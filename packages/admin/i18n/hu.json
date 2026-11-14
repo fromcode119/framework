@@ -613,7 +613,13 @@
       "none": "Nincs személymezőbe mentve",
       "missing": "{{key}} (már nem személymező)",
       "manage": "Személymezők kezelése"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Nem mentett módosítások",
+      "discard": "Elvetés",
+      "save": "Mentés"
+    },
+    "dropToInstall": "Engedje el a fájlt a telepítéshez"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Az importálás sikertelen: {{reason}}",
       "awaitingApproval": "Jóváhagyásra vár",
       "reviewAndApprove": "Áttekintés és jóváhagyás",
-      "waitsForYourApproval": "Elhelyezve; arra vár, hogy jóváhagyja, amit kér."
+      "waitsForYourApproval": "Elhelyezve; arra vár, hogy jóváhagyja, amit kér.",
+      "tabAll": "Összes",
+      "tabOff": "Kikapcsolva",
+      "tabUpdates": "Frissíthető",
+      "tabErrors": "Hibás",
+      "details": "Részletek",
+      "installedOnThePlatform": "A platformra telepítve"
     },
     "upload": {
       "name": "Név: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Másolva",
       "pageSubtitle": "A munkaterület által használt külső szolgáltatások. A titkos adatok titkosítva vannak, és többé nem jelennek meg.",
       "ownerPlatform": "Platform",
-      "save": "Mentés",
       "saving": "Mentés…",
       "more": "Továbbiak",
       "oneProviderAtATime": "Egyszerre egy szolgáltató lehet aktív. Másik választása lecseréli a jelenlegit.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Adja meg a nyelv nevét és ISO-kódját, majd engedélyezze vagy tiltsa le az egyes nyelveket.",
       "noLocalesConfiguredAddOne": "Nincs beállított nyelv. Adjon hozzá egyet alább; semmi sem kerül tárolásra, amíg nem ment.",
       "languageNameEGEnglish": "Nyelv neve (pl. English)",
+      "pickLanguage": "Válasszon nyelvet",
       "enabled": "Engedélyezve",
       "remove": "Eltávolítás",
       "addLocale": "Nyelv hozzáadása",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Útvonal-előtag (/bg/...)",
       "noLocaleInUrl": "Nincs nyelv az URL-ben",
       "selectLocaleUrlStrategy": "URL-stratégia kiválasztása",
-      "isoCodeExample": "ISO-kód (pl. en, en-gb)",
       "consoleLanguage": "Konzol nyelve",
       "platformConsoleLanguageHint": "A konzol nyelve, ha nincs kiválasztott webhely. Az a webhely, amely nem választott saját konzolnyelvet, ezt használja.",
       "consoleLanguageSaved": "A konzol nyelve mentve."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Elutasításra kerül: a telepített téma gyártója {{installed}}, ez a csomag pedig a(z) {{incoming}} gyártótól származik.",
     "notAvailableHere": "Itt nincs „{{slug}}” téma",
     "notAvailableHereHelp": "Ez a webhely nem lát ilyen nevű témát. A témái a Témák alatt láthatók; a témákat a platformadminisztrátor rendeli hozzá a webhelyekhez a Webhelyek menüben.",
-    "manageThemes": "Témák kezelése"
+    "manageThemes": "Témák kezelése",
+    "activeTheme": "Aktív téma",
+    "otherThemes": "Egyéb témák",
+    "noActiveTheme": "Nincs aktív téma"
   },
   "media": {
     "failedToCreateFolder": "Nem sikerült létrehozni a mappát",

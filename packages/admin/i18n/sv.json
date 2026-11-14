@@ -613,7 +613,13 @@
       "none": "Sparas inte i ett personfält",
       "missing": "{{key}} (inte längre ett personfält)",
       "manage": "Hantera personfält"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Osparade ändringar",
+      "discard": "Ignorera",
+      "save": "Spara"
+    },
+    "dropToInstall": "Släpp filen för att installera den"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importen misslyckades: {{reason}}",
       "awaitingApproval": "Väntar på godkännande",
       "reviewAndApprove": "Granska och godkänn",
-      "waitsForYourApproval": "Placerat och väntar på att du godkänner det som det begär."
+      "waitsForYourApproval": "Placerat och väntar på att du godkänner det som det begär.",
+      "tabAll": "Alla",
+      "tabOff": "Av",
+      "tabUpdates": "Med uppdatering",
+      "tabErrors": "Med fel",
+      "details": "Detaljer",
+      "installedOnThePlatform": "Installerade på plattformen"
     },
     "upload": {
       "name": "Namn: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopierad",
       "pageSubtitle": "Externa tjänster som denna arbetsyta använder. Hemligheter krypteras och visas aldrig igen.",
       "ownerPlatform": "Plattform",
-      "save": "Spara",
       "saving": "Sparar…",
       "more": "Mer",
       "oneProviderAtATime": "En leverantör åt gången. Om du väljer en annan ersätts den.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Ange språknamn och ISO-kod och aktivera eller inaktivera sedan varje språk.",
       "noLocalesConfiguredAddOne": "Inga språk har konfigurerats. Lägg till ett nedan; inget lagras förrän du sparar.",
       "languageNameEGEnglish": "Språknamn (t.ex. Svenska)",
+      "pickLanguage": "Välj ett språk",
       "enabled": "Aktiverad",
       "remove": "Ta bort",
       "addLocale": "Lägg till språk",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Sökvägsprefix (/bg/...)",
       "noLocaleInUrl": "Inget språk i URL:en",
       "selectLocaleUrlStrategy": "Välj språkstrategi för URL:er",
-      "isoCodeExample": "ISO-kod (t.ex. en, en-gb)",
       "consoleLanguage": "Konsolens språk",
       "platformConsoleLanguageHint": "Språket som konsolen använder när ingen webbplats är vald. En webbplats som inte har valt eget konsolspråk använder detta.",
       "consoleLanguageSaved": "Konsolens språk har sparats."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Kommer att nekas: det installerade temat kommer från {{installed}}, detta paket från {{incoming}}.",
     "notAvailableHere": "Inget tema \"{{slug}}\" här",
     "notAvailableHereHelp": "Denna webbplats ser inget tema med det namnet. Dess teman visas under Teman; en plattformsadministratör tilldelar teman till webbplatser under Webbplatser.",
-    "manageThemes": "Hantera teman"
+    "manageThemes": "Hantera teman",
+    "activeTheme": "Aktivt tema",
+    "otherThemes": "Andra teman",
+    "noActiveTheme": "Inget tema är aktivt"
   },
   "media": {
     "failedToCreateFolder": "Det gick inte att skapa mappen",

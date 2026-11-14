@@ -3,7 +3,6 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { TagFieldUtils } from '@/components/ui/tag-field/utils';
@@ -56,7 +55,6 @@ export class AuditTrailCard extends Reactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES}
           separator={SettingListSeparator.COMMA}
-          icon={FrameworkIcons.Database}
           title={AdminI18n.t('settings.security.tablesExcludedFromWriteAuditing')}
           description={AdminI18n.t('settings.security.physicalTableNamesCommaSeparated')}
           options={this.tables}

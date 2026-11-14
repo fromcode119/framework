@@ -4,8 +4,7 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Select } from '@/components/ui/view/select.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/localization/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -31,7 +30,6 @@ export class LocaleTargetsCard extends PureReactor {
       <Card title={AdminI18n.t('settings.localization.defaultLocaleTargets')}>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.localization.systemDefaultLocale')}
           description={AdminI18n.t('settings.localization.primaryLocaleUsedBySystem')}
         >
@@ -48,7 +46,6 @@ export class LocaleTargetsCard extends PureReactor {
 
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Settings}
           title={AdminI18n.t('settings.localization.adminDefaultLocale')}
           description={AdminI18n.t('settings.localization.defaultLanguageUsedByThe')}
         >
@@ -65,7 +62,6 @@ export class LocaleTargetsCard extends PureReactor {
 
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Layout}
           title={AdminI18n.t('settings.localization.frontendDefaultLocale')}
           description={AdminI18n.t('settings.localization.defaultLanguageUsedByFrontend')}
         >
@@ -82,7 +78,6 @@ export class LocaleTargetsCard extends PureReactor {
 
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.localization.localeUrlStrategy')}
           description={AdminI18n.t('settings.localization.chooseLocaleRoutingStyleLocale')}
         >

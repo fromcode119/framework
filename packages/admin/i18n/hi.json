@@ -613,7 +613,13 @@
       "none": "किसी व्यक्ति फ़ील्ड में सहेजा नहीं गया",
       "missing": "{{key}} (अब व्यक्ति फ़ील्ड नहीं है)",
       "manage": "व्यक्ति फ़ील्ड प्रबंधित करें"
-    }
+    },
+    "saveBar": {
+      "unsaved": "बिना सहेजे बदलाव",
+      "discard": "छोड़ें",
+      "save": "सहेजें"
+    },
+    "dropToInstall": "इंस्टॉल करने के लिए फ़ाइल यहाँ छोड़ें"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "इम्पोर्ट विफल: {{reason}}",
       "awaitingApproval": "स्वीकृति की प्रतीक्षा में",
       "reviewAndApprove": "समीक्षा करें और स्वीकृत करें",
-      "waitsForYourApproval": "रखा गया है, और अपनी माँगों के लिए आपकी स्वीकृति की प्रतीक्षा कर रहा है।"
+      "waitsForYourApproval": "रखा गया है, और अपनी माँगों के लिए आपकी स्वीकृति की प्रतीक्षा कर रहा है।",
+      "tabAll": "सभी",
+      "tabOff": "बंद",
+      "tabUpdates": "अपडेट के साथ",
+      "tabErrors": "त्रुटि के साथ",
+      "details": "विवरण",
+      "installedOnThePlatform": "प्लेटफ़ॉर्म पर इंस्टॉल"
     },
     "upload": {
       "name": "नाम: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "कॉपी हो गया",
       "pageSubtitle": "इस वर्कस्पेस द्वारा उपयोग की जाने वाली बाहरी सेवाएँ। सीक्रेट एन्क्रिप्ट किए जाते हैं और दोबारा कभी नहीं दिखाए जाते।",
       "ownerPlatform": "प्लेटफ़ॉर्म",
-      "save": "सहेजें",
       "saving": "सहेजा जा रहा है…",
       "more": "अधिक",
       "oneProviderAtATime": "एक समय में एक ही प्रदाता। दूसरा चुनने पर यह बदल जाएगा।",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "भाषा का नाम + ISO कोड निर्धारित करें, फिर हर लोकेल को सक्षम या अक्षम करें।",
       "noLocalesConfiguredAddOne": "कोई लोकेल कॉन्फ़िगर नहीं है। नीचे एक जोड़ें; सहेजने तक कुछ भी संग्रहीत नहीं होता।",
       "languageNameEGEnglish": "भाषा का नाम (उदा. English)",
+      "pickLanguage": "भाषा चुनें",
       "enabled": "सक्षम",
       "remove": "हटाएँ",
       "addLocale": "लोकेल जोड़ें",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "पाथ प्रीफ़िक्स (/bg/...)",
       "noLocaleInUrl": "URL में लोकेल नहीं",
       "selectLocaleUrlStrategy": "लोकेल URL रणनीति चुनें",
-      "isoCodeExample": "ISO कोड (जैसे en, en-gb)",
       "consoleLanguage": "कंसोल भाषा",
       "platformConsoleLanguageHint": "कोई साइट न चुने होने पर यह कंसोल इसी भाषा में दिखता है। जिस साइट ने अपनी कंसोल भाषा नहीं चुनी है, वह यही भाषा उपयोग करती है।",
       "consoleLanguageSaved": "कंसोल भाषा सहेज ली गई है।"
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "अस्वीकार किया जाएगा: इंस्टॉल की गई थीम {{installed}} की है, यह पैकेज {{incoming}} का है।",
     "notAvailableHere": "यहाँ कोई थीम \"{{slug}}\" नहीं है",
     "notAvailableHereHelp": "यह साइट इस नाम की कोई थीम नहीं देख सकती। इसकी थीम Themes में सूचीबद्ध हैं; प्लेटफ़ॉर्म एडमिन Sites से साइटों को थीम असाइन करता है।",
-    "manageThemes": "थीम प्रबंधित करें"
+    "manageThemes": "थीम प्रबंधित करें",
+    "activeTheme": "सक्रिय थीम",
+    "otherThemes": "अन्य थीम",
+    "noActiveTheme": "कोई थीम सक्रिय नहीं है"
   },
   "media": {
     "failedToCreateFolder": "फ़ोल्डर बनाया नहीं जा सका",

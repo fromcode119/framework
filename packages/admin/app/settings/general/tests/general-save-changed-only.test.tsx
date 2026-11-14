@@ -54,13 +54,33 @@ describe('General settings: Save sends only what changed', () => {
     settingsUpdate.mockResolvedValue({});
   });
 
-  it('sends nothing when nothing was changed, so no blank row is ever written', async () => {
+  it('offers no Save while nothing was changed, so no blank row is ever written', async () => {
     withRuntime(<GeneralSettingsPage />);
     await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
 
-    fireEvent.click(screen.getByText('Save Changes'));
+    expect(screen.queryByText('Save')).toBeNull();
+    expect(settingsUpdate).not.toHaveBeenCalled();
+  });
 
-    await waitFor(() => expect(addNotification).toHaveBeenCalledWith(expect.objectContaining({ title: 'Settings Saved' })));
+  it('takes the save bar away again when the edit is undone by hand', async () => {
+    withRuntime(<GeneralSettingsPage />);
+    await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
+
+    fireEvent.change(screen.getByDisplayValue('Shop'), { target: { value: 'Shop & Co' } });
+    await waitFor(() => expect(screen.getByText('Save')).not.toBeNull());
+    fireEvent.change(screen.getByDisplayValue('Shop & Co'), { target: { value: 'Shop' } });
+    await waitFor(() => expect(screen.queryByText('Save')).toBeNull());
+  });
+
+  it('puts back what was read when Discard is pressed', async () => {
+    withRuntime(<GeneralSettingsPage />);
+    await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
+
+    fireEvent.change(screen.getByDisplayValue('Shop'), { target: { value: 'Shop & Co' } });
+    fireEvent.click(await screen.findByText('Discard'));
+
+    await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
+    expect(screen.queryByText('Save')).toBeNull();
     expect(settingsUpdate).not.toHaveBeenCalled();
   });
 
@@ -69,7 +89,7 @@ describe('General settings: Save sends only what changed', () => {
     await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
 
     fireEvent.change(screen.getByDisplayValue('Shop'), { target: { value: 'Shop & Co' } });
-    fireEvent.click(screen.getByText('Save Changes'));
+    fireEvent.click(await screen.findByText('Save'));
 
     await waitFor(() => expect(settingsUpdate).toHaveBeenCalledTimes(1));
     expect(settingsUpdate).toHaveBeenCalledWith({ platform_name: 'Shop & Co' });

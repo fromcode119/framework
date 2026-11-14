@@ -6,7 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -53,7 +53,6 @@ export class ApiResponseCacheCard extends AdminComponent {
       <Card title={AdminI18n.t('settings.infrastructure.apiResponseCache')}>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Clock}
           title={AdminI18n.t('settings.infrastructure.apiResponseCacheSeconds')}
           stacked
           description={AdminI18n.t('settings.infrastructure.apiResponseCacheHelp')}

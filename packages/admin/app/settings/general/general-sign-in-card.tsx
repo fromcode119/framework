@@ -4,8 +4,7 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { Input } from '@/components/ui/view/input.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -73,7 +72,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('frontend_auth_enabled') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Lock}
                 title={AdminI18n.t('settings.general.frontendAuthentication')}
                 description={AdminI18n.t('settings.general.enablePublicCustomerAuthenticationRoutes')}
               >
@@ -87,7 +85,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('frontend_registration_enabled') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Users}
                 title={AdminI18n.t('settings.general.frontendRegistration')}
                 description={AdminI18n.t('settings.general.allowNewCustomerSelfRegistration')}
               >
@@ -102,7 +99,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('app_auth_enabled') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Lock}
                 title={AdminI18n.t('settings.general.appAuthentication')}
                 description={AdminI18n.t('settings.general.enableAppAuthenticationRoutes')}
               >
@@ -116,7 +112,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('app_registration_enabled') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Users}
                 title={AdminI18n.t('settings.general.appRegistration')}
                 description={AdminI18n.t('settings.general.allowNewCustomerAppRegistration')}
               >
@@ -131,7 +126,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('app_anonymous_enabled') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Users}
                 title={AdminI18n.t('settings.general.appAnonymous')}
                 description={AdminI18n.t('settings.general.appAnonymousDescription')}
               >
@@ -146,7 +140,6 @@ export class GeneralSignInCard extends PureReactor {
             {this.shown('account_section_order') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Users}
                 title={AdminI18n.t('settings.general.accountSectionOrder')}
                 description={AdminI18n.t('settings.general.accountSectionOrderDescription')}
               >

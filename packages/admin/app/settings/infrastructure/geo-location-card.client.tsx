@@ -6,7 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Switch } from '@/components/ui/view/switch.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminApi } from '@/lib/api';
@@ -94,10 +94,10 @@ export class GeoLocationCard extends AdminComponent {
     const source = status?.source;
     return (
       <Card title={AdminI18n.t('settings.infrastructure.geoLocation')}>
-        <SettingRow theme={theme} icon={FrameworkIcons.Globe} title={AdminI18n.t('settings.infrastructure.geoLookupTitle')} stacked description={AdminI18n.t('settings.infrastructure.geoLookupDescription')}>
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoLookupTitle')} stacked description={AdminI18n.t('settings.infrastructure.geoLookupDescription')}>
           <Switch checked={this.enabled} onChange={this.onToggle} disabled={!this.loaded || this.busy} label={this.enabled ? AdminI18n.t('settings.infrastructure.on') : AdminI18n.t('settings.infrastructure.off')} />
         </SettingRow>
-        <SettingRow theme={theme} icon={FrameworkIcons.Database} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} stacked description={this.databaseLine()}>
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} stacked description={this.databaseLine()}>
           <div className="flex flex-col gap-2">
             {status?.lastCheckedAt ? <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</span> : null}
             {status?.lastError ? <span className="text-xs text-rose-500">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</span> : null}

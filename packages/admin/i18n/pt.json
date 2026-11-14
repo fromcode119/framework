@@ -613,7 +613,13 @@
       "none": "Não guardado num campo de pessoa",
       "missing": "{{key}} (já não é um campo de pessoa)",
       "manage": "Gerir campos de pessoa"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Alterações não guardadas",
+      "discard": "Descartar",
+      "save": "Guardar"
+    },
+    "dropToInstall": "Largue o ficheiro para o instalar"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Falha na importação: {{reason}}",
       "awaitingApproval": "Aguardando aprovação",
       "reviewAndApprove": "Revisar e aprovar",
-      "waitsForYourApproval": "Instalado e aguardando sua aprovação do que solicita."
+      "waitsForYourApproval": "Instalado e aguardando sua aprovação do que solicita.",
+      "tabAll": "Todos",
+      "tabOff": "Desligados",
+      "tabUpdates": "Com atualização",
+      "tabErrors": "Com erros",
+      "details": "Detalhes",
+      "installedOnThePlatform": "Instalados na plataforma"
     },
     "upload": {
       "name": "Nome: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Copiado",
       "pageSubtitle": "Serviços externos usados por este espaço de trabalho. Os segredos são criptografados e nunca mais exibidos.",
       "ownerPlatform": "Plataforma",
-      "save": "Salvar",
       "saving": "Salvando…",
       "more": "Mais",
       "oneProviderAtATime": "Um provedor por vez. Escolher outro substitui o atual.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Defina o nome do idioma e o código ISO e, em seguida, ative ou desative cada idioma.",
       "noLocalesConfiguredAddOne": "Nenhum idioma configurado. Adicione um abaixo; nada é guardado até clicar em Guardar.",
       "languageNameEGEnglish": "Nome do idioma (ex.: Português)",
+      "pickLanguage": "Escolha um idioma",
       "enabled": "Ativado",
       "remove": "Remover",
       "addLocale": "Adicionar idioma",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefixo de caminho (/bg/...)",
       "noLocaleInUrl": "Sem locale no URL",
       "selectLocaleUrlStrategy": "Selecionar estratégia de URL do locale",
-      "isoCodeExample": "Código ISO (por exemplo, en, en-gb)",
       "consoleLanguage": "Idioma da consola",
       "platformConsoleLanguageHint": "O idioma desta consola quando nenhum site está selecionado. Um site que não tenha escolhido o seu próprio idioma da consola usa este.",
       "consoleLanguageSaved": "O idioma da consola foi guardado."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Será recusado: o tema instalado é de {{installed}}, este pacote é de {{incoming}}.",
     "notAvailableHere": "Não existe o tema \"{{slug}}\" aqui",
     "notAvailableHereHelp": "Este site não tem acesso a um tema com esse nome. Os seus temas estão listados em Temas; um administrador da plataforma atribui temas aos sites em Sites.",
-    "manageThemes": "Gerir temas"
+    "manageThemes": "Gerir temas",
+    "activeTheme": "Tema ativo",
+    "otherThemes": "Outros temas",
+    "noActiveTheme": "Nenhum tema ativo"
   },
   "media": {
     "failedToCreateFolder": "Falha ao criar a pasta",

@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminClass } from '@/lib/admin-class';
 import type { ISitePluginOffer } from '@/app/plugins/installed/interfaces/site-plugin-offer.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -48,11 +46,8 @@ export class SitePluginOffers extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${dark ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-        <h3 className={`text-[12px] font-medium mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.availableToThisSite')}</h3>
-        <p className="text-xs text-slate-500 mb-4">{AdminI18n.t('plugins.list.pluginsThePlatformOffersTo')}</p>
+      <Card className="mb-3" title={AdminI18n.t('plugins.list.availableToThisSite')} description={AdminI18n.t('plugins.list.pluginsThePlatformOffersTo')}>
         {this.loading ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.loading')}</p>
           : this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p>
           : this.offers.length === 0 ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.thePlatformOffersNoPlugins')}</p>

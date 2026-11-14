@@ -613,7 +613,13 @@
       "none": "Neukládá se do pole osoby",
       "missing": "{{key}} (již není polem osoby)",
       "manage": "Spravovat pole osob"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Neuložené změny",
+      "discard": "Zahodit",
+      "save": "Uložit"
+    },
+    "dropToInstall": "Pusťte soubor a nainstalujte ho"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import se nezdařil: {{reason}}",
       "awaitingApproval": "Čeká na schválení",
       "reviewAndApprove": "Zkontrolovat a schválit",
-      "waitsForYourApproval": "Umístěno, čeká na schválení oprávnění, o která žádá."
+      "waitsForYourApproval": "Umístěno, čeká na schválení oprávnění, o která žádá.",
+      "tabAll": "Vše",
+      "tabOff": "Vypnuté",
+      "tabUpdates": "S aktualizací",
+      "tabErrors": "S chybou",
+      "details": "Podrobnosti",
+      "installedOnThePlatform": "Nainstalováno na platformě"
     },
     "upload": {
       "name": "Název: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Zkopírováno",
       "pageSubtitle": "Externí služby, které tento pracovní prostor používá. Tajné údaje jsou šifrované a znovu se nezobrazí.",
       "ownerPlatform": "Platforma",
-      "save": "Uložit",
       "saving": "Ukládání…",
       "more": "Více",
       "oneProviderAtATime": "Vždy jen jeden poskytovatel. Výběrem jiného se stávající nahradí.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Zadejte název jazyka a kód ISO a poté jednotlivé jazyky povolte nebo zakažte.",
       "noLocalesConfiguredAddOne": "Nejsou nastaveny žádné jazyky. Přidejte jeden níže; nic se neuloží, dokud nekliknete na Uložit.",
       "languageNameEGEnglish": "Název jazyka (např. Čeština)",
+      "pickLanguage": "Vyberte jazyk",
       "enabled": "Povoleno",
       "remove": "Odebrat",
       "addLocale": "Přidat jazyk",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Předpona cesty (/bg/...)",
       "noLocaleInUrl": "Bez jazyka v URL",
       "selectLocaleUrlStrategy": "Vyberte způsob zobrazení jazyka v URL",
-      "isoCodeExample": "Kód ISO (např. en, en-gb)",
       "consoleLanguage": "Jazyk konzole",
       "platformConsoleLanguageHint": "Jazyk konzole, když není vybrán žádný web. Web, který si nezvolil vlastní jazyk konzole, používá tento.",
       "consoleLanguageSaved": "Jazyk konzole byl uložen."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Bude odmítnuto: nainstalovaný motiv je od {{installed}}, tento balíček je od {{incoming}}.",
     "notAvailableHere": "Motiv „{{slug}}“ zde není",
     "notAvailableHereHelp": "Tento web nevidí motiv s tímto názvem. Jeho motivy jsou uvedeny v části Motivy; správce platformy přiřazuje motivy webům v části Weby.",
-    "manageThemes": "Spravovat motivy"
+    "manageThemes": "Spravovat motivy",
+    "activeTheme": "Aktivní motiv",
+    "otherThemes": "Další motivy",
+    "noActiveTheme": "Žádný motiv není aktivní"
   },
   "media": {
     "failedToCreateFolder": "Složku se nepodařilo vytvořit",

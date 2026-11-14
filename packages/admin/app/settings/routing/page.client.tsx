@@ -1,12 +1,11 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { AdminClass } from '@/lib/admin-class';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
@@ -14,6 +13,8 @@ import { RoutingPageActions } from '@/app/settings/routing/page-actions.client';
 import { RoutingPageState } from '@/app/settings/routing/page-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Input } from '@/components/ui/view/input.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
 
 /**
  * Routing — the permalink structure and what the home page serves.
@@ -59,7 +60,6 @@ export class RoutingPage extends RoutingPageActions {
         <div className="flex flex-col h-full animate-in fade-in duration-500">
           <CompactPageHeader
             theme={theme}
-            icon={<FrameworkIcons.Map size={18} strokeWidth={2} />}
             title={AdminI18n.t('settings.routing.routing')}
             subtitle={AdminI18n.t('settings.routing.homepageTargetPermalinkConfiguration')}
           />
@@ -77,21 +77,8 @@ export class RoutingPage extends RoutingPageActions {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Map size={18} strokeWidth={2} />}
           title={AdminI18n.t('settings.routing.routing')}
           subtitle={AdminI18n.t('settings.routing.homepageTargetPermalinkConfiguration')}
-          actions={
-            this.outOfScope ? null : (
-              <Button
-                icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-                onClick={this.handleSave}
-                isLoading={this.isSaving}
-                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-              >
-                {AdminI18n.t('settings.routing.applyRouting')}
-              </Button>
-            )
-          }
         />
 
         {this.outOfScope && (
@@ -99,32 +86,25 @@ export class RoutingPage extends RoutingPageActions {
         )}
 
         {!this.outOfScope && (
-        <div className="p-6 w-full space-y-8">
+        <div className="p-6 w-full space-y-3">
           <Card title={AdminI18n.t('settings.routing.homepageTarget')}>
-            <div className="space-y-5 py-2">
-              <div>
-                <label className={`block text-[12px] font-medium mb-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {AdminI18n.t('settings.routing.rootRoute')}
-                </label>
-                <Select
-                  value={homeTarget}
-                  onChange={this.setHomeTarget}
-                  options={this.homeOptions}
-                  placeholder={AdminI18n.t('settings.routing.selectHomepageTarget')}
-                  theme={theme}
-                  searchable
-                  onSearchChange={this.setSearchTerm}
-                />
-                <p className="mt-3 text-[11px] text-slate-500 font-medium italic">
-                  {AdminI18n.t('settings.routing.targetsAreDiscoveredFromAvailable')}
-                </p>
-                <div className={`mt-3 ${AdminClass.SURFACE} px-3 py-2 text-[11px] ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'
-                  }`}>
-                  <span className="font-medium text-[12px] opacity-70">{AdminI18n.t('settings.routing.resolvedHomepageSource')}</span>
-                  <div className="mt-1 font-semibold">{resolvedSourceLabel}</div>
-                </div>
-              </div>
-            </div>
+            <SettingRow
+              title={AdminI18n.t('settings.routing.rootRoute')}
+              description={AdminI18n.t('settings.routing.targetsAreDiscoveredFromAvailable')}
+            >
+              <Select
+                value={homeTarget}
+                onChange={this.setHomeTarget}
+                options={this.homeOptions}
+                placeholder={AdminI18n.t('settings.routing.selectHomepageTarget')}
+                theme={theme}
+                searchable
+                onSearchChange={this.setSearchTerm}
+              />
+            </SettingRow>
+            <SettingRow title={AdminI18n.t('settings.routing.resolvedHomepageSource')} width={SettingRowWidth.AUTO}>
+              <span className="text-[13px] font-medium">{resolvedSourceLabel}</span>
+            </SettingRow>
           </Card>
 
           <Card title={AdminI18n.t('settings.routing.permalinkStructure')}>
@@ -174,9 +154,6 @@ export class RoutingPage extends RoutingPageActions {
                       placeholder="/:year/:slug"
                     />
                   </div>
-                  <Button onClick={this.handleSave} isLoading={this.isSaving} className="px-8 rounded-xl">
-                    {AdminI18n.t('settings.routing.apply')}
-                  </Button>
                 </div>
               </div>
             </div>
@@ -209,6 +186,7 @@ export class RoutingPage extends RoutingPageActions {
               ))}
             </div>
           </Card>
+          <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSave} onDiscard={this.discardChanges} />
         </div>
         )}
       </div>

@@ -613,7 +613,13 @@
       "none": "Không lưu vào trường thông tin người",
       "missing": "{{key}} (không còn là trường thông tin người)",
       "manage": "Quản lý trường thông tin người"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Thay đổi chưa lưu",
+      "discard": "Hủy bỏ",
+      "save": "Lưu"
+    },
+    "dropToInstall": "Thả tệp để cài đặt"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Nhập thất bại: {{reason}}",
       "awaitingApproval": "Đang chờ phê duyệt",
       "reviewAndApprove": "Xem xét và phê duyệt",
-      "waitsForYourApproval": "Đã đặt vào, đang chờ bạn phê duyệt các quyền mà plugin yêu cầu."
+      "waitsForYourApproval": "Đã đặt vào, đang chờ bạn phê duyệt các quyền mà plugin yêu cầu.",
+      "tabAll": "Tất cả",
+      "tabOff": "Đang tắt",
+      "tabUpdates": "Có cập nhật",
+      "tabErrors": "Có lỗi",
+      "details": "Chi tiết",
+      "installedOnThePlatform": "Đã cài trên nền tảng"
     },
     "upload": {
       "name": "Tên: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Đã sao chép",
       "pageSubtitle": "Các dịch vụ bên ngoài mà không gian làm việc này sử dụng. Thông tin bí mật được mã hóa và không bao giờ hiển thị lại.",
       "ownerPlatform": "Nền tảng",
-      "save": "Lưu",
       "saving": "Đang lưu…",
       "more": "Thêm",
       "oneProviderAtATime": "Mỗi lúc chỉ dùng một nhà cung cấp. Chọn nhà cung cấp khác sẽ thay thế nhà cung cấp hiện tại.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Khai báo tên ngôn ngữ + mã ISO, sau đó bật hoặc tắt từng ngôn ngữ.",
       "noLocalesConfiguredAddOne": "Chưa cấu hình ngôn ngữ nào. Hãy thêm bên dưới; chưa có gì được lưu cho đến khi bạn bấm Lưu.",
       "languageNameEGEnglish": "Tên ngôn ngữ (vd: English)",
+      "pickLanguage": "Chọn ngôn ngữ",
       "enabled": "Đã bật",
       "remove": "Xóa",
       "addLocale": "Thêm ngôn ngữ",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Tiền tố đường dẫn (/bg/...)",
       "noLocaleInUrl": "Không có ngôn ngữ trong URL",
       "selectLocaleUrlStrategy": "Chọn cách thể hiện ngôn ngữ trong URL",
-      "isoCodeExample": "Mã ISO (ví dụ: en, en-gb)",
       "consoleLanguage": "Ngôn ngữ bảng điều khiển",
       "platformConsoleLanguageHint": "Ngôn ngữ của bảng điều khiển khi chưa chọn trang nào. Trang nào chưa chọn ngôn ngữ bảng điều khiển riêng sẽ dùng ngôn ngữ này.",
       "consoleLanguageSaved": "Đã lưu ngôn ngữ bảng điều khiển."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Sẽ bị từ chối: giao diện đã cài thuộc {{installed}}, còn gói này thuộc {{incoming}}.",
     "notAvailableHere": "Không có giao diện \"{{slug}}\" tại đây",
     "notAvailableHereHelp": "Trang web này không thấy giao diện nào có tên đó. Các giao diện của trang được liệt kê trong mục Giao diện; quản trị viên nền tảng gán giao diện cho trang web trong mục Trang web.",
-    "manageThemes": "Quản lý giao diện"
+    "manageThemes": "Quản lý giao diện",
+    "activeTheme": "Giao diện đang dùng",
+    "otherThemes": "Giao diện khác",
+    "noActiveTheme": "Không có giao diện nào đang dùng"
   },
   "media": {
     "failedToCreateFolder": "Không thể tạo thư mục",

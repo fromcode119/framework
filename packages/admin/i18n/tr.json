@@ -613,7 +613,13 @@
       "none": "Bir kişi alanına kaydedilmez",
       "missing": "{{key}} (artık bir kişi alanı değil)",
       "manage": "Kişi alanlarını yönet"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Kaydedilmemiş değişiklikler",
+      "discard": "Vazgeç",
+      "save": "Kaydet"
+    },
+    "dropToInstall": "Yüklemek için dosyayı bırakın"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "İçe aktarma başarısız: {{reason}}",
       "awaitingApproval": "Onay bekleniyor",
       "reviewAndApprove": "İncele ve onayla",
-      "waitsForYourApproval": "Yerleştirildi; istedikleri için onayınızı bekliyor."
+      "waitsForYourApproval": "Yerleştirildi; istedikleri için onayınızı bekliyor.",
+      "tabAll": "Tümü",
+      "tabOff": "Kapalı",
+      "tabUpdates": "Güncellemesi olan",
+      "tabErrors": "Hatalı",
+      "details": "Ayrıntılar",
+      "installedOnThePlatform": "Platformda yüklü"
     },
     "upload": {
       "name": "Ad: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopyalandı",
       "pageSubtitle": "Bu çalışma alanının kullandığı dış hizmetler. Gizli bilgiler şifrelenir ve bir daha gösterilmez.",
       "ownerPlatform": "Platform",
-      "save": "Kaydet",
       "saving": "Kaydediliyor…",
       "more": "Daha fazla",
       "oneProviderAtATime": "Aynı anda tek sağlayıcı kullanılabilir. Başka birini seçmek mevcut olanın yerini alır.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Dil adını ve ISO kodunu tanımlayın, ardından her yerel ayarı etkinleştirin veya devre dışı bırakın.",
       "noLocalesConfiguredAddOne": "Yapılandırılmış yerel ayar yok. Aşağıdan ekleyin; kaydedene kadar hiçbir şey saklanmaz.",
       "languageNameEGEnglish": "Dil adı (ör. Türkçe)",
+      "pickLanguage": "Bir dil seçin",
       "enabled": "Etkin",
       "remove": "Kaldır",
       "addLocale": "Yerel Ayar Ekle",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Yol Öneki (/bg/...)",
       "noLocaleInUrl": "URL'de Yerel Ayar Yok",
       "selectLocaleUrlStrategy": "Yerel ayar URL stratejisini seçin",
-      "isoCodeExample": "ISO kodu (ör. en, en-gb)",
       "consoleLanguage": "Konsol dili",
       "platformConsoleLanguageHint": "Hiçbir site seçili değilken bu konsolun kullandığı dil. Kendi konsol dilini seçmemiş bir site bu dili kullanır.",
       "consoleLanguageSaved": "Konsol dili kaydedildi."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Reddedilecek: yüklü tema {{installed}} sağlayıcısına, bu paket ise {{incoming}} sağlayıcısına ait.",
     "notAvailableHere": "Burada \"{{slug}}\" teması yok",
     "notAvailableHereHelp": "Bu site bu ada sahip bir temayı göremiyor. Sitenin temaları Temalar altında listelenir; temaları sitelere bir platform yöneticisi Siteler bölümünden atar.",
-    "manageThemes": "Temaları Yönet"
+    "manageThemes": "Temaları Yönet",
+    "activeTheme": "Etkin tema",
+    "otherThemes": "Diğer temalar",
+    "noActiveTheme": "Etkin tema yok"
   },
   "media": {
     "failedToCreateFolder": "Klasör oluşturulamadı",

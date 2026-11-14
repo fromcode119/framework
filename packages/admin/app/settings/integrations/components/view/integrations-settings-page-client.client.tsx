@@ -13,6 +13,7 @@ import { Platform } from '@fromcode119/react-class-components';
 import { IntegrationsSettingsPageActions } from '@/app/settings/integrations/components/view/integrations-settings-page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 
 /**
  * The integrations settings screen.
@@ -176,8 +177,6 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <IntegrationHeader
           theme={this.theme}
-          formId={this.editor ? IntegrationProviderEditor.FORM_ID : ''}
-          saving={this.saving}
           resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
@@ -194,6 +193,12 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
                 the list, so the editor stands alone. */}
             {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
           </section>
+          <SettingsSaveBar
+            dirty={this.editorDirty}
+            saving={this.saving}
+            onSave={() => this.handleSaveProvider()}
+            onDiscard={() => this.discardEditorChanges()}
+          />
         </div>
       </div>
     );

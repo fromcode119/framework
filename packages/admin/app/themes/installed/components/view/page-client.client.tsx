@@ -177,6 +177,7 @@ export class InstalledThemesPageClient
         siteQuota={this.siteQuota}
         siteScope={this.scopeKnown && this.siteScope}
         onUpdate={this.onUpdate}
+        onNavigate={(href: string) => this.router.push(href)}
         showUploadPreview={this.showUploadPreview}
         themes={this.themes}
         themeMode={this.theme}

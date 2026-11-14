@@ -613,7 +613,13 @@
       "none": "לא נשמר בשדה של אדם",
       "missing": "{{key}} (כבר אינו שדה של אדם)",
       "manage": "ניהול שדות של אדם"
-    }
+    },
+    "saveBar": {
+      "unsaved": "שינויים שלא נשמרו",
+      "discard": "בטל",
+      "save": "שמור"
+    },
+    "dropToInstall": "שחרר את הקובץ כדי להתקין אותו"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "הייבוא נכשל: {{reason}}",
       "awaitingApproval": "ממתין לאישור",
       "reviewAndApprove": "בדיקה ואישור",
-      "waitsForYourApproval": "הוצב, וממתין לאישורכם לבקשותיו."
+      "waitsForYourApproval": "הוצב, וממתין לאישורכם לבקשותיו.",
+      "tabAll": "הכול",
+      "tabOff": "כבויים",
+      "tabUpdates": "עם עדכון",
+      "tabErrors": "עם שגיאות",
+      "details": "פרטים",
+      "installedOnThePlatform": "מותקנים בפלטפורמה"
     },
     "upload": {
       "name": "שם: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "הועתק",
       "pageSubtitle": "שירותים חיצוניים שסביבת העבודה משתמשת בהם. הסודות מוצפנים ולא יוצגו שוב.",
       "ownerPlatform": "פלטפורמה",
-      "save": "שמירה",
       "saving": "שומר…",
       "more": "עוד",
       "oneProviderAtATime": "ספק אחד בכל פעם. בחירת ספק אחר תחליף אותו.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "הגדירו שם שפה וקוד ISO, ולאחר מכן הפעילו או השביתו כל שפה.",
       "noLocalesConfiguredAddOne": "לא הוגדרו שפות. הוסיפו שפה למטה; דבר לא יישמר עד שתלחצו על שמירה.",
       "languageNameEGEnglish": "שם השפה (לדוגמה English)",
+      "pickLanguage": "בחרו שפה",
       "enabled": "מופעל",
       "remove": "הסרה",
       "addLocale": "הוספת שפה",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "קידומת נתיב (/bg/...)",
       "noLocaleInUrl": "ללא שפה בכתובת",
       "selectLocaleUrlStrategy": "בחירת שיטת השפה בכתובת",
-      "isoCodeExample": "קוד ISO (לדוגמה en, en-gb)",
       "consoleLanguage": "שפת המסוף",
       "platformConsoleLanguageHint": "השפה שבה המסוף מוצג כשלא נבחר אתר. אתר שלא בחר שפת מסוף משלו ישתמש בשפה זו.",
       "consoleLanguageSaved": "שפת המסוף נשמרה."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "תידחה: ערכת העיצוב המותקנת היא של {{installed}}, וחבילה זו היא של {{incoming}}.",
     "notAvailableHere": "אין כאן ערכת עיצוב \"{{slug}}\"",
     "notAvailableHereHelp": "אתר זה אינו רואה ערכת עיצוב בשם זה. ערכות העיצוב שלו מופיעות תחת ערכות עיצוב; מנהל הפלטפורמה משייך ערכות עיצוב לאתרים דרך אתרים.",
-    "manageThemes": "ניהול ערכות עיצוב"
+    "manageThemes": "ניהול ערכות עיצוב",
+    "activeTheme": "ערכת נושא פעילה",
+    "otherThemes": "ערכות נושא אחרות",
+    "noActiveTheme": "אין ערכת נושא פעילה"
   },
   "media": {
     "failedToCreateFolder": "יצירת התיקייה נכשלה",

@@ -613,7 +613,13 @@
       "none": "ไม่บันทึกลงในฟิลด์บุคคล",
       "missing": "{{key}} (ไม่ใช่ฟิลด์บุคคลแล้ว)",
       "manage": "จัดการฟิลด์บุคคล"
-    }
+    },
+    "saveBar": {
+      "unsaved": "การเปลี่ยนแปลงที่ยังไม่บันทึก",
+      "discard": "ยกเลิก",
+      "save": "บันทึก"
+    },
+    "dropToInstall": "วางไฟล์เพื่อติดตั้ง"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "นำเข้าไม่สำเร็จ: {{reason}}",
       "awaitingApproval": "รอการอนุมัติ",
       "reviewAndApprove": "ตรวจสอบและอนุมัติ",
-      "waitsForYourApproval": "วางไว้แล้ว และกำลังรอให้คุณอนุมัติสิ่งที่ร้องขอ"
+      "waitsForYourApproval": "วางไว้แล้ว และกำลังรอให้คุณอนุมัติสิ่งที่ร้องขอ",
+      "tabAll": "ทั้งหมด",
+      "tabOff": "ปิดอยู่",
+      "tabUpdates": "มีอัปเดต",
+      "tabErrors": "มีข้อผิดพลาด",
+      "details": "รายละเอียด",
+      "installedOnThePlatform": "ติดตั้งบนแพลตฟอร์ม"
     },
     "upload": {
       "name": "ชื่อ: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "คัดลอกแล้ว",
       "pageSubtitle": "บริการภายนอกที่เวิร์กสเปซนี้ใช้ ข้อมูลลับจะถูกเข้ารหัสและจะไม่แสดงอีก",
       "ownerPlatform": "แพลตฟอร์ม",
-      "save": "บันทึก",
       "saving": "กำลังบันทึก…",
       "more": "เพิ่มเติม",
       "oneProviderAtATime": "ใช้ได้ครั้งละหนึ่งผู้ให้บริการ การเลือกผู้ให้บริการอื่นจะแทนที่ตัวเดิม",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "กำหนดชื่อภาษาและรหัส ISO แล้วเปิดหรือปิดใช้งานแต่ละภาษา",
       "noLocalesConfiguredAddOne": "ยังไม่ได้กำหนดภาษา เพิ่มด้านล่างได้ ระบบจะยังไม่บันทึกจนกว่าคุณจะกดบันทึก",
       "languageNameEGEnglish": "ชื่อภาษา (เช่น English)",
+      "pickLanguage": "เลือกภาษา",
       "enabled": "เปิดใช้งาน",
       "remove": "ลบ",
       "addLocale": "เพิ่มภาษา",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "คำนำหน้าพาธ (/bg/...)",
       "noLocaleInUrl": "ไม่มีโลแคลใน URL",
       "selectLocaleUrlStrategy": "เลือกรูปแบบโลแคลใน URL",
-      "isoCodeExample": "รหัส ISO (เช่น en, en-gb)",
       "consoleLanguage": "ภาษาของคอนโซล",
       "platformConsoleLanguageHint": "ภาษาที่คอนโซลใช้เมื่อไม่ได้เลือกไซต์ ไซต์ที่ยังไม่ได้เลือกภาษาคอนโซลของตนเองจะใช้ภาษานี้",
       "consoleLanguageSaved": "บันทึกภาษาของคอนโซลแล้ว"
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "จะถูกปฏิเสธ: ธีมที่ติดตั้งไว้มาจาก {{installed}} แต่แพ็กเกจนี้มาจาก {{incoming}}",
     "notAvailableHere": "ไม่มีธีม \"{{slug}}\" ที่นี่",
     "notAvailableHereHelp": "ไซต์นี้ไม่เห็นธีมชื่อนี้ ธีมของไซต์แสดงอยู่ในส่วนธีม ผู้ดูแลแพลตฟอร์มเป็นผู้กำหนดธีมให้ไซต์จากส่วนไซต์",
-    "manageThemes": "จัดการธีม"
+    "manageThemes": "จัดการธีม",
+    "activeTheme": "ธีมที่ใช้งาน",
+    "otherThemes": "ธีมอื่น",
+    "noActiveTheme": "ไม่มีธีมที่ใช้งาน"
   },
   "media": {
     "failedToCreateFolder": "สร้างโฟลเดอร์ไม่สำเร็จ",

@@ -234,4 +234,29 @@ describe('./plugin-settings-form', () => {
     
     expect(window.open).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/export`), '_blank');
   });
+
+  it('offers Save only while something differs from what was read, and Discard puts it back', async () => {
+    (AdminApi.put as any).mockResolvedValue({ success: true });
+    renderForm({ pluginSlug });
+    await waitFor(() => screen.getByTestId('input-siteName'));
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+
+    const input = screen.getByTestId('input-siteName') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'New Name' } });
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDefined();
+
+    // Typed back to what was read: nothing to save.
+    fireEvent.change(input, { target: { value: 'My Awesome Site' } });
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+
+    fireEvent.change(input, { target: { value: 'New Name' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    expect((screen.getByTestId('input-siteName') as HTMLInputElement).value).toBe('My Awesome Site');
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+
+    fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'Saved Name' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(AdminApi.put).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ siteName: 'Saved Name' })));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).toBeNull());
+  });
 });

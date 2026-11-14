@@ -1,8 +1,7 @@
 import type { ThemeMode } from '@fromcode119/core/client';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -27,7 +26,6 @@ export class GeneralEmailLogoRow extends PureReactor {
     return (
       <SettingRow
         theme={this.theme}
-        icon={FrameworkIcons.Mail}
         title={AdminI18n.t('settings.general.emailLogo')}
         description={AdminI18n.t('settings.general.emailLogoDescription')}
         stacked

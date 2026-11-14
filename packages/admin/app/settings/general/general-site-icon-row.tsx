@@ -1,9 +1,8 @@
 import { SiteIcon, SiteIconSource } from '@fromcode119/core/client';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -63,7 +62,6 @@ export class GeneralSiteIconRow extends AdminComponent {
     return (
       <SettingRow
         theme={this.theme}
-        icon={FrameworkIcons.Image}
         title={AdminI18n.t('settings.general.siteIcon')}
         description={AdminI18n.t('settings.general.siteIconDescription')}
         explanation={line ? <Explanation>{line}</Explanation> : undefined}

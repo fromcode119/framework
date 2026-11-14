@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { SiteClock } from '@/lib/site-clock';
@@ -92,7 +92,6 @@ export class GeneralSystemCards extends PureReactor {
       <Card title={AdminI18n.t('settings.general.site')}>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('sites.environment')}
           description={AdminI18n.t('settings.general.siteEnvironmentDescription')}
           explanation={(
@@ -116,7 +115,6 @@ export class GeneralSystemCards extends PureReactor {
         </SettingRow>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Search}
           title={AdminI18n.t('settings.general.siteSearchIndexing')}
           description={AdminI18n.t('settings.general.siteSearchIndexingDescription')}
           explanation={(
@@ -153,7 +151,6 @@ export class GeneralSystemCards extends PureReactor {
           <Card title={AdminI18n.t('settings.general.regionalDefaults')}>
             <SettingRow
               theme={theme}
-              icon={FrameworkIcons.Clock}
               title={AdminI18n.t('settings.general.systemTimezone')}
               description={AdminI18n.t('settings.general.theDefaultTimezoneForContent')}
             >
@@ -171,7 +168,6 @@ export class GeneralSystemCards extends PureReactor {
             {this.shown('time_format') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Clock}
                 title={AdminI18n.t('settings.general.timeFormat')}
                 description={AdminI18n.t('settings.general.12Or24HourClock')}
               >
@@ -193,7 +189,6 @@ export class GeneralSystemCards extends PureReactor {
             {this.shown('notification_email') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Mail}
                 title={AdminI18n.t('settings.general.notificationEmail')}
                 description={AdminI18n.t('settings.general.singleSystemWideDestinationFor')}
               >
@@ -209,7 +204,6 @@ export class GeneralSystemCards extends PureReactor {
             {this.shown('notification_email_cc') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Users}
                 title={AdminI18n.t('settings.general.notificationCcEmails')}
                 description={AdminI18n.t('settings.general.optionalGlobalCcRecipientsSeparate')}
               >
@@ -225,7 +219,6 @@ export class GeneralSystemCards extends PureReactor {
             {this.shown('email_notifications') && (
               <SettingRow
                 theme={theme}
-                icon={FrameworkIcons.Mail}
                 title={AdminI18n.t('settings.general.emailTelemetry')}
                 description={AdminI18n.t('settings.general.receiveCriticalSystemAlertsAnd')}
               >
@@ -254,7 +247,6 @@ export class GeneralSystemCards extends PureReactor {
           <Card title={AdminI18n.t('settings.general.searchEngines')}>
             <SettingRow
               theme={theme}
-              icon={FrameworkIcons.Lock}
               title={AdminI18n.t('settings.general.indexPlatformHosts')}
               description={<AdminRichText k="settings.general.indexPlatformHostsDescription" />}
               explanation={(

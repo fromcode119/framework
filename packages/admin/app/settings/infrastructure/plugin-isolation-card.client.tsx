@@ -6,7 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,12 +22,12 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class PluginIsolationCard extends AdminComponent {
   private static readonly LIMITS = [
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB, icon: FrameworkIcons.Database, title: () => AdminI18n.t('settings.infrastructure.memoryCeilingPerPluginProcess'), description: () => AdminI18n.t('settings.infrastructure.aPluginThatAllocatesPast'), min: 64, step: 64, fallback: SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT },
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS, icon: FrameworkIcons.Clock, title: () => AdminI18n.t('settings.infrastructure.deadlinePerRequestMs'), description: () => AdminI18n.t('settings.infrastructure.aPluginRouteOrHook'), min: 1000, step: 1000, fallback: SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT },
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT, icon: FrameworkIcons.Activity, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShare'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShareDescription'), min: 10, max: 100, step: 10, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT },
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB, icon: FrameworkIcons.Server, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginMemory'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginMemoryDescription'), min: 64, step: 64, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT },
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_DISK_MB, icon: FrameworkIcons.Folder, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginDisk'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginDiskDescription'), min: 1, step: 10, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_DISK_MB_DEFAULT },
-    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MAX_TASKS, icon: FrameworkIcons.Layers, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginProcesses'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginProcessesDescription'), min: 16, step: 8, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_MAX_TASKS_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB, title: () => AdminI18n.t('settings.infrastructure.memoryCeilingPerPluginProcess'), description: () => AdminI18n.t('settings.infrastructure.aPluginThatAllocatesPast'), min: 64, step: 64, fallback: SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS, title: () => AdminI18n.t('settings.infrastructure.deadlinePerRequestMs'), description: () => AdminI18n.t('settings.infrastructure.aPluginRouteOrHook'), min: 1000, step: 1000, fallback: SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShare'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShareDescription'), min: 10, max: 100, step: 10, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginMemory'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginMemoryDescription'), min: 64, step: 64, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_DISK_MB, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginDisk'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginDiskDescription'), min: 1, step: 10, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_DISK_MB_DEFAULT },
+    { key: SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MAX_TASKS, title: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginProcesses'), description: () => AdminI18n.t('settings.infrastructure.siteUploadedPluginProcessesDescription'), min: 16, step: 8, fallback: SystemConstants.PLUGIN_ISOLATION_SITE_MAX_TASKS_DEFAULT },
   ] as const;
 
   @state values: Record<string, string> = {};
@@ -66,11 +66,11 @@ export class PluginIsolationCard extends AdminComponent {
     const last = PluginIsolationCard.LIMITS.length - 1;
     return (
       <Card title={AdminI18n.t('settings.infrastructure.pluginIsolation')}>
-        <SettingRow theme={theme} icon={FrameworkIcons.Shield} title={AdminI18n.t('settings.infrastructure.wherePluginsRun')} stacked description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}>
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.wherePluginsRun')} stacked description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}>
           <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
         </SettingRow>
         {PluginIsolationCard.LIMITS.map((limit, index) => (
-          <SettingRow key={limit.key} theme={theme} icon={limit.icon} title={limit.title()} stacked description={limit.description()}>
+          <SettingRow key={limit.key} theme={theme} title={limit.title()} stacked description={limit.description()}>
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
                 <NumberStepper min={limit.min} max={'max' in limit ? limit.max : undefined} step={limit.step} value={this.values[limit.key] ?? ''} onChange={this.onChange(limit.key)} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: limit.fallback })} />

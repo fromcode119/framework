@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { LocaleRegistryCard } from '@/app/settings/localization/locale-registry-card';
@@ -8,6 +6,7 @@ import { LocaleTargetsCard } from '@/app/settings/localization/locale-targets-ca
 import { MeasurementSystemCard } from '@/app/settings/localization/measurement-system-card';
 import { ConsoleLanguageCard } from '@/app/settings/localization/console-language-card';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
@@ -44,7 +43,6 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
         <div className="flex flex-col h-full animate-in fade-in duration-500">
           <CompactPageHeader
             theme={theme}
-            icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
             title={AdminI18n.t('settings.localization.localization')}
             subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
           />
@@ -62,21 +60,8 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
           title={AdminI18n.t('settings.localization.localization')}
           subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
-          actions={
-            this.outOfScope ? null : (
-              <Button
-                icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-                onClick={this.consoleLanguageOnly ? this.handleSaveConsoleLanguage : this.handleSave}
-                isLoading={this.isSaving}
-                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-              >
-                {AdminI18n.t('settings.localization.saveLocalization')}
-              </Button>
-            )
-          }
         />
 
         {this.outOfScope && (
@@ -84,13 +69,14 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
         )}
 
         {this.consoleLanguageOnly && (
-          <div className="p-6 w-full space-y-8">
+          <div className="p-6 w-full space-y-3">
             <ConsoleLanguageCard theme={theme} value={this.adminDefaultLocale} onChange={this.setAdminDefaultLocale} />
+            <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSaveConsoleLanguage} onDiscard={this.discardChanges} />
           </div>
         )}
 
         {!this.outOfScope && !this.consoleLanguageOnly && (
-        <div className="p-6 w-full space-y-8">
+        <div className="p-6 w-full space-y-3">
           <LocaleRegistryCard
             locales={locales}
             theme={theme}
@@ -121,6 +107,7 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
             frontendDefaultLocale={this.frontendDefaultLocale}
             defaultLocale={this.defaultLocale}
           />
+          <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSave} onDiscard={this.discardChanges} />
         </div>
         )}
       </div>

@@ -613,7 +613,13 @@
       "none": "Netiek saglabāts personas laukā",
       "missing": "{{key}} (vairs nav personas lauks)",
       "manage": "Pārvaldīt personas laukus"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Nesaglabātas izmaiņas",
+      "discard": "Atmest",
+      "save": "Saglabāt"
+    },
+    "dropToInstall": "Nometiet failu, lai to instalētu"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importēšana neizdevās: {{reason}}",
       "awaitingApproval": "Gaida apstiprinājumu",
       "reviewAndApprove": "Pārskatīt un apstiprināt",
-      "waitsForYourApproval": "Izvietots un gaida, kad apstiprināsiet tā pieprasījumus."
+      "waitsForYourApproval": "Izvietots un gaida, kad apstiprināsiet tā pieprasījumus.",
+      "tabAll": "Visi",
+      "tabOff": "Izslēgti",
+      "tabUpdates": "Ar atjauninājumu",
+      "tabErrors": "Ar kļūdām",
+      "details": "Detaļas",
+      "installedOnThePlatform": "Instalēti platformā"
     },
     "upload": {
       "name": "Nosaukums: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Nokopēts",
       "pageSubtitle": "Ārējie pakalpojumi, ko izmanto šī darbvieta. Noslēpumi tiek šifrēti un vairs netiek rādīti.",
       "ownerPlatform": "Platforma",
-      "save": "Saglabāt",
       "saving": "Saglabā…",
       "more": "Vairāk",
       "oneProviderAtATime": "Vienlaikus var būt tikai viens pakalpojumu sniedzējs. Izvēloties citu, tas aizstāj esošo.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Norādiet valodas nosaukumu un ISO kodu, pēc tam iespējojiet vai atspējojiet katru lokalizāciju.",
       "noLocalesConfiguredAddOne": "Nav konfigurēta neviena lokalizācija. Pievienojiet to tālāk; nekas netiek saglabāts, kamēr nesaglabājat.",
       "languageNameEGEnglish": "Valodas nosaukums (piem., English)",
+      "pickLanguage": "Izvēlieties valodu",
       "enabled": "Iespējots",
       "remove": "Noņemt",
       "addLocale": "Pievienot lokalizāciju",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Ceļa prefikss (/bg/...)",
       "noLocaleInUrl": "Bez lokalizācijas URL",
       "selectLocaleUrlStrategy": "Izvēlieties lokalizācijas URL stratēģiju",
-      "isoCodeExample": "ISO kods (piem., en, en-gb)",
       "consoleLanguage": "Konsoles valoda",
       "platformConsoleLanguageHint": "Valoda, kurā konsole darbojas, ja nav izvēlēta neviena vietne. Vietne, kurai nav izvēlēta sava konsoles valoda, izmanto šo.",
       "consoleLanguageSaved": "Konsoles valoda ir saglabāta."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Tiks noraidīts: instalētā motīva izstrādātājs ir {{installed}}, šīs pakotnes — {{incoming}}.",
     "notAvailableHere": "Motīvs \"{{slug}}\" šeit nav pieejams",
     "notAvailableHereHelp": "Šī vietne neredz motīvu ar šādu nosaukumu. Tās motīvi ir norādīti sadaļā Motīvi; platformas administrators piešķir motīvus vietnēm sadaļā Vietnes.",
-    "manageThemes": "Pārvaldīt motīvus"
+    "manageThemes": "Pārvaldīt motīvus",
+    "activeTheme": "Aktīvā tēma",
+    "otherThemes": "Citas tēmas",
+    "noActiveTheme": "Neviena tēma nav aktīva"
   },
   "media": {
     "failedToCreateFolder": "Neizdevās izveidot mapi",

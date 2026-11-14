@@ -80,9 +80,37 @@ export abstract class IntegrationsSettingsPageState extends AdminComponent {
     return IntegrationSelectors.currentProviderDefinition(this.activeIntegration, this.editor);
   }
 
+  /**
+   * The open provider as it was when it was opened, before the first edit. The Save bar compares the
+   * editor against it, so it appears only when something differs, and Discard puts it back.
+   */
+  @state editorBaseline: IProviderEditorState | null = null;
+  /** The editor the last edit produced. An editor that is not this one was opened afresh, so nothing is changed yet. */
+  protected lastEdited: IProviderEditorState | null = null;
+
+  protected get editorDirty(): boolean {
+    const editor = this.editor;
+    if (!editor || editor !== this.lastEdited) return false;
+    return IntegrationsSettingsPageState.snapshot(editor) !== IntegrationsSettingsPageState.snapshot(this.editorBaseline);
+  }
+
+  /** A field typed into and cleared again is unset, as it was before, not a change. */
+  private static snapshot(editor: IProviderEditorState | null): string {
+    return JSON.stringify(editor, (_key, value) => (value === '' || value === null ? undefined : value));
+  }
+
   protected patchEditor(patch: Partial<IProviderEditorState> | ((prev: IProviderEditorState) => IProviderEditorState)): void {
     const previous = this.editor;
     if (!previous) return;
-    this.editor = typeof patch === 'function' ? patch(previous) : { ...previous, ...patch };
+    if (previous !== this.lastEdited) this.editorBaseline = previous;
+    const next = typeof patch === 'function' ? patch(previous) : { ...previous, ...patch };
+    this.lastEdited = next;
+    this.editor = next;
+  }
+
+  protected discardEditorChanges(): void {
+    if (!this.editorBaseline) return;
+    this.lastEdited = null;
+    this.editor = this.editorBaseline;
   }
 }

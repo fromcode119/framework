@@ -1,36 +1,24 @@
-import { ThemeMode } from '@fromcode119/core/client';
-import React from 'react';
-
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemesLayout extends AdminComponent {
   @prop declare children: ReactNode;
 
-  private get tabs(): Array<{ label: string; href: string; icon: ReactNode }> {
+  private get tabs(): Array<{ label: string; href: string }> {
     return [
-      { label: AdminI18n.t('themes.installed'), href: AdminConstants.ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
-      { label: AdminI18n.t('themes.marketplace'), href: AdminConstants.ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
+      { label: AdminI18n.t('themes.installed'), href: AdminConstants.ROUTES.THEMES.INSTALLED },
+      { label: AdminI18n.t('themes.marketplace'), href: AdminConstants.ROUTES.THEMES.MARKETPLACE },
     ];
   }
 
   private get isMarketplace(): boolean {
     return this.pathname.startsWith(AdminConstants.ROUTES.THEMES.MARKETPLACE);
-  }
-
-  private get isInstalled(): boolean {
-    const pathname = this.pathname;
-    return (
-      pathname === AdminConstants.ROUTES.THEMES.INSTALLED ||
-      (pathname.startsWith(`${AdminConstants.ROUTES.THEMES.ROOT}/`) &&
-        !pathname.startsWith(AdminConstants.ROUTES.THEMES.MARKETPLACE) &&
-        pathname !== AdminConstants.ROUTES.THEMES.INSTALLED)
-    );
   }
 
   private get isDetailPage(): boolean {
@@ -44,7 +32,7 @@ export class ThemesLayout extends AdminComponent {
   }
 
   /** Logic to determine active tab strictly */
-  private get activeTab(): { label: string; href: string; icon: ReactNode } {
+  private get activeTab(): { label: string; href: string } {
     return this.isMarketplace ? this.tabs[1] : this.tabs[0];
   }
 
@@ -54,91 +42,25 @@ export class ThemesLayout extends AdminComponent {
     if (this.isDetailPage) {
       return <div className="flex w-full flex-col animate-in fade-in duration-500">{this.children}</div>;
     }
-    const theme = this.theme;
-    const { isMarketplace, isInstalled, activeTab } = this;
+    const { isMarketplace, activeTab } = this;
+    const subtitle = isMarketplace
+      ? AdminI18n.t('themes.discoverAndInstallVisualStyles')
+      : AdminI18n.t('themes.manageYourExistingInstallationLayout');
+    const nav = (
+      <nav className={AdminClass.of('page-tabs')}>
+        {this.tabs.map((tab) => (
+          <AdminLink key={tab.href} href={tab.href} className={AdminClass.of('page-tabs__tab')}
+            aria-current={tab.href === activeTab.href ? 'page' : undefined}>
+            {tab.label}
+          </AdminLink>
+        ))}
+      </nav>
+    );
 
     return (
-      <div className="w-full pb-12 animate-in fade-in duration-700">
-        {/* Themes Header */}
-        <div className={`sticky top-0 z-30 border-b backdrop-blur transition-all duration-300 ${
-          theme === ThemeMode.DARK
-            ? 'bg-slate-950/80 border-slate-800/50'
-            : 'bg-white/90 border-slate-100'
-        }`}>
-          <div className="w-full px-6 lg:px-8 py-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <h1 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {activeTab.label}
-                </h1>
-                <p className={`text-xs font-medium max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {isMarketplace
-                    ? AdminI18n.t('themes.discoverAndInstallVisualStyles')
-                    : AdminI18n.t('themes.manageYourExistingInstallationLayout')}
-                </p>
-              </div>
-
-              <div className={`flex p-1 rounded-xl border transition-all duration-300 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-900/50 border-slate-800 backdrop-blur'
-                  : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
-              }`}>
-                {this.tabs.map(tab => {
-                  const isActive = tab.href === AdminConstants.ROUTES.THEMES.INSTALLED ? isInstalled : isMarketplace;
-
-                  return (
-                    <AdminLink
-                      key={tab.href}
-                      href={tab.href}
-                      className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                        isActive
-                          ? (theme === ThemeMode.DARK
-                              ? 'bg-indigo-600 text-white shadow-sm'
-                              : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
-                          : (theme === ThemeMode.DARK
-                              ? 'text-slate-500 hover:text-slate-300'
-                              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50')
-                      }`}
-                    >
-                      {React.cloneElement(tab.icon as ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
-                      <span className=" text-[12px]">{tab.label}</span>
-                    </AdminLink>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full px-6 lg:px-8 pt-6 space-y-6 pb-6">
-          <div className="relative">
-            {this.children}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className={`p-6 border-t mt-auto ${
-          theme === ThemeMode.DARK ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
-        }`}>
-          <div className="w-full px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                    {AdminI18n.t('themes.visualArchitectureThemes')}
-                  </span>
-                </div>
-                <p className="text-[10px] font-bold text-slate-400">{AdminI18n.t('themes.transformYourPlatformInterfaceWith')}</p>
-              </div>
-
-              <div className="flex items-center gap-4 text-[12px] font-medium text-slate-400">
-                 {/* "Theme Documentation" pointed at docs.fromcode.com, which does not resolve. */}
-                 <AdminLink href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">{AdminI18n.t('themes.marketplaceHealth')}</AdminLink>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full animate-in fade-in duration-700">
+        <CompactPageHeader title={activeTab.label} subtitle={subtitle} actions={nav} />
+        <div className="w-full p-6">{this.children}</div>
       </div>
     );
   }

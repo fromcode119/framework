@@ -613,7 +613,13 @@
       "none": "Tidak disimpan ke kolom orang",
       "missing": "{{key}} (bukan lagi kolom orang)",
       "manage": "Kelola kolom orang"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Perubahan belum disimpan",
+      "discard": "Buang",
+      "save": "Simpan"
+    },
+    "dropToInstall": "Lepaskan file untuk memasangnya"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Impor gagal: {{reason}}",
       "awaitingApproval": "Menunggu persetujuan",
       "reviewAndApprove": "Tinjau dan setujui",
-      "waitsForYourApproval": "Sudah ditempatkan, dan menunggu persetujuan Anda atas permintaannya."
+      "waitsForYourApproval": "Sudah ditempatkan, dan menunggu persetujuan Anda atas permintaannya.",
+      "tabAll": "Semua",
+      "tabOff": "Nonaktif",
+      "tabUpdates": "Ada pembaruan",
+      "tabErrors": "Ada kesalahan",
+      "details": "Detail",
+      "installedOnThePlatform": "Terpasang di platform"
     },
     "upload": {
       "name": "Nama: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Disalin",
       "pageSubtitle": "Layanan eksternal yang digunakan ruang kerja ini. Rahasia dienkripsi dan tidak akan ditampilkan lagi.",
       "ownerPlatform": "Platform",
-      "save": "Simpan",
       "saving": "Menyimpan…",
       "more": "Lainnya",
       "oneProviderAtATime": "Hanya satu penyedia dalam satu waktu. Memilih penyedia lain akan menggantikannya.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Tentukan nama bahasa + kode ISO, lalu aktifkan atau nonaktifkan setiap lokal.",
       "noLocalesConfiguredAddOne": "Belum ada lokal yang dikonfigurasi. Tambahkan di bawah; tidak ada yang disimpan sampai Anda menyimpan.",
       "languageNameEGEnglish": "Nama bahasa (mis. English)",
+      "pickLanguage": "Pilih bahasa",
       "enabled": "Aktif",
       "remove": "Hapus",
       "addLocale": "Tambah Lokal",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Awalan Path (/bg/...)",
       "noLocaleInUrl": "Tanpa Lokal di URL",
       "selectLocaleUrlStrategy": "Pilih strategi URL lokal",
-      "isoCodeExample": "Kode ISO (mis. en, en-gb)",
       "consoleLanguage": "Bahasa konsol",
       "platformConsoleLanguageHint": "Bahasa yang digunakan konsol ini saat tidak ada situs yang dipilih. Situs yang belum memilih bahasa konsolnya sendiri akan menggunakan bahasa ini.",
       "consoleLanguageSaved": "Bahasa konsol telah disimpan."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Akan ditolak: tema terpasang berasal dari {{installed}}, paket ini dari {{incoming}}.",
     "notAvailableHere": "Tidak ada tema \"{{slug}}\" di sini",
     "notAvailableHereHelp": "Situs ini tidak dapat melihat tema dengan nama tersebut. Tema situs tercantum di Tema; admin platform menetapkan tema ke situs dari Situs.",
-    "manageThemes": "Kelola Tema"
+    "manageThemes": "Kelola Tema",
+    "activeTheme": "Tema aktif",
+    "otherThemes": "Tema lain",
+    "noActiveTheme": "Tidak ada tema aktif"
   },
   "media": {
     "failedToCreateFolder": "Gagal membuat folder",

@@ -171,6 +171,7 @@ export class InstalledPluginsPageClient
         isUploading={this.isUploading}
         loading={this.loading}
         operationStatus={this.operationStatus}
+        onNavigate={(href) => this.router.push(href)}
         markImageError={(slug) => {
           this.imageErrors = { ...this.imageErrors, [slug]: true };
         }}

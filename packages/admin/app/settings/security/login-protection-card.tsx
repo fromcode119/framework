@@ -3,7 +3,6 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -28,7 +27,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD}
-          icon={FrameworkIcons.Lock}
           title={AdminI18n.t('settings.security.failedLoginsBeforeLockout')}
           description={AdminI18n.t('settings.security.howManyFailedSignIns')}
           min={1}
@@ -40,7 +38,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES}
-          icon={FrameworkIcons.Clock}
           title={AdminI18n.t('settings.security.failedLoginWindowMinutes')}
           description={AdminI18n.t('settings.security.failuresMoreThanThisFar')}
           min={1}
@@ -52,7 +49,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES}
-          icon={FrameworkIcons.Clock}
           title={AdminI18n.t('settings.security.lockoutDurationMinutes')}
           description={AdminI18n.t('settings.security.howLongALockedEmail')}
           min={1}
@@ -64,7 +60,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_ADDRESS_THRESHOLD}
-          icon={FrameworkIcons.Lock}
           title={AdminI18n.t('settings.security.failedLoginsPerAddress')}
           description={AdminI18n.t('settings.security.failedLoginsPerAddressDescription')}
           min={1}
@@ -76,7 +71,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_RESET_LIMIT}
-          icon={FrameworkIcons.Mail}
           title={AdminI18n.t('settings.security.passwordResetLimit')}
           description={AdminI18n.t('settings.security.passwordResetLimitDescription')}
           min={1}
@@ -88,7 +82,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED}
-          icon={FrameworkIcons.Fingerprint}
           title={AdminI18n.t('settings.security.requireCaptchaAfterRepeatedFailures')}
           description={AdminI18n.t('settings.security.onceTheCaptchaThresholdBelow')}
         />
@@ -98,7 +91,6 @@ export class LoginProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD}
-          icon={FrameworkIcons.Fingerprint}
           title={AdminI18n.t('settings.security.failedLoginsBeforeCaptcha')}
           description={AdminI18n.t('settings.security.onlyUsedWhileTheCaptcha')}
           min={1}

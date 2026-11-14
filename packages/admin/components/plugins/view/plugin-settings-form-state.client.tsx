@@ -42,7 +42,16 @@ export abstract class PluginSettingsFormState extends AdminComponent {
   @state isDirty = false;
   @state status: { type: NotificationType; message: string } | null = null;
 
+  /** What was last read or written: Discard puts it back, and a change that returns to it is no change. */
+  protected baseline: { settings: Record<string, any>; secrets: Set<string> } = { settings: {}, secrets: new Set() };
+
   protected statusTimer?: ReturnType<typeof setTimeout>;
+
+  /** The values now on screen become the ones that are saved. */
+  protected markClean(): void {
+    this.baseline = { settings: { ...this.settings }, secrets: new Set(this.savedSecretFields) };
+    this.isDirty = false;
+  }
 
   protected get settingsEndpoint(): string {
     const endpoints = AdminConstants.ENDPOINTS.PLUGINS;

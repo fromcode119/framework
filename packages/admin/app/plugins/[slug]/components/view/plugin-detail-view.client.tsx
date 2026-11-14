@@ -55,9 +55,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare onCloseDefinition: () => void;
   @prop declare plugin: ILoadedPlugin;
   @prop declare sandboxSettings: IPluginSandboxSettings;
-  @prop declare settingsDirty: boolean;
   @prop declare settingsFormRef: Ref<PluginSettingsForm>;
-  @prop declare settingsSaving: boolean;
   @prop declare settingsHasFields: boolean;
   @prop declare showDefinition: boolean;
   @prop declare showDeleteConfirm: boolean;
@@ -93,7 +91,7 @@ export class PluginDetailView extends AdminComponent {
     return (
       <div className="w-full pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
-        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} settingsSaving={this.settingsSaving} theme={theme} />
+        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} theme={theme} />
         <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
         {plugin.error ? (
           <div className={`mx-6 mt-6 rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -134,7 +132,7 @@ export class PluginDetailView extends AdminComponent {
                 waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange} />
             </PlatformScopeGate>
           ) : (
-            <div className="w-full p-6"><section className={`overflow-hidden ${PluginSettingsForm.CARD}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
+            <div className="w-full p-6"><section className={`overflow-hidden ${AdminClass.SURFACE}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
               {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview isUpdating={this.isUpdating} loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onOpenSecurity={() => this.onTabChange(PluginDetailTab.PERMISSIONS)} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} siteScope={this.siteScope} theme={theme} />}
               {activeTab === PluginDetailTab.PERMISSIONS && (
                 <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSSecurityThe')}>

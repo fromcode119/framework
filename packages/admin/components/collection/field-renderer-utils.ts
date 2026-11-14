@@ -73,26 +73,34 @@ export class FieldRendererUtils {
    * control and the input renders disabled.
    */
   static wrapperClassName(field: any): string {
-    const colSpan =
-      field.type === 'textarea' ||
+    const block = FieldRendererUtils.isBlockField(field);
+    const colSpan = block || FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ? 'col-span-full' : '';
+
+    // No box around a read-only field. It used to get `rounded-xl border bg-slate-50/70 p-2.5`,
+    // which put a frame inside the section's card for every locked value on the screen — a page of
+    // nested outlines. Locked already reads as locked without one: the field carries its own
+    // "Unlock edit" control and the input renders disabled.
+    // `fc-field-row` is how a screen that lays fields out as settings rows (settings.css) finds them:
+    // `--full` keeps the whole row, `--narrow` gets the short box a number needs.
+    // Width is a grid matter (a field with no declared width resolves to FULL); as a settings row every
+    // field is label-and-control except one that is a block of its own.
+    const row = block ? 'fc-field-row fc-field-row--full' : field.type === 'number' ? 'fc-field-row fc-field-row--narrow' : 'fc-field-row';
+    return `w-full ${colSpan} ${row}`.replace(/\s+/g, ' ').trim();
+  }
+
+  /** A field that is a block of its own (long text, a list, a switch row) rather than one box. */
+  private static isBlockField(field: any): boolean {
+    return field.type === 'textarea' ||
       field.type === 'richText' ||
       field.type === 'array' ||
       (field.type === 'relationship' && field.hasMany) ||
       // A json value with no control of its own is a block of text; one a plugin draws a compact control
       // for (a currency picker) takes the width it declares, like any other field.
       (field.type === 'json' && !(field.admin?.component && FieldWidth.resolve(field.admin?.width) === FieldWidth.HALF)) ||
-      FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ||
       field.admin?.component === 'TagField' ||
       field.admin?.component === 'Tags' ||
       // A yes/no field is a row with its switch at the end; beside an input whose label sits above
       // its box, neither lines up, so it always takes the whole row.
-      ((field.type === 'boolean' || field.type === 'checkbox') && !field.admin?.component)
-        ? 'col-span-full' : '';
-
-    // No box around a read-only field. It used to get `rounded-xl border bg-slate-50/70 p-2.5`,
-    // which put a frame inside the section's card for every locked value on the screen — a page of
-    // nested outlines. Locked already reads as locked without one: the field carries its own
-    // "Unlock edit" control and the input renders disabled.
-    return `w-full ${colSpan}`.trim();
+      ((field.type === 'boolean' || field.type === 'checkbox') && !field.admin?.component);
   }
 }

@@ -6,8 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/security/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { SettingListRow } from '@/app/settings/security/setting-list-row';
@@ -51,7 +50,6 @@ export class EdgeProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_UNDER_ATTACK}
-          icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.underAttackMode')}
           description={AdminI18n.t('settings.security.underAttackModeHelp')}
         />
@@ -62,7 +60,6 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_COUNTRIES}
           separator={SettingListSeparator.COMMA}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.blockedCountries')}
           description={AdminI18n.t('settings.security.blockedCountriesHelp')}
           options={countries}
@@ -76,7 +73,6 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGED_COUNTRIES}
           separator={SettingListSeparator.COMMA}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.challengedCountries')}
           description={AdminI18n.t('settings.security.challengedCountriesHelp')}
           options={countries}
@@ -90,7 +86,6 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_ADDRESSES}
           separator={SettingListSeparator.LINE}
-          icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.blockedAddresses')}
           description={AdminI18n.t('settings.security.blockedAddressesHelp')}
         />
@@ -100,7 +95,6 @@ export class EdgeProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCK_ATTACK_PATTERNS}
-          icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.security.blockAttackPatterns')}
           description={AdminI18n.t('settings.security.blockAttackPatternsHelp')}
         />
@@ -111,7 +105,6 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_PATHS}
           separator={SettingListSeparator.LINE}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.blockedPaths')}
           description={AdminI18n.t('settings.security.blockedPathsHelp')}
         />
@@ -122,7 +115,6 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_USER_AGENTS}
           separator={SettingListSeparator.LINE}
-          icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.blockedTools')}
           description={AdminI18n.t('settings.security.blockedToolsHelp')}
         />
@@ -132,7 +124,6 @@ export class EdgeProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_RATE_LIMIT_PER_MINUTE}
-          icon={FrameworkIcons.Activity}
           title={AdminI18n.t('settings.security.visitorRequestsPerMinute')}
           description={AdminI18n.t('settings.security.visitorRequestsPerMinuteHelp')}
           min={0}
@@ -144,7 +135,6 @@ export class EdgeProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGE_CLEARANCE_MINUTES}
-          icon={FrameworkIcons.Clock}
           title={AdminI18n.t('settings.security.browserCheckValidMinutes')}
           description={AdminI18n.t('settings.security.browserCheckValidMinutesHelp')}
           min={5}
@@ -157,14 +147,12 @@ export class EdgeProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGE_EXEMPT_PATHS}
           separator={SettingListSeparator.LINE}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.browserCheckExemptPaths')}
           description={AdminI18n.t('settings.security.browserCheckExemptPathsHelp')}
         />
 
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.security.browserCheckPageTitle')}
           description={AdminI18n.t('settings.security.browserCheckPageTitleHelp')}
           wide
@@ -174,7 +162,6 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.security.browserCheckPageMessage')}
           description={AdminI18n.t('settings.security.browserCheckPageMessageHelp')}
           wide

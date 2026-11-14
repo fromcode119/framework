@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
@@ -40,7 +40,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
           <Card title={AdminI18n.t('settings.infrastructure.maintenance')}>
             <SettingRow
               theme={theme}
-              icon={FrameworkIcons.Activity}
               title={AdminI18n.t('settings.infrastructure.maintenanceMode')}
               description={AdminI18n.t('settings.infrastructure.restrictsFrontendAccessWhileYou')}
             >
@@ -67,7 +66,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
         <Card title={AdminI18n.t('settings.infrastructure.serverRendering')}>
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Layers}
             title={AdminI18n.t('settings.infrastructure.residentThemeWorlds')}
             stacked
             description={AdminI18n.t('settings.infrastructure.howManyDistinctThemePlugin')}
@@ -88,7 +86,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               per-render deadline. A theme that leaks or hangs loses its own process, never the storefront. */}
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Database}
             title={AdminI18n.t('settings.infrastructure.memoryCeilingPerRenderProcess')}
             stacked
             description={AdminI18n.t('settings.infrastructure.aThemeWorldThatAllocates')}
@@ -101,7 +98,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
           </SettingRow>
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Clock}
             title={AdminI18n.t('settings.infrastructure.deadlinePerRenderMs')}
             stacked
             description={AdminI18n.t('settings.infrastructure.aPageRenderThatDoes')}
@@ -138,7 +134,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
         <Card title={AdminI18n.t('settings.infrastructure.retention')}>
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Database}
             title={AdminI18n.t('settings.infrastructure.logRetention')}
             stacked
             description={AdminI18n.t('settings.infrastructure.daysOfSystemLogHistory')}
@@ -166,7 +161,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
 
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Shield}
             title={AdminI18n.t('settings.infrastructure.auditRetention')}
             stacked
             description={AdminI18n.t('settings.infrastructure.daysOfAuditHistoryTo')}

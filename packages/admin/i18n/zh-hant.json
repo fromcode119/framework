@@ -613,7 +613,13 @@
       "none": "不儲存至聯絡人欄位",
       "missing": "{{key}}(已不是聯絡人欄位)",
       "manage": "管理聯絡人欄位"
-    }
+    },
+    "saveBar": {
+      "unsaved": "未儲存的變更",
+      "discard": "捨棄",
+      "save": "儲存"
+    },
+    "dropToInstall": "放開檔案即可安裝"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "匯入失敗：{{reason}}",
       "awaitingApproval": "等待核准",
       "reviewAndApprove": "檢閱並核准",
-      "waitsForYourApproval": "已放置，正在等待您核准其要求的權限。"
+      "waitsForYourApproval": "已放置，正在等待您核准其要求的權限。",
+      "tabAll": "全部",
+      "tabOff": "已關閉",
+      "tabUpdates": "有更新",
+      "tabErrors": "有錯誤",
+      "details": "詳細資料",
+      "installedOnThePlatform": "已安裝在平台上"
     },
     "upload": {
       "name": "名稱：{{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "已複製",
       "pageSubtitle": "此工作區使用的外部服務。密鑰會加密儲存，且不會再次顯示。",
       "ownerPlatform": "平台",
-      "save": "儲存",
       "saving": "儲存中…",
       "more": "更多",
       "oneProviderAtATime": "一次只能使用一個供應商。選擇其他供應商會取代目前的供應商。",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "定義語言名稱與 ISO 代碼，再逐一啟用或停用各語系。",
       "noLocalesConfiguredAddOne": "尚未設定任何語系。請在下方新增；儲存前不會保存任何內容。",
       "languageNameEGEnglish": "語言名稱（例如 English）",
+      "pickLanguage": "選擇語言",
       "enabled": "已啟用",
       "remove": "移除",
       "addLocale": "新增語系",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "路徑前綴（/bg/...）",
       "noLocaleInUrl": "網址不含語系",
       "selectLocaleUrlStrategy": "選擇語系網址策略",
-      "isoCodeExample": "ISO 代碼（例如 en、en-gb）",
       "consoleLanguage": "主控台語言",
       "platformConsoleLanguageHint": "未選擇網站時，本主控台所使用的語言。尚未自行選擇主控台語言的網站也會使用此語言。",
       "consoleLanguageSaved": "主控台語言已儲存。"
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "將被拒絕：已安裝的佈景主題來自 {{installed}}，此套件來自 {{incoming}}。",
     "notAvailableHere": "此處沒有佈景主題「{{slug}}」",
     "notAvailableHereHelp": "此網站看不到該名稱的佈景主題。網站的佈景主題列在「佈景主題」中；平台管理員可從「網站」將佈景主題指派給網站。",
-    "manageThemes": "管理佈景主題"
+    "manageThemes": "管理佈景主題",
+    "activeTheme": "目前主題",
+    "otherThemes": "其他主題",
+    "noActiveTheme": "沒有啟用的主題"
   },
   "media": {
     "failedToCreateFolder": "無法建立資料夾",

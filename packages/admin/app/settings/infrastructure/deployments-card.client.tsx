@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { AdminDeployClient } from '@/lib/settings/admin-deploy-client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -85,7 +85,6 @@ export class DeploymentsCard extends AdminComponent {
       <Card title={AdminI18n.t('settings.infrastructure.deployments')}>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Refresh}
           title={AdminI18n.t('settings.infrastructure.howAReleaseReplacesThe')}
           stacked
           description={AdminI18n.t('settings.infrastructure.restartEveryAppIsRecreated')}

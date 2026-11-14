@@ -5,8 +5,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { ColorField } from '@/components/ui/view/color-field.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
@@ -51,7 +50,7 @@ export class GeneralSignupEmailCard extends PureReactor {
 
   private renderCopyRow(row: { key: string; title: string; description: string }): ReactNode {
     return (
-      <SettingRow key={row.key} theme={this.theme} icon={FrameworkIcons.Edit} title={row.title} description={row.description} stacked>
+      <SettingRow key={row.key} theme={this.theme} title={row.title} description={row.description} stacked>
         <Input
           value={this.settings[row.key] ?? ''}
           onChange={(event: any) => this.change(row.key, event?.target?.value ?? '')}
@@ -71,7 +70,6 @@ export class GeneralSignupEmailCard extends PureReactor {
       <Card title={AdminI18n.t('settings.general.signUpEmail')}>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Mail}
           title={AdminI18n.t('settings.general.brandedSignUpEmail')}
           description={<AdminRichText k="settings.general.brandedSignUpEmailDescription" vars={{ brandName: '{{brandName}}' }} />}
         >
@@ -79,7 +77,7 @@ export class GeneralSignupEmailCard extends PureReactor {
         </SettingRow>
         {branded && GeneralSignupEmailCard.COPY_ROWS.map((row) => this.renderCopyRow(row))}
         {branded && (
-          <SettingRow theme={this.theme} icon={FrameworkIcons.Palette} title={AdminI18n.t('settings.general.accentColour')} description={AdminI18n.t('settings.general.theVerifyButtonAndLink')}>
+          <SettingRow theme={this.theme} title={AdminI18n.t('settings.general.accentColour')} description={AdminI18n.t('settings.general.theVerifyButtonAndLink')}>
             <ColorField
               value={this.settings[GeneralSignupEmailCard.ACCENT_KEY] || locks.declaredDefault(GeneralSignupEmailCard.ACCENT_KEY)}
               onChange={(value: string) => this.change(GeneralSignupEmailCard.ACCENT_KEY, value)}

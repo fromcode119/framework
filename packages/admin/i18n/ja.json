@@ -613,7 +613,13 @@
       "none": "連絡先フィールドに保存しない",
       "missing": "{{key}}（連絡先フィールドではなくなりました）",
       "manage": "連絡先フィールドを管理"
-    }
+    },
+    "saveBar": {
+      "unsaved": "未保存の変更",
+      "discard": "破棄",
+      "save": "保存"
+    },
+    "dropToInstall": "ファイルをドロップしてインストール"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "インポートに失敗しました: {{reason}}",
       "awaitingApproval": "承認待ち",
       "reviewAndApprove": "確認して承認",
-      "waitsForYourApproval": "配置済みです。要求する権限の承認を待っています。"
+      "waitsForYourApproval": "配置済みです。要求する権限の承認を待っています。",
+      "tabAll": "すべて",
+      "tabOff": "オフ",
+      "tabUpdates": "更新あり",
+      "tabErrors": "エラーあり",
+      "details": "詳細",
+      "installedOnThePlatform": "プラットフォームにインストール済み"
     },
     "upload": {
       "name": "名前: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "コピーしました",
       "pageSubtitle": "このワークスペースが使用する外部サービスです。シークレットは暗号化され、再表示されません。",
       "ownerPlatform": "プラットフォーム",
-      "save": "保存",
       "saving": "保存中…",
       "more": "その他",
       "oneProviderAtATime": "プロバイダーは一度に 1 つだけです。別のものを選ぶと置き換わります。",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "言語名と ISO コードを指定し、各ロケールを有効または無効にします。",
       "noLocalesConfiguredAddOne": "ロケールが設定されていません。下で追加してください。保存するまで何も保存されません。",
       "languageNameEGEnglish": "言語名(例: English)",
+      "pickLanguage": "言語を選択",
       "enabled": "有効",
       "remove": "削除",
       "addLocale": "ロケールを追加",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "パスプレフィックス（/bg/...）",
       "noLocaleInUrl": "URL にロケールを含めない",
       "selectLocaleUrlStrategy": "ロケールの URL 方式を選択",
-      "isoCodeExample": "ISO コード（例：en、en-gb）",
       "consoleLanguage": "コンソールの言語",
       "platformConsoleLanguageHint": "サイトが選択されていないときのコンソールの言語です。独自のコンソール言語を設定していないサイトでもこの言語が使用されます。",
       "consoleLanguageSaved": "コンソールの言語を保存しました。"
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "拒否されます: インストール済みのテーマは {{installed}} のもので、このパッケージは {{incoming}} のものです。",
     "notAvailableHere": "テーマ「{{slug}}」はここにはありません",
     "notAvailableHereHelp": "このサイトではその名前のテーマを参照できません。このサイトのテーマは「テーマ」に一覧表示されます。サイトへのテーマの割り当てはプラットフォーム管理者が「サイト」から行います。",
-    "manageThemes": "テーマを管理"
+    "manageThemes": "テーマを管理",
+    "activeTheme": "有効なテーマ",
+    "otherThemes": "その他のテーマ",
+    "noActiveTheme": "有効なテーマはありません"
   },
   "media": {
     "failedToCreateFolder": "フォルダーを作成できませんでした",

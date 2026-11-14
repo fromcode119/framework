@@ -1,10 +1,9 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
-import { Reactor, prop, Ref } from '@fromcode119/react-class-components';
+import { Reactor, prop, state, bound, Ref } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { DependencyDialog } from '@/components/ui/view/dependency-dialog.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { PluginState } from '@fromcode119/core/client';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { UploadPreviewDialog } from '@/components/ui/view/upload-preview-dialog.client';
@@ -18,10 +17,13 @@ import { SitePluginOffers } from '@/app/plugins/installed/components/view/site-p
 import { SiteOwnPlugins } from '@/app/plugins/installed/components/view/site-own-plugins.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Input } from '@/components/ui/view/input.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { PluginListFilter } from '@/app/plugins/installed/enums/plugin-list-filter.enum';
 
 export class InstalledPluginsView extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<InstalledPluginsView, 'canManage' | 'siteScope' | 'closeDeleteConfirm' | 'closeDependencyConfirm' | 'closeUploadPreview' | 'confirmUploadPreview' | 'deleteConfirmDescription' | 'dependencyIssues' | 'failedPluginsCount' | 'heldPluginsCount' | 'onReapproveAll' | 'filteredPlugins' | 'fileInputRef' | 'handleDragLeave' | 'handleDragOver' | 'handleDrop' | 'handleFileChange' | 'hasPluginUpdate' | 'handleToggle' | 'handleUploadClick' | 'imageErrors' | 'isActivating' | 'isDeleting' | 'isDropActive' | 'isInspectingUpload' | 'isUploading' | 'loading' | 'operationStatus' | 'markImageError' | 'onDeleteConfirm' | 'onDeletePrompt' | 'searchQuery' | 'setSearchQuery' | 'showDeleteConfirm' | 'showDependencyConfirm' | 'showUploadPreview' | 'targetPlugin' | 'theme' | 'toggleDependencies' | 'uploadProgressLabel' | 'uploadProgressPercent' | 'uploadPreviewDescription' | 'uploadPreviewSections' | 'uploadPreviewTitle'>;
+  declare props: Pick<InstalledPluginsView, 'canManage' | 'siteScope' | 'closeDeleteConfirm' | 'closeDependencyConfirm' | 'closeUploadPreview' | 'confirmUploadPreview' | 'deleteConfirmDescription' | 'dependencyIssues' | 'failedPluginsCount' | 'heldPluginsCount' | 'onReapproveAll' | 'filteredPlugins' | 'fileInputRef' | 'handleDragLeave' | 'handleDragOver' | 'handleDrop' | 'handleFileChange' | 'hasPluginUpdate' | 'handleToggle' | 'handleUploadClick' | 'imageErrors' | 'isActivating' | 'isDeleting' | 'isDropActive' | 'isInspectingUpload' | 'isUploading' | 'loading' | 'operationStatus' | 'markImageError' | 'onNavigate' | 'onDeleteConfirm' | 'onDeletePrompt' | 'searchQuery' | 'setSearchQuery' | 'showDeleteConfirm' | 'showDependencyConfirm' | 'showUploadPreview' | 'targetPlugin' | 'theme' | 'toggleDependencies' | 'uploadProgressLabel' | 'uploadProgressPercent' | 'uploadPreviewDescription' | 'uploadPreviewSections' | 'uploadPreviewTitle'>;
 
   @prop declare closeDeleteConfirm: () => void;
   @prop declare closeDependencyConfirm: () => void;
@@ -54,6 +56,7 @@ export class InstalledPluginsView extends Reactor {
   @prop declare loading: boolean;
   @prop declare operationStatus: IPluginInstallOperation | null;
   @prop declare markImageError: (slug: string) => void;
+  @prop declare onNavigate: (href: string) => void;
   @prop declare onDeleteConfirm: () => Promise<void>;
   @prop declare onDeletePrompt: (slug: string) => void;
   @prop declare searchQuery: string;
@@ -70,110 +73,146 @@ export class InstalledPluginsView extends Reactor {
   @prop declare uploadPreviewSections: IUploadPreviewSection[];
   @prop declare uploadPreviewTitle: string;
 
+  /** Which tab of the list is open. */
+  @state private filter: PluginListFilter = PluginListFilter.ALL;
+
+  private count(filter: PluginListFilter): number {
+    return this.filteredPlugins.filter((plugin) => filter.matches(plugin, this.hasPluginUpdate(plugin))).length;
+  }
+
+  /** A file dragged from outside, not a row or a text selection dragged inside the page. */
+  @bound
+  private onPageDragOver(event: DragEvent<HTMLDivElement>): void {
+    if (!this.canManage || !Array.from(event.dataTransfer?.types || []).includes('Files')) return;
+    this.handleDragOver(event);
+  }
+
+  private renderTabs(): ReactNode {
+    return (
+      <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('plugins.list.searchInstalledPlugins')}>
+        {PluginListFilter.ORDER.map((filter) => {
+          const count = this.count(filter);
+          // A tab for something that is not there (no updates, nothing failed) is left out, except
+          // the one standing open, so the list never sits under a heading it cannot leave.
+          if (!count && filter !== PluginListFilter.ALL && filter !== this.filter) return null;
+          return (
+            <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
+              aria-current={filter === this.filter ? 'page' : undefined} onClick={() => { this.filter = filter; }}>
+              {AdminI18n.t(filter.labelKey)}<span className={AdminClass.of('ext-tabs__count')}>{count}</span>
+            </button>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  private renderAlerts(): ReactNode {
+    const failed = this.failedPluginsCount;
+    const held = this.heldPluginsCount;
+    return (
+      <>
+        {failed > 0 ? (
+          <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')}`} role="alert">
+            <FrameworkIcons.Alert size={16} />
+            <span className={AdminClass.of('ext-alert__text')}>
+              {AdminI18n.t(failed === 1 ? 'plugins.list.failedOne' : 'plugins.list.failedMany', { count: failed })}
+            </span>
+          </div>
+        ) : null}
+        {held > 0 ? (
+          <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--warn')}`} role="alert">
+            <FrameworkIcons.Alert size={16} />
+            <span className={AdminClass.of('ext-alert__text')}>
+              {AdminI18n.t(held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: held })}
+            </span>
+            {/* Approval changes what the plugin may do on every site, so the server only takes it in
+                Platform scope; inside a site the dialog could only end in a refusal. */}
+            {this.siteScope
+              ? <PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate>
+              : <Button variant={ButtonVariant.OUTLINE} onClick={this.onReapproveAll} isLoading={this.isActivating}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  private renderToolbar(): ReactNode {
+    const busy = this.isUploading || this.isInspectingUpload;
+    return (
+      <div className={AdminClass.of('ext-toolbar')}>
+        <div className={AdminClass.of('ext-toolbar__search')}>
+          <FrameworkIcons.Search size={16} />
+          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-10" />
+        </div>
+        {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
+            and an upload that can only ever 403 is a bug, not a hint. */}
+        {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
+        {this.canManage ? (
+          <Button onClick={this.handleUploadClick} isLoading={busy}>
+            {this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
+  private renderProgress(): ReactNode {
+    if (!this.uploadProgressLabel) return null;
+    const percent = Math.max(4, Math.min(this.uploadProgressPercent ?? 0, 100));
+    return (
+      <div className={AdminClass.of('ext-progress')}>
+        <div className={AdminClass.of('ext-progress__track')}>
+          <div className={AdminClass.of('ext-progress__bar')} style={{ width: `${percent}%` }} />
+        </div>
+        {this.uploadProgressLabel}
+      </div>
+    );
+  }
+
+  private renderList(): ReactNode {
+    const shown = this.filteredPlugins.filter((plugin) => this.filter.matches(plugin, this.hasPluginUpdate(plugin)));
+    if (!shown.length) {
+      return (
+        <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>
+          {AdminI18n.t('plugins.list.noPluginsFound')}
+          {this.searchQuery ? <> · {AdminI18n.t('plugins.list.tryADifferentSearchTerm2')}</> : null}
+        </div>
+      );
+    }
+    return (
+      <div className={AdminClass.of('ext-list')}>
+        {shown.map((plugin) => (
+          <InstalledPluginCard key={plugin.manifest.slug} hasImageError={this.imageErrors[plugin.manifest.slug] ?? false}
+            hasUpdate={this.hasPluginUpdate(plugin)} isDark={this.theme === ThemeMode.DARK} onDelete={this.onDeletePrompt}
+            onImageError={this.markImageError} onNavigate={this.onNavigate} onToggle={this.handleToggle} plugin={plugin} canManage={this.canManage} />
+        ))}
+      </div>
+    );
+  }
+
   render(): ReactNode {
-  const theme = this.theme;
-  const filteredPlugins = this.filteredPlugins;
-  const hasPluginUpdate = this.hasPluginUpdate;
-  const failedPluginsCount = this.failedPluginsCount;
-  const isDark = theme === ThemeMode.DARK;
-  const activeCount = filteredPlugins.filter((p) => p.state === PluginState.ACTIVE && !p.error).length;
-  const inactiveCount = filteredPlugins.filter((p) => p.state !== PluginState.ACTIVE && !(Boolean(p.error) || p.state === PluginState.ERROR)).length;
-  const updateCount = filteredPlugins.filter((p) => hasPluginUpdate(p)).length;
-  const summaryStats: Array<{ label: string; value: number; tone: string }> = [
-    { label: AdminI18n.t('plugins.list.total'), value: filteredPlugins.length, tone: isDark ? 'text-white' : 'text-slate-900' },
-    { label: AdminI18n.t('plugins.list.active'), value: activeCount, tone: 'text-emerald-500' },
-    { label: AdminI18n.t('plugins.list.inactive'), value: inactiveCount, tone: isDark ? 'text-slate-400' : 'text-slate-500' },
-    { label: AdminI18n.t('plugins.list.updates'), value: updateCount, tone: 'text-amber-500' },
-    { label: AdminI18n.t('plugins.list.errors'), value: failedPluginsCount, tone: failedPluginsCount > 0 ? 'text-rose-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
-  ];
   return (
-    <div className="space-y-4 animate-in fade-in duration-500">
+    <div className={AdminClass.of('ext-page')} onDragOver={this.onPageDragOver}>
       {this.operationStatus && (this.isUploading || this.isActivating) ? <Loader fullPage label={this.operationStatus.message} /> : null}
       {this.loading ? <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('plugins.list.synchronizingGlobalMarketplaceCatalog')} /></div> : (
         <>
-          {failedPluginsCount > 0 ? (
-            <div className={`rounded-xl border px-4 py-3 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <div className={`self-start rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
-                  <FrameworkIcons.Alert size={18} />
-                </div>
-                <div>
-                  <h3 className="text-[12px] font-medium text-rose-500">{AdminI18n.t('plugins.list.pluginFailuresDetected')}</h3>
-                  <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-rose-100/90' : 'text-rose-700'}`}>
-                    {AdminI18n.t(failedPluginsCount === 1 ? 'plugins.list.failedOne' : 'plugins.list.failedMany', { count: failedPluginsCount })}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : null}
-          {this.heldPluginsCount > 0 ? (
-            <div className={`rounded-xl border px-4 py-3 ${theme === ThemeMode.DARK ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-                <div className={`self-start rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}>
-                  <FrameworkIcons.Alert size={18} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-[12px] font-medium text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
-                  <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-amber-100/90' : 'text-amber-700'}`}>
-                    {AdminI18n.t(this.heldPluginsCount === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: this.heldPluginsCount })}
-                  </p>
-                  {/* Approval changes what the plugin may do on every site, so the server only takes it in
-                      Platform scope; inside a site the dialog could only end in a refusal. */}
-                  {this.siteScope ? <div className="mt-3"><PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate></div> : null}
-                </div>
-                {this.siteScope ? null : <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
-                  {this.isActivating ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
-                  <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
-                </button>}
-              </div>
-            </div>
-          ) : null}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1 group">
-              <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
-              <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-11" />
-            </div>
-            {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
-            {this.canManage ? <button onClick={this.handleUploadClick} disabled={this.isUploading || this.isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.isUploading || this.isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}</span></button> : null}
-          </div>
+          {this.renderAlerts()}
+          {this.siteScope ? <PlatformScopeGate what={AdminI18n.t('plugins.list.installingPluginsForEverySite')}>{null}</PlatformScopeGate> : null}
           {this.siteScope ? <SitePluginOffers /> : null}
           {this.siteScope ? <SiteOwnPlugins /> : null}
-          {this.siteScope ? <PlatformScopeGate what={AdminI18n.t('plugins.list.installingPluginsForEverySite')}>{null}</PlatformScopeGate> : null}
-          {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
-              and a dropzone that can only ever 403 is a bug, not a hint. */}
-          {this.canManage ? (
-            <div onClick={this.handleUploadClick} onDrop={this.handleDrop} onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave} className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-4 transition-all ${this.isDropActive ? (theme === ThemeMode.DARK ? 'border-indigo-400 bg-indigo-500/10' : 'border-indigo-500 bg-indigo-50') : (theme === ThemeMode.DARK ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')}`}>
-              <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={this.isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{AdminI18n.t('plugins.list.dragAndDropPluginZip')}</p></div>
-              {this.uploadProgressLabel ? (
-                <div className="mt-4 space-y-2">
-                  <div className={`h-2 overflow-hidden rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                    <div
-                      className="h-full rounded-full bg-indigo-600 transition-all duration-200"
-                      style={{ width: `${Math.max(4, Math.min(this.uploadProgressPercent ?? 0, 100))}%` }}
-                    />
-                  </div>
-                  <p className={`text-xs font-medium ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
-                    {this.uploadProgressLabel}
-                  </p>
-                </div>
-              ) : null}
+          {this.siteScope ? <h2 className={AdminClass.of('ext-section')}>{AdminI18n.t('plugins.list.installedOnThePlatform')}</h2> : null}
+          {this.renderToolbar()}
+          {this.renderProgress()}
+          {this.renderTabs()}
+          {this.renderList()}
+          {this.canManage && this.isDropActive ? (
+            <div className={AdminClass.of('ext-drop')} onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave} onDrop={this.handleDrop}>
+              <div className={AdminClass.of('ext-drop__box')}>
+                <FrameworkIcons.Upload size={22} />
+                {AdminI18n.t('ui.dropToInstall')}
+              </div>
             </div>
           ) : null}
-          <div className="flex flex-wrap items-center gap-2">
-            {summaryStats.map((s) => (
-              <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-                <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
-                <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
-              </div>
-            ))}
-          </div>
-          {filteredPlugins.length === 0 ? (
-            <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800"><div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" /></div><h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.noPluginsFound')}</h3><p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.tryADifferentSearchTerm2')}</p></div>
-          ) : (
-            <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
-              {filteredPlugins.map((plugin) => <InstalledPluginCard key={plugin.manifest.slug} hasImageError={this.imageErrors[plugin.manifest.slug] ?? false} hasUpdate={hasPluginUpdate(plugin)} isDark={isDark} onDelete={this.onDeletePrompt} onImageError={this.markImageError} onToggle={this.handleToggle} plugin={plugin} canManage={this.canManage} />)}
-            </div>
-          )}
         </>
       )}
       <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.closeDeleteConfirm} onConfirm={this.onDeleteConfirm} isLoading={this.isDeleting} title={AdminI18n.t('plugins.list.destroyPlugin')} description={this.deleteConfirmDescription} confirmLabel={AdminI18n.t('plugins.list.destroyNow')} />

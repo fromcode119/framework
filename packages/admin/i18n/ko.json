@@ -613,7 +613,13 @@
       "none": "사람 필드에 저장하지 않음",
       "missing": "{{key}} (더 이상 사람 필드가 아님)",
       "manage": "사람 필드 관리"
-    }
+    },
+    "saveBar": {
+      "unsaved": "저장되지 않은 변경 사항",
+      "discard": "취소",
+      "save": "저장"
+    },
+    "dropToInstall": "파일을 놓아 설치하세요"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "가져오기 실패: {{reason}}",
       "awaitingApproval": "승인 대기 중",
       "reviewAndApprove": "검토 및 승인",
-      "waitsForYourApproval": "배치되었으며, 요청한 권한에 대한 승인을 기다리는 중입니다."
+      "waitsForYourApproval": "배치되었으며, 요청한 권한에 대한 승인을 기다리는 중입니다.",
+      "tabAll": "전체",
+      "tabOff": "꺼짐",
+      "tabUpdates": "업데이트 있음",
+      "tabErrors": "오류 있음",
+      "details": "세부 정보",
+      "installedOnThePlatform": "플랫폼에 설치됨"
     },
     "upload": {
       "name": "이름: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "복사됨",
       "pageSubtitle": "이 워크스페이스에서 사용하는 외부 서비스입니다. 비밀 값은 암호화되며 다시 표시되지 않습니다.",
       "ownerPlatform": "플랫폼",
-      "save": "저장",
       "saving": "저장 중…",
       "more": "더 보기",
       "oneProviderAtATime": "한 번에 하나의 공급자만 사용할 수 있습니다. 다른 공급자를 선택하면 대체됩니다.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "언어 이름과 ISO 코드를 지정한 다음 각 로캘을 사용 또는 사용 안 함으로 설정하세요.",
       "noLocalesConfiguredAddOne": "구성된 로캘이 없습니다. 아래에서 추가하세요. 저장하기 전까지는 아무것도 저장되지 않습니다.",
       "languageNameEGEnglish": "언어 이름(예: English)",
+      "pickLanguage": "언어 선택",
       "enabled": "사용",
       "remove": "삭제",
       "addLocale": "로캘 추가",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "경로 접두사(/bg/...)",
       "noLocaleInUrl": "URL에 로캘 없음",
       "selectLocaleUrlStrategy": "로캘 URL 방식 선택",
-      "isoCodeExample": "ISO 코드(예: en, en-gb)",
       "consoleLanguage": "콘솔 언어",
       "platformConsoleLanguageHint": "사이트를 선택하지 않았을 때 이 콘솔에 표시되는 언어입니다. 자체 콘솔 언어를 선택하지 않은 사이트에도 이 언어가 사용됩니다.",
       "consoleLanguageSaved": "콘솔 언어가 저장되었습니다."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "거부됨: 설치된 테마는 {{installed}}의 것이고, 이 패키지는 {{incoming}}의 것입니다.",
     "notAvailableHere": "\"{{slug}}\" 테마가 없습니다",
     "notAvailableHereHelp": "이 사이트에서는 해당 이름의 테마를 찾을 수 없습니다. 사이트의 테마는 테마 메뉴에 표시되며, 플랫폼 관리자가 사이트 메뉴에서 사이트에 테마를 할당합니다.",
-    "manageThemes": "테마 관리"
+    "manageThemes": "테마 관리",
+    "activeTheme": "활성 테마",
+    "otherThemes": "기타 테마",
+    "noActiveTheme": "활성 테마가 없습니다"
   },
   "media": {
     "failedToCreateFolder": "폴더를 만들지 못했습니다",

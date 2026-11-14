@@ -18,7 +18,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The page's header (the shared compact one): which plugin, its state and version — and the one action of the
- * tab you are on (settings: save; resources: save the policy). Everything that is not an everyday action
+ * tab you are on (resources: save the policy). Settings are saved from the bar at the foot of the form,
+ * which shows only while something is changed, like on every other settings page. Everything that is not an everyday action
  * (exporting, importing or resetting the settings, the raw definition) sits in the ⋯ menu.
  */
 export class PluginDetailHeader extends PureReactor {
@@ -29,11 +30,9 @@ export class PluginDetailHeader extends PureReactor {
   /** The platform's own actions (definition, the resource policy) — only in Platform scope, for a platform admin. */
   @prop declare platformActions: boolean;
   @prop declare plugin: ILoadedPlugin;
-  @prop declare settingsDirty: boolean;
   @prop declare settingsFormRef: Ref<IPluginSettingsFormHandle | null>;
   /** False for a plugin with nothing to set (or one that is not running yet): no Save, Export, Import or Reset. */
   @prop declare settingsHasFields: boolean;
-  @prop declare settingsSaving: boolean;
   @prop declare theme: ThemeMode;
 
   /** The state in the operator's words; `plugin.state` may still be a plain string before hydration. */
@@ -69,20 +68,6 @@ export class PluginDetailHeader extends PureReactor {
     return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors ${primary ? 'font-semibold' : ''} ${tone}`}>{label}</button>;
   }
 
-  private settingsActions(): ReactNode {
-    const { settingsDirty, settingsSaving } = this;
-    return (
-      <>
-        {settingsDirty ? <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-500"><span className="h-2 w-2 rounded-full bg-amber-500" />{AdminI18n.t('plugins.detail.unsavedChanges')}</span> : null}
-        <button type="submit" form="plugin-settings-form" disabled={settingsSaving || !settingsDirty}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
-          {settingsSaving ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Check size={14} />}
-          {settingsSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.saveSettings')}
-        </button>
-      </>
-    );
-  }
-
   render(): ReactNode {
     const { activeTab, plugin } = this;
     const items = this.menuItems;
@@ -98,7 +83,6 @@ export class PluginDetailHeader extends PureReactor {
     );
     const actions = (
       <>
-        {(activeTab === PluginDetailTab.SETTINGS || (activeTab === PluginDetailTab.PLATFORM_SETTINGS && this.platformActions)) && this.settingsHasFields ? this.settingsActions() : null}
         {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
         {items.length ? (
           <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={

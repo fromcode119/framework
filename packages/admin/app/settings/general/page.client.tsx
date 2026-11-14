@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { Slot } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
 import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
@@ -45,13 +44,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
         {offerSwitch && this.hostLocksSite ? (
           <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
         ) : offerSwitch ? (
-          <Button
-            onClick={this.openPlatformScope}
-            icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
-            className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
-          >
-            {AdminI18n.t('settings.general.openPlatformScope')}
-          </Button>
+          <button type="button" className="fc-scope-notice__go" onClick={this.openPlatformScope}>{AdminI18n.t('ui.scopeGate.open')}</button>
         ) : null}
       </div>
     );
@@ -67,21 +60,8 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Settings size={18} strokeWidth={2} />}
           title={AdminI18n.t('settings.general.generalConfiguration')}
           subtitle={AdminI18n.t('settings.general.brandIdentitySystemPreferences')}
-          actions={
-            settings ? (
-              <Button
-                icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-                onClick={this.handleSave}
-                isLoading={this.isSaving}
-                className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-              >
-                {AdminI18n.t('settings.general.saveChanges')}
-              </Button>
-            ) : null
-          }
         />
 
         {this.renderScopeNotice()}
@@ -96,7 +76,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
         )}
 
         {settings && (
-          <div className="p-6 w-full space-y-8">
+          <div className="p-6 w-full space-y-3">
             <GeneralBrandCard
               platformLocks={this.platformLocks}
               settings={settings}
@@ -129,6 +109,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
             />
 
             <Slot name="admin.settings.general.bottom" />
+            <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSave} onDiscard={this.discardChanges} />
           </div>
         )}
       </div>
