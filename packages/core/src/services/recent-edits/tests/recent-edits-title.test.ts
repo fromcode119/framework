@@ -16,6 +16,11 @@ describe('recent edits title', () => {
     expect(edit.title).toBe('ORD-1002');
   });
 
+  it('reads it in the column spelling a version is stored in', async () => {
+    const [edit] = await service({ order_number: 'ORD-1002' }).list('7', 5);
+    expect(edit.title).toBe('ORD-1002');
+  });
+
   it('is the record number when nothing names it, never the collection name again', async () => {
     const [edit] = await service({ items: [] }).list('7', 5);
     expect(edit.title).toBe('#2');

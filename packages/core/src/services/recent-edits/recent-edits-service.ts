@@ -1,4 +1,5 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
+import { StringUtils } from '@core/utils/string-utils';
 
 /**
  * What this operator was last working on — the documents themselves, not a count of them.
@@ -78,7 +79,8 @@ export class RecentEditsService {
   private static titleOf(versionData: unknown, titleKey = ''): string {
     const data = (versionData || {}) as Record<string, unknown>;
     for (const key of [titleKey, ...RecentEditsService.TITLE_KEYS].filter(Boolean)) {
-      const value = data[key];
+      // A version is stored as the row was written, in the table's own column spelling (order_number).
+      const value = data[key] ?? data[StringUtils.toSnakeCase(key)];
       if (typeof value === 'string' && value.trim()) return value.trim();
       // Localized fields arrive as { en: "…", bg: "…" } — any language names the record.
       if (value && typeof value === 'object') {
