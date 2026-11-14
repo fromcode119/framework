@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.583] - 2026-11-14
+
+### Added
+
+- **admin**: one quiet look for settings, plugin and theme screens ([#1427](https://github.com/fromcode119/framework/pull/1427))
+
 ## [0.2.582] - 2026-11-14
 
 ### Fixed
@@ -22,7 +28,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Added
 
-- **admin**: minimal record page — header card, ⋯ menu, "Още" sections, cards edited in place; one dense dashboard ([#1420](https://github.com/fromcode119/framework/pull/1420))
+- **admin**: minimal record page — header card, ⋯ menu, "Още" sections, cards edited in place ([#1420](https://github.com/fromcode119/framework/pull/1420))
 
 ### Fixed
 
