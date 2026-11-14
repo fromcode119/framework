@@ -933,7 +933,8 @@
         }
       },
       "open": "Oscail",
-      "loadFailed": "Níorbh fhéidir figiúirí an ghiuirléid seo a lódáil. Athlódáil an leathanach chun triail eile a bhaint as."
+      "loadFailed": "Níorbh fhéidir figiúirí an ghiuirléid seo a lódáil. Athlódáil an leathanach chun triail eile a bhaint as.",
+      "quiet": "Níl aon rud ag fanacht: {{list}}"
     }
   },
   "notFound": {

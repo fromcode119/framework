@@ -933,7 +933,8 @@
         }
       },
       "open": "Ouvrir",
-      "loadFailed": "Impossible de charger les données de ce widget. Rechargez la page pour réessayer."
+      "loadFailed": "Impossible de charger les données de ce widget. Rechargez la page pour réessayer.",
+      "quiet": "Rien en attente : {{list}}"
     }
   },
   "notFound": {

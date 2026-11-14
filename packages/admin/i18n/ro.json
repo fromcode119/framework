@@ -933,7 +933,8 @@
         }
       },
       "open": "Deschide",
-      "loadFailed": "Datele acestui widget nu au putut fi încărcate. Reîncărcați pagina pentru a încerca din nou."
+      "loadFailed": "Datele acestui widget nu au putut fi încărcate. Reîncărcați pagina pentru a încerca din nou.",
+      "quiet": "Nimic în așteptare: {{list}}"
     }
   },
   "notFound": {

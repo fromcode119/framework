@@ -933,7 +933,8 @@
         }
       },
       "open": "Open",
-      "loadFailed": "This widget's figures could not be loaded. Reload the page to try again."
+      "loadFailed": "This widget's figures could not be loaded. Reload the page to try again.",
+      "quiet": "Nothing waiting: {{list}}"
     }
   },
   "notFound": {

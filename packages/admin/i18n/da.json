@@ -933,7 +933,8 @@
         }
       },
       "open": "Åbn",
-      "loadFailed": "Denne widgets tal kunne ikke indlæses. Genindlæs siden for at prøve igen."
+      "loadFailed": "Denne widgets tal kunne ikke indlæses. Genindlæs siden for at prøve igen.",
+      "quiet": "Intet venter: {{list}}"
     }
   },
   "notFound": {

@@ -933,7 +933,8 @@
         }
       },
       "open": "Atidaryti",
-      "loadFailed": "Nepavyko įkelti šio valdiklio duomenų. Norėdami bandyti dar kartą, perkraukite puslapį."
+      "loadFailed": "Nepavyko įkelti šio valdiklio duomenų. Norėdami bandyti dar kartą, perkraukite puslapį.",
+      "quiet": "Nieko nelaukia: {{list}}"
     }
   },
   "notFound": {

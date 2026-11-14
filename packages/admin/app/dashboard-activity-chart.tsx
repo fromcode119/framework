@@ -68,7 +68,7 @@ export class DashboardActivityChart extends PureReactor {
     if (window.isEmpty) {
       return (
         <Card title={AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
-          <p className="text-[12px] text-slate-500">{this.emptyCopy}</p>
+          <p data-empty-state className="text-[12px] text-slate-500">{this.emptyCopy}</p>
         </Card>
       );
     }

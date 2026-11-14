@@ -933,7 +933,8 @@
         }
       },
       "open": "Aç",
-      "loadFailed": "Bu bileşenin verileri yüklenemedi. Tekrar denemek için sayfayı yenileyin."
+      "loadFailed": "Bu bileşenin verileri yüklenemedi. Tekrar denemek için sayfayı yenileyin.",
+      "quiet": "Bekleyen bir şey yok: {{list}}"
     }
   },
   "notFound": {

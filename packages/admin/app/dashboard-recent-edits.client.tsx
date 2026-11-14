@@ -3,10 +3,9 @@ import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
-import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { SectionCard } from '@/components/plugin-dashboard/view/section-card.client';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -58,15 +57,14 @@ export class DashboardRecentEdits extends AdminComponent {
     if (this.edits.length === 0) return null;
 
     return (
-      <div className="space-y-2">
-        <DashboardSectionHeading label={AdminI18n.t('dashboard.leftOff')} />
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
+      <SectionCard title={AdminI18n.t('dashboard.leftOff')} noPadding>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
           {this.edits.map((edit) => (
             <button
               key={`${edit.collectionSlug}:${edit.recordId}`}
               type="button"
               onClick={() => this.open(edit)}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
+              className="flex w-full items-center gap-2.5 px-4 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
             >
               <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
                 {/* A localized title is a MAP keyed by locale, not a string; `String()` printed
@@ -80,7 +78,7 @@ export class DashboardRecentEdits extends AdminComponent {
             </button>
           ))}
         </div>
-      </div>
+      </SectionCard>
     );
   }
 }

@@ -933,7 +933,8 @@
         }
       },
       "open": "Iftaħ",
-      "loadFailed": "Iċ-ċifri ta' dan il-widget ma setgħux jitniżżlu. Erġa' tella' l-paġna biex tipprova mill-ġdid."
+      "loadFailed": "Iċ-ċifri ta' dan il-widget ma setgħux jitniżżlu. Erġa' tella' l-paġna biex tipprova mill-ġdid.",
+      "quiet": "Xejn ma qed jistenna: {{list}}"
     }
   },
   "notFound": {

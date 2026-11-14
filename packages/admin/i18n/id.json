@@ -933,7 +933,8 @@
         }
       },
       "open": "Buka",
-      "loadFailed": "Angka widget ini tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi."
+      "loadFailed": "Angka widget ini tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
+      "quiet": "Tidak ada yang menunggu: {{list}}"
     }
   },
   "notFound": {

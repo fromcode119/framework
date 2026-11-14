@@ -933,7 +933,8 @@
         }
       },
       "open": "Mở",
-      "loadFailed": "Không thể tải số liệu của tiện ích này. Hãy tải lại trang để thử lại."
+      "loadFailed": "Không thể tải số liệu của tiện ích này. Hãy tải lại trang để thử lại.",
+      "quiet": "Không có gì đang chờ: {{list}}"
     }
   },
   "notFound": {

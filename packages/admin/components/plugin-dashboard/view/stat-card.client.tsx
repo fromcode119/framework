@@ -49,7 +49,7 @@ export class StatCard extends PureReactor {
     // AdminClass.SURFACE IS the raised-panel treatment (radius + border + card background + shadow).
     // These tiles previously drew their own `rounded-xl … ring-1`, which is why they alone had no shadow.
     const cardClass = `
-    group relative overflow-hidden
+    fc-stat group relative overflow-hidden
     ${AdminClass.SURFACE}
     p-4
     transition-colors duration-150
@@ -58,9 +58,9 @@ export class StatCard extends PureReactor {
 
     const inner = (
       <div className="relative">
-        <div className="flex items-center justify-between mb-3">
+        <div className="fc-stat__head flex items-center justify-between mb-3">
           {stat.icon && (
-            <div className={`h-9 w-9 flex items-center justify-center rounded-lg ${colors.bg} ${colors.text} [&_svg]:h-[18px] [&_svg]:w-[18px]`}>
+            <div className={`fc-stat__icon h-9 w-9 flex items-center justify-center rounded-lg ${colors.bg} ${colors.text} [&_svg]:h-[18px] [&_svg]:w-[18px]`}>
               {stat.icon}
             </div>
           )}
@@ -75,14 +75,14 @@ export class StatCard extends PureReactor {
             </div>
           )}
         </div>
-        <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500 mb-1">
+        <p className="fc-stat__label text-[12px] font-medium text-slate-400 dark:text-slate-500 mb-1">
           {stat.label}
         </p>
-        <h4 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+        <h4 className="fc-stat__value text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
           {stat.value}
         </h4>
         {stat.subtext && (
-          <p className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50 text-[12px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
+          <p className="fc-stat__sub mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50 text-[12px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
             {stat.subtext}
           </p>
         )}

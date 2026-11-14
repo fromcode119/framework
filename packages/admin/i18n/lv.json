@@ -933,7 +933,8 @@
         }
       },
       "open": "Atvērt",
-      "loadFailed": "Šī logrīka datus neizdevās ielādēt. Pārlādējiet lapu, lai mēģinātu vēlreiz."
+      "loadFailed": "Šī logrīka datus neizdevās ielādēt. Pārlādējiet lapu, lai mēģinātu vēlreiz.",
+      "quiet": "Nekas negaida: {{list}}"
     }
   },
   "notFound": {

@@ -933,7 +933,8 @@
         }
       },
       "open": "Otwórz",
-      "loadFailed": "Nie udało się wczytać danych tego widżetu. Odśwież stronę, aby spróbować ponownie."
+      "loadFailed": "Nie udało się wczytać danych tego widżetu. Odśwież stronę, aby spróbować ponownie.",
+      "quiet": "Nic nie czeka: {{list}}"
     }
   },
   "notFound": {

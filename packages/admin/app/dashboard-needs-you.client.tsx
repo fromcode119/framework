@@ -3,9 +3,8 @@ import { state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminClass } from '@/lib/admin-class';
 import { DashboardAttentionRow } from '@/app/dashboard-attention-row.client';
-import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { SectionCard } from '@/components/plugin-dashboard/view/section-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -39,14 +38,13 @@ export class DashboardNeedsYou extends AdminComponent {
     if (this.items.length === 0) return null;
 
     return (
-      <div className="space-y-2">
-        <DashboardSectionHeading label={AdminI18n.t('dashboard.needsYou')} count={this.items.length} />
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
+      <SectionCard title={`${AdminI18n.t('dashboard.needsYou')} · ${this.items.length}`} noPadding>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
           {this.items.map((item) => (
             <DashboardAttentionRow key={String(item.key)} item={item} />
           ))}
         </div>
-      </div>
+      </SectionCard>
     );
   }
 }

@@ -933,7 +933,8 @@
         }
       },
       "open": "Otvori",
-      "loadFailed": "Podaci ovog widgeta nisu se mogli učitati. Ponovno učitajte stranicu kako biste pokušali ponovno."
+      "loadFailed": "Podaci ovog widgeta nisu se mogli učitati. Ponovno učitajte stranicu kako biste pokušali ponovno.",
+      "quiet": "Ništa ne čeka: {{list}}"
     }
   },
   "notFound": {

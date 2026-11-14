@@ -8,19 +8,24 @@ const widget = (key: string, defaultVisible = true, size = DashboardWidgetSize.S
 });
 
 describe('DashboardLayout', () => {
-  const definitions = [widget('a', true, DashboardWidgetSize.LARGE), widget('b'), widget('c', false)];
+  const definitions = [widget('system.a', true, DashboardWidgetSize.LARGE), widget('b'), widget('c', false)];
 
   it('shows the default widgets, in declared order, when nothing is saved', () => {
-    expect(DashboardLayout.resolve(definitions, null)).toEqual([{ key: 'a', size: 'large' }, { key: 'b', size: 'small' }]);
+    expect(DashboardLayout.resolve(definitions, null)).toEqual([{ key: 'system.a', size: 'large' }, { key: 'b', size: 'small' }]);
+  });
+
+  it('puts what can be acted on first and the full-width rows of figures last', () => {
+    const offered = [widget('figures', true, DashboardWidgetSize.LARGE), widget('system.notices', true, DashboardWidgetSize.LARGE), widget('queue', true, DashboardWidgetSize.MEDIUM), widget('system.edits'), widget('trend')];
+    expect(DashboardLayout.defaults(offered).map((e) => e.key)).toEqual(['system.notices', 'queue', 'trend', 'system.edits', 'figures']);
   });
 
   it('keeps the saved order and sizes, and drops widgets that are no longer offered', () => {
-    const saved = [{ key: 'c', size: 'medium' }, { key: 'gone', size: 'small' }, { key: 'a', size: 'small' }];
-    expect(DashboardLayout.resolve(definitions, saved)).toEqual([{ key: 'c', size: 'medium' }, { key: 'a', size: 'small' }]);
+    const saved = [{ key: 'c', size: 'medium' }, { key: 'gone', size: 'small' }, { key: 'system.a', size: 'small' }];
+    expect(DashboardLayout.resolve(definitions, saved)).toEqual([{ key: 'c', size: 'medium' }, { key: 'system.a', size: 'small' }]);
   });
 
   it('does not force a newly offered widget onto a saved dashboard — it waits in the picker', () => {
-    const layout = DashboardLayout.resolve(definitions, [{ key: 'a', size: 'large' }]);
+    const layout = DashboardLayout.resolve(definitions, [{ key: 'system.a', size: 'large' }]);
     expect(DashboardLayout.available(definitions, layout).map((d) => d.key)).toEqual(['b', 'c']);
   });
 
@@ -31,13 +36,13 @@ describe('DashboardLayout', () => {
   it('adds, removes, resizes and reorders', () => {
     let layout = DashboardLayout.defaults(definitions);
     layout = DashboardLayout.add(layout, definitions[2]!);
-    layout = DashboardLayout.move(layout, 'c', 'a');
-    expect(layout.map((e) => e.key)).toEqual(['c', 'a', 'b']);
+    layout = DashboardLayout.move(layout, 'c', 'system.a');
+    expect(layout.map((e) => e.key)).toEqual(['c', 'system.a', 'b']);
     layout = DashboardLayout.shift(layout, 'b', -1);
-    expect(layout.map((e) => e.key)).toEqual(['c', 'b', 'a']);
+    expect(layout.map((e) => e.key)).toEqual(['c', 'b', 'system.a']);
     layout = DashboardLayout.resize(layout, 'b', DashboardWidgetSize.MEDIUM);
     layout = DashboardLayout.remove(layout, 'c');
-    expect(layout).toEqual([{ key: 'b', size: 'medium' }, { key: 'a', size: 'large' }]);
+    expect(layout).toEqual([{ key: 'b', size: 'medium' }, { key: 'system.a', size: 'large' }]);
   });
 
   it('ignores a duplicated key and an unknown size in a saved layout', () => {

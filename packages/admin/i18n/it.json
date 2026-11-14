@@ -933,7 +933,8 @@
         }
       },
       "open": "Apri",
-      "loadFailed": "Impossibile caricare i dati di questo widget. Ricarichi la pagina per riprovare."
+      "loadFailed": "Impossibile caricare i dati di questo widget. Ricarichi la pagina per riprovare.",
+      "quiet": "Niente in sospeso: {{list}}"
     }
   },
   "notFound": {

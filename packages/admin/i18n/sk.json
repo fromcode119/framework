@@ -933,7 +933,8 @@
         }
       },
       "open": "Otvoriť",
-      "loadFailed": "Údaje tohto miniaplikácie sa nepodarilo načítať. Skúste to znova obnovením stránky."
+      "loadFailed": "Údaje tohto miniaplikácie sa nepodarilo načítať. Skúste to znova obnovením stránky.",
+      "quiet": "Nič nečaká: {{list}}"
     }
   },
   "notFound": {

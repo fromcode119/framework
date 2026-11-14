@@ -933,7 +933,8 @@
         }
       },
       "open": "Hap",
-      "loadFailed": "Shifrat e këtij widget-i nuk mund të ngarkoheshin. Ringarkoni faqen për të provuar përsëri."
+      "loadFailed": "Shifrat e këtij widget-i nuk mund të ngarkoheshin. Ringarkoni faqen për të provuar përsëri.",
+      "quiet": "Asgjë në pritje: {{list}}"
     }
   },
   "notFound": {

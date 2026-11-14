@@ -933,7 +933,8 @@
         }
       },
       "open": "Åpne",
-      "loadFailed": "Tallene for denne widgeten kunne ikke lastes inn. Last inn siden på nytt for å prøve igjen."
+      "loadFailed": "Tallene for denne widgeten kunne ikke lastes inn. Last inn siden på nytt for å prøve igjen.",
+      "quiet": "Ingenting venter: {{list}}"
     }
   },
   "notFound": {

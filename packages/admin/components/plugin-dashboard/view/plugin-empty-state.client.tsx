@@ -19,7 +19,8 @@ export class PluginEmptyState extends PureReactor {
     const className = this.className ?? "";
     return (
     <div
-      className={`flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/70 bg-slate-50/40 py-12 px-6 text-center dark:bg-slate-800/20 dark:border-slate-700/50 ${className}`}
+      data-empty-state
+      className={`fc-empty-state flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/70 bg-slate-50/40 py-12 px-6 text-center dark:bg-slate-800/20 dark:border-slate-700/50 ${className}`}
     >
       {/* Icon */}
       {icon && (

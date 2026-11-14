@@ -933,7 +933,8 @@
         }
       },
       "open": "Avaa",
-      "loadFailed": "Tämän pienoisohjelman lukuja ei voitu ladata. Yritä uudelleen lataamalla sivu uudelleen."
+      "loadFailed": "Tämän pienoisohjelman lukuja ei voitu ladata. Yritä uudelleen lataamalla sivu uudelleen.",
+      "quiet": "Ei odottavia: {{list}}"
     }
   },
   "notFound": {

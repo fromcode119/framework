@@ -933,7 +933,8 @@
         }
       },
       "open": "Öffnen",
-      "loadFailed": "Die Werte dieses Widgets konnten nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen."
+      "loadFailed": "Die Werte dieses Widgets konnten nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen.",
+      "quiet": "Nichts offen: {{list}}"
     }
   },
   "notFound": {

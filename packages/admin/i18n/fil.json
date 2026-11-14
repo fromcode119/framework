@@ -933,7 +933,8 @@
         }
       },
       "open": "Buksan",
-      "loadFailed": "Hindi ma-load ang mga numero ng widget na ito. I-reload ang page para subukang muli."
+      "loadFailed": "Hindi ma-load ang mga numero ng widget na ito. I-reload ang page para subukang muli.",
+      "quiet": "Walang naghihintay: {{list}}"
     }
   },
   "notFound": {

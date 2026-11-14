@@ -933,7 +933,8 @@
         }
       },
       "open": "Ava",
-      "loadFailed": "Selle vidina andmeid ei õnnestunud laadida. Uuesti proovimiseks laadige leht uuesti."
+      "loadFailed": "Selle vidina andmeid ei õnnestunud laadida. Uuesti proovimiseks laadige leht uuesti.",
+      "quiet": "Midagi ei oota: {{list}}"
     }
   },
   "notFound": {

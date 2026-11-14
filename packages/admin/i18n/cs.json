@@ -933,7 +933,8 @@
         }
       },
       "open": "Otevřít",
-      "loadFailed": "Údaje tohoto widgetu se nepodařilo načíst. Zkuste to znovu po obnovení stránky."
+      "loadFailed": "Údaje tohoto widgetu se nepodařilo načíst. Zkuste to znovu po obnovení stránky.",
+      "quiet": "Nic nečeká: {{list}}"
     }
   },
   "notFound": {

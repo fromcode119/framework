@@ -31,7 +31,7 @@ export class DashboardAttentionRow extends AdminComponent {
   render(): ReactNode {
     const item = this.item;
     return (
-      <div className="flex items-center gap-2.5 px-3 py-2">
+      <div className="flex items-center gap-2.5 px-4 py-2">
         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${this.dotClass}`} />
         <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
           {String(item.title)}

@@ -933,7 +933,8 @@
         }
       },
       "open": "Öppna",
-      "loadFailed": "Det gick inte att läsa in widgetens siffror. Läs in sidan igen för att försöka på nytt."
+      "loadFailed": "Det gick inte att läsa in widgetens siffror. Läs in sidan igen för att försöka på nytt.",
+      "quiet": "Inget väntar: {{list}}"
     }
   },
   "notFound": {

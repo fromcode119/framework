@@ -64,7 +64,7 @@ export class DashboardActivityFeed extends PureReactor {
           ))}
 
           {!hasMainContent && activity.length === 0 && !loadingActivity && (
-            <div className="py-12 flex flex-col items-center justify-center text-center">
+            <div data-empty-state className="py-12 flex flex-col items-center justify-center text-center">
                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-3">
                  <FrameworkIcons.Search size={20} className="text-slate-300" />
                </div>

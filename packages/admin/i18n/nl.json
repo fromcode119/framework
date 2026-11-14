@@ -933,7 +933,8 @@
         }
       },
       "open": "Openen",
-      "loadFailed": "De cijfers van deze widget konden niet worden geladen. Laad de pagina opnieuw om het nog eens te proberen."
+      "loadFailed": "De cijfers van deze widget konden niet worden geladen. Laad de pagina opnieuw om het nog eens te proberen.",
+      "quiet": "Niets openstaand: {{list}}"
     }
   },
   "notFound": {

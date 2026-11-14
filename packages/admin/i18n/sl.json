@@ -933,7 +933,8 @@
         }
       },
       "open": "Odpri",
-      "loadFailed": "Podatkov tega gradnika ni bilo mogoče naložiti. Za ponoven poskus znova naložite stran."
+      "loadFailed": "Podatkov tega gradnika ni bilo mogoče naložiti. Za ponoven poskus znova naložite stran.",
+      "quiet": "Nič ne čaka: {{list}}"
     }
   },
   "notFound": {

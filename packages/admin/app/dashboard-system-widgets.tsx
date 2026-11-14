@@ -14,7 +14,8 @@ import type { IDashboardWidgetDefinition } from '@/lib/dashboard/interfaces/dash
 
 /**
  * The console's own panels, offered as widgets like any plugin's. Listed in the order a fresh dashboard
- * shows them. The three slots plugins could fill before widgets existed are offered too — only when
+ * shows them. What a site's owner acts on is on by default; the system log, the server's memory and disk,
+ * the activity breakdown and the developer links are offered under Customize, off until someone adds them. The three slots plugins could fill before widgets existed are offered too — only when
  * something fills them — so an extension written against them keeps appearing, and can now be moved.
  */
 export class DashboardSystemWidgets {
@@ -28,13 +29,13 @@ export class DashboardSystemWidgets {
     onViewActivity: () => void;
     onNavigateFramework: () => void;
   }): IDashboardWidgetDefinition[] {
-    const widget = (id: string, size: DashboardWidgetSize, render: () => ReactNode): IDashboardWidgetDefinition => ({
+    const widget = (id: string, size: DashboardWidgetSize, render: () => ReactNode, defaultVisible = true): IDashboardWidgetDefinition => ({
       key: `system.${id}`,
       label: AdminI18n.t(`dashboard.widgets.system.${id}.label`),
       description: AdminI18n.t(`dashboard.widgets.system.${id}.description`),
       source: '',
       size,
-      defaultVisible: true,
+      defaultVisible,
       render,
     });
     const hasMain = (input.slots['admin.dashboard.main']?.length ?? 0) > 0;
@@ -45,10 +46,10 @@ export class DashboardSystemWidgets {
       widget('activityChart', DashboardWidgetSize.SMALL, () => <DashboardActivityChart activity={input.activity} days={14} scope={input.scope} />),
       widget('activityFeed', DashboardWidgetSize.MEDIUM, () => (
         <DashboardActivityFeed activity={input.activity} loadingActivity={input.loadingActivity} hasMainContent={hasMain} onViewAll={input.onViewActivity} />
-      )),
-      widget('system', DashboardWidgetSize.SMALL, () => <DashboardSystemPanel />),
-      widget('activityBreakdown', DashboardWidgetSize.SMALL, () => <DashboardActivityBreakdown activity={input.activity} />),
-      widget('support', DashboardWidgetSize.SMALL, () => <DashboardSupportCard onNavigateFramework={input.onNavigateFramework} />),
+      ), false),
+      widget('system', DashboardWidgetSize.SMALL, () => <DashboardSystemPanel />, false),
+      widget('activityBreakdown', DashboardWidgetSize.SMALL, () => <DashboardActivityBreakdown activity={input.activity} />, false),
+      widget('support', DashboardWidgetSize.SMALL, () => <DashboardSupportCard onNavigateFramework={input.onNavigateFramework} />, false),
       ...DashboardSystemWidgets.LEGACY_SLOTS
         .filter((slot) => (input.slots[slot]?.length ?? 0) > 0)
         .map((slot): IDashboardWidgetDefinition => ({

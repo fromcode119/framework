@@ -933,7 +933,8 @@
         }
       },
       "open": "Megnyitás",
-      "loadFailed": "A modul adatait nem sikerült betölteni. Az újrapróbáláshoz töltse újra az oldalt."
+      "loadFailed": "A modul adatait nem sikerült betölteni. Az újrapróbáláshoz töltse újra az oldalt.",
+      "quiet": "Nincs teendő: {{list}}"
     }
   },
   "notFound": {
