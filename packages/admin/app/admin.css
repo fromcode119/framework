@@ -66,6 +66,23 @@
   --fc-nav-sub-indent: 38px;
   --fc-record-gap: 14px;
 
+  /* The dashboard's look, in one place. Every widget — the console's own and every plugin's — is drawn
+   * by the shared card, figures and empty-state components, so an appearance or a later restyle changes
+   * these values (or the `.fc-dashboard` rules at the end of this file) and every widget follows. */
+  --fc-dashboard-gap: 12px;
+  --fc-dashboard-head-pad: 8px 16px;
+  --fc-dashboard-head-icon: 24px;
+  --fc-dashboard-body-pad: 12px 16px;
+  --fc-dashboard-quiet-text: 12px;
+  --fc-dashboard-stat-min: 150px;
+  --fc-dashboard-stat-label: 11px;
+  --fc-dashboard-stat-value: 18px;
+  --fc-dashboard-alert-accent: var(--fc-warning);
+  --fc-dashboard-alert-strong: var(--fc-warning-strong);
+  --fc-dashboard-alert-soft: var(--fc-warning-soft);
+  --fc-dashboard-alert-border: var(--fc-warning-soft-border);
+  --fc-dashboard-alert-tile: 32px;
+
   /* Status TINTS: a soft surface, a border, and text that reads on it.
    *
    * Declared for BOTH schemes, because a literal hex tint is the one thing that cannot adapt — an
@@ -1345,57 +1362,64 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 
 /* ── Dashboard ───────────────────────────────────────────────────────────────
-   One dense page: every widget is a compact card, 12px apart; figures read as a row of label + value,
-   not a tile each with an icon; a widget with nothing to show steps aside and is named on the
-   "nothing waiting" line (DashboardWidgetFrame / DashboardWidgetBoard). Scoped to `.fc-dashboard`, so the
-   same components keep their own look on a plugin's overview page. */
-.fc-dashboard { display: flex; flex-direction: column; gap: 12px; }
-.fc-dashboard__board { display: flex; flex-direction: column; gap: 12px; }
-.fc-dashboard__grid { --fc-dashboard-gap: 12px; gap: var(--fc-dashboard-gap); }
+   One dense page: every widget is a compact card; figures read as a row of label + value, not a tile
+   each with an icon; a widget with nothing to show steps aside and is named on the "nothing waiting"
+   line (DashboardWidgetFrame / DashboardWidgetBoard). Sizes and colours are the `--fc-dashboard-*`
+   values at the top of this file. Scoped to `.fc-dashboard`, so the same components keep their own look
+   on a plugin's overview page. */
+.fc-dashboard { display: flex; flex-direction: column; gap: var(--fc-dashboard-gap); }
+.fc-dashboard__board { display: flex; flex-direction: column; gap: var(--fc-dashboard-gap); }
+.fc-dashboard__grid { gap: var(--fc-dashboard-gap); }
 /* Packed: 1px rows, each widget spanning its own height plus the gap (DashboardWidgetFrame measures it). */
 .fc-dashboard__grid--packed { grid-auto-rows: 1px; row-gap: 0; }
 .fc-dashboard__widget--quiet { display: none; }
 .fc-dashboard__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .fc-dashboard__toolbar > :last-child { margin-inline-start: auto; }
-.fc-dashboard__quiet { flex: 1 1 16rem; min-width: 0; margin: 0; font-size: 12px; line-height: 1.5; color: var(--fc-text-muted); }
+.fc-dashboard__quiet { flex: 1 1 16rem; min-width: 0; margin: 0; font-size: var(--fc-dashboard-quiet-text); line-height: 1.5; color: var(--fc-text-muted); }
+/* Every widget has nothing to show: the board says so in one card instead of leaving an empty page. */
+.fc-dashboard__calm {
+  display: flex; align-items: center; gap: 12px; margin: 0; padding: var(--fc-dashboard-body-pad);
+  border: 1px solid var(--fc-border); border-radius: var(--radius); background: var(--fc-surface);
+  font-size: 13px; color: var(--fc-text-muted);
+}
+.fc-dashboard__calm svg { flex: none; color: var(--fc-success); }
 
-.fc-dashboard .fc-section-card__head { padding: 8px 16px; gap: 12px; }
-.fc-dashboard .fc-section-card__icon { height: 24px; width: 24px; border-radius: 6px; }
+.fc-dashboard .fc-section-card__head { padding: var(--fc-dashboard-head-pad); gap: 12px; }
+.fc-dashboard .fc-section-card__icon { height: var(--fc-dashboard-head-icon); width: var(--fc-dashboard-head-icon); border-radius: 6px; }
 .fc-dashboard .fc-section-card__icon svg { height: 14px; width: 14px; }
-.fc-dashboard .fc-widget-card > .p-4 { padding: 12px 16px; }
+.fc-dashboard .fc-widget-card > .p-4 { padding: var(--fc-dashboard-body-pad); }
 
-.fc-dashboard .fc-stats { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 16px; }
+.fc-dashboard .fc-stats { grid-template-columns: repeat(auto-fill, minmax(var(--fc-dashboard-stat-min), 1fr)); gap: 12px 16px; }
 .fc-dashboard .fc-stat { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; overflow: visible; }
 .fc-dashboard .fc-stat__head { margin: 0; }
 .fc-dashboard .fc-stat__icon { display: none; }
 .fc-dashboard .fc-stat__head:not(:has(> :not(.fc-stat__icon))) { display: none; }
-.fc-dashboard .fc-stat__label { margin: 0 0 2px; font-size: 11px; line-height: 1.35; }
-.fc-dashboard .fc-stat__value { font-size: 18px; font-variant-numeric: tabular-nums; }
-.fc-dashboard .fc-stat__sub { margin-top: 2px; padding-top: 0; border-top: 0; font-size: 11px; line-height: 1.35; }
+.fc-dashboard .fc-stat__label { margin: 0 0 2px; font-size: var(--fc-dashboard-stat-label); line-height: 1.35; }
+.fc-dashboard .fc-stat__value { font-size: var(--fc-dashboard-stat-value); font-variant-numeric: tabular-nums; }
+.fc-dashboard .fc-stat__sub { margin-top: 2px; padding-top: 0; border-top: 0; font-size: var(--fc-dashboard-stat-label); line-height: 1.35; }
 @media (max-width: 639px) {
   .fc-dashboard .fc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* The platform update, on one line: an accent tile and edge so it is not mistaken for a plain note. */
+/* The platform update, on one line: an accent tile and edge so it is not mistaken for a plain note.
+   Its colours are the warning tints, which html.dark redefines, so it needs no dark rule of its own. */
 .fc-update-alert {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
   padding: 8px 8px 8px 10px; border-radius: var(--radius);
-  border: 1px solid rgb(245 158 11 / 0.35); border-inline-start: 4px solid #f59e0b;
-  background: linear-gradient(90deg, rgb(245 158 11 / 0.12), rgb(245 158 11 / 0.03) 60%, var(--card));
-  box-shadow: 0 1px 2px rgb(245 158 11 / 0.12);
+  border: 1px solid var(--fc-dashboard-alert-border); border-inline-start: 4px solid var(--fc-dashboard-alert-accent);
+  background: linear-gradient(90deg, var(--fc-dashboard-alert-soft), var(--fc-surface) 70%);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--fc-dashboard-alert-accent) 15%, transparent);
 }
 .fc-update-alert__icon {
-  display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 8px;
-  background: #f59e0b; color: #fff; box-shadow: 0 4px 10px -4px rgb(245 158 11 / 0.7);
+  display: grid; place-items: center; flex: none;
+  width: var(--fc-dashboard-alert-tile); height: var(--fc-dashboard-alert-tile); border-radius: 8px;
+  background: var(--fc-dashboard-alert-accent); color: #fff;
+  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--fc-dashboard-alert-accent) 70%, transparent);
 }
 .fc-update-alert__text { flex: 1 1 14rem; min-width: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12px; line-height: 1.4; }
 .fc-update-alert__title { font-size: 13px; font-weight: 600; color: var(--fc-text); }
 .fc-update-alert__detail { color: var(--fc-text-muted); }
-.fc-update-alert__version { font-weight: 600; color: #b45309; }
+.fc-update-alert__version { font-weight: 600; color: var(--fc-dashboard-alert-strong); }
 .fc-update-alert__actions { display: flex; align-items: center; gap: 4px; margin-inline-start: auto; }
-.fc-update-alert__primary.fc-update-alert__primary { background: #d97706; color: #fff; }
-.fc-update-alert__primary.fc-update-alert__primary:hover { background: #b45309; }
-.dark .fc-update-alert,
-:root[data-theme='dark'] .fc-update-alert { background: linear-gradient(90deg, rgb(245 158 11 / 0.18), rgb(245 158 11 / 0.04) 60%, transparent); }
-.dark .fc-update-alert__version,
-:root[data-theme='dark'] .fc-update-alert__version { color: #fbbf24; }
+.fc-update-alert__primary.fc-update-alert__primary { background: var(--fc-dashboard-alert-accent); color: #fff; }
+.fc-update-alert__primary.fc-update-alert__primary:hover { background: color-mix(in srgb, var(--fc-dashboard-alert-accent) 85%, #000); }

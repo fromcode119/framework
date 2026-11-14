@@ -85,8 +85,12 @@ export class DashboardWidgetBoard extends AdminComponent {
       <div className="fc-dashboard__board">
         {this.renderToolbar(layout, byKey)}
         {this.editing ? <DashboardWidgetPicker available={DashboardLayout.available(definitions, layout)} onAdd={(definition: IDashboardWidgetDefinition) => this.commit(DashboardLayout.add(layout, definition))} /> : null}
-        {this.loaded && layout.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-[13px] text-slate-500 dark:border-slate-800">{AdminI18n.t('dashboard.widgets.empty')}</p>
+        {this.loaded && layout.length === 0 ? <p className="fc-dashboard__calm">{AdminI18n.t('dashboard.widgets.empty')}</p> : null}
+        {this.allQuiet(layout) ? (
+          <p className="fc-dashboard__calm">
+            <FrameworkIcons.CheckCircle size={18} aria-hidden />
+            <span>{AdminI18n.t('dashboard.widgets.quiet', { list: this.quietLabels(layout, byKey).join(' · ') })}</span>
+          </p>
         ) : null}
         <div className={`fc-dashboard__grid grid grid-flow-row-dense grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-3 ${this.editing ? '' : 'fc-dashboard__grid--packed'}`}>
           {this.loaded ? layout.map((entry, index) => this.renderWidget(entry, index, layout, byKey.get(entry.key)!)) : null}
@@ -116,13 +120,18 @@ export class DashboardWidgetBoard extends AdminComponent {
     );
   }
 
+  /** Every widget on the board has nothing to show: one calm card says so, instead of a bare line over an empty page. */
+  private allQuiet(layout: IDashboardLayoutEntry[]): boolean {
+    return this.loaded && !this.editing && layout.length > 0 && layout.every((entry) => this.quiet[entry.key]);
+  }
+
   /** The widgets with nothing to show, in the order they stand — the "nothing waiting" line names them. */
   private quietLabels(layout: IDashboardLayoutEntry[], byKey: Map<string, IDashboardWidgetDefinition>): string[] {
     return layout.filter((entry) => this.quiet[entry.key]).map((entry) => byKey.get(entry.key)?.label || '').filter(Boolean);
   }
 
   private renderToolbar(layout: IDashboardLayoutEntry[], byKey: Map<string, IDashboardWidgetDefinition>): ReactNode {
-    const quiet = this.editing ? [] : this.quietLabels(layout, byKey);
+    const quiet = this.editing || this.allQuiet(layout) ? [] : this.quietLabels(layout, byKey);
     return (
       <div className="fc-dashboard__toolbar">
         {quiet.length ? <p className="fc-dashboard__quiet">{AdminI18n.t('dashboard.widgets.quiet', { list: quiet.join(' · ') })}</p> : null}

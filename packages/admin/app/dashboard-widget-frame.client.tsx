@@ -64,7 +64,7 @@ export class DashboardWidgetFrame extends PureReactor {
     this.packed = null;
     if (!node || typeof MutationObserver === 'undefined') return;
     const check = () => {
-      const quiet = node.querySelector('[data-empty-state]') !== null;
+      const quiet = DashboardWidgetFrame.onlyEmpty(node);
       if (quiet !== this.reported) { this.reported = quiet; this.onQuietChange(quiet); }
       this.pack(node);
     };
@@ -72,6 +72,21 @@ export class DashboardWidgetFrame extends PureReactor {
     this.observer.observe(node, { childList: true, subtree: true });
     check();
   };
+
+  /**
+   * Quiet means the widget says nothing BUT its empty state: an empty state somewhere inside, and no other
+   * text outside the card's heading (its `header` or title). A widget with figures and one empty list keeps its card.
+   */
+  static onlyEmpty(node: HTMLElement): boolean {
+    if (!node.querySelector('[data-empty-state]')) return false;
+    const walker = node.ownerDocument.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      if (!text.textContent?.trim()) continue;
+      const parent = text.parentElement;
+      if (parent && !parent.closest('[data-empty-state], header, h1, h2, h3, h4, h5, h6')) return false;
+    }
+    return true;
+  }
 
   componentWillUnmount(): void {
     this.observer?.disconnect();
