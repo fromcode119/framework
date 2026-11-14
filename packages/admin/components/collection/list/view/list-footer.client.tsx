@@ -1,5 +1,4 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
@@ -8,7 +7,6 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Collection list footer (record count + export/import/API links). Pure presentational class. */
 export class ListFooter extends PureReactor {
-  @prop declare theme: ThemeMode;
   @prop declare slug: string;
   @prop declare total: number;
   @prop declare resolvedSlug: string;
@@ -19,18 +17,14 @@ export class ListFooter extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className={`mt-auto border-t py-6 backdrop-blur-3xl transition-all duration-300 ${
-        this.theme === ThemeMode.DARK
-          ? 'bg-slate-950/40 border-slate-800'
-          : 'bg-slate-50/50 border-slate-100'
-      }`}>
-        <div className="w-full px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="fc-list-actions">
+        <div>
+          <div className="fc-list-actions__row">
             {/* Was "Data Management Node // SLUG" over a pulsing dot, and "Connected to N records in
                 the system cluster." Both implied a distributed cluster topology that does not exist —
                 the same fabrication as the dashboard-footer "distributed cluster node" line. The
                 record count is real, so it stays; the invented infrastructure around it does not. */}
-            <p className="text-xs font-semibold text-slate-400 tracking-wide text-center md:text-start">
+            <p className="fc-list-actions__count">
               {AdminI18n.t(this.total === 1 ? 'collection.list.countOne' : 'collection.list.countMany', { count: this.total })}
             </p>
 

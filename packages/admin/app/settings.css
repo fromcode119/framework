@@ -271,3 +271,10 @@
   .fc-ext-row__meta { display: none; }
   .fc-ext-row { gap: 10px; }
 }
+
+/* ── Collection list: what the list itself offers, under the records ─────────────────────────── */
+/* Was a full-bleed bar with a blur and its own border, pretending to be window chrome; the count and
+   the export/import/API links are real controls, so they stay — as a plain line under the table. */
+.fc-list-actions { padding-top: 4px; }
+.fc-list-actions__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.fc-list-actions__count { font-size: 12px; font-weight: 600; color: var(--fc-text-muted); }

@@ -90,7 +90,7 @@ export class EditPageBody extends PureReactor {
     ) : null;
 
     return (
-    <div className="flex-1 w-full px-3 sm:px-6 py-4">
+    <div className="flex-1 w-full p-6">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password

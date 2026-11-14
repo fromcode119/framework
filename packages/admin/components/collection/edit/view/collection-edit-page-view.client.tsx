@@ -163,7 +163,7 @@ export class CollectionEditPageView extends Reactor {
     }
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className="w-full flex flex-col animate-in fade-in duration-500">
         {canSave ? null : (
           <div className="fc-scope-notice">
             <span className="fc-scope-notice__text">{AdminI18n.t('collection.edit.viewOnly')}</span>
