@@ -105,9 +105,8 @@ export class CollectionEditDerivations {
      * the one held back. What is held back is listed under "More" (see CollectionEditRecordMore).
      */
     const everySection = [...sidebarGrouped, ...mainFieldSections];
-    const focusedSectionTitle = CollectionEditRecordMore.focusedTitle(everySection, CollectionEditRecordMore.focusKey(self.props.searchParams));
-    const focus = focusedSectionTitle ? CollectionEditRecordMore.focusKey(self.props.searchParams) : '';
-    const draw = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => CollectionEditRecordMore.draw(sections, focus, formData, self.state.fieldErrors);
+    const openedSections = CollectionEditRecordMore.openKeys(self.props.searchParams);
+    const draw = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => CollectionEditRecordMore.draw(sections, openedSections, formData, self.state.fieldErrors);
     const sidebarFieldSections = draw(sidebarGrouped);
     /**
      * The main column is one column of cards, so its sections come in the order the collection declares
@@ -116,7 +115,7 @@ export class CollectionEditDerivations {
      */
     const standardMainFieldSections = draw(mainFieldSections);
     const fullWidthMainFieldSections: typeof standardMainFieldSections = [];
-    const moreSections = focus ? [] : CollectionEditRecordMore.rows(everySection, formData, self.state.fieldErrors);
+    const moreSections = CollectionEditRecordMore.rows(everySection, openedSections, formData, self.state.fieldErrors);
 
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
     // A read-only status is changed by the collection's own actions (a refund moves through the service
@@ -136,7 +135,7 @@ export class CollectionEditDerivations {
     return {
       collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
       sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections,
-      moreSections, focusedSection: focus ? { key: focus, title: focusedSectionTitle } : null,
+      moreSections, openedSections,
       // The status field shows its schema default until the operator picks one, and the default is what is
       // saved; the header showed the FIRST option instead (a new subscription read "Trial" above a field
       // reading "Pending"). Both now name the same value.

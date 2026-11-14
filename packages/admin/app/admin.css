@@ -668,14 +668,12 @@ html.dark {
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
 .fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
 .fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
-/* A focused section or the history reads as one column, at the width a record's main column has. */
-.fc-edit-columns__grid--focus { max-width: 48rem; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
   .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
   /* A side column with nothing in it (an invoice: every card is the record's own) keeps no empty third of
-     the page: the record reads as one column, as a focused section does. */
+     the page: the record reads as one column at the width of a record's main column. */
   .fc-edit-columns__grid--sidebar:not(:has(> .fc-edit-sticky > .fc-edit-column > *, > .fc-edit-sticky .fc-edit-top__grid > *)) { grid-template-columns: minmax(0, 1fr); max-width: 48rem; }
 }
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
@@ -838,7 +836,8 @@ html.dark {
 /* ── A collection list: a table where it fits, a card per record where it does not. ──
    Decided by the LIST's width, not the window's. The sidebar and an open sub-menu leave a 1280px
    window with a list under 700px wide, where a table of six columns overflows and the actions pinned
-   to its right edge cover whatever columns sit under them. */
+   to its right edge cover whatever columns sit under them. Each cell holds one line (see `.fc-dt-*`), so
+   from 48rem the table fits; below that a record is a card. */
 .fc-collection-list { container-type: inline-size; }
 /* A record's card in that list: three lines on a phone, two where the list has the width for it. */
 .fc-list-card__badge--inline { display: none; }
@@ -851,7 +850,7 @@ html.dark {
 }
 .fc-collection-list .fc-list-table,
 .fc-collection-list .fc-list-table-only { display: none; }
-@container (min-width: 960px) {
+@container (min-width: 48rem) {
   .fc-collection-list .fc-list-table { display: block; }
   .fc-collection-list .fc-list-table-only { display: block; }
   .fc-collection-list .fc-list-cards { display: none; }
@@ -865,14 +864,51 @@ tr.fc-drop-after > td, div.fc-drop-after { box-shadow: inset 0 -2px 0 0 rgb(99 1
 /* A group's heading under the pointer: the record joins that group, at its start. */
 tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 241); background: rgb(99 102 241 / 0.08); }
 
-/* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 960px.
+/* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 48rem.
    `cards={false}` opts a table out — the collection list above draws its own cards. */
 .fc-data-table { container-type: inline-size; }
 .fc-data-table .fc-data-table-rows { display: none; }
-@container (min-width: 960px) {
+@container (min-width: 48rem) {
   .fc-data-table .fc-data-table-rows { display: block; }
   .fc-data-table .fc-data-table-cards { display: none; }
 }
+
+/* ── A table of records ── one quiet frame, a light header row in sentence case, one line per record,
+   the row's controls at its end and the count with the pages at the foot, inside the same frame. */
+.fc-list-frame { border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); overflow: hidden; }
+.fc-dt { width: 100%; border-collapse: collapse; text-align: start; }
+.fc-dt-head { background: var(--fc-surface-muted); border-bottom: 1px solid var(--fc-border); }
+.fc-dt-th { height: 40px; padding: 0 12px; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: nowrap; }
+.fc-dt-th__inner { display: flex; align-items: center; gap: 4px; }
+.fc-dt-th--sortable { cursor: pointer; }
+.fc-dt-th--sortable:hover { color: var(--fc-text); }
+.fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline-end: 4px; }
+.fc-dt-th--actions, .fc-dt-td--actions { width: 1%; text-align: end; }
+.fc-dt-row { border-bottom: 1px solid var(--fc-border); transition: background-color .12s; }
+.fc-dt-row:last-child { border-bottom: 0; }
+.fc-dt-row:hover { background: var(--fc-surface-muted); }
+.fc-dt-row--link { cursor: pointer; }
+.fc-dt-row--selected { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
+.fc-dt-td { height: 48px; padding: 0 12px; vertical-align: middle; white-space: nowrap; }
+.fc-dt-td--actions { padding-inline: 4px 8px; }
+.fc-dt-cell { font-size: 13px; font-weight: 400; color: var(--fc-text); }
+/* A pinned cell is opaque, so the columns scrolling under it never show through; it follows its row. */
+.fc-dt-pinned { background: var(--fc-surface); }
+.fc-dt-head .fc-dt-pinned { background: var(--fc-surface-muted); }
+.fc-dt-row:hover > .fc-dt-pinned { background: var(--fc-surface-muted); }
+.fc-dt-row--selected > .fc-dt-pinned { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
+.fc-dt-pinned-edge { border-inline-end: 1px solid var(--fc-border); }
+.fc-dt-pinned-end { inset-inline-end: 0; position: sticky; border-inline-start: 1px solid var(--fc-border); }
+/* In a table the row's controls stay on its one line; a card lets them wrap. */
+.fc-dt-td--actions .fc-row-actions { flex-wrap: nowrap; }
+.fc-dt-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 8px 12px; border-top: 1px solid var(--fc-border); }
+.fc-dt-foot__count { margin: 0; font-size: 12px; color: var(--fc-text-muted); }
+.fc-dt-pages { display: flex; align-items: center; gap: 4px; }
+.fc-dt-pages__gap { padding-inline: 2px; font-size: 12px; color: var(--fc-text-muted); }
+.fc-dt-page { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--fc-text-muted); background: transparent; }
+.fc-dt-page:hover:not(:disabled) { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-dt-page:disabled { opacity: .4; cursor: default; }
+.fc-dt-page--current { background: var(--fc-surface-muted); color: var(--fc-text); font-weight: 600; box-shadow: inset 0 0 0 1px var(--fc-border); }
 
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
 .fc-edit-sticky { position: sticky; align-self: start; }
@@ -928,6 +964,12 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-sub__item:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
 .fc-nav-sub__item--active { color: var(--fc-nav-text); font-weight: 600; }
 .fc-nav-sub__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A sub-menu: one line for a group of pages, its pages one step further in while one of them is open. */
+.fc-nav-sub__group { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-sub__chevron { margin-inline-start: auto; display: inline-flex; color: var(--fc-nav-muted); transition: transform .15s; }
+.fc-nav-sub__group--open .fc-nav-sub__chevron { transform: rotate(90deg); }
+.fc-nav-sub__group--open > .fc-nav-sub__item--group { color: var(--fc-nav-text); }
+.fc-nav-sub__item--nested { padding-inline-start: calc(var(--fc-nav-sub-indent) + 12px); }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
 .fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }
@@ -1097,6 +1139,10 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   .fc-record-card--editing .fc-record-part,
   .fc-record-card--editing .fc-record-card__menu { display: none; }
 }
+
+/* While a section is being edited it carries its own Cancel / Save; the page's save bar would offer the
+   same save a second time for the same change, so it steps aside until the section is closed. */
+body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 
 /* ── A saved record's section card ───────────────────────────────────────────────────────────────────
  * RecordSectionCard: the values that are set, as label / value rows; Edit opens the sheet. */

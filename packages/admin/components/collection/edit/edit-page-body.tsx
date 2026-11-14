@@ -44,7 +44,7 @@ export class EditPageBody extends PureReactor {
     // A new record can offer none of the correlation keys, so there is no question to ask yet.
     const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
     const navigate = (href: string) => edit.router?.push(href);
-    const history = !isNew && edit.focusedSection?.key === CollectionEditRecordMore.HISTORY;
+    const history = !isNew && edit.openedSections.includes(CollectionEditRecordMore.HISTORY);
     const slotProps = { formData, setFormData, isNew, handleSubmit, saving };
     const sectionSlotBase = `admin.collection.${slug}.edit.section`;
     // Side sections are matched by title: that is the name a collection's `recordLinks.parts` gives them.
@@ -53,10 +53,7 @@ export class EditPageBody extends PureReactor {
     // A part mapped to a section no field names is drawn as a side card of its own, so it is placed too.
     if (recordLinks && renderSidebar) mainSectionKeys.push(...recordLinks.sectionsWithoutFields(mainSectionKeys).map((section) => section.title));
 
-    // A focused section or the history is a page of one thing: one column, and the side card it may be
-    // stands in it, instead of beside an empty column.
-    const focused = Boolean(edit.focusedSection);
-    const sideBySide = renderSidebar && !focused;
+    const sideBySide = renderSidebar;
     const sidebar = renderSidebar ? (
       <EditPageSidebar
         slug={slug}
@@ -88,7 +85,6 @@ export class EditPageBody extends PureReactor {
         navigate={navigate}
         sectionSlotBase={sectionSlotBase}
         slotProps={slotProps}
-        focused={focused}
         fieldSectionKeys={[...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key)).concat(sidebarFieldSections.map((section: any) => String(section.title)))}
       />
     ) : null;
@@ -161,7 +157,7 @@ export class EditPageBody extends PureReactor {
               third of that squeezed every field into a sliver. Below the width a sidebar fits beside the
               form, it moves under it. */}
           <div className="fc-edit-columns">
-          <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}${focused ? ' fc-edit-columns__grid--focus' : ''}`}>
+          <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}`}>
           <div className="fc-edit-column">
             {this.head}
             <EditPageMain
@@ -191,13 +187,13 @@ export class EditPageBody extends PureReactor {
               slotProps={slotProps}
             />
             {/* What is linked to this record and has no section of its own on this page. */}
-            {recordLinks && !history && (
+            {recordLinks && (
               <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
-            {/* When the record was made and changed, and its versions: a page of their own, opened from the
-                record's ⋯ menu like the held-back sections, so the record itself is all the record shows. */}
+            {/* When the record was made and changed, and its versions: opened from the record's ⋯ menu like
+                the held-back sections, under the record, which stays whole. */}
             {history && (
-              <>
+              <div id={CollectionEditRecordMore.anchorId(CollectionEditRecordMore.HISTORY)} className="space-y-4">
                 <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />
                 <SidebarVersions
                   revisions={revisions}
@@ -211,9 +207,8 @@ export class EditPageBody extends PureReactor {
                   formData={formData}
                   fields={collection?.fields ?? []}
                 />
-              </>
+              </div>
             )}
-            {focused ? sidebar : null}
             {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
           </div>
 

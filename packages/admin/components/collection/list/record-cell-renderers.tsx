@@ -69,8 +69,9 @@ export class RecordCellRenderers {
       // Fields typed as "date" (date-only pickers) render without the time component.
       // Show time only for explicit datetime fields. Date fields and system
       // timestamp columns (createdAt/updatedAt) render date-only in list view.
+      // A list cell holds one line, so a moment is read to the minute: seconds only widen the column.
       const isDateOnly = field?.type !== 'datetime';
-      return isDateOnly ? date.toLocaleDateString() : date.toLocaleString();
+      return isDateOnly ? date.toLocaleDateString() : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
     }
 
     if (Array.isArray(field?.options) && field.options.length) {

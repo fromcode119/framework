@@ -174,7 +174,7 @@ export class CollectionEditPageView extends Reactor {
           advancedView={this.advancedView}
           crumbs={edit.isNew ? null : (
             <EditRecordCrumbs
-              pluginSlug={pluginSlug} slug={slug} id={id} focusedSection={edit.focusedSection}
+              pluginSlug={pluginSlug} slug={slug}
               listLabel={CollectionListUtils.resolveCollectionLabel(collection, slug)} title={edit.resolvedTitleValue || String(id)}
             />
           )}
@@ -188,8 +188,8 @@ export class CollectionEditPageView extends Reactor {
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
               handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
               canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
-              isDirty={edit.isDirty}
-              moreSections={edit.moreSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.push(href)}
+              isDirty={edit.isDirty} saveBar={!edit.hideFooter && canSave}
+              moreSections={edit.moreSections} openedSections={edit.openedSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.replace(href, { scroll: false })}
             />
           )}
         />

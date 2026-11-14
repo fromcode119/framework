@@ -1,7 +1,8 @@
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop, ref, Platform } from '@fromcode119/react-class-components';
-import { Slot } from '@fromcode119/react';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { NavSectionPages } from '@/lib/nav-section-pages';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 
@@ -101,24 +102,42 @@ export class NavItemView extends PureReactor {
 
         {open && !isMini && pages.length > 0 ? (
           <div className="fc-nav-sub">
-            {pages.map((page) => {
-              const path = NavUtils.normalizePath(page.path);
-              const current = path === activePage;
-              return (
-                <AdminLink
-                  key={path}
-                  href={page.path}
-                  onClick={onClick}
-                  aria-current={current ? 'page' : undefined}
-                  className={`fc-nav-sub__item${current ? ' fc-nav-sub__item--active' : ''}`}
-                >
-                  <span className="fc-nav-sub__label">{page.sourcePlugin ? AdminNavText.panelLabel(page) : AdminNavText.menuLabel(page)}</span>
-                  {this.renderTrailing(page.path, current, false)}
-                </AdminLink>
-              );
-            })}
+            {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
+              ? this.renderPage(entry.page, activePage)
+              : this.renderGroup(entry, activePage)))}
           </div>
         ) : null}
+      </div>
+    );
+  }
+
+  private renderPage(page: any, activePage: string, nested = false): ReactNode {
+    const path = NavUtils.normalizePath(page.path);
+    const current = path === activePage;
+    return (
+      <AdminLink
+        key={path}
+        href={page.path}
+        onClick={this.onClick}
+        aria-current={current ? 'page' : undefined}
+        className={`fc-nav-sub__item${nested ? ' fc-nav-sub__item--nested' : ''}${current ? ' fc-nav-sub__item--active' : ''}`}
+      >
+        <span className="fc-nav-sub__label">{page.sourcePlugin ? AdminNavText.panelLabel(page) : AdminNavText.menuLabel(page)}</span>
+        {this.renderTrailing(page.path, current, false)}
+      </AdminLink>
+    );
+  }
+
+  /** A sub-menu: its name leads to its first page, and its pages show under it while one of them is open. */
+  private renderGroup(entry: { name: string; pages: any[] }, activePage: string): ReactNode {
+    const open = NavSectionPages.holds(entry, activePage);
+    return (
+      <div key={`group:${entry.name}`} className={`fc-nav-sub__group${open ? ' fc-nav-sub__group--open' : ''}`}>
+        <AdminLink href={entry.pages[0].path} onClick={this.onClick} aria-expanded={open} className="fc-nav-sub__item fc-nav-sub__item--group">
+          <span className="fc-nav-sub__label">{entry.name}</span>
+          <span className="fc-nav-sub__chevron" aria-hidden="true"><FrameworkIcons.ChevronRight size={14} /></span>
+        </AdminLink>
+        {open ? entry.pages.map((page) => this.renderPage(page, activePage, true)) : null}
       </div>
     );
   }

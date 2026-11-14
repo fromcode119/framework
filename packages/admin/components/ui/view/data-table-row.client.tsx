@@ -9,8 +9,8 @@ import { Column } from '@/components/ui/column';
  *
  * Pinned cells carry their own OPAQUE background, because the row's hover and selected tints are
  * translucent and a pinned cell wearing one would let the scrolled columns show through it. The tints
- * are therefore restated here in opaque form and driven off the row's `group` hover, so a pinned cell
- * still highlights with the row it belongs to instead of sitting there as a white gap.
+ * are therefore restated in opaque form (`.fc-dt-pinned` in admin.css) and follow the row's hover, so a
+ * pinned cell still highlights with the row it belongs to instead of sitting there as a white gap.
  */
 export class DataTableRow<T extends { id: any }> extends PureReactor {
   declare props: Pick<DataTableRow<T>, 'row' | 'columns' | 'selectable' | 'selected' | 'onToggleOne' | 'onRowClick' | 'actions' | 'stickyCount' | 'stickyOffsets' | 'stickyActions' | 'className'>;
@@ -30,9 +30,7 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
 
   private get pinnedClass(): string {
     // Opaque base + opaque restatements of the row states, so a pinned cell tracks its row.
-    return `sticky z-10 ${this.selected
-      ? 'bg-indigo-50 dark:bg-slate-900'
-      : 'bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800'}`;
+    return 'sticky z-10 fc-dt-pinned';
   }
 
   @bound private handleRowClick(): void {
@@ -50,12 +48,12 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
     return (
       <tr
         data-row-id={String(row.id)}
-        className={`group transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${this.onRowClick ? 'cursor-pointer' : ''} ${selected ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''} ${this.className || ''}`}
+        className={`fc-dt-row ${this.onRowClick ? 'fc-dt-row--link' : ''} ${selected ? 'fc-dt-row--selected' : ''} ${this.className || ''}`}
         onClick={this.handleRowClick}
       >
         {selectable && (
           <td
-            className={`px-3 py-2.5 w-4 ${stickyCount > 0 ? this.pinnedClass : ''}`}
+            className={`fc-dt-td fc-dt-td--check ${stickyCount > 0 ? this.pinnedClass : ''}`}
             style={stickyCount > 0 ? { insetInlineStart: stickyOffsets[0] ?? 0 } : undefined}
             onClick={this.handleToggleOne}
           >
@@ -69,20 +67,17 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
           return (
             <td
               key={col.id}
-              className={`px-3 py-2.5 ${isPinned ? this.pinnedClass : ''} ${isPinned && index === stickyCount - 1 ? 'border-e border-slate-200 dark:border-slate-700' : ''} ${col.className || ''}`}
+              className={`fc-dt-td ${isPinned ? this.pinnedClass : ''} ${isPinned && index === stickyCount - 1 ? 'fc-dt-pinned-edge' : ''} ${col.className || ''}`}
               style={isPinned ? { insetInlineStart: columnOffsetAt(index) } : undefined}
             >
-              <div className="text-[13px] font-semibold tracking-tight text-slate-700 dark:text-slate-300">
+              <div className="fc-dt-cell">
                 {typeof col.accessor === 'function' ? col.accessor(row) : (String(row[col.accessor]) || '-')}
               </div>
             </td>
           );
         })}
         {actions && (
-          <td className={`px-3 py-2 text-end ${this.stickyActions
-            ? `sticky end-0 z-10 border-s border-slate-200 dark:border-slate-700 ${selected ? 'bg-indigo-50 dark:bg-slate-900' : 'bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800'}`
-            : ''}`}
-          >
+          <td className={`fc-dt-td fc-dt-td--actions ${this.stickyActions ? 'sticky end-0 z-10 fc-dt-pinned fc-dt-pinned-end' : ''}`}>
             {actions(row)}
           </td>
         )}

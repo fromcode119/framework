@@ -32,9 +32,9 @@ export class ListColumnDecorator {
         accessor = ListColumnDecorator.inline(accessor, field, context);
       }
       if (column.id === context.layout.titleField) {
-        // The title is what a row is read by; without a floor it is the column the table squeezes
-        // first, down to one word per line.
-        return { ...column, accessor: ListColumnDecorator.title(accessor, context.layout, visible), className: `${column.className || ''} min-w-[14rem]` };
+        // The title is what a row is read by. A table cell holds one line, so a long title ends in "…"
+        // at 28rem instead of pushing every other column off the screen.
+        return { ...column, accessor: ListColumnDecorator.title(accessor, context.layout, visible) };
       }
       return accessor === column.accessor ? column : { ...column, accessor };
     });
@@ -82,12 +82,12 @@ export class ListColumnDecorator {
     const showNumber = !visible.has('id');
     if (!showMedia && !showNumber) return accessor;
     return (row: any) => (
-      <div className="flex items-center gap-3 min-w-[14rem] max-w-[28rem]">
+      <div className="flex items-center gap-3 max-w-[28rem]">
         {showMedia && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
           ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
           : null}
         <div className="min-w-0">
-          <div className="line-clamp-2 text-slate-900 dark:text-slate-100">{accessor(row)}</div>
+          <div className="truncate text-slate-900 dark:text-slate-100">{accessor(row)}</div>
           {showNumber ? <div className="mt-0.5 text-[12px] font-medium text-slate-400">#{row.id}</div> : null}
         </div>
       </div>

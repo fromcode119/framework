@@ -45,14 +45,21 @@ export class EditHeader extends PureReactor {
    * so the page-wide Save appears only when something outside a sheet (a status, an inline table) changed.
    */
   @prop declare isDirty?: boolean;
+  /**
+   * The page has its save bar (Cancel / Save at the foot, shown whenever there is something to save). Then
+   * the header offers no Save of its own: two buttons doing one save is one too many.
+   */
+  @prop declare saveBar?: boolean;
   /** Whether the signed-in user may delete it. */
   @prop declare canDelete: boolean;
   /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
   @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
   @prop declare advancedView: boolean;
   @prop declare setAdvancedView: (next: boolean) => void;
-  /** Sections holding fields the record does not draw; each opens on its own page from the ⋯ menu. */
+  /** Sections holding fields the record does not draw; each opens in place from the ⋯ menu. */
   @prop declare moreSections?: Array<{ key: string; title: string; count: number }>;
+  /** The sections already opened in place, which a newly opened one joins. */
+  @prop declare openedSections?: string[];
   /** The record's own address, which those menu rows extend with the section they open. */
   @prop declare recordHref?: string;
   @prop declare navigate?: (href: string) => void;
@@ -150,7 +157,7 @@ export class EditHeader extends PureReactor {
           ) : null}
           <Slot name={`admin.collection.${slug}.edit.header.actions`} include={this.includeAction} props={slotProps} />
           <Slot name="admin.collection.edit.header.actions" include={this.includeAction} props={slotProps} />
-          {collection?.admin?.hideHeaderPrimaryAction !== true && this.canSave && (isNew || this.isDirty) ? (
+          {collection?.admin?.hideHeaderPrimaryAction !== true && !this.saveBar && this.canSave && (isNew || this.isDirty) ? (
             <Button onClick={this.onSave} isLoading={saving} icon={<FrameworkIcons.Save size={14} />}>
               {AdminI18n.t(isNew ? 'common.create' : 'common.save')}
             </Button>
@@ -162,7 +169,7 @@ export class EditHeader extends PureReactor {
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
               canArchive={this.canSave && CollectionArchive.isArchivable(collection)}
               canDelete={this.canDelete} onDelete={this.onDelete}
-              moreSections={this.moreSections || []} recordHref={this.recordHref || ''} navigate={this.navigate}
+              moreSections={this.moreSections || []} openedSections={this.openedSections || []} recordHref={this.recordHref || ''} navigate={this.navigate}
               actions={(
                 <>
                   <Slot name={`admin.collection.${slug}.edit.header.menu`} include={this.includeAction} props={slotProps} />

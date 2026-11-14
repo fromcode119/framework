@@ -179,11 +179,8 @@ export class CollectionListTable extends PureReactor {
     );
   }
 
-  @bound private tableActions(row: any): ReactNode {
-    return this.actionsFor(row, false);
-  }
-
-  @bound private cardActions(row: any): ReactNode {
+  /** The table's row and the card share the short set: the less used actions live in the row's ⋯ menu. */
+  @bound private rowActions(row: any): ReactNode {
     return this.actionsFor(row, true);
   }
 
@@ -215,9 +212,7 @@ export class CollectionListTable extends PureReactor {
     return (
       <>
         <Slot name={`admin.collection.${this.slotSlug}.list.top`} props={slotProps} />
-        <div className={`rounded-xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
-          this.theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-sm' : 'bg-white border-white shadow-xl'
-        }`}>
+        <div className="fc-list-frame">
           <div className="fc-list-table">
             <DataTable
               cards={false}
@@ -237,7 +232,7 @@ export class CollectionListTable extends PureReactor {
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}
               expandedRowId={this.quickEditExpandedId}
-              actions={this.tableActions}
+              actions={this.rowActions}
               renderExpandedRow={this.renderQuickEdit}
               sections={sections}
               sectionClassName={this.sectionClass}
@@ -256,7 +251,7 @@ export class CollectionListTable extends PureReactor {
               pageSize={this.pageSize}
               onPageChange={this.onPageChange}
               onOpen={this.onRowClick}
-              renderActions={this.cardActions}
+              renderActions={this.rowActions}
               renderExpanded={this.renderQuickEdit}
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}

@@ -3,7 +3,7 @@ import { CollectionEditDerivations } from '@/components/collection/edit/view/col
 
 /**
  * `admin.level` says how often an operator needs a field. A record draws its everyday fields; every section
- * holding more is one "More" row, opening that section on its own page (`?section=<key>`) with all of it.
+ * holding more is one "More" row, opening that section in place (`?section=<key>,…`) with all of it.
  * A field the save depends on is drawn on the record whatever its level.
  */
 const selfFor = (fields: any[], state: Record<string, unknown> = {}, query = '') => ({
@@ -25,22 +25,31 @@ describe('CollectionEditDerivations — what a record draws and lists under More
   it('lists each section holding more as one row, with how many fields it adds', () => {
     const d = CollectionEditDerivations.build(selfFor([name, { ...cost, admin: { level: 'occasional', section: 'Costs' } }, key]));
     expect(d.moreSections.map((row: any) => [row.title, row.count])).toEqual([[expect.any(String), 1], ['Costs', 1]]);
-    expect(d.focusedSection).toBeNull();
+    expect(d.openedSections).toEqual([]);
   });
 
-  it('opens one section on its own page with every field of it, and lists nothing more there', () => {
+  it('opens a section in place: the record stays whole and the section gains every field of it', () => {
     const costs = { ...cost, admin: { level: 'occasional', section: 'Costs' } };
-    const listed = CollectionEditDerivations.build(selfFor([name, costs])).moreSections;
-    const d = CollectionEditDerivations.build(selfFor([name, costs], {}, `section=${listed[0].key}`));
-    expect(names(d)).toEqual(['cost']);
-    expect(d.focusedSection).toEqual({ key: listed[0].key, title: 'Costs' });
+    const listed = CollectionEditDerivations.build(selfFor([name, costs, key])).moreSections;
+    const costsKey = listed.find((row: any) => row.title === 'Costs').key;
+    const d = CollectionEditDerivations.build(selfFor([name, costs, key], {}, `section=${costsKey}`));
+    expect(names(d)).toEqual(['name', 'cost']);
+    expect(d.openedSections).toEqual([costsKey]);
+    expect(d.moreSections.map((row: any) => row.key)).not.toContain(costsKey);
+    expect(d.moreSections).toHaveLength(1);
+  });
+
+  it('keeps several sections open, named in the address', () => {
+    const costs = { ...cost, admin: { level: 'occasional', section: 'Costs' } };
+    const keys = CollectionEditDerivations.build(selfFor([name, costs, key])).moreSections.map((row: any) => row.key);
+    const d = CollectionEditDerivations.build(selfFor([name, costs, key], {}, `section=${keys.join(',')}`));
+    expect(names(d).sort()).toEqual(['cost', 'name', 'replayKey']);
     expect(d.moreSections).toEqual([]);
   });
 
-  it('falls back to the record when a link names no section', () => {
+  it('shows the record as it is when a link names no section', () => {
     const d = CollectionEditDerivations.build(selfFor([name, cost], {}, 'section=gone'));
     expect(names(d)).toEqual(['name']);
-    expect(d.focusedSection).toBeNull();
   });
 
   it('treats an undeclared level as everyday, so an untagged collection lists nothing more', () => {

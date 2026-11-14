@@ -6,9 +6,13 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * What a record page draws, and what it lists under "More".
  *
  * A record opens on its everyday fields (`admin.level`, undeclared = everyday). Every section that holds
- * a field above that is one row of the "More" card — its title and how many fields it adds — and the row
- * opens the section on its own page (`?section=<key>`) with ALL its fields. Nothing is folded away in
- * place and nothing is out of reach: each held-back field is one click from the record, under its name.
+ * a field above that is one row of the ⋯ menu's "More" — its title and how many fields it adds. Choosing
+ * a row OPENS that section in place: the record stays whole, the section is drawn with all its fields
+ * where the collection declares it, and the page scrolls to it. Opened sections are named in the address
+ * (`?section=<key>,<key>`), so a reload or a shared link shows the same page.
+ *
+ * Opening one section on a page of its own was tried and rejected: the record disappeared around a small
+ * card of three fields, which read as if everything else had been removed.
  *
  * A field the save depends on (one with an error, or required and still empty) is drawn on the record
  * itself whatever its level, so a save never fails on something the operator cannot see.
@@ -18,45 +22,53 @@ export class CollectionEditRecordMore {
   /** The record's own history (when it was made and changed, and its versions), opened like a section. */
   static readonly HISTORY = 'record-history';
 
-  /** The section a `?section=` link asks for; '' on the record itself. */
-  static focusKey(searchParams: URLSearchParams | null | undefined): string {
-    return String(searchParams?.get(CollectionEditRecordMore.PARAM) || '').trim();
+  /** The sections the address opens; none on the record as it first opens. */
+  static openKeys(searchParams: URLSearchParams | null | undefined): string[] {
+    return String(searchParams?.get(CollectionEditRecordMore.PARAM) || '')
+      .split(',').map((key) => key.trim()).filter(Boolean);
+  }
+
+  /** The address with one more section opened. */
+  static hrefOpening(recordHref: string, opened: string[], key: string): string {
+    const keys = opened.includes(key) ? opened : [...opened, key];
+    return `${recordHref}?${CollectionEditRecordMore.PARAM}=${keys.map(encodeURIComponent).join(',')}`;
+  }
+
+  /**
+   * The element a section is drawn in, to scroll to once it is open. A side section is listed here as
+   * `side:<title>` but its card is drawn as `sidebar-<title>` (the key its edit sheet answers to).
+   */
+  static anchorId(key: string): string {
+    const side = 'side:';
+    return key.startsWith(side) ? `section-sidebar-${key.slice(side.length)}` : `section-${key}`;
   }
 
   static title(section: { title?: string }): string {
     return String(section?.title || AdminI18n.t('collection.edit.content'));
   }
 
-  /**
-   * The sections to draw. Focused on a section that exists, that section alone with every field; else every
-   * section narrowed to what the record shows, empty ones dropped.
-   */
+  /** Every section: an opened one with all its fields, the others narrowed to what the record shows. */
   static draw<T extends { key: string; fields: any[] }>(
-    sections: T[], focus: string, formData: Record<string, unknown>, fieldErrors: Record<string, unknown>,
+    sections: T[], opened: string[], formData: Record<string, unknown>, fieldErrors: Record<string, unknown>,
   ): T[] {
-    if (focus) return sections.filter((section) => String(section.key) === focus);
     return sections
-      .map((section) => ({ ...section, fields: section.fields.filter((field: any) => CollectionEditFieldDepth.shows(field, FieldLevel.EVERYDAY, formData, fieldErrors)) }))
+      .map((section) => (opened.includes(String(section.key))
+        ? section
+        : { ...section, fields: section.fields.filter((field: any) => CollectionEditFieldDepth.shows(field, FieldLevel.EVERYDAY, formData, fieldErrors)) }))
       .filter((section) => section.fields.length > 0);
   }
 
-  /** One row per section holding fields the record does not draw: its key, title and how many. */
+  /** One row per section, not yet opened, holding fields the record does not draw: its key, title and how many. */
   static rows(
-    sections: Array<{ key: string; title?: string; fields: any[] }>, formData: Record<string, unknown>, fieldErrors: Record<string, unknown>,
+    sections: Array<{ key: string; title?: string; fields: any[] }>, opened: string[], formData: Record<string, unknown>, fieldErrors: Record<string, unknown>,
   ): Array<{ key: string; title: string; count: number }> {
     return sections
+      .filter((section) => !opened.includes(String(section.key)))
       .map((section) => ({
         key: String(section.key),
         title: CollectionEditRecordMore.title(section),
         count: section.fields.filter((field: any) => !CollectionEditFieldDepth.shows(field, FieldLevel.EVERYDAY, formData, fieldErrors)).length,
       }))
       .filter((row) => row.count > 0);
-  }
-
-  /** The focused section's title for the breadcrumb, or '' when the key names no section (a stale link). */
-  static focusedTitle(sections: Array<{ key: string; title?: string }>, focus: string): string {
-    if (focus === CollectionEditRecordMore.HISTORY) return AdminI18n.t('collection.edit.versions');
-    const found = focus ? sections.find((section) => String(section.key) === focus) : undefined;
-    return found ? CollectionEditRecordMore.title(found) : '';
   }
 }

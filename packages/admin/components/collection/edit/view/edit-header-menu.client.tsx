@@ -41,9 +41,11 @@ export class EditHeaderMenu extends Reactor {
   @prop declare canDelete: boolean;
   @prop declare onDelete: () => void;
 
-  /** Sections holding fields the record does not draw: one row each, opening the section on its own page. */
+  /** Sections holding fields the record does not draw: one row each, opening the section in place. */
   @prop declare moreSections: Array<{ key: string; title: string; count: number }>;
-  /** The record's own address; a row adds `?section=<key>` to it. */
+  /** The sections already open, which the one chosen joins in the address. */
+  @prop declare openedSections: string[];
+  /** The record's own address; a row adds the sections opened to it (`?section=a,b`). */
   @prop declare recordHref: string;
   @prop declare navigate?: (href: string) => void;
 
@@ -110,21 +112,41 @@ export class EditHeaderMenu extends Reactor {
 
   /**
    * "More": every section the record does not draw, by title and how many fields it adds, and the record's
-   * history (when it was made and changed, and its versions). Each opens on its own page; nothing folds
-   * open in place and nothing is out of reach.
+   * history (when it was made and changed, and its versions). Choosing one opens it ON the record — the
+   * section gains its other fields where it stands, or appears where the collection declares it — and the
+   * page scrolls to it. The record never gives way to a page of one section.
    */
   private pageItems(): IDropdownItem[] {
     if (!this.recordHref || !this.navigate) return [];
-    const open = (key: string) => () => this.navigate?.(`${this.recordHref}?${CollectionEditRecordMore.PARAM}=${encodeURIComponent(key)}`);
+    const opened = this.openedSections || [];
+    const open = (key: string) => () => {
+      this.navigate?.(CollectionEditRecordMore.hrefOpening(this.recordHref, opened, key));
+      EditHeaderMenu.scrollToOpened(key);
+    };
     const rows: IDropdownItem[] = this.moreSections.map((section) => ({
       label: section.title,
       detail: AdminI18n.t(section.count === 1 ? 'collection.edit.moreOneField' : 'collection.edit.moreFields', { count: section.count }),
       icon: <FrameworkIcons.Right size={15} />,
       onClick: open(section.key),
     }));
-    rows.push({ label: AdminI18n.t('collection.edit.versions'), icon: <FrameworkIcons.Clock size={15} />, onClick: open(CollectionEditRecordMore.HISTORY) });
-    rows[0].section = AdminI18n.t('collection.edit.more');
+    if (!opened.includes(CollectionEditRecordMore.HISTORY)) {
+      rows.push({ label: AdminI18n.t('collection.edit.versions'), icon: <FrameworkIcons.Clock size={15} />, onClick: open(CollectionEditRecordMore.HISTORY) });
+    }
+    if (rows.length) rows[0].section = AdminI18n.t('collection.edit.more');
     return rows;
+  }
+
+  /**
+   * Scroll to a section once the page has drawn it. It is drawn on the next render after the address
+   * changes, so this waits for the element (a few frames at most) rather than guessing a delay.
+   */
+  private static scrollToOpened(key: string, attemptsLeft = 30): void {
+    const element = document.getElementById(CollectionEditRecordMore.anchorId(key));
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (attemptsLeft > 0) requestAnimationFrame(() => EditHeaderMenu.scrollToOpened(key, attemptsLeft - 1));
   }
 
   render(): ReactNode {

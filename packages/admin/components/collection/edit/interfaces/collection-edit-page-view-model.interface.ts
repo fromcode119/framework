@@ -55,8 +55,8 @@ export interface ICollectionEditPageViewModel {
   fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
   /** The sections holding fields the record does not draw, one "More" row each (CollectionEditRecordMore). */
   moreSections: Array<{ key: string; title: string; count: number }>;
-  /** The section a `?section=` link opened on its own page; null on the record itself. */
-  focusedSection: { key: string; title: string } | null;
+  /** The sections the address opened in place (`?section=a,b`), the history among them; none at first. */
+  openedSections: string[];
   handleInputChange: (name: string, value: any) => void;
   handlePatch: (partial: Record<string, any>) => void;
   handleDelete: () => Promise<void>;

@@ -45,8 +45,6 @@ export class EditPageSidebar extends PureReactor {
   @prop declare navigate?: (href: string) => void;
   /** Every section the page draws from fields, main and side: a part mapped to none of them gets its own card. */
   @prop declare fieldSectionKeys?: string[];
-  /** One section (or the record's history) is open on its own page: no other card is drawn beside it. */
-  @prop declare focused?: boolean;
   /** Names each section's slots (`<base>.<section>.head|body|menu`); see RecordSectionCard. */
   @prop declare sectionSlotBase?: string;
   @prop declare slotProps?: Record<string, any>;
@@ -123,7 +121,7 @@ export class EditPageSidebar extends PureReactor {
   /** The record's side sections, each part-only card right after the section it declares `after`. */
   private renderSections(): ReactNode[] {
     const sections = this.hasSidebarFields ? this.sidebarFieldSections : [];
-    const partSections = !this.isNew && !this.focused && this.recordLinks ? this.recordLinks.sectionsWithoutFields(this.fieldSectionKeys || []) : [];
+    const partSections = !this.isNew && this.recordLinks ? this.recordLinks.sectionsWithoutFields(this.fieldSectionKeys || []) : [];
     const placed = new Set<string>();
     const out: ReactNode[] = [];
     for (const section of sections) {

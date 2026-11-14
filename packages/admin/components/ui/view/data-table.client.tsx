@@ -253,7 +253,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
           </div>
         ) : null}
         <div className="overflow-x-auto fc-data-table-rows" ref={this.scroller}>
-          <table className="w-full text-start border-collapse min-w-[600px]">
+          <table className="fc-dt">
             <DataTableHead
               columns={columns}
               rowRef={this.headRow}
@@ -268,7 +268,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
               stickyOffsets={this.stickyOffsets}
               stickyActions={this.isActionsPinned}
             />
-            <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
+            <tbody>
               {this.renderBody(data, columns, totalColumns, selectedIds)}
             </tbody>
           </table>
