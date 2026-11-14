@@ -2,7 +2,7 @@
 export interface IAutomaticUpdatePlan {
   current: string;
   target: string;
-  /** `requested` | `automatic` | `heldBreaking` | `heldFailed` | `off` | `current` | `unknown` */
+  /** `requested` | `automatic` | `heldBreaking` | `heldFailed` | `heldRolling` | `off` | `current` | `unknown` */
   reason: string;
   /** The version that holds an automatic update back (breaking, or failed here before); '' when none. */
   heldBy: string;

@@ -12,7 +12,8 @@ import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.
  *    column would break the old one for that minute. A purely additive one (a new table, a new index)
  *    says so, and rolls;
  *  - the box does not have the memory to run a second copy of the largest app while it is swapped.
- * Either way the deploy still happens, as a restart: nothing is left half-done because rolling was out.
+ * `ruledOut` says that the operator chose rolling and it was refused. The deploy command still restarts
+ * then; the self-updater does not — it holds the update and asks, because nobody is watching it.
  */
 export class DeployStrategy {
   /** The apps swapped one at a time; the gateway after them — rolled too when `edge` holds the ports. */
@@ -21,10 +22,14 @@ export class DeployStrategy {
   constructor(private readonly stack: IDeployStack) {}
 
   /** Call after `.env` names the new version: the migration check reads that image. */
-  async choose(): Promise<{ mode: DeployMode; reason: string }> {
+  async choose(): Promise<{ mode: DeployMode; reason: string; ruledOut: boolean }> {
     const stored = DeployMode.resolve(await this.stack.query("SELECT value FROM _system_meta WHERE key = 'deploy_mode' AND tenant_id IS NULL"));
-    if (stored !== DeployMode.ROLLING) return { mode: DeployMode.RESTART, reason: 'the deploy mode is set to restart' };
+    if (stored !== DeployMode.ROLLING) return { mode: DeployMode.RESTART, reason: 'the deploy mode is set to restart', ruledOut: false };
+    const decided = await this.rollingOrWhyNot();
+    return { ...decided, ruledOut: decided.mode !== DeployMode.ROLLING };
+  }
 
+  private async rollingOrWhyNot(): Promise<{ mode: DeployMode; reason: string }> {
     // The release that introduces `edge` moves the public ports from the gateway to it — one gap, taken
     // once, in a restart. Rolled, the new `edge` could not bind ports the running gateway still holds.
     if ((await this.stack.declared([ComposeStack.EDGE])).length && !(await this.stack.containerIds(ComposeStack.EDGE)).length) {

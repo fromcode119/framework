@@ -10,4 +10,11 @@ export interface IAutomaticUpdateInput {
   pending: Array<{ version: string; breaking: boolean }>;
   /** The version the last update tried and could not keep (failed or rolled back); '' when none. */
   failed?: string;
+  /** The version the last update held back because rolling was not possible, and when; '' when none. */
+  held?: string;
+  heldAt?: string;
+  /** The version an operator allowed to be installed with a restart; '' when none. */
+  restartAllowed?: string;
+  /** For tests; the real clock otherwise. */
+  now?: Date;
 }

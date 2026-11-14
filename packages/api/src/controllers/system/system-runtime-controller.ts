@@ -100,7 +100,7 @@ export class SystemRuntimeController {
 
   async applyUpdate(req: Request, res: Response) {
     try {
-      res.json(DeploymentKind.isImage ? await new SelfUpdateScreenService(this.runtime.db).request() : await SystemUpdateService.applyUpdate());
+      res.json(DeploymentKind.isImage ? await new SelfUpdateScreenService(this.runtime.db).request(CoercionUtils.toBoolean(req.body?.restart)) : await SystemUpdateService.applyUpdate());
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

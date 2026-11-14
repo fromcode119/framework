@@ -2986,7 +2986,10 @@
         "requestedTitle": "Uppdatering begärd",
         "requested": "Uppdateraren installerar v{{version}} inom en minut. Förloppet visas på den här sidan.",
         "unknown": "Det gick inte att söka efter nya versioner just nu (versionskällan svarade inte). Uppdateraren försöker igen om några minuter.",
-        "heldFailed": "Uppdateringen till v{{version}} kunde inte behållas, så den tidigare versionen körs och v{{version}} provas inte igen automatiskt. {{error}} Tryck på knappen Installera för att försöka igen."
+        "heldFailed": "Uppdateringen till v{{version}} kunde inte behållas, så den tidigare versionen körs och v{{version}} provas inte igen automatiskt. {{error}} Tryck på knappen Installera för att försöka igen.",
+        "heldRolling": "v{{version}} väntar: driftsättningsläget är rolling och rolling var inte möjligt ({{reason}}). Inget har ändrats, alla webbplatser körs. Nytt försök i natt mellan 02:00 och 05:00 UTC, eller installera nu med omstart.",
+        "updateWithRestart": "Uppdatera till v{{version}} med omstart",
+        "updateWithRestartExplained": "Apparna byts ut på plats: alla webbplatser är otillgängliga i ungefär två minuter medan den nya versionen startar."
       },
       "pluginAuto": {
         "automatic": "Installera uppdateringar av marknadsplatstillägg automatiskt",

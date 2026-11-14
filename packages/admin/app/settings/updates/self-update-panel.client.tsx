@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,6 +23,8 @@ export class SelfUpdatePanel extends AdminComponent {
   @prop declare onPolled: (check: any) => void;
 
   @state saving = false;
+  @state confirmRestart = false;
+  @state restarting = false;
 
   private static readonly POLL_MS = 5000;
   private poll: ReturnType<typeof setTimeout> | null = null;
@@ -38,9 +41,30 @@ export class SelfUpdatePanel extends AdminComponent {
     if (this.poll) clearTimeout(this.poll);
   }
 
-  /** An update was asked for or is running: re-check every few seconds until it ends. */
+  /** An update was asked for or is running: re-check every few seconds until it ends. A held one waits. */
   private get active(): boolean {
+    if (this.held) return false;
     return Boolean(this.selfUpdate.requested) || this.selfUpdate.status?.state === 'updating';
+  }
+
+  /** The mode is rolling, rolling was not possible for this version, and nothing was changed. */
+  private get held(): boolean {
+    return this.selfUpdate.plan?.reason === 'heldRolling';
+  }
+
+  /** "Update with restart": the operator accepts the short interruption rolling would have avoided. */
+  @bound
+  private async updateWithRestart(): Promise<void> {
+    this.restarting = true;
+    try {
+      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_APPLY, { restart: true });
+      this.confirmRestart = false;
+      this.onChanged();
+    } catch (error: any) {
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.selfUpdate.saveFailed'), error?.message || '');
+    } finally {
+      this.restarting = false;
+    }
   }
 
   /**
@@ -85,6 +109,7 @@ export class SelfUpdatePanel extends AdminComponent {
     if (!updaterRunning) return { text: AdminI18n.t('settings.updates.selfUpdate.notRunning'), tone: 'text-rose-500' };
     if (status?.step === SelfUpdatePanel.OFF_STEP) return { text: AdminI18n.t('settings.updates.selfUpdate.turnedOff'), tone: 'text-amber-600' };
     if (status?.state === 'updating') return { text: AdminI18n.t('settings.updates.selfUpdate.updating', { to: status.to, step: status.step }), tone: 'text-indigo-500' };
+    if (this.held) return { text: AdminI18n.t('settings.updates.selfUpdate.heldRolling', { version: plan.heldBy, reason: status?.deployReason ?? '' }), tone: 'text-amber-600' };
     if (plan?.reason === 'heldFailed') return { text: AdminI18n.t('settings.updates.selfUpdate.heldFailed', { version: plan.heldBy, error: status?.error ?? '' }), tone: 'text-rose-500' };
     if (status?.state === 'failed') return { text: AdminI18n.t('settings.updates.selfUpdate.failed', { to: status.to, error: status.error }), tone: 'text-rose-500' };
     if (status?.state === 'rolledBack') return { text: AdminI18n.t('settings.updates.selfUpdate.rolledBack', { to: status.to, error: status.error }), tone: 'text-rose-500' };
@@ -113,7 +138,25 @@ export class SelfUpdatePanel extends AdminComponent {
           description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
         />
         <p className={`text-[11px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
-        {this.deployLine ? <p className="text-[11px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
+        {this.deployLine && !this.held ? <p className="text-[11px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
+        {this.held ? (
+          <button
+            type="button"
+            onClick={() => { this.confirmRestart = true; }}
+            disabled={this.restarting}
+            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+          >
+            {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
+          </button>
+        ) : null}
+        <ConfirmDialog
+          isOpen={this.confirmRestart}
+          onClose={() => { this.confirmRestart = false; }}
+          onConfirm={this.updateWithRestart}
+          isLoading={this.restarting}
+          title={AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
+          description={AdminI18n.t('settings.updates.selfUpdate.updateWithRestartExplained')}
+        />
       </div>
     );
   }

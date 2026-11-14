@@ -2986,7 +2986,10 @@
         "requestedTitle": "Kemas kini diminta",
         "requested": "Pengemas kini akan memasang v{{version}} dalam masa seminit. Kemajuan ditunjukkan pada halaman ini.",
         "unknown": "Versi baharu tidak dapat disemak sebentar tadi (sumber keluaran tidak menjawab). Pengemas kini akan mencuba lagi dalam beberapa minit.",
-        "heldFailed": "Kemas kini ke v{{version}} tidak dapat dikekalkan, jadi versi sebelumnya sedang berjalan dan v{{version}} tidak akan dicuba lagi secara automatik. {{error}} Tekan butang Pasang untuk mencubanya semula."
+        "heldFailed": "Kemas kini ke v{{version}} tidak dapat dikekalkan, jadi versi sebelumnya sedang berjalan dan v{{version}} tidak akan dicuba lagi secara automatik. {{error}} Tekan butang Pasang untuk mencubanya semula.",
+        "heldRolling": "v{{version}} sedang menunggu: mod penggunaan ialah rolling, dan rolling tidak dapat dilakukan ({{reason}}). Tiada apa-apa diubah, semua laman berjalan. Dicuba semula malam ini antara 02:00 dan 05:00 UTC, atau pasang sekarang dengan mula semula.",
+        "updateWithRestart": "Kemas kini ke v{{version}} dengan mula semula",
+        "updateWithRestartExplained": "Aplikasi diganti di tempat: semua laman tidak tersedia kira-kira dua minit semasa versi baharu bermula."
       },
       "pluginAuto": {
         "automatic": "Pasang kemas kini pemalam pasaran secara automatik",

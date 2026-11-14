@@ -2986,7 +2986,10 @@
         "requestedTitle": "Update aangevraagd",
         "requested": "De updater installeert v{{version}} binnen een minuut. De voortgang wordt op deze pagina getoond.",
         "unknown": "Er kon zojuist niet op nieuwe versies worden gecontroleerd (de releasebron reageerde niet). De updater probeert het over enkele minuten opnieuw.",
-        "heldFailed": "De update naar v{{version}} kon niet worden behouden. De vorige versie draait en v{{version}} wordt niet automatisch opnieuw geprobeerd. {{error}} Druk op de knop Installeren om het opnieuw te proberen."
+        "heldFailed": "De update naar v{{version}} kon niet worden behouden. De vorige versie draait en v{{version}} wordt niet automatisch opnieuw geprobeerd. {{error}} Druk op de knop Installeren om het opnieuw te proberen.",
+        "heldRolling": "v{{version}} wacht: de uitrolmodus is rolling en rolling was niet mogelijk ({{reason}}). Er is niets gewijzigd, alle sites draaien. Nieuwe poging vannacht tussen 02:00 en 05:00 UTC, of installeer nu met een herstart.",
+        "updateWithRestart": "Bijwerken naar v{{version}} met herstart",
+        "updateWithRestartExplained": "De apps worden ter plekke vervangen: alle sites zijn ongeveer twee minuten onbereikbaar terwijl de nieuwe versie start."
       },
       "pluginAuto": {
         "automatic": "Marktplaats-plug-inupdates automatisch installeren",

@@ -2986,7 +2986,10 @@
         "requestedTitle": "Atjaunināšana pieprasīta",
         "requested": "Atjauninātājs instalēs v{{version}} minūtes laikā. Progress tiek rādīts šajā lapā.",
         "unknown": "Pašlaik neizdevās pārbaudīt jaunas versijas (laidienu avots neatbildēja). Atjauninātājs mēģinās vēlreiz pēc dažām minūtēm.",
-        "heldFailed": "Atjauninājumu uz v{{version}} neizdevās paturēt, tāpēc darbojas iepriekšējā versija un v{{version}} netiks automātiski mēģināta vēlreiz. {{error}} Nospiediet pogu Instalēt, lai mēģinātu vēlreiz."
+        "heldFailed": "Atjauninājumu uz v{{version}} neizdevās paturēt, tāpēc darbojas iepriekšējā versija un v{{version}} netiks automātiski mēģināta vēlreiz. {{error}} Nospiediet pogu Instalēt, lai mēģinātu vēlreiz.",
+        "heldRolling": "v{{version}} gaida: izvietošanas režīms ir rolling, un rolling nebija iespējams ({{reason}}). Nekas netika mainīts, visas vietnes darbojas. Jauns mēģinājums šonakt no 02:00 līdz 05:00 UTC, vai instalējiet tagad ar restartu.",
+        "updateWithRestart": "Atjaunināt uz v{{version}} ar restartu",
+        "updateWithRestartExplained": "Lietotnes tiek aizstātas uz vietas: visas vietnes ir nepieejamas aptuveni divas minūtes, kamēr startē jaunā versija."
       },
       "pluginAuto": {
         "automatic": "Automātiski instalēt veikala spraudņu atjauninājumus",

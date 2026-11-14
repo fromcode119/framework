@@ -27,11 +27,11 @@ class Stack {
     this.engine.add('redis', 'redis:7-alpine');
     for (const image of ['api', 'admin', 'frontend', 'gateway']) this.engine.published.add(`${REG}${image}:v0.2.400`);
   }
-  run() {
+  run(allowRestart = false) {
     const rolling = (stack: any) => new RollingDeploy(stack, async () => undefined, 0, 0);
     return new SelfUpdateRun(this.engine, { reports: async () => { this.createdAtHealth.push(this.engine.created.map((c) => c.name)); return this.healthy; } },
       new EnvVersionFile(path.join(this.folder, '.env')), new ComposeDirectory(this.folder), 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes, async () => undefined)
-      .run('0.2.392', '0.2.400');
+      .run('0.2.392', '0.2.400', allowRestart);
   }
   get version(): string {
     return new EnvVersionFile(path.join(this.folder, '.env')).read();
@@ -101,24 +101,40 @@ describe('SelfUpdateRun — rolling, as the deploy command does', () => {
     expect(copy.NetworkingConfig).toBeUndefined();
   });
 
-  it('restarts instead when the release runs a migration the serving release cannot run beside', async () => {
+  it('holds the update, changing nothing, when the release runs a migration the serving release cannot run beside', async () => {
     const stack = rollingStack();
     stack.engine.appliedMigration = 53;
 
     const outcome = await stack.run();
 
-    expect(outcome.state).toBe('succeeded');
-    expect(stack.steps.find((step) => step.startsWith('Deploy mode:'))).toContain('migration 54');
-    expect(stack.engine.byName('site-api-2')).toBeUndefined();
+    expect(outcome.state).toBe('held');
+    expect(stack.steps.find((step) => step.startsWith('Rolling is not possible now'))).toContain('migration 54');
+    expect(stack.engine.stops).toHaveLength(0);
+    expect(stack.imageOf('api')).toMatch(/:v0\.2\.392$/);
+    expect(stack.version).toBe('v0.2.392');
   });
 
-  it('restarts instead when the machine has no room for a second copy', async () => {
+  it('holds the update, changing nothing, when the machine has no room for a second copy', async () => {
     const stack = rollingStack();
     stack.availableBytes = 300 * 1024 ** 2;
 
-    await stack.run();
+    const outcome = await stack.run();
 
+    expect(outcome.state).toBe('held');
+    expect(stack.steps.find((step) => step.startsWith('Rolling is not possible now'))).toContain('not enough memory');
+    expect(stack.engine.stops).toHaveLength(0);
+    expect(stack.version).toBe('v0.2.392');
+  });
+
+  it('restarts when rolling is out and the operator allowed the restart', async () => {
+    const stack = rollingStack();
+    stack.availableBytes = 300 * 1024 ** 2;
+
+    const outcome = await stack.run(true);
+
+    expect(outcome.state).toBe('succeeded');
     expect(stack.steps.find((step) => step.startsWith('Deploy mode:'))).toContain('not enough memory');
+    expect(stack.imageOf('api')).toMatch(/:v0\.2\.400$/);
   });
 
   it('rolls the apps it already swapped back, with no gap either, when a new one will not start', async () => {

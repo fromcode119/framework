@@ -2986,7 +2986,10 @@
         "requestedTitle": "Actualizare solicitată",
         "requested": "Serviciul de actualizare instalează v{{version}} în cel mult un minut. Progresul este afișat pe această pagină.",
         "unknown": "Nu s-au putut căuta versiuni noi acum (sursa versiunilor nu a răspuns). Serviciul de actualizare va încerca din nou în câteva minute.",
-        "heldFailed": "Actualizarea la v{{version}} nu a putut fi păstrată, așa că rulează versiunea anterioară, iar v{{version}} nu va mai fi încercată automat. {{error}} Apăsați butonul Instalează pentru a încerca din nou."
+        "heldFailed": "Actualizarea la v{{version}} nu a putut fi păstrată, așa că rulează versiunea anterioară, iar v{{version}} nu va mai fi încercată automat. {{error}} Apăsați butonul Instalează pentru a încerca din nou.",
+        "heldRolling": "v{{version}} așteaptă: modul de implementare este rolling, iar rolling nu a fost posibil ({{reason}}). Nu s-a schimbat nimic, toate site-urile funcționează. Se reîncearcă la noapte între 02:00 și 05:00 UTC, sau instalați acum cu repornire.",
+        "updateWithRestart": "Actualizează la v{{version}} cu repornire",
+        "updateWithRestartExplained": "Aplicațiile sunt înlocuite pe loc: toate site-urile sunt indisponibile aproximativ două minute cât pornește noua versiune."
       },
       "pluginAuto": {
         "automatic": "Instalează automat actualizările pluginurilor din marketplace",

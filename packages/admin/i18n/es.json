@@ -2986,7 +2986,10 @@
         "requestedTitle": "Actualización solicitada",
         "requested": "El servicio de actualización instalará la v{{version}} en menos de un minuto. El progreso se muestra en esta página.",
         "unknown": "No se han podido buscar nuevas versiones en este momento (el origen de las versiones no respondió). El servicio de actualización lo volverá a intentar en unos minutos.",
-        "heldFailed": "No se pudo mantener la actualización a la v{{version}}, por lo que se está ejecutando la versión anterior y la v{{version}} no se volverá a intentar automáticamente. {{error}} Pulse el botón Instalar para intentarlo de nuevo."
+        "heldFailed": "No se pudo mantener la actualización a la v{{version}}, por lo que se está ejecutando la versión anterior y la v{{version}} no se volverá a intentar automáticamente. {{error}} Pulse el botón Instalar para intentarlo de nuevo.",
+        "heldRolling": "v{{version}} está en espera: el modo de despliegue es rolling y no fue posible ({{reason}}). No se cambió nada y todos los sitios funcionan. Se reintentará esta noche entre las 02:00 y las 05:00 UTC, o instálela ahora con un reinicio.",
+        "updateWithRestart": "Actualizar a v{{version}} con reinicio",
+        "updateWithRestartExplained": "Las aplicaciones se reemplazan en el sitio: todos los sitios quedan sin servicio unos dos minutos mientras arranca la nueva versión."
       },
       "pluginAuto": {
         "automatic": "Instalar las actualizaciones de plugins del mercado automáticamente",

@@ -2986,7 +2986,10 @@
         "requestedTitle": "Frissítés kérelmezve",
         "requested": "A frissítő egy percen belül telepíti a v{{version}} verziót. A folyamat ezen az oldalon követhető.",
         "unknown": "Az új verziókat most nem sikerült ellenőrizni (a kiadási forrás nem válaszolt). A frissítő néhány perc múlva újrapróbálja.",
-        "heldFailed": "A v{{version}} verzióra való frissítést nem sikerült megtartani, ezért az előző verzió fut, és a v{{version}} automatikusan nem kerül újrapróbálásra. {{error}} Az újrapróbáláshoz nyomja meg a Telepítés gombot."
+        "heldFailed": "A v{{version}} verzióra való frissítést nem sikerült megtartani, ezért az előző verzió fut, és a v{{version}} automatikusan nem kerül újrapróbálásra. {{error}} Az újrapróbáláshoz nyomja meg a Telepítés gombot.",
+        "heldRolling": "A v{{version}} várakozik: a telepítési mód rolling, és a rolling nem volt lehetséges ({{reason}}). Semmi sem változott, minden oldal működik. Újrapróbálás ma éjjel 02:00 és 05:00 UTC között, vagy telepítse most újraindítással.",
+        "updateWithRestart": "Frissítés v{{version}} verzióra újraindítással",
+        "updateWithRestartExplained": "Az alkalmazások helyben cserélődnek: az új verzió indulása alatt minden oldal körülbelül két percig elérhetetlen."
       },
       "pluginAuto": {
         "automatic": "Piactéri bővítményfrissítések automatikus telepítése",

@@ -2986,7 +2986,10 @@
         "requestedTitle": "Iarradh nuashonrú",
         "requested": "Suiteálann an nuashonraitheoir v{{version}} laistigh de nóiméad. Taispeántar an dul chun cinn ar an leathanach seo.",
         "unknown": "Níorbh fhéidir leaganacha nua a sheiceáil díreach anois (níor fhreagair foinse na n-eisiúintí). Déanfaidh an nuashonraitheoir iarracht arís i gceann cúpla nóiméad.",
-        "heldFailed": "Níorbh fhéidir an nuashonrú go v{{version}} a choinneáil, mar sin tá an leagan roimhe seo ag rith agus ní dhéanfar v{{version}} a thriail arís go huathoibríoch. {{error}} Brúigh an cnaipe Suiteáil chun é a thriail arís."
+        "heldFailed": "Níorbh fhéidir an nuashonrú go v{{version}} a choinneáil, mar sin tá an leagan roimhe seo ag rith agus ní dhéanfar v{{version}} a thriail arís go huathoibríoch. {{error}} Brúigh an cnaipe Suiteáil chun é a thriail arís.",
+        "heldRolling": "Tá v{{version}} ag fanacht: is é rolling an modh imscartha, agus ní raibh rolling indéanta ({{reason}}). Níor athraíodh aon rud agus tá gach suíomh ar siúl. Triailfear arís anocht idir 02:00 agus 05:00 UTC, nó suiteáil anois le hatosú.",
+        "updateWithRestart": "Nuashonraigh go v{{version}} le hatosú",
+        "updateWithRestartExplained": "Cuirtear na haipeanna in ionad a chéile san áit: ní bhíonn aon suíomh ar fáil ar feadh thart ar dhá nóiméad agus an leagan nua ag tosú."
       },
       "pluginAuto": {
         "automatic": "Suiteáil nuashonruithe breiseán ón margadh go huathoibríoch",

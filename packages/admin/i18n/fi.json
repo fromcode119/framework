@@ -2986,7 +2986,10 @@
         "requestedTitle": "Päivitystä pyydetty",
         "requested": "Päivityspalvelu asentaa version v{{version}} minuutin kuluessa. Edistyminen näkyy tällä sivulla.",
         "unknown": "Uusia versioita ei voitu tarkistaa juuri nyt (julkaisulähde ei vastannut). Päivityspalvelu yrittää uudelleen muutaman minuutin kuluttua.",
-        "heldFailed": "Päivitystä versioon v{{version}} ei voitu pitää voimassa, joten edellinen versio on käytössä eikä versiota v{{version}} yritetä automaattisesti uudelleen. {{error}} Yritä uudelleen painamalla Asenna-painiketta."
+        "heldFailed": "Päivitystä versioon v{{version}} ei voitu pitää voimassa, joten edellinen versio on käytössä eikä versiota v{{version}} yritetä automaattisesti uudelleen. {{error}} Yritä uudelleen painamalla Asenna-painiketta.",
+        "heldRolling": "v{{version}} odottaa: käyttöönottotila on rolling, eikä rolling ollut mahdollinen ({{reason}}). Mitään ei muutettu, kaikki sivustot toimivat. Uusi yritys tänä yönä klo 02:00–05:00 UTC, tai asenna nyt uudelleenkäynnistyksellä.",
+        "updateWithRestart": "Päivitä versioon v{{version}} uudelleenkäynnistyksellä",
+        "updateWithRestartExplained": "Sovellukset vaihdetaan paikallaan: kaikki sivustot ovat poissa käytöstä noin kaksi minuuttia uuden version käynnistyessä."
       },
       "pluginAuto": {
         "automatic": "Asenna kaupan laajennusten päivitykset automaattisesti",

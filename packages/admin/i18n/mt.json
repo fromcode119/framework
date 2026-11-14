@@ -2986,7 +2986,10 @@
         "requestedTitle": "Aġġornament mitlub",
         "requested": "Is-servizz tal-aġġornament jinstalla v{{version}} fi żmien minuta. Il-progress jidher f'din il-paġna.",
         "unknown": "Il-verżjonijiet il-ġodda ma setgħux jiġu vverifikati bħalissa (is-sors tal-verżjonijiet ma weġibx). Is-servizz tal-aġġornament jerġa' jipprova fi ftit minuti.",
-        "heldFailed": "L-aġġornament għal v{{version}} ma setax jinżamm, għalhekk il-verżjoni ta' qabel qed taħdem u v{{version}} mhix ser terġa' tiġi ppruvata awtomatikament. {{error}} Agħfas il-buttuna Installa biex terġa' tipprova."
+        "heldFailed": "L-aġġornament għal v{{version}} ma setax jinżamm, għalhekk il-verżjoni ta' qabel qed taħdem u v{{version}} mhix ser terġa' tiġi ppruvata awtomatikament. {{error}} Agħfas il-buttuna Installa biex terġa' tipprova.",
+        "heldRolling": "v{{version}} qed tistenna: il-modalità tal-iskjerament hija rolling, u r-rolling ma kienx possibbli ({{reason}}). Xejn ma nbidel u s-siti kollha qed jaħdmu. Jerġa' jiġi ppruvat illejla bejn 02:00 u 05:00 UTC, jew installah issa b'restart.",
+        "updateWithRestart": "Aġġorna għal v{{version}} b'restart",
+        "updateWithRestartExplained": "L-apps jiġu sostitwiti f'posthom: is-siti kollha ma jkunux disponibbli għal madwar żewġ minuti waqt li tibda l-verżjoni l-ġdida."
       },
       "pluginAuto": {
         "automatic": "Installa l-aġġornamenti tal-plugins mis-suq awtomatikament",

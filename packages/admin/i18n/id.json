@@ -2986,7 +2986,10 @@
         "requestedTitle": "Pembaruan diminta",
         "requested": "Pembaru akan memasang v{{version}} dalam satu menit. Progres ditampilkan di halaman ini.",
         "unknown": "Versi baru tidak dapat diperiksa saat ini (sumber rilis tidak merespons). Pembaru akan mencoba lagi dalam beberapa menit.",
-        "heldFailed": "Pembaruan ke v{{version}} tidak dapat dipertahankan, sehingga versi sebelumnya sedang berjalan dan v{{version}} tidak dicoba lagi secara otomatis. {{error}} Tekan tombol Pasang untuk mencobanya lagi."
+        "heldFailed": "Pembaruan ke v{{version}} tidak dapat dipertahankan, sehingga versi sebelumnya sedang berjalan dan v{{version}} tidak dicoba lagi secara otomatis. {{error}} Tekan tombol Pasang untuk mencobanya lagi.",
+        "heldRolling": "v{{version}} menunggu: mode deploy adalah rolling, dan rolling tidak memungkinkan ({{reason}}). Tidak ada yang diubah, semua situs berjalan. Dicoba lagi malam ini antara 02:00 dan 05:00 UTC, atau pasang sekarang dengan restart.",
+        "updateWithRestart": "Perbarui ke v{{version}} dengan restart",
+        "updateWithRestartExplained": "Aplikasi diganti di tempat: semua situs tidak tersedia sekitar dua menit selama versi baru dimulai."
       },
       "pluginAuto": {
         "automatic": "Pasang pembaruan plugin marketplace secara otomatis",

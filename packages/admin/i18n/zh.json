@@ -2986,7 +2986,10 @@
         "requestedTitle": "已请求更新",
         "requested": "更新服务将在一分钟内安装 v{{version}}，进度将显示在此页面上。",
         "unknown": "暂时无法检查新版本（发布源未响应）。更新服务将在几分钟后重试。",
-        "heldFailed": "未能保留更新至 v{{version}}，因此当前运行的是之前的版本，且不会再自动尝试 v{{version}}。{{error}} 点击“安装”按钮可再次尝试。"
+        "heldFailed": "未能保留更新至 v{{version}}，因此当前运行的是之前的版本，且不会再自动尝试 v{{version}}。{{error}} 点击“安装”按钮可再次尝试。",
+        "heldRolling": "v{{version}} 正在等待：部署模式为 rolling，但本次无法 rolling（{{reason}}）。未做任何更改，所有站点正常运行。将于今晚 02:00 至 05:00 UTC 重试，或现在以重启方式安装。",
+        "updateWithRestart": "以重启方式更新到 v{{version}}",
+        "updateWithRestartExplained": "应用将原地替换：新版本启动期间，所有站点约有两分钟无法访问。"
       },
       "pluginAuto": {
         "automatic": "自动安装应用市场插件更新",

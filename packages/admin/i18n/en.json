@@ -2986,7 +2986,10 @@
         "requestedTitle": "Update requested",
         "requested": "The updater installs v{{version}} within a minute. Progress is shown on this page.",
         "unknown": "New versions could not be checked just now (the release source did not answer). The updater tries again in a few minutes.",
-        "heldFailed": "The update to v{{version}} could not be kept, so the previous version is running and v{{version}} is not tried again automatically. {{error}} Press the Install button to try it again."
+        "heldFailed": "The update to v{{version}} could not be kept, so the previous version is running and v{{version}} is not tried again automatically. {{error}} Press the Install button to try it again.",
+        "heldRolling": "v{{version}} is waiting: the deploy mode is rolling, and rolling was not possible ({{reason}}). Nothing was changed and every site is up. It is tried again tonight between 02:00 and 05:00 UTC, or install it now with a restart.",
+        "updateWithRestart": "Update to v{{version}} with restart",
+        "updateWithRestartExplained": "The apps are replaced in place: every site is unavailable for about two minutes while the new version starts."
       },
       "pluginAuto": {
         "automatic": "Install marketplace plugin updates automatically",

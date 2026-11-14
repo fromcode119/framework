@@ -2986,7 +2986,10 @@
         "requestedTitle": "Zlecono aktualizację",
         "requested": "Usługa aktualizacji zainstaluje v{{version}} w ciągu minuty. Postęp jest widoczny na tej stronie.",
         "unknown": "Nie udało się teraz sprawdzić nowych wersji (źródło wydań nie odpowiedziało). Usługa aktualizacji spróbuje ponownie za kilka minut.",
-        "heldFailed": "Nie udało się utrzymać aktualizacji do v{{version}}, więc działa poprzednia wersja, a v{{version}} nie będzie ponownie instalowana automatycznie. {{error}} Kliknij przycisk Zainstaluj, aby spróbować ponownie."
+        "heldFailed": "Nie udało się utrzymać aktualizacji do v{{version}}, więc działa poprzednia wersja, a v{{version}} nie będzie ponownie instalowana automatycznie. {{error}} Kliknij przycisk Zainstaluj, aby spróbować ponownie.",
+        "heldRolling": "v{{version}} czeka: tryb wdrożenia to rolling, a rolling nie był możliwy ({{reason}}). Nic nie zmieniono, wszystkie strony działają. Ponowna próba tej nocy między 02:00 a 05:00 UTC lub zainstaluj teraz z restartem.",
+        "updateWithRestart": "Zaktualizuj do v{{version}} z restartem",
+        "updateWithRestartExplained": "Aplikacje są zastępowane na miejscu: wszystkie strony są niedostępne przez około dwie minuty, gdy uruchamia się nowa wersja."
       },
       "pluginAuto": {
         "automatic": "Automatycznie instaluj aktualizacje wtyczek z marketplace",

@@ -10,6 +10,8 @@ export class UpdaterStatusStore {
   static readonly SILENT_AFTER_MS = 5 * 60 * 1000;
   private static readonly MAX_STEPS = 40;
   private static readonly FINISHED = [UpdaterState.SUCCEEDED.value, UpdaterState.FAILED.value, UpdaterState.ROLLED_BACK.value];
+  /** Outcomes a restarted updater's `idle` must not erase. HELD keeps its request: the update still waits. */
+  private static readonly KEPT = [...UpdaterStatusStore.FINISHED, UpdaterState.HELD.value];
 
   private readonly meta: PlatformMetaStore;
 
@@ -17,8 +19,10 @@ export class UpdaterStatusStore {
     this.meta = new PlatformMetaStore(db);
   }
 
-  async request(version: string): Promise<void> {
+  /** `restart`: the operator accepts a restart for this version when rolling is not possible. */
+  async request(version: string, restart = false): Promise<void> {
     await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_REQUEST, version);
+    await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_RESTART, restart ? version : '');
   }
 
   async requested(): Promise<string> {
@@ -41,12 +45,14 @@ export class UpdaterStatusStore {
     // A restarted updater reports `idle` with no memory of its last update. The OUTCOME is kept — it is
     // what stops a failed version from being retried every minute — and only the heartbeat moves.
     const previous = await this.status();
-    const keepOutcome = status.state === UpdaterState.IDLE.value && !status.step && previous && UpdaterStatusStore.FINISHED.includes(previous.state);
+    const keepOutcome = status.state === UpdaterState.IDLE.value && !status.step && previous && UpdaterStatusStore.KEPT.includes(previous.state);
     await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_STATUS, JSON.stringify(keepOutcome ? { ...previous, reportedAt: status.reportedAt } : status));
     const requested = (await this.requested()).replace(/^v/, '');
     if (requested && UpdaterStatusStore.FINISHED.includes(status.state) && status.to.replace(/^v/, '') === requested) {
       await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_REQUEST, '');
     }
+    // A permission to restart is for one version and one attempt: once anything but HELD ends, it is spent.
+    if (UpdaterStatusStore.FINISHED.includes(status.state)) await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_RESTART, '');
   }
 
   async status(): Promise<Record<string, string> | null> {

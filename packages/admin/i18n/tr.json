@@ -2986,7 +2986,10 @@
         "requestedTitle": "Güncelleme istendi",
         "requested": "Güncelleyici v{{version}} sürümünü bir dakika içinde yükleyecek. İlerleme bu sayfada gösterilir.",
         "unknown": "Yeni sürümler şu anda denetlenemedi (sürüm kaynağı yanıt vermedi). Güncelleyici birkaç dakika içinde yeniden deneyecek.",
-        "heldFailed": "v{{version}} sürümüne güncelleme korunamadı; önceki sürüm çalışıyor ve v{{version}} otomatik olarak yeniden denenmeyecek. {{error}} Yeniden denemek için Yükle düğmesine basın."
+        "heldFailed": "v{{version}} sürümüne güncelleme korunamadı; önceki sürüm çalışıyor ve v{{version}} otomatik olarak yeniden denenmeyecek. {{error}} Yeniden denemek için Yükle düğmesine basın.",
+        "heldRolling": "v{{version}} bekliyor: dağıtım modu rolling ve rolling mümkün olmadı ({{reason}}). Hiçbir şey değiştirilmedi, tüm siteler çalışıyor. Bu gece 02:00–05:00 UTC arasında yeniden denenecek veya şimdi yeniden başlatmayla kurun.",
+        "updateWithRestart": "v{{version}} sürümüne yeniden başlatmayla güncelle",
+        "updateWithRestartExplained": "Uygulamalar yerinde değiştirilir: yeni sürüm başlarken tüm siteler yaklaşık iki dakika erişilemez."
       },
       "pluginAuto": {
         "automatic": "Market eklenti güncellemelerini otomatik yükle",

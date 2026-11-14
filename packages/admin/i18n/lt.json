@@ -2986,7 +2986,10 @@
         "requestedTitle": "Atnaujinimas užsakytas",
         "requested": "Atnaujinimo tarnyba įdiegs v{{version}} per minutę. Eiga rodoma šiame puslapyje.",
         "unknown": "Šiuo metu nepavyko patikrinti naujų versijų (versijų šaltinis neatsakė). Atnaujinimo tarnyba bandys dar kartą po kelių minučių.",
-        "heldFailed": "Atnaujinimo į v{{version}} nepavyko išlaikyti, todėl veikia ankstesnė versija, o v{{version}} automatiškai nebebandoma diegti. {{error}} Spustelėkite mygtuką „Įdiegti“, kad bandytumėte dar kartą."
+        "heldFailed": "Atnaujinimo į v{{version}} nepavyko išlaikyti, todėl veikia ankstesnė versija, o v{{version}} automatiškai nebebandoma diegti. {{error}} Spustelėkite mygtuką „Įdiegti“, kad bandytumėte dar kartą.",
+        "heldRolling": "v{{version}} laukia: diegimo režimas yra rolling, o rolling nebuvo įmanomas ({{reason}}). Niekas nepakeista, visos svetainės veikia. Naujas bandymas šiąnakt 02:00–05:00 UTC arba įdiekite dabar su paleidimu iš naujo.",
+        "updateWithRestart": "Atnaujinti į v{{version}} paleidžiant iš naujo",
+        "updateWithRestartExplained": "Programos pakeičiamos vietoje: visos svetainės maždaug dvi minutes nepasiekiamos, kol paleidžiama nauja versija."
       },
       "pluginAuto": {
         "automatic": "Automatiškai diegti prekyvietės papildinių naujinius",

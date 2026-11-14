@@ -2986,7 +2986,10 @@
         "requestedTitle": "Mise à jour demandée",
         "requested": "Le service de mise à jour installera la v{{version}} dans la minute. La progression s'affiche sur cette page.",
         "unknown": "Impossible de rechercher de nouvelles versions pour le moment (la source des versions n'a pas répondu). Le service de mise à jour réessaiera dans quelques minutes.",
-        "heldFailed": "La mise à jour vers la v{{version}} n'a pas pu être conservée : la version précédente est en service et la v{{version}} ne sera plus tentée automatiquement. {{error}} Cliquez sur le bouton Installer pour réessayer."
+        "heldFailed": "La mise à jour vers la v{{version}} n'a pas pu être conservée : la version précédente est en service et la v{{version}} ne sera plus tentée automatiquement. {{error}} Cliquez sur le bouton Installer pour réessayer.",
+        "heldRolling": "v{{version}} est en attente : le mode de déploiement est rolling, et le rolling n'était pas possible ({{reason}}). Rien n'a été modifié, tous les sites fonctionnent. Nouvel essai cette nuit entre 02:00 et 05:00 UTC, ou installez-la maintenant avec un redémarrage.",
+        "updateWithRestart": "Mettre à jour vers v{{version}} avec redémarrage",
+        "updateWithRestartExplained": "Les applications sont remplacées sur place : tous les sites sont indisponibles environ deux minutes pendant le démarrage de la nouvelle version."
       },
       "pluginAuto": {
         "automatic": "Installer automatiquement les mises à jour des plugins de la marketplace",
