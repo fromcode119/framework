@@ -31,9 +31,9 @@ describe('NavSectionPages.arrange', () => {
 
 describe('NavSectionPages.holds', () => {
   it('is true only for a group holding the open page', () => {
-    const group = { pages: [page('/ecommerce/refunds'), page('/ecommerce/withdrawals')] };
-    expect(NavSectionPages.holds(group, '/ecommerce/refunds')).toBe(true);
-    expect(NavSectionPages.holds(group, '/ecommerce/orders')).toBe(false);
+    const group = { pages: [page('/area/refunds'), page('/area/withdrawals')] };
+    expect(NavSectionPages.holds(group, '/area/refunds')).toBe(true);
+    expect(NavSectionPages.holds(group, '/area/orders')).toBe(false);
     expect(NavSectionPages.holds(group, '')).toBe(false);
   });
 });
