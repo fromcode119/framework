@@ -1,5 +1,6 @@
 import { FieldType, ICollection } from '@fromcode119/core';
 import { DynamicSchema, IDatabaseManager, NamingStrategy, Sql } from '@fromcode119/database';
+import { RelationshipIdSpellings } from '@api/services/relationship-id-spellings';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 
@@ -91,21 +92,20 @@ export class QueryHelper {
         });
       // Match relationship fields by their related record's name: `field IN (matchedRelatedIds)`,
       // resolved upstream so the list search also covers related records (e.g. inventory by product).
-      // The relationship column is a jsonb column whose id is stored as TEXT (e.g. "5.0"), so a
-      // An `in` on the typed column mis-binds. Build a raw clause that casts per id type:
-      // numeric ids → CAST(col AS REAL) IN (numbers); otherwise CAST(col AS TEXT) IN (strings).
+      // The relationship column is jsonb, and the id inside it may be written as a number (5), as a
+      // string ("5") or as a float-ish string ("5.0"), so neither the typed `in` nor one fixed cast
+      // matches them all. CAST(jsonb AS REAL) does not merely miss: Postgres REFUSES it with
+      // "cannot cast jsonb string to type real", and the whole list then answered with that error
+      // instead of records — which is what searching the CMS pages list did.
+      // So: never cast the column to a number. Compare it as text against every spelling the id can
+      // have, including the quoted form a jsonb string casts to.
       if (relationshipMatches) {
         for (const [fieldName, ids] of Object.entries(relationshipMatches)) {
           if (!Array.isArray(ids) || ids.length === 0) continue;
           const physicalColumn = Sql.identifier(NamingStrategy.toSnakeCase(fieldName));
-          const numericIds = ids.map((value) => Number(value)).filter((value) => Number.isFinite(value));
-          if (numericIds.length === ids.length) {
-            const list = Sql.join(numericIds.map((value) => Sql.query`${value}`), Sql.query`, `);
-            searchClauses.push(Sql.query`CAST(${physicalColumn} AS REAL) IN (${list})`);
-          } else {
-            const list = Sql.join(ids.map((value) => Sql.query`${String(value)}`), Sql.query`, `);
-            searchClauses.push(Sql.query`CAST(${physicalColumn} AS TEXT) IN (${list})`);
-          }
+          const spellings = RelationshipIdSpellings.of(ids);
+          const list = Sql.join(spellings.map((value) => Sql.query`${value}`), Sql.query`, `);
+          searchClauses.push(Sql.query`CAST(${physicalColumn} AS TEXT) IN (${list})`);
         }
       }
       if (searchClauses.length > 0) {
