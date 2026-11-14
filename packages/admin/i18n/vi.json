@@ -2986,7 +2986,10 @@
         "requestedTitle": "Đã yêu cầu cập nhật",
         "requested": "Trình cập nhật sẽ cài đặt v{{version}} trong vòng một phút. Tiến trình được hiển thị trên trang này.",
         "unknown": "Hiện không thể kiểm tra phiên bản mới (nguồn phát hành không phản hồi). Trình cập nhật sẽ thử lại sau vài phút.",
-        "heldFailed": "Không thể giữ bản cập nhật lên v{{version}}, nên phiên bản trước đang chạy và v{{version}} sẽ không được thử lại tự động. {{error}} Nhấn nút Cài đặt để thử lại."
+        "heldFailed": "Không thể giữ bản cập nhật lên v{{version}}, nên phiên bản trước đang chạy và v{{version}} sẽ không được thử lại tự động. {{error}} Nhấn nút Cài đặt để thử lại.",
+        "heldRolling": "v{{version}} đang chờ: chế độ triển khai là rolling, và không thể rolling ({{reason}}). Không có gì thay đổi, mọi trang vẫn hoạt động. Sẽ thử lại đêm nay trong khoảng 02:00–05:00 UTC, hoặc cài đặt ngay với khởi động lại.",
+        "updateWithRestart": "Cập nhật lên v{{version}} có khởi động lại",
+        "updateWithRestartExplained": "Các ứng dụng được thay thế tại chỗ: mọi trang không truy cập được khoảng hai phút trong lúc phiên bản mới khởi động."
       },
       "pluginAuto": {
         "automatic": "Tự động cài đặt bản cập nhật plugin từ chợ ứng dụng",

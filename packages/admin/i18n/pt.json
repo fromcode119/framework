@@ -2986,7 +2986,10 @@
         "requestedTitle": "Atualização pedida",
         "requested": "O serviço de atualização instala a v{{version}} no espaço de um minuto. O progresso é apresentado nesta página.",
         "unknown": "Não foi possível procurar novas versões neste momento (a origem das versões não respondeu). O serviço de atualização tentará novamente dentro de alguns minutos.",
-        "heldFailed": "Não foi possível manter a atualização para v{{version}}, pelo que a versão anterior está em execução e a v{{version}} não será tentada novamente de forma automática. {{error}} Prima o botão Instalar para tentar novamente."
+        "heldFailed": "Não foi possível manter a atualização para v{{version}}, pelo que a versão anterior está em execução e a v{{version}} não será tentada novamente de forma automática. {{error}} Prima o botão Instalar para tentar novamente.",
+        "heldRolling": "v{{version}} está em espera: o modo de implantação é rolling e o rolling não foi possível ({{reason}}). Nada foi alterado e todos os sites estão no ar. Nova tentativa esta noite entre 02:00 e 05:00 UTC, ou instale agora com reinício.",
+        "updateWithRestart": "Atualizar para v{{version}} com reinício",
+        "updateWithRestartExplained": "As aplicações são substituídas no local: todos os sites ficam indisponíveis cerca de dois minutos enquanto a nova versão arranca."
       },
       "pluginAuto": {
         "automatic": "Instalar automaticamente as atualizações de plugins do marketplace",

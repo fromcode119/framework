@@ -2986,7 +2986,10 @@
         "requestedTitle": "Opdatering anmodet",
         "requested": "Opdateringstjenesten installerer v{{version}} inden for et minut. Status vises på denne side.",
         "unknown": "Der kunne ikke søges efter nye versioner lige nu (udgivelseskilden svarede ikke). Opdateringstjenesten prøver igen om et par minutter.",
-        "heldFailed": "Opdateringen til v{{version}} kunne ikke bevares, så den tidligere version kører, og v{{version}} forsøges ikke igen automatisk. {{error}} Tryk på knappen Installer for at prøve igen."
+        "heldFailed": "Opdateringen til v{{version}} kunne ikke bevares, så den tidligere version kører, og v{{version}} forsøges ikke igen automatisk. {{error}} Tryk på knappen Installer for at prøve igen.",
+        "heldRolling": "v{{version}} venter: udrulningstilstanden er rolling, og rolling var ikke muligt ({{reason}}). Intet er ændret, alle sider kører. Nyt forsøg i nat mellem 02:00 og 05:00 UTC, eller installér nu med genstart.",
+        "updateWithRestart": "Opdatér til v{{version}} med genstart",
+        "updateWithRestartExplained": "Apps udskiftes på stedet: alle sider er utilgængelige i cirka to minutter, mens den nye version starter."
       },
       "pluginAuto": {
         "automatic": "Installer opdateringer til markedsplads-plugins automatisk",

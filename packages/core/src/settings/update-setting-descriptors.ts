@@ -14,6 +14,7 @@ export class UpdateSettingDescriptors {
     },
     [SystemConstants.META_KEY.FRAMEWORK_UPDATE_REQUEST]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemConstants.META_KEY.FRAMEWORK_UPDATE_STATUS]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
+    [SystemConstants.META_KEY.FRAMEWORK_UPDATE_RESTART]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     // Marketplace plugins, not the platform: the api checks the catalogue every hour and installs what is newer.
     // A version that asks for a permission nobody approved still waits for the operator (the plugin is held).
     [SystemConstants.META_KEY.PLUGINS_AUTO_UPDATE]: {

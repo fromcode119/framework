@@ -2986,7 +2986,10 @@
         "requestedTitle": "Posodobitev zahtevana",
         "requested": "Storitev za posodabljanje bo v minuti namestila v{{version}}. Napredek je prikazan na tej strani.",
         "unknown": "Novih različic trenutno ni bilo mogoče preveriti (vir izdaj se ni odzval). Storitev za posodabljanje bo poskusila znova čez nekaj minut.",
-        "heldFailed": "Posodobitve na v{{version}} ni bilo mogoče obdržati, zato deluje prejšnja različica in v{{version}} se ne bo samodejno poskusila znova. {{error}} Za ponoven poskus pritisnite gumb Namesti."
+        "heldFailed": "Posodobitve na v{{version}} ni bilo mogoče obdržati, zato deluje prejšnja različica in v{{version}} se ne bo samodejno poskusila znova. {{error}} Za ponoven poskus pritisnite gumb Namesti.",
+        "heldRolling": "v{{version}} čaka: način uvajanja je rolling, rolling pa ni bil mogoč ({{reason}}). Nič ni bilo spremenjeno, vsa spletna mesta delujejo. Nov poskus nocoj med 02:00 in 05:00 UTC ali namestite zdaj s ponovnim zagonom.",
+        "updateWithRestart": "Posodobi na v{{version}} s ponovnim zagonom",
+        "updateWithRestartExplained": "Aplikacije se zamenjajo na mestu: vsa spletna mesta so približno dve minuti nedosegljiva, medtem ko se nova različica zaganja."
       },
       "pluginAuto": {
         "automatic": "Samodejno namesti posodobitve vtičnikov s tržnice",

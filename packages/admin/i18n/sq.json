@@ -2986,7 +2986,10 @@
         "requestedTitle": "Përditësimi u kërkua",
         "requested": "Shërbimi i përditësimit do të instalojë v{{version}} brenda një minute. Ecuria shfaqet në këtë faqe.",
         "unknown": "Versionet e reja nuk mund të kontrolloheshin tani (burimi i versioneve nuk u përgjigj). Shërbimi i përditësimit do të provojë sërish pas pak minutash.",
-        "heldFailed": "Përditësimi në v{{version}} nuk mund të mbahej, prandaj po funksionon versioni i mëparshëm dhe v{{version}} nuk do të provohet më automatikisht. {{error}} Shtypni butonin Instalo për ta provuar sërish."
+        "heldFailed": "Përditësimi në v{{version}} nuk mund të mbahej, prandaj po funksionon versioni i mëparshëm dhe v{{version}} nuk do të provohet më automatikisht. {{error}} Shtypni butonin Instalo për ta provuar sërish.",
+        "heldRolling": "v{{version}} është në pritje: mënyra e vendosjes është rolling dhe rolling nuk ishte i mundur ({{reason}}). Asgjë nuk ndryshoi, të gjitha faqet punojnë. Riprovohet sonte mes 02:00 dhe 05:00 UTC, ose instalojeni tani me rinisje.",
+        "updateWithRestart": "Përditëso në v{{version}} me rinisje",
+        "updateWithRestartExplained": "Aplikacionet zëvendësohen në vend: të gjitha faqet janë të padisponueshme rreth dy minuta ndërsa nis versioni i ri."
       },
       "pluginAuto": {
         "automatic": "Instalo automatikisht përditësimet e shtojcave nga tregu",

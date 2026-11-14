@@ -2986,7 +2986,10 @@
         "requestedTitle": "Hiniling ang update",
         "requested": "Ii-install ng updater ang v{{version}} sa loob ng isang minuto. Ipinapakita sa page na ito ang progreso.",
         "unknown": "Hindi ma-check ang mga bagong bersyon ngayon (hindi sumagot ang pinagmumulan ng release). Susubukan muli ng updater sa loob ng ilang minuto.",
-        "heldFailed": "Hindi napanatili ang pag-update sa v{{version}}, kaya tumatakbo ang dating bersyon at hindi na awtomatikong susubukan muli ang v{{version}}. {{error}} Pindutin ang button na I-install para subukan ito muli."
+        "heldFailed": "Hindi napanatili ang pag-update sa v{{version}}, kaya tumatakbo ang dating bersyon at hindi na awtomatikong susubukan muli ang v{{version}}. {{error}} Pindutin ang button na I-install para subukan ito muli.",
+        "heldRolling": "Naghihintay ang v{{version}}: rolling ang deploy mode, at hindi posible ang rolling ({{reason}}). Walang binago at gumagana ang lahat ng site. Susubukan muli ngayong gabi sa pagitan ng 02:00 at 05:00 UTC, o i-install ngayon nang may restart.",
+        "updateWithRestart": "I-update sa v{{version}} nang may restart",
+        "updateWithRestartExplained": "Papalitan ang mga app sa lugar: hindi magagamit ang lahat ng site nang mga dalawang minuto habang nagsisimula ang bagong bersyon."
       },
       "pluginAuto": {
         "automatic": "Awtomatikong i-install ang mga update ng plugin mula sa marketplace",

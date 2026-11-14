@@ -2986,7 +2986,10 @@
         "requestedTitle": "Update angefordert",
         "requested": "Der Updater installiert v{{version}} innerhalb einer Minute. Der Fortschritt wird auf dieser Seite angezeigt.",
         "unknown": "Neue Versionen konnten gerade nicht geprüft werden (die Release-Quelle hat nicht geantwortet). Der Updater versucht es in einigen Minuten erneut.",
-        "heldFailed": "Das Update auf v{{version}} konnte nicht beibehalten werden. Daher läuft die vorherige Version, und v{{version}} wird nicht erneut automatisch versucht. {{error}} Klicken Sie auf „Installieren“, um es erneut zu versuchen."
+        "heldFailed": "Das Update auf v{{version}} konnte nicht beibehalten werden. Daher läuft die vorherige Version, und v{{version}} wird nicht erneut automatisch versucht. {{error}} Klicken Sie auf „Installieren“, um es erneut zu versuchen.",
+        "heldRolling": "v{{version}} wartet: Der Bereitstellungsmodus ist Rolling, und Rolling war nicht möglich ({{reason}}). Nichts wurde geändert, alle Sites laufen. Neuer Versuch heute Nacht zwischen 02:00 und 05:00 UTC, oder jetzt mit Neustart installieren.",
+        "updateWithRestart": "Mit Neustart auf v{{version}} aktualisieren",
+        "updateWithRestartExplained": "Die Apps werden direkt ersetzt: Alle Sites sind etwa zwei Minuten nicht erreichbar, während die neue Version startet."
       },
       "pluginAuto": {
         "automatic": "Marktplatz-Plugin-Updates automatisch installieren",

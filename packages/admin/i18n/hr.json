@@ -2986,7 +2986,10 @@
         "requestedTitle": "Ažuriranje zatraženo",
         "requested": "Usluga za ažuriranje instalirat će v{{version}} unutar minute. Napredak je prikazan na ovoj stranici.",
         "unknown": "Nove verzije trenutačno nije moguće provjeriti (izvor izdanja nije odgovorio). Usluga za ažuriranje pokušat će ponovno za nekoliko minuta.",
-        "heldFailed": "Ažuriranje na v{{version}} nije se moglo zadržati, pa radi prethodna verzija i v{{version}} se neće ponovno automatski pokušati. {{error}} Pritisnite gumb Instaliraj za ponovni pokušaj."
+        "heldFailed": "Ažuriranje na v{{version}} nije se moglo zadržati, pa radi prethodna verzija i v{{version}} se neće ponovno automatski pokušati. {{error}} Pritisnite gumb Instaliraj za ponovni pokušaj.",
+        "heldRolling": "v{{version}} čeka: način implementacije je rolling, a rolling nije bio moguć ({{reason}}). Ništa nije promijenjeno, sve stranice rade. Novi pokušaj noćas između 02:00 i 05:00 UTC ili instalirajte sada s ponovnim pokretanjem.",
+        "updateWithRestart": "Ažuriraj na v{{version}} s ponovnim pokretanjem",
+        "updateWithRestartExplained": "Aplikacije se zamjenjuju na mjestu: sve su stranice nedostupne oko dvije minute dok se nova verzija pokreće."
       },
       "pluginAuto": {
         "automatic": "Automatski instaliraj ažuriranja dodataka s tržnice",

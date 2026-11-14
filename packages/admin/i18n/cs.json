@@ -2986,7 +2986,10 @@
         "requestedTitle": "Aktualizace vyžádána",
         "requested": "Služba aktualizací nainstaluje v{{version}} do minuty. Průběh se zobrazuje na této stránce.",
         "unknown": "Nové verze nyní nelze zkontrolovat (zdroj vydání neodpověděl). Služba aktualizací to zkusí znovu za několik minut.",
-        "heldFailed": "Aktualizaci na v{{version}} se nepodařilo zachovat, proto běží předchozí verze a v{{version}} se automaticky znovu nezkouší. {{error}} Chcete-li to zkusit znovu, stiskněte tlačítko Nainstalovat."
+        "heldFailed": "Aktualizaci na v{{version}} se nepodařilo zachovat, proto běží předchozí verze a v{{version}} se automaticky znovu nezkouší. {{error}} Chcete-li to zkusit znovu, stiskněte tlačítko Nainstalovat.",
+        "heldRolling": "v{{version}} čeká: režim nasazení je rolling a rolling nebyl možný ({{reason}}). Nic se nezměnilo, všechny weby běží. Nový pokus dnes v noci mezi 02:00 a 05:00 UTC, nebo nainstalujte nyní s restartem.",
+        "updateWithRestart": "Aktualizovat na v{{version}} s restartem",
+        "updateWithRestartExplained": "Aplikace se nahradí na místě: všechny weby budou asi dvě minuty nedostupné, než se nová verze spustí."
       },
       "pluginAuto": {
         "automatic": "Aktualizace pluginů z tržiště instalovat automaticky",

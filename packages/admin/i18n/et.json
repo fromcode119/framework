@@ -2986,7 +2986,10 @@
         "requestedTitle": "Uuendus taotletud",
         "requested": "Uuendaja paigaldab versiooni v{{version}} minuti jooksul. Edenemist näidatakse sellel lehel.",
         "unknown": "Uusi versioone ei õnnestunud praegu kontrollida (väljalaskeallikas ei vastanud). Uuendaja proovib mõne minuti pärast uuesti.",
-        "heldFailed": "Uuendust versioonile v{{version}} ei õnnestunud säilitada, seega töötab eelmine versioon ja versiooni v{{version}} automaatselt uuesti ei proovita. {{error}} Uuesti proovimiseks vajutage nuppu Paigalda."
+        "heldFailed": "Uuendust versioonile v{{version}} ei õnnestunud säilitada, seega töötab eelmine versioon ja versiooni v{{version}} automaatselt uuesti ei proovita. {{error}} Uuesti proovimiseks vajutage nuppu Paigalda.",
+        "heldRolling": "v{{version}} ootab: juurutusrežiim on rolling ja rolling ei olnud võimalik ({{reason}}). Midagi ei muudetud, kõik saidid töötavad. Uus katse täna öösel 02:00–05:00 UTC või paigalda kohe taaskäivitusega.",
+        "updateWithRestart": "Uuenda versioonile v{{version}} taaskäivitusega",
+        "updateWithRestartExplained": "Rakendused asendatakse kohapeal: kõik saidid on uue versiooni käivitumise ajal umbes kaks minutit kättesaamatud."
       },
       "pluginAuto": {
         "automatic": "Paigalda poe pluginate uuendused automaatselt",

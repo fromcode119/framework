@@ -2986,7 +2986,10 @@
         "requestedTitle": "已要求更新",
         "requested": "更新程式將在一分鐘內安裝 v{{version}}，進度會顯示於此頁面。",
         "unknown": "目前無法檢查新版本（發布來源未回應）。更新程式將在幾分鐘後重試。",
-        "heldFailed": "無法保留 v{{version}} 的更新，因此目前執行先前的版本，且不會再自動嘗試 v{{version}}。{{error}} 請按下「安裝」按鈕再試一次。"
+        "heldFailed": "無法保留 v{{version}} 的更新，因此目前執行先前的版本，且不會再自動嘗試 v{{version}}。{{error}} 請按下「安裝」按鈕再試一次。",
+        "heldRolling": "v{{version}} 正在等待：部署模式為 rolling，但本次無法 rolling（{{reason}}）。未做任何變更，所有網站正常運作。將於今晚 02:00 至 05:00 UTC 重試，或現在以重新啟動方式安裝。",
+        "updateWithRestart": "以重新啟動方式更新至 v{{version}}",
+        "updateWithRestartExplained": "應用程式將就地替換：新版本啟動期間，所有網站約有兩分鐘無法使用。"
       },
       "pluginAuto": {
         "automatic": "自動安裝應用市集外掛更新",

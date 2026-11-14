@@ -2986,7 +2986,10 @@
         "requestedTitle": "Oppdatering forespurt",
         "requested": "Oppdateringstjenesten installerer v{{version}} innen ett minutt. Fremdriften vises på denne siden.",
         "unknown": "Kunne ikke se etter nye versjoner akkurat nå (utgivelseskilden svarte ikke). Oppdateringstjenesten prøver igjen om noen minutter.",
-        "heldFailed": "Oppdateringen til v{{version}} kunne ikke beholdes, så den forrige versjonen kjører, og v{{version}} prøves ikke på nytt automatisk. {{error}} Trykk på Installer-knappen for å prøve igjen."
+        "heldFailed": "Oppdateringen til v{{version}} kunne ikke beholdes, så den forrige versjonen kjører, og v{{version}} prøves ikke på nytt automatisk. {{error}} Trykk på Installer-knappen for å prøve igjen.",
+        "heldRolling": "v{{version}} venter: utrullingsmodusen er rolling, og rolling var ikke mulig ({{reason}}). Ingenting er endret, alle nettsteder kjører. Nytt forsøk i natt mellom 02:00 og 05:00 UTC, eller installer nå med omstart.",
+        "updateWithRestart": "Oppdater til v{{version}} med omstart",
+        "updateWithRestartExplained": "Appene byttes ut på stedet: alle nettsteder er utilgjengelige i omtrent to minutter mens den nye versjonen starter."
       },
       "pluginAuto": {
         "automatic": "Installer oppdateringer av markedsplass-utvidelser automatisk",

@@ -30,9 +30,10 @@ import type { IUpdateOutcome } from '@cli/services/updater/interfaces/update-out
  *
  * And it rolls the way the deploy command does — `DeployStrategy` decides, `RollingDeploy` swaps, over
  * the same Engine API — so an update starts each new app beside the old one and stops the old one only
- * once the new one answers. It falls back to replacing the containers in place only where the deploy
- * command would restart too (the operator chose restart, a migration the serving release cannot run
- * beside, not enough memory), and for an install that names no version yet.
+ * once the new one answers. It replaces the containers in place only when the operator chose restart,
+ * for an install that names no version yet, or when the operator pressed "Update with restart". When the
+ * mode is rolling and rolling is out (a migration the serving release cannot run beside, not enough
+ * memory), it changes nothing and holds the update — it never takes the sites down on its own.
  */
 export class SelfUpdateRun {
   /** Replaced in this order: plugin hosts before the api that drives them, the gateway last. */
@@ -70,7 +71,12 @@ export class SelfUpdateRun {
     this.deployment = new ReleaseDeployment(engine, directory, versionFile, project, (step) => this.onStep(step));
   }
 
-  async run(from: string, to: string): Promise<IUpdateOutcome> {
+  /**
+   * `allowRestart` is the operator's "Update with restart". Without it a deployment set to rolling is never
+   * restarted by the updater: when rolling is out, the folder is put back and the update is HELD — every
+   * site stays up, and Settings → Updates says why and offers the restart.
+   */
+  async run(from: string, to: string, allowRestart = false): Promise<IUpdateOutcome> {
     const tag = SelfUpdateRun.tag(to);
     const targets = await this.targets(SelfUpdateRun.tag(from));
     if (!targets.length) return SelfUpdateRun.failed(`No platform container of project "${this.project}" runs ${SelfUpdateRun.tag(from)}.`);
@@ -89,8 +95,14 @@ export class SelfUpdateRun {
       .catch((error: Error) => error);
     if (sources instanceof Error) return SelfUpdateRun.failed(`The compose files of ${tag} cannot be applied here: ${sources.message.replace(/\.?$/, '.')} Nothing was changed.`);
     const plan = unpinned
-      ? { mode: DeployMode.RESTART, reason: 'this install names no version yet, so the first update pins one with a restart' }
+      ? { mode: DeployMode.RESTART, reason: 'this install names no version yet, so the first update pins one with a restart', ruledOut: false }
       : await new DeployStrategy(this.stackFor(tag, sources.release)).choose();
+    if (plan.ruledOut && !allowRestart) {
+      this.deployment.restore();
+      this.plan = { mode: DeployMode.ROLLING.value, reason: plan.reason };
+      this.onStep(`Rolling is not possible now — ${plan.reason}. Nothing was changed; the update waits.`);
+      return { state: UpdaterState.HELD.value, error: '' };
+    }
     this.plan = { mode: plan.mode.value, reason: plan.reason };
     this.onStep(`Deploy mode: ${plan.mode.value} — ${plan.reason}`);
     if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, sources);

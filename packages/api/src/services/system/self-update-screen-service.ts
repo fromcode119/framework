@@ -30,12 +30,15 @@ export class SelfUpdateScreenService {
     };
   }
 
-  /** "Update now" on an image installation: ask the updater for the newest version. */
-  async request(): Promise<Record<string, any>> {
+  /**
+   * "Update now" on an image installation: ask the updater for the newest version. `restart` is "Update
+   * with restart", offered when rolling was not possible: the updater may then replace the apps in place.
+   */
+  async request(restart = false): Promise<Record<string, any>> {
     const check = await SystemUpdateService.checkUpdate();
     if (!check?.hasUpdate) throw new Error('No update available');
     const version = String(check.latest).replace(/^v/, '');
-    await this.store.request(version);
+    await this.store.request(version, restart);
     return { requested: version, updaterRunning: UpdaterStatusStore.isRunning(await this.store.status()) };
   }
 }

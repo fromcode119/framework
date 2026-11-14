@@ -15,12 +15,40 @@ export class AutomaticUpdatePolicy {
   static readonly AUTOMATIC = 'automatic';
   static readonly HELD_BREAKING = 'heldBreaking';
   static readonly HELD_FAILED = 'heldFailed';
+  /** Rolling was not possible for this version; it is tried again at night, or now with "Update with restart". */
+  static readonly HELD_ROLLING = 'heldRolling';
+  /** Hours (UTC, the box's clock) in which a version held for rolling is tried again — when the box is quietest. */
+  static readonly NIGHT_FROM_HOUR = 2;
+  static readonly NIGHT_TO_HOUR = 5;
+  /** Within the night, one try an hour: each try downloads nothing new, but writes and restores the folder. */
+  static readonly RETRY_EVERY_MS = 60 * 60 * 1000;
   static readonly OFF = 'off';
   static readonly CURRENT = 'current';
   /** The release source could not be read, so whether anything newer exists is not known. */
   static readonly UNKNOWN = 'unknown';
 
   static decide(input: IAutomaticUpdateInput): IAutomaticUpdatePlan {
+    const decided = AutomaticUpdatePolicy.target(input);
+    if (!decided.target || !AutomaticUpdatePolicy.waitsForRolling(input, decided.target)) return decided;
+    return { current: decided.current, target: '', reason: AutomaticUpdatePolicy.HELD_ROLLING, heldBy: decided.target };
+  }
+
+  /**
+   * A version held because rolling was out is not retried every minute — nothing would have changed — but
+   * once an hour in the night, and at once when an operator allows the restart.
+   */
+  private static waitsForRolling(input: IAutomaticUpdateInput, target: string): boolean {
+    if (AutomaticUpdatePolicy.bare(input.held ?? '') !== target) return false;
+    if (AutomaticUpdatePolicy.bare(input.restartAllowed ?? '') === target) return false;
+    const now = input.now ?? new Date();
+    const hour = now.getUTCHours();
+    const night = hour >= AutomaticUpdatePolicy.NIGHT_FROM_HOUR && hour < AutomaticUpdatePolicy.NIGHT_TO_HOUR;
+    const heldAt = Date.parse(input.heldAt ?? '');
+    const due = !Number.isFinite(heldAt) || now.getTime() - heldAt >= AutomaticUpdatePolicy.RETRY_EVERY_MS;
+    return !(night && due);
+  }
+
+  private static target(input: IAutomaticUpdateInput): IAutomaticUpdatePlan {
     const current = AutomaticUpdatePolicy.bare(input.current);
     const plan = (target: string, reason: string, heldBy = ''): IAutomaticUpdatePlan => ({ current, target, reason, heldBy });
     const requested = AutomaticUpdatePolicy.bare(input.requested);

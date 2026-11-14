@@ -18,7 +18,7 @@ export class UpdaterApiClient implements IUpdaterHealth {
     private readonly sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   ) {}
 
-  async plan(): Promise<{ current: string; target: string; reason: string } | null> {
+  async plan(): Promise<{ current: string; target: string; reason: string; allowRestart?: boolean } | null> {
     const response = await this.call(RouteConstants.SEGMENTS.INTERNAL_UPDATER_PLAN, { headers: InternalServiceAuth.requestHeaders() });
     return response?.ok ? response.json() : null;
   }

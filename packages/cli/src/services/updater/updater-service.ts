@@ -116,14 +116,14 @@ export class UpdaterService {
     }
     this.busy = true;
     try {
-      await this.update(plan.current, plan.target);
+      await this.update(plan.current, plan.target, plan.allowRestart === true);
     } finally {
       this.busy = false;
       this.lock?.release();
     }
   }
 
-  private async update(from: string, to: string): Promise<void> {
+  private async update(from: string, to: string, allowRestart = false): Promise<void> {
     const startedAt = new Date().toISOString();
     const steps: string[] = [];
     const plan = () => ({ deployMode: run.plan?.mode ?? '', deployReason: run.plan?.reason ?? '' });
@@ -134,11 +134,12 @@ export class UpdaterService {
       void this.api.report(this.last);
     };
     const run = new SelfUpdateRun(this.engine, this.api, this.versionFile, this.directory, this.project, report);
-    const outcome = await run.run(from, to)
+    const outcome = await run.run(from, to, allowRestart)
       .catch((error: Error) => ({ state: UpdaterState.FAILED.value, error: error.message }));
     this.last = { ...this.last, ...plan(), state: outcome.state, error: outcome.error, finishedAt: new Date().toISOString(), step: '' };
     console.log(`[updater] ${from} -> ${to}: ${outcome.state}${outcome.error ? ` — ${outcome.error}` : ''}`);
-    this.failedTarget = outcome.state === UpdaterState.SUCCEEDED.value ? '' : to;
+    // A held update changed nothing and is retried by the api's plan (at night, or on "Update with restart").
+    this.failedTarget = [UpdaterState.FAILED.value, UpdaterState.ROLLED_BACK.value].includes(outcome.state) ? to : '';
     await this.api.reportUntilStored(this.last);
     if (outcome.state === UpdaterState.SUCCEEDED.value) await this.handOver(SelfUpdateRun.tag(to));
   }
