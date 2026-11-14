@@ -3601,6 +3601,11 @@
       "failed": "Sinu teavitusseadeid ei õnnestunud salvestada. Proovi uuesti.",
       "alertsIntroOther": "Vali, millised teavitused sellele inimesele e-posti ja konsooli kella kaudu jõuavad. Teised selle saidi haldajad saavad neid edasi.",
       "emailsIntroOther": "Valikulised e-kirjad selle inimese aadressile. Kviitungid ja konto turvalisuse e-kirjad saadetakse alati."
+    },
+    "filter": {
+      "all": "Kõik",
+      "active": "Aktiivsed",
+      "suspended": "Peatatud"
     }
   },
   "scope": {

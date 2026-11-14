@@ -128,7 +128,7 @@ export class MediaPageView extends PureReactor {
           handleDrop={this.handleDrop}
         />
 
-        <div className="w-full px-6 lg:px-12 pt-12 space-y-8 pb-12">
+        <div className="w-full p-6 space-y-6">
           <MediaControls
             theme={this.theme}
             uploading={this.uploading}

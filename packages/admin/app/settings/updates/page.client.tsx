@@ -144,7 +144,7 @@ export class UpdatesPage extends AdminComponent {
     // every site runs on and restarts the box; offering that button from a console headed with one
     // customer's name says it is that customer's to press.
     return (
-      <PlatformScopeGate what={AdminI18n.t('settings.updates.updates')}>
+      <PlatformScopeGate page what={AdminI18n.t('settings.updates.updates')}>
         {this.body()}
       </PlatformScopeGate>
     );

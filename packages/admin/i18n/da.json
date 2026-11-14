@@ -3601,6 +3601,11 @@
       "failed": "Dine notifikationsindstillinger kunne ikke gemmes. Prøv igen.",
       "alertsIntroOther": "Vælg, hvilke beskeder denne person modtager, via e-mail og konsolklokken. Andre, der administrerer dette websted, modtager dem fortsat.",
       "emailsIntroOther": "Valgfrie e-mails sendt til denne persons adresse. Kvitteringer og e-mails om kontosikkerhed sendes altid."
+    },
+    "filter": {
+      "all": "Alle",
+      "active": "Aktive",
+      "suspended": "Suspenderede"
     }
   },
   "scope": {

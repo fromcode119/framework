@@ -59,14 +59,14 @@ export class JobsPage extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <div className="w-full pb-24">
+      <div className={`w-full ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Clock size={18} strokeWidth={2.5} />}
           title={AdminI18n.t('jobs.title')}
           subtitle={this.platformScope ? AdminI18n.t('jobs.subtitlePlatform') : AdminI18n.t('jobs.subtitleSite')}
         />
-        <div className="w-full px-6 lg:px-12 pt-8 space-y-8">
+        <div className="w-full p-6 space-y-6">
           <section className="space-y-3">
             <div>
               <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.scheduledHeading')}</h2>

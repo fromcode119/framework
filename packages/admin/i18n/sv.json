@@ -3601,6 +3601,11 @@
       "failed": "Dina aviseringsinställningar kunde inte sparas. Försök igen.",
       "alertsIntroOther": "Välj vilka aviseringar den här personen får, via e-post och konsolens klocka. Andra som administrerar den här webbplatsen fortsätter att få dem.",
       "emailsIntroOther": "Valfria e-postmeddelanden som skickas till den här personens adress. Kvitton och e-postmeddelanden om kontosäkerhet skickas alltid."
+    },
+    "filter": {
+      "all": "Alla",
+      "active": "Aktiva",
+      "suspended": "Avstängda"
     }
   },
   "scope": {

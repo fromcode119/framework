@@ -3601,6 +3601,11 @@
       "failed": "Setările tale de notificare nu au putut fi salvate. Încearcă din nou.",
       "alertsIntroOther": "Alege ce alerte primește această persoană, prin e-mail și în clopoțelul consolei. Ceilalți care administrează acest site le primesc în continuare.",
       "emailsIntroOther": "E-mailuri opționale trimise la adresa acestei persoane. Chitanțele și e-mailurile de securitate a contului se trimit întotdeauna."
+    },
+    "filter": {
+      "all": "Toți",
+      "active": "Activi",
+      "suspended": "Suspendați"
     }
   },
   "scope": {

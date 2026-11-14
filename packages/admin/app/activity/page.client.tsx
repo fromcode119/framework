@@ -7,7 +7,6 @@ import { DataTable } from '@/components/ui/view/data-table.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
-import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { ActivityColumnsFactory } from '@/app/activity/activity-columns';
 import { ActivityPageHeader } from '@/app/activity/activity-page-header';
 import { ActivityDetailModal } from '@/app/activity/activity-detail-modal';
@@ -114,7 +113,7 @@ export class ActivityPage extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     return (
-      <div className="w-full pb-24 animate-in fade-in duration-500">
+      <div className="w-full animate-in fade-in duration-500">
         <ActivityPageHeader
           mode={this.mode}
           theme={theme}
@@ -124,7 +123,7 @@ export class ActivityPage extends AdminComponent {
           onSearch={this.handleSearch}
         />
 
-        <div className="w-full px-6 lg:px-12 pt-12 space-y-8 pb-12">
+        <div className="w-full p-6">
           <div className={`${AdminClass.SURFACE} overflow-hidden`}>
             <DataTable
               columns={this.columns}
@@ -148,17 +147,6 @@ export class ActivityPage extends AdminComponent {
             onExport={this.handleExportJSON}
           />
         )}
-
-        <AdminPageFooter
-          label={AdminI18n.t('activity.systemActivityLog')}
-          description={AdminI18n.t('activity.globalLedgerOfAdministrativeActions2')}
-          accent="emerald"
-          links={[
-            { label: AdminI18n.t('activity.users'), href: AdminConstants.ROUTES.USERS.LIST },
-            { label: AdminI18n.t('activity.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: AdminI18n.t('activity.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
-          ]}
-        />
       </div>
     );
   }

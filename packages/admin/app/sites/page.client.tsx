@@ -147,7 +147,7 @@ export class SitesPageClient extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     return (
-      <PlatformScopeGate what={AdminI18n.t('sites.sites')}>
+      <PlatformScopeGate page what={AdminI18n.t('sites.sites')}>
       <div className="fc-sites">
         <CompactPageHeader
           theme={theme}

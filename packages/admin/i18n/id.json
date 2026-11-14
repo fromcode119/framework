@@ -3601,6 +3601,11 @@
       "failed": "Pengaturan notifikasi Anda tidak dapat disimpan. Coba lagi.",
       "alertsIntroOther": "Pilih peringatan yang diterima orang ini, melalui email dan lonceng konsol. Orang lain yang mengelola situs ini tetap menerimanya.",
       "emailsIntroOther": "Email opsional yang dikirim ke alamat orang ini. Tanda terima dan email keamanan akun selalu dikirim."
+    },
+    "filter": {
+      "all": "Semua",
+      "active": "Aktif",
+      "suspended": "Ditangguhkan"
     }
   },
   "scope": {

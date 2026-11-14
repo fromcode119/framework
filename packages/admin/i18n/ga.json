@@ -3601,6 +3601,11 @@
       "failed": "Níorbh fhéidir do shocruithe fógra a shábháil. Bain triail eile as.",
       "alertsIntroOther": "Roghnaigh cé na foláirimh a thagann chuig an duine seo, trí ríomhphost agus i gclog na consóle. Leanann daoine eile a bhainistíonn an suíomh seo orthu a fháil.",
       "emailsIntroOther": "Ríomhphoist roghnacha a sheoltar chuig seoladh an duine seo. Seoltar admhálacha agus ríomhphoist slándála cuntais i gcónaí."
+    },
+    "filter": {
+      "all": "Gach duine",
+      "active": "Gníomhach",
+      "suspended": "Curtha ar fionraí"
     }
   },
   "scope": {

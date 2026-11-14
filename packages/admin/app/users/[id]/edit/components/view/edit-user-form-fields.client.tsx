@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AccountStatus } from '@/app/users/enums/account-status.enum';
 
 export class EditUserFormFields extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -129,19 +130,19 @@ export class EditUserFormFields extends PureReactor {
                  <div className="flex items-center gap-3">
                     <Button
                       type="button"
-                      variant={formData.accountStatus === 'active' ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
+                      variant={AccountStatus.resolve(formData.accountStatus) === AccountStatus.ACTIVE ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
                       size={FieldSize.SM}
                       className="rounded-lg"
-                      onClick={() => onPatch({ accountStatus: 'active' })}
+                      onClick={() => onPatch({ accountStatus: AccountStatus.ACTIVE.value })}
                     >
                       {AdminI18n.t('users.active')}
                     </Button>
                     <Button
                       type="button"
-                      variant={formData.accountStatus === 'suspended' ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
+                      variant={AccountStatus.resolve(formData.accountStatus) === AccountStatus.SUSPENDED ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
                       size={FieldSize.SM}
                       className="rounded-lg"
-                      onClick={() => onPatch({ accountStatus: 'suspended' })}
+                      onClick={() => onPatch({ accountStatus: AccountStatus.SUSPENDED.value })}
                     >
                       {AdminI18n.t('users.suspended')}
                     </Button>

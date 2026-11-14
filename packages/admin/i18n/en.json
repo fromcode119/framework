@@ -3601,6 +3601,11 @@
       "failed": "Your notification settings could not be saved. Try again.",
       "alertsIntroOther": "Choose which alerts reach this person, by email and in the console bell. Other people who manage this site keep receiving them.",
       "emailsIntroOther": "Optional emails sent to this person's address. Receipts and account security emails are always sent."
+    },
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "suspended": "Suspended"
     }
   },
   "scope": {

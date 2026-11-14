@@ -3601,6 +3601,11 @@
       "failed": "Varslingsinnstillingene dine kunne ikke lagres. Prøv igjen.",
       "alertsIntroOther": "Velg hvilke varsler denne personen mottar, på e-post og i konsollklokken. Andre som administrerer dette nettstedet fortsetter å motta dem.",
       "emailsIntroOther": "Valgfrie e-poster sendt til adressen til denne personen. Kvitteringer og e-poster om kontosikkerhet sendes alltid."
+    },
+    "filter": {
+      "all": "Alle",
+      "active": "Aktive",
+      "suspended": "Suspenderte"
     }
   },
   "scope": {

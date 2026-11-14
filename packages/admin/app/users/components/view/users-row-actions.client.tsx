@@ -7,6 +7,8 @@ import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IUser } from '@/app/users/interfaces/user.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 
 export class UsersRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -20,13 +22,14 @@ export class UsersRowActions extends PureReactor {
   render(): React.ReactNode {
     const { user, theme, onNavigate, onRequestDelete } = this;
     return (
-      <div className="flex items-center justify-end gap-2">
+      <>
         <Slot name="admin.users.list.table.actions" props={{ user }} />
         <Dropdown
+          align={HorizontalAlign.RIGHT}
           trigger={
-            <button className={`h-9 w-9 flex items-center justify-center rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}>
-              <FrameworkIcons.MoreVertical size={16} strokeWidth={2.5} />
-            </button>
+            <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}>
+              <FrameworkIcons.More size={16} />
+            </span>
           }
           items={[
             {
@@ -62,7 +65,7 @@ export class UsersRowActions extends PureReactor {
             }
           ]}
         />
-      </div>
+      </>
     );
   }
 }

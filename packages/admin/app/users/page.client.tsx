@@ -1,23 +1,22 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { Slot } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
-import { DataTable } from '@/components/ui/view/data-table.client';
-import { StatCard } from '@/components/ui/view/stat-card.client';
+import { DataTablePagination } from '@/components/ui/view/data-table-pagination.client';
+import { AdminClass } from '@/lib/admin-class';
+import { UsersRow } from '@/app/users/components/view/users-row.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
-import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
-import { UsersColumns } from '@/app/users/components/view/users-columns.client';
 import { UsersRowActions } from '@/app/users/components/view/users-row-actions.client';
 import { UsersPageHeader } from '@/app/users/components/view/users-page-header.client';
 import type { IUser } from '@/app/users/interfaces/user.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { Input } from '@/components/ui/view/input.client';
+import { UserListFilter } from '@/app/users/enums/user-list-filter.enum';
 
 export class UsersPage extends AdminComponent {
   private mounted = false;
@@ -25,7 +24,6 @@ export class UsersPage extends AdminComponent {
   @state searchQuery = '';
   @state users: IUser[] = [];
   @state loading = true;
-  @state stats: { total: number; active: number; roles: number } = { total: 0, active: 0, roles: 0 };
   /** role slug → the name the operator gave it under Roles; the list shows names, never slugs. */
   @state roleNames: Record<string, string> = {};
   @state deleteConfirm: IUser | null = null;
@@ -35,7 +33,10 @@ export class UsersPage extends AdminComponent {
   /** Set when the user list could not be loaded, so an empty table is never passed off as "no users". */
   @state loadError = '';
 
-  private readonly pageSize = 10;
+  private readonly pageSize = 20;
+
+  /** Which of the counted tabs is open. */
+  @state filter: UserListFilter = UserListFilter.ALL;
 
   componentDidMount(): void {
     this.mounted = true;
@@ -57,14 +58,7 @@ export class UsersPage extends AdminComponent {
       this.roleNames = Object.fromEntries((Array.isArray(roles) ? roles : []).map((role: any) => [String(role?.slug ?? ''), String(role?.name ?? '').trim()]).filter(([slug, name]) => slug && name));
       this.loadError = '';
 
-      // Stats based on real RBAC data
-      const activeUsers = userData.filter((user: any) => String(user.accountStatus || 'active').toLowerCase() !== 'suspended').length;
       this.users = userData;
-      this.stats = {
-        total: userData.length,
-        active: activeUsers,
-        roles: new Set(userData.flatMap((u: any) => u.roles || [])).size || 1,
-      };
     } catch (err) {
       console.error('Failed to fetch users:', err);
       // Without this the table fell back to "No user records match your query" — a positive claim
@@ -93,8 +87,14 @@ export class UsersPage extends AdminComponent {
     }
   }
 
+  /** How many people each tab holds, before the search narrows them. */
+  private countOf(filter: UserListFilter): number {
+    return this.users.filter((u) => filter.matches(u)).length;
+  }
+
   private get filteredUsers(): IUser[] {
-    const users = this.users;
+    const filter = this.filter;
+    const users = this.users.filter((u) => filter.matches(u));
     const searchQuery = this.searchQuery;
     return users.filter(u =>
       (u.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -118,15 +118,11 @@ export class UsersPage extends AdminComponent {
     return this.filteredUsers.slice((page - 1) * this.pageSize, page * this.pageSize);
   }
 
-  private get columns(): any[] {
-    return UsersColumns.build(this.theme, this.roleNames);
-  }
 
   render(): ReactElement {
     const theme = this.theme;
     const searchQuery = this.searchQuery;
     const loading = this.loading;
-    const stats = this.stats;
     const deleteConfirm = this.deleteConfirm;
     const isDeleting = this.isDeleting;
 
@@ -138,66 +134,53 @@ export class UsersPage extends AdminComponent {
       );
     }
 
+    const pageItems = this.pageItems;
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <UsersPageHeader theme={theme} />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard
-              title={AdminI18n.t('users.userBase')}
-              value={stats.total.toLocaleString()}
-              icon={<FrameworkIcons.Users size={20} />}
-            />
-            <StatCard
-              title={AdminI18n.t('users.activeNow')}
-              value={stats.active.toLocaleString()}
-              icon={<FrameworkIcons.UserCheck size={20} />}
-            />
-            <StatCard
-              title={AdminI18n.t('users.accessLevels')}
-              value={stats.roles.toLocaleString()}
-              icon={<FrameworkIcons.Shield size={20} />}
-            />
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1 group">
-              <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
-                <FrameworkIcons.Search size={18} />
+        <div className="w-full p-6">
+          <div className={AdminClass.of('ext-tabbar')}>
+            <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('users.users')}>
+              {UserListFilter.all().map((filter) => (
+                <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
+                  aria-current={this.filter === filter ? 'page' : undefined}
+                  onClick={() => { this.filter = filter; this.page = 1; }}>
+                  {AdminI18n.t(`users.filter.${filter.value}`)}<span className={AdminClass.of('ext-tabs__count')}>{this.countOf(filter)}</span>
+                </button>
+              ))}
+            </nav>
+            <div className={AdminClass.of('ext-toolbar')}>
+              <div className={AdminClass.of('ext-toolbar__search')}>
+                <FrameworkIcons.Search size={16} />
+                <Input
+                  type="text"
+                  placeholder={AdminI18n.t('users.searchUserBaseByName')}
+                  value={searchQuery}
+                  onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
+                  inputClassName="ps-10"
+                />
               </div>
-              <Input
-                type="text"
-                placeholder={AdminI18n.t('users.searchUserBaseByName')}
-                value={searchQuery}
-                onChange={(e) => { this.searchQuery = e.target.value; }}
-                inputClassName="ps-11"
-              />
             </div>
           </div>
 
-          <div className={`rounded-xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
-            theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-sm' : 'bg-white border-white shadow-xl'
-          }`}>
-            <DataTable
-              columns={this.columns}
-              data={this.pageItems}
-              loading={false}
-              totalDocs={this.filteredUsers.length}
-              limit={this.pageSize}
-              page={this.currentPage}
-              onPageChange={(p) => { this.page = p; }}
-              emptyMessage={this.loadError || AdminI18n.t('users.noUserRecordsMatchYour')}
-              actions={(user) => (
-                <UsersRowActions
-                  user={user}
-                  theme={theme}
-                  onNavigate={(href) => this.router.push(href)}
-                  onRequestDelete={(u) => { this.deleteConfirm = u; }}
-                />
-              )}
-            />
-          </div>
+          {pageItems.length === 0 ? (
+            <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{this.loadError || AdminI18n.t('users.noUserRecordsMatchYour')}</div>
+          ) : (
+            <div className={AdminClass.of('ext-list')}>
+              {pageItems.map((user) => (
+                <UsersRow key={user.id} user={user} roleNames={this.roleNames} actions={
+                  <UsersRowActions
+                    user={user}
+                    theme={theme}
+                    onNavigate={(href) => this.router.push(href)}
+                    onRequestDelete={(u) => { this.deleteConfirm = u; }}
+                  />
+                } />
+              ))}
+            </div>
+          )}
+          <DataTablePagination totalDocs={this.filteredUsers.length} limit={this.pageSize} page={this.currentPage} onPageChange={(p: number) => { this.page = p; }} />
 
           <Slot name="admin.users.list.bottom" />
         </div>
@@ -210,16 +193,6 @@ export class UsersPage extends AdminComponent {
           title={AdminI18n.t('users.revokeAccess')}
           description={AdminI18n.t('users.thisWillPermanentlyDeleteS', { email: deleteConfirm?.email })}
           confirmLabel={AdminI18n.t('users.deactivateUser')}
-        />
-
-        <AdminPageFooter
-          label={AdminI18n.t('users.userManagementInfrastructure')}
-          description={AdminI18n.t('users.manageUserAccountsAndSecurity')}
-          links={[
-            { label: AdminI18n.t('users.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: AdminI18n.t('users.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
-            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
-          ]}
         />
       </div>
     );

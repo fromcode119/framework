@@ -3601,6 +3601,11 @@
       "failed": "Nie udało się zapisać ustawień powiadomień. Spróbuj ponownie.",
       "alertsIntroOther": "Wybierz, które alerty otrzymuje ta osoba, e-mailem i w dzwonku konsoli. Inne osoby zarządzające tą witryną nadal je otrzymują.",
       "emailsIntroOther": "Opcjonalne e-maile wysyłane na adres tej osoby. Potwierdzenia i e-maile dotyczące bezpieczeństwa konta są wysyłane zawsze."
+    },
+    "filter": {
+      "all": "Wszyscy",
+      "active": "Aktywni",
+      "suspended": "Zawieszeni"
     }
   },
   "scope": {

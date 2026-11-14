@@ -84,7 +84,7 @@ export class BuildOverview extends SourcesPageActions {
   render(): ReactNode {
     const matching = this.matchingRows;
     return (
-      <PlatformScopeGate what={AdminI18n.t('sources.sources')}>
+      <PlatformScopeGate page what={AdminI18n.t('sources.sources')}>
         {/* No padding on the root: the sticky header spans the content column like every other screen's. */}
         <div className="w-full">
           <CompactPageHeader title={AdminI18n.t('sources.sources')} subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')} icon={<Hammer size={20} />} actions={this.renderHeaderActions()} />

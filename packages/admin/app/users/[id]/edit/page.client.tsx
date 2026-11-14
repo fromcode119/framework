@@ -11,6 +11,7 @@ import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { SelfAccount } from '@/lib/self-account';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AccountStatus } from '@/app/users/enums/account-status.enum';
 
 export class EditUserPage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -23,7 +24,7 @@ export class EditUserPage extends AdminComponent {
     username: '',
     firstName: '',
     lastName: '',
-    accountStatus: 'active',
+    accountStatus: AccountStatus.ACTIVE.value,
     forcePasswordReset: false,
     password: '',
     confirmPassword: ''
@@ -63,7 +64,7 @@ export class EditUserPage extends AdminComponent {
         username: data.username || '',
         firstName: data.firstName || '',
         lastName: data.lastName || '',
-        accountStatus: String(data.accountStatus || 'active'),
+        accountStatus: AccountStatus.resolve(data.accountStatus).value,
         forcePasswordReset: Boolean(data.forcePasswordReset),
         password: '',
         confirmPassword: ''

@@ -6,11 +6,11 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
-import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PermissionCatalogGroupCard } from '@/app/users/permissions/components/view/permission-catalog-group-card.client';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
 
 /**
  * Every permission a role can hold on this site, and which roles hold each one.
@@ -71,7 +71,7 @@ export class PermissionsPage extends AdminComponent {
     const scoped = this.roles.filter((role) => !role.permissions.includes('*'));
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-300">
+      <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
@@ -79,7 +79,7 @@ export class PermissionsPage extends AdminComponent {
           subtitle={AdminI18n.t('users.whatARoleCanBe')}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+        <div className="w-full p-6">
           <div className="space-y-6 pb-8">
             {this.loadError ? (
               <div className="fc-scope-notice"><span className="fc-scope-notice__text">{this.loadError}</span></div>
@@ -99,16 +99,6 @@ export class PermissionsPage extends AdminComponent {
             ))}
           </div>
         </div>
-
-        <AdminPageFooter
-          label={AdminI18n.t('users.permissions')}
-          description={AdminI18n.t('users.checkedByTheFrameworkAnd')}
-          links={[
-            { label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.LIST },
-            { label: AdminI18n.t('users.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
-          ]}
-        />
       </div>
     );
   }
