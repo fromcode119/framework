@@ -106,7 +106,11 @@ jobs:
           # Fast-forward only: a merge that landed meanwhile makes this fail rather than be overwritten.
           # The workflow token's update starts no other workflow, so this cannot loop.
           gh api -X PATCH "$repo/refs/heads/$BRANCH" -f sha="$commit" -F force=false >/dev/null
-          git fetch -q origin "$BRANCH" && git checkout -q "$commit"
+          # `reset --hard`, not `checkout`: the edit above left this file changed in the working tree, and
+          # `git checkout` then refuses to move onto a commit that touches it ("local changes would be
+          # overwritten"), which failed every release that actually bumped a version. The commit carries
+          # exactly the content that was uploaded, so there is nothing here worth keeping.
+          git fetch -q origin "$BRANCH" && git reset -q --hard "$commit"
 
       # A branch whose head is still an UNSIGNED release commit (made by this job before it signed its
       # commits) is one Sources refuses to build. Put a signed commit with the same content on top.
