@@ -155,6 +155,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           onMiniToggle={() => navigationState.setIsMini(!navigationState.isMini)}
           onActiveContextChange={navigationState.setActivePrimaryContextId}
           sectionPages={navigationState.secondaryResolved.items}
+          settingsPages={navigationState.settingsPages}
           activePrimaryPathOverride={String(navigationState.activePrimaryItem?.path || '')}
           activeChildPathOverride={String(navigationState.secondaryResolved?.activeSourcePath || '')}
         />

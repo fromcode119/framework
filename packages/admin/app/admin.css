@@ -990,6 +990,9 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   .fc-nav-sub__item--current, .fc-nav-sub__group--preview > .fc-nav-sub__item--group { background: var(--fc-nav-active); color: var(--fc-nav-text); }
   .fc-nav-second { display: block; position: sticky; top: 0; z-index: 190; flex: none; height: 100vh; }
   .fc-nav-second:empty { width: 0; }
+  /* A paneled section (Settings) keeps its pages in the second column, not under its line. */
+  .fc-nav-sub--paneled { display: none; }
+  .fc-nav-item--preview { background: var(--fc-nav-hover); }
 }
 .fc-nav-panel {
   display: flex; flex-direction: column; gap: 4px; width: 220px; height: 100%; padding: 14px 10px;
@@ -1001,6 +1004,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-panel__list { display: flex; flex-direction: column; gap: 1px; }
 .fc-nav-panel .fc-nav-sub__item { min-height: var(--fc-nav-row); padding-inline: 10px; }
 .fc-nav-panel .fc-nav-sub__item--active { background: var(--fc-nav-active); }
+.fc-nav-panel__group { display: flex; flex-direction: column; gap: 1px; margin-top: 8px; }
+.fc-nav-panel__group-title { margin: 0 0 2px; padding-inline: 10px; font-size: 11px; font-weight: 600; color: var(--fc-nav-muted); }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
 .fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }

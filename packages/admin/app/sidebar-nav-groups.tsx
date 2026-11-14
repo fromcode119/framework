@@ -25,6 +25,8 @@ export class SidebarNavGroups extends PureReactor {
   @prop declare groupedMenu: Record<string, any[]>;
   /** The panel entries of the section you are in; drawn under it. */
   @prop declare sectionPages?: any[];
+  /** Settings' own pages whatever page is open; the pinned Settings shows them in the column beside. */
+  @prop declare settingsPages?: any[];
   @prop declare normalizedActivePrimaryPathOverride: string;
   @prop declare normalizedActiveChildPathOverride: string;
   @prop declare footerSettingsItem: any;
@@ -49,7 +51,7 @@ export class SidebarNavGroups extends PureReactor {
     return NavUtils.isPathActive(this.pathname, item.path, siblings.map((entry) => entry.path));
   }
 
-  private renderItem(item: any, siblings: any[], children?: any[]): ReactNode {
+  private renderItem(item: any, siblings: any[], children?: any[], paneled = false): ReactNode {
     const active = this.isActive(item, siblings);
     return (
       <NavItem
@@ -60,8 +62,9 @@ export class SidebarNavGroups extends PureReactor {
         active={active}
         onClick={this.onClose}
         children={children ?? item.children}
-        subItems={active ? this.sectionPages : undefined}
+        subItems={paneled && this.settingsPages?.length ? this.settingsPages : active ? this.sectionPages : undefined}
         isMini={this.isMini}
+        paneled={paneled}
         pluginSlug={item.pluginSlug}
         activePathOverride={this.normalizedActiveChildPathOverride || this.normalizedActivePrimaryPathOverride}
       />
@@ -94,10 +97,12 @@ export class SidebarNavGroups extends PureReactor {
 
     if (this.part === SidebarNavPart.FOOT) {
       if (this.query?.trim()) return null;
+      // Settings is pinned at the foot: its twenty pages opened there pushed the whole menu out of the
+      // sidebar, so on a desktop they stand in the second column beside it instead.
       return (
         <div className="fc-nav-foot">
           {settingsItem
-            ? this.renderItem(settingsItem, [settingsItem], settingsChildren)
+            ? this.renderItem(settingsItem, [settingsItem], settingsChildren, true)
             : upkeep.map((item) => this.renderItem(item, upkeep))}
         </div>
       );

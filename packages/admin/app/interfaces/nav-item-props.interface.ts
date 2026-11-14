@@ -8,6 +8,8 @@ export interface INavItemProps {
   /** More pages of the section (its panel entries), shown under it while it is open. */
   subItems?: any[];
   pluginSlug?: string;
+  /** The section's pages stand in the second column beside the menu (desktop), not under its line. */
+  paneled?: boolean;
   isMini?: boolean;
   /** Resolved active path (honours secondary-panel sourcePaths). When it matches one of the section's
    * pages, that page is the one marked — so a sub-page like /<plugin>/<child> lights up its true

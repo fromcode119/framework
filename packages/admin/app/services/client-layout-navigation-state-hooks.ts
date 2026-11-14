@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { NavUtils } from '@/lib/nav-utils';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SecondarySidebarStateService } from '@/app/services/secondary-sidebar-state-service';
 import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
 import { SecondarySidebarContextResolver } from '@/app/services/secondary-sidebar-context-resolver';
@@ -36,6 +37,20 @@ export class ClientLayoutNavigationStateHooks {
         userCapabilities: args.user?.permissions || [],
       });
     }, [args.normalizedPathname, activePrimaryContextId, sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
+
+    // Settings opens its pages in the column beside the menu from any page, not only from a settings
+    // route, so its own list is resolved whatever the current route is.
+    const settingsPages = React.useMemo(() => {
+      return ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
+        pathname: NavUtils.normalizePath(AdminConstants.ROUTES.SETTINGS.ROOT),
+        primaryContextId: '',
+        menuItems: sidebarState.menuItems,
+        secondaryPanel: sidebarState.effectiveSecondaryPanel,
+        plugins: sidebarState.plugins,
+        userRoles: args.user?.roles || [],
+        userCapabilities: args.user?.permissions || [],
+      }).items;
+    }, [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
 
     const routePrimaryItem = React.useMemo(() => NavUtils.resolveBestMatchEntry(args.normalizedPathname, sidebarState.menuItems), [sidebarState.menuItems, args.normalizedPathname]);
     const activePrimaryItem = React.useMemo(() => {
@@ -250,6 +265,7 @@ export class ClientLayoutNavigationStateHooks {
       setDesktopSecondaryOpen: sidebarState.setDesktopSecondaryOpen,
       setActivePrimaryContextId,
       secondaryResolved,
+      settingsPages,
       secondaryMode,
       secondarySourceLabel,
       activePrimaryItem,

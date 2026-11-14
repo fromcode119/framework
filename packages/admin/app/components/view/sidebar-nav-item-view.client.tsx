@@ -27,6 +27,12 @@ export class NavItemView extends PureReactor {
   @prop declare isMini?: boolean;
   /** The plugin that registered this item; only it may fill the item's trailing slot. */
   @prop declare pluginSlug?: string;
+  /**
+   * The section's pages stand in the second column beside the menu on a desktop — Settings, pinned at
+   * the menu's foot, where twenty pages opened under it pushed every other section out of the sidebar.
+   * The phone's menu keeps them under the line.
+   */
+  @prop declare paneled?: boolean;
   /** The page the current one belongs to, when a page is reached from a section's page (a record of a list). */
   @prop declare activePathOverride?: string;
   /** Raw pathname from `usePathname()`, supplied by the thin functional shim. */
@@ -40,6 +46,8 @@ export class NavItemView extends PureReactor {
   @state private previewGroup = '';
   private previewTimer = 0;
   private static readonly PREVIEW_EVENT = 'fc-nav-group-preview';
+  /** The preview key of a paneled section's own pages (a group is keyed by its name). */
+  private static readonly SECTION_PREVIEW = ':section';
 
   componentDidMount(): void {
     this.revealWhenOpen();
@@ -120,17 +128,22 @@ export class NavItemView extends PureReactor {
     const nav = 'fc-nav-item';
     const state = open ? ` ${nav}--active` : '';
 
+    const paneled = Boolean(this.paneled) && !isMini && pages.length > 0;
+    const previewing = paneled && !open && this.previewGroup === NavItemView.SECTION_PREVIEW;
     return (
       <div className="fc-nav-section" ref={this.sectionRef}>
         <AdminLink
           href={href}
-          onClick={onClick}
+          onClick={paneled ? () => { this.closePreviewNow(); onClick?.(); } : onClick}
+          onMouseEnter={paneled ? () => this.openPreview(NavItemView.SECTION_PREVIEW) : undefined}
+          onMouseLeave={paneled ? this.closePreview : undefined}
           // Collapsed, the icon is the ONLY thing on screen, so the name lives in the tooltip and in the
           // accessible name instead.
           title={isMini ? label : undefined}
           aria-label={isMini ? label : undefined}
           aria-current={open && !activePage ? 'page' : undefined}
-          className={`${nav}${isMini ? ` ${nav}--mini` : ''}${state}`}
+          aria-expanded={paneled ? open || previewing : undefined}
+          className={`${nav}${isMini ? ` ${nav}--mini` : ''}${state}${previewing ? ` ${nav}--preview` : ''}`}
         >
           <span className={`${nav}__icon`}>{icon}</span>
           {!isMini ? <span className={`${nav}__label`}>{label}</span> : null}
@@ -138,11 +151,18 @@ export class NavItemView extends PureReactor {
         </AdminLink>
 
         {open && !isMini && pages.length > 0 ? (
-          <div className="fc-nav-sub">
+          <div className={`fc-nav-sub${paneled ? ' fc-nav-sub--paneled' : ''}`}>
             {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
               ? this.renderPage(entry.page, activePage)
               : this.renderGroup(entry, activePage)))}
           </div>
+        ) : null}
+        {paneled && (open || previewing) ? (
+          <NavGroupPanel title={label} preview={previewing} onPointerEnter={this.keepPreview} onPointerLeave={this.closePreview}>
+            {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
+              ? this.renderPage(entry.page, activePage)
+              : this.renderPanelGroup(entry, activePage)))}
+          </NavGroupPanel>
         ) : null}
       </div>
     );
@@ -193,6 +213,16 @@ export class NavItemView extends PureReactor {
             {pages(false)}
           </NavGroupPanel>
         ) : null}
+      </div>
+    );
+  }
+
+  /** A sub-menu inside the second column: its name as a heading, its pages under it (no third column). */
+  private renderPanelGroup(entry: { name: string; pages: any[] }, activePage: string): ReactNode {
+    return (
+      <div key={`group:${entry.name}`} className="fc-nav-panel__group">
+        <p className="fc-nav-panel__group-title">{entry.name}</p>
+        {entry.pages.map((page) => this.renderPage(page, activePage))}
       </div>
     );
   }

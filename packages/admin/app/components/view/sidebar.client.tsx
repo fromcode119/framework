@@ -23,6 +23,8 @@ export class Sidebar extends AdminComponent {
   @prop declare onActiveContextChange: (contextId: string) => void;
   /** The panel entries of the section you are in, drawn under that section in the menu. */
   @prop declare sectionPages: any[];
+  /** Settings' own pages, whatever page is open: they open in the column beside the menu. */
+  @prop declare settingsPages: any[];
   @prop declare activePrimaryPathOverride: string;
   @prop declare activeChildPathOverride: string;
 
@@ -138,6 +140,7 @@ export class Sidebar extends AdminComponent {
       pathname: this.pathnameValue,
       groupedMenu,
       sectionPages: this.sectionPages,
+      settingsPages: this.settingsPages,
       normalizedActivePrimaryPathOverride: this.normalizedActivePrimaryPathOverride,
       normalizedActiveChildPathOverride: this.normalizedActiveChildPathOverride,
       footerSettingsItem: this.footerSettingsItem,
