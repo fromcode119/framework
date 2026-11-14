@@ -124,7 +124,7 @@ export class CollectionEditDerivations {
     // refused with "Unlock confirmation is required" — so a read-only status, or a locked record, gets no
     // header control.
     const statusOptions = Array.isArray(statusField?.options) && statusField?.admin?.readOnly !== true && !locked
-      ? statusField.options.map((option: any) => ({ label: String(option?.label || option?.value || '').trim(), value: String(option?.value || '').trim() })).filter((option: any) => option.value)
+      ? statusField.options.map((option: any) => ({ label: String(option?.label || option?.value || '').trim(), value: String(option?.value || '').trim(), tone: String(option?.tone || '').trim() })).filter((option: any) => option.value)
       : [];
 
     const hasSlug = collection?.fields.some((f: IField) => f.name === 'slug');

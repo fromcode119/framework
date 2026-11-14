@@ -30,7 +30,7 @@ export class EditHeader extends PureReactor {
   @prop declare setFormData: (value: any) => void;
   @prop declare getPreviewUrl: () => string;
   @prop declare showPreview: boolean;
-  @prop declare statusOptions: { label: string; value: string }[];
+  @prop declare statusOptions: { label: string; value: string; tone?: string }[];
   @prop declare currentStatusValue: string;
   /** The status option's label, shown as a badge whether or not it may be changed here. */
   @prop declare currentStatusLabel: string;

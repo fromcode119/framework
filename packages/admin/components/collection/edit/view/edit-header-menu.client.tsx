@@ -31,7 +31,8 @@ export class EditHeaderMenu extends Reactor {
   @prop declare id: string;
   @prop declare formData: any;
   @prop declare setFormData: (value: any) => void;
-  @prop declare statusOptions: { label: string; value: string }[];
+  /** Each option may name the tone of its badge; the menu leads the option with that badge's dot. */
+  @prop declare statusOptions: { label: string; value: string; tone?: string }[];
   @prop declare currentStatusValue: string;
   @prop declare onStatusChange: (value: string) => void;
   @prop declare advancedView: boolean;
@@ -81,6 +82,7 @@ export class EditHeaderMenu extends Reactor {
     const items: IDropdownItem[] = this.statusOptions.map((option, index) => ({
       label: option.label,
       section: index === 0 ? AdminI18n.t('collection.edit.statusSection') : undefined,
+      icon: <span className={AdminClass.of('state-dot')} data-tone={option.tone || 'default'} />,
       selectable: true,
       selected: option.value === this.currentStatusValue,
       onClick: () => this.onStatusChange(option.value),

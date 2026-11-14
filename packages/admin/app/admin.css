@@ -701,6 +701,21 @@ html.dark {
 .fc-record-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
 .fc-dropdown-footer { padding: 6px; border-top: 1px solid var(--fc-border); }
 .fc-dropdown-footer:not(:has(button)) { display: none; }
+/* The chosen row of a set: a tick at the end, an empty slot of the same width on the rows not chosen. */
+.fc-dropdown-choice { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; margin-inline-start: 8px; color: var(--fc-text); }
+/* A status option leads with the dot of its tone, the same dot as the record's state badge. */
+.fc-state-dot { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
+.fc-state-dot[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-state-dot[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-state-dot[data-tone="danger"] { --fc-tone: var(--fc-danger); }
+.fc-state-dot[data-tone="info"] { --fc-tone: var(--fc-info); }
+
+/* The admin's tick box: a plain square in the console's ink, no glow; its label reads at body size. */
+.fc-checkbox__box { display: flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid color-mix(in srgb, var(--fc-text-muted) 55%, transparent); border-radius: 4px; background: var(--fc-surface); color: var(--fc-brand-contrast); transition: background-color .15s, border-color .15s; }
+.fc-checkbox__box[data-checked="true"] { border-color: var(--fc-brand); background: var(--fc-brand); }
+.fc-checkbox__box[data-disabled="true"] { opacity: .5; }
+.fc-checkbox__dash { width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
+.fc-checkbox__label { font-size: 13px; color: var(--fc-text); user-select: none; }
 .fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
