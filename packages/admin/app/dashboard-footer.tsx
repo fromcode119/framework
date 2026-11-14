@@ -17,13 +17,14 @@ export class DashboardFooter extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="p-6 border-t mt-auto bg-slate-50/50 border-slate-100 dark:bg-slate-950/20 dark:border-slate-800">
-        <div className="w-full px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+      <div className="fc-list-actions px-6 pb-6">
+        <div>
+          <div className="fc-list-actions__row">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[12px] font-medium tracking-tight text-slate-500 dark:text-slate-400">
+                {/* No dot: this footer fetches nothing, and a glowing light beside a name reads as a
+                    live status it never measured. The name and the build are facts it does have. */}
+                <span className="fc-list-actions__count">
                   {AdminI18n.t('dashboard.infrastructure', { name: this.platformName })}{this.build ? ` // ${this.build}` : ''}
                 </span>
               </div>

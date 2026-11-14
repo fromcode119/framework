@@ -21,7 +21,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
   protected present({ slug, model }: IPluginDetailPageValues): ReactNode {
     if (model.loading) {
       return (
-        <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="flex-1 flex items-center justify-center py-20">
           <Loader label={AdminI18n.t('plugins.detail.synchronizingPluginManifest')} />
         </div>
       );

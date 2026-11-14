@@ -36,7 +36,7 @@ export class PluginHealthView extends PureReactor {
     const isDark = this.theme === ThemeMode.DARK;
 
     if (this.loading) {
-      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('plugins.list.loadingPlatformHealth')} /></div>;
+      return <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('plugins.list.loadingPlatformHealth')} /></div>;
     }
     if (!this.report) {
       return (

@@ -195,7 +195,7 @@ export class InstalledPluginsView extends Reactor {
   return (
     <div className={AdminClass.of('ext-page')} onDragOver={this.onPageDragOver}>
       {this.operationStatus && (this.isUploading || this.isActivating) ? <Loader fullPage label={this.operationStatus.message} /> : null}
-      {this.loading ? <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('plugins.list.synchronizingGlobalMarketplaceCatalog')} /></div> : (
+      {this.loading ? <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('plugins.list.synchronizingGlobalMarketplaceCatalog')} /></div> : (
         <>
           {this.renderAlerts()}
           {this.siteScope ? <PlatformScopeGate what="" text={AdminI18n.t('plugins.list.platformNote')}>{null}</PlatformScopeGate> : null}
