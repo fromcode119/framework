@@ -674,6 +674,9 @@ html.dark {
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
   .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
+  /* A side column with nothing in it (an invoice: every card is the record's own) keeps no empty third of
+     the page: the record reads as one column, as a focused section does. */
+  .fc-edit-columns__grid--sidebar:not(:has(> .fc-edit-sticky > .fc-edit-column > *, > .fc-edit-sticky .fc-edit-top__grid > *)) { grid-template-columns: minmax(0, 1fr); max-width: 48rem; }
 }
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
    column's first card — who the record is for — follows the record's first card instead of waiting under
@@ -755,7 +758,9 @@ html.dark {
 /* On a phone the actions stay beside the title, at its top, instead of taking a row of their own. */
 /* On a phone the number and date take the whole line; the states and ⋯ follow on a row of their own. */
 @media (max-width: 639px) { .fc-record-head { align-items: flex-start; gap: 10px; } .fc-record-head__main { flex-basis: 100%; } }
-@media (min-width: 640px) { .fc-record-head { flex-wrap: nowrap; } .fc-record-head__main { flex-basis: 0; } .fc-record-head__actions { flex: none; flex-wrap: nowrap; } }
+/* The title keeps room to be read: actions that do not fit beside it (an invoice carries four) move to a
+   row of their own under it, instead of squeezing the number into a column one letter wide. */
+@media (min-width: 640px) { .fc-record-head__main { min-width: min(18rem, 100%); } .fc-record-head__actions { flex: none; max-width: 100%; } }
 .fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
 .fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 700; line-height: 1.25; color: var(--fc-text); }
 .fc-record-head__copy,
