@@ -48,7 +48,9 @@ export class RecentEditsService {
       const collection = this.collectionFor(table);
       edits.push({
         recordId,
-        title: RecentEditsService.titleOf(row?.version_data) || `${collection.label} ${recordId}`,
+        // The collection's name sits beside the title in the console's language; repeating it here in the
+        // language it was declared in printed "Orders 2 Поръчки". Without a title the record is its number.
+        title: RecentEditsService.titleOf(row?.version_data, collection.titleKey) || `#${recordId}`,
         collectionLabel: collection.label,
         collectionSlug: collection.shortSlug,
         pluginSlug: collection.pluginSlug,
@@ -72,9 +74,10 @@ export class RecentEditsService {
     return CoercionUtils.toString(raw).replace(/^"|"$/g, '').trim();
   }
 
-  private static titleOf(versionData: unknown): string {
+  /** The field the collection names as its title (`admin.useAsTitle`, an order's number) first, then the usual ones. */
+  private static titleOf(versionData: unknown, titleKey = ''): string {
     const data = (versionData || {}) as Record<string, unknown>;
-    for (const key of RecentEditsService.TITLE_KEYS) {
+    for (const key of [titleKey, ...RecentEditsService.TITLE_KEYS].filter(Boolean)) {
       const value = data[key];
       if (typeof value === 'string' && value.trim()) return value.trim();
       // Localized fields arrive as { en: "…", bg: "…" } — any language names the record.
@@ -87,17 +90,18 @@ export class RecentEditsService {
   }
 
   /** The collection that owns a physical table, so the row can link where the operator edits it. */
-  private collectionFor(table: string): { label: string; shortSlug: string; pluginSlug: string } {
+  private collectionFor(table: string): { label: string; shortSlug: string; pluginSlug: string; titleKey: string } {
     const match = (this.deps.listCollections() || []).find(
       (collection) => String(collection?.tableName || collection?.slug) === table,
     );
     if (!match) {
-      return { label: RecentEditsService.prettify(table), shortSlug: '', pluginSlug: '' };
+      return { label: RecentEditsService.prettify(table), shortSlug: '', pluginSlug: '', titleKey: '' };
     }
     return {
       label: RecentEditsService.labelOf(match) || RecentEditsService.prettify(table),
       shortSlug: String(match.shortSlug || match.slug || ''),
       pluginSlug: String(match.pluginSlug || 'system'),
+      titleKey: CoercionUtils.toString(match.admin?.useAsTitle).trim(),
     };
   }
 
