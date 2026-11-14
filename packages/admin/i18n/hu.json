@@ -434,7 +434,6 @@
       "add": "Menüpont hozzáadása"
     },
     "field": {
-      "enter": "{{label}} megadása...",
       "notSet": "Nincs beállítva",
       "auto": "Automatikus",
       "localeFallback": "Üres ({{locale}}) — a webhely a(z) {{fallback}} értéket mutatja",

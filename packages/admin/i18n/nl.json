@@ -434,7 +434,6 @@
       "add": "Menu-item toevoegen"
     },
     "field": {
-      "enter": "Voer {{label}} in...",
       "notSet": "Niet ingesteld",
       "auto": "Automatisch",
       "localeFallback": "Leeg in {{locale}} — de site toont de waarde uit {{fallback}}",

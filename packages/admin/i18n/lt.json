@@ -434,7 +434,6 @@
       "add": "Pridėti meniu punktą"
     },
     "field": {
-      "enter": "Įveskite {{label}}...",
       "notSet": "Nenustatyta",
       "auto": "Automatiškai",
       "localeFallback": "Tuščia kalba {{locale}} — svetainėje rodoma {{fallback}} reikšmė",

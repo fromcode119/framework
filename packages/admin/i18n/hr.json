@@ -434,7 +434,6 @@
       "add": "Dodaj stavku izbornika"
     },
     "field": {
-      "enter": "Unesite {{label}}...",
       "notSet": "Nije postavljeno",
       "auto": "Automatski",
       "localeFallback": "Prazno za {{locale}} — stranica prikazuje vrijednost za {{fallback}}",

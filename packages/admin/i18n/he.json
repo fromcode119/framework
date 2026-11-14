@@ -434,7 +434,6 @@
       "add": "הוספת פריט תפריט"
     },
     "field": {
-      "enter": "הזינו {{label}}...",
       "notSet": "לא הוגדר",
       "auto": "אוטומטי",
       "localeFallback": "ריק ב-{{locale}} — האתר מציג את הערך של {{fallback}}",

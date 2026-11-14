@@ -31,13 +31,17 @@ export class CollectionListPageViewModelBuilder {
     const selectFilterFields = CollectionListPageService.resolveSelectFilterFields(collection);
     const layout = CollectionListLayout.from(collection);
     layout.reportRefused(resolvedSlug);
-    const quickEditFields = layout.rowFields;
     const columnById = new Map(allColumns.map((col: any) => [col.id, col]));
     const ordered = self.state.visibleColumnIds.map((id: string) => columnById.get(id)).filter(Boolean);
+    // Quick edit is offered only when it holds something the row does not already let the operator change
+    // in place: a form repeating the one value that is a click away in its cell is the same control twice.
+    const inPlace = (name: string) => layout.isInline(name) && self.state.visibleColumnIds.includes(name);
+    const quickEditFields = layout.rowFields.some((entry) => !inPlace(entry.name)) ? layout.rowFields : [];
     const access = CollectionAccess.forList(self.props.user, collection);
     const cellContext = {
       collection, layout, access, resolvedSlug, theme, pluginSettings: self.state.pluginSettings,
       onSaved: () => self.fetchData(self.state.page),
+      recordHref: (row: any) => `/${pluginSlug}/${slug}/${row.id}`,
     };
     const columns = ListColumnDecorator.decorate(ordered.length ? ordered : allColumns.slice(0, 1), cellContext);
     const cardCells = ListColumnDecorator.cells(allColumns, cellContext);

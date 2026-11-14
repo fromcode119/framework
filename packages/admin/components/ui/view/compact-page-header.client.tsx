@@ -52,7 +52,7 @@ export class CompactPageHeader extends PureReactor {
             )}
             <div className="min-w-0">
               <h1 className="text-xl font-bold tracking-tight leading-tight text-slate-900 dark:text-white">{title}</h1>
-              {subtitle && <p className="text-xs font-medium text-slate-500 dark:text-slate-500 tracking-tight truncate">{subtitle}</p>}
+              {subtitle && <p className="text-xs font-medium text-slate-500 dark:text-slate-500 tracking-tight">{subtitle}</p>}
             </div>
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2 min-w-0">{actions}</div>}

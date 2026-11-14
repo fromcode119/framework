@@ -434,7 +434,6 @@
       "add": "Thêm mục menu"
     },
     "field": {
-      "enter": "Nhập {{label}}...",
       "notSet": "Chưa đặt",
       "auto": "Tự động",
       "localeFallback": "Trống ở {{locale}} — trang web hiển thị giá trị {{fallback}}",

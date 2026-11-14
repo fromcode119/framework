@@ -434,7 +434,6 @@
       "add": "Dodaj element menija"
     },
     "field": {
-      "enter": "Vnesite {{label}} ...",
       "notSet": "Ni nastavljeno",
       "auto": "Samodejno",
       "localeFallback": "Prazno v {{locale}} — spletno mesto prikaže vrednost {{fallback}}",

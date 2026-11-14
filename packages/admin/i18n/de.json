@@ -434,7 +434,6 @@
       "add": "Menüeintrag hinzufügen"
     },
     "field": {
-      "enter": "{{label}} eingeben...",
       "notSet": "Nicht festgelegt",
       "auto": "Automatisch",
       "localeFallback": "Leer in {{locale}} – die Website zeigt den Wert aus {{fallback}}",

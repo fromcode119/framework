@@ -117,18 +117,16 @@ export class CollectionListPageService {
       const semanticDefaults = ['id', 'title', 'name', 'label', 'slug', 'status', 'createdAt'].filter((id) => availableIds.has(id));
       defaults = semanticDefaults.length ? semanticDefaults : allColumns.slice(0, 4).map((column) => column.id);
     } else {
+      // The collection's own columns, as declared: the record's number is a column like any other, so a
+      // collection whose title already identifies the record (an order number) does not get it twice.
       defaults = defaults.filter((id) => availableIds.has(id));
-      if (availableIds.has('id') && !defaults.includes('id')) defaults = ['id', ...defaults];
       if (availableIds.has('createdAt') && !defaults.includes('createdAt')) defaults = [...defaults, 'createdAt'];
     }
 
     const uniqueDefaults = Array.from(new Set(defaults));
     const validPersistedColumns = persistedColumns.filter((id) => availableIds.has(id));
+    // The operator's own column choice is kept as made, including a hidden number.
     const next = validPersistedColumns.length ? validPersistedColumns : uniqueDefaults;
-
-    if (uniqueDefaults.includes('id') && availableIds.has('id') && !next.includes('id')) {
-      return ['id', ...next];
-    }
 
     return next.length ? next : allColumns.slice(0, 4).map((column) => column.id);
   }

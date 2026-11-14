@@ -434,7 +434,6 @@
       "add": "Añadir elemento de menú"
     },
     "field": {
-      "enter": "Introduzca {{label}}...",
       "notSet": "Sin definir",
       "auto": "Automático",
       "localeFallback": "Vacío en {{locale}}: el sitio muestra el valor de {{fallback}}",

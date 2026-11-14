@@ -434,7 +434,6 @@
       "add": "मेनू आइटम जोड़ें"
     },
     "field": {
-      "enter": "{{label}} दर्ज करें...",
       "notSet": "सेट नहीं है",
       "auto": "स्वचालित",
       "localeFallback": "{{locale}} में खाली — साइट {{fallback}} मान दिखाती है",

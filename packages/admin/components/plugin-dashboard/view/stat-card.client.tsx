@@ -82,7 +82,7 @@ export class StatCard extends PureReactor {
           {stat.value}
         </h4>
         {stat.subtext && (
-          <p className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50 text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
+          <p className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50 text-[12px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed tracking-tight">
             {stat.subtext}
           </p>
         )}

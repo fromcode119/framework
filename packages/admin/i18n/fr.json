@@ -434,7 +434,6 @@
       "add": "Ajouter un élément de menu"
     },
     "field": {
-      "enter": "Saisissez {{label}}...",
       "notSet": "Non défini",
       "auto": "Auto",
       "localeFallback": "Vide en {{locale}} — le site affiche la valeur {{fallback}}",

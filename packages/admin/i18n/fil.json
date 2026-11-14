@@ -434,7 +434,6 @@
       "add": "Magdagdag ng Menu Item"
     },
     "field": {
-      "enter": "Ilagay ang {{label}}...",
       "notSet": "Hindi nakatakda",
       "auto": "Auto",
       "localeFallback": "Walang laman sa {{locale}} — ipinapakita ng site ang value sa {{fallback}}",

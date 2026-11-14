@@ -79,11 +79,12 @@ describe('./field-renderer', () => {
 
     const input = screen.getByTestId('mock-input');
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute('placeholder', 'Enter Title...');
+    // No invented "Enter Title...": the label above already names the field.
+    expect(input).not.toHaveAttribute('placeholder');
   });
 
-  it('renders a textarea for textarea type', () => {
-    const field: any = { name: 'content', type: 'textarea' };
+  it('renders a textarea for textarea type with the placeholder the field declares', () => {
+    const field: any = { name: 'content', type: 'textarea', placeholder: 'Write the story' };
     render(
       <FieldRenderer 
         field={field} 
@@ -94,7 +95,7 @@ describe('./field-renderer', () => {
       />
     );
 
-    expect(screen.getByPlaceholderText('Enter Content...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Write the story')).toBeInTheDocument();
   });
 
   it('renders a select for select type', () => {

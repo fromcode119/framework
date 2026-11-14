@@ -434,7 +434,6 @@
       "add": "Legg til menyelement"
     },
     "field": {
-      "enter": "Skriv inn {{label}} …",
       "notSet": "Ikke angitt",
       "auto": "Auto",
       "localeFallback": "Tom for {{locale}} – nettstedet viser verdien for {{fallback}}",

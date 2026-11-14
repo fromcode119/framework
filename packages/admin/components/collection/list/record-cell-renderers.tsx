@@ -7,6 +7,7 @@ import { CollectionListMediaCellValue } from '@/components/collection/list/view/
 import { PluginCellValue } from '@/components/collection/list/view/plugin-cell-value.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Turning one cell's raw value into what the list actually shows.
@@ -65,13 +66,14 @@ export class RecordCellRenderers {
     if (columnName === 'createdAt' || columnName === 'updatedAt' || field?.type === 'date' || field?.type === 'datetime') {
       const date = raw ? new Date(raw) : null;
       if (!date || Number.isNaN(date.getTime())) return '-';
-      // System timestamp columns and explicit datetime fields keep the full date+time.
-      // Fields typed as "date" (date-only pickers) render without the time component.
-      // Show time only for explicit datetime fields. Date fields and system
-      // timestamp columns (createdAt/updatedAt) render date-only in list view.
-      // A list cell holds one line, so a moment is read to the minute: seconds only widen the column.
-      const isDateOnly = field?.type !== 'datetime';
-      return isDateOnly ? date.toLocaleDateString() : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+      // A date field shows the day; a datetime field the day and the minute. A list cell holds one line, so
+      // a moment this year leaves out its year, as an inbox does; the full moment is in the tooltip.
+      if (field?.type !== 'datetime') return date.toLocaleDateString(AdminI18n.locale);
+      const thisYear = date.getFullYear() === new Date().getFullYear();
+      const short = date.toLocaleString(AdminI18n.locale, thisYear
+        ? { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }
+        : { dateStyle: 'medium', timeStyle: 'short' });
+      return React.createElement('span', { title: date.toLocaleString(AdminI18n.locale, { dateStyle: 'full', timeStyle: 'short' }) }, short);
     }
 
     if (Array.isArray(field?.options) && field.options.length) {

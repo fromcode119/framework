@@ -434,7 +434,6 @@
       "add": "Menü Öğesi Ekle"
     },
     "field": {
-      "enter": "{{label}} girin...",
       "notSet": "Ayarlanmadı",
       "auto": "Otomatik",
       "localeFallback": "{{locale}} dilinde boş — site {{fallback}} değerini gösteriyor",

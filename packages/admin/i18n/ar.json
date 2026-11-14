@@ -434,7 +434,6 @@
       "add": "إضافة عنصر قائمة"
     },
     "field": {
-      "enter": "أدخل {{label}}...",
       "notSet": "غير محدد",
       "auto": "تلقائي",
       "localeFallback": "فارغ في {{locale}} — يعرض الموقع قيمة {{fallback}}",

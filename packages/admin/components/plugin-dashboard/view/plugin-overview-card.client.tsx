@@ -59,7 +59,7 @@ export class PluginOverviewCard extends PureReactor {
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
+          <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
             {subtitle}
           </p>
         )}

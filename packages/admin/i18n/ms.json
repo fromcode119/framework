@@ -434,7 +434,6 @@
       "add": "Tambah Item Menu"
     },
     "field": {
-      "enter": "Masukkan {{label}}...",
       "notSet": "Tidak ditetapkan",
       "auto": "Auto",
       "localeFallback": "Kosong dalam {{locale}} — tapak memaparkan nilai {{fallback}}",

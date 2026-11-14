@@ -434,7 +434,6 @@
       "add": "Tilføj menupunkt"
     },
     "field": {
-      "enter": "Angiv {{label}}...",
       "notSet": "Ikke angivet",
       "auto": "Auto",
       "localeFallback": "Tom på {{locale}} — webstedet viser værdien fra {{fallback}}",

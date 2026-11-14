@@ -434,7 +434,6 @@
       "add": "Pievienot izvēlnes vienumu"
     },
     "field": {
-      "enter": "Ievadiet {{label}}...",
       "notSet": "Nav iestatīts",
       "auto": "Automātiski",
       "localeFallback": "Tukšs valodā {{locale}} — vietne rāda {{fallback}} vērtību",

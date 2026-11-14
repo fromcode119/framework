@@ -64,7 +64,7 @@ export class CollectionListTable extends PureReactor {
   @prop declare onDelete: (id: string) => void;
   /** Archive / Restore one row; absent when the collection is not archivable. */
   @prop declare onArchive?: (id: string, archiving: boolean) => void;
-  @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
+  @prop declare onQuickEditOpen: (row: any, event?: MouseEvent) => void;
   @prop declare onQuickEditSave: () => void;
   @prop declare onQuickEditClose: () => void;
   /** Present when the collection declares `admin.list.groupBy` or `admin.list.order`. */
@@ -179,8 +179,13 @@ export class CollectionListTable extends PureReactor {
     );
   }
 
-  /** The table's row and the card share the short set: the less used actions live in the row's ⋯ menu. */
+  /** The table's row: its title links to the record, so it carries no edit icon of its own. */
   @bound private rowActions(row: any): ReactNode {
+    return this.actionsFor(row, false);
+  }
+
+  /** The card: the edit icon is its link to the record. */
+  @bound private cardActions(row: any): ReactNode {
     return this.actionsFor(row, true);
   }
 
@@ -251,7 +256,7 @@ export class CollectionListTable extends PureReactor {
               pageSize={this.pageSize}
               onPageChange={this.onPageChange}
               onOpen={this.onRowClick}
-              renderActions={this.rowActions}
+              renderActions={this.cardActions}
               renderExpanded={this.renderQuickEdit}
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}

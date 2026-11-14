@@ -434,7 +434,6 @@
       "add": "Shto element menuje"
     },
     "field": {
-      "enter": "Shkruani {{label}}...",
       "notSet": "E pacaktuar",
       "auto": "Automatik",
       "localeFallback": "Bosh në {{locale}} — sajti shfaq vlerën në {{fallback}}",

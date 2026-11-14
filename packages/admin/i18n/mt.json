@@ -434,7 +434,6 @@
       "add": "Żid Element tal-Menu"
     },
     "field": {
-      "enter": "Daħħal {{label}}...",
       "notSet": "Mhux issettjat",
       "auto": "Awtomatiku",
       "localeFallback": "Vojt f'{{locale}} — is-sit juri l-valur ta' {{fallback}}",

@@ -434,7 +434,6 @@
       "add": "Cuir Mír Roghchláir Leis"
     },
     "field": {
-      "enter": "Cuir isteach {{label}}...",
       "notSet": "Gan socrú",
       "auto": "Uathoibríoch",
       "localeFallback": "Folamh i {{locale}} — taispeánann an suíomh an luach {{fallback}}",

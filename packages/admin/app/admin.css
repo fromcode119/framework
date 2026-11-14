@@ -878,8 +878,10 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-list-frame { border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); overflow: hidden; }
 .fc-dt { width: 100%; border-collapse: collapse; text-align: start; }
 .fc-dt-head { background: var(--fc-surface-muted); border-bottom: 1px solid var(--fc-border); }
-.fc-dt-th { height: 40px; padding: 0 12px; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: nowrap; }
-.fc-dt-th__inner { display: flex; align-items: center; gap: 4px; }
+/* A long column name wraps onto a second line instead of widening its column past what the values need,
+   so a list fits its page instead of scrolling sideways. */
+.fc-dt-th { height: 40px; padding: 6px 10px; font-size: 12px; font-weight: 500; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: normal; }
+.fc-dt-th__inner { display: flex; align-items: flex-end; gap: 4px; }
 .fc-dt-th--sortable { cursor: pointer; }
 .fc-dt-th--sortable:hover { color: var(--fc-text); }
 .fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline-end: 4px; }
@@ -889,9 +891,12 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-row:hover { background: var(--fc-surface-muted); }
 .fc-dt-row--link { cursor: pointer; }
 .fc-dt-row--selected { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
-.fc-dt-td { height: 48px; padding: 0 12px; vertical-align: middle; white-space: nowrap; }
+.fc-dt-td { height: 48px; padding: 0 10px; vertical-align: middle; white-space: nowrap; }
 .fc-dt-td--actions { padding-inline: 4px 8px; }
 .fc-dt-cell { font-size: 13px; font-weight: 400; color: var(--fc-text); }
+/* The title opens its record; it reads as the row's name, and underlines only to show it is a link. */
+.fc-dt-title-link { color: inherit; font-weight: 500; text-decoration: none; }
+.fc-dt-title-link:hover, .fc-dt-title-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
 /* A pinned cell is opaque, so the columns scrolling under it never show through; it follows its row. */
 .fc-dt-pinned { background: var(--fc-surface); }
 .fc-dt-head .fc-dt-pinned { background: var(--fc-surface-muted); }

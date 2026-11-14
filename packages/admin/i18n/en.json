@@ -181,7 +181,10 @@
       "deletePermanently": "Delete Permanently",
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
-      "recordPart": { "download": "Download {{title}}", "person": "Name" },
+      "recordPart": {
+        "download": "Download {{title}}",
+        "person": "Name"
+      },
       "unsavedIn": "Unsaved changes to",
       "noUnsaved": "No unsaved changes",
       "notSaved": "Not saved: {{reason}}",
@@ -431,7 +434,6 @@
       "add": "Add Menu Item"
     },
     "field": {
-      "enter": "Enter {{label}}...",
       "notSet": "Not set",
       "auto": "Auto",
       "localeFallback": "Empty in {{locale}} — the site shows the {{fallback}} value",

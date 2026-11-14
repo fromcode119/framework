@@ -434,7 +434,6 @@
       "add": "Aggiungi voce di menu"
     },
     "field": {
-      "enter": "Inserisci {{label}}...",
       "notSet": "Non impostato",
       "auto": "Auto",
       "localeFallback": "Vuoto in {{locale}} — il sito mostra il valore {{fallback}}",

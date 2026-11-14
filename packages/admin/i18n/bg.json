@@ -218,7 +218,10 @@
       "deletePermanently": "Изтрий окончателно",
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
-      "recordPart": { "download": "Изтегли {{title}}", "person": "Име" },
+      "recordPart": {
+        "download": "Изтегли {{title}}",
+        "person": "Име"
+      },
       "unsavedIn": "Незапазени промени в",
       "noUnsaved": "Няма незапазени промени",
       "notSaved": "Не е запазено: {{reason}}",
@@ -468,7 +471,6 @@
       "add": "Добави елемент"
     },
     "field": {
-      "enter": "Въведете {{label}}…",
       "notSet": "Не е зададено",
       "auto": "Автоматично",
       "localeFallback": "Празно на {{locale}} — сайтът показва стойността на {{fallback}}",

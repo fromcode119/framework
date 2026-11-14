@@ -56,7 +56,7 @@ export class FieldTextInput extends PureReactor {
           onChange={updateValue}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
-          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
+          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : field.placeholder}
           step={admin.step ?? (field as any).step}
           min={admin.min ?? (field as any).min}
           max={admin.max ?? (field as any).max}
@@ -81,7 +81,7 @@ export class FieldTextInput extends PureReactor {
             }
             updateValue(e.target.value);
           }}
-          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
+          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : field.placeholder}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
           inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}

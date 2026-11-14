@@ -434,7 +434,6 @@
       "add": "メニュー項目を追加"
     },
     "field": {
-      "enter": "{{label}}を入力...",
       "notSet": "未設定",
       "auto": "自動",
       "localeFallback": "{{locale}} では空です — サイトには {{fallback}} の値が表示されます",

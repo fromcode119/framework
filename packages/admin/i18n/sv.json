@@ -434,7 +434,6 @@
       "add": "Lägg till menyobjekt"
     },
     "field": {
-      "enter": "Ange {{label}}...",
       "notSet": "Inte angiven",
       "auto": "Auto",
       "localeFallback": "Tomt för {{locale}} — webbplatsen visar värdet för {{fallback}}",

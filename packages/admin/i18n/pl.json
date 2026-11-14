@@ -434,7 +434,6 @@
       "add": "Dodaj pozycję menu"
     },
     "field": {
-      "enter": "Wpisz: {{label}}...",
       "notSet": "Nie ustawiono",
       "auto": "Automatycznie",
       "localeFallback": "Puste w {{locale}} — strona wyświetla wartość z {{fallback}}",

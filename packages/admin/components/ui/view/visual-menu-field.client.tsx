@@ -103,7 +103,7 @@ export class VisualMenuField extends PureReactor {
         this.handleUpdateItem(index, f.name, value);
       },
       theme: this.theme,
-      placeholder: AdminI18n.t('ui.field.enter', { label: f.label || f.name }),
+      placeholder: f.placeholder,
     };
 
     if (f.type === 'relationship') {

@@ -27,7 +27,7 @@ export class SectionCard extends PureReactor {
             <div className="min-w-0">
               <h2 className="text-[13px] font-semibold tracking-tight text-slate-800 dark:text-white truncate">{title}</h2>
               {subtitle && (
-                <p className="text-[10px] font-semibold tracking-tight text-slate-400 mt-0.5 truncate">{subtitle}</p>
+                <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
               )}
             </div>
           </div>

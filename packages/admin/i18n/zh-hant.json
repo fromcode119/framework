@@ -434,7 +434,6 @@
       "add": "新增選單項目"
     },
     "field": {
-      "enter": "輸入{{label}}...",
       "notSet": "未設定",
       "auto": "自動",
       "localeFallback": "{{locale}} 中為空白 — 網站會顯示 {{fallback}} 的值",

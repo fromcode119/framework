@@ -190,7 +190,8 @@ export class CollectionListPageActions {
     setQuickEditInitialData
   }: {
     row: any;
-    event: React.MouseEvent;
+    /** The click that asked for it, when one did; the ⋯ menu's item calls without one. */
+    event?: React.MouseEvent;
     resolvedSlug: string;
     quickEditExpandedId: string | null;
     setQuickEditExpandedId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -199,7 +200,7 @@ export class CollectionListPageActions {
     setQuickEditData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setQuickEditInitialData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   }): Promise<void> {
-    event.stopPropagation();
+    event?.stopPropagation();
     const rowId = String(row.id);
     if (quickEditExpandedId === rowId) {
       setQuickEditExpandedId(null);

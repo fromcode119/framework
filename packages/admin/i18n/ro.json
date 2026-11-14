@@ -434,7 +434,6 @@
       "add": "Adaugă element de meniu"
     },
     "field": {
-      "enter": "Introduceți {{label}}...",
       "notSet": "Nesetat",
       "auto": "Automat",
       "localeFallback": "Gol în {{locale}} — site-ul afișează valoarea din {{fallback}}",

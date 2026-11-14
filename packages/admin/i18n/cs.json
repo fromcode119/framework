@@ -434,7 +434,6 @@
       "add": "Přidat položku menu"
     },
     "field": {
-      "enter": "Zadejte {{label}}...",
       "notSet": "Nenastaveno",
       "auto": "Automaticky",
       "localeFallback": "Prázdné v {{locale}} — web zobrazuje hodnotu z {{fallback}}",

@@ -434,7 +434,6 @@
       "add": "메뉴 항목 추가"
     },
     "field": {
-      "enter": "{{label}} 입력...",
       "notSet": "설정되지 않음",
       "auto": "자동",
       "localeFallback": "{{locale}}에서 비어 있음 — 사이트에 {{fallback}} 값이 표시됩니다",

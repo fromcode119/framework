@@ -434,7 +434,6 @@
       "add": "Lisa menüüüksus"
     },
     "field": {
-      "enter": "Sisestage {{label}}...",
       "notSet": "Määramata",
       "auto": "Automaatne",
       "localeFallback": "Keeles {{locale}} tühi — sait näitab väärtust keeles {{fallback}}",

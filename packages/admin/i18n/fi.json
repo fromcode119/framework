@@ -434,7 +434,6 @@
       "add": "Lisää valikkokohde"
     },
     "field": {
-      "enter": "Anna {{label}}...",
       "notSet": "Ei asetettu",
       "auto": "Automaattinen",
       "localeFallback": "Tyhjä kielellä {{locale}} — sivusto näyttää arvon kielellä {{fallback}}",
