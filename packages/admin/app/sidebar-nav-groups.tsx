@@ -87,7 +87,10 @@ export class SidebarNavGroups extends PureReactor {
     const settingsItem = this.footerSettingsItem;
     const { main, settingsArea } = SidebarMenuService.sections(this.groupedMenu, settingsItem?.path ?? '');
     const upkeep = this.withActivity(settingsArea);
-    const settingsChildren = [...(settingsItem?.children || []), ...upkeep];
+    // A page listed under Settings — its own entries or the upkeep pages — carries the COLUMN group it
+    // came from ("Platform"), not a sub-menu of Settings: kept, every page sharing it would be folded
+    // under that name, once per spelling ("Platform" and its translation).
+    const settingsChildren = [...(settingsItem?.children || []), ...upkeep].map((item) => ({ ...item, group: undefined }));
 
     if (this.part === SidebarNavPart.FOOT) {
       if (this.query?.trim()) return null;
