@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyValue } from '@/components/collection/fields/view/structured-read-only-value.client';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import { StructuredReadOnlyTableService } from '@/components/collection/fields/structured-read-only-table-service';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
@@ -37,7 +38,7 @@ export class StructuredReadOnlyTable extends PureReactor {
    * same ones every list in the console uses.
    */
   private get filters(): ListFilter[] {
-    return StructuredReadOnlyFieldService.filterableColumns(this.node).map((entry) => new ListFilter(
+    return StructuredReadOnlyTableService.filterableColumns(this.node).map((entry) => new ListFilter(
       entry.column,
       StructuredReadOnlyFieldService.keyLabel(entry.column, this.keyLabels),
       [{ label: AdminI18n.t('collection.list.filterAll'), value: '' }, ...entry.values.map((value) => ({ label: value, value }))],
@@ -51,7 +52,7 @@ export class StructuredReadOnlyTable extends PureReactor {
   private narrowed(rows: Array<Record<string, IStructuredNode>>): Array<Record<string, IStructuredNode>> {
     const picked = Object.entries(this.picked).filter(([, value]) => value);
     if (!picked.length) return rows;
-    return rows.filter((row) => picked.every(([column, value]) => StructuredReadOnlyFieldService.cellText(row[column]).trim() === value));
+    return rows.filter((row) => picked.every(([column, value]) => StructuredReadOnlyTableService.cellText(row[column]).trim() === value));
   }
 
   /** The column the operator sorted by, and which way. Empty means the order the record holds. */
@@ -81,7 +82,7 @@ export class StructuredReadOnlyTable extends PureReactor {
   private ordered(rows: Array<Record<string, IStructuredNode>>): Array<Record<string, IStructuredNode>> {
     const column = this.sortColumn;
     if (!column) return rows;
-    const text = (row: Record<string, IStructuredNode>): string => StructuredReadOnlyFieldService.cellText(row[column]);
+    const text = (row: Record<string, IStructuredNode>): string => StructuredReadOnlyTableService.cellText(row[column]);
     const sorted = [...rows].sort((left, right) => text(left).localeCompare(text(right), undefined, { numeric: true, sensitivity: 'base' }));
     return this.sortDescending ? sorted.reverse() : sorted;
   }
@@ -108,7 +109,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const columns = this.node.tableColumns ?? [];
     const all = this.node.tableRows ?? [];
     const needle = String(this.filterLower || '').trim();
-    const matching = needle ? all.filter((row) => StructuredReadOnlyFieldService.tableRowMatches(row, needle)) : all;
+    const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle)) : all;
     const rows = this.ordered(this.narrowed(matching));
     const filters = this.filters;
     return (
