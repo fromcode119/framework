@@ -115,7 +115,7 @@ export class AdminSchemaLocalizer {
       }
       next.label = this.menuLabel(slug, item, adminLabelOf(slug));
       // An AREA's row is named by the area, in the reader's language — not by the plugin that happens
-      // to own its first page. Without this the menu would read "Commerce" above "Поръчки".
+      // to own its first page. Without this the row would read the raw area key above its own pages.
       if (item.isArea && next.group) next.label = next.group;
       if (Array.isArray(item.children)) next.children = this.menu(item.children, adminLabelOf);
       return next;

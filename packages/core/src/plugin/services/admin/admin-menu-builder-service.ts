@@ -215,7 +215,7 @@ export class AdminMenuBuilderService {
       const plugin = allPlugins.find(p => p.manifest.slug === owner.pluginSlug);
       finalMenu.push({
         // The area's own name. The localizer reads `admin.groups.<key>` from the owning plugin's
-        // dictionary and puts the translation here, so the row reads "Търговия", not "Commerce".
+        // dictionary and puts the translation here, so the row reads in the operator's language.
         label: bucket.groupName,
         icon: plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers',
         group: bucket.groupName,
