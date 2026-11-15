@@ -181,6 +181,7 @@
       "deletePermanently": "Endgültig löschen",
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Herunterladen {{title}}",
         "person": "Person"

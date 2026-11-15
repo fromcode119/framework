@@ -181,6 +181,7 @@
       "deletePermanently": "Burahin nang Permanente",
       "relatedRecords": "Mga kaugnay na record",
       "relatedEmpty": "Wala pang ibang plugin na may record na naka-link dito.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "I-download {{title}}",
         "person": "Tao"

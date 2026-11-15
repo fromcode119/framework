@@ -181,6 +181,7 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Transferir {{title}}",
         "person": "Pessoa"

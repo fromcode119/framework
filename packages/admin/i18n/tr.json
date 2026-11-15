@@ -181,6 +181,7 @@
       "deletePermanently": "Kalıcı Olarak Sil",
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "İndir {{title}}",
         "person": "Kişi"

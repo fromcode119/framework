@@ -181,6 +181,7 @@
       "deletePermanently": "Ħassar b'Mod Permanenti",
       "relatedRecords": "Rekords relatati",
       "relatedEmpty": "L-ebda plugin ieħor għadu ma għandu rekord marbut ma' dan.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Niżżel {{title}}",
         "person": "Persuna"

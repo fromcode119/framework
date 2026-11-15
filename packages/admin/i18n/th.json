@@ -181,6 +181,7 @@
       "deletePermanently": "ลบถาวร",
       "relatedRecords": "รายการที่เกี่ยวข้อง",
       "relatedEmpty": "ยังไม่มีปลั๊กอินอื่นที่มีรายการเชื่อมโยงกับรายการนี้",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "ดาวน์โหลด {{title}}",
         "person": "บุคคล"

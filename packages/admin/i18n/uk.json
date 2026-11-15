@@ -181,6 +181,7 @@
       "deletePermanently": "Видалити назавжди",
       "relatedRecords": "Пов’язані записи",
       "relatedEmpty": "Жоден інший плагін ще не має запису, пов’язаного з цим.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Завантажити {{title}}",
         "person": "Особа"

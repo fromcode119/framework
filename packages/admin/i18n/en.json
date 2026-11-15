@@ -181,6 +181,7 @@
       "deletePermanently": "Delete Permanently",
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Download {{title}}",
         "person": "Name"

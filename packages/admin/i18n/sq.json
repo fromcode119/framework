@@ -181,6 +181,7 @@
       "deletePermanently": "Fshije përgjithmonë",
       "relatedRecords": "Regjistrime të lidhura",
       "relatedEmpty": "Ende asnjë shtojcë tjetër nuk ka regjistrim të lidhur me këtë.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Shkarko {{title}}",
         "person": "Personi"

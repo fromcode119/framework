@@ -181,6 +181,7 @@
       "deletePermanently": "Ištrinti visam laikui",
       "relatedRecords": "Susiję įrašai",
       "relatedEmpty": "Joks kitas įskiepis dar neturi su šiuo susieto įrašo.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Atsisiųsti {{title}}",
         "person": "Asmuo"
