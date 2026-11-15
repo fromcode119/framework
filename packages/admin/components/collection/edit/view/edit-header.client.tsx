@@ -57,7 +57,6 @@ export class EditHeader extends PureReactor {
   @prop declare advancedView: boolean;
   @prop declare setAdvancedView: (next: boolean) => void;
   /** Sections holding fields the record does not draw; each opens in place from the ⋯ menu. */
-  @prop declare moreSections?: Array<{ key: string; title: string; count: number }>;
   /** The sections already opened in place, which a newly opened one joins. */
   @prop declare openedSections?: string[];
   /** The record's own address, which those menu rows extend with the section they open. */
@@ -169,7 +168,7 @@ export class EditHeader extends PureReactor {
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
               canArchive={this.canSave && CollectionArchive.isArchivable(collection)}
               canDelete={this.canDelete} onDelete={this.onDelete}
-              moreSections={this.moreSections || []} openedSections={this.openedSections || []} recordHref={this.recordHref || ''} navigate={this.navigate}
+              openedSections={this.openedSections || []} recordHref={this.recordHref || ''} navigate={this.navigate}
               actions={(
                 <>
                   <Slot name={`admin.collection.${slug}.edit.header.menu`} include={this.includeAction} props={slotProps} />

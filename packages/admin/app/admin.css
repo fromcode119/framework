@@ -1288,6 +1288,25 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    — Shopify's, Stripe's, Medusa's — keeps one row per fact and lets the card be short. A card that is
    short is not a card that is broken. */
 .fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
+/* What else the record holds, at its foot: one row per section, its name, how many fields it adds. */
+.fc-record-more__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  font-size: var(--fc-record-text);
+  text-align: start;
+  color: var(--fc-text);
+  cursor: pointer;
+}
+.fc-record-more__row:hover .fc-record-more__name { color: var(--fc-brand); }
+.fc-record-more__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.fc-record-more__count { color: var(--fc-text-muted); white-space: nowrap; }
+.fc-record-more__go { flex: none; color: var(--fc-text-muted); }
 .fc-record-card__label { color: var(--fc-text-muted); }
 .fc-record-card__value {
   min-width: 0;
