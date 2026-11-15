@@ -27,6 +27,8 @@ export class ListColumnDecorator {
     onSaved: () => void;
     /** The admin path of a record — the title links there, so a row opens from the keyboard and in a new tab. */
     recordHref: (row: any) => string;
+    /** Cell renderers by field name (see `cells`), for the values on the row's second line. */
+    metaCells?: ReadonlyMap<string, (row: any) => ReactNode>;
   }): any[] {
     const visible = new Set(columns.map((column) => column.id));
     return columns.map((column) => {
@@ -40,7 +42,7 @@ export class ListColumnDecorator {
         // at 28rem instead of pushing every other column off the screen.
         const linked = accessor === column.accessor ? ListColumnDecorator.linked(accessor, context.recordHref) : accessor;
         const numbered = !visible.has('id') && !ListColumnDecorator.identifies(context.collection, column.id);
-        return { ...column, accessor: ListColumnDecorator.title(linked, context.layout, visible, numbered) };
+        return { ...column, accessor: ListColumnDecorator.title(linked, context.layout, visible, numbered, context.metaCells) };
       }
       return accessor === column.accessor ? column : { ...column, accessor };
     });
@@ -101,19 +103,51 @@ export class ListColumnDecorator {
     return indexes.some((index) => index?.unique && Array.isArray(index.fields) && index.fields.length === 1 && index.fields[0] === name);
   }
 
-  private static title(accessor: (row: any) => ReactNode, layout: CollectionListLayout, visible: Set<string>, showNumber: boolean): (row: any) => ReactNode {
+  /**
+   * The title cell: the record's thumbnail and name on one line, and under it the quiet line that says
+   * which record this is — its number, then the values the collection declared on `admin.list.meta`
+   * that are NOT columns right now. A value that already has its own column is not repeated, and a
+   * field with nothing in it prints nothing rather than a dash: a second line appears only when it has
+   * something to say.
+   */
+  private static title(
+    accessor: (row: any) => ReactNode,
+    layout: CollectionListLayout,
+    visible: Set<string>,
+    showNumber: boolean,
+    metaCells?: ReadonlyMap<string, (row: any) => ReactNode>,
+  ): (row: any) => ReactNode {
     const showMedia = Boolean(layout.mediaField) && !visible.has(layout.mediaField);
-    if (!showMedia && !showNumber) return accessor;
-    return (row: any) => (
-      <div className="flex items-center gap-3 max-w-[28rem]">
-        {showMedia && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
-          ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
-          : null}
-        <div className="min-w-0">
-          <div className="truncate text-slate-900 dark:text-slate-100">{accessor(row)}</div>
-          {showNumber ? <div className="mt-0.5 text-[12px] font-medium text-slate-400">#{row.id}</div> : null}
+    const metaFields = layout.metaFields.filter((name) => !visible.has(name) && metaCells?.has(name));
+    if (!showMedia && !showNumber && !metaFields.length) return accessor;
+    return (row: any) => {
+      const parts: ReactNode[] = [];
+      if (showNumber) parts.push(<span key="__id">#{row.id}</span>);
+      for (const name of metaFields) {
+        const value = row[name];
+        if (value === null || value === undefined || value === '') continue;
+        parts.push(
+          <span key={name} className="truncate">
+            {layout.valueLabels[name] ? <span className="text-slate-300 dark:text-slate-600">{layout.valueLabels[name]} </span> : null}
+            {metaCells!.get(name)!(row)}
+          </span>,
+        );
+      }
+      return (
+        <div className="flex items-center gap-3 max-w-[28rem]">
+          {showMedia && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
+            ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
+            : null}
+          <div className="min-w-0">
+            <div className="truncate font-medium text-slate-900 dark:text-slate-100">{accessor(row)}</div>
+            {parts.length ? (
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                {parts.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="text-slate-300 dark:text-slate-600">·</span>, part] : [part]))}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
-    );
+      );
+    };
   }
 }

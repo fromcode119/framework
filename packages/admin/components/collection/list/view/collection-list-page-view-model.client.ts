@@ -43,8 +43,8 @@ export class CollectionListPageViewModelBuilder {
       onSaved: () => self.fetchData(self.state.page),
       recordHref: (row: any) => `/${pluginSlug}/${slug}/${row.id}`,
     };
-    const columns = ListColumnDecorator.decorate(ordered.length ? ordered : allColumns.slice(0, 1), cellContext);
     const cardCells = ListColumnDecorator.cells(allColumns, cellContext);
+    const columns = ListColumnDecorator.decorate(ordered.length ? ordered : allColumns.slice(0, 1), { ...cellContext, metaCells: cardCells });
     const arrangement = layout.groupField || layout.orderField
       ? new ListArrangement(layout.groupField, layout.orderField, self.state.groups, AdminI18n.t('collection.list.noGroup'))
       : null;

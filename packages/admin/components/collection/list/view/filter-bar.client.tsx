@@ -3,6 +3,8 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.client';
 import { SortMenu } from '@/components/collection/list/view/sort-menu.client';
@@ -77,15 +79,15 @@ export class FilterBar extends PureReactor {
   private renderColumnsButton(): ReactNode {
     return (
       <div className="fc-list-table-only relative shrink-0" ref={this.columnsMenuRef}>
-        <button
+        <Button
           type="button"
+          variant={ButtonVariant.SECONDARY}
           onClick={this.toggleColumnsMenu}
           title={AdminI18n.t('collection.list.columns')}
-          className="h-11 px-3.5 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 leading-none shadow-sm transition-all bg-white border-slate-200 text-slate-700 hover:border-indigo-400 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-200 dark:hover:border-indigo-500/60"
+          icon={<FrameworkIcons.Layout size={15} />}
         >
-          <FrameworkIcons.Layout size={15} />
           <span className="hidden lg:inline">{AdminI18n.t('collection.list.columns')}</span>
-        </button>
+        </Button>
         {this.showColumnsMenu && (
           <CollectionColumnsMenu
             theme={this.theme}

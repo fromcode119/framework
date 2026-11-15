@@ -52,9 +52,22 @@ export class CollectionListPageService {
         id: columnName,
         header,
         sortable: CollectionListPageService.isSortableColumn(columnName, field, { timestamps, hasWorkflow }),
+        // Digits line up only when they end in the same place, so a numeric column is set to the end of
+        // its cell and uses the font's tabular figures. Everything else reads from the start, where the
+        // eye runs down a list.
+        className: CollectionListPageService.isNumericColumn(columnName, field) ? 'text-end tabular-nums' : undefined,
         accessor: (row: any) => RecordCellRenderers.renderCellValue({ columnName, field, header, raw: row[columnName], row })
       };
     });
+  }
+
+  /**
+   * Whether this column holds a quantity. Only a declared number counts — an identifier made of digits
+   * is a name, not an amount, and a date is read from its start like any other text.
+   */
+  private static isNumericColumn(columnName: string, field: any): boolean {
+    if (!field) return false;
+    return String(field.type) === 'number';
   }
 
   /** The columns the platform adds to every collection, in the console's language rather than their field name. */
@@ -114,13 +127,17 @@ export class CollectionListPageService {
     let defaults = adminDefaultColumns;
 
     if (!Array.isArray(defaults) || !defaults.length) {
-      const semanticDefaults = ['id', 'title', 'name', 'label', 'slug', 'status', 'createdAt'].filter((id) => availableIds.has(id));
+      // What a person reads to find the row they want: its name and its state. Not the generated number
+      // (NN/g: the first column is a readable identifier, not a "mystery meat" id) and not the date it
+      // was created, which almost no list is looked up by. Both stay one click away under "Columns".
+      const semanticDefaults = ['title', 'name', 'label', 'slug', 'status'].filter((id) => availableIds.has(id));
       defaults = semanticDefaults.length ? semanticDefaults : allColumns.slice(0, 4).map((column) => column.id);
     } else {
       // The collection's own columns, as declared: the record's number is a column like any other, so a
       // collection whose title already identifies the record (an order number) does not get it twice.
+      // Exactly the columns the collection declared. "Created" used to be appended to every list that
+      // did not ask for it, which is a column nobody chose on every screen of the console.
       defaults = defaults.filter((id) => availableIds.has(id));
-      if (availableIds.has('createdAt') && !defaults.includes('createdAt')) defaults = [...defaults, 'createdAt'];
     }
 
     const uniqueDefaults = Array.from(new Set(defaults));
