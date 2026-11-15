@@ -1246,9 +1246,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    the complaint behind this change. `.fc-edit-columns` is the query container, so the rows answer to the
    space the RECORD has (menu and sub-menu open or not), never to the window. */
 @container (min-width: 80rem) {
-  .fc-record-card__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
-  .fc-record-card__rows > * + * { border-top: 0; }
-  .fc-record-card__rows > * { border-top: var(--fc-record-rule); }
+  .fc-record-card__rows,
+  .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .fc-record-card__rows > * + *,
+  .fc-sro__rows > * + * { border-top: 0; }
+  .fc-record-card__rows > *,
+  .fc-sro__rows > * { border-top: var(--fc-record-rule); }
   /* A value that needs the room (a long text, its own control) keeps the whole row. */
   .fc-record-card__rows > .fc-record-card__row--wide { grid-column: 1 / -1; }
 }
