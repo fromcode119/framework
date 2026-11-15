@@ -11,12 +11,17 @@
   --fc-settings-row-gap: 16px;
   --fc-settings-card-gap: var(--fc-stack-gap);
   --fc-settings-card-radius: 12px;
-  --fc-settings-title: 14px;
+  /* The card's head against the rows under it. They were 14px/600 over 13px/600 — one pixel and the
+     same weight apart, so a section's name read as another setting. Medusa's settings put a 16px/600
+     heading over 12px/500 rows; this keeps our scale and restores the step. */
+  --fc-settings-title: 15px;
   --fc-settings-label: 13px;
   --fc-settings-text: 12px;
   --fc-settings-page-title: 18px;
   --fc-settings-control-field: 300px;
   --fc-settings-control-narrow: 160px;
+  /* A control that takes its own row: as wide as its text needs, not as wide as the screen is. */
+  --fc-settings-control-wide: 640px;
   --fc-settings-bar-bg: var(--fc-text);
   --fc-settings-bar-text: var(--fc-surface);
   --fc-settings-bar-shadow: 0 8px 24px rgb(15 23 42 / 0.18);
@@ -79,7 +84,7 @@
 .fc-surface > .fc-settings-row:first-child { border-top: 0; }
 .fc-settings-row__text { flex: 1 1 auto; min-width: 0; }
 .fc-settings-row__title { display: flex; align-items: center; gap: 6px; }
-.fc-settings-row__title h3 { margin: 0; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); }
+.fc-settings-row__title h3 { margin: 0; font-size: var(--fc-settings-label); font-weight: 500; color: var(--fc-text); }
 .fc-settings-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); line-height: 1.45; color: var(--fc-text-muted); }
 /* A long explanation reads as one line; ⓘ opens the whole of it. */
 .fc-settings-row__desc--clamp, .fc-field-summary--clamp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -100,7 +105,11 @@
 .fc-settings-row__control input, .fc-settings-row__control select { font-weight: var(--fc-field-weight); }
 .fc-settings-row--wide { flex-direction: column; align-items: stretch; gap: 8px; }
 .fc-settings-row--wide > .fc-settings-row__control { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+/* A row that stacks gives its control the whole width — so the control must take it. One child kept
+   its natural width instead: eight email-template fields sat 175px wide with 1 806px of nothing to
+   their right. Several children (a row of buttons) still size themselves. */
 .fc-settings-row--wide > .fc-settings-row__control > * { width: auto; flex: 0 1 auto; }
+.fc-settings-row--wide > .fc-settings-row__control > :only-child { width: 100%; max-width: var(--fc-settings-control-wide); flex: 1 1 auto; min-width: 0; }
 @media (max-width: 639.98px) {
   .fc-settings-row { flex-wrap: wrap; gap: 8px; }
   .fc-settings-row__control--field, .fc-settings-row__control--narrow { width: 100%; justify-content: flex-start; }
