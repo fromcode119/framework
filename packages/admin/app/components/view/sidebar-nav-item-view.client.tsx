@@ -27,6 +27,8 @@ export class NavItemView extends PureReactor {
   @prop declare isMini?: boolean;
   /** The plugin that registered this item; only it may fill the item's trailing slot. */
   @prop declare pluginSlug?: string;
+  /** The letter this section answers to after G. Printed on the row, so the key is never a secret. */
+  @prop declare shortcut?: string;
   /**
    * The section's pages stand in the second column beside the menu on a desktop — Settings, pinned at
    * the menu's foot, where twenty pages opened under it pushed every other section out of the sidebar.
@@ -170,6 +172,7 @@ export class NavItemView extends PureReactor {
         >
           <span className={`${nav}__icon`}>{icon}</span>
           {!isMini ? <span className={`${nav}__label`}>{label}</span> : null}
+          {!isMini && this.shortcut ? <kbd className={`${nav}__kbd`} aria-hidden="true">G {this.shortcut.toUpperCase()}</kbd> : null}
           {this.renderTrailing(href, open, !!isMini)}
         </AdminLink>
 

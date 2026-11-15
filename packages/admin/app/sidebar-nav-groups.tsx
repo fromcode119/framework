@@ -37,6 +37,8 @@ export class SidebarNavGroups extends PureReactor {
   @prop declare query?: string;
   /** The sections (scrolling) or Settings (pinned at the sidebar's foot). */
   @prop declare part?: SidebarNavPart;
+  /** The letter each section answers to after G, keyed by its address; drawn on the row. */
+  @prop declare shortcuts?: Map<string, string>;
 
   /** Activity is the console's own page for administrators; it is added when the metadata did not list it. */
   private withActivity(items: any[]): any[] {
@@ -66,6 +68,7 @@ export class SidebarNavGroups extends PureReactor {
         isMini={this.isMini}
         paneled={paneled}
         pluginSlug={item.pluginSlug}
+        shortcut={this.shortcuts?.get(NavUtils.normalizePath(item.path)) || ''}
         activePathOverride={this.normalizedActiveChildPathOverride || this.normalizedActivePrimaryPathOverride}
       />
     );
