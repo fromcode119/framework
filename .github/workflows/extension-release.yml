@@ -87,10 +87,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # `pageRelease` names the release that prepared a stored page; it moves with the version.
+          # A `*Release` stamp (`pageRelease`, `postRelease`, ...) names the release that prepared a stored
+          # document; every one that named the old version moves with it. Moving only `pageRelease` left
+          # cms `postRelease` one release behind after each merge, failing its own test on main.
           tmp=$(mktemp)
           jq --indent 2 --arg old "$OLD" --arg new "$NEW" \
-            '.version = $new | walk(if type == "object" and .pageRelease == $old then .pageRelease = $new else . end)' \
+            '.version = $new | walk(if type == "object" then with_entries(if (.key | test("Release$")) and .value == $old then .value = $new else . end) else . end)' \
             "$FILE" > "$tmp" && mv "$tmp" "$FILE"
           repo="repos/$GITHUB_REPOSITORY/git"
           base=$(git rev-parse HEAD)
@@ -135,8 +137,8 @@ jobs:
           [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$head^" -q .commit.verification.verified)" = true ] \
             || { echo "Parent of $head is not signed — not signing." >&2; exit 1; }
           # The author and message can be set by anyone; the CONTENT cannot hide. Outside `version` and
-          # `pageRelease` the file must be byte-for-byte its signed parent's, so signing adds nothing new.
-          strip='del(.version) | walk(if type == "object" then del(.pageRelease) else . end)'
+          # the `*Release` stamps the file must be byte-for-byte its signed parent's, so signing adds nothing new.
+          strip='del(.version) | walk(if type == "object" then with_entries(select(.key | test("Release$") | not)) else . end)'
           # Fail closed: a file that is missing or does not parse stops here instead of comparing equal-empty.
           parent_json=$(git show "$head^:$files" | jq -eS "$strip")
           head_json=$(git show "$head:$files" | jq -eS "$strip")
