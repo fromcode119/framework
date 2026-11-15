@@ -45,7 +45,7 @@ export class FiltersButton extends PureReactor {
           onClick={this.toggle}
           aria-expanded={this.open}
           title={AdminI18n.t('ui.listToolbar.filters')}
-          className={`h-11 px-3.5 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 leading-none shadow-sm transition-all ${this.buttonClass}`}
+          className={`h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-semibold inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
         >
           <FrameworkIcons.Filter size={15} />
           <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>

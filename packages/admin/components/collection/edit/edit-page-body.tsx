@@ -14,6 +14,7 @@ import { RecordJsonView } from '@/components/collection/edit/view/record-json-vi
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
+import { EditMoreSectionsCard } from '@/components/collection/edit/view/edit-more-sections-card.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,6 +23,8 @@ export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
   @prop declare slug: string;
   @prop declare id: string;
+  /** The plugin the collection belongs to; with slug and id it names this record's own address. */
+  @prop declare pluginSlug: string;
   /** Owned by the page view; switched from the header's record menu. */
   @prop declare advancedView: boolean;
   /** Where the record sits — the way back to its list; above both columns. Null on a new record. */
@@ -44,6 +47,11 @@ export class EditPageBody extends PureReactor {
     // A new record can offer none of the correlation keys, so there is no question to ask yet.
     const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
     const navigate = (href: string) => edit.router?.push(href);
+    /**
+     * Opening a section only adds it to the address; the page must not move. `push` scrolls to the top
+     * on navigation, so the operator pressed a row at the foot and landed back at the record's title.
+     */
+    const openSection = (href: string) => edit.router?.replace(href, { scroll: false });
     const history = !isNew && edit.openedSections.includes(CollectionEditRecordMore.HISTORY);
     const slotProps = { formData, setFormData, isNew, handleSubmit, saving };
     const sectionSlotBase = `admin.collection.${slug}.edit.section`;
@@ -190,8 +198,47 @@ export class EditPageBody extends PureReactor {
             {recordLinks && (
               <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
-            {/* When the record was made and changed, and its versions: opened from the record's ⋯ menu like
-                the held-back sections, under the record, which stays whole. */}
+            {/* A section opened from the foot is drawn HERE, where it was asked for, with the same
+                renderer every other section uses — not at the place the collection declares for it. */}
+            {!isNew && (edit.footSections || []).length > 0 && (
+              <EditPageMain
+                standardMainFieldSections={edit.footSections}
+                fullWidthMainFieldSections={[]}
+                theme={theme}
+                resolvedSlug={resolvedSlug}
+                formData={formData}
+                pluginSettings={pluginSettings}
+                pluginSettingsSchema={pluginSettingsSchema}
+                fieldErrors={fieldErrors}
+                saving={saving}
+                isNew={isNew}
+                slugWarning={slugWarning}
+                slugManuallyEdited={slugManuallyEdited}
+                readOnlyOverrideGranted={readOnlyOverrideGranted}
+                handleInputChange={handleInputChange}
+                handlePatch={handlePatch}
+                handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+                recordLinks={null}
+                navigate={navigate}
+                handleSubmit={() => handleSubmit()}
+                saveError={''}
+                recordTitle={edit.resolvedTitleValue}
+                clearSaveError={() => setStatus(null)}
+                sectionSlotBase={sectionSlotBase}
+                slotProps={slotProps}
+              />
+            )}
+            {/* What else this record holds: one row per section the page does not draw, at its foot. */}
+            {!isNew && (
+              <EditMoreSectionsCard
+                sections={edit.moreSections || []}
+                openedSections={edit.openedSections || []}
+                recordHref={`/${this.pluginSlug}/${slug}/${id}`}
+                navigate={openSection}
+              />
+            )}
+            {/* When the record was made and changed, and its versions: opened from the foot of the
+                record like the held-back sections, under the record, which stays whole. */}
             {history && (
               <div id={CollectionEditRecordMore.anchorId(CollectionEditRecordMore.HISTORY)} className="space-y-4">
                 {/* When the record was made and changed is in the side column on every saved record, so

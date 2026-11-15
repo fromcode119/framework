@@ -61,11 +61,20 @@ export class Button extends PureReactor {
     outline: 'border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)]',
   };
 
+  /**
+   * Two heights, not four. A button took 32, 40, 44 or 40px depending on the `size` its caller happened
+   * to pass, which is how one order page came to hold seven different control heights: a "Create
+   * shipment" at 32 beside a field at 40 beside a copy button at 28.
+   *
+   * `sm` is the COMPACT control — a card's head, a toolbar, the controls among read values.
+   * `md` and `lg` are the FIELD height — a button standing in a form row, beside inputs.
+   * The keys stay so that no caller has to change; what they resolve to is now the console's two tokens.
+   */
   const sizes: Record<string, string> = {
-    sm: 'h-8 px-3 text-[12px]',
-    md: 'h-10 px-4 text-[12px]',
-    lg: 'h-11 px-6 text-[13px]',
-    icon: 'h-10 w-10 p-0',
+    sm: 'h-[var(--fc-control-h)] px-3 text-[length:var(--fc-control-text)]',
+    md: 'h-[var(--fc-field-h)] px-4 text-[length:var(--fc-control-text)]',
+    lg: 'h-[var(--fc-field-h)] px-6 text-[length:var(--fc-control-text)]',
+    icon: 'h-[var(--fc-field-h)] w-[var(--fc-field-h)] p-0',
   };
 
   const spinnerColor = variant === ButtonVariant.PRIMARY || variant === ButtonVariant.DANGER

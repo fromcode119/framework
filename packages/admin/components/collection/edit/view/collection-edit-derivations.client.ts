@@ -7,6 +7,9 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
+import { CollectionEditFieldDepth } from '@/components/collection/edit/view/collection-edit-field-depth.client';
+import { FieldLevel } from '@fromcode119/core/client';
+import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
 
 /**
  * Pure, render-time derivations for the collection edit page (field sections, resolved title, status
@@ -23,6 +26,18 @@ export class CollectionEditDerivations {
       if (held === undefined || held === null || held === '') shown[field.name] = field.defaultValue;
     }
     return shown;
+  }
+
+  /**
+   * The record is read before it is inspected. A section that holds nothing but recorded DATA — a
+   * structured value the runtime wrote, read as a table — belongs after the sections the operator
+   * works in, not between them: every record page worth copying ends with what is technical and
+   * begins with what is used. Order among those sections, and among the rest, stays as declared.
+   */
+  static dataLast<T extends { fields: any[] }>(sections: T[]): T[] {
+    const isData = (section: T): boolean => section.fields.length > 0
+      && section.fields.every((field: any) => RecordSectionFields.readsAsData(field));
+    return [...sections.filter((section) => !isData(section)), ...sections.filter(isData)];
   }
 
   static optionLabel(field: any, value: unknown): string {
@@ -107,13 +122,24 @@ export class CollectionEditDerivations {
     const everySection = [...sidebarGrouped, ...mainFieldSections];
     const openedSections = CollectionEditRecordMore.openKeys(self.props.searchParams);
     const draw = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => CollectionEditRecordMore.draw(sections, openedSections, formData, self.state.fieldErrors);
-    const sidebarFieldSections = draw(sidebarGrouped);
+    /**
+     * A section the record does not draw by itself appears WHERE IT WAS OPENED — at the foot, under
+     * "More" — and not at the place the collection declares for it. Opening "Address" from the foot used
+     * to redraw it in the side column, two screens up, and scroll the page there: the operator pressed a
+     * row and the record moved under them. Where you ask is where it opens.
+     */
+    const opensAtFoot = (section: { key: string; fields: any[] }): boolean => openedSections.includes(String(section.key))
+      && !section.fields.some((field: any) => CollectionEditFieldDepth.shows(field, FieldLevel.EVERYDAY, formData, self.state.fieldErrors));
+    const footSections = everySection.filter(opensAtFoot);
+    const atFoot = new Set(footSections.map((section) => String(section.key)));
+    const inPlace = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => sections.filter((section) => !atFoot.has(String(section.key)));
+    const sidebarFieldSections = inPlace(draw(sidebarGrouped));
     /**
      * The main column is one column of cards, so its sections come in the order the collection declares
      * them. Sections holding a `sectionLayout: 'full'` field used to be moved after all the others, from
      * when the column held two cards side by side; that put an order's items below its payment and shipment.
      */
-    const standardMainFieldSections = draw(mainFieldSections);
+    const standardMainFieldSections = CollectionEditDerivations.dataLast(inPlace(draw(mainFieldSections)));
     const fullWidthMainFieldSections: typeof standardMainFieldSections = [];
     const moreSections = CollectionEditRecordMore.rows(everySection, openedSections, formData, self.state.fieldErrors);
 
@@ -134,7 +160,7 @@ export class CollectionEditDerivations {
 
     return {
       collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
-      sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections,
+      sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections, footSections,
       moreSections, openedSections,
       // The status field shows its schema default until the operator picks one, and the default is what is
       // saved; the header showed the FIRST option instead (a new subscription read "Trial" above a field

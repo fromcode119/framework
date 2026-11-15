@@ -57,7 +57,7 @@ export class CollectionEditPageViewModelBuilder {
       getPreviewUrl: () => CollectionEditPageHandlers.getPreviewUrl(self),
       sidebarFieldSections: d.sidebarFieldSections, standardMainFieldSections: d.standardMainFieldSections,
       fullWidthMainFieldSections: d.fullWidthMainFieldSections,
-      moreSections: d.moreSections, openedSections: d.openedSections,
+      moreSections: d.moreSections, footSections: d.footSections, openedSections: d.openedSections,
       handleInputChange: (name, value) => CollectionEditPageHandlers.handleInputChange(self, name, value),
       handlePatch: (partial) => CollectionEditPageHandlers.handlePatch(self, partial),
       handleDelete: () => CollectionEditPageHandlers.handleDelete(self),
