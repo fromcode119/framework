@@ -170,6 +170,7 @@
       "permalinkCard": "預覽與永久連結",
       "permalinkHint": "按一下路徑部分，即可覆寫自動產生的代稱。",
       "settings": "設定",
+      "details": "詳情",
       "noSidebarFields": "此集合尚未設定任何側邊欄欄位。",
       "unlockTitle": "要解鎖自動記錄的值嗎？",
       "unlockText": "「{{label}}」為自動記錄，因此是唯讀的。確認後，此紀錄上的所有唯讀欄位都將解鎖供編輯。",

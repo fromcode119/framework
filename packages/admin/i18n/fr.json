@@ -170,6 +170,7 @@
       "permalinkCard": "Aperçu et permalien",
       "permalinkHint": "Cliquez sur l’élément du chemin pour remplacer le slug généré automatiquement.",
       "settings": "Paramètres",
+      "details": "Détails",
       "noSidebarFields": "Aucun champ de barre latérale n’est encore configuré pour cette collection.",
       "unlockTitle": "Déverrouiller les valeurs enregistrées ?",
       "unlockText": "« {{label}} » est en lecture seule, car sa valeur est enregistrée automatiquement. Confirmer déverrouille tous les champs en lecture seule de cet enregistrement pour les modifier.",

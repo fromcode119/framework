@@ -170,6 +170,7 @@
       "permalinkCard": "Náhľad a trvalý odkaz",
       "permalinkHint": "Kliknutím na časť cesty prepíšete automaticky vygenerovaný slug.",
       "settings": "Nastavenia",
+      "details": "Podrobnosti",
       "noSidebarFields": "Pre túto kolekciu zatiaľ nie sú nastavené žiadne polia bočného panela.",
       "unlockTitle": "Odomknúť zaznamenané hodnoty?",
       "unlockText": "Pole „{{label}}“ je len na čítanie, pretože sa zaznamenáva automaticky. Potvrdením odomknete na úpravu všetky polia tohto záznamu určené len na čítanie.",

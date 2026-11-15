@@ -170,6 +170,7 @@
       "permalinkCard": "Önizleme ve Kalıcı Bağlantı",
       "permalinkHint": "Otomatik oluşturulan kısa adı değiştirmek için yol bileşenine tıklayın.",
       "settings": "Ayarlar",
+      "details": "Ayrıntılar",
       "noSidebarFields": "Bu koleksiyon için henüz kenar çubuğu alanı yapılandırılmadı.",
       "unlockTitle": "Kaydedilen değerlerin kilidi açılsın mı?",
       "unlockText": "\"{{label}}\" otomatik olarak kaydedildiği için salt okunurdur. Onaylarsanız bu kayıttaki tüm salt okunur alanların kilidi düzenleme için açılır.",

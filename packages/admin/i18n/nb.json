@@ -170,6 +170,7 @@
       "permalinkCard": "Forhåndsvisning og permalenke",
       "permalinkHint": "Klikk på stidelen for å overstyre den automatisk genererte slugen.",
       "settings": "Innstillinger",
+      "details": "Detaljer",
       "noSidebarFields": "Ingen sidefeltfelt er konfigurert for denne samlingen ennå.",
       "unlockTitle": "Låse opp registrerte verdier?",
       "unlockText": "«{{label}}» er skrivebeskyttet fordi verdien registreres automatisk. Hvis du bekrefter, låses alle skrivebeskyttede felt i denne oppføringen opp for redigering.",

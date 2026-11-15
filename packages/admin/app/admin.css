@@ -1241,11 +1241,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   font-size: var(--fc-record-text);
   line-height: 1.45;
 }
-/* A record's facts read in TWO columns once the record area is wide. One column of ten rows across a
-   2300px screen put every value a hand's width from its label and left the card three-quarters empty —
-   the complaint behind this change. `.fc-edit-columns` is the query container, so the rows answer to the
-   space the RECORD has (menu and sub-menu open or not), never to the window. */
-@container (min-width: 80rem) {
+/* A record's facts read in TWO columns once THE CARD is wide. One column of ten rows across a 2300px
+   screen put every value a hand's width from its label and left the card three-quarters empty — the
+   complaint behind this change. The card itself is the query container: measured against the record AREA
+   instead, a 352px side card split into two columns as well, and its labels wrapped into its values. */
+.fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
+@container (min-width: 52rem) {
   .fc-record-card__rows,
   .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
   .fc-record-card__rows > * + *,

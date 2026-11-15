@@ -170,6 +170,7 @@
       "permalinkCard": "Eelvaade ja püsilink",
       "permalinkHint": "Automaatselt loodud slugi muutmiseks klõpsake tee osal.",
       "settings": "Seaded",
+      "details": "Üksikasjad",
       "noSidebarFields": "Selle kogumi jaoks pole veel külgriba välju seadistatud.",
       "unlockTitle": "Kas avada salvestatud väärtused?",
       "unlockText": "„{{label}}” on kirjutuskaitstud, sest see salvestatakse automaatselt. Kinnitamisel avatakse muutmiseks kõik selle kirje kirjutuskaitstud väljad.",

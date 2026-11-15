@@ -170,6 +170,7 @@
       "permalinkCard": "Voorbeeld & permalink",
       "permalinkHint": "Klik op het padgedeelte om de automatisch gegenereerde slug te overschrijven.",
       "settings": "Instellingen",
+      "details": "Details",
       "noSidebarFields": "Er zijn nog geen zijbalkvelden ingesteld voor deze collectie.",
       "unlockTitle": "Vastgelegde waarden ontgrendelen?",
       "unlockText": "\"{{label}}\" is alleen-lezen omdat het automatisch wordt vastgelegd. Na bevestiging worden alle alleen-lezenvelden van dit record ontgrendeld voor bewerking.",

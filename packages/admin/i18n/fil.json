@@ -170,6 +170,7 @@
       "permalinkCard": "Preview at Permalink",
       "permalinkHint": "I-click ang bahagi ng path para palitan ang awtomatikong nabuong slug.",
       "settings": "Mga Setting",
+      "details": "Mga detalye",
       "noSidebarFields": "Wala pang naka-configure na sidebar field para sa collection na ito.",
       "unlockTitle": "I-unlock ang mga naitalang value?",
       "unlockText": "Read-only ang \"{{label}}\" dahil awtomatiko itong naitatala. Kapag kinumpirma, maa-unlock para sa pag-edit ang lahat ng read-only na field sa record na ito.",

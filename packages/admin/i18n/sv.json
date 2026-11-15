@@ -170,6 +170,7 @@
       "permalinkCard": "Förhandsvisning och permalänk",
       "permalinkHint": "Klicka på sökvägsdelen för att ersätta den automatiskt genererade sluggen.",
       "settings": "Inställningar",
+      "details": "Detaljer",
       "noSidebarFields": "Inga sidofältsfält har konfigurerats för den här samlingen ännu.",
       "unlockTitle": "Lås upp registrerade värden?",
       "unlockText": "”{{label}}” är skrivskyddat eftersom det registreras automatiskt. Om du bekräftar låses alla skrivskyddade fält i den här posten upp för redigering.",

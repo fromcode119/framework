@@ -170,6 +170,7 @@
       "permalinkCard": "Anteprima e permalink",
       "permalinkHint": "Fai clic sul componente del percorso per sostituire lo slug generato automaticamente.",
       "settings": "Impostazioni",
+      "details": "Dettagli",
       "noSidebarFields": "Non sono ancora configurati campi della barra laterale per questa collezione.",
       "unlockTitle": "Sbloccare i valori registrati?",
       "unlockText": "\"{{label}}\" è di sola lettura perché viene registrato automaticamente. Confermando, tutti i campi di sola lettura di questo record diventano modificabili.",

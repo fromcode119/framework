@@ -170,6 +170,7 @@
       "permalinkCard": "Esikatselu ja pysyvä linkki",
       "permalinkHint": "Napsauta polun osaa, jos haluat ohittaa automaattisesti luodun polkutunnisteen.",
       "settings": "Asetukset",
+      "details": "Tiedot",
       "noSidebarFields": "Tälle kokoelmalle ei ole vielä määritetty sivupalkin kenttiä.",
       "unlockTitle": "Avataanko tallennettujen arvojen lukitus?",
       "unlockText": "”{{label}}” on vain luku -tilassa, koska se tallennetaan automaattisesti. Vahvistamalla avaat tämän tietueen kaikki vain luku -kentät muokattaviksi.",

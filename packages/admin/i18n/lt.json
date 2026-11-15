@@ -170,6 +170,7 @@
       "permalinkCard": "Peržiūra ir nuolatinė nuoroda",
       "permalinkHint": "Spustelėkite kelio dalį, kad pakeistumėte automatiškai sugeneruotą slug.",
       "settings": "Nustatymai",
+      "details": "Išsami informacija",
       "noSidebarFields": "Šiai kolekcijai šoninės juostos laukų dar nesukonfigūruota.",
       "unlockTitle": "Atrakinti užfiksuotas reikšmes?",
       "unlockText": "„{{label}}“ yra tik skaitymui, nes užfiksuojamas automatiškai. Patvirtinus bus atrakinti redaguoti visi šio įrašo tik skaitymui skirti laukai.",

@@ -170,6 +170,7 @@
       "permalinkCard": "Pré-visualização e ligação permanente",
       "permalinkHint": "Clique no componente do caminho para substituir o slug gerado automaticamente.",
       "settings": "Definições",
+      "details": "Detalhes",
       "noSidebarFields": "Ainda não existem campos da barra lateral configurados para esta coleção.",
       "unlockTitle": "Desbloquear valores registados?",
       "unlockText": "\"{{label}}\" é só de leitura porque é registado automaticamente. Ao confirmar, todos os campos só de leitura deste registo ficam desbloqueados para edição.",

@@ -170,6 +170,7 @@
       "permalinkCard": "Xem trước & Liên kết cố định",
       "permalinkHint": "Nhấp vào phần đường dẫn để ghi đè slug được tạo tự động.",
       "settings": "Cài đặt",
+      "details": "Chi tiết",
       "noSidebarFields": "Chưa có trường thanh bên nào được cấu hình cho bộ sưu tập này.",
       "unlockTitle": "Mở khóa các giá trị đã ghi nhận?",
       "unlockText": "\"{{label}}\" chỉ đọc vì được ghi nhận tự động. Khi xác nhận, mọi trường chỉ đọc trên bản ghi này sẽ được mở khóa để chỉnh sửa.",

@@ -170,6 +170,7 @@
       "permalinkCard": "Pregled i trajna poveznica",
       "permalinkHint": "Kliknite dio putanje kako biste zamijenili automatski generirani slug.",
       "settings": "Postavke",
+      "details": "Pojedinosti",
       "noSidebarFields": "Za ovu zbirku još nisu konfigurirana polja bočne trake.",
       "unlockTitle": "Otključati zabilježene vrijednosti?",
       "unlockText": "\"{{label}}\" je samo za čitanje jer se bilježi automatski. Potvrdom otključavate za uređivanje sva polja samo za čitanje u ovom zapisu.",
