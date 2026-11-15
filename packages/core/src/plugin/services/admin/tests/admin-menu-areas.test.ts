@@ -28,6 +28,18 @@ describe('admin menu areas', () => {
     expect(menu.filter((item) => item.pluginSlug === 'courier' && !item.isGroup)).toHaveLength(0);
   });
 
+  it('wears the mark the owning plugin declares for the area, never a plugin of its own', () => {
+    const owner = { slug: 'owner', name: 'Owner', admin: { group: 'Commerce', label: 'Owner', icon: 'Boxes', areas: [{ key: 'commerce', icon: 'ShoppingBag' }], menu: [{ label: 'Hub', path: '/owner/hub' }], slots: [{ slot: 'admin.plugin.owner.content' }] } };
+    const menu = build([delivery, courier, owner]);
+    const area = menu.find((item) => item.isArea);
+    expect(area.icon).toBe('ShoppingBag');
+  });
+
+  it('falls back to a neutral mark while nobody declares the area', () => {
+    const menu = build([delivery, courier]);
+    expect(menu.find((item) => item.isArea).icon).toBe('Layers');
+  });
+
   it('an area holding one page is that page, with no chevron that opens a list of one', () => {
     const menu = build([money]);
     const own = menu.filter((item) => item.pluginSlug === 'money');
