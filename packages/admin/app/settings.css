@@ -9,7 +9,7 @@
   --fc-settings-pad-y: 10px;
   --fc-settings-row-min: 56px;
   --fc-settings-row-gap: 16px;
-  --fc-settings-card-gap: 12px;
+  --fc-settings-card-gap: var(--fc-stack-gap);
   --fc-settings-card-radius: 12px;
   --fc-settings-title: 14px;
   --fc-settings-label: 13px;

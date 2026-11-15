@@ -126,7 +126,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                     onClick={() => this.router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE_DETAIL(t.slug))}
                     className={`group flex flex-col border-0 relative transition-all duration-300 cursor-pointer overflow-hidden ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-sm hover:shadow-md'}`}
                   >
-                    <div className="p-4 space-y-4 flex-1">
+                    <div className="p-4 flex-1 fc-page-stack">
                       <div className="flex items-start justify-between">
                         <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}

@@ -48,7 +48,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
     return (
       <div className="w-full lg:w-96 space-y-6">
          <Card noPadding className={`sticky top-8 overflow-hidden ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-[#0f172a] ring-1 ring-white/5 border-0' : 'bg-white shadow-sm border-slate-100'}`}>
-            <div className="p-4 space-y-6">
+            <div className="p-4 fc-page-stack">
               <div className="space-y-4">
                 {!installedPlugin ? (
                   <button

@@ -169,7 +169,7 @@ export class RedirectsSettingsPage extends AdminComponent {
           title={AdminI18n.t('settings.redirects.redirects')}
           subtitle={AdminI18n.t('settings.redirects.sendRetiredUrlsToTheir')}
         />
-        <div className="p-6 w-full space-y-6">
+        <div className="p-6 w-full fc-page-stack">
           <RedirectCreateCard theme={theme} isSubmitting={this.isCreating} onCreate={this.handleCreate} />
           <RedirectRulesCard
             theme={theme}

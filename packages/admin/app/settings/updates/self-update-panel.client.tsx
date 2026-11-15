@@ -129,7 +129,7 @@ export class SelfUpdatePanel extends AdminComponent {
   render(): ReactNode {
     const line = this.statusLine;
     return (
-      <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/40">
+      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/40 fc-page-stack">
         <Switch
           checked={this.selfUpdate.plan?.automatic === true}
           onChange={this.setAutomatic}
