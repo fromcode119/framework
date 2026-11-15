@@ -61,7 +61,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const emailSent = await this.sendVerificationEmail({ to: normalizedEmail, verificationUrl, firstName: String(firstName || '').trim() });
 
     this.manager.hooks.emit('auth:user:registered', { userId: newUser.id, email: normalizedEmail, context: flowContext });
-    await this.manager.writeLog('INFO', `User registered: ${normalizedEmail}`, 'system', { userId: newUser.id, email: normalizedEmail, context: flowContext, emailVerificationSent: emailSent }).catch(() => {});
+    await this.manager.writeLog('INFO', `User registered: ${normalizedEmail}`, 'system', { event: 'auth.registered', userId: newUser.id, email: normalizedEmail, context: flowContext, emailVerificationSent: emailSent }).catch(() => {});
 
     // The account exists by now whether or not the email left. Answering 500 "try again" here sent the
     // person back to a sign-up that then refused them as "already registered", with no way to get the

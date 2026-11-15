@@ -47,7 +47,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         // Written down like every other refusal: without it the Activity log shows the failures that
         // caused the lock and then nothing, and nobody can tell why the person still could not sign in.
         await this.manager.writeLog('WARN', `Blocked login for ${email} (Locked After Failed Attempts)`, 'system', {
-          email, ip: NetworkAddressUtils.resolveClientIp(req), lockedUntil
+          event: 'auth.login.locked', email, ip: NetworkAddressUtils.resolveClientIp(req), lockedUntil
         }).catch(() => {});
         return res.status(429).json({
           error: 'Too many failed login attempts. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value, lockedUntil
@@ -89,6 +89,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         if (status === AccountStatus.SUSPENDED) {
           await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           await this.manager.writeLog('WARN', `Blocked login for suspended account: ${email}`, 'system', {
+            event: 'auth.login.suspended',
             userId: user.id,
             email,
             ip: NetworkAddressUtils.resolveClientIp(req)
@@ -105,7 +106,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
             'WARN',
             `Failed login attempt for ${email} (Invalid Password)`,
             'system',
-            { email, ip: NetworkAddressUtils.resolveClientIp(req) }
+            { event: 'auth.login.badPassword', email, ip: NetworkAddressUtils.resolveClientIp(req) }
           ).catch(() => {});
           return res.status(401).json({ error: 'Invalid email or password', code: AuthErrorCode.INVALID_CREDENTIALS.value });
         }
@@ -195,6 +196,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
           `Successful login for ${user.email}`,
           'system',
           {
+            event: 'auth.login.success',
             userId: user.id,
             email: user.email,
             ip: NetworkAddressUtils.resolveClientIp(req),
@@ -228,7 +230,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         'WARN',
         `Failed login attempt for non-existent user: ${email}`,
         'system',
-        { email, ip: NetworkAddressUtils.resolveClientIp(req) }
+        { event: 'auth.login.unknownUser', email, ip: NetworkAddressUtils.resolveClientIp(req) }
       ).catch(() => {});
       return res.status(401).json({ error: 'Invalid email or password', code: AuthErrorCode.INVALID_CREDENTIALS.value });
     } catch (err: any) {

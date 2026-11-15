@@ -4696,6 +4696,18 @@
       "DEBUG": "DEBUG",
       "SYSTEM": "SISTEM",
       "AUDIT": "REVIZIJA"
+    },
+    "events": {
+      "auth": {
+        "login": {
+          "success": "Signed in",
+          "badPassword": "Wrong password",
+          "unknownUser": "No such account",
+          "locked": "Locked after repeated failures",
+          "suspended": "Account suspended"
+        },
+        "registered": "Account created"
+      }
     }
   },
   "mediaPicker": {
