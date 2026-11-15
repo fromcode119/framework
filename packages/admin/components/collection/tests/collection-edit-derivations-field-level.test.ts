@@ -12,6 +12,8 @@ const selfFor = (fields: any[], state: Record<string, unknown> = {}, query = '')
 });
 
 const names = (d: any) => [...d.standardMainFieldSections, ...d.sidebarFieldSections].flatMap((s: any) => s.fields.map((f: any) => f.name));
+/** Everything the record draws, wherever it stands: its own places, and the foot where "More" opens. */
+const drawn = (d: any) => [...names(d), ...d.footSections.flatMap((s: any) => s.fields.map((f: any) => f.name))];
 
 describe('CollectionEditDerivations — what a record draws and lists under More', () => {
   const name = { name: 'name', type: 'text', label: 'Name' };
@@ -28,12 +30,15 @@ describe('CollectionEditDerivations — what a record draws and lists under More
     expect(d.openedSections).toEqual([]);
   });
 
-  it('opens a section in place: the record stays whole and the section gains every field of it', () => {
+  it('opens a section WHERE IT WAS ASKED FOR — at the foot, not at the place the collection declares', () => {
     const costs = { ...cost, admin: { level: 'occasional', section: 'Costs' } };
     const listed = CollectionEditDerivations.build(selfFor([name, costs, key])).moreSections;
     const costsKey = listed.find((row: any) => row.title === 'Costs').key;
     const d = CollectionEditDerivations.build(selfFor([name, costs, key], {}, `section=${costsKey}`));
-    expect(names(d)).toEqual(['name', 'cost']);
+    // The record keeps its own cards; the opened section is drawn at the foot, under "More".
+    expect(names(d)).toEqual(['name']);
+    expect(d.footSections.flatMap((section: any) => section.fields.map((field: any) => field.name))).toEqual(['cost']);
+    expect(drawn(d)).toEqual(['name', 'cost']);
     expect(d.openedSections).toEqual([costsKey]);
     expect(d.moreSections.map((row: any) => row.key)).not.toContain(costsKey);
     expect(d.moreSections).toHaveLength(1);
@@ -43,7 +48,7 @@ describe('CollectionEditDerivations — what a record draws and lists under More
     const costs = { ...cost, admin: { level: 'occasional', section: 'Costs' } };
     const keys = CollectionEditDerivations.build(selfFor([name, costs, key])).moreSections.map((row: any) => row.key);
     const d = CollectionEditDerivations.build(selfFor([name, costs, key], {}, `section=${keys.join(',')}`));
-    expect(names(d).sort()).toEqual(['cost', 'name', 'replayKey']);
+    expect(drawn(d).sort()).toEqual(['cost', 'name', 'replayKey']);
     expect(d.moreSections).toEqual([]);
   });
 

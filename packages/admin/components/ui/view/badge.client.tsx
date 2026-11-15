@@ -24,7 +24,7 @@ export class Badge extends PureReactor {
   };
 
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border ${variants[BadgeVariant.resolve(variant).value]} ${className}`}>
+    <span className={`fc-badge ${variants[BadgeVariant.resolve(variant).value]} ${className}`}>
       {this.children}
     </span>
   );

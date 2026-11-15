@@ -18,6 +18,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * expects to find it.
  */
 export class RecordCellRenderers {
+  /** Longer than this and a value is a sentence, not a token, so it is not drawn as a chip. */
+  private static readonly CHIP_LABEL_LIMIT = 24;
   static renderCellValue({
     columnName,
     field,
@@ -76,10 +78,36 @@ export class RecordCellRenderers {
       return React.createElement('span', { title: date.toLocaleString(AdminI18n.locale, { dateStyle: 'full', timeStyle: 'short' }) }, short);
     }
 
+    /**
+     * A value the collection chose from a LIST of its own reads as a chip, wherever it is read.
+     *
+     * The word alone cannot be told from a typed value: "Catalogue and search", "Sold online", "Physical
+     * delivery" sat in a card as plain sentences, and nothing said they are one of a few named states
+     * rather than something somebody wrote. A chip says it without a word of explanation — which is why
+     * every console worth copying puts its sizes, its account states and its statuses in one.
+     *
+     * A collection that declares a TONE for the option keeps it (handled above); the rest are neutral,
+     * because the framework does not guess a colour from a word.
+     */
     if (Array.isArray(field?.options) && field.options.length) {
-      const values = Array.isArray(raw) ? raw : [raw];
-      const labels = values.map((value) => this.optionLabel(field, value) || value);
-      return CollectionListUtils.formatCellValue(Array.isArray(raw) ? labels : labels[0]);
+      const values = (Array.isArray(raw) ? raw : [raw]).filter((value) => value !== null && value !== undefined && value !== '');
+      if (!values.length) return CollectionListUtils.formatCellValue(raw);
+      /**
+       * A chip is a TOKEN: a word or two the eye takes in whole, which is why it never wraps. An
+       * option whose label is a sentence — "As set for the shop" — makes a chip wider than the column
+       * it stands in, and in a 440px side card it was cut off at the edge. Those read as plain text,
+       * which wraps like any other value.
+       */
+      const labels = values.map((value) => this.optionLabel(field, value) || String(value));
+      if (labels.some((label) => label.length > RecordCellRenderers.CHIP_LABEL_LIMIT)) {
+        return CollectionListUtils.formatCellValue(Array.isArray(raw) ? labels : labels[0]);
+      }
+      const chips = values.map((value, index) => React.createElement(
+        Badge,
+        { key: `${String(value)}-${index}`, variant: BadgeVariant.DEFAULT },
+        this.optionLabel(field, value) || String(value),
+      ));
+      return chips.length === 1 ? chips[0] : React.createElement('span', { className: 'fc-chips' }, chips);
     }
 
     return CollectionListUtils.formatCellValue(raw);

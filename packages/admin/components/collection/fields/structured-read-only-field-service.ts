@@ -57,15 +57,65 @@ export class StructuredReadOnlyFieldService {
       : { kind: StructuredNodeKind.ARRAY, items };
   }
 
+  /** A nested value small enough to be written WHOLE on one line keeps its row in the table. */
+  private static readonly INLINE_ENTRY_LIMIT = 3;
+
   /**
-   * An array renders as a TABLE only when every item is a FLAT object (every value scalar/empty) —
-   * that's what makes a timeline or a changelog scannable. One nested item and it falls back to
-   * ordinary indexed rows instead.
+   * A nested value as one line, or nothing when it cannot be written whole.
+   *
+   * Nothing is summarised away: a product's variant carries `options: { Size: "S" }`, and one line that
+   * says `Size: S` holds every character the nested value holds. The moment it would not — a longer
+   * object, an array of objects — this returns nothing and the array falls back to indexed rows, where
+   * everything is still readable.
+   */
+  private static oneLine(node: IStructuredNode): IStructuredNode | null {
+    if (node.kind === StructuredNodeKind.SCALAR || node.kind === StructuredNodeKind.EMPTY) return node;
+    const scalarText = (item: IStructuredNode): string | null => (item.kind === StructuredNodeKind.EMPTY
+      ? ''
+      : item.kind === StructuredNodeKind.SCALAR ? String(item.scalarValue ?? '') : null);
+    if (node.kind === StructuredNodeKind.OBJECT) {
+      const entries = node.entries ?? [];
+      if (!entries.length || entries.length > StructuredReadOnlyFieldService.INLINE_ENTRY_LIMIT) return null;
+      const parts: string[] = [];
+      for (const entry of entries) {
+        const text = scalarText(entry.node);
+        if (text === null) return null;
+        parts.push(text ? `${entry.key}: ${text}` : entry.key);
+      }
+      return { kind: StructuredNodeKind.SCALAR, scalarValue: parts.join(' · ') };
+    }
+    if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) {
+      const items = node.items ?? [];
+      if (!items.length || items.length > StructuredReadOnlyFieldService.INLINE_ENTRY_LIMIT) return null;
+      const parts: string[] = [];
+      for (const item of items) {
+        const text = scalarText(item);
+        if (text === null) return null;
+        parts.push(text);
+      }
+      return { kind: StructuredNodeKind.SCALAR, scalarValue: parts.join(', ') };
+    }
+    return null;
+  }
+
+  /**
+   * An array renders as a TABLE when every item is an object and every value in it can be written on
+   * one line — a scalar, or a nested value small enough to be shown whole (see {@link oneLine}).
+   *
+   * It used to demand that every value be a scalar, and one nested key sent the whole array back to
+   * indexed rows: a product with four variants printed fourteen label/value rows per variant, 2 457px
+   * of them, because each variant carries `options`. A list of four things is a table of four rows.
    */
   private static buildTable(items: IStructuredNode[]): { columns: string[]; rows: Record<string, IStructuredNode>[] } | null {
     if (items.length === 0 || !items.every((item) => item.kind === StructuredNodeKind.OBJECT)) return null;
-    const isFlat = items.every((item) => (item.entries ?? []).every((entry) => entry.node.kind === StructuredNodeKind.SCALAR || entry.node.kind === StructuredNodeKind.EMPTY));
-    if (!isFlat) return null;
+    const inlined = new Map<IStructuredNode, IStructuredNode>();
+    for (const item of items) {
+      for (const entry of item.entries ?? []) {
+        const line = StructuredReadOnlyFieldService.oneLine(entry.node);
+        if (!line) return null;
+        inlined.set(entry.node, line);
+      }
+    }
 
     const columns: string[] = [];
     items.forEach((item) => {
@@ -74,10 +124,25 @@ export class StructuredReadOnlyFieldService {
       });
     });
 
+    // A column no row fills is not drawn. A product's variants carry fourteen keys and fill six of
+    // them, so eight columns said "not recorded" four times each — noise standing where a value would
+    // be. Nothing is hidden by this: an empty column has nothing in it, and the section's sheet still
+    // holds every key, filled or not.
+    const holdsSomething = (node?: IStructuredNode): boolean => {
+      if (!node || node.kind === StructuredNodeKind.EMPTY) return false;
+      // A blank string is no value either, however it was stored.
+      if (node.kind === StructuredNodeKind.SCALAR) return String(node.scalarValue ?? '').trim() !== '';
+      return true;
+    };
+    const filled = columns.filter((column) => items.some((item) => holdsSomething(item.entries?.find((entry) => entry.key === column)?.node)));
+    columns.length = 0;
+    columns.push(...filled);
+
     const rows = items.map((item) => {
       const row: Record<string, IStructuredNode> = {};
       columns.forEach((column) => {
-        row[column] = item.entries?.find((entry) => entry.key === column)?.node ?? { kind: StructuredNodeKind.EMPTY };
+        const found = item.entries?.find((entry) => entry.key === column)?.node;
+        row[column] = found ? (inlined.get(found) ?? found) : { kind: StructuredNodeKind.EMPTY };
       });
       return row;
     });

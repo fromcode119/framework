@@ -29,7 +29,21 @@
    * HERE once. A component never spells these out, so a change of style is one edit in this block (or
    * one override in an appearance's stylesheet), not a sweep through every screen. They are written in
    * terms of the palette above, so the dark scheme follows by itself. */
+  /* The height of a control that stands beside FIELDS — an input, a stepper, a button in a form row.
+     Its compact counterpart is --fc-control-h, for a card's head and the controls among read values.
+     Two heights, each with a job; a screen that invents a third is the defect this token exists for. */
+  --fc-field-h: 40px;
   --fc-field-text: 12px;
+  /* The console's text scale, so that a plugin drawing on a record uses the console's sizes instead of
+     inventing its own. An order page carried ELEVEN sizes — 9, 9.5, 10, 11, 11.5, 12, 12.5, 13, 14, 16,
+     18 — because each card picked for itself, and 11.5px beside 12px is two sizes nobody can tell apart.
+     A small label, a column heading, a muted note: --fc-label-text. A value, a line of text:
+     --fc-value-text. A control's own words: --fc-control-text. A card's name: --fc-card-title. */
+  --fc-label-text: 11px;
+  --fc-value-text: 13px;
+  /* A row of a list. Its text is --fc-value-text, like every other value in the console: a list is not
+     a place for a scale of its own. Its head takes the field height and a control's text. */
+  --fc-row-h: 48px;
   --fc-field-weight: 500;
   --fc-sheet-backdrop: rgb(15 23 42 / 0.4);
   --fc-sheet-canvas: var(--fc-canvas);
@@ -47,11 +61,19 @@
   --fc-sheet-phone-field-weight: 400;
   /* A saved record's card: label column, the rule between rows, the value's size. */
   --fc-record-label-width: 140px;
-  --fc-record-rule: 1px dashed var(--fc-border);
+  /* A hairline, not a dash. A dashed rule draws attention to the gap between two facts instead of to
+     the facts, and a card with eight of them reads as a form that was torn along the perforations. */
+  --fc-record-rule: 1px solid var(--fc-border);
   --fc-record-text: 13px;
-  /* A record page: the side column beside its main one, and the header card's title. */
-  --fc-record-side: 352px;
-  --fc-record-title: 20px;
+  /* ONE size for a card's title, wherever the card stands. A record card said 14px and a settings
+     card 15px, so a single screen carried two of them — a difference nobody can name and everybody
+     feels. */
+  --fc-card-title: 16px;
+  /* A record page: the side column beside its main one, and the header card's title. The side holds
+     what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
+     for short facts; the main column keeps the rest. */
+  --fc-record-side: 440px;
+  --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
   --fc-nav-bg: var(--fc-surface);
@@ -69,10 +91,23 @@
   /* The space between two stacked cards, ON EVERY SCREEN. Each page used to pick its own — a record
      column said 14px, the dashboard 12px, a settings screen 12px, 24px or 32px depending which one —
      so the rhythm changed under you on every move between two screens. */
-  --fc-stack-gap: 14px;
+  --fc-stack-gap: 12px;
   /* A card's head and body, so every card on a page — the record's own and a plugin's — keeps one rhythm. */
-  --fc-card-head-height: 57px;
-  --fc-card-body-pad: 4px 16px;
+  /* 16 + 16 of padding around a 28px control, plus the rule under it: the height of every card head,
+     whether or not that head holds anything but its title. */
+  --fc-card-head-height: 61px;
+  /* EVERY control the operator can click: one height, one corner, one text size. Counted on a product
+     record before this: 22, 24, 28, 32 and 40 px side by side in the same header, and two different
+     corners on two things that both labelled a state. Change these three and the whole console moves. */
+  /* The card: its corner and the room inside it, both measured on Medusa's own record page. */
+  --fc-card-radius: 8px;
+  --fc-control-h: 28px;
+  --fc-control-radius: 6px;
+  --fc-control-text: 12px;
+  /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner. */
+  --fc-badge-h: 24px;
+  --fc-card-pad-x: 24px;
+  --fc-card-body-pad: 4px var(--fc-card-pad-x);
 
   /* ── One page rhythm ──────────────────────────────────────────────────────────────────────────────
    * Every console screen is inset by THESE two values and no others. Before this, each page carried its
@@ -286,13 +321,13 @@ html.dark {
    controls (buttons, inputs) use --fc-elevation-control. Nothing hardcodes a
    box-shadow, so turning elevation off is a single switch rather than a sweep. */
 :root {
-  --fc-elevation-surface: 0 20px 40px -18px rgb(15 23 42 / 0.16), 0 2px 6px -3px rgb(15 23 42 / 0.08);
+  --fc-elevation-surface: 0 1px 2px -1px rgb(15 23 42 / 0.08), 0 1px 1px rgb(15 23 42 / 0.04);
   --fc-elevation-control: 0 1px 2px 0 rgb(15 23 42 / 0.06), 0 1px 3px 0 rgb(15 23 42 / 0.10);
 }
 
 .dark,
 :root[data-theme='dark'] {
-  --fc-elevation-surface: 0 20px 40px -18px rgb(0 0 0 / 0.5), 0 2px 6px -3px rgb(0 0 0 / 0.4);
+  --fc-elevation-surface: 0 1px 2px -1px rgb(0 0 0 / 0.5), 0 1px 1px rgb(0 0 0 / 0.3);
   --fc-elevation-control: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 1px 3px 0 rgb(0 0 0 / 0.3);
 }
 
@@ -304,7 +339,7 @@ html.dark {
 }
 
 .fc-surface {
-  border-radius: var(--radius);
+  border-radius: var(--fc-card-radius);
   /* The edge comes from the SAME token an appearance can repaint (--fc-border), not a literal — a
      hardcoded #fff here made every top-level panel edgeless in light mode while nested ones (which
      read var(--border) below) kept a real slate-200 edge, so cards looked inconsistently borderless. */
@@ -751,7 +786,7 @@ html.dark {
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
-.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 7px; border: 1px solid var(--fc-border); border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
 .fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
 .fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
 .fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
@@ -760,7 +795,7 @@ html.dark {
 /* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
 .fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
 .fc-copy-value__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius); color: var(--fc-text-muted); }
+.fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--fc-control-h); height: var(--fc-control-h); border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
 .fc-copy-value__button::before { content: ''; position: absolute; inset: -6px; }
 .fc-copy-value__button:hover { color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
@@ -772,21 +807,21 @@ html.dark {
    row of their own under it, instead of squeezing the number into a column one letter wide. */
 @media (min-width: 640px) { .fc-record-head__main { min-width: min(18rem, 100%); } .fc-record-head__actions { flex: none; max-width: 100%; } }
 .fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
-.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 700; line-height: 1.25; color: var(--fc-text); }
+.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 600; line-height: 1.25; color: var(--fc-text); }
 .fc-record-head__copy,
-.fc-record-head__menu { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); color: var(--fc-text-muted); }
-.fc-record-head__copy { width: 24px; height: 24px; }
+.fc-record-head__menu { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
+.fc-record-head__copy { width: var(--fc-control-h); height: var(--fc-control-h); }
 /* A 24px icon gets a 36px hit area, so a thumb finds it beside the title. */
 .fc-record-head__copy::before { content: ''; position: absolute; inset: -6px; }
-.fc-record-head__menu { width: 28px; height: 28px; }
+.fc-record-head__menu { width: var(--fc-control-h); height: var(--fc-control-h); }
 .fc-record-head__menu::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-head__copy:hover,
 .fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px; border: 1px solid var(--fc-border); border-radius: 9999px; font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
 .fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: 1.4; color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: var(--fc-record-text); font-weight: 600; color: var(--fc-text); background: var(--fc-surface); }
+.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface); }
 .fc-record-head__button:hover { background: var(--fc-surface-muted); }
 @media (max-width: 639px) { .fc-record-head__button-label { display: none; } }
 
@@ -832,11 +867,11 @@ html.dark {
 .fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: 11px; font-weight: 600; background: var(--fc-surface-muted); color: var(--fc-text-muted); }
 .fc-record-part__meta { font-size: 12px; color: var(--fc-text-muted); }
 .fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fc-text); }
-.fc-record-part__action { position: relative; flex: none; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--fc-text-muted); }
+.fc-record-part__action { position: relative; flex: none; width: var(--fc-control-h); height: var(--fc-control-h); display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
 .fc-record-part__action::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-part__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-.fc-record-part__button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-record-part__button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
 .fc-record-part__button:hover { background: var(--fc-surface-muted); }
 /* A card that is the part itself (an order's invoices) needs no label repeating its title. */
 .fc-record-part__group--bare { grid-template-columns: minmax(0, 1fr); }
@@ -894,7 +929,7 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-head { background: var(--fc-surface-muted); border-bottom: 1px solid var(--fc-border); }
 /* A long column name wraps onto a second line instead of widening its column past what the values need,
    so a list fits its page instead of scrolling sideways. */
-.fc-dt-th { height: 40px; padding: 6px 10px; font-size: 12px; font-weight: 500; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: normal; }
+.fc-dt-th { height: var(--fc-field-h); padding: 6px 10px; font-size: var(--fc-control-text); font-weight: 500; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: normal; }
 .fc-dt-th__inner { display: flex; align-items: flex-end; gap: 4px; }
 .fc-dt-th--sortable { cursor: pointer; }
 .fc-dt-th--sortable:hover { color: var(--fc-text); }
@@ -905,9 +940,9 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-row:hover { background: var(--fc-surface-muted); }
 .fc-dt-row--link { cursor: pointer; }
 .fc-dt-row--selected { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
-.fc-dt-td { height: 48px; padding: 0 10px; vertical-align: middle; white-space: nowrap; }
+.fc-dt-td { height: var(--fc-row-h); padding: 0 10px; vertical-align: middle; white-space: nowrap; }
 .fc-dt-td--actions { padding-inline: 4px 8px; }
-.fc-dt-cell { font-size: 13px; font-weight: 400; color: var(--fc-text); }
+.fc-dt-cell { font-size: var(--fc-value-text); font-weight: 400; color: var(--fc-text); }
 /* The title opens its record; it reads as the row's name, and underlines only to show it is a link. */
 .fc-dt-title-link { color: inherit; font-weight: 500; text-decoration: none; }
 .fc-dt-title-link:hover, .fc-dt-title-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
@@ -995,8 +1030,9 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   pointer-events: none;
   white-space: nowrap;
 }
-.fc-nav-item:hover .fc-nav-item__kbd,
-.fc-nav-item--active .fc-nav-item__kbd { opacity: 1; }
+/* Only while the pointer is on the row. On the open section it stood there all day, which read as a
+   stray box beside the menu rather than as a hint. */
+.fc-nav-item:hover .fc-nav-item__kbd { opacity: 1; }
 @media (hover: none) { .fc-nav-item__kbd { display: none; } }
 .fc-nav-sub { display: flex; flex-direction: column; gap: 1px; padding-block: 2px 6px; }
 .fc-nav-sub__item {
@@ -1065,8 +1101,12 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 
 /* ── Edit sheet ──────────────────────────────────────────────────────────────────────────────────────
- * EditSheet: rises from the bottom edge on a phone; from 640px it is drawn in place, inside the card it
- * edits — never a dialog over the page. Every value is a `--fc-sheet-*` token in :root. */
+ * EditSheet: rises from the bottom edge on a phone; from 640px it is a dialog over the page, centred,
+ * with its own head and its own Cancel / Save. Every value is a `--fc-sheet-*` token in :root.
+ *
+ * It was drawn in place, inside the card, and that is what made the record read as two different pages:
+ * the card's rows vanished, controls of another size took their place, and the page under them moved.
+ * A dialog leaves the record exactly where it is and puts the editing on top of it. */
 .fc-sheet {
   position: fixed;
   inset: 0;
@@ -1125,10 +1165,11 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin: -6px -8px -6px 0;
-  border-radius: var(--fc-sheet-radius);
+  /* A head control, like the ⋯ of a card: the compact height, not the field one. */
+  width: var(--fc-control-h);
+  height: var(--fc-control-h);
+  margin-inline-end: -4px;
+  border-radius: var(--fc-control-radius);
   color: var(--fc-text-muted);
 }
 .fc-sheet__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
@@ -1166,50 +1207,34 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 .fc-sheet__foot > * { flex: 1 1 0; }
 
-/* Only a phone floats the sheet over the page, so only a phone stops the page scrolling under it. */
-@media (max-width: 639.98px) {
-  html:has(.fc-sheet) { overflow: hidden; }
-}
-
-/* From 640px nothing floats: the sheet is drawn in place, inside the card it edits, and the card's own
- * title stands above it — no backdrop, no second heading, no box inside the box. */
+/* From 640px the sheet is a dialog: centred over the page, a panel of its own, the record untouched
+ * behind it. The fields read at the console's own size, not the phone's. */
 @media (min-width: 640px) {
   .fc-sheet {
-    position: static;
-    display: block;
-    z-index: auto;
+    align-items: center;
+    padding: 24px;
     --fc-field-text: 12px;
     --fc-field-weight: 500;
   }
-  .fc-sheet__backdrop,
-  .fc-sheet__head { display: none; }
   .fc-sheet__panel {
-    max-height: none;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: visible;
+    width: min(720px, 100%);
+    max-height: calc(100dvh - 96px);
+    background: var(--fc-sheet-canvas);
+    border: 1px solid var(--fc-sheet-border);
+    border-radius: var(--fc-sheet-radius);
+    box-shadow: 0 24px 64px rgb(15 23 42 / 0.24);
   }
-  .fc-sheet__body { padding: 12px 0; overflow: visible; }
-  .fc-sheet__group { padding: 0; background: transparent; border: 0; border-radius: 0; }
-  .fc-sheet__error { border: 0; border-radius: var(--fc-sheet-radius); }
+  .fc-sheet__body { padding: var(--fc-sheet-pad); }
+  .fc-sheet__group { padding: 0; background: transparent; border: 0; }
   .fc-sheet__foot {
     justify-content: flex-end;
-    padding: 12px 0;
-    background: transparent;
-    border-top: var(--fc-record-rule);
+    padding: 12px var(--fc-sheet-pad);
   }
   .fc-sheet__foot > * { flex: 0 0 auto; }
-  /* The fields replace the values they edit, in the same place — the rows, what a component reads from
-     them (an address) and the components drawn again among them. What else the card holds (a plugin's
-     history, a payment drawn under the totals) stays where it was: editing never takes it away. */
-  .fc-record-card--editing .fc-record-card__rows,
-  .fc-record-card--editing .fc-record-card__read,
-  .fc-record-card--editing .fc-record-card__own,
-  .fc-record-card--editing .fc-record-card__edit,
-  .fc-record-card--editing .fc-record-card__menu { display: none; }
 }
+
+/* The page never scrolls under an open dialog, at any width. */
+html:has(.fc-sheet) { overflow: hidden; }
 
 /* While a section is being edited it carries its own Cancel / Save; the page's save bar would offer the
    same save a second time for the same change, so it steps aside until the section is closed. */
@@ -1225,13 +1250,13 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   justify-content: space-between;
   gap: 12px;
   min-height: var(--fc-card-head-height);
-  padding: 12px 16px;
+  padding: 16px var(--fc-card-pad-x);
   border-bottom: var(--fc-record-rule);
 }
 .fc-record-card__title {
   min-width: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--fc-card-title);
+  font-weight: 500;
   color: var(--card-foreground);
 }
 .fc-record-card__title { flex: none; }
@@ -1255,44 +1280,65 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-right: -6px;
-  border-radius: var(--radius);
+  width: var(--fc-control-h);
+  height: var(--fc-control-h);
+  border-radius: var(--fc-control-radius);
   color: var(--fc-text-muted);
   cursor: pointer;
 }
 .fc-record-card__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-/* Edit stands in the card's head, where every card puts it, not inside the ⋯. */
-.fc-record-card__edit { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; cursor: pointer; }
-.fc-record-card__edit:hover { background: var(--fc-surface-muted); }
-.fc-record-card__edit + .fc-record-card__menu { margin-left: -4px; }
+/* The menu is portalled from a wrapper of its own, whose inline-block line box added a pixel to the
+   head it sits in — two head heights down one column, for a reason nothing on screen could show. */
+.fc-record-card__head > div:has(.fc-record-card__menu),
+.fc-record-card__head > div:has(.fc-record-card__menu) > div { display: flex; align-items: center; }
+/* Editing is the first item of the head's ⋯, so the head holds ONE control, of one shape, always in
+   the same place — the whole reason every card head is now exactly as tall as every other. */
 .fc-record-card__body:not(:empty) { padding: var(--fc-card-body-pad); }
 .fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
 .fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }
+/* The rule between two facts runs the WHOLE width of the card, as it does on every record page worth
+   copying. Held inside the card's padding it stopped 16px short at each end, which reads as a form
+   whose boxes do not quite line up rather than as a list of facts. The row keeps its own padding, so
+   the text still stands clear of the edge. */
 .fc-record-card__row {
   display: grid;
-  grid-template-columns: min(var(--fc-record-label-width), 32%) minmax(0, 1fr);
+  /* Two equal halves, measured on Medusa's own record: 528px and 528px in a 1120px card, the value
+     starting at the midpoint. A narrow label column put every value hard against its label and left
+     the right half of the card empty. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
-  padding: 10px 0;
+  margin-inline: calc(-1 * var(--fc-card-pad-x));
+  padding: 14px var(--fc-card-pad-x);
   font-size: var(--fc-record-text);
   line-height: 1.45;
 }
-/* A record's facts read in TWO columns once THE CARD is wide. One column of ten rows across a 2300px
-   screen put every value a hand's width from its label and left the card three-quarters empty — the
-   complaint behind this change. The card itself is the query container: measured against the record AREA
-   instead, a 352px side card split into two columns as well, and its labels wrapped into its values. */
+/* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
+   the wrong answer: the name of the product and its description ended up on one line, each cut to half
+   the card, and the eye had two label columns to follow instead of one. Every record page worth copying
+   — Shopify's, Stripe's, Medusa's — keeps one row per fact and lets the card be short. A card that is
+   short is not a card that is broken. */
 .fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
-@container (min-width: 52rem) {
-  .fc-record-card__rows,
-  .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
-  .fc-record-card__rows > * + *,
-  .fc-sro__rows > * + * { border-top: 0; }
-  .fc-record-card__rows > *,
-  .fc-sro__rows > * { border-top: var(--fc-record-rule); }
-  /* A value that needs the room (a long text, its own control) keeps the whole row. */
-  .fc-record-card__rows > .fc-record-card__row--wide { grid-column: 1 / -1; }
+/* What else the record holds, at its foot: one row per section, its name, how many fields it adds. */
+.fc-record-more__row {
+  /* The count belongs BESIDE the name, not at the far end of the card: stretched across 660px the row
+     read as two unrelated columns. The way in stays at the edge, where the eye looks for it. */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  font-size: var(--fc-record-text);
+  text-align: start;
+  color: var(--fc-text);
+  cursor: pointer;
 }
+.fc-record-more__row:hover .fc-record-more__name { color: var(--fc-brand); }
+.fc-record-more__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.fc-record-more__go { margin-inline-start: auto; }
+.fc-record-more__count { color: var(--fc-text-muted); white-space: nowrap; }
+.fc-record-more__go { flex: none; margin-inline-start: auto; color: var(--fc-text-muted); }
 .fc-record-card__label { color: var(--fc-text-muted); }
 .fc-record-card__value {
   min-width: 0;
@@ -1384,7 +1430,39 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
 .fc-sro__media { display: inline-flex; align-items: center; gap: 8px; }
 .fc-sro__thumb { width: 48px; height: 48px; flex: none; border: 1px solid var(--fc-border); border-radius: 6px; object-fit: cover; }
+/* ONE badge in the console. It used to carry its own pill shape and its own text size, so a value
+   chosen from a list wore a different corner and a different type from everything beside it. */
+.fc-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--fc-badge-h);
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--fc-control-radius);
+  font-size: var(--fc-control-text);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+.fc-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+/* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
+.fc-record-head__actions .fc-state-badge,
+.fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
 .fc-sro-table { overflow-x: auto; }
+.fc-sro-table__tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.fc-sro-table__sort {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fc-sro-table__sort:hover { color: var(--fc-text); }
+.fc-sro-table__count { margin: 6px 0 0; font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
 .fc-sro-table table { width: 100%; border-collapse: collapse; }
 .fc-sro-table th {
   padding: 8px 16px 8px 0;
@@ -1404,6 +1482,25 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-table th:last-child, .fc-sro-table td:last-child { padding-inline-end: 0; }
 .fc-sro-table tr:last-child td { border-bottom: 0; }
+/* The ⋯ at the end of a row: the way into the row from the row itself. The column takes only its own
+   width and the control is quiet until the row is under the pointer, so a table still reads as a table. */
+.fc-sro-table__menu-head, .fc-sro-table__menu-cell { width: 1%; padding-inline-end: 0; text-align: end; }
+.fc-sro-table__menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--fc-control-h);
+  height: var(--fc-control-h);
+  border-radius: var(--fc-control-radius);
+  color: var(--fc-text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+.fc-sro-table tr:hover .fc-sro-table__menu,
+.fc-sro-table__menu:focus-visible { opacity: 1; }
+.fc-sro-table__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+@media (hover: none) { .fc-sro-table__menu { opacity: 1; } }
 .fc-record-card__empty {
   padding: 8px 0;
   font-size: var(--fc-record-text);

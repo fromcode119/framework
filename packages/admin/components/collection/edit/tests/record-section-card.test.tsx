@@ -17,8 +17,14 @@ describe('RecordSectionCard', () => {
   ];
   const section = { key: 'customer', title: 'Customer', fields };
   const renderField = (field: any) => <input key={field.name} aria-label={`field ${field.name}`} readOnly />;
-  /** "Edit" stands in the card's head, never inside the ⋯. */
-  const openEdit = () => fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+  /** Every card head carries ONE control: the ⋯, whose first item is Edit. */
+  const openEdit = () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Section actions' }));
+    // jsdom measures nothing, so the portalled panel never leaves its pre-measurement
+    // `visibility: hidden`: it is in the document and clickable, but it has no accessible NAME while
+    // it is hidden, so the item is reached by its title instead of by its role.
+    fireEvent.click(screen.getByTitle('Edit'));
+  };
 
   const mount = (overrides: Record<string, any> = {}) => {
     const props: any = {
@@ -41,8 +47,9 @@ describe('RecordSectionCard', () => {
     expect(screen.getByText('0878663848')).toBeInTheDocument();
     expect(screen.queryByText('Note')).toBeNull();
     expect(screen.getByText('Email')).toBeInTheDocument();
-    // A field with its own component stays on the card, working in place.
-    expect(screen.getByLabelText('field items')).toBeInTheDocument();
+    // A field whose value is DATA reads as data and is changed in the sheet; with no value recorded
+    // there is nothing to read, so the card draws neither a value nor its editor.
+    expect(screen.queryByLabelText('field items')).toBeNull();
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -86,8 +93,8 @@ describe('RecordSectionCard', () => {
     const locked = [{ name: 'number', type: 'text', label: 'Number', admin: { readOnly: true, readOnlyOverride: 'never' } }];
     render(<RecordSectionCard section={{ key: 'x', title: 'Order', fields: locked }} formData={{ number: '7' }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
     expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
-    // Nothing offered for the section: no ⋯ either.
+    // Nothing to edit and nothing offered for the section: no ⋯ at all.
+    expect(screen.queryByRole('button', { name: 'Section actions' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Section actions' })).toBeNull();
   });
 
@@ -97,7 +104,7 @@ describe('RecordSectionCard', () => {
       { name: 'requestKey', type: 'text', label: 'Request key', admin: { readOnly: true } },
     ];
     render(<RecordSectionCard section={{ key: 'x', title: 'Record', fields: written }} formData={{ requestKey: 'k-1' }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
-    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Section actions' })).toBeNull();
   });
 
   it('keeps every field of the card while editing — locked and recorded ones as they read, nothing swapped', () => {

@@ -7,6 +7,7 @@ import { StructuredReadOnlyBlock } from '@/components/collection/fields/view/str
 import { StructuredReadOnlyGroup } from '@/components/collection/fields/view/structured-read-only-group.client';
 import { StructuredReadOnlyTable } from '@/components/collection/fields/view/structured-read-only-table.client';
 import { StructuredReadOnlyList } from '@/components/collection/fields/view/structured-read-only-list.client';
+import { StructuredReadOnlyTableService } from '@/components/collection/fields/structured-read-only-table-service';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -37,6 +38,12 @@ export class StructuredReadOnlyField extends Reactor {
     return StructuredReadOnlyFieldService.classify(this.parsedValue);
   }
 
+  /** Opens the editor the read value belongs to, offered from the ⋯ of every row of a table. */
+  private get editRow(): (() => void) | undefined {
+    const declared = this.field?.admin?.onEditRow;
+    return typeof declared === 'function' ? declared as () => void : undefined;
+  }
+
   /** The plugin names its own keys; the framework renders whatever it is told. */
   private get keyLabels(): Record<string, string> | undefined {
     const declared = this.field?.admin?.keyLabels;
@@ -51,7 +58,24 @@ export class StructuredReadOnlyField extends Reactor {
   private renderBody(): ReactNode {
     const node = this.rootNode;
     if (node.kind === StructuredNodeKind.EMPTY) return <p className="fc-sro__absent">{AdminI18n.t('ui.structured.empty')}</p>;
-    if (node.kind === StructuredNodeKind.ARRAY_TABLE) return <StructuredReadOnlyTable node={node} keyLabels={this.keyLabels} />;
+    if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
+      // A long table is looked THROUGH, so it carries the same filter every list in the console has.
+      const searchable = StructuredReadOnlyTableService.isSearchableTable(node);
+      const needle = searchable ? this.filterText.trim().toLowerCase() : '';
+      return (
+        <>
+          {searchable ? (
+            <Input
+              value={this.filterText}
+              onChange={(event: any) => this.handleFilterChange(event?.target?.value ?? '')}
+              placeholder={AdminI18n.t('ui.structured.filter')}
+              className="fc-sro__filter"
+            />
+          ) : null}
+          <StructuredReadOnlyTable node={node} keyLabels={this.keyLabels} filterLower={needle} editRow={this.editRow} />
+        </>
+      );
+    }
     if (StructuredReadOnlyFieldService.isValueList(node)) return <StructuredReadOnlyList node={node} />;
     if (node.kind === StructuredNodeKind.SCALAR) {
       return <dl className="fc-sro__rows"><StructuredReadOnlyBlock label={AdminI18n.t('collection.structuredValue')} node={node} keyLabels={this.keyLabels} /></dl>;

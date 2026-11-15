@@ -17,14 +17,43 @@ export class RecordSectionFields {
   /** The console's components that only SHOW a recorded value: there is nothing in them to edit. */
   private static readonly DISPLAY_COMPONENTS = new Set(['StructuredReadOnlyField']);
 
-  /** Field types whose value has a shape, so a component for them IS the interface for reading it. */
-  private static readonly STRUCTURED_TYPES = new Set(['json', 'array', 'blocks', 'richText', 'relationship', 'media', 'upload']);
+  /**
+   * Types whose component is the only way to READ the value: a picture, a block document, a name behind
+   * an id. Drawn in place on a saved record, because there is nothing else to show.
+   */
+  private static readonly VISUAL_TYPES = new Set(['blocks', 'richText', 'relationship', 'media', 'upload']);
+
+  /**
+   * Types whose value is DATA — a list, a set of keyed values. The framework reads those itself, as the
+   * table it already draws for any structured value.
+   */
+  private static readonly DATA_TYPES = new Set(['json', 'array']);
 
   /** A field drawn by its own component — it is shown and used in place, never moved into the sheet. */
   static ownsItsControl(field: any): boolean {
     if (!field?.admin?.component || field?.admin?.readComponent || field?.admin?.readAsValue || field?.admin?.readBy) return false;
     if (RecordSectionFields.displaysOnly(field)) return false;
-    return field.admin.inPlace === true || RecordSectionFields.STRUCTURED_TYPES.has(String(field?.type || ''));
+    return field.admin.inPlace === true || RecordSectionFields.VISUAL_TYPES.has(String(field?.type || ''));
+  }
+
+  /**
+   * The one rule a saved record follows: it SHOWS what is recorded, and the sheet is where it changes.
+   *
+   * A field whose value is data — a product's variants, its choices, its prices per currency — used to
+   * draw its own editor on the record, so a saved product was a page of steppers, switches and bins
+   * where an order of the same age was a page of values. That is the difference between the two screens,
+   * and it was never a decision anybody took: it followed from "a structured type is its own interface",
+   * which is true of a photograph and false of a list.
+   *
+   * Such a field is read here by the console's own structured renderer — the table it already draws for
+   * any recorded value — and edited in the section's sheet with its real control. A plugin that means
+   * its control to be used in place says so with `admin.inPlace`, and a plugin that has a better way to
+   * read its value says so with `admin.readComponent`; both still win.
+   */
+  static readsAsData(field: any): boolean {
+    if (!field?.admin?.component || field?.admin?.readComponent || field?.admin?.readAsValue || field?.admin?.readBy) return false;
+    if (RecordSectionFields.displaysOnly(field) || field.admin.inPlace === true) return false;
+    return RecordSectionFields.DATA_TYPES.has(String(field?.type || ''));
   }
 
   /**
@@ -40,9 +69,31 @@ export class RecordSectionFields {
     return admin.readOnly === true && !RecordSectionFields.declaresUnlock(field);
   }
 
-  /** The display-only fields of a section that hold something, in the section's order. */
+  /**
+   * The display-only fields a section draws with their OWN component.
+   *
+   * A locked field used to qualify on the strength of being locked, and a component that does not
+   * honour `readOnly` then drew its form anyway: a product's stock is locked, and its card still held
+   * two steppers, a date picker, two switches and a Save button — 554px of form in a column meant for
+   * short facts. Locked says who may change the value, not how it is read.
+   *
+   * So the component is drawn only where it IS the reading: the console's own display components, a
+   * value whose shape needs it (a picture, a block document), or a plugin that says `inPlace`.
+   * Everything else is read as a value, like every other fact on the card.
+   */
   static displayFields(fields: any[], record: Record<string, any>): any[] {
-    return (fields || []).filter((field) => RecordSectionFields.displaysOnly(field) && !RecordSectionFields.isEmpty(field, record?.[field.name]));
+    return (fields || []).filter((field) => RecordSectionFields.displaysOnly(field)
+      && RecordSectionFields.readsThroughItsComponent(field)
+      && !RecordSectionFields.isEmpty(field, record?.[field.name]));
+  }
+
+  /** Whether a field's own component is how the value READS, as opposed to how it is changed. */
+  static readsThroughItsComponent(field: any): boolean {
+    const admin = field?.admin;
+    if (!admin?.component) return false;
+    if (admin.inPlace === true) return true;
+    if (RecordSectionFields.DISPLAY_COMPONENTS.has(String(admin.component))) return true;
+    return RecordSectionFields.VISUAL_TYPES.has(String(field?.type || ''));
   }
 
   /** A field the card draws through its read component, not as a row. */
@@ -52,7 +103,8 @@ export class RecordSectionFields {
 
   /** The fields the section's sheet holds: every field that is not its own interface. */
   static sheetFields(fields: any[]): any[] {
-    return (fields || []).filter((field) => !RecordSectionFields.ownsItsControl(field) && !RecordSectionFields.displaysOnly(field));
+    return (fields || []).filter((field) => !RecordSectionFields.ownsItsControl(field)
+      && !(RecordSectionFields.displaysOnly(field) && RecordSectionFields.readsThroughItsComponent(field)));
   }
 
   /**
@@ -103,6 +155,9 @@ export class RecordSectionFields {
   static shownFields(fields: any[], record: Record<string, any>): any[] {
     return RecordSectionFields.sheetFields(fields).filter((field) => {
       if (RecordSectionFields.readsByComponent(field) || field?.admin?.readBy) return false;
+      if (RecordSectionFields.readsAsData(field)) return false;
+      // Drawn by its own component above, so not a row as well.
+      if (RecordSectionFields.displaysOnly(field) && RecordSectionFields.readsThroughItsComponent(field)) return false;
       const value = record?.[field.name];
       return !RecordSectionFields.isEmpty(field, value) || RecordSectionFields.isMissing(field, value);
     });

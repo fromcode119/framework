@@ -45,11 +45,14 @@ export class FiltersButton extends PureReactor {
           onClick={this.toggle}
           aria-expanded={this.open}
           title={AdminI18n.t('ui.listToolbar.filters')}
-          className={`h-11 px-3.5 rounded-xl border text-sm font-semibold inline-flex items-center gap-2 leading-none shadow-sm transition-all ${this.buttonClass}`}
+          // Below 640px the word is dropped and only the funnel is left, so the button has to say what
+          // it is some other way — otherwise a phone shows an unlabelled square beside the search box.
+          aria-label={AdminI18n.t('ui.listToolbar.filters')}
+          className={`h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-semibold inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
         >
           <FrameworkIcons.Filter size={15} />
           <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>
-          {activeCount ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[11px] inline-flex items-center justify-center">{activeCount}</span> : null}
+          {activeCount ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[length:var(--fc-label-text)] inline-flex items-center justify-center">{activeCount}</span> : null}
         </button>
         {this.open ? <FilterPanel filters={this.filters} total={this.total} onClose={this.close} /> : null}
       </div>

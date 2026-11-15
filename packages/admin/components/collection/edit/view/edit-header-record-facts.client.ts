@@ -1,5 +1,6 @@
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
+import { FieldDisplayLabel } from '@/lib/collection/field-display-label';
 
 /**
  * What the header card says about a record besides its title: the line under it, and the state badges
@@ -19,9 +20,27 @@ export class EditHeaderRecordFacts {
         const field = EditHeaderRecordFacts.field(collection, name);
         if (!field) return '';
         const value = formData?.[name];
-        return (EditHeaderRecordFacts.longDate(field, value) ?? ReadOnlyFieldValue.describe(field, value)).trim();
+        const text = (EditHeaderRecordFacts.longDate(field, value) ?? ReadOnlyFieldValue.describe(field, value)).trim();
+        return text ? EditHeaderRecordFacts.named(field, text) : '';
       })
       .filter(Boolean);
+  }
+
+  /**
+   * A number says what it counts.
+   *
+   * A product's line read "PS0427 · 0": the SKU speaks for itself, and the second fact was a bare
+   * digit. The row of the same product in the list reads "Наличност 0", because a list labels its
+   * values — the header did not, so the one fact that needed a word was the one without it.
+   *
+   * A value that is a number or a yes/no carries its field's name; text, a date, a state or anything
+   * else already says what it is, and repeating the name would only make the line longer.
+   */
+  private static named(field: any, text: string): string {
+    const kind = String(field?.type || '');
+    if (!['number', 'boolean', 'checkbox'].includes(kind)) return text;
+    const label = FieldDisplayLabel.of(field).trim();
+    return label ? `${label} ${text}` : text;
   }
 
   /** The declared state badges with a value, each in its option's tone; null when the collection declares none. */

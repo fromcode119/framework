@@ -42,7 +42,6 @@ export class EditHeaderMenu extends Reactor {
   @prop declare onDelete: () => void;
 
   /** Sections holding fields the record does not draw: one row each, opening the section in place. */
-  @prop declare moreSections: Array<{ key: string; title: string; count: number }>;
   /** The sections already open, which the one chosen joins in the address. */
   @prop declare openedSections: string[];
   /** The record's own address; a row adds the sections opened to it (`?section=a,b`). */
@@ -111,10 +110,11 @@ export class EditHeaderMenu extends Reactor {
   }
 
   /**
-   * "More": every section the record does not draw, by title and how many fields it adds, and the record's
-   * history (when it was made and changed, and its versions). Choosing one opens it ON the record — the
-   * section gains its other fields where it stands, or appears where the collection declares it — and the
-   * page scrolls to it. The record never gives way to a page of one section.
+   * The record's history (when it was made and changed, and its versions), opened ON the record.
+   *
+   * The sections the record does not draw used to be listed here too. They are at the FOOT of the
+   * record now: a menu is where you look for an action, not for the rest of what you are reading, and
+   * a row that exists only while a menu is open is a row nobody finds.
    */
   private pageItems(): IDropdownItem[] {
     if (!this.recordHref || !this.navigate) return [];
@@ -123,12 +123,7 @@ export class EditHeaderMenu extends Reactor {
       this.navigate?.(CollectionEditRecordMore.hrefOpening(this.recordHref, opened, key));
       EditHeaderMenu.scrollToOpened(key);
     };
-    const rows: IDropdownItem[] = this.moreSections.map((section) => ({
-      label: section.title,
-      detail: AdminI18n.t(section.count === 1 ? 'collection.edit.moreOneField' : 'collection.edit.moreFields', { count: section.count }),
-      icon: <FrameworkIcons.Right size={15} />,
-      onClick: open(section.key),
-    }));
+    const rows: IDropdownItem[] = [];
     if (!opened.includes(CollectionEditRecordMore.HISTORY)) {
       rows.push({ label: AdminI18n.t('collection.edit.versions'), icon: <FrameworkIcons.Clock size={15} />, onClick: open(CollectionEditRecordMore.HISTORY) });
     }
