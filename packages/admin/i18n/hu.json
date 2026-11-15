@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Nincs rögzítve",
       "filter": "Szűrés kulcs szerint…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Még nincs rögzítve semmi.",
       "noMatch": "Nincs a szűrőnek megfelelő találat."
     },

@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Ei tallennettu",
       "filter": "Suodata avaimen mukaan…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Mitään ei ole vielä tallennettu.",
       "noMatch": "Suodattimella ei löytynyt mitään."
     },

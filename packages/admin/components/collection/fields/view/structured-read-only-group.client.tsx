@@ -32,6 +32,8 @@ export class StructuredReadOnlyGroup extends PureReactor {
   @prop declare keyLabels?: Record<string, string>;
   /** The names of the levels above, already joined; empty at the top. */
   @prop declare prefix?: string;
+  /** Draw this level's own values and not what nests under them — see `StructuredReadOnlyField`. */
+  @prop declare leavesOnly?: boolean;
 
   /** Object entries and array items reach this component as the same shape. */
   private get entries(): IStructuredEntry[] {
@@ -70,6 +72,22 @@ export class StructuredReadOnlyGroup extends PureReactor {
     );
   }
 
+  /**
+   * What is in there, without printing it: the group's name and how many values it holds. A field too
+   * big to read is still a field the operator must be able to see the shape of before searching it.
+   */
+  private renderNamed(entry: IStructuredEntry): ReactNode {
+    const count = StructuredReadOnlyFieldService.leafCount(entry.node);
+    return (
+      <section key={entry.key} className="fc-sro__section fc-sro__section--named">
+        <h3 className="fc-sro__heading">
+          {this.label(entry.key)}
+          {count ? <span className="fc-sro__count">{count}</span> : null}
+        </h3>
+      </section>
+    );
+  }
+
   private renderChild(entry: IStructuredEntry): ReactNode {
     const { depth, filterLower, keyLabels } = this;
     const count = StructuredReadOnlyFieldService.topLevelCount(entry.node);
@@ -100,11 +118,13 @@ export class StructuredReadOnlyGroup extends PureReactor {
             {leaves.map((entry) => <StructuredReadOnlyBlock key={entry.key} label={this.label(entry.key)} node={entry.node} />)}
           </dl>
         ) : null}
-        {children.map((entry) => (this.depth >= StructuredReadOnlyGroup.JOIN_FROM_DEPTH
-          && !StructuredReadOnlyFieldService.isValueList(entry.node)
-          && entry.node.kind !== StructuredNodeKind.ARRAY_TABLE
-          ? this.renderJoined(entry)
-          : this.renderChild(entry)))}
+        {this.leavesOnly
+          ? children.map((entry) => this.renderNamed(entry))
+          : children.map((entry) => (this.depth >= StructuredReadOnlyGroup.JOIN_FROM_DEPTH
+            && !StructuredReadOnlyFieldService.isValueList(entry.node)
+            && entry.node.kind !== StructuredNodeKind.ARRAY_TABLE
+            ? this.renderJoined(entry)
+            : this.renderChild(entry)))}
       </>
     );
   }

@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Não registado",
       "filter": "Filtrar por chave…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ainda não há nada registado.",
       "noMatch": "Nada corresponde a esse filtro."
     },

@@ -18,6 +18,13 @@ export class StructuredReadOnlyFieldService {
   /** Above this many characters a leaf value is truncated with the full text behind a title. */
   private static readonly LARGE_LEAF_VALUE_THRESHOLD = 150;
 
+  /**
+   * Past this many values a recorded field stops being something anyone reads and becomes a page of
+   * its own: a product's storefront snapshot printed 284 of them — the record a second time, with
+   * every translation key and every metadata list — and made the product page 19 695px tall.
+   */
+  private static readonly OVERSIZED_LEAF_VALUE_THRESHOLD = 80;
+
   /** Defensively resolve the raw field value into real data. A JSON string parses; a plain string stays a string. */
   static parse(raw: unknown): unknown {
     if (typeof raw !== 'string') return raw;
@@ -150,6 +157,20 @@ export class StructuredReadOnlyFieldService {
   static isLargePayload(node: IStructuredNode): boolean {
     return StructuredReadOnlyFieldService.topLevelCount(node) > StructuredReadOnlyFieldService.LARGE_TOP_LEVEL_KEY_THRESHOLD
       || StructuredReadOnlyFieldService.leafCount(node) > StructuredReadOnlyFieldService.LARGE_LEAF_VALUE_THRESHOLD;
+  }
+
+  /** The values of this level itself, without what nests under them. */
+  static ownLeafCount(node: IStructuredNode): number {
+    if (node.kind === StructuredNodeKind.SCALAR) return 1;
+    const children = node.kind === StructuredNodeKind.OBJECT
+      ? (node.entries ?? []).map((entry) => entry.node)
+      : (node.items ?? []);
+    return children.filter((child) => child.kind === StructuredNodeKind.SCALAR || child.kind === StructuredNodeKind.EMPTY).length;
+  }
+
+  /** More values than anyone reads at once: the field opens on its own level and its filter finds the rest. */
+  static isOversized(node: IStructuredNode): boolean {
+    return StructuredReadOnlyFieldService.leafCount(node) > StructuredReadOnlyFieldService.OVERSIZED_LEAF_VALUE_THRESHOLD;
   }
 
   static isLink(value: unknown): value is string {

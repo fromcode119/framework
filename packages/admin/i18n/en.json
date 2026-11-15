@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Not recorded",
       "filter": "Filter by key…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Nothing recorded yet.",
       "noMatch": "Nothing matches that filter."
     },

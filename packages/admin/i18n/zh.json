@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "未记录",
       "filter": "按键筛选…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "暂无记录。",
       "noMatch": "没有符合筛选条件的内容。"
     },
