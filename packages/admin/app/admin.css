@@ -1246,7 +1246,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    complaint behind this change. The card itself is the query container: measured against the record AREA
    instead, a 352px side card split into two columns as well, and its labels wrapped into its values. */
 .fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
-@container (min-width: 44rem) {
+@container (min-width: 52rem) {
   .fc-record-card__rows,
   .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
   .fc-record-card__rows > * + *,
