@@ -65,6 +65,9 @@
   --fc-nav-radius: 8px;
   --fc-nav-sub-indent: 38px;
   --fc-record-gap: 14px;
+  /* A card's head and body, so every card on a page — the record's own and a plugin's — keeps one rhythm. */
+  --fc-card-head-height: 57px;
+  --fc-card-body-pad: 4px 16px;
 
   /* ── One page rhythm ──────────────────────────────────────────────────────────────────────────────
    * Every console screen is inset by THESE two values and no others. Before this, each page carried its
@@ -691,7 +694,6 @@ html.dark {
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky > *,
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > * { order: 4; }
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > :first-child { order: 2; }
-  .fc-edit-columns__grid--sidebar .fc-edit-top:not(:has(.fc-edit-top__grid > *)) { display: none; }
 }
 
 /* ── A record page's top: the breadcrumb, then one card naming the record ─────────────────────────────
@@ -793,6 +795,8 @@ html.dark {
    its neighbours where the form is wide enough; one that holds content keeps the full width. Stacked
    one per row, four short panels were a screen of scrolling before the first field. */
 .fc-edit-top { container-type: inline-size; }
+/* Nothing in it: no element, so the column's gap does not open under the last card. */
+.fc-edit-top:not(:has(.fc-edit-top__grid > *)) { display: none; }
 @container (min-width: 44rem) {
   .fc-edit-top__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.75rem; align-items: start; }
   .fc-edit-top__grid > *:has(.fc-admin-panel--body), .fc-edit-top__grid > .fc-admin-panel--body { grid-column: 1 / -1; }
@@ -919,7 +923,11 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-page--current { background: var(--fc-surface-muted); color: var(--fc-text); font-weight: 600; box-shadow: inset 0 0 0 1px var(--fc-border); }
 
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
-.fc-edit-sticky { position: sticky; align-self: start; }
+/* The side column's cards keep the record's one gap between them. This element used to hold a single
+   child — the sidebar's own column, which gapped its cards itself — so it needed no layout; the moment a
+   second card stood beside that column (the record's own facts), the two were glued edge to edge while
+   every other pair on the page sat 14px apart. */
+.fc-edit-sticky { position: sticky; align-self: start; display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 
 /* A menu item's trailing slot (sidebar-nav-item-view): after the label, or on the icon's corner collapsed. */
 /* ── The menu ── one column, no group headings; see `sidebar-nav-groups.tsx`. */
@@ -1183,11 +1191,14 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 
 /* ── A saved record's section card ───────────────────────────────────────────────────────────────────
  * RecordSectionCard: the values that are set, as label / value rows; Edit opens the sheet. */
+/* One height for every card's head. It was the content's: 57px where an Edit button stood in it and
+   46px where none did, so two cards in the same column had their titles on different lines. */
 .fc-record-card__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: var(--fc-card-head-height);
   padding: 12px 16px;
   border-bottom: var(--fc-record-rule);
 }
@@ -1230,7 +1241,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-card__edit { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; cursor: pointer; }
 .fc-record-card__edit:hover { background: var(--fc-surface-muted); }
 .fc-record-card__edit + .fc-record-card__menu { margin-left: -4px; }
-.fc-record-card__body:not(:empty) { padding: 4px 16px; }
+.fc-record-card__body:not(:empty) { padding: var(--fc-card-body-pad); }
 .fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
 .fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }
 .fc-record-card__row {
@@ -1284,7 +1295,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-admin-panel__head--alone { border-bottom: 0; }
 .fc-admin-panel__title { display: inline-flex; align-items: center; gap: 6px; }
 .fc-admin-panel__actions { flex: none; justify-content: flex-end; }
-.fc-admin-panel__body { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; }
+/* A plugin's panel reads at the record's own rhythm: its body padded like a record card's, not 8px
+   deeper, so the first line of a panel sits where the first line of the card above it sits. */
+.fc-admin-panel__body { display: flex; flex-direction: column; gap: 10px; padding: var(--fc-card-body-pad); }
 .fc-admin-panel__body:empty { display: none; }
 .fc-admin-panel__description { font-size: var(--fc-record-text); line-height: 1.45; color: var(--fc-text-muted); }
 
