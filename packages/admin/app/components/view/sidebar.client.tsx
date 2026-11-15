@@ -14,6 +14,7 @@ import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.c
 import { SidebarNotifications } from '@/app/components/view/sidebar-notifications.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
 import { SidebarSearch } from '@/app/sidebar-search.client';
+import { NavShortcuts } from '@/lib/nav-shortcuts';
 
 export class Sidebar extends AdminComponent {
   @prop declare isOpen: boolean;
@@ -42,6 +43,7 @@ export class Sidebar extends AdminComponent {
   componentDidMount(): void {
     this.syncBodyScrollLock();
     this.notifyActiveContext();
+    if (Platform.isBrowser) window.addEventListener('keydown', this.navigateByKey);
   }
 
   componentDidUpdate(prevProps: Record<string, unknown>): void {
@@ -51,6 +53,42 @@ export class Sidebar extends AdminComponent {
 
   componentWillUnmount(): void {
     this.releaseBodyScrollLock();
+    if (Platform.isBrowser) window.removeEventListener('keydown', this.navigateByKey);
+    window.clearTimeout(this.leaderTimer);
+  }
+
+  /** Whether G was pressed just now, so the next letter is a section rather than a letter of a word. */
+  private leaderArmed = false;
+  private leaderTimer = 0;
+
+  /**
+   * G, then a section's letter. The leader is forgotten after a moment, so a G pressed by accident
+   * never swallows the key after it; anything typed into a field is the operator's and passes through.
+   */
+  @bound private navigateByKey(event: globalThis.KeyboardEvent): void {
+    if (NavShortcuts.isTyping(event.target, event)) return;
+    if (this.leaderArmed) {
+      this.disarmLeader();
+      const path = NavShortcuts.pathFor(this.shortcuts, event.code);
+      if (!path) return;
+      event.preventDefault();
+      this.router.push(path);
+      return;
+    }
+    if (event.code !== NavShortcuts.LEADER) return;
+    event.preventDefault();
+    this.leaderArmed = true;
+    this.leaderTimer = window.setTimeout(() => { this.leaderArmed = false; }, NavShortcuts.WINDOW_MS);
+  }
+
+  private disarmLeader(): void {
+    window.clearTimeout(this.leaderTimer);
+    this.leaderArmed = false;
+  }
+
+  /** The letter each section of the menu answers to, derived from the menu the operator actually has. */
+  private get shortcuts(): Map<string, string> {
+    return NavShortcuts.assign([...this.groupedMenuItems, this.footerSettingsItem].filter(Boolean));
   }
 
   // Lock body scroll on mobile when sidebar is open so the page doesn't scroll
@@ -146,6 +184,7 @@ export class Sidebar extends AdminComponent {
       footerSettingsItem: this.footerSettingsItem,
       onClose: this.onClose,
       query: isMini ? '' : this.query,
+      shortcuts: this.shortcuts,
     };
 
     return (
