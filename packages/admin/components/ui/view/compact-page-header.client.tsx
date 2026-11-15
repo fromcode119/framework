@@ -45,7 +45,12 @@ export class CompactPageHeader extends PureReactor {
   render(): ReactNode {
     const { title, subtitle, actions } = this;
     return (
-      <div className={AdminClass.of('page-header')}>
+      // The header spans the whole content column, so its left edge IS the page's left edge and the
+      // rule under it reaches both sides. It used to be the caller's job: 45 screens render this header
+      // and two of them remembered, so the dashboard's title stood 24px right of the transactions
+      // list's and its header had no line across — the difference that reads as "the spacing is one
+      // thing here and another there" on every move between two screens.
+      <div className={`${AdminClass.PAGE_BLEED} ${AdminClass.of('page-header')}`}>
         <div className={AdminClass.of('page-header__inner')}>
           <div className={AdminClass.of('page-header__main')}>
             {this.backButton()}

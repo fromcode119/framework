@@ -74,9 +74,7 @@ export class CollectionListHeader extends PureReactor {
     // again in a sentence, on every list in the console. The users list is the one that explains itself.
     const subtitle = this.collection.slug === 'users' ? AdminI18n.t('collection.list.usersDescription') : undefined;
     return (
-      <div className={AdminClass.PAGE_BLEED}>
-        <CompactPageHeader title={this.title()} subtitle={subtitle} actions={this.actions()} />
-      </div>
+      <CompactPageHeader title={this.title()} subtitle={subtitle} actions={this.actions()} />
     );
   }
 }
