@@ -20,6 +20,14 @@ export class PeopleRow extends PureReactor {
   @prop declare onEdit: () => void;
   @prop declare onGrantLogin: () => void;
 
+  /** The account's roles as the console names them, or nothing when it carries none. */
+  private get accountRoles(): string {
+    const roles = (this.person as { accountRoles?: unknown })?.accountRoles;
+    if (!Array.isArray(roles) || !roles.length) return '';
+    // The console's word for a role it knows; a role a site invented keeps the name it was given.
+    return roles.map((role) => AdminI18n.optional(`users.roleNames.${String(role)}`) || String(role)).join(', ');
+  }
+
   render(): ReactNode {
     const { person } = this;
     const pill = AdminClass.of('ext-pill');
@@ -36,7 +44,13 @@ export class PeopleRow extends PureReactor {
           <div className={AdminClass.of('ext-row__name')}>
             <button type="button" className={AdminClass.of('ext-row__link')} onClick={this.onEdit}>{this.name}</button>
             {hasLogin
-              ? <span className={`${pill} ${AdminClass.of('ext-pill--ok')}`}>{AdminI18n.t('users.linkedToUser', { id: person.userId })}</span>
+              ? (
+                /* What this person may do, not merely that a row exists in another table: this list is
+                   the only one a site has, so the account's roles have to read here. */
+                <span className={`${pill} ${AdminClass.of('ext-pill--ok')}`}>
+                  {this.accountRoles || AdminI18n.t('users.hasAccount')}
+                </span>
+              )
               : <span className={pill}>{AdminI18n.t('users.noAccount')}</span>}
           </div>
           <p className={AdminClass.of('ext-row__desc')} title={contact}>{contact || '—'}</p>

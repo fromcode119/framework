@@ -3609,7 +3609,14 @@
       "all": "Все",
       "active": "Активные",
       "suspended": "Заблокированные"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Настройки сайта ({{what}}) задаются внутри каждого сайта — выберите сайт в меню сайтов.",

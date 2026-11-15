@@ -19,8 +19,9 @@ describe('AdminMetadataService', () => {
     const settingsItems = systemItems.filter((item) => item.sourcePaths.includes(AppPathConstants.ADMIN.SETTINGS.ROOT));
 
     expect(result.secondaryPanel.contexts['org.fromcode:system']).toBeDefined();
-    expect(userItems.map((item) => item.id)).toEqual(['users-list', 'people', 'person-fields', 'roles', 'permissions']);
-    expect(userItems.map((item) => item.label)).toEqual(['Users List', 'People', 'Person fields', 'Roles', 'Permissions']);
+    // People leads: inside a site it is the list of everyone, and the accounts list is withheld there.
+    expect(userItems.map((item) => item.id)).toEqual(['people', 'users-list', 'person-fields', 'roles', 'permissions']);
+    expect(userItems.map((item) => item.label)).toEqual(['People', 'Users List', 'Person fields', 'Roles', 'Permissions']);
     expect(userItems.every((item) => item.sourcePaths.every((path) => path === AppPathConstants.ADMIN.USERS.ROOT))).toBe(true);
     expect(settingsItems.map((item) => item.id)).toEqual([
       'general',

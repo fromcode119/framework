@@ -3609,7 +3609,14 @@
       "all": "Gach duine",
       "active": "Gníomhach",
       "suspended": "Curtha ar fionraí"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Socraítear socruithe suímh ({{what}}) laistigh de gach suíomh — roghnaigh ceann ó roghchlár an tsuímh.",

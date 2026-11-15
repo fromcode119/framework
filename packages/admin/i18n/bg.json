@@ -3657,7 +3657,14 @@
       "all": "Всички",
       "active": "Активни",
       "suspended": "Спрени"
-    }
+    },
+    "roleNames": {
+      "admin": "Администратор",
+      "customer": "Клиент",
+      "partner": "Партньор",
+      "user": "Потребител"
+    },
+    "hasAccount": "Може да влиза"
   },
   "lib": {
     "httpErrorStatus": "HTTP грешка! Статус: {{status}}",

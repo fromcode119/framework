@@ -3609,7 +3609,14 @@
       "all": "Alla",
       "active": "Aktiva",
       "suspended": "Avstängda"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Webbplatsinställningar ({{what}}) anges inuti varje webbplats – välj en i webbplatsmenyn.",

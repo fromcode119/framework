@@ -3609,7 +3609,14 @@
       "all": "Semua",
       "active": "Aktif",
       "suspended": "Ditangguhkan"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Pengaturan situs ({{what}}) diatur di dalam setiap situs — pilih salah satu dari menu situs.",

@@ -105,7 +105,10 @@ export class AdminSystemNavigationMetadataService {
   private getUsersSecondaryPanelItems(): ISecondaryPanelItemManifest[] {
     return [
       {
+        /** Inside a site People IS this list, and says who may sign in; with no site there are no
+         *  people to list, so the accounts are the only list there. */
         id: 'users-list',
+        platformScopeOnly: true,
         label: 'Users List',
         path: AppPathConstants.ADMIN.USERS.LIST,
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
@@ -122,7 +125,7 @@ export class AdminSystemNavigationMetadataService {
         sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
         icon: 'Users',
         scope: CapabilityScope.SELF,
-        priority: 15,
+        priority: 10,
         requiredCapabilities: ['users:view'],
       },
       {

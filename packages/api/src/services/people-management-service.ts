@@ -70,11 +70,34 @@ export class PeopleManagementService {
       .find(SystemConstants.TABLE.PEOPLE, { orderBy: { createdAt: 'desc' }, limit: readLimit })
       .catch(() => []);
     const people = (Array.isArray(rows) ? rows : []).map((row: any) => PeopleSelfService.toCamel(row));
-    if (!query) return people;
+    if (!query) return this.withAccountRoles(people);
 
     // Filtered here rather than in SQL because the searchable value is a COMPOSITE of several nullable
     // columns (display name, first/last, email, phone); a LIKE over one of them would miss the others.
-    return people.filter((person: any) => PeopleManagementService.haystack(person).includes(query)).slice(0, limit);
+    return this.withAccountRoles(people.filter((person: any) => PeopleManagementService.haystack(person).includes(query)).slice(0, limit));
+  }
+
+  /**
+   * What a person's login account is, for the people the directory lists.
+   *
+   * The directory is the one list of everyone a site knows, and a person who can sign in is one of
+   * them — so the row has to be able to say WHAT that person may do, not only that an account exists.
+   * Read in one query for the whole page, and only for the people who have an account at all.
+   */
+  private async withAccountRoles(people: any[]): Promise<any[]> {
+    const ids = [...new Set(people.map((person: any) => person?.userId).filter(Boolean))];
+    if (!ids.length) return people;
+    const accounts = await this.db
+      .find(SystemConstants.TABLE.USERS, { where: { id: { in: ids } }, limit: ids.length })
+      .catch(() => []);
+    const rolesById = new Map<unknown, string[]>();
+    (Array.isArray(accounts) ? accounts : []).forEach((account: any) => {
+      const roles = Array.isArray(account?.roles) ? account.roles.map((role: unknown) => String(role)) : [];
+      rolesById.set(account?.id, roles);
+    });
+    return people.map((person: any) => (rolesById.has(person?.userId)
+      ? { ...person, accountRoles: rolesById.get(person.userId) }
+      : person));
   }
 
   private static haystack(person: any): string {

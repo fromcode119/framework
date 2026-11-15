@@ -3609,7 +3609,14 @@
       "all": "全部",
       "active": "活跃",
       "suspended": "已停用"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "网站设置（{{what}}）需在各网站内设置——请从网站菜单中选择一个网站。",

@@ -3609,7 +3609,14 @@
       "all": "전체",
       "active": "활성",
       "suspended": "정지됨"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "사이트 설정({{what}})은 각 사이트 안에서 설정합니다. 사이트 메뉴에서 사이트를 선택하세요.",
