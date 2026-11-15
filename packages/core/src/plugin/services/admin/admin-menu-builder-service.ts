@@ -1,4 +1,5 @@
 import { StringUtils } from '@core/utils/string-utils';
+import { AdminMenuAreaService } from '@core/plugin/services/admin/admin-menu-area-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
@@ -205,19 +206,22 @@ export class AdminMenuBuilderService {
     systemItems.forEach(item => finalMenu.push(item));
 
     Object.values(areaBuckets).forEach(bucket => {
-      const items = AdminMenuBuilderService.orderArea(bucket.items, allPlugins);
+      const items = AdminMenuAreaService.order(bucket.items, allPlugins);
       // An area holding one page is that page: a row with a chevron that opens a list of one says nothing.
       if (items.length === 1) {
         finalMenu.push({ ...items[0], group: bucket.groupName, groupKey: bucket.key });
         return;
       }
       const owner = items[0];
-      const plugin = allPlugins.find(p => p.manifest.slug === owner.pluginSlug);
+      const declared = AdminMenuAreaService.declared(bucket.key, allPlugins);
       finalMenu.push({
         // The area's own name. The localizer reads `admin.groups.<key>` from the owning plugin's
         // dictionary and puts the translation here, so the row reads in the operator's language.
         label: bucket.groupName,
-        icon: plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers',
+        // The AREA's own mark, declared by the plugin that owns the work. An area is not a plugin, so
+        // it must not wear one's icon: taking the first page's plugin put a gift box on "Growth" (the
+        // advent plugin happened to sort first) and a calculator on "Readings".
+        icon: declared?.icon || 'Layers',
         group: bucket.groupName,
         groupKey: bucket.key,
         // Anchored to its first page's real path, so the sub-menu previews on hover like any section.
@@ -226,7 +230,7 @@ export class AdminMenuBuilderService {
         isGroup: true,
         // An AREA, as opposed to a plugin's own dropdown: the localizer names this row by the area.
         isArea: true,
-        priority: owner.priority || 50,
+        priority: declared?.priority ?? (owner.priority || 50),
         pluginSlug: owner.pluginSlug,
       });
     });
@@ -234,39 +238,6 @@ export class AdminMenuBuilderService {
     const sorted = finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     return CoreServices.getInstance().menu.deduplicate(sorted);
-  }
-
-  /**
-   * The pages of one area, in reading order: a plugin's pages stay together and the plugins follow each
-   * other by the priority of their first page. Sorted by priority alone the area interleaved them —
-   * "Orders, Overview, Catalog, Shipping Methods, Customers, Shipments" — because every plugin numbers
-   * its own menu from 1, so the numbers mean nothing across two plugins.
-   *
-   * A plugin's own landing page (`/<slug>`) is named after the PLUGIN inside a shared area: five rows
-   * reading "Overview" tell the operator nothing about which five things they open.
-   */
-  private static orderArea(items: any[], allPlugins: ILoadedPlugin[]): any[] {
-    const blocks = new Map<string, any[]>();
-    items.forEach((item) => {
-      const slug = String(item.pluginSlug || '');
-      if (!blocks.has(slug)) blocks.set(slug, []);
-      (blocks.get(slug) as any[]).push(item);
-    });
-    const ordered: any[] = [];
-    [...blocks.entries()]
-      .map(([slug, list]) => ({
-        slug,
-        list: [...list].sort((a, b) => (a.priority || 0) - (b.priority || 0)),
-      }))
-      .sort((a, b) => (a.list[0]?.priority || 0) - (b.list[0]?.priority || 0) || a.slug.localeCompare(b.slug))
-      .forEach(({ slug, list }) => {
-        const label = String(allPlugins.find((p) => p.manifest.slug === slug)?.manifest.admin?.label || '').trim();
-        list.forEach((item) => {
-          const isLanding = String(item.path || '') === `/${slug}`;
-          ordered.push(isLanding && label ? { ...item, label } : item);
-        });
-      });
-    return ordered;
   }
 
   /**

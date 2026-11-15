@@ -96,7 +96,8 @@ export class SidebarNavGroups extends PureReactor {
     const settingsChildren = [...(settingsItem?.children || []), ...upkeep].map((item) => ({ ...item, group: undefined }));
 
     if (this.part === SidebarNavPart.FOOT) {
-      if (this.query?.trim()) return null;
+      // Settings stays while the menu is being searched. It is the one row that is always in the same
+      // place, and searching for anything else made it disappear — the menu lost its floor mid-type.
       // Settings is pinned at the foot: its twenty pages opened there pushed the whole menu out of the
       // sidebar, so on a desktop they stand in the second column beside it instead.
       return (
