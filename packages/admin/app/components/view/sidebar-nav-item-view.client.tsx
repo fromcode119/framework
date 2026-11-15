@@ -120,6 +120,19 @@ export class NavItemView extends PureReactor {
    * its pages, the override `/finance` matched first: standing on /finance/currencies the menu marked
    * "Overview" and left the sub-menu holding Currencies shut, so that sub-menu looked like it did nothing.
    */
+  /**
+   * Where the section's own row goes: its declared page, or its first one when that page is not among
+   * the pages it has. A section whose landing page is withheld in this scope — the accounts list,
+   * which belongs to the platform and is dropped inside a site — would otherwise open the one screen
+   * the menu just decided not to offer.
+   */
+  private openingHref(pages: any[]): string {
+    const declared = NavUtils.normalizePath(this.href);
+    if (!pages.length || !declared) return this.href;
+    const has = pages.some((page) => NavUtils.normalizePath(page?.path) === declared);
+    return has ? this.href : (String(pages[0]?.path || '') || this.href);
+  }
+
   private activePagePath(pages: any[]): string {
     const paths = pages.map((page) => NavUtils.normalizePath(page.path)).filter(Boolean) as string[];
     const matched = NavUtils.resolveBestMatchPath(this.rawPathname || '', paths) || '';
@@ -130,8 +143,9 @@ export class NavItemView extends PureReactor {
   }
 
   render(): ReactElement {
-    const { icon, label, href, onClick, isMini } = this;
+    const { icon, label, onClick, isMini } = this;
     const pages = this.pages;
+    const href = this.openingHref(pages);
     const activePage = this.activePagePath(pages);
     const open = Boolean(this.active || activePage);
     const nav = 'fc-nav-item';
