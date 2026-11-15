@@ -17,6 +17,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { Input } from '@/components/ui/view/input.client';
 import { UserListFilter } from '@/app/users/enums/user-list-filter.enum';
+import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AppPathConstants } from '@fromcode119/core/client';
 
 export class UsersPage extends AdminComponent {
   private mounted = false;
@@ -40,6 +42,21 @@ export class UsersPage extends AdminComponent {
 
   componentDidMount(): void {
     this.mounted = true;
+    void this.openTheListThisScopeHas();
+  }
+
+  /**
+   * Inside a site, the list of everyone is People — the accounts list belongs to the platform and the
+   * menu withholds it here. Reached by a link or a bookmark it would still have drawn the accounts,
+   * so the one address lands on the list this scope actually has.
+   */
+  private async openTheListThisScopeHas(): Promise<void> {
+    const locks = await PlatformSettingLocks.load().catch(() => null);
+    if (!this.mounted) return;
+    if (locks && !locks.isPlatformScope()) {
+      this.router.replace(AppPathConstants.ADMIN.PEOPLE.ROOT);
+      return;
+    }
     void this.fetchUsers();
   }
 
