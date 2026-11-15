@@ -27,9 +27,9 @@
 }
 
 /* ── The page column: header and content share one centred width ─────────────────────────────── */
-.fc-settings-page { width: 100%; max-width: var(--fc-settings-page-max); margin-inline: 0; }  /* beside the menu, never floating in the middle of a wide screen */
+.fc-settings-page { width: 100%; margin-inline: 0; }  /* beside the menu, and as wide as the screen it is on */
 .fc-settings-page .fc-page-header { position: static; border-bottom: 0; background: none; backdrop-filter: none; }
-.fc-settings-page .fc-page-header__inner { padding: 20px 24px 4px; }
+.fc-settings-page .fc-page-header__inner { padding: var(--fc-page-pad-y) var(--fc-page-pad-x) 4px; }
 .fc-settings-page .fc-scope-notice { margin-top: 8px; }
 
 /* ── Page header ─────────────────────────────────────────────────────────────────────────────── */
@@ -41,9 +41,10 @@
 }
 .fc-page-header__inner {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 12px 16px; padding: 12px 24px;
+  /* The header's left edge is the page's left edge: both read the one page inset, so the title sits
+     exactly above the first card instead of 8px off it on a wide screen and 12px off on a narrow one. */
+  gap: 12px 16px; padding: 12px var(--fc-page-pad-x);
 }
-@media (min-width: 1024px) { .fc-page-header__inner { padding: 12px 32px; } }
 /* The title's 16rem basis decides when the actions drop to a second line: beside the title while
    both fit, under it on a phone — never squeezing the title to nothing. */
 .fc-page-header__main { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 16rem; }

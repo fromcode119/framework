@@ -7,9 +7,19 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * A collection list's header. It renders the console's ONE page header (`CompactPageHeader`), like
+ * every plugin page and every settings screen: this bar used to be hand-built — its own sticky wrapper,
+ * its own `px-4 sm:px-6 lg:px-8 py-3 sm:py-4`, an indigo icon tile and a `text-xl` title — so moving
+ * from the finance overview to the transactions list shifted the title's left edge by 8px, its size by
+ * 4px and the space under it by 10px. Nothing is lost: the two header slots and the New button are
+ * still here, as the header's title and actions.
+ */
 export class CollectionListHeader extends PureReactor {
   @prop declare collection: any;
   @prop declare pluginSlug: string;
@@ -20,67 +30,53 @@ export class CollectionListHeader extends PureReactor {
   /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
   @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
 
-  render(): ReactNode {
+  private get displayName(): string {
+    return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
+  }
+
+  /** The title, or whatever a plugin puts in this list's header slot instead. */
+  private title(): ReactNode {
     const { collection, pluginSlug, slug, theme } = this;
-  const displayName = CollectionListUtils.resolveCollectionLabel(collection, slug);
-  const singularDisplayName = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
+    const plain = collection.slug === 'users' ? AdminI18n.t('collection.list.usersTitle') : this.displayName;
+    return (
+      <Slot
+        name={`admin.collection.${pluginSlug}.${slug}.header`}
+        props={{ collection, pluginSlug, slug, theme }}
+        fallback={<Slot name={`admin.collection.${slug}.header`} props={{ collection, pluginSlug, slug, theme }} fallback={plain} />}
+      />
+    );
+  }
 
-  // Pinned only from tablet width: on a phone a pinned title and its actions kept a quarter of the
-  // screen while the list scrolled under them.
-  return (
-    <div className="md:sticky md:top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <Slot
-            name={`admin.collection.${pluginSlug}.${slug}.header`}
-            props={{ collection, pluginSlug, slug, theme }}
-            fallback={
-              <Slot
-                name={`admin.collection.${slug}.header`}
-                props={{ collection, pluginSlug, slug, theme }}
-                fallback={
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
-                      <FrameworkIcons.Layout size={18} />
-                    </div>
-                    <div className="min-w-0">
-                      <h1 className="text-xl font-bold tracking-tight leading-tight text-slate-900 dark:text-white">
-                        {collection.slug === 'users' ? AdminI18n.t('collection.list.usersTitle') : displayName}
-                      </h1>
-                      {/* No line under the title for a collection: "Manage and organize orders records." said
-                          the title again in a sentence, on every list in the console. */}
-                      {collection.slug === 'users' ? (
-                        <p className="text-xs font-medium text-slate-500 tracking-tight">{AdminI18n.t('collection.list.usersDescription')}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                }
-              />
-            }
-          />
-        </div>
+  private actions(): ReactNode {
+    const { collection, pluginSlug, slug } = this;
+    const singular = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
+    return (
+      <>
+        <Slot name={`admin.collection.${slug}.header.actions`} include={this.includeAction} props={{ collection }} />
+        <Slot name="admin.collection.list.header.actions" include={this.includeAction} props={{ collection }} />
+        {this.canCreate && !collection.admin?.disableCreate && (
+          <Button
+            variant={ButtonVariant.PRIMARY}
+            size={FieldSize.SM}
+            as={AdminLink}
+            href={`/${pluginSlug}/${slug}/new`}
+            icon={<FrameworkIcons.Plus size={15} />}
+          >
+            {collection.slug === 'users' ? AdminI18n.t('collection.list.createUser') : AdminI18n.t('collection.list.newRecord', { name: singular, label: this.displayName })}
+          </Button>
+        )}
+      </>
+    );
+  }
 
-        <div className="flex items-center gap-2">
-          <Slot name={`admin.collection.${slug}.header.actions`} include={this.includeAction} props={{ collection }} />
-          <Slot name="admin.collection.list.header.actions" include={this.includeAction} props={{ collection }} />
-          {/* An "Invite" button used to render here for the users collection with no onClick and no
-              href — a visible, clickable control that did nothing. Removed until an invite flow
-              exists to wire it to. */}
-          {this.canCreate && !collection.admin?.disableCreate && (
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              size={FieldSize.SM}
-              as={AdminLink}
-              href={`/${pluginSlug}/${slug}/new`}
-              className="h-9 px-4 rounded-lg font-semibold tracking-wide text-xs text-white"
-              icon={<FrameworkIcons.Plus size={15} />}
-            >
-              {collection.slug === 'users' ? AdminI18n.t('collection.list.createUser') : AdminI18n.t('collection.list.newRecord', { name: singularDisplayName, label: displayName })}
-            </Button>
-          )}
-        </div>
+  render(): ReactNode {
+    // No line under the title for a collection: "Manage and organize orders records." said the title
+    // again in a sentence, on every list in the console. The users list is the one that explains itself.
+    const subtitle = this.collection.slug === 'users' ? AdminI18n.t('collection.list.usersDescription') : undefined;
+    return (
+      <div className={AdminClass.PAGE_BLEED}>
+        <CompactPageHeader title={this.title()} subtitle={subtitle} actions={this.actions()} />
       </div>
-    </div>
-  );
+    );
   }
 }
