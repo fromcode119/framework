@@ -8,7 +8,6 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /** Collection list footer (record count + export/import/API links). Pure presentational class. */
 export class ListFooter extends PureReactor {
   @prop declare slug: string;
-  @prop declare total: number;
   @prop declare resolvedSlug: string;
   @prop declare handleExport: (format: ExportFormat) => void;
   @prop declare handleImport: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -24,10 +23,9 @@ export class ListFooter extends PureReactor {
                 the system cluster." Both implied a distributed cluster topology that does not exist —
                 the same fabrication as the dashboard-footer "distributed cluster node" line. The
                 record count is real, so it stays; the invented infrastructure around it does not. */}
-            <p className="fc-list-actions__count">
-              {AdminI18n.t(this.total === 1 ? 'collection.list.countOne' : 'collection.list.countMany', { count: this.total })}
-            </p>
-
+            {/* The record count is NOT repeated here: the table's own footer already says "1 — 10 of 15
+                records" inside the card, and the same number printed again just under it read as two
+                different facts. What is left is what this row is for — the three ways out of the list. */}
             <div className="flex items-center gap-3 text-xs font-semibold tracking-wide text-slate-400">
               <button
                 onClick={() => this.handleExport(ExportFormat.JSON)}

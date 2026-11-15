@@ -70,7 +70,7 @@ export class CollectionListPageProps {
     };
 
     const footerProps = {
-      slug, total, resolvedSlug, handleExport, canCreate: access.canCreate,
+      slug, resolvedSlug, handleExport, canCreate: access.canCreate,
       handleImport: (event: React.ChangeEvent<HTMLInputElement>) => CollectionListPageActions.handleImport(event, resolvedSlug)
     };
 
