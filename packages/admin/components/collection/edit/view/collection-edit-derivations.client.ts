@@ -175,6 +175,15 @@ export class CollectionEditDerivations {
     return ordered;
   }
 
+  /**
+   * The cards of the main column.
+   *
+   * A field naming no section lands in the card for the record itself, and that card is named. The side
+   * column already names its own untitled card ("Settings"); this one carried an EMPTY heading, so every
+   * record whose collection declares no sections opened with 57px of card holding nothing but the Edit
+   * button. Shopify's order page calls the same card "Order details"; here it is the console's own word
+   * for it, in the reader's language.
+   */
   private static groupMain(mainFields: any[]): Array<{ key: string; title?: string; fields: any[]; collapsed: boolean }> {
     const ordered: Array<{ key: string; title?: string; fields: any[]; collapsed: boolean }> = [];
     const indexByKey = new Map<string, number>();
@@ -184,7 +193,7 @@ export class CollectionEditDerivations {
       // Only a titled section can collapse: its title is what stays on screen to open it by.
       const collapses = Boolean(sectionTitle) && field?.admin?.sectionCollapsed === true;
       const existing = indexByKey.get(key);
-      if (existing === undefined) { indexByKey.set(key, ordered.length); ordered.push({ key, title: sectionTitle || undefined, fields: [field], collapsed: collapses }); return; }
+      if (existing === undefined) { indexByKey.set(key, ordered.length); ordered.push({ key, title: sectionTitle || AdminI18n.t('collection.edit.details'), fields: [field], collapsed: collapses }); return; }
       ordered[existing].fields.push(field);
       if (collapses) ordered[existing].collapsed = true;
     });

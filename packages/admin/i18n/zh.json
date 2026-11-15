@@ -170,6 +170,7 @@
       "permalinkCard": "预览与固定链接",
       "permalinkHint": "点击路径部分可覆盖自动生成的别名。",
       "settings": "设置",
+      "details": "详情",
       "noSidebarFields": "此集合尚未配置侧边栏字段。",
       "unlockTitle": "解锁自动记录的值？",
       "unlockText": "“{{label}}”由系统自动记录，因此为只读。确认后，此记录上的所有只读字段都将解锁以供编辑。",

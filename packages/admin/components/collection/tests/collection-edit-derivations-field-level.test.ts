@@ -71,14 +71,15 @@ describe('CollectionEditDerivations — what a record draws and lists under More
 
   it('drops a section left with no everyday field', () => {
     const d = CollectionEditDerivations.build(selfFor([name, { ...cost, admin: { level: 'occasional', section: 'Costs' } }]));
-    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual([undefined]);
+    // A field naming no section lands in the card for the record itself, which the console names.
+    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual(['Details']);
   });
 
   it('keeps a section where its fields put it, even when the field that set its layout is held back', () => {
     const wide = { name: 'address', type: 'json', label: 'Address', admin: { section: 'Payment', sectionLayout: 'full', level: 'occasional' } };
     const method = { name: 'method', type: 'text', label: 'Method', admin: { section: 'Payment' } };
     const d = CollectionEditDerivations.build(selfFor([name, wide, method]));
-    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual([undefined, 'Payment']);
+    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual(['Details', 'Payment']);
     expect(d.standardMainFieldSections[1].fields.map((f: any) => f.name)).toEqual(['method']);
   });
 

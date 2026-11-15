@@ -170,6 +170,7 @@
       "permalinkCard": "Preview & Permalink",
       "permalinkHint": "Click the path component to override the automatically generated slug.",
       "settings": "Settings",
+      "details": "Details",
       "noSidebarFields": "No sidebar fields are configured for this collection yet.",
       "unlockTitle": "Unlock recorded values?",
       "unlockText": "\"{{label}}\" is read-only because it is recorded automatically. Confirming unlocks every read-only field on this record for editing.",

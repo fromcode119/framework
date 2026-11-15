@@ -170,6 +170,7 @@
       "permalinkCard": "Podgląd i bezpośredni odnośnik",
       "permalinkHint": "Kliknij fragment ścieżki, aby zastąpić automatycznie wygenerowany slug.",
       "settings": "Ustawienia",
+      "details": "Szczegóły",
       "noSidebarFields": "Dla tej kolekcji nie skonfigurowano jeszcze pól panelu bocznego.",
       "unlockTitle": "Odblokować zarejestrowane wartości?",
       "unlockText": "Pole „{{label}}” jest tylko do odczytu, ponieważ jest wypełniane automatycznie. Potwierdzenie odblokuje do edycji wszystkie pola tylko do odczytu w tym rekordzie.",

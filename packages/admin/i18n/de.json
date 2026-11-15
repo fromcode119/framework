@@ -170,6 +170,7 @@
       "permalinkCard": "Vorschau & Permalink",
       "permalinkHint": "Klicken Sie auf den Pfadbestandteil, um den automatisch erzeugten Slug zu überschreiben.",
       "settings": "Einstellungen",
+      "details": "Details",
       "noSidebarFields": "Für diese Sammlung sind noch keine Seitenleistenfelder konfiguriert.",
       "unlockTitle": "Aufgezeichnete Werte entsperren?",
       "unlockText": "„{{label}}“ ist schreibgeschützt, da der Wert automatisch aufgezeichnet wird. Mit der Bestätigung werden alle schreibgeschützten Felder dieses Datensatzes zur Bearbeitung entsperrt.",

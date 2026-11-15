@@ -170,6 +170,7 @@
       "permalinkCard": "Forhåndsvisning og permalink",
       "permalinkHint": "Klik på stidelen for at tilsidesætte den automatisk genererede slug.",
       "settings": "Indstillinger",
+      "details": "Detaljer",
       "noSidebarFields": "Der er endnu ikke konfigureret sidebjælkefelter for denne samling.",
       "unlockTitle": "Lås registrerede værdier op?",
       "unlockText": "\"{{label}}\" er skrivebeskyttet, fordi det registreres automatisk. Hvis du bekræfter, låses alle skrivebeskyttede felter på denne post op til redigering.",

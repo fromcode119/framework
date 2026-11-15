@@ -170,6 +170,7 @@
       "permalinkCard": "Previzualizare și permalink",
       "permalinkHint": "Faceți clic pe componenta căii pentru a înlocui slug-ul generat automat.",
       "settings": "Setări",
+      "details": "Detalii",
       "noSidebarFields": "Nu există încă câmpuri de bară laterală configurate pentru această colecție.",
       "unlockTitle": "Deblocați valorile înregistrate?",
       "unlockText": "„{{label}}” este doar pentru citire deoarece este înregistrat automat. Confirmarea deblochează pentru editare toate câmpurile doar pentru citire ale acestei înregistrări.",

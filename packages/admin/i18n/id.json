@@ -170,6 +170,7 @@
       "permalinkCard": "Pratinjau & Permalink",
       "permalinkHint": "Klik komponen jalur untuk mengganti slug yang dibuat otomatis.",
       "settings": "Pengaturan",
+      "details": "Detail",
       "noSidebarFields": "Belum ada kolom bilah sisi yang dikonfigurasi untuk koleksi ini.",
       "unlockTitle": "Buka kunci nilai yang tercatat?",
       "unlockText": "\"{{label}}\" bersifat hanya-baca karena dicatat secara otomatis. Jika dikonfirmasi, semua kolom hanya-baca pada rekaman ini akan dibuka agar dapat diedit.",

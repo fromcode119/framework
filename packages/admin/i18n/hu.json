@@ -170,6 +170,7 @@
       "permalinkCard": "Előnézet és állandó hivatkozás",
       "permalinkHint": "Kattintson az útvonalrészre az automatikusan létrehozott slug felülírásához.",
       "settings": "Beállítások",
+      "details": "Részletek",
       "noSidebarFields": "Ehhez a gyűjteményhez még nincsenek oldalsávmezők beállítva.",
       "unlockTitle": "Feloldja a rögzített értékeket?",
       "unlockText": "A(z) „{{label}}” csak olvasható, mert automatikusan rögzül. A megerősítéssel a rekord összes csak olvasható mezője szerkeszthetővé válik.",

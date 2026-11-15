@@ -170,6 +170,7 @@
       "permalinkCard": "Predogled in stalna povezava",
       "permalinkHint": "Kliknite del poti, da preglasite samodejno ustvarjeni URL-ime (slug).",
       "settings": "Nastavitve",
+      "details": "Podrobnosti",
       "noSidebarFields": "Za to zbirko še ni nastavljenih polj stranske vrstice.",
       "unlockTitle": "Odklenem zabeležene vrednosti?",
       "unlockText": "»{{label}}« je samo za branje, ker se beleži samodejno. S potrditvijo odklenete za urejanje vsa polja tega zapisa, ki so samo za branje.",
