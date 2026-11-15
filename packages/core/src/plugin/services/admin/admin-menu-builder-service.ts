@@ -1,4 +1,4 @@
-import { NavGroupStrategy } from '@core/enums/nav-group-strategy.enum';
+import { StringUtils } from '@core/utils/string-utils';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
@@ -172,85 +172,101 @@ export class AdminMenuBuilderService {
     });
 
     const finalMenu: any[] = [];
-    const pluginGroupBuckets: Record<string, { pluginSlug: string, groupName: string, items: any[] }> = {};
+
+    /**
+     * The console's own entries (Dashboard, Media, Settings…) are its fixed core and stand as they are.
+     * Everything a PLUGIN contributes is filed under the AREA it declares (`admin.group`) — one entry
+     * per area, holding the pages of every plugin that named it.
+     *
+     * It used to bucket by plugin AND group, so the area was declared and then thrown away: a delivery
+     * plugin and a carrier adapter for it both name the same area, and each still got a top-level row
+     * of its own — as did every payment adapter beside the plugin it extends. The menu followed the
+     * plugins rather than the work, which is what makes a console with dozens of them unusable.
+     * Medusa's dashboard does the same thing the other way round — a fixed core, and an extension that
+     * names a core route is drawn inside it rather than beside it.
+     *
+     * The area is a shared key, not a name one plugin takes from another: `commerce` is translated by
+     * each plugin's own `admin.groups.commerce`, exactly as the related-records parts work.
+     */
+    const systemItems: any[] = [];
+    const areaBuckets: Record<string, { key: string; groupName: string; items: any[] }> = {};
 
     rawMenuItems.forEach(item => {
-      const gName = item.group || 'Platform';
-      const bucketKey = `${item.pluginSlug}:${gName}`;
-      if (!pluginGroupBuckets[bucketKey]) {
-        pluginGroupBuckets[bucketKey] = {
-            pluginSlug: item.pluginSlug || 'system',
-            groupName: gName,
-            items: []
-        };
+      if (String(item.pluginSlug || '') === 'system') {
+        systemItems.push(item);
+        return;
       }
-      pluginGroupBuckets[bucketKey].items.push(item);
+      const groupName = String(item.group || 'Platform');
+      const key = StringUtils.slugify(groupName, '');
+      if (!areaBuckets[key]) areaBuckets[key] = { key, groupName, items: [] };
+      areaBuckets[key].items.push(item);
     });
 
-    Object.values(pluginGroupBuckets).forEach(bucket => {
-      const { pluginSlug, groupName, items } = bucket;
-      const plugin = allPlugins.find(p => p.manifest.slug === pluginSlug);
+    systemItems.forEach(item => finalMenu.push(item));
 
-      let strategy: NavGroupStrategy = NavGroupStrategy.SECTION;
-
-      if (plugin?.manifest.admin?.groupStrategy) {
-        const gs = plugin.manifest.admin.groupStrategy as any;
-        if (typeof gs === 'string') {
-          strategy = NavGroupStrategy.resolve ? NavGroupStrategy.resolve(gs) : (gs as any);
-        } else if (gs[groupName]) {
-          strategy = NavGroupStrategy.resolve ? NavGroupStrategy.resolve(gs[groupName]) : (gs[groupName] as any);
-        }
+    Object.values(areaBuckets).forEach(bucket => {
+      const items = AdminMenuBuilderService.orderArea(bucket.items, allPlugins);
+      // An area holding one page is that page: a row with a chevron that opens a list of one says nothing.
+      if (items.length === 1) {
+        finalMenu.push({ ...items[0], group: bucket.groupName, groupKey: bucket.key });
+        return;
       }
-
-      // A dropdown wrapper only makes sense with 2+ children. A single-page plugin
-      // (a plugin whose only child is its Overview) should be a plain link with no
-      // chevron — otherwise every plugin shows a redundant expand arrow.
-      if (strategy === NavGroupStrategy.SECTION || items.length <= 1) {
-        items.forEach(item => {
-          finalMenu.push({
-            ...item,
-            group: groupName,
-            // Single-page dropdown plugins still want the plugin's short label/icon
-            // on their one nav item rather than the raw page label.
-            ...(strategy !== NavGroupStrategy.SECTION && items.length === 1
-              ? {
-                  label: String(plugin?.manifest.admin?.label || item.label).trim(),
-                  icon: plugin?.manifest.admin?.icon || item.icon,
-                }
-              : {}),
-          });
-        });
-      } else {
-        // Use admin.label (a short display name a plugin declares) so that multiple
-        // plugins sharing the same group each appear as a distinctly-named dropdown.
-        // Fall back to manifest.name then groupName.
-        const dropdownLabel = String(
-          plugin?.manifest.admin?.label ||
-          plugin?.manifest.name ||
-          groupName
-        ).trim();
-        const groupIcon = plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers';
-        // Anchor the dropdown to its first child's real path so the
-        // secondary-sidebar resolver can preview that plugin's panel on hover.
-        // Falls back to a synthetic group anchor when no concrete path exists.
-        const anchorPath = String(items[0]?.path || '').trim() || `/#group-${pluginSlug}-${groupName.toLowerCase()}`;
-
-        finalMenu.push({
-          label: dropdownLabel,
-          icon: groupIcon,
-          group: groupName,
-          path: anchorPath,
-          children: items,
-          isGroup: true,
-          priority: items[0].priority || 50,
-          pluginSlug
-        });
-      }
+      const owner = items[0];
+      const plugin = allPlugins.find(p => p.manifest.slug === owner.pluginSlug);
+      finalMenu.push({
+        // The area's own name. The localizer reads `admin.groups.<key>` from the owning plugin's
+        // dictionary and puts the translation here, so the row reads "Търговия", not "Commerce".
+        label: bucket.groupName,
+        icon: plugin?.manifest.admin?.icon || items.find(i => i.icon)?.icon || 'Layers',
+        group: bucket.groupName,
+        groupKey: bucket.key,
+        // Anchored to its first page's real path, so the sub-menu previews on hover like any section.
+        path: String(owner.path || '').trim() || `/#area-${bucket.key}`,
+        children: items,
+        isGroup: true,
+        // An AREA, as opposed to a plugin's own dropdown: the localizer names this row by the area.
+        isArea: true,
+        priority: owner.priority || 50,
+        pluginSlug: owner.pluginSlug,
+      });
     });
 
     const sorted = finalMenu.sort((a, b) => (a.priority || 0) - (b.priority || 0));
 
     return CoreServices.getInstance().menu.deduplicate(sorted);
+  }
+
+  /**
+   * The pages of one area, in reading order: a plugin's pages stay together and the plugins follow each
+   * other by the priority of their first page. Sorted by priority alone the area interleaved them —
+   * "Orders, Overview, Catalog, Shipping Methods, Customers, Shipments" — because every plugin numbers
+   * its own menu from 1, so the numbers mean nothing across two plugins.
+   *
+   * A plugin's own landing page (`/<slug>`) is named after the PLUGIN inside a shared area: five rows
+   * reading "Overview" tell the operator nothing about which five things they open.
+   */
+  private static orderArea(items: any[], allPlugins: ILoadedPlugin[]): any[] {
+    const blocks = new Map<string, any[]>();
+    items.forEach((item) => {
+      const slug = String(item.pluginSlug || '');
+      if (!blocks.has(slug)) blocks.set(slug, []);
+      (blocks.get(slug) as any[]).push(item);
+    });
+    const ordered: any[] = [];
+    [...blocks.entries()]
+      .map(([slug, list]) => ({
+        slug,
+        list: [...list].sort((a, b) => (a.priority || 0) - (b.priority || 0)),
+      }))
+      .sort((a, b) => (a.list[0]?.priority || 0) - (b.list[0]?.priority || 0) || a.slug.localeCompare(b.slug))
+      .forEach(({ slug, list }) => {
+        const label = String(allPlugins.find((p) => p.manifest.slug === slug)?.manifest.admin?.label || '').trim();
+        list.forEach((item) => {
+          const isLanding = String(item.path || '') === `/${slug}`;
+          ordered.push(isLanding && label ? { ...item, label } : item);
+        });
+      });
+    return ordered;
   }
 
   /**
