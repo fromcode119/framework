@@ -9,7 +9,7 @@ export class MarketplaceDetailError extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="p-8 text-center space-y-4">
+      <div className="p-8 text-center fc-page-stack">
         <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
            <FrameworkIcons.Alert size={40} className="text-red-500" />
         </div>

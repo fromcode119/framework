@@ -64,7 +64,11 @@
   --fc-nav-row: 32px;
   --fc-nav-radius: 8px;
   --fc-nav-sub-indent: 38px;
-  --fc-record-gap: 14px;
+  --fc-record-gap: var(--fc-stack-gap);
+  /* The space between two stacked cards, ON EVERY SCREEN. Each page used to pick its own — a record
+     column said 14px, the dashboard 12px, a settings screen 12px, 24px or 32px depending which one —
+     so the rhythm changed under you on every move between two screens. */
+  --fc-stack-gap: 14px;
   /* A card's head and body, so every card on a page — the record's own and a plugin's — keeps one rhythm. */
   --fc-card-head-height: 57px;
   --fc-card-body-pad: 4px 16px;
@@ -82,7 +86,7 @@
   /* The dashboard's look, in one place. Every widget — the console's own and every plugin's — is drawn
    * by the shared card, figures and empty-state components, so an appearance or a later restyle changes
    * these values (or the `.fc-dashboard` rules at the end of this file) and every widget follows. */
-  --fc-dashboard-gap: 12px;
+  --fc-dashboard-gap: var(--fc-stack-gap);
   --fc-dashboard-head-pad: 8px 16px;
   --fc-dashboard-head-icon: 24px;
   --fc-dashboard-body-pad: 12px 16px;
@@ -676,6 +680,8 @@ html.dark {
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
 .fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
+/* A page whose body is a column of cards: one gap, the console's. */
+.fc-page-stack { display: flex; flex-direction: column; gap: var(--fc-stack-gap); }
 .fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }

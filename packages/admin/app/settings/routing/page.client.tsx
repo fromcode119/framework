@@ -86,7 +86,7 @@ export class RoutingPage extends RoutingPageActions {
         )}
 
         {!this.outOfScope && (
-        <div className="p-6 w-full space-y-3">
+        <div className="p-6 w-full fc-page-stack">
           <Card title={AdminI18n.t('settings.routing.homepageTarget')}>
             <SettingRow
               title={AdminI18n.t('settings.routing.rootRoute')}

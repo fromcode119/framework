@@ -112,7 +112,7 @@ export class UserProfilePage extends AdminComponent {
       <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <UserProfileHeader theme={theme} user={user} userId={id} initials={initials} selfService={selfService} />
 
-        <div className="w-full p-6 space-y-6">
+        <div className="w-full p-6 fc-page-stack">
           <Card title={AdminI18n.t('users.accountInformation')}>
             <SettingRow title={AdminI18n.t('users.firstName')} width={SettingRowWidth.AUTO}>{user.firstName ? value(user.firstName) : notSet}</SettingRow>
             <SettingRow title={AdminI18n.t('users.lastName')} width={SettingRowWidth.AUTO}>{user.lastName ? value(user.lastName) : notSet}</SettingRow>

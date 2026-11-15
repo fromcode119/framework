@@ -69,14 +69,14 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
         )}
 
         {this.consoleLanguageOnly && (
-          <div className="p-6 w-full space-y-3">
+          <div className="p-6 w-full fc-page-stack">
             <ConsoleLanguageCard theme={theme} value={this.adminDefaultLocale} onChange={this.setAdminDefaultLocale} />
             <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSaveConsoleLanguage} onDiscard={this.discardChanges} />
           </div>
         )}
 
         {!this.outOfScope && !this.consoleLanguageOnly && (
-        <div className="p-6 w-full space-y-3">
+        <div className="p-6 w-full fc-page-stack">
           <LocaleRegistryCard
             locales={locales}
             theme={theme}

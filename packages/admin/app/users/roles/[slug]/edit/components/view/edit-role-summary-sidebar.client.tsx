@@ -21,7 +21,7 @@ export class EditRoleSummarySidebar extends PureReactor {
       <div className="lg:col-span-4 space-y-8">
         <Card title={AdminI18n.t('users.summary')}>
           <div className="space-y-6">
-            <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 space-y-4">
+            <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 fc-page-stack">
                <div className="flex flex-col gap-1">
                   <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
                   <Badge variant={BadgeVariant.AMBER}>{type}</Badge>

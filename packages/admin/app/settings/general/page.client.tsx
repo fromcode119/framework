@@ -75,7 +75,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
         )}
 
         {settings && (
-          <div className="p-6 w-full space-y-3">
+          <div className="p-6 w-full fc-page-stack">
             <GeneralBrandCard
               platformLocks={this.platformLocks}
               settings={settings}

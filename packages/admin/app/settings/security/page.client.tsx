@@ -204,7 +204,7 @@ export class SecuritySettingsPage extends AdminComponent {
           />
         )}
 
-        <div className="p-6 w-full space-y-3 pb-24">
+        <div className="p-6 w-full pb-24 fc-page-stack">
           {activeTab === SecurityTab.DASHBOARD && this.statsError && !this.loadError && (
             <LoadErrorPanel
               title={AdminI18n.t('settings.security.securityStatisticsCouldNotBe')}

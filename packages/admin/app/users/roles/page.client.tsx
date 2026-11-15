@@ -120,7 +120,7 @@ export class RolesPage extends AdminComponent {
           }
         />
 
-        <div className="w-full p-6 space-y-6">
+        <div className="w-full p-6 fc-page-stack">
           <RolesListCard roles={roles} onRequestDelete={this.requestDelete} onNavigate={(href: string) => this.router.push(href)} />
           <RolesAuditSidebar logs={logs} health={health} loading={loading} theme={theme} />
         </div>
