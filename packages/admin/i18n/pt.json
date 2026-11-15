@@ -3609,7 +3609,14 @@
       "all": "Todos",
       "active": "Ativos",
       "suspended": "Suspensos"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "As definições do site ({{what}}) são configuradas dentro de cada site — escolha um no menu de sites.",

@@ -3609,7 +3609,14 @@
       "all": "Lahat",
       "active": "Aktibo",
       "suspended": "Suspendido"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Ang mga setting ng site ({{what}}) ay itinatakda sa loob ng bawat site — pumili ng isa mula sa menu ng site.",

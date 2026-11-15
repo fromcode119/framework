@@ -3609,7 +3609,14 @@
       "all": "सभी",
       "active": "सक्रिय",
       "suspended": "निलंबित"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "साइट सेटिंग्स ({{what}}) हर साइट के अंदर सेट की जाती हैं — साइट मेनू से कोई साइट चुनें।",

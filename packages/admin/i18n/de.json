@@ -3609,7 +3609,14 @@
       "all": "Alle",
       "active": "Aktiv",
       "suspended": "Gesperrt"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Website-Einstellungen ({{what}}) werden in jeder Website einzeln festgelegt – wählen Sie eine im Website-Menü aus.",

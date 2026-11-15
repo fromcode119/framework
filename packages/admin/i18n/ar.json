@@ -3609,7 +3609,14 @@
       "all": "الكل",
       "active": "نشطون",
       "suspended": "موقوفون"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "تُضبط إعدادات الموقع ({{what}}) داخل كل موقع — اختر موقعاً من قائمة المواقع.",

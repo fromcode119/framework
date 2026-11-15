@@ -3609,7 +3609,14 @@
       "all": "Visi",
       "active": "Aktīvie",
       "suspended": "Apturētie"
-    }
+    },
+    "roleNames": {
+      "admin": "Administrator",
+      "customer": "Customer",
+      "partner": "Partner",
+      "user": "User"
+    },
+    "hasAccount": "Can sign in"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Vietnes iestatījumi ({{what}}) tiek iestatīti katrā vietnē atsevišķi — izvēlieties vietni vietņu izvēlnē.",
