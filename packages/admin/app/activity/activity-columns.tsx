@@ -1,5 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ActivityMessage } from '@/app/activity/activity-message';
 export class ActivityColumnsFactory {
   static system(theme: ThemeMode) {
     return [
@@ -29,7 +30,9 @@ export class ActivityColumnsFactory {
         header: AdminI18n.t('activity.actor'),
         id: 'actor',
         accessor: (row: any) => {
-          const actor = row.actor_id || row.context?.email || (row.message && row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
+          // The entry says who it was. It used to be cut out of the message — `message.split('for ')[1]`
+          // — which only ever worked while that message was an English sentence.
+          const actor = row.actor_id || row.context?.email || AdminI18n.t('activity.system');
           return (
             <div className="flex items-center gap-3">
               <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-semibold border-2 ${
@@ -75,7 +78,7 @@ export class ActivityColumnsFactory {
         header: AdminI18n.t('activity.activity'),
         id: 'details',
         accessor: (row: any) => (
-          <span className="text-xs font-medium text-slate-500 leading-relaxed block max-w-sm">{row.message}</span>
+          <span className="text-xs font-medium text-slate-500 leading-relaxed block max-w-sm">{ActivityMessage.of(row)}</span>
         )
       }
     ];
