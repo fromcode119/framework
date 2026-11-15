@@ -2,19 +2,29 @@
  * How a section of a saved record splits between what its card SHOWS and what its edit sheet EDITS.
  *
  * A saved record is read first and changed a piece at a time: the card lists the values that are set,
- * and "Edit" opens the section's own fields in a sheet. A field that brings its own component (an items
- * table, a media gallery) is its own interface and stays in the card, working as it always did — unless
- * it declares how it reads (`admin.readComponent`, `admin.readAsValue`): then the card shows that and the
- * component edits it in the sheet with the rest of the section.
+ * and "Edit" opens the section's own fields in a sheet.
+ *
+ * A field that brings its own component is its own INTERFACE only when its value has a shape — a list of
+ * tags, a block document, a relationship, a gallery. Carrying one for a plain value (a currency, a
+ * colour, a locale, a slug) does not make it one: the card used to drop a live dropdown in the middle of
+ * its read rows, under a heading of its own, after every value the record had — about a hundred fields
+ * across the plugins do exactly this, and none of them declared the `readAsValue` that was meant to
+ * prevent it. Those read as a value like every other field and are changed in the sheet with the rest.
+ * A component that must be used in place although its value is plain (an editor, a canvas) says so with
+ * `admin.inPlace: true`.
  */
 export class RecordSectionFields {
   /** The console's components that only SHOW a recorded value: there is nothing in them to edit. */
   private static readonly DISPLAY_COMPONENTS = new Set(['StructuredReadOnlyField']);
 
+  /** Field types whose value has a shape, so a component for them IS the interface for reading it. */
+  private static readonly STRUCTURED_TYPES = new Set(['json', 'array', 'blocks', 'richText', 'relationship', 'media', 'upload']);
+
   /** A field drawn by its own component — it is shown and used in place, never moved into the sheet. */
   static ownsItsControl(field: any): boolean {
-    return Boolean(field?.admin?.component) && !field?.admin?.readComponent && !field?.admin?.readAsValue && !field?.admin?.readBy
-      && !RecordSectionFields.displaysOnly(field);
+    if (!field?.admin?.component || field?.admin?.readComponent || field?.admin?.readAsValue || field?.admin?.readBy) return false;
+    if (RecordSectionFields.displaysOnly(field)) return false;
+    return field.admin.inPlace === true || RecordSectionFields.STRUCTURED_TYPES.has(String(field?.type || ''));
   }
 
   /**

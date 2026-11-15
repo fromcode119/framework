@@ -218,6 +218,7 @@
       "deletePermanently": "Изтрий окончателно",
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
+      "relatedFailed": "Свързаните записи не можаха да бъдат прочетени.",
       "recordPart": {
         "download": "Изтегли {{title}}",
         "person": "Име"

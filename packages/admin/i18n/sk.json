@@ -181,6 +181,7 @@
       "deletePermanently": "Odstrániť natrvalo",
       "relatedRecords": "Súvisiace záznamy",
       "relatedEmpty": "Žiadny iný plugin zatiaľ nemá záznam prepojený s týmto.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Stiahnuť {{title}}",
         "person": "Osoba"

@@ -181,6 +181,7 @@
       "deletePermanently": "Hapus Permanen",
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Unduh {{title}}",
         "person": "Orang"

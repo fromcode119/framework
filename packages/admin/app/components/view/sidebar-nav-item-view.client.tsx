@@ -113,11 +113,20 @@ export class NavItemView extends PureReactor {
     });
   }
 
+  /**
+   * Which page of this section is open. The page the URL itself names wins; the override only decides
+   * the cases the URL cannot — a page reached from another section, where the panel says which section
+   * it belongs to. It used to be the other way round, and because a section's own landing page is one of
+   * its pages, the override `/finance` matched first: standing on /finance/currencies the menu marked
+   * "Overview" and left the sub-menu holding Currencies shut, so that sub-menu looked like it did nothing.
+   */
   private activePagePath(pages: any[]): string {
     const paths = pages.map((page) => NavUtils.normalizePath(page.path)).filter(Boolean) as string[];
+    const matched = NavUtils.resolveBestMatchPath(this.rawPathname || '', paths) || '';
+    if (matched && matched !== NavUtils.normalizePath(this.href)) return matched;
     const override = NavUtils.normalizePath(this.activePathOverride);
     if (override && paths.includes(override)) return override;
-    return NavUtils.resolveBestMatchPath(this.rawPathname || '', paths) || '';
+    return matched;
   }
 
   render(): ReactElement {
@@ -152,14 +161,14 @@ export class NavItemView extends PureReactor {
 
         {open && !isMini && pages.length > 0 ? (
           <div className={`fc-nav-sub${paneled ? ' fc-nav-sub--paneled' : ''}`}>
-            {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
+            {NavSectionPages.arrange(pages, label).map((entry) => (entry.kind === 'page'
               ? this.renderPage(entry.page, activePage)
               : this.renderGroup(entry, activePage)))}
           </div>
         ) : null}
         {paneled && (open || previewing) ? (
           <NavGroupPanel title={label} preview={previewing} onPointerEnter={this.keepPreview} onPointerLeave={this.closePreview}>
-            {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
+            {NavSectionPages.arrange(pages, label).map((entry) => (entry.kind === 'page'
               ? this.renderPage(entry.page, activePage)
               : this.renderPanelGroup(entry, activePage)))}
           </NavGroupPanel>

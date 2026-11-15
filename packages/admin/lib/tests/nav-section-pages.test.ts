@@ -27,6 +27,12 @@ describe('NavSectionPages.arrange', () => {
     const returns = entries[1];
     expect(returns.kind === 'group' && returns.pages.map((entry) => entry.path)).toEqual(['/r1', '/r2']);
   });
+
+  it('does not make a sub-menu of a group named after the section itself', () => {
+    const entries = NavSectionPages.arrange([page('/f', 'Finance'), page('/t', 'Finance'), page('/c', 'Setup'), page('/r', 'Setup')], 'Finance');
+    expect(entries.map((entry) => (entry.kind === 'page' ? entry.page.path : `group:${entry.name}`)))
+      .toEqual(['/f', '/t', 'group:Setup']);
+  });
 });
 
 describe('NavSectionPages.holds', () => {

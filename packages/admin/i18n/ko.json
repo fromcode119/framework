@@ -181,6 +181,7 @@
       "deletePermanently": "영구 삭제",
       "relatedRecords": "관련 레코드",
       "relatedEmpty": "아직 이 레코드에 연결된 레코드를 가진 다른 플러그인이 없습니다.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "다운로드 {{title}}",
         "person": "사람"

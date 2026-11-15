@@ -181,6 +181,7 @@
       "deletePermanently": "Poista pysyvästi",
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Lataa {{title}}",
         "person": "Henkilö"

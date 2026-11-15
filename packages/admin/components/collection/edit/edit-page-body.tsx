@@ -90,7 +90,7 @@ export class EditPageBody extends PureReactor {
     ) : null;
 
     return (
-    <div className="flex-1 w-full p-6">
+    <div className="flex-1 w-full">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password
@@ -194,7 +194,8 @@ export class EditPageBody extends PureReactor {
                 the held-back sections, under the record, which stays whole. */}
             {history && (
               <div id={CollectionEditRecordMore.anchorId(CollectionEditRecordMore.HISTORY)} className="space-y-4">
-                <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />
+                {/* When the record was made and changed is in the side column on every saved record, so
+                    this section is the versions alone. */}
                 <SidebarVersions
                   revisions={revisions}
                   revisionsLoading={revisionsLoading}
@@ -209,15 +210,23 @@ export class EditPageBody extends PureReactor {
                 />
               </div>
             )}
-            {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
+            {/* What plugins add to this record. It stands in the MAIN column, under the record's own
+                cards: in the side column a courier's waybill tool — a form with a delivery day, a
+                payment mode and a packing-list table with a stepper per line — had 352px to live in,
+                and every control in it was crushed. Shopify and Medusa both draw an app's blocks in the
+                record's own column for the same reason. The side column keeps the record's short facts,
+                so the customer and the state are still on the first screen. */}
+            <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
           </div>
 
           {sideBySide && (
             <EditStickyColumn>
             {sidebar}
-            {/* What plugins add to the record comes after the record's own side cards: above them it pushed
-                the customer and the state off the first screen. */}
-            <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
+            {/* The record's own facts close the side column. Every console that lays a record out in two
+                columns keeps one for the record itself (Medusa's dashboard puts metadata and the raw record
+                there) — without it a record whose collection declares no side fields drew ONE card in a
+                page three times its width, which is what this card ends. */}
+            {!isNew && <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />}
             </EditStickyColumn>
           )}
           </div>

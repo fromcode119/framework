@@ -181,6 +181,7 @@
       "deletePermanently": "Slet permanent",
       "relatedRecords": "Relaterede poster",
       "relatedEmpty": "Intet andet plugin har endnu en post knyttet til denne.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Download {{title}}",
         "person": "Person"

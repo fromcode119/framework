@@ -181,6 +181,7 @@
       "deletePermanently": "Удалить навсегда",
       "relatedRecords": "Связанные записи",
       "relatedEmpty": "Ни один другой плагин пока не содержит записей, связанных с этой.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Скачать {{title}}",
         "person": "Человек"

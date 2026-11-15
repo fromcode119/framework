@@ -7,11 +7,19 @@ import { NavUtils } from '@/lib/nav-utils';
  * its pages are drawn under it only while the current page is one of them — the same rule the menu keeps
  * for a section (nothing opens or closes by hand). A group holding one page is just that page, and when
  * every page shares one group there is nothing to divide, so the section lists them as they are.
+ *
+ * A group named after the section itself is not a sub-menu either. Finance's collections declare
+ * `group: "Finance"`, so the menu drew Финанси › Финанси › Преглед — three lines saying the same word
+ * before the first real page, and a level that led nowhere. Those pages stand directly under the section.
  */
 export class NavSectionPages {
   /** Each line under an open section of the menu: a page, or a sub-menu holding several. */
-  static arrange(pages: any[]): Array<{ kind: 'page'; page: any } | { kind: 'group'; name: string; pages: any[] }> {
-    const groupOf = (page: any): string => String(page?.group || '').trim();
+  static arrange(pages: any[], sectionLabel = ''): Array<{ kind: 'page'; page: any } | { kind: 'group'; name: string; pages: any[] }> {
+    const section = String(sectionLabel || '').trim().toLocaleLowerCase();
+    const groupOf = (page: any): string => {
+      const group = String(page?.group || '').trim();
+      return section && group.toLocaleLowerCase() === section ? '' : group;
+    };
     const counts = new Map<string, number>();
     pages.forEach((page) => {
       const group = groupOf(page);

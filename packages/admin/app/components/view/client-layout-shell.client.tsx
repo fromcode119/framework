@@ -168,7 +168,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           {/* The horizontal clip lives on the CONTENT wrapper, not on <main>: wrapping the header in it
               cut off the account button's shadow at the right edge (a wide table still cannot scroll the
               page sideways, because the clip still covers everything the pages render). */}
-          <div className="flex flex-1 flex-col overflow-x-clip transition-all duration-300"><PagePermissionGate>{this.children}</PagePermissionGate></div>
+          <div className="fc-shell flex flex-1 flex-col overflow-x-clip transition-all duration-300"><PagePermissionGate>{this.children}</PagePermissionGate></div>
         </main>
       </div>
     );

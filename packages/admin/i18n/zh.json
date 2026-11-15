@@ -181,6 +181,7 @@
       "deletePermanently": "永久删除",
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "下载 {{title}}",
         "person": "人员"

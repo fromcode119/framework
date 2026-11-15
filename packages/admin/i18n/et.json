@@ -181,6 +181,7 @@
       "deletePermanently": "Kustuta jäädavalt",
       "relatedRecords": "Seotud kirjed",
       "relatedEmpty": "Ühelgi teisel pluginal pole veel selle kirjega seotud kirjet.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Laadi alla {{title}}",
         "person": "Isik"

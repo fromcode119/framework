@@ -181,6 +181,7 @@
       "deletePermanently": "Definitief verwijderen",
       "relatedRecords": "Gerelateerde records",
       "relatedEmpty": "Nog geen andere plugin heeft een record dat aan dit record is gekoppeld.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Downloaden {{title}}",
         "person": "Persoon"

@@ -66,6 +66,16 @@
   --fc-nav-sub-indent: 38px;
   --fc-record-gap: 14px;
 
+  /* ── One page rhythm ──────────────────────────────────────────────────────────────────────────────
+   * Every console screen is inset by THESE two values and no others. Before this, each page carried its
+   * own padding utility — 191 roots said `p-4`, 115 said `p-6`, 33 said `p-8`, the collection list said
+   * `px-3 sm:px-6 lg:px-12 py-5 sm:py-8 lg:py-10` — so the gap under a page's title was 16px on the
+   * finance overview, 24px on a record and 48px on a list, and the eye caught it on every move between
+   * two screens. The shell applies them (`.fc-shell`), a page declares none, and `.fc-page-bleed` reads
+   * them to span a sticky header across the full content column. */
+  --fc-page-pad-x: 16px;
+  --fc-page-pad-y: 16px;
+
   /* The dashboard's look, in one place. Every widget — the console's own and every plugin's — is drawn
    * by the shared card, figures and empty-state components, so an appearance or a later restyle changes
    * these values (or the `.fc-dashboard` rules at the end of this file) and every widget follows. */
@@ -309,38 +319,22 @@ html.dark {
 
    The page root answers for its own padding here; the header just reads the answer. An unmapped root
    (e.g. one padded from an inline style) resolves to 0 — the bar is then inset, never overhanging. */
+@media (min-width: 640px) {
+  :root { --fc-page-pad-x: 24px; --fc-page-pad-y: 20px; }
+}
+
+/* The shell insets the page; the page itself declares no padding. Doubling the class beats a page root
+   that still carries `p-4`/`p-6`/`px-3 lg:px-12` (0,1,0) without `!important`, so a plugin page written
+   before this reads at the same rhythm as a framework one. A page that must reach the edges — one whose
+   own header is sticky and full-bleed — opts out with `.fc-page-flush` and insets its own body. */
+.fc-shell.fc-shell > * { padding: var(--fc-page-pad-y) var(--fc-page-pad-x); }
+.fc-shell.fc-shell > .fc-page-flush { padding: 0; }
+
 .fc-page-bleed {
   margin:
     calc(-1 * var(--fc-page-pad-y, var(--fc-page-pad, 0px)))
     calc(-1 * var(--fc-page-pad-x, var(--fc-page-pad, 0px)))
     1.5rem;
-}
-
-.p-4:has(> .fc-page-bleed) { --fc-page-pad: 1rem; }
-.p-6:has(> .fc-page-bleed) { --fc-page-pad: 1.5rem; }
-.p-8:has(> .fc-page-bleed),
-.px-8:has(> .fc-page-bleed) { --fc-page-pad: 2rem; }
-
-/* Responsive roots (`p-4 md:p-6`, `p-6 lg:p-8`) — these must stay AFTER the rules above: same
-   specificity, so source order is what lets the larger padding win at its breakpoint. */
-@media (min-width: 768px) {
-  .md\:p-6:has(> .fc-page-bleed) { --fc-page-pad: 1.5rem; }
-}
-@media (min-width: 1024px) {
-  .lg\:p-8:has(> .fc-page-bleed) { --fc-page-pad: 2rem; }
-}
-
-/* A plugin page that matches the collection list's inset (`px-3 sm:px-6 lg:px-12 py-5 sm:py-8 lg:py-10`,
-   the same classes `.fc-collection-list` uses) pads differently across and down, so it answers per axis. */
-.px-3:has(> .fc-page-bleed) { --fc-page-pad-x: 0.75rem; }
-.py-5:has(> .fc-page-bleed) { --fc-page-pad-y: 1.25rem; }
-@media (min-width: 640px) {
-  .sm\:px-6:has(> .fc-page-bleed) { --fc-page-pad-x: 1.5rem; }
-  .sm\:py-8:has(> .fc-page-bleed) { --fc-page-pad-y: 2rem; }
-}
-@media (min-width: 1024px) {
-  .lg\:px-12:has(> .fc-page-bleed) { --fc-page-pad-x: 3rem; }
-  .lg\:py-10:has(> .fc-page-bleed) { --fc-page-pad-y: 2.5rem; }
 }
 
 /* Controls opt in by class, so a button is elevated by the same token as a panel. */
@@ -684,9 +678,6 @@ html.dark {
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
   .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
-  /* A side column with nothing in it (an invoice: every card is the record's own) keeps no empty third of
-     the page: the record reads as one column at the width of a record's main column. */
-  .fc-edit-columns__grid--sidebar:not(:has(> .fc-edit-sticky > .fc-edit-column > *, > .fc-edit-sticky .fc-edit-top__grid > *)) { grid-template-columns: minmax(0, 1fr); max-width: 48rem; }
 }
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
    column's first card — who the record is for — follows the record's first card instead of waiting under
@@ -1249,6 +1240,20 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   padding: 10px 0;
   font-size: var(--fc-record-text);
   line-height: 1.45;
+}
+/* A record's facts read in TWO columns once the record area is wide. One column of ten rows across a
+   2300px screen put every value a hand's width from its label and left the card three-quarters empty —
+   the complaint behind this change. `.fc-edit-columns` is the query container, so the rows answer to the
+   space the RECORD has (menu and sub-menu open or not), never to the window. */
+@container (min-width: 80rem) {
+  .fc-record-card__rows,
+  .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+  .fc-record-card__rows > * + *,
+  .fc-sro__rows > * + * { border-top: 0; }
+  .fc-record-card__rows > *,
+  .fc-sro__rows > * { border-top: var(--fc-record-rule); }
+  /* A value that needs the room (a long text, its own control) keeps the whole row. */
+  .fc-record-card__rows > .fc-record-card__row--wide { grid-column: 1 / -1; }
 }
 .fc-record-card__label { color: var(--fc-text-muted); }
 .fc-record-card__value {

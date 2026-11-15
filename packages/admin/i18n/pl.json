@@ -181,6 +181,7 @@
       "deletePermanently": "Usuń trwale",
       "relatedRecords": "Powiązane rekordy",
       "relatedEmpty": "Żadna inna wtyczka nie ma jeszcze rekordu powiązanego z tym.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Pobierz {{title}}",
         "person": "Osoba"

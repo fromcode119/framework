@@ -181,6 +181,7 @@
       "deletePermanently": "स्थायी रूप से हटाएँ",
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "डाउनलोड करें {{title}}",
         "person": "व्यक्ति"

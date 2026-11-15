@@ -181,6 +181,7 @@
       "deletePermanently": "Padam Secara Kekal",
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Muat turun {{title}}",
         "person": "Orang"

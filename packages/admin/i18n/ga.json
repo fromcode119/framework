@@ -181,6 +181,7 @@
       "deletePermanently": "Scrios go Buan",
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Íoslódáil {{title}}",
         "person": "Duine"

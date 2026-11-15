@@ -181,6 +181,7 @@
       "deletePermanently": "Οριστική διαγραφή",
       "relatedRecords": "Σχετικές εγγραφές",
       "relatedEmpty": "Κανένα άλλο πρόσθετο δεν έχει ακόμη εγγραφή συνδεδεμένη με αυτήν.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Λήψη {{title}}",
         "person": "Πρόσωπο"

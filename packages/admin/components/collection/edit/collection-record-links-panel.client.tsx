@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
-import { Reactor, prop, state, watch } from '@fromcode119/react-class-components';
-import { RecordsHub } from '@fromcode119/react';
+import { Reactor, bound, prop, state, watch } from '@fromcode119/react-class-components';
 import type { IRecordsHubItem } from '@fromcode119/react';
+import { Card } from '@/components/ui/view/card.client';
+import { RecordPartRow } from '@/components/collection/edit/view/record-part-row.client';
 import { AdminApi } from '@/lib/api';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -20,6 +21,11 @@ import type { CollectionRecordLinksDeclaration } from '@/components/collection/e
  * It lists only what has no section of its own on this page. Records whose part the collection mapped
  * to a section on screen are drawn there, as part of the record; once every linked record has such a
  * place this list has nothing left to say and is not drawn.
+ *
+ * It draws those records with the SAME row as the placed ones (`RecordPartRow`). It used to draw them
+ * with a component of its own, so one record page carried two looks for the same thing: the order and
+ * the invoice as plain lines in their card, the shipment as a bordered tile under a heading in a panel
+ * below — the difference the operator sees and nobody can explain.
  */
 export class CollectionRecordLinksPanel extends Reactor {
   @prop declare links: CollectionRecordLinksDeclaration;
@@ -64,6 +70,20 @@ export class CollectionRecordLinksPanel extends Reactor {
     return (this.result?.items || []).filter((item) => !item.part || !this.placedTerms.includes(this.links.termOf(item.part)));
   }
 
+  /** The leftover records, by the group their provider gave them. */
+  private get groups(): Array<{ group: string; items: IRecordsHubItem[] }> {
+    const groups: Array<{ group: string; items: IRecordsHubItem[] }> = [];
+    for (const item of this.remaining) {
+      const group = String(item.group || '');
+      const existing = groups.find((entry) => entry.group === group);
+      if (existing) existing.items.push(item); else groups.push({ group, items: [item] });
+    }
+    return groups;
+  }
+
+  @bound private open(item: IRecordsHubItem): void { RecordsHubOpenItem.open(item, this.navigate); }
+  @bound private download(item: IRecordsHubItem): void { void RecordsHubOpenItem.download(item, this.navigate); }
+
   render(): ReactNode {
     if (!this.result && !this.failed) return null;
     const remaining = this.remaining;
@@ -71,19 +91,29 @@ export class CollectionRecordLinksPanel extends Reactor {
     const actions = (this.result?.actions || []).filter((action: any) => !action.part || !this.placedTerms.includes(this.links.termOf(action.part)));
     // Everything linked has a section of its own on this page, and nothing went wrong finding it.
     if (!this.failed && this.placedTerms.length > 0 && !remaining.length && !errors.length && !actions.length) return null;
+    const title = this.links.title || AdminI18n.t('collection.edit.relatedRecords');
     return (
-      <div className="mt-6">
-        <RecordsHub
-          theme={this.theme}
-          title={this.links.title || AdminI18n.t('collection.edit.relatedRecords')}
-          emptyHint={this.links.emptyHint || AdminI18n.t('collection.edit.relatedEmpty')}
-          reloadKey={`${this.links.reloadKey}:${this.placedTerms.join('|')}:${remaining.length}`}
-          load={() => this.failed ? AdminApi.get(this.links.url) : Promise.resolve({ items: remaining, errors })}
-          onOpenItem={(item: IRecordsHubItem) => RecordsHubOpenItem.open(item, this.navigate)}
-          onDownloadItem={(item: IRecordsHubItem) => void RecordsHubOpenItem.download(item, this.navigate)}
-        />
+      <Card title={title}>
+        <div className="fc-record-part">
+          {this.failed || errors.length ? (
+            <p className="fc-record-part__empty-text">{AdminI18n.t('collection.edit.relatedFailed')}</p>
+          ) : null}
+          {!this.failed && !remaining.length && !errors.length ? (
+            <p className="fc-record-part__empty-text">{this.links.emptyHint || AdminI18n.t('collection.edit.relatedEmpty')}</p>
+          ) : null}
+          {this.groups.map((entry) => (
+            <div key={entry.group} className="fc-record-part__group">
+              {entry.group ? <span className="fc-record-part__heading">{entry.group}</span> : null}
+              <div className="fc-record-part__items">
+                {entry.items.map((item) => (
+                  <RecordPartRow key={`${item.kind}:${item.id}`} item={item} onOpen={this.open} onDownload={this.download} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
         <RecordPartActions actions={actions} onOpen={(href: string) => RecordsHubOpenItem.open({ href } as IRecordsHubItem, this.navigate)} />
-      </div>
+      </Card>
     );
   }
 }

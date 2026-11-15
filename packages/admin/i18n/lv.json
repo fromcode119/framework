@@ -181,6 +181,7 @@
       "deletePermanently": "Dzēst neatgriezeniski",
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Lejupielādēt {{title}}",
         "person": "Persona"

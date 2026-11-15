@@ -181,6 +181,7 @@
       "deletePermanently": "永久刪除",
       "relatedRecords": "相關紀錄",
       "relatedEmpty": "目前尚無其他外掛有連結至此紀錄的資料。",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "下載 {{title}}",
         "person": "人員"

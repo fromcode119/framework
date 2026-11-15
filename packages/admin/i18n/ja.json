@@ -181,6 +181,7 @@
       "deletePermanently": "完全に削除",
       "relatedRecords": "関連レコード",
       "relatedEmpty": "このレコードにリンクされたレコードを持つプラグインはまだありません。",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "ダウンロード {{title}}",
         "person": "人物"

@@ -181,6 +181,7 @@
       "deletePermanently": "Slett permanent",
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Last ned {{title}}",
         "person": "Person"

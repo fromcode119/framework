@@ -181,6 +181,7 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Noben drug vtičnik še nima zapisa, povezanega s tem.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Prenesi {{title}}",
         "person": "Oseba"

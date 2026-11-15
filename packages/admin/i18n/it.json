@@ -181,6 +181,7 @@
       "deletePermanently": "Elimina definitivamente",
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
+      "relatedFailed": "Could not read what else is linked to this record.",
       "recordPart": {
         "download": "Scarica {{title}}",
         "person": "Persona"
