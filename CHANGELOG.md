@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.590] - 2026-11-15
+
+### Added
+
+- **admin**: the collection list reads like a record, not a spreadsheet ([#1461](https://github.com/fromcode119/framework/pull/1461))
+- **admin**: walk the console without the mouse — G, then the section's key ([#1459](https://github.com/fromcode119/framework/pull/1459))
+
+### Fixed
+
+- **admin**: inside a site, the one address for people opens the list this scope has ([#1458](https://github.com/fromcode119/framework/pull/1458))
+- **admin**: a section opens a page it actually has ([#1457](https://github.com/fromcode119/framework/pull/1457))
+- **ci**: extension release moves every *Release stamp with the version ([#1455](https://github.com/fromcode119/framework/pull/1455))
+- the console's own history reads in the console's language ([#1454](https://github.com/fromcode119/framework/pull/1454))
+- **admin**: a settings section reads as a section, and a stacked control takes its row ([#1453](https://github.com/fromcode119/framework/pull/1453))
+- **admin**: the area wears its own mark, Settings stays while searching, menu type as measured ([#1452](https://github.com/fromcode119/framework/pull/1452))
+- **admin**: a recorded value too big to read is searched, not printed ([#1451](https://github.com/fromcode119/framework/pull/1451))
+- **core**: the menu is filed by the area a plugin declares, not by the plugin ([#1449](https://github.com/fromcode119/framework/pull/1449))
+- **admin**: one gap between stacked cards, on every screen ([#1448](https://github.com/fromcode119/framework/pull/1448))
+- **admin**: the page header spans the content column on every screen, not two ([#1447](https://github.com/fromcode119/framework/pull/1447))
+- **admin**: one spacing on a record — cards, heads and a plugin's panel ([#1446](https://github.com/fromcode119/framework/pull/1446))
+
+### Changed
+
+- Една скала за контролите в цялата конзола ([#1462](https://github.com/fromcode119/framework/pull/1462))
+- One list of the people a site knows, instead of two ([#1456](https://github.com/fromcode119/framework/pull/1456))
+- Name the card that holds the record itself ([#1445](https://github.com/fromcode119/framework/pull/1445))
+- Console layout: one rhythm, full-width records, a menu that follows the page ([#1444](https://github.com/fromcode119/framework/pull/1444))
+
 ## [0.2.589] - 2026-11-14
 
 ### Fixed
