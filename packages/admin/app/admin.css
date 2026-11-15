@@ -47,10 +47,14 @@
   --fc-sheet-phone-field-weight: 400;
   /* A saved record's card: label column, the rule between rows, the value's size. */
   --fc-record-label-width: 140px;
-  --fc-record-rule: 1px dashed var(--fc-border);
+  /* A hairline, not a dash. A dashed rule draws attention to the gap between two facts instead of to
+     the facts, and a card with eight of them reads as a form that was torn along the perforations. */
+  --fc-record-rule: 1px solid var(--fc-border);
   --fc-record-text: 13px;
-  /* A record page: the side column beside its main one, and the header card's title. */
-  --fc-record-side: 352px;
+  /* A record page: the side column beside its main one, and the header card's title. The side holds
+     what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
+     for short facts; the main column keeps the rest. */
+  --fc-record-side: 440px;
   --fc-record-title: 20px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
@@ -1278,21 +1282,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   font-size: var(--fc-record-text);
   line-height: 1.45;
 }
-/* A record's facts read in TWO columns once THE CARD is wide. One column of ten rows across a 2300px
-   screen put every value a hand's width from its label and left the card three-quarters empty — the
-   complaint behind this change. The card itself is the query container: measured against the record AREA
-   instead, a 352px side card split into two columns as well, and its labels wrapped into its values. */
+/* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
+   the wrong answer: the name of the product and its description ended up on one line, each cut to half
+   the card, and the eye had two label columns to follow instead of one. Every record page worth copying
+   — Shopify's, Stripe's, Medusa's — keeps one row per fact and lets the card be short. A card that is
+   short is not a card that is broken. */
 .fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
-@container (min-width: 52rem) {
-  .fc-record-card__rows,
-  .fc-sro__rows { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
-  .fc-record-card__rows > * + *,
-  .fc-sro__rows > * + * { border-top: 0; }
-  .fc-record-card__rows > *,
-  .fc-sro__rows > * { border-top: var(--fc-record-rule); }
-  /* A value that needs the room (a long text, its own control) keeps the whole row. */
-  .fc-record-card__rows > .fc-record-card__row--wide { grid-column: 1 / -1; }
-}
 .fc-record-card__label { color: var(--fc-text-muted); }
 .fc-record-card__value {
   min-width: 0;
