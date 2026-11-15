@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Nezaznamenané",
       "filter": "Filtrovať podľa kľúča…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Zatiaľ nič nie je zaznamenané.",
       "noMatch": "Filtru nič nezodpovedá."
     },

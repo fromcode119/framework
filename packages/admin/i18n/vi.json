@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Chưa ghi nhận",
       "filter": "Lọc theo khóa…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Chưa có dữ liệu nào được ghi nhận.",
       "noMatch": "Không có kết quả khớp với bộ lọc."
     },

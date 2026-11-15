@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Не е запишано",
       "filter": "Филтрирај по клуч…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Сè уште нема ништо запишано.",
       "noMatch": "Ништо не одговара на тој филтер."
     },

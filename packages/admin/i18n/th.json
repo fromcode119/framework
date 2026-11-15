@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "ไม่ได้บันทึก",
       "filter": "กรองตามคีย์…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "ยังไม่มีข้อมูลที่บันทึก",
       "noMatch": "ไม่มีรายการที่ตรงกับตัวกรอง"
     },

@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Tidak tercatat",
       "filter": "Filter berdasarkan kunci…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Belum ada yang tercatat.",
       "noMatch": "Tidak ada yang cocok dengan filter tersebut."
     },

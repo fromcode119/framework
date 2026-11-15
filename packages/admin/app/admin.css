@@ -1326,6 +1326,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro__note { display: block; margin-top: 2px; font-size: 12px; color: var(--fc-warning); }
 .fc-sro__source { padding: 2px 0 8px; font-size: 12px; color: var(--fc-text-muted); }
 .fc-sro__absent { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+/* What this level does not print, counted. The filter above is how it is read. */
+.fc-sro__more { margin: 8px 0 0; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+/* A group shown by name only, while the field is too big to print. */
+.fc-sro__section--named { padding: 2px 0; }
 .fc-sro__section { border-top: var(--fc-record-rule); }
 .fc-sro__rows + .fc-sro__section, .fc-sro__section:first-child { border-top: var(--fc-record-rule); }
 .fc-sro > .fc-sro__section:first-child { border-top: 0; }

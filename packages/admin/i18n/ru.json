@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Не записано",
       "filter": "Фильтр по ключу…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Пока ничего не записано.",
       "noMatch": "Ничего не соответствует фильтру."
     },

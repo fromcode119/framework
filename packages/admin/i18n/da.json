@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Ikke registreret",
       "filter": "Filtrér efter nøgle…",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Intet registreret endnu.",
       "noMatch": "Intet matcher filteret."
     },

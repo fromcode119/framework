@@ -532,6 +532,7 @@
     "structured": {
       "notRecorded": "Ni zabeleženo",
       "filter": "Filtriraj po ključu …",
+      "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ničesar še ni zabeleženega.",
       "noMatch": "Temu filtru nič ne ustreza."
     },

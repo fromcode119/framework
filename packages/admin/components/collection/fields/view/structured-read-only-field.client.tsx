@@ -59,6 +59,17 @@ export class StructuredReadOnlyField extends Reactor {
 
     // A long record (an import's whole payload) gets a filter; a short one is read at a glance.
     const isLarge = StructuredReadOnlyFieldService.isLargePayload(node);
+    const filter = isLarge ? this.filterText.trim().toLowerCase() : '';
+    /**
+     * Past a few dozen values a recorded field is no longer read, it is searched. A product's
+     * storefront snapshot printed 284 of them — the record a second time, with every translation key
+     * and every metadata list under it — and made the product page 19 695px tall, three quarters of it
+     * that one field. So this level's own values are drawn, what nests under them is counted, and the
+     * filter above reaches every one of them. Nothing is dropped and nothing is behind a disclosure:
+     * the count says what is there and the filter is how it is read.
+     */
+    const oversized = StructuredReadOnlyFieldService.isOversized(node) && !filter;
+    const hidden = oversized ? StructuredReadOnlyFieldService.leafCount(node) - StructuredReadOnlyFieldService.ownLeafCount(node) : 0;
     return (
       <>
         {isLarge ? (
@@ -69,7 +80,8 @@ export class StructuredReadOnlyField extends Reactor {
             className="fc-sro__filter"
           />
         ) : null}
-        <StructuredReadOnlyGroup node={node} depth={1} filterLower={isLarge ? this.filterText.trim().toLowerCase() : ''} keyLabels={this.keyLabels} />
+        <StructuredReadOnlyGroup node={node} depth={1} filterLower={filter} keyLabels={this.keyLabels} leavesOnly={oversized} />
+        {hidden > 0 ? <p className="fc-sro__more">{AdminI18n.t('ui.structured.more', { count: hidden })}</p> : null}
       </>
     );
   }
