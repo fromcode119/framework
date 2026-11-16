@@ -8,4 +8,5 @@ export interface IStructuredTable {
   columnOrigins?: Record<string, string>;
   /** The columns no row fills — left out of a table the framework arranged, kept in one a field declared. */
   emptyColumns?: string[];
+  mediaColumns?: string[];
 }

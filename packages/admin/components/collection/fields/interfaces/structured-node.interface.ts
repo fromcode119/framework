@@ -28,4 +28,6 @@ export interface IStructuredNode {
   tableColumnOrigins?: Record<string, string>;
   /** Set only for an ARRAY_TABLE — the columns no row fills. */
   tableEmptyColumns?: string[];
+  /** The columns whose values are pictures, worked out from the values themselves. */
+  tableMediaColumns?: string[];
 }

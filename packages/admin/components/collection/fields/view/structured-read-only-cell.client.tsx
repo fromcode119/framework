@@ -23,7 +23,7 @@ import type { IStructuredNode } from '@/components/collection/fields/interfaces/
  */
 export class StructuredReadOnlyCell extends PureReactor {
   @prop declare node?: IStructuredNode;
-  /** Whether this cell's column holds a picture, as the field declared it. */
+  /** Whether this cell's column holds pictures, as its values showed. */
   @prop declare media?: boolean;
 
   /** The entries a table cell draws as chips — present only on a value folded from an object. */

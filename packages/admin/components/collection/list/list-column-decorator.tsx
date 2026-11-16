@@ -7,6 +7,8 @@ import { InlineEditValue } from '@/components/collection/list/view/inline-edit-v
 import { MediaRelationFieldUtils } from '@/components/collection/media-relation-field-utils';
 import { AdminLink } from '@/components/view/admin-link.client';
 
+import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Turns the plain columns into the ones the list shows, from the collection's list layout.
  *
@@ -135,8 +137,15 @@ export class ListColumnDecorator {
       }
       return (
         <div className="flex items-center gap-3 max-w-[28rem]">
-          {showMedia && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
-            ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
+          {/* A record with no picture keeps the empty frame, so every name in the column starts at one line. */}
+          {showMedia
+            ? (MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
+              ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
+              : (
+                <span title={AdminI18n.t('ui.structured.noImage')} className="w-10 h-10 rounded-md shrink-0 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400">
+                  <FrameworkIcons.Image size={16} />
+                </span>
+              ))
             : null}
           <div className="min-w-0">
             <div className="truncate font-medium text-slate-900 dark:text-slate-100">{accessor(row)}</div>

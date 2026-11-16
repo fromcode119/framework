@@ -86,13 +86,17 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[2].fields[0].label).toBe('Код');
   });
 
-  it('translates the key names a structured read-only field prints, keeping untranslated ones as declared', () => {
-    const out = localizer.collection('shop', {
+  it('names the keys a structured field prints from the dictionary alone, with nothing listed in the schema', () => {
+    const block = (plugin: string, key: string) => Object.fromEntries(Object.entries(dictionary)
+      .filter(([name]) => name.startsWith(`${plugin}.${key}.`))
+      .map(([name, text]) => [name.slice(`${plugin}.${key}.`.length), text]));
+    const out = new AdminSchemaLocalizer((plugin, key) => dictionary[`${plugin}.${key}`] || '', block).collection('shop', {
       slug: 'shop-products',
       shortSlug: 'catalog',
-      fields: [{ name: 'history', admin: { component: 'StructuredReadOnlyField', keyLabels: { changedBy: 'Changed by', note: 'Note' } } }],
+      fields: [{ name: 'history', admin: { component: 'StructuredReadOnlyField' } }, { name: 'name' }],
     });
-    expect(out.fields[0].admin.keyLabels).toEqual({ changedBy: 'Променено от', note: 'Note' });
+    expect(out.fields[0].admin.keyLabels).toEqual({ changedBy: 'Променено от' });
+    expect(out.fields[1].admin).toBeUndefined();
   });
 
   it('leaves text a dictionary lacks exactly as declared, and adds nothing that was not declared', () => {

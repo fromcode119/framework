@@ -55,7 +55,7 @@ export class StructuredReadOnlyFieldService {
     const items = value.map((item) => StructuredReadOnlyFieldService.classify(item));
     const table = StructuredReadOnlyFieldService.buildTable(items);
     return table
-      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows, tableColumnOrigins: table.columnOrigins, tableEmptyColumns: table.emptyColumns }
+      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows, tableColumnOrigins: table.columnOrigins, tableEmptyColumns: table.emptyColumns, tableMediaColumns: table.mediaColumns }
       : { kind: StructuredNodeKind.ARRAY, items };
   }
 
@@ -129,19 +129,21 @@ export class StructuredReadOnlyFieldService {
       });
     });
 
-    // Which columns no row fills. A value nobody has recorded is NOISE in a column nobody asked for —
-    // a product's variants carry fourteen keys and an arbitrary payload has more — so a table the
-    // framework arranged by itself leaves those out. A table whose field DECLARED its columns keeps
-    // them all: there the empty column is the answer to a question the operator asked ("which of these
-    // has no picture, which has no stock"), and dropping it hides the very thing they came to see.
-    // Who decides is {@link StructuredReadOnlyTableService.columnsFor}; this only says which are empty.
+    // Which columns no row fills. A value nobody has recorded is noise: a product's variants carry
+    // fourteen keys and an arbitrary payload has more, so a column no row fills is not drawn.
     const holdsSomething = (node?: IStructuredNode): boolean => {
       if (!node || node.kind === StructuredNodeKind.EMPTY) return false;
       // A blank string is no value either, however it was stored.
       if (node.kind === StructuredNodeKind.SCALAR) return String(node.scalarValue ?? '').trim() !== '';
       return true;
     };
-    const empty = columns.filter((column) => !items.some((item) => holdsSomething(item.entries?.find((entry) => entry.key === column)?.node)));
+    // A switch nobody turned on in any row says nothing a reader needs: a column of "No" is a setting's
+    // resting state, not a fact about these rows. One row turned on and the column is drawn whole.
+    const allOff = (column: string): boolean => items.every((item) => {
+      const node = item.entries?.find((entry) => entry.key === column)?.node;
+      return !node || node.kind === StructuredNodeKind.EMPTY || (node.kind === StructuredNodeKind.SCALAR && node.scalarValue === false);
+    });
+    const empty = columns.filter((column) => allOff(column) || !items.some((item) => holdsSomething(item.entries?.find((entry) => entry.key === column)?.node)));
 
     const rows = items.map((item) => {
       const row: Record<string, IStructuredNode> = {};
@@ -152,7 +154,14 @@ export class StructuredReadOnlyFieldService {
       return row;
     });
 
-    return { ...StructuredTableSplitService.split(items, columns, rows), emptyColumns: empty };
+    // A column is a picture when what it holds IS a picture — never because a field said so. Such a
+    // column leads the row, the way every catalogue table opens on its thumbnail.
+    const media = columns.filter((column) => rows.some((row) => {
+      const node = row[column];
+      return node?.kind === StructuredNodeKind.SCALAR && StructuredReadOnlyFieldService.isImagePath(String(node.scalarValue ?? '').trim());
+    }));
+    const ordered = [...media, ...columns.filter((column) => !media.includes(column))];
+    return { ...StructuredTableSplitService.split(items, ordered, rows), emptyColumns: empty, mediaColumns: media };
   }
 
   /** Top-level key/item count — the "(n keys)" a group label shows. */
@@ -168,7 +177,7 @@ export class StructuredReadOnlyFieldService {
   /**
    * A data key as a person reads it.
    *
-   * `overrides` is the owning plugin's own vocabulary, taken from the field's `admin.keyLabels`. It
+   * `overrides` is the owning plugin's own vocabulary, read from its dictionary (`fields.<field>.keyLabels`). It
    * wins outright, because only the plugin knows that `codAmount` is a cash-on-delivery amount —
    * the framework must not, and used to carry a list of commerce and finance acronyms to fake it.
    */
@@ -189,8 +198,8 @@ export class StructuredReadOnlyFieldService {
    *
    * This list used to carry COD, VAT, IBAN, BIC, SKU, EAN, AWB, UIC and GTIN — commerce, finance and
    * logistics words, sitting in `packages/admin`, which is supposed to contain no business domain at
-   * all. A plugin's vocabulary is the plugin's: it names its own keys through
-   * `admin.keyLabels` on the field, and the framework renders whatever it is told.
+   * all. A plugin's vocabulary is the plugin's: it names its own keys in its dictionary, under
+   * `fields.<field>.keyLabels`, and the framework renders whatever it is told.
    *
    * Whole words only, so `idempotencyKey` stays "Idempotency Key" and `avoid` stays "Avoid".
    */
