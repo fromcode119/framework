@@ -1,11 +1,13 @@
-import type { ReactNode } from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
+import type { ReactNode, RefObject } from 'react';
+import { PureReactor, prop, state, bound, ref } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyCell } from '@/components/collection/fields/view/structured-read-only-cell.client';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
 import { StructuredReadOnlyTableService } from '@/components/collection/fields/structured-read-only-table-service';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { Input } from '@/components/ui/view/input.client';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FiltersButton } from '@/components/ui/list-toolbar/view/filters-button.client';
 import { StructuredReadOnlyTableFoot } from '@/components/collection/fields/view/structured-read-only-table-foot.client';
@@ -23,6 +25,30 @@ export class StructuredReadOnlyTable extends PureReactor {
   @prop declare keyLabels?: Record<string, string>;
   /** What the section's own search holds, already lower-cased; empty shows every row. */
   @prop declare searchLower?: string;
+
+  /**
+   * Where the section's head keeps room for this table's controls. The toolbar is rendered by the
+   * table, which is the only thing that knows its columns, and then moved into that room — the card's
+   * head is above the field in the page, so a field cannot render into it from where it stands.
+   */
+  @prop declare toolbarTarget?: HTMLElement;
+  @ref declare private toolsRef: RefObject<HTMLDivElement | null>;
+  @state private search = '';
+
+  componentDidMount(): void {
+    this.placeTools();
+  }
+
+  componentDidUpdate(): void {
+    this.placeTools();
+  }
+
+  /** Keeps the toolbar in the head the section offered it, once React has drawn both. */
+  private placeTools(): void {
+    const tools = this.toolsRef.current;
+    if (!tools || !this.toolbarTarget || tools.parentElement === this.toolbarTarget) return;
+    this.toolbarTarget.appendChild(tools);
+  }
 
   /** How many rows are read at once, after which the table pages. */
   private static readonly PAGE_SIZE = 20;
@@ -45,13 +71,13 @@ export class StructuredReadOnlyTable extends PureReactor {
    * same ones every list in the console uses.
    */
   private get filters(): ListFilter[] {
-    return StructuredReadOnlyTableService.filterableColumns(this.node).map((entry) => new ListFilter(
+    return StructuredReadOnlyTableService.filterableColumns(this.node, this.toolbarTarget ? 2 : undefined).map((entry) => new ListFilter(
       entry.column,
       StructuredReadOnlyFieldService.keyLabel(entry.column, this.keyLabels),
       [{ label: AdminI18n.t('collection.list.filterAll'), value: '' }, ...entry.values.map((value) => ({ label: value, value }))],
       this.picked[entry.column] ?? '',
       '',
-      (value: string) => { this.picked = { ...this.picked, [entry.column]: value }; },
+      (value: string) => { this.picked = { ...this.picked, [entry.column]: value }; this.page = 1; },
     ));
   }
 
@@ -72,6 +98,7 @@ export class StructuredReadOnlyTable extends PureReactor {
    * now, not a setting, and the next record opens as the record has it.
    */
   @bound private sortBy(column: string): void {
+    this.page = 1;
     if (this.sortColumn !== column) {
       this.sortColumn = column;
       this.sortDescending = false;
@@ -104,9 +131,9 @@ export class StructuredReadOnlyTable extends PureReactor {
         align={HorizontalAlign.RIGHT}
         items={[{ label, onClick: open, icon: <FrameworkIcons.Edit size={14} /> }]}
         trigger={
-          <span role="button" tabIndex={0} aria-label={label} title={label} className="fc-sro-table__menu">
+          <button type="button" aria-label={label} title={label} className="fc-sro-table__menu">
             <FrameworkIcons.More size={16} />
-          </span>
+          </button>
         }
       />
     );
@@ -123,17 +150,51 @@ export class StructuredReadOnlyTable extends PureReactor {
    */
   private renderTools(total: number): ReactNode {
     const filters = this.filters;
-    if (!filters.length) return null;
-    return <div className="fc-sro-table__tools"><FiltersButton filters={filters} total={total} /></div>;
+    if (!this.toolbarTarget) {
+      return filters.length ? <div className="fc-sro-table__tools"><FiltersButton filters={filters} total={total} /></div> : null;
+    }
+    const label = AdminI18n.t('shell.nav.search');
+    const sortLabel = AdminI18n.t('collection.list.sortBy');
+    const sortOptions = StructuredReadOnlyTableService.columnsFor(this.node)
+      .filter((column) => !this.node.tableMediaColumns?.includes(column))
+      .map((column) => ({
+        label: StructuredReadOnlyFieldService.keyLabel(column, this.keyLabels),
+        icon: this.sortColumn === column
+          ? (this.sortDescending ? <FrameworkIcons.ArrowDown size={14} /> : <FrameworkIcons.ArrowUp size={14} />)
+          : undefined,
+        onClick: () => this.sortBy(column),
+      }));
+    return (
+      <div className="fc-sro-table__tools" ref={this.toolsRef}>
+        {filters.length ? <FiltersButton compact filters={filters} total={total} /> : null}
+        {sortOptions.length ? (
+          <Dropdown align={HorizontalAlign.RIGHT} items={sortOptions} trigger={
+            <button type="button" className="fc-sro-table__tool" aria-label={sortLabel} title={sortLabel}>
+              <FrameworkIcons.List size={15} />
+            </button>
+          } />
+        ) : null}
+        {/* The console's own field, so the table's search is the one height and look every list has. */}
+        <Input
+          size={FieldSize.SM}
+          type="search"
+          value={this.search}
+          aria-label={label}
+          placeholder={label}
+          onChange={(event: any) => { this.search = String(event?.target?.value ?? ''); this.page = 1; }}
+          className="fc-sro-table__search-field"
+        />
+      </div>
+    );
   }
 
   render(): ReactNode {
     const columns = StructuredReadOnlyTableService.columnsFor(this.node);
     const all = this.node.tableRows ?? [];
-    const needle = String(this.searchLower || '').trim();
+    const needle = (this.toolbarTarget ? this.search : this.searchLower ?? '').trim().toLowerCase();
     const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle, columns)) : all;
     const rows = this.ordered(this.narrowed(matching));
-    const size = StructuredReadOnlyTable.PAGE_SIZE;
+    const size = this.toolbarTarget ? 10 : StructuredReadOnlyTable.PAGE_SIZE;
     const pages = Math.max(1, Math.ceil(rows.length / size));
     const page = Math.min(this.page, pages);
     const shown = rows.slice((page - 1) * size, page * size);
@@ -142,33 +203,41 @@ export class StructuredReadOnlyTable extends PureReactor {
     return (
       <div className="fc-sro-table">
         {toolbar}
-        <table>
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column} aria-sort={this.sortColumn === column ? (this.sortDescending ? 'descending' : 'ascending') : 'none'}>
-                  <button type="button" className="fc-sro-table__sort" onClick={() => this.sortBy(column)}>
-                    {StructuredReadOnlyFieldService.keyLabel(column, this.keyLabels)}
-                    {this.sortColumn === column ? <span aria-hidden="true">{this.sortDescending ? ' ↓' : ' ↑'}</span> : null}
-                  </button>
-                </th>
-              ))}
-              {this.editRow ? <th className="fc-sro-table__menu-head" aria-label="" /> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {shown.map((row, rowIndex) => (
-              <tr key={rowIndex}>
+        <div className="fc-sro-table__scroll">
+          <table>
+            <thead>
+              <tr>
                 {columns.map((column) => (
-                  <td key={column} className={media.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
-                    <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />
-                  </td>
+                  media.includes(column) && this.toolbarTarget
+                    ? <th key={column} className="fc-sro-table__media-cell" aria-label={StructuredReadOnlyFieldService.keyLabel(column, this.keyLabels)} />
+                    :
+                  <th key={column} aria-sort={this.sortColumn === column ? (this.sortDescending ? 'descending' : 'ascending') : 'none'}>
+                    <button type="button" className="fc-sro-table__sort" onClick={() => this.sortBy(column)}>
+                      {StructuredReadOnlyFieldService.keyLabel(column, this.keyLabels)}
+                      {this.sortColumn === column ? <span aria-hidden="true">{this.sortDescending ? ' ↓' : ' ↑'}</span> : null}
+                    </button>
+                  </th>
                 ))}
-                {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}
+                {this.editRow ? <th className="fc-sro-table__menu-head" aria-label="" /> : null}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {!shown.length ? (
+                <tr><td colSpan={columns.length + (this.editRow ? 1 : 0)}>{AdminI18n.t('ui.structured.noMatch')}</td></tr>
+              ) : null}
+              {shown.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {columns.map((column) => (
+                    <td key={column} className={media.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
+                      <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />
+                    </td>
+                  ))}
+                  {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <StructuredReadOnlyTableFoot
           from={rows.length ? (page - 1) * size + 1 : 0}
           to={(page - 1) * size + shown.length}
@@ -176,6 +245,7 @@ export class StructuredReadOnlyTable extends PureReactor {
           page={page}
           pages={pages}
           onPage={this.goToPage}
+          showPager={Boolean(this.toolbarTarget)}
         />
       </div>
     );

@@ -15,6 +15,7 @@ export class StructuredReadOnlyTableFoot extends PureReactor {
   @prop declare total: number;
   @prop declare page: number;
   @prop declare pages: number;
+  @prop declare showPager?: boolean;
   @prop declare onPage: (page: number) => void;
 
   render(): ReactNode {
@@ -24,7 +25,7 @@ export class StructuredReadOnlyTableFoot extends PureReactor {
         <span className="fc-sro-table__count">
           {AdminI18n.t('ui.structured.tableRange', { from: this.from, to: this.to, total: this.total })}
         </span>
-        {pages > 1 ? (
+        {this.showPager || pages > 1 ? (
           <span className="fc-sro-table__pager">
             <span className="fc-sro-table__pages">{AdminI18n.t('ui.structured.tablePages', { page, pages })}</span>
             <button type="button" className="fc-sro-table__page" disabled={page <= 1} onClick={() => this.onPage(page - 1)}>

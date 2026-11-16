@@ -1,3 +1,4 @@
+import type { IField } from '@fromcode119/core/client';
 import { StructuredNodeKind } from '@/components/collection/fields/enums/structured-node-kind.enum';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
 
@@ -33,6 +34,28 @@ export class StructuredReadOnlyTableService {
     return (node.tableColumns ?? []).filter((column) => !empty.includes(column));
   }
 
+  /** Applies a screen's column order to the same structured rows used by the automatic table. */
+  static applyLayout(node: IStructuredNode, layout: NonNullable<IField['admin']>['tableLayout']): IStructuredNode {
+    if (!layout?.length || node.kind !== StructuredNodeKind.ARRAY_TABLE) return node;
+    const media = layout.filter((column) => column.media).map((column) => column.key);
+    const columns = layout.flatMap(({ key }) => {
+      const children = (node.tableColumns ?? []).filter((column) => node.tableColumnOrigins?.[column] === key);
+      return children.length ? children : [key];
+    });
+    const rows = (node.tableRows ?? []).map((row, index) => {
+      const values = { ...row };
+      for (const { key, join } of layout) {
+        if (!join) continue;
+        const group = node.items?.[index]?.entries?.find((entry) => entry.key === join.from)?.node;
+        const title = group?.entries?.map((entry) => StructuredReadOnlyTableService.cellText(entry.node))
+          .filter(Boolean).join(join.separator);
+        if (title) values[key] = { kind: StructuredNodeKind.SCALAR, scalarValue: title };
+      }
+      return values;
+    });
+    return { ...node, tableColumns: columns, tableRows: rows, tableMediaColumns: media, tableEmptyColumns: [] };
+  }
+
   /** Past this many distinct values a column is searched, not picked from. */
   private static readonly FILTERABLE_VALUE_LIMIT = 12;
   /**
@@ -49,9 +72,9 @@ export class StructuredReadOnlyTableService {
    * no row is in. A column where every row says the same thing is left out — there is nothing to
    * narrow — and so is one with a different value in every row, which is what the search is for.
    */
-  static filterableColumns(node: IStructuredNode): Array<{ column: string; values: string[] }> {
+  static filterableColumns(node: IStructuredNode, minimumRows = StructuredReadOnlyTableService.FILTERABLE_TABLE_ROWS): Array<{ column: string; values: string[] }> {
     const rows = node.tableRows ?? [];
-    if (node.kind !== StructuredNodeKind.ARRAY_TABLE || rows.length < StructuredReadOnlyTableService.FILTERABLE_TABLE_ROWS) return [];
+    if (node.kind !== StructuredNodeKind.ARRAY_TABLE || rows.length < minimumRows) return [];
     const out: Array<{ column: string; values: string[] }> = [];
     for (const column of StructuredReadOnlyTableService.columnsFor(node)) {
       const seen: string[] = [];
