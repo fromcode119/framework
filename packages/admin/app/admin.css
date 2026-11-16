@@ -227,13 +227,15 @@
   --border: var(--fc-border);
   --input: var(--fc-border);
   --ring: var(--fc-brand);
-  /* ONE control radius for the console, and it is the control's — not a surface's.
-     Everything a hand uses (a field, a select, a button, a menu) takes this corner; a surface that
-     holds them takes 8px, and a card 8px. The token used to be 12px while `--fc-control-radius` said
-     6px and a card said 8px: three corners on one screen, which is enough to make a page look
-     unsettled without anyone being able to name why. The rule in `UiFieldUtils` still holds — a control
-     that needs another corner changes THIS, never a hardcoded Tailwind step. */
-  --radius: 6px;
+  /* ONE surface radius, equal to Tailwind's `rounded-xl` — the class the whole admin was swept to.
+     A token that disagrees with the utility class is how every panel ended up a slightly different shape.
+
+     It is NOT the place to settle the console's control corner. BrandTokenStyleService appends
+     `--radius: var(--fc-radius)` at runtime, so whatever is written here is replaced by the active
+     brand's radius before anything is painted — a value set here looks like a decision and is not one.
+     Controls read 12px and `--fc-control-radius` says 6px; which of the two the console should keep is
+     the brand's call, not a stylesheet's. */
+  --radius: 0.75rem;
   /* Concrete value, NOT var(--radius): BrandTokenStyleService appends `--radius: var(--fc-radius)`
      at runtime, so a var() here creates a custom-property cycle whenever the active theme defines
      no --theme-radius — both variables go invalid and every rounded-[var(--radius)] corner renders
@@ -1639,7 +1641,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    part of the heading rather than as a badge competing with the record's state. */
 .fc-record-card__count {
   flex: none;
-  margin-inline-start: -4px;
+  margin-inline-start: 8px;
+  vertical-align: 1px;
   padding: 1px 6px;
   border-radius: 4px;
   background: var(--fc-surface-muted);

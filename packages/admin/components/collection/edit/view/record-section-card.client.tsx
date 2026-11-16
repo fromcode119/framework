@@ -240,10 +240,12 @@ export class RecordSectionCard extends RecordSectionCardEditing {
       <Card id={`section-${this.section.key}`} noPadding className={this.open ? `${card} ${card}--editing` : card}>
         {title || editable ? (
           <div className={`${card}__head`}>
-            <h2 className={`${card}__title`}>{title}</h2>
-            {RecordSectionCount.of(this.section.fields, this.formData) !== null
-              ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
-              : null}
+            <h2 className={`${card}__title`}>
+              {title}
+              {RecordSectionCount.of(this.section.fields, this.formData) !== null
+                ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
+                : null}
+            </h2>
             <div className={`${card}__aside`}>{this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}</div>
             {this.renderMenu(editable)}
           </div>

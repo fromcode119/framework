@@ -12,6 +12,11 @@ import { RecordSectionFields } from '@/components/collection/edit/record-section
  * about the schema and not about the record.
  */
 export class RecordSectionCount {
+  /** Whether the field's own type says its value is a list, whatever it currently holds. */
+  private static declaresAList(field: any): boolean {
+    return String(field?.type || '') === 'array';
+  }
+
   /** The number to put in the section's head, or `null` when the section is not one list. */
   static of(fields: any[], record: Record<string, any>): number | null {
     const data = (fields || []).filter((field: any) => RecordSectionFields.readsAsData(field));
@@ -20,6 +25,9 @@ export class RecordSectionCount {
     if (Array.isArray(value)) return value.length;
     // A set of keyed values counts its keys, as a metadata section does.
     if (value && typeof value === 'object') return Object.keys(value).length;
-    return RecordSectionFields.isEmpty(data[0], value) ? 0 : null;
+    // Nothing stored yet: only a field DECLARED as a list has a count of none. A price section holds
+    // one field the console reads as data and no list at all, and "Price 0" read as the price being
+    // zero — a number whose meaning the reader cannot recover is worse than no number.
+    return RecordSectionCount.declaresAList(data[0]) ? 0 : null;
   }
 }
