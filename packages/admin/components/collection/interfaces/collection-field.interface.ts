@@ -67,6 +67,12 @@ export interface ICollectionField {
     position?: FieldPosition;
     description?: string;
     /**
+     * This field's `component` IS how the value reads on a saved record, not a control behind Edit —
+     * read by `RecordSectionFields`. For a component that already presents the value (a block editor,
+     * a list of rows); without it such a `json` field is read as data and the card prints its indices.
+     */
+    inPlace?: boolean;
+    /**
      * How a list of rows is laid out: `table` names the columns once in a header and gives each row one
      * line; left out, the rows stack as cards, which is what a reorderable list wants.
      */
