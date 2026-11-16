@@ -10,11 +10,12 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * list says so even with the panel closed.
  */
 export class FiltersButton extends PureReactor {
-  declare props: Pick<FiltersButton, 'filters' | 'total'>;
+  declare props: Pick<FiltersButton, 'filters' | 'total' | 'compact'>;
 
   @prop declare filters: readonly ListFilter[];
   /** Rows the current filters match, for the panel's closing button. */
   @prop declare total: number;
+  @prop declare compact?: boolean;
 
   @state open = false;
 
@@ -48,10 +49,10 @@ export class FiltersButton extends PureReactor {
           // Below 640px the word is dropped and only the funnel is left, so the button has to say what
           // it is some other way — otherwise a phone shows an unlabelled square beside the search box.
           aria-label={AdminI18n.t('ui.listToolbar.filters')}
-          className={`h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-medium inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
+          className={this.compact ? 'fc-sro-table__tool' : `h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-medium inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
         >
           <FrameworkIcons.Filter size={15} />
-          <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>
+          {this.compact ? null : <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>}
           {activeCount ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[length:var(--fc-label-text)] inline-flex items-center justify-center">{activeCount}</span> : null}
         </button>
         {this.open ? <FilterPanel filters={this.filters} total={this.total} onClose={this.close} /> : null}

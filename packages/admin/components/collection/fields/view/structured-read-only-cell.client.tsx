@@ -3,8 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyValue } from '@/components/collection/fields/view/structured-read-only-value.client';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { StructuredTableThumbnail } from '@/components/collection/fields/view/structured-table-thumbnail.client';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
 
 /**
@@ -59,17 +58,10 @@ export class StructuredReadOnlyCell extends PureReactor {
         </span>
       );
     }
-    const source = this.imageSource;
-    if (source) return <img src={source} alt="" title={source} className="fc-sro-table__thumb" />;
-    // A column of pictures keeps its frame where there is no picture: an empty frame says this one has
-    // none, where a blank cell reads as a column that failed to draw.
-    if (this.media) {
-      return (
-        <span className="fc-sro-table__thumb fc-sro-table__thumb--none" title={AdminI18n.t('ui.structured.noImage')}>
-          <FrameworkIcons.Image size={14} />
-        </span>
-      );
+    if (this.media || this.imageSource) {
+      const value = this.node?.scalarValue;
+      return <StructuredTableThumbnail value={value == null ? '' : String(value).trim()} />;
     }
-    return <StructuredReadOnlyValue node={this.node} />;
+    return <StructuredReadOnlyValue node={this.node ?? { kind: StructuredNodeKind.EMPTY }} />;
   }
 }

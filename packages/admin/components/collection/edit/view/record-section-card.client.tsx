@@ -9,6 +9,8 @@ import { RecordSectionFields } from '@/components/collection/edit/record-section
 import { RecordSectionChips } from '@/components/collection/edit/record-section-chips';
 import { RecordSectionCount } from '@/components/collection/edit/record-section-count';
 import { RecordSectionCardEditing } from '@/components/collection/edit/view/record-section-card-editing.client';
+import { RecordSectionData } from '@/components/collection/edit/record-section-data';
+import { RecordSectionNamedRows } from '@/components/collection/edit/view/record-section-named-rows.client';
 import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
 import { FieldDisplayLabel } from '@/lib/collection/field-display-label';
@@ -63,12 +65,17 @@ export class RecordSectionCard extends RecordSectionCardEditing {
   private menuWatch: MutationObserver | null = null;
 
   componentDidMount(): void {
+    this.syncTableToolbar();
     const probe = this.menuProbe.current;
     if (!probe) return;
     const measure = () => { const filled = probe.childElementCount > 0; if (filled !== this.hasMenu) this.hasMenu = filled; };
     this.menuWatch = new MutationObserver(measure);
     this.menuWatch.observe(probe, { childList: true, subtree: true });
     measure();
+  }
+
+  componentDidUpdate(): void {
+    this.syncTableToolbar();
   }
 
   componentWillUnmount(): void {
@@ -113,7 +120,7 @@ export class RecordSectionCard extends RecordSectionCardEditing {
       && !fields.some((field: any) => RecordSectionFields.readsAsData(field) && !RecordSectionFields.isEmpty(field, this.formData?.[field.name]));
   }
 
-  private renderRows(): ReactNode {
+  private renderRows(tableField?: string): ReactNode {
     const shown = RecordSectionFields.shownFields(this.section.fields, this.formData);
     const own = this.section.fields.filter(RecordSectionFields.ownsItsControl);
     const read = this.section.fields.filter(RecordSectionFields.readsByComponent);
@@ -148,7 +155,7 @@ export class RecordSectionCard extends RecordSectionCardEditing {
         {/* What the runtime recorded, under a heading of its own name, as rows like the ones above. */}
         {display.map((field) => this.renderRecorded(field, `${card}__read`))}
         {/* Data the record holds, read by the console's own structured renderer. */}
-        {data.map((field) => this.renderAsData(field, `${card}__read`))}
+        {data.map((field) => this.renderAsData(field, `${card}__read`, field.name === tableField))}
         {/* A field that is its own control (an items table) reads under its name like a recorded value —
             a heading of the card, not a form label; when it IS what the card is called, the title says it. */}
         {own.map((field) => {
@@ -165,44 +172,27 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     );
   }
 
-  /**
-   * A section none of whose fields is filled in: its rows, each with a dash.
-   *
-   * It used to be one sentence — "nothing filled in yet" — which is the one thing the reader already knew.
-   * Which fields the section offers, and therefore what Edit would ask for, was not said anywhere. Counted
-   * on one product: five of sixteen cards were that sentence, so a quarter of the record page carried no
-   * information at all, in a shape no other card on the page had. The dash row is the card's own row, so
-   * an empty section now reads as the same kind of thing as a full one.
-   *
-   * A section with no rows to name (one a plugin's slot fills, one whose only field draws its own control)
-   * draws nothing: a card is allowed to be short.
-   */
-  private renderNamedRows(): ReactNode {
-    const card = AdminClass.of('record-card');
-    const named = RecordSectionFields.blankFields(this.section.fields);
-    if (!named.length) return null;
-    return (
-      <dl className={`${card}__rows`}>
-        {named.map((field: any) => (
-          <div key={field.name} className={`${card}__row`}>
-            <dt className={`${card}__label`}>{FieldDisplayLabel.of(field)}</dt>
-            <dd className={`${card}__value ${card}__value--none`}>{RecordSectionCard.NO_VALUE}</dd>
-          </div>
-        ))}
-      </dl>
-    );
-  }
 
   /** What the section's search holds. Nothing is stored: it is how the card is being read now. */
   @state private searchText = '';
 
+  /** Where the section's head keeps room for the table's own toolbar, once the head has drawn it. */
+  @ref declare private tableToolbarRef: RefObject<HTMLDivElement | null>;
+  @state private tableToolbar: HTMLDivElement | null = null;
+
+  private syncTableToolbar(): void {
+    const target = this.tableToolbarRef.current;
+    if (target !== this.tableToolbar) this.tableToolbar = target;
+  }
+
+  /** The one field of this section that reads as a table, if the section is exactly one table. */
+  private get sectionTableField(): string | undefined {
+    return RecordSectionData.tableField(this.section.fields, this.formData);
+  }
+
   /** How many rows the section's own data holds — what decides whether a search is worth offering. */
   private get dataRowCount(): number {
-    return this.section.fields
-      .filter((field: any) => RecordSectionFields.readsAsData(field))
-      .map((field: any) => this.formData?.[field.name])
-      .filter((value: unknown) => Array.isArray(value))
-      .reduce((most: number, value: any) => Math.max(most, value.length), 0);
+    return RecordSectionData.rowCount(this.section.fields, this.formData);
   }
 
   /** What a record part or a plugin adds to this section's ⋯. */
@@ -214,14 +204,11 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     this.searchText = next;
   }
 
-  /** An en dash stands for a value nobody has set — the same mark every record page worth copying uses. */
-  private static readonly NO_VALUE = '–';
-
   /**
    * A field whose value is data, read as the structured table the console draws for any recorded value.
    * Its own control is not drawn here — the section's Edit opens it with the real thing.
    */
-  private renderAsData(field: any, extra = ''): ReactNode {
+  private renderAsData(field: any, extra: string, withToolbar: boolean): ReactNode {
     const card = AdminClass.of('record-card');
     const label = FieldDisplayLabel.of(field);
     const named = label && label.trim().toLowerCase() !== String(this.section.title || '').trim().toLowerCase();
@@ -235,7 +222,8 @@ export class RecordSectionCard extends RecordSectionCardEditing {
           // A read table's rows each carry a ⋯ that opens this section's editor — the one place the row's
           // real controls live. It is not scoped to the row it sits on, because the value is one field of
           // the record and the sheet edits that field whole.
-          onEditRow: this.openSheet,
+          onEditRow: RecordSectionFields.canEdit([field]) ? this.openSheet : undefined,
+          tableToolbar: withToolbar ? this.tableToolbar : undefined,
           // What the section's own search holds; the table narrows itself to it.
           searchText: this.searchText,
         },
@@ -259,18 +247,21 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     const card = AdminClass.of('record-card');
     const title = this.section.title || '';
     const editable = RecordSectionFields.canEdit(this.section.fields);
+    const tableField = this.sectionTableField;
     return (
       <Card id={`section-${this.section.key}`} noPadding className={this.open ? `${card} ${card}--editing` : card}>
         {title || editable ? (
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>
               {title}
-              {RecordSectionCount.of(this.section.fields, this.formData) !== null
+              {!tableField && RecordSectionCount.of(this.section.fields, this.formData) !== null
                 ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
                 : null}
             </h2>
             <div className={`${card}__aside`}>
-              <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />
+              {tableField
+                ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
+                : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
               {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
             </div>
             <RecordSectionMenu
@@ -285,9 +276,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
         <div className={`${card}__body`}>
           {this.renderSheet(title)}
           {this.recordPart?.(RecordPartPlace.LEAD)}
-          {this.renderRows()}
+          {this.renderRows(tableField)}
           {this.recordPart?.(RecordPartPlace.BODY)}
-          {this.slot('body', this.isBlank() ? this.renderNamedRows() : null)}
+          {this.slot('body', this.isBlank() ? <RecordSectionNamedRows fields={this.section.fields} /> : null)}
         </div>
       </Card>
     );

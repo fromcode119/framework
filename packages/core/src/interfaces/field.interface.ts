@@ -101,6 +101,13 @@ export interface IField {
      * Without it a component field is its own interface and is drawn, working, on the card itself.
      */
     readComponent?: string;
+    /** Optional reading order for a structured data table. Nested groups expand to their own columns. */
+    tableLayout?: readonly {
+      readonly key: string;
+      readonly media?: boolean;
+      /** Use the values of a nested group as the display text, falling back to the named key. */
+      readonly join?: { readonly from: string; readonly separator: string };
+    }[];
     /** Read a `component` field on the card as a plain value row; the component edits it with the section. */
     readAsValue?: boolean;
     /**

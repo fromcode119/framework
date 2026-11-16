@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { StructuredReadOnlyField } from '@/components/collection/fields/view/structured-read-only-field.client';
+
+import { MediaRelationPreviewResolver } from '@/components/collection/media-relation-preview-resolver';
 
 const variants = [
   { key: 'S', sku: 'TS-S', options: { 'Размер': 'S' }, isDefault: true, isPopular: false, image: '/uploads/s.webp' },
@@ -39,5 +41,43 @@ describe('A column of objects, read down', () => {
     render(<StructuredReadOnlyField value={clashing} field={{ name: 'variants' }} />);
     const headings = screen.getAllByRole('columnheader').map((cell) => cell.textContent?.trim());
     expect(headings).toEqual(['Размер', 'Options']);
+  });
+});
+
+describe('A structured table with a declared layout', () => {
+  it('keeps missing media and zero quantities while expanding option columns in the requested order', () => {
+    render(<StructuredReadOnlyField
+      value={[{ key: 'S|White', options: { Size: 'S', Color: 'White' }, sku: 'SHIRT-S-WHITE', stock: 0, enabled: true }]}
+      field={{ admin: {
+        keyLabels: { key: 'Title', sku: 'SKU', stock: 'Inventory' },
+        tableLayout: [
+          { key: 'image', media: true },
+          { key: 'key', join: { from: 'options', separator: ' / ' } },
+          { key: 'sku' },
+          { key: 'options' },
+          { key: 'stock' },
+        ],
+      } }}
+    />);
+    expect(screen.getAllByRole('columnheader').map((cell) => cell.textContent?.trim()))
+      .toEqual(['Image', 'Title', 'SKU', 'Size', 'Color', 'Inventory']);
+    expect(screen.getByText('S / White')).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByTitle('No picture')).toBeInTheDocument();
+    expect(screen.queryByText('Enabled')).toBeNull();
+  });
+
+  it('resolves a stored media ID to a thumbnail', async () => {
+    const resolve = vi.spyOn(MediaRelationPreviewResolver, 'resolve')
+      .mockResolvedValue({ id: '123', url: '/uploads/photo.webp', filename: 'photo.webp', mimeType: 'image/webp' });
+    try {
+      const { container } = render(<StructuredReadOnlyField value={[{ image: 123 }]}
+        field={{ admin: { tableLayout: [{ key: 'image', media: true }] } }} />);
+      await screen.findByAltText('');
+      expect(resolve).toHaveBeenCalledWith('123');
+      expect(container.querySelector('img')).toHaveAttribute('src', '/uploads/photo.webp');
+    } finally {
+      resolve.mockRestore();
+    }
   });
 });

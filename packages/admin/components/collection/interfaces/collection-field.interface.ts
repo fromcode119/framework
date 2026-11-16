@@ -1,4 +1,4 @@
-import type { CodeLanguage } from '@fromcode119/core/client';
+import type { CodeLanguage, IField } from '@fromcode119/core/client';
 import { FieldPosition } from '@fromcode119/core/client';
 
 export interface ICollectionField {
@@ -25,6 +25,7 @@ export interface ICollectionField {
   fields?: ICollectionField[];
   admin?: {
     component?: string;
+    tableLayout?: NonNullable<IField['admin']>['tableLayout'];
     handlesLocalization?: boolean;
     readOnly?: boolean;
     hidden?: boolean;

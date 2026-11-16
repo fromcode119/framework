@@ -1537,51 +1537,98 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
-.fc-sro-table { overflow-x: auto; --fc-sro-row-h: 48px; }
-/* Inside a record card the table takes the card's own width, exactly as a row of facts does. Held inside
-   the body's padding it got 485px of a 533px card and started scrolling sideways over 48px of blank
-   margin — a product's four variants, which fit, read as a table too small for them. The scroll stays
-   for a table that is genuinely wider than the card; it no longer appears because of padding. */
-.fc-record-card__body > * .fc-sro-table,
-.fc-record-card__body > .fc-sro-table {
+/* Only the rows scroll sideways. The toolbar and pagination stay within the card. */
+.fc-sro-table { --fc-sro-row-h: 48px; --fc-sro-inset: 16px; min-width: 0; }
+.fc-sro-table__scroll { overflow-x: auto; }
+.fc-record-card__body .fc-sro-table {
+  --fc-sro-inset: var(--fc-card-pad-x);
   margin-inline: calc(-1 * var(--fc-card-pad-x));
-  padding-inline: var(--fc-card-pad-x);
 }
-/* The table's own controls, on one line at its top end, the way every list in the console carries them —
-   a search 240px wide beside the filter, not a field the width of the card standing over four rows. */
+.fc-record-card__table-tools {
+  flex: 1;
+  min-width: 0;
+}
 .fc-sro-table__tools {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  padding-block: 10px;
+  gap: 6px;
+  padding: 8px var(--fc-sro-inset);
 }
-.fc-sro-table__search { width: 240px; }
-/* In the section's head the toolbar is one of the head's own controls, so it takes no room of its own. */
-.fc-record-card__aside > .fc-sro-table__tools { padding-block: 0; }
+.fc-record-card__table-tools .fc-sro-table__tools { padding: 0; }
+.fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
+.fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
+.fc-sro-table__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 30px;
+  height: 30px;
+  padding-inline: 6px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface);
+  color: var(--fc-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.fc-sro-table__tool:hover,
+.fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-sro-table__search-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 184px;
+  min-width: 0;
+  height: 30px;
+  padding-inline: 8px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+}
+.fc-sro-table__search-field svg { flex: none; }
+.fc-sro-table__search-field:focus-within { outline: 2px solid var(--ring); outline-offset: 1px; }
+.fc-sro-table__search-field input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fc-text);
+  font-size: 13px;
+}
+.fc-sro-table__search { width: min(240px, 100%); }
+@container (max-width: 420px) {
+  .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head {
+    padding-inline: 16px;
+  }
+  .fc-record-card__table-tools .fc-sro-table__search-field { padding-inline: 6px; }
+}
 /* The line that closes the table: how much of it is on screen, and the way to the rest. */
 .fc-sro-table__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-block: 14px;
+  padding: 14px var(--fc-sro-inset);
   border-top: var(--fc-record-rule);
 }
-.fc-sro-table__pager { display: inline-flex; align-items: center; gap: 8px; }
+.fc-sro-table__pager { display: inline-flex; align-items: center; gap: 4px; }
 .fc-sro-table__pages { font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
 .fc-sro-table__page {
   height: var(--fc-control-h);
   padding-inline: 10px;
-  border: 1px solid var(--fc-border);
+  border: 0;
   border-radius: var(--fc-control-radius);
-  background: var(--fc-surface);
+  background: transparent;
   font-size: 12px;
   color: var(--fc-text);
   cursor: pointer;
 }
 .fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
-.fc-sro-table__page:disabled { color: var(--fc-text-muted); cursor: default; }
+.fc-sro-table__page:disabled { color: var(--fc-text-muted); opacity: .65; cursor: default; }
 .fc-sro-table__sort {
   display: inline-flex;
   align-items: center;
@@ -1604,7 +1651,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table thead tr { background: var(--fc-surface-muted); }
 .fc-sro-table th {
   height: var(--fc-sro-row-h);
-  padding: 0 24px 0 0;
+  padding: 0 12px;
   border-block: 1px solid var(--fc-border);
   text-align: start;
   font-size: 13px;
@@ -1614,20 +1661,17 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-table td {
   height: var(--fc-sro-row-h);
-  padding: 8px 24px;
-  padding-inline-start: 0;
+  padding: 8px 12px;
+  white-space: nowrap;
   border-bottom: var(--fc-record-rule);
   vertical-align: middle;
   font-size: var(--fc-record-text);
   color: var(--fc-text);
 }
-.fc-sro-table th:last-child, .fc-sro-table td:last-child { padding-inline-end: 0; }
-/* The band reaches the card's edges, as the rules do, so the head is a band and not a floating strip. */
-.fc-record-card__body > * .fc-sro-table thead tr th:first-child,
-.fc-record-card__body > .fc-sro-table thead tr th:first-child { box-shadow: calc(-1 * var(--fc-card-pad-x)) 0 0 var(--fc-surface-muted); }
-.fc-record-card__body > * .fc-sro-table thead tr th:last-child,
-.fc-record-card__body > .fc-sro-table thead tr th:last-child { box-shadow: var(--fc-card-pad-x) 0 0 var(--fc-surface-muted); }
+.fc-sro-table :is(th, td):first-child { padding-inline-start: var(--fc-sro-inset); }
+.fc-sro-table :is(th, td):last-child { padding-inline-end: var(--fc-sro-inset); }
 .fc-sro-table tr:last-child td { border-bottom: 0; }
+.fc-sro-table tbody tr:hover { background: var(--fc-surface-muted); }
 /* The ⋯ at the end of a row: the way into the row from the row itself. The column takes only its own
    width and the control is quiet until the row is under the pointer, so a table still reads as a table. */
 .fc-sro-table__menu-head, .fc-sro-table__menu-cell { width: 1%; padding-inline-end: 0; text-align: end; }
@@ -1647,8 +1691,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    there the address is the value, but down a column that address is the same noise on every row. */
 /* A column of pictures keeps its width and its frame on every row: the empty frame says this variant
    has no picture, where a blank cell reads as a column that failed to draw. */
-.fc-sro-table__media-cell { width: 1%; padding-inline-end: 16px; }
-.fc-sro-table__thumb--none {
+.fc-sro-table :is(th, td).fc-sro-table__media-cell { width: 1%; padding-inline-end: 24px; }
+.fc-sro-table__thumb.fc-sro-table__thumb--none {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1656,10 +1700,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-table__thumb {
   display: block;
-  width: 32px;
+  width: 24px;
   height: 32px;
   border: 1px solid var(--fc-border);
-  border-radius: var(--radius);
+  border-radius: var(--fc-control-radius);
   object-fit: cover;
   background: var(--fc-surface-muted);
 }

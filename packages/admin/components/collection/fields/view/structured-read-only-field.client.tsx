@@ -63,10 +63,11 @@ export class StructuredReadOnlyField extends Reactor {
       // the width of the card standing over four rows reads as the section's own control.
       return (
         <StructuredReadOnlyTable
-          node={node}
+          node={StructuredReadOnlyTableService.applyLayout(node, this.field?.admin?.tableLayout)}
           keyLabels={this.keyLabels}
           searchLower={String(this.field?.admin?.searchText ?? '').trim().toLowerCase()}
           editRow={this.editRow}
+          toolbarTarget={this.field?.admin?.tableToolbar}
         />
       );
     }
