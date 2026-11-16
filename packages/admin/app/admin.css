@@ -92,7 +92,7 @@
   --fc-nav-muted: var(--fc-text-muted);
   --fc-nav-hover: color-mix(in srgb, var(--fc-text) 5%, transparent);
   --fc-nav-active: color-mix(in srgb, var(--fc-text) 8%, transparent);
-  /* The menu's text, at the size the consoles this one is measured against use (Medusa's "small"). */
+  /* The menu's text, at the size the consoles this one is measured against use for a "small" row. */
   --fc-nav-size: 12px;
   --fc-nav-row: 32px;
   --fc-nav-radius: 8px;
@@ -109,7 +109,7 @@
   /* EVERY control the operator can click: one height, one corner, one text size. Counted on a product
      record before this: 22, 24, 28, 32 and 40 px side by side in the same header, and two different
      corners on two things that both labelled a state. Change these three and the whole console moves. */
-  /* The card: its corner and the room inside it, both measured on Medusa's own record page. */
+  /* The card: its corner and the room inside it, both measured on the record pages this one follows. */
   --fc-card-radius: 8px;
   --fc-control-h: 28px;
   --fc-control-radius: 6px;
@@ -866,7 +866,7 @@ html.dark {
  * It had its own card: 115px of border, shadow and padding whose whole content was the name, one
  * summary line and the record's ⋯ — and then a 12px gutter before the first thing the record
  * actually says. Measured on a product page, the first row of data began 257px down the screen
- * where Medusa's began at 125. Joined, the two read as one card with a title, which is how every
+ * where a console worth copying began at 125. Joined, the two read as one card with a title, as every
  * record page worth copying draws it, and the record starts where the reader is already looking.
  *
  * The section under it keeps its own heading and its own ⋯: our record ⋯ acts on the record and the
@@ -1094,7 +1094,7 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 .fc-nav-item:hover { background: var(--fc-nav-hover); }
 /* The open row is a RAISED surface, not heavier text: bolding it made the row jump a pixel wider as you
-   moved down the menu. Medusa's dashboard marks its open item the same way — a card on the menu's wash. */
+   moved down the menu. The consoles this one follows mark the open item the same way — a card on the wash. */
 .fc-nav-item--active, .fc-nav-item--active:hover { background: var(--fc-surface); box-shadow: var(--fc-elevation-control); color: var(--fc-text); }
 .fc-nav-item--mini { justify-content: center; width: 40px; height: 40px; padding: 0; }
 .fc-nav-item__icon { display: inline-flex; flex: none; color: var(--fc-nav-muted); }
@@ -1392,7 +1392,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    the text still stands clear of the edge. */
 .fc-record-card__row {
   display: grid;
-  /* Two equal halves, measured on Medusa's own record: 528px and 528px in a 1120px card, the value
+  /* Two equal halves, measured on the record pages this one follows: 528px and 528px in a 1120px card, the value
      starting at the midpoint. A narrow label column put every value hard against its label and left
      the right half of the card empty. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -1405,7 +1405,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
    the wrong answer: the name of the product and its description ended up on one line, each cut to half
    the card, and the eye had two label columns to follow instead of one. Every record page worth copying
-   — Shopify's, Stripe's, Medusa's — keeps one row per fact and lets the card be short. A card that is
+   that was looked at keeps one row per fact and lets the card be short. A card that is
    short is not a card that is broken. */
 .fc-record-card, .fc-admin-panel__body { container-type: inline-size; }
 /* What else the record holds, at its foot: one row per section, its name, how many fields it adds. */
@@ -1537,7 +1537,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
-.fc-sro-table { overflow-x: auto; }
+.fc-sro-table { overflow-x: auto; --fc-sro-row-h: 48px; }
 /* Inside a record card the table takes the card's own width, exactly as a row of facts does. Held inside
    the body's padding it got 485px of a 533px card and started scrolling sideways over 48px of blank
    margin — a product's four variants, which fit, read as a table too small for them. The scroll stays
@@ -1547,7 +1547,16 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   margin-inline: calc(-1 * var(--fc-card-pad-x));
   padding-inline: var(--fc-card-pad-x);
 }
-.fc-sro-table__tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+/* The table's own controls, on one line at its top end, the way every list in the console carries them —
+   a search 240px wide beside the filter, not a field the width of the card standing over four rows. */
+.fc-sro-table__tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-block: 10px;
+}
+.fc-sro-table__search { width: 240px; }
 .fc-sro-table__sort {
   display: inline-flex;
   align-items: center;
@@ -1560,25 +1569,46 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   white-space: nowrap;
 }
 .fc-sro-table__sort:hover { color: var(--fc-text); }
-.fc-sro-table__count { margin: 6px 0 0; font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
-.fc-sro-table table { width: 100%; border-collapse: collapse; }
-.fc-sro-table th {
-  padding: 8px 16px 8px 0;
-  border-bottom: 1px solid var(--fc-border);
-  text-align: start;
+/* The table says its own size on a line that closes it, the way the rules between its rows open it. */
+.fc-sro-table__count {
+  margin: 0;
+  padding-block: 14px;
+  border-top: var(--fc-record-rule);
   font-size: 12px;
-  font-weight: 500;
+  color: var(--fc-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.fc-sro-table table { width: 100%; border-collapse: collapse; }
+/* The head of a table is a BAND, not a line of small grey words: it is what tells the eye where the
+   table starts and holds the names the rows are read against. Measured against the same table in the
+   consoles this one follows — a #fafafa band, 48px, labels 13px/500 — because ours read 37px with 12px
+   labels and no fill, which is why a list of variants looked like text that happened to line up. */
+.fc-sro-table thead tr { background: var(--fc-surface-muted); }
+.fc-sro-table th {
+  height: var(--fc-sro-row-h);
+  padding: 0 24px 0 0;
+  border-block: 1px solid var(--fc-border);
+  text-align: start;
+  font-size: 13px;
+  font-weight: var(--fc-weight-strong);
   color: var(--fc-text-muted);
   white-space: nowrap;
 }
 .fc-sro-table td {
-  padding: 8px 16px 8px 0;
+  height: var(--fc-sro-row-h);
+  padding: 8px 24px;
+  padding-inline-start: 0;
   border-bottom: var(--fc-record-rule);
-  vertical-align: top;
+  vertical-align: middle;
   font-size: var(--fc-record-text);
   color: var(--fc-text);
 }
 .fc-sro-table th:last-child, .fc-sro-table td:last-child { padding-inline-end: 0; }
+/* The band reaches the card's edges, as the rules do, so the head is a band and not a floating strip. */
+.fc-record-card__body > * .fc-sro-table thead tr th:first-child,
+.fc-record-card__body > .fc-sro-table thead tr th:first-child { box-shadow: calc(-1 * var(--fc-card-pad-x)) 0 0 var(--fc-surface-muted); }
+.fc-record-card__body > * .fc-sro-table thead tr th:last-child,
+.fc-record-card__body > .fc-sro-table thead tr th:last-child { box-shadow: var(--fc-card-pad-x) 0 0 var(--fc-surface-muted); }
 .fc-sro-table tr:last-child td { border-bottom: 0; }
 /* The ⋯ at the end of a row: the way into the row from the row itself. The column takes only its own
    width and the control is quiet until the row is under the pointer, so a table still reads as a table. */

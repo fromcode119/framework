@@ -21,4 +21,9 @@ export interface IStructuredNode {
   tableColumns?: string[];
   /** Set only when `kind === StructuredNodeKind.ARRAY_TABLE` — one row per array item, keyed by column. */
   tableRows?: Record<string, IStructuredNode>[];
+  /**
+   * Set when a column was split into one column per key: the new column's name mapped to the key it
+   * came from, so a field that asked for `options` still gets the columns `options` became.
+   */
+  tableColumnOrigins?: Record<string, string>;
 }

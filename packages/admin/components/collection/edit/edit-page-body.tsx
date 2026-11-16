@@ -260,7 +260,7 @@ export class EditPageBody extends PureReactor {
             {/* What plugins add to this record. It stands in the MAIN column, under the record's own
                 cards: in the side column a courier's waybill tool — a form with a delivery day, a
                 payment mode and a packing-list table with a stepper per line — had 352px to live in,
-                and every control in it was crushed. Shopify and Medusa both draw an app's blocks in the
+                and every control in it was crushed. The consoles this one follows draw an app's blocks in the
                 record's own column for the same reason. The side column keeps the record's short facts,
                 so the customer and the state are still on the first screen. */}
             <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
@@ -270,8 +270,8 @@ export class EditPageBody extends PureReactor {
             <EditStickyColumn>
             {sidebar}
             {/* The record's own facts close the side column. Every console that lays a record out in two
-                columns keeps one for the record itself (Medusa's dashboard puts metadata and the raw record
-                there) — without it a record whose collection declares no side fields drew ONE card in a
+                columns keeps one for the record itself (metadata and the raw record live there) — without
+                it a record whose collection declares no side fields drew ONE card in a
                 page three times its width, which is what this card ends. */}
             {!isNew && <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />}
             </EditStickyColumn>
