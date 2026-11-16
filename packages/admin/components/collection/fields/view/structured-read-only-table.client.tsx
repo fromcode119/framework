@@ -21,10 +21,6 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class StructuredReadOnlyTable extends PureReactor {
   @prop declare node: IStructuredNode;
   @prop declare keyLabels?: Record<string, string>;
-  /** The columns to draw, in order — the owning field's `admin.tableColumns`. Empty draws every column. */
-  @prop declare columns?: readonly string[];
-  /** The columns that hold a picture, as the field declared them. */
-  @prop declare media?: readonly string[];
   /** What the section's own search holds, already lower-cased; empty shows every row. */
   @prop declare searchLower?: string;
 
@@ -49,7 +45,7 @@ export class StructuredReadOnlyTable extends PureReactor {
    * same ones every list in the console uses.
    */
   private get filters(): ListFilter[] {
-    return StructuredReadOnlyTableService.filterableColumns(this.node, this.columns).map((entry) => new ListFilter(
+    return StructuredReadOnlyTableService.filterableColumns(this.node).map((entry) => new ListFilter(
       entry.column,
       StructuredReadOnlyFieldService.keyLabel(entry.column, this.keyLabels),
       [{ label: AdminI18n.t('collection.list.filterAll'), value: '' }, ...entry.values.map((value) => ({ label: value, value }))],
@@ -132,7 +128,7 @@ export class StructuredReadOnlyTable extends PureReactor {
   }
 
   render(): ReactNode {
-    const columns = StructuredReadOnlyTableService.columnsFor(this.node, this.columns);
+    const columns = StructuredReadOnlyTableService.columnsFor(this.node);
     const all = this.node.tableRows ?? [];
     const needle = String(this.searchLower || '').trim();
     const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle, columns)) : all;
@@ -142,6 +138,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const page = Math.min(this.page, pages);
     const shown = rows.slice((page - 1) * size, page * size);
     const toolbar = this.renderTools(rows.length);
+    const media = this.node.tableMediaColumns ?? [];
     return (
       <div className="fc-sro-table">
         {toolbar}
@@ -163,8 +160,8 @@ export class StructuredReadOnlyTable extends PureReactor {
             {shown.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {columns.map((column) => (
-                  <td key={column} className={this.media?.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
-                    <StructuredReadOnlyCell node={row[column]} media={this.media?.includes(column)} />
+                  <td key={column} className={media.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
+                    <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />
                   </td>
                 ))}
                 {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}

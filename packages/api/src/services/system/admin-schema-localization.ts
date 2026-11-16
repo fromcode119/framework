@@ -23,8 +23,10 @@ export class AdminSchemaLocalization {
 
   static forLocale(manager: PluginManager, locale: string): AdminSchemaLocalizer {
     const target = String(locale || '').trim().toLowerCase();
-    return new AdminSchemaLocalizer((pluginSlug, key) => (target
-      ? manager.i18n.translateOrFallback(`${pluginSlug}.${key}`, '', {}, target)
-      : ''));
+    return new AdminSchemaLocalizer(
+      (pluginSlug, key) => (target ? manager.i18n.translateOrFallback(`${pluginSlug}.${key}`, '', {}, target) : ''),
+      // Key names have no literal in the schema to fall back on, so with no language they are read in English.
+      (pluginSlug, key) => manager.i18n.entries(`${pluginSlug}.${key}`, target || 'en'),
+    );
   }
 }

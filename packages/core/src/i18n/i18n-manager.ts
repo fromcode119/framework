@@ -66,6 +66,25 @@ export class I18nManager {
     });
   }
 
+  /**
+   * The plain-text entries directly under a key, as `{ name: text }` — a dictionary's own list of names
+   * (what a plugin calls the keys of a structured field), read without anyone listing them in code.
+   * Falls back to English per entry, like {@link translate}.
+   */
+  entries(key: string, locale?: string): Record<string, string> {
+    const read = (map: unknown): Record<string, string> => {
+      let value: any = map;
+      for (const part of key.split('.')) {
+        if (!value || typeof value !== 'object' || !(part in value)) return {};
+        value = value[part];
+      }
+      if (!value || typeof value !== 'object') return {};
+      return Object.fromEntries(Object.entries(value).filter(([, text]) => typeof text === 'string' && text.trim()).map(([name, text]) => [name, String(text).trim()]));
+    };
+    const targetLocale = locale || RequestContextUtils.getLocale() || this.currentLocale;
+    return { ...read(this.translations.get('en')), ...read(this.translations.get(targetLocale)) };
+  }
+
   translateOrFallback(
     key: string,
     fallback: string,

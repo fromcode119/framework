@@ -18,7 +18,7 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *   admin.collections.<collection>.tabs.<name>         admin tabs / sections (`.sections.<name>.label|description`)
  *   admin.collections.<collection>.fields.<field>.label | description | placeholder | patternNote
  *   admin.collections.<collection>.fields.<field>.options.<value>
- *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names
+ *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names (dictionary only)
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
@@ -31,7 +31,11 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  * `lookup(pluginSlug, key)` answers the translation or '' — the caller binds it to one locale.
  */
 export class AdminSchemaLocalizer {
-  constructor(private readonly lookup: (pluginSlug: string, key: string) => string) {}
+  constructor(
+    private readonly lookup: (pluginSlug: string, key: string) => string,
+    /** The entries a dictionary holds under a key — how a structured field's key names are found without being listed in code. */
+    private readonly block: (pluginSlug: string, key: string) => Record<string, string> = () => ({}),
+  ) {}
 
   collection<T extends Record<string, any>>(pluginSlug: string, collection: T): T {
     const base = `admin.collections.${AdminSchemaLocalizer.collectionKey(collection)}`;
@@ -205,9 +209,11 @@ export class AdminSchemaLocalizer {
           // was the one English sentence on a Bulgarian form, and only where something had gone wrong.
           ...(field.admin.patternNote ? { patternNote: this.text(pluginSlug, `${key}.patternNote`, field.admin.patternNote) } : {}),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
-          ...(field.admin.keyLabels ? { keyLabels: this.keyLabels(pluginSlug, `${key}.keyLabels`, field.admin.keyLabels) } : {}),
         };
       }
+      // A structured field's keys are named in the plugin's dictionary alone; the schema lists none.
+      const keyLabels = this.block(pluginSlug, `${key}.keyLabels`);
+      if (Object.keys(keyLabels).length) next.admin = { ...(next.admin ?? {}), keyLabels };
       if (Array.isArray(field.options)) {
         next.options = field.options.map((option: any) => (option && typeof option === 'object'
           ? { ...option, label: this.text(pluginSlug, `${key}.options.${option.value}`, option.label) }
@@ -216,14 +222,6 @@ export class AdminSchemaLocalizer {
       if (Array.isArray(field.fields)) next.fields = this.fields(pluginSlug, `${key}.fields`, field.fields, sectionsBase);
       return next;
     });
-  }
-
-  /**
-   * The column and row names a read-only structured field prints for its keys (`admin.keyLabels`), per key —
-   * `keyLabels.<key>` — so a table in a Bulgarian console does not head its columns in English.
-   */
-  private keyLabels(pluginSlug: string, base: string, labels: Record<string, unknown>): Record<string, unknown> {
-    return Object.fromEntries(Object.entries(labels).map(([name, label]) => [name, this.text(pluginSlug, `${base}.${name}`, label as string)]));
   }
 
   /**

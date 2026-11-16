@@ -25,33 +25,12 @@ export class StructuredReadOnlyTableService {
   }
 
   /**
-   * The columns a table draws, in order.
-   *
-   * `declared` is the owning field's `admin.tableColumns`: the plugin says WHICH of its keys a reader
-   * needs at a glance and in what order, because only the plugin knows that a variant is read by its
-   * name, its article number and its options, while "default" and "popular" are settings one opens a
-   * row to change. A key the rows do not hold is not drawn, and a declaration that matches nothing
-   * is ignored rather than leaving an empty table. Nothing is hidden: every key is still in the
-   * section's own editor, which the ⋯ of each row opens.
+   * The columns a table draws, in order: every key the rows hold that at least one row fills, pictures
+   * first. Nothing is declared — the data says what the columns are, and the plugin's dictionary names them.
    */
-  static columnsFor(node: IStructuredNode, declared?: readonly string[]): string[] {
-    const present = node.tableColumns ?? [];
-    // Nobody declared anything: the framework arranged this table by itself, so a column no row fills
-    // is left out — it is a key of the payload, not a question anyone asked.
+  static columnsFor(node: IStructuredNode): string[] {
     const empty = node.tableEmptyColumns ?? [];
-    if (!declared?.length) return present.filter((column) => !empty.includes(column));
-    // A column that was split into one per key answers to the name the field asked for: a field that
-    // declared `options` gets the columns `options` became, in the place it put them. A declared column
-    // is drawn whether or not a row fills it: "no picture on any of them" is an answer, not an absence.
-    const origins = node.tableColumnOrigins ?? {};
-    const picked: string[] = [];
-    for (const column of declared) {
-      for (const name of present) {
-        if (picked.includes(name)) continue;
-        if (name === column || origins[name] === column) picked.push(name);
-      }
-    }
-    return picked.length ? picked : present;
+    return (node.tableColumns ?? []).filter((column) => !empty.includes(column));
   }
 
   /** Past this many distinct values a column is searched, not picked from. */
@@ -70,11 +49,11 @@ export class StructuredReadOnlyTableService {
    * no row is in. A column where every row says the same thing is left out — there is nothing to
    * narrow — and so is one with a different value in every row, which is what the search is for.
    */
-  static filterableColumns(node: IStructuredNode, declared?: readonly string[]): Array<{ column: string; values: string[] }> {
+  static filterableColumns(node: IStructuredNode): Array<{ column: string; values: string[] }> {
     const rows = node.tableRows ?? [];
     if (node.kind !== StructuredNodeKind.ARRAY_TABLE || rows.length < StructuredReadOnlyTableService.FILTERABLE_TABLE_ROWS) return [];
     const out: Array<{ column: string; values: string[] }> = [];
-    for (const column of StructuredReadOnlyTableService.columnsFor(node, declared)) {
+    for (const column of StructuredReadOnlyTableService.columnsFor(node)) {
       const seen: string[] = [];
       for (const row of rows) {
         const text = StructuredReadOnlyTableService.cellText(row[column]).trim();
