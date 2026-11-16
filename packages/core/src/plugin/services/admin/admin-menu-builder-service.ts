@@ -151,7 +151,9 @@ export class AdminMenuBuilderService {
                 label,
                 path,
                 icon: col.admin?.icon || p.admin.icon || 'FileText',
-                group: col.admin?.group || p.admin.group || p.name,
+                // The AREA is the plugin's, not the table's: a collection naming its own group put one
+                // plugin's pages in two places in the menu, which is what made a plugin unfindable.
+                group: p.admin.group || p.name,
                 priority: col.admin?.priority || col.priority || 100,
                 pluginSlug: slug,
                 // The collection's own key, as its dictionary spells it: the path is lower-cased, so

@@ -216,14 +216,14 @@ export class NavItemView extends PureReactor {
    * column beside the menu — kept while one of them is open, shown over the content while the pointer is
    * on the line. In the phone's menu the same pages sit under the line while one of them is open.
    */
-  private renderGroup(entry: { name: string; pages: any[] }, activePage: string): ReactNode {
+  private renderGroup(entry: { name: string; pages: any[]; href?: string }, activePage: string): ReactNode {
     const open = NavSectionPages.holds(entry, activePage);
     const previewing = !open && this.previewGroup === entry.name;
     const pages = (nested: boolean) => entry.pages.map((page) => this.renderPage(page, activePage, nested));
     return (
       <div key={`group:${entry.name}`} className={`fc-nav-sub__group${open ? ' fc-nav-sub__group--open' : ''}${previewing ? ' fc-nav-sub__group--preview' : ''}`}>
         <AdminLink
-          href={entry.pages[0].path}
+          href={entry.href || entry.pages[0].path}
           onClick={() => { this.closePreviewNow(); this.onClick?.(); }}
           onMouseEnter={() => this.openPreview(entry.name)}
           onMouseLeave={this.closePreview}

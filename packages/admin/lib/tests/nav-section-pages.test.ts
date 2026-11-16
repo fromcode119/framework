@@ -43,3 +43,53 @@ describe('NavSectionPages.holds', () => {
     expect(NavSectionPages.holds(group, '')).toBe(false);
   });
 });
+
+describe('NavSectionPages.arrange — an area of several plugins', () => {
+  const from = (slug: string, path: string, label: string, pluginLabel: string) => ({ path, label, pluginSlug: slug, pluginLabel, group: 'Content' });
+
+  const area = [
+    from('cms', '/cms', 'CMS', 'CMS'),
+    from('cms', '/cms/posts', 'Posts', 'CMS'),
+    from('cms', '/cms/pages', 'Pages', 'CMS'),
+    from('forms', '/forms', 'Forms', 'Forms'),
+    from('forms', '/forms/submissions', 'Submissions', 'Forms'),
+    from('seo', '/seo', 'SEO', 'SEO'),
+  ];
+
+  it('draws one line per plugin, named by the plugin', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    expect(entries.map((entry) => (entry.kind === 'page' ? entry.page.path : `group:${entry.name}`)))
+      .toEqual(['group:CMS', 'group:Forms', '/seo']);
+  });
+
+  it('opens the plugin line at the plugin itself, and does not repeat it below', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    const cms = entries[0];
+    expect(cms.kind === 'group' && cms.href).toBe('/cms');
+    expect(cms.kind === 'group' && cms.pages.map((page: any) => page.path)).toEqual(['/cms/posts', '/cms/pages']);
+  });
+
+  it('keeps a plugin with one page as that page', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    expect(entries[2]).toMatchObject({ kind: 'page' });
+  });
+
+  it('leaves a section of one plugin exactly as it was', () => {
+    const own = [from('numerology', '/numerology', 'Overview', 'Numerology'), from('numerology', '/numerology/profiles', 'Profiles', 'Numerology')];
+    const entries = NavSectionPages.arrange(own, 'Readings');
+    expect(entries.every((entry) => entry.kind === 'page')).toBe(true);
+  });
+
+  it('names a plugin that has no landing page after the plugin, not after its first page', () => {
+    const mixed = [
+      from('cms', '/cms', 'CMS', 'CMS'),
+      from('cms', '/cms/pages', 'Pages', 'CMS'),
+      from('broadcasts', '/broadcasts/lists', 'Lists', 'Broadcasts'),
+      from('broadcasts', '/broadcasts/campaigns', 'Campaigns', 'Broadcasts'),
+    ];
+    const entries = NavSectionPages.arrange(mixed, 'Content');
+    expect(entries.map((entry) => (entry.kind === 'group' ? entry.name : entry.page.path))).toEqual(['CMS', 'Broadcasts']);
+    const broadcasts = entries[1];
+    expect(broadcasts.kind === 'group' && broadcasts.pages).toHaveLength(2);
+  });
+});
