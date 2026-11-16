@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { AliasEmitRewrite } from '../alias-emit-rewrite';
 import { TyporSyntaxPlugin } from '../tsmi-syntax-plugin';
 import { SourceWalk } from './source-walk';
+import { SourceRestore } from './source-restore';
 import { StaleEmitPrune } from '../stale-emit-prune';
 import { TyporCommand } from './tsmi-command';
 import { WorkspaceRoot } from './workspace-root';
@@ -13,7 +14,8 @@ import { WorkspaceRoot } from './workspace-root';
  *
  * `tsc` cannot parse `class X extends A, B`. Mirroring the tree defeats project references and workspace
  * symlinks, so instead the affected files are rewritten IN PLACE, the build runs, and the originals are
- * restored in a `finally` — so an interrupted build can never leave transformed source behind.
+ * put back by {@link SourceRestore} — on a normal exit, on a throw, AND on a terminating signal, which
+ * a `finally` alone never sees (see that class for what an interrupted build used to leave behind).
  *
  * Only files that actually use the extended syntax are touched, and the rewrite is line-preserving, so
  * diagnostics and emitted sourcemaps stay accurate.
@@ -41,7 +43,8 @@ export class BuildCommand extends TyporCommand {
       return aliasesByPackage.get(pkg);
     };
 
-    const originals = new Map<string, string>();
+    const restore = new SourceRestore();
+    const stopListening = restore.onSignal();
     try {
       for (const file of SourceWalk.files(packagesDir)) {
         const source = readFileSync(file, 'utf8');
@@ -49,7 +52,7 @@ export class BuildCommand extends TyporCommand {
         const needsAlias = AliasEmitRewrite.handles(source, aliases);
         const needsSyntax = TyporSyntaxPlugin.handles(source);
         if (!needsAlias && !needsSyntax) continue;
-        originals.set(file, source);
+        restore.remember(file, source);
         let next = needsSyntax ? TyporSyntaxPlugin.transform(source) : source;
         if (needsAlias) next = AliasEmitRewrite.transform(next, file, aliases);
         writeFileSync(file, next, 'utf8');
@@ -59,15 +62,15 @@ export class BuildCommand extends TyporCommand {
       const tsc = path.join(workspace, 'node_modules/.bin/tsc');
       const run = spawnSync(tsc, argv, { encoding: 'utf8', cwd: process.cwd() });
       process.stdout.write((run.stdout || '') + (run.stderr || ''));
-      console.log(`[typescript-multiple-inheritance] tsc ${argv.join(' ')} (${originals.size} file(s) rewritten: extended syntax / package alias)`);
+      console.log(`[typescript-multiple-inheritance] tsc ${argv.join(' ')} (${restore.size} file(s) rewritten: extended syntax / package alias)`);
       // tsc only writes, so output for a deleted module stays in dist and keeps shipping. Prune AFTER
       // a successful build only: a failed one may have emitted nothing, and pruning then would delete
       // the last working output over a typo.
       if ((run.status ?? 0) === 0) BuildCommand.pruneStaleEmit(argv);
       return run.status ?? 0;
     } finally {
-      // ALWAYS restore, even on crash/interrupt — source must never be left rewritten.
-      for (const [file, source] of originals) writeFileSync(file, source, 'utf8');
+      restore.restore();
+      stopListening();
     }
   }
 
