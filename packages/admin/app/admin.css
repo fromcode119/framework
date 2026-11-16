@@ -1449,6 +1449,15 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
 .fc-sro-table { overflow-x: auto; }
+/* Inside a record card the table takes the card's own width, exactly as a row of facts does. Held inside
+   the body's padding it got 485px of a 533px card and started scrolling sideways over 48px of blank
+   margin — a product's four variants, which fit, read as a table too small for them. The scroll stays
+   for a table that is genuinely wider than the card; it no longer appears because of padding. */
+.fc-record-card__body > * .fc-sro-table,
+.fc-record-card__body > .fc-sro-table {
+  margin-inline: calc(-1 * var(--fc-card-pad-x));
+  padding-inline: var(--fc-card-pad-x);
+}
 .fc-sro-table__tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .fc-sro-table__sort {
   display: inline-flex;
@@ -1537,11 +1546,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   transition: color 120ms ease, background-color 120ms ease;
 }
 .fc-rows__remove:hover { background: var(--fc-danger-soft); color: var(--fc-danger); }
-.fc-record-card__empty {
-  padding: 8px 0;
-  font-size: var(--fc-record-text);
-  color: var(--fc-text-muted);
-}
+/* A value nobody has set reads as a dash in the muted ink — the row keeps the shape of a filled row, so
+   an empty section is the same kind of card as a full one instead of a paragraph where content belongs.
+   Not `__missing`, which is the warning colour and means a REQUIRED value is absent. */
+.fc-record-card__value--none { color: var(--fc-text-muted); }
 
 /* ── Dashboard ───────────────────────────────────────────────────────────────
    One dense page: every widget is a compact card; figures read as a row of label + value, not a tile

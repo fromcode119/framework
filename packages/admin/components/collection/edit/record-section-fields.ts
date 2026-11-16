@@ -153,14 +153,42 @@ export class RecordSectionFields {
    * A field another field's read component reads (`admin.readBy`) is shown there, not as a row.
    */
   static shownFields(fields: any[], record: Record<string, any>): any[] {
+    return RecordSectionFields.namedFields(fields).filter((field) => {
+      const value = record?.[field.name];
+      return !RecordSectionFields.isEmpty(field, value) || RecordSectionFields.isMissing(field, value);
+    });
+  }
+
+  /**
+   * The rows the section HAS, filled or not — {@link shownFields} without the test on the value.
+   *
+   * A section whose fields are all empty used to print one sentence ("nothing filled in yet") in place of
+   * its content, so the one thing the reader needed — which fields this section even offers — was the one
+   * thing the card would not say. Named with a dash each, the empty section states its own shape, exactly
+   * as the filled one does, and the page stops having a second kind of card.
+   */
+  static namedFields(fields: any[]): any[] {
     return RecordSectionFields.sheetFields(fields).filter((field) => {
       if (RecordSectionFields.readsByComponent(field) || field?.admin?.readBy) return false;
       if (RecordSectionFields.readsAsData(field)) return false;
       // Drawn by its own component above, so not a row as well.
       if (RecordSectionFields.displaysOnly(field) && RecordSectionFields.readsThroughItsComponent(field)) return false;
-      const value = record?.[field.name];
-      return !RecordSectionFields.isEmpty(field, value) || RecordSectionFields.isMissing(field, value);
+      return true;
     });
+  }
+
+  /**
+   * The rows an EMPTY section names: {@link namedFields}, and also the fields whose value would be read as
+   * data (a table of variants, a list of choice groups).
+   *
+   * With a value those draw their own table, so they are not rows; with none they have nothing to draw,
+   * and leaving them out would make a section whose only field is one of them say nothing at all. Named
+   * with a dash the section still states what it holds — which is the whole point of the dash row.
+   */
+  static blankFields(fields: any[]): any[] {
+    const named = new Set(RecordSectionFields.namedFields(fields));
+    return RecordSectionFields.sheetFields(fields).filter((field) => named.has(field)
+      || (RecordSectionFields.readsAsData(field) && !RecordSectionFields.readsByComponent(field) && !field?.admin?.readBy));
   }
 
   /**
