@@ -109,6 +109,29 @@
   --fc-card-pad-x: 24px;
   --fc-card-body-pad: 4px var(--fc-card-pad-x);
 
+  /* ── One type scale ───────────────────────────────────────────────────────────────────────────────
+   * Five sizes and two weights for the whole console, and ONE leading for everything compact.
+   *
+   * Measured on one record page before this: eight sizes (10, 11, 12, 12.5, 13, 15, 16, 18), four
+   * weights (400, 500, 600, 700) and FIFTEEN line heights — 19.5, 18.85, 18.2, 17.875, 17.1875, 16.5,
+   * 16.25, 20.625 and more. Every one of them is fractional, because each was a ratio over its own
+   * size (1.45 x 13 = 18.85), and a ratio lands text wherever it lands. Two declarations produced 94
+   * of those elements. A row of facts whose lines start at a different height from the row above it
+   * is what "the design keeps slipping away from us" looks like from across the room.
+   *
+   * Compact leading is a FLAT 20px, not a ratio: at 12px and at 14px alike, every line of console text
+   * then sits on the same 20px rhythm and rows line up across a card and across two columns. Reading
+   * text — a paragraph meant to be read rather than scanned — still sets its own, and says so. */
+  --fc-text-xs: 12px;
+  --fc-text-sm: 13px;
+  --fc-text-md: 14px;
+  --fc-text-lg: 16px;
+  --fc-text-xl: 18px;
+  --fc-leading: 20px;
+  --fc-leading-title: 28px;
+  --fc-weight-plain: 400;
+  --fc-weight-strong: 500;
+
   /* ── How the console moves ────────────────────────────────────────────────────────────────────────
    * Two durations and one curve, for everything. A thing the operator asked for — a menu, a dialog —
    * arrives in --fc-dur-overlay; a thing that answers the pointer — a hover, a press, a switch — in
@@ -756,13 +779,20 @@ html.dark {
 
 /* ── A record page's top: the breadcrumb, then one card naming the record ─────────────────────────────
  * EditHeader / EditHeaderMenu. */
-.fc-record-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 12px; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+/* The record page sets the compact rhythm once, at its own blocks, and everything inside inherits it.
+   Declared per element instead, 43 of them kept the document's 1.5 — 19.5px on 13px text — because
+   nothing had told them otherwise. Text that is read rather than scanned still sets its own. */
+.fc-record-card,
+.fc-record-head,
+.fc-record-crumbs,
+.fc-record-part { line-height: var(--fc-leading); }
+.fc-record-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 12px; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 .fc-record-crumbs__back { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 4px; border: 1px solid var(--fc-border); border-radius: var(--radius); background: var(--fc-surface); color: var(--fc-text); }
 .fc-record-crumbs__back:hover { background: var(--fc-surface-muted); }
 .fc-record-crumbs__link { flex: none; color: var(--fc-text-muted); }
 .fc-record-crumbs__link:hover { color: var(--fc-text); text-decoration: underline; }
 .fc-record-crumbs__sep { flex: none; color: var(--fc-text-muted); }
-.fc-record-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
+.fc-record-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-dropdown-footer { padding: 6px; border-top: 1px solid var(--fc-border); }
 .fc-dropdown-footer:not(:has(button)) { display: none; }
 /* The chosen row of a set: a tick at the end, an empty slot of the same width on the rows not chosen. */
@@ -823,7 +853,7 @@ html.dark {
    row of their own under it, instead of squeezing the number into a column one letter wide. */
 @media (min-width: 640px) { .fc-record-head__main { min-width: min(18rem, 100%); } .fc-record-head__actions { flex: none; max-width: 100%; } }
 .fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
-.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 600; line-height: 1.25; color: var(--fc-text); }
+.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: var(--fc-weight-strong); line-height: var(--fc-leading-title); color: var(--fc-text); }
 .fc-record-head__copy,
 .fc-record-head__menu { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
 .fc-record-head__copy { width: var(--fc-control-h); height: var(--fc-control-h); }
@@ -835,7 +865,7 @@ html.dark {
 .fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
-.fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: 1.4; color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface); }
 .fc-record-head__button:hover { background: var(--fc-surface-muted); }
@@ -866,7 +896,7 @@ html.dark {
 .fc-record-part { display: grid; container-type: inline-size; }
 .fc-record-part__group { display: grid; grid-template-columns: min(var(--fc-record-label-width, 8rem), 32%) minmax(0, 1fr); gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); }
 .fc-record-card__body > .fc-record-part:first-child > .fc-record-part__group:first-child { border-top: 0; }
-.fc-record-part__heading { color: var(--fc-text-muted); line-height: 1.45; }
+.fc-record-part__heading { color: var(--fc-text-muted); line-height: var(--fc-leading); }
 .fc-record-part__items { display: grid; min-width: 0; }
 .fc-record-part__empty { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); color: var(--fc-text-muted); }
 .fc-record-card__body > .fc-record-part:first-child > .fc-record-part__empty:first-child { border-top: 0; }
@@ -880,7 +910,7 @@ html.dark {
 .fc-record-part__title { font-size: var(--fc-record-text); font-weight: 500; color: var(--fc-text); overflow-wrap: anywhere; text-align: start; }
 .fc-record-part__title--link { color: var(--fc-accent); }
 .fc-record-part__title--link:hover { text-decoration: underline; }
-.fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: 11px; font-weight: 600; background: var(--fc-surface-muted); color: var(--fc-text-muted); }
+.fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: var(--fc-text-xs); font-weight: var(--fc-weight-strong); line-height: var(--fc-leading); background: var(--fc-surface-muted); color: var(--fc-text-muted); }
 .fc-record-part__meta { font-size: 12px; color: var(--fc-text-muted); }
 .fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fc-text); }
 .fc-record-part__action { position: relative; flex: none; width: var(--fc-control-h); height: var(--fc-control-h); display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
@@ -1326,7 +1356,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   margin-inline: calc(-1 * var(--fc-card-pad-x));
   padding: 14px var(--fc-card-pad-x);
   font-size: var(--fc-record-text);
-  line-height: 1.45;
+  line-height: var(--fc-leading);
 }
 /* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
    the wrong answer: the name of the product and its description ended up on one line, each cut to half
@@ -1387,7 +1417,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    deeper, so the first line of a panel sits where the first line of the card above it sits. */
 .fc-admin-panel__body { display: flex; flex-direction: column; gap: 10px; padding: var(--fc-card-body-pad); }
 .fc-admin-panel__body:empty { display: none; }
-.fc-admin-panel__description { font-size: var(--fc-record-text); line-height: 1.45; color: var(--fc-text-muted); }
+.fc-admin-panel__description { font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 
 /* ── A recorded value: StructuredReadOnlyField ───────────────────────────────────────────────────────
  * The same label / value rows a saved record's card lists its fields in; a nested group is a heading,
@@ -1401,7 +1431,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   gap: 12px;
   padding: 10px 0;
   font-size: var(--fc-record-text);
-  line-height: 1.45;
+  line-height: var(--fc-leading);
 }
 .fc-sro__label { color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-sro__value { min-width: 0; color: var(--fc-text); overflow-wrap: anywhere; }

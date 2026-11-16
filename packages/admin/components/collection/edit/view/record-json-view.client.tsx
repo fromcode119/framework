@@ -145,13 +145,13 @@ export class RecordJsonView extends Reactor {
 
   render(): ReactNode {
     const unsurfaced = this.unsurfacedKeys;
-    const buttonClass = 'h-9 px-3 rounded-[var(--radius)] border border-slate-200 bg-white text-[11px] font-semibold text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
+    const buttonClass = 'h-9 px-3 rounded-[var(--radius)] border border-slate-200 bg-white text-[12px] font-medium text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
 
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('collection.json.title')}</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('collection.json.title')}</p>
             <p className="mt-0.5 text-[12px] text-slate-500">
               {AdminI18n.t('collection.json.hint')}
             </p>
@@ -172,7 +172,7 @@ export class RecordJsonView extends Reactor {
 
         {unsurfaced.length > 0 && (
           <div className="rounded-[var(--radius)] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-            <p className="text-[12px] font-semibold text-amber-700 dark:text-amber-400">
+            <p className="text-[12px] font-medium text-amber-700 dark:text-amber-400">
               {AdminI18n.t(unsurfaced.length === 1 ? 'collection.json.unsurfacedOne' : 'collection.json.unsurfacedMany', { count: unsurfaced.length })}
             </p>
             <p className="mt-0.5 text-[12px] text-amber-700/80 dark:text-amber-400/80">
@@ -213,7 +213,7 @@ export class RecordJsonView extends Reactor {
 
         <div className="min-h-[20px]">
           {this.error
-            ? <p className="text-[12px] font-semibold text-rose-600">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
+            ? <p className="text-[12px] font-medium text-rose-600">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
             : <p className="text-[12px] text-emerald-600">{AdminI18n.t('collection.json.validState')}</p>}
           {this.notice && !this.error && <p className="mt-0.5 text-[12px] text-slate-500">{this.notice}</p>}
         </div>

@@ -74,14 +74,14 @@ export class PermalinkInput extends AdminComponent {
         >
           <div className="flex items-start justify-between gap-3 w-full">
              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-[10px] leading-tight text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
-                <span className={`text-[13px] leading-tight font-semibold break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
+                <span className="text-[12px] leading-tight text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
+                <span className={`text-[13px] leading-tight font-medium break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
                   {displayValue}{suffix}
                 </span>
              </div>
              <div className="flex items-start gap-2 shrink-0 pt-0.5">
                 {isCustomMode && (
-                   <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-600 text-[10px] font-bold rounded-lg border border-indigo-500/20">
+                   <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-600 text-[12px] font-medium rounded-lg border border-indigo-500/20">
                       {AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}
                    </div>
                 )}
@@ -102,7 +102,7 @@ export class PermalinkInput extends AdminComponent {
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onChange(''); this.isEditing = false; }}
-              className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
+              className="text-[12px] font-medium text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
             >
               <FrameworkIcons.Refresh size={8} />
               {AdminI18n.t('ui.permalink.revert')}
@@ -120,7 +120,7 @@ export class PermalinkInput extends AdminComponent {
             // No path yet: only the mode changes — the "…" placeholder is never saved as an address.
             if (normalizedCurrent) onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
           }}
-          className={`w-full rounded-lg border px-3 py-2 text-start text-[11px] font-semibold transition-colors ${
+          className={`w-full rounded-lg border px-3 py-2 text-start text-[12px] font-medium transition-colors ${
             useAbsolutePath
               ? 'border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
               : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
@@ -133,7 +133,7 @@ export class PermalinkInput extends AdminComponent {
 
         <div className="flex flex-col gap-2">
           <div className={`${UiFieldUtils.getFieldClasses(FieldSize.MD, 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-2xl bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
-             <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 opacity-60 leading-none mb-1">
+             <div className="flex items-center gap-1 text-[12px] font-medium text-slate-400 opacity-60 leading-none mb-1">
                 <FrameworkIcons.Layout size={10} />
                 <span className="truncate">{baseUrl}{useAbsolutePath ? '/' : finalPrefix}</span>
              </div>
@@ -145,21 +145,21 @@ export class PermalinkInput extends AdminComponent {
                   if (e.key === 'Enter') this.isEditing = false;
                   if (e.key === 'Escape') this.isEditing = false;
                 }}
-                className="w-full bg-transparent text-[12px] font-semibold text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 leading-none"
+                className="w-full bg-transparent text-[12px] font-medium text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 leading-none"
                 placeholder="my-secret-path"
              />
           </div>
 
           <div className="flex gap-2">
              <Button
-                className="flex-1 font-bold text-[11px]"
+                className="flex-1 font-medium text-[12px]"
                 onClick={() => this.isEditing = false}
              >
                 {AdminI18n.t('ui.permalink.save')}
              </Button>
              <Button
                 variant={ButtonVariant.GHOST}
-                className="px-4 text-[11px] font-bold"
+                className="px-4 text-[12px] font-medium"
                 onClick={() => this.isEditing = false}
              >
                 {AdminI18n.t('common.cancel')}

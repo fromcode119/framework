@@ -100,7 +100,7 @@ export class EditFooter extends PureReactor {
               {AdminI18n.t('collection.edit.discard')}
             </Button>
             <Button
-              className="h-9 px-4 text-[13px] font-semibold"
+              className="h-9 px-4 text-[13px] font-medium"
               onClick={this.onCommit}
               isLoading={this.saving}
               icon={<FrameworkIcons.Save size={14} />}
