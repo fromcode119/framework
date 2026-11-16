@@ -149,7 +149,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
             <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
               <FrameworkIcons.Search size={22} className="text-slate-400" />
             </div>
-            <p className="font-semibold text-slate-400 tracking-wide text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
+            <p className="font-medium text-slate-400 tracking-wide text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
           </div>
         </td>
       </tr>
@@ -161,7 +161,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
       <tr key={`heading:${key}`} data-row-id={id} className={`bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 ${className}`}>
         <td colSpan={totalColumns} className="px-3 py-2">
           <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
-          <span className="ms-2 text-[11px] font-semibold text-slate-400">{count}</span>
+          <span className="ms-2 text-[12px] font-medium text-slate-400">{count}</span>
         </td>
       </tr>
     );

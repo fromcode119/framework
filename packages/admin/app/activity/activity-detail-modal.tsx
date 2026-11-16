@@ -35,7 +35,7 @@ export class ActivityDetailModal extends PureReactor {
                <div className="flex items-center gap-3">
                   {/* System-log rows carry `level`; audit rows carry `status` instead — an audit
                       row rendered `level[0]` and crashed the whole screen on the first click. */}
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-semibold ${
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-medium ${
                     selectedLog.level === 'ERROR' || selectedLog.status === 'violation' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
                     selectedLog.level === 'WARN' || selectedLog.status === 'denied' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
                     'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
@@ -43,10 +43,10 @@ export class ActivityDetailModal extends PureReactor {
                      {String(selectedLog.level ?? selectedLog.status ?? '').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className={`text-xl font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+                    <h3 className={`text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                       {AdminI18n.t('activity.eventDetails')}
                     </h3>
-                    <p className="text-[10px] font-semibold text-slate-500 tracking-wide leading-none mt-1">
+                    <p className="text-[12px] font-medium text-slate-500 tracking-wide leading-none mt-1">
                       {AdminI18n.t('activity.logSignature', { id: selectedLog.id })}
                     </p>
                   </div>
@@ -61,12 +61,12 @@ export class ActivityDetailModal extends PureReactor {
                   <Card title={AdminI18n.t('activity.context')}>
                      <div className="space-y-4">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.resource')}</span>
-                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug && selectedLog.pluginSlug !== 'system' ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.resource')}</span>
+                           <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug && selectedLog.pluginSlug !== 'system' ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.timestamp')}</span>
-                           <span className="text-[13px] font-semibold text-slate-600 dark:text-slate-300">
+                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.timestamp')}</span>
+                           <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
                              {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
                            </span>
                         </div>
@@ -75,11 +75,11 @@ export class ActivityDetailModal extends PureReactor {
                   <Card title={AdminI18n.t('activity.authority')}>
                      <div className="space-y-4">
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.actorId')}</span>
-                           <span className="text-[13px] font-semibold text-indigo-500">{selectedLog.actor_id || AdminI18n.t('activity.system')}</span>
+                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.actorId')}</span>
+                           <span className="text-[13px] font-medium text-indigo-500">{selectedLog.actor_id || AdminI18n.t('activity.system')}</span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-[10px] font-semibold tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.type')}</span>
+                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.type')}</span>
                            <Badge variant={mode === ActivityMode.SECURITY ? (selectedLog.status === 'violation' ? 'danger' : 'blue') : 'blue'}>
                               {mode === ActivityMode.SYSTEM ? AdminI18n.t('activity.systemLog') : AdminI18n.t('activity.audit', { status: selectedLog.status })}
                            </Badge>
@@ -97,7 +97,7 @@ export class ActivityDetailModal extends PureReactor {
                ) : (
                   <div className="grid grid-cols-2 gap-4">
                       <Card title={AdminI18n.t('activity.actionTaken')}>
-                          <span className="text-[13px] font-bold text-slate-900 dark:text-white">{selectedLog.action}</span>
+                          <span className="text-[13px] font-medium text-slate-900 dark:text-white">{selectedLog.action}</span>
                       </Card>
                       <Card title={AdminI18n.t('activity.resourcePool')}>
                           <span className="text-[13px] font-mono text-slate-500">{selectedLog.resource}</span>
@@ -116,12 +116,12 @@ export class ActivityDetailModal extends PureReactor {
 
             <div className={`p-8 border-t ${theme === ThemeMode.DARK ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-semibold text-slate-400 tracking-wide italic">
+                  <p className="text-[12px] font-medium text-slate-400 tracking-wide italic">
                     {AdminI18n.t('activity.thisEntryIsPartOf')}
                   </p>
                   <Button
                     variant={ButtonVariant.GHOST}
-                    className="text-indigo-500 font-semibold text-[10px] tracking-wide"
+                    className="text-indigo-500 font-medium text-[12px] tracking-wide"
                     icon={<FrameworkIcons.More size={14} />}
                     onClick={this.handleExport}
                   >

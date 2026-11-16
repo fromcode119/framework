@@ -19,11 +19,11 @@ export class PermissionCatalogGroupCard extends PureReactor {
 
   private grantedBy(name: string): ReactNode {
     const holders = this.roles.filter((role) => PermissionGrants.covers(role.permissions, name));
-    if (holders.length === 0) return <span className="text-[11px] text-slate-400">{AdminI18n.t('users.noRole')}</span>;
+    if (holders.length === 0) return <span className="text-[12px] text-slate-400">{AdminI18n.t('users.noRole')}</span>;
     return (
       <span className="flex flex-wrap gap-1">
         {holders.map((role) => (
-          <span key={role.slug} className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{role.name}</span>
+          <span key={role.slug} className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{role.name}</span>
         ))}
       </span>
     );
@@ -51,9 +51,9 @@ export class PermissionCatalogGroupCard extends PureReactor {
                   <tr key={permission.name}>
                     <td className="py-2.5 pe-4 align-top">
                       <span className="flex flex-col gap-0.5">
-                        <span className="font-semibold text-slate-800 dark:text-slate-100">{permission.label}</span>
-                        <span className="text-[11px] text-slate-500">{permission.description}</span>
-                        <code className="text-[10px] text-slate-400">{permission.name}</code>
+                        <span className="font-medium text-slate-800 dark:text-slate-100">{permission.label}</span>
+                        <span className="text-[12px] text-slate-500">{permission.description}</span>
+                        <code className="text-[12px] text-slate-400">{permission.name}</code>
                       </span>
                     </td>
                     <td className="py-2.5 align-top">{this.grantedBy(permission.name)}</td>
@@ -74,7 +74,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {group.collections.map((collection) => (
                     <tr key={collection.key}>
-                      <td className="px-3 py-2 align-top font-semibold text-slate-700 dark:text-slate-200">{collection.label}</td>
+                      <td className="px-3 py-2 align-top font-medium text-slate-700 dark:text-slate-200">{collection.label}</td>
                       {RolePermissionSelection.ACTIONS.map((action) => (
                         <td key={action} className="px-3 py-2 align-top">
                           {collection.actions[action] ? this.grantedBy(collection.actions[action]) : <span className="text-slate-300">—</span>}

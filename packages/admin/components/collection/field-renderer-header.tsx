@@ -45,7 +45,7 @@ export class FieldRendererHeader extends PureReactor {
         <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
-          {field.required && <span className="text-rose-500 ms-1 font-semibold font-sans">*</span>}
+          {field.required && <span className="text-rose-500 ms-1 font-medium font-sans">*</span>}
         </label>
         {this.help}
         </span>
@@ -56,7 +56,7 @@ export class FieldRendererHeader extends PureReactor {
         <div className="flex items-center gap-2">
           {!isFieldReadOnly && supportsReadOnlyOverride && readOnlyOverrideGranted && (
             <span
-              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[10px] font-semibold tracking-wide border ${
+              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[12px] font-medium tracking-wide border ${
                 theme === ThemeMode.DARK
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-600'

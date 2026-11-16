@@ -13,7 +13,7 @@ export class PageHeading extends PureReactor {
 
   get titleClassName(): string {
     return (this.props as { titleClassName?: string }).titleClassName
-      ?? 'text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight';
+      ?? 'text-xl font-medium text-slate-900 dark:text-white tracking-tight leading-tight';
   }
 
   get subtitleClassName(): string {

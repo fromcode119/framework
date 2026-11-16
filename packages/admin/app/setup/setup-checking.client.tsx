@@ -12,7 +12,7 @@ export class SetupChecking extends PureReactor {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-6">
           <div className="animate-spin text-indigo-600"><FrameworkIcons.Loader size={48} /></div>
-          <span className="text-[11px] font-semibold text-indigo-500 tracking-wide">
+          <span className="text-[12px] font-medium text-indigo-500 tracking-wide">
             {AdminDictionary.translate(this.locale, 'setup.checking')}
           </span>
         </div>

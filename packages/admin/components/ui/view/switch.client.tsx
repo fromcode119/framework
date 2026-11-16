@@ -29,7 +29,7 @@ export class Switch extends PureReactor {
           className={`flex flex-col select-none ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
           onClick={disabled ? undefined : this.handleToggle}
         >
-          {label && <span className="text-[12px] font-semibold text-slate-900 dark:text-slate-100">{label}</span>}
+          {label && <span className="text-[12px] font-medium text-slate-900 dark:text-slate-100">{label}</span>}
           {description && <span className="text-xs text-slate-500">{description}</span>}
         </div>
       )}

@@ -67,7 +67,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                         <Icon size={18} />
                       </div>
                       <div>
-                        <h3 className={`text-sm font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-100' : 'text-slate-900'}`}>
+                        <h3 className={`text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-100' : 'text-slate-900'}`}>
                           {item.title}
                         </h3>
                         <p className="text-[13px] text-slate-500 leading-relaxed mt-0.5">

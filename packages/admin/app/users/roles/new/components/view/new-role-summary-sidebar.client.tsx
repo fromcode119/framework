@@ -22,11 +22,11 @@ export class NewRoleSummarySidebar extends PureReactor {
             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3.5 border border-slate-100 dark:border-slate-800 space-y-3">
                <div className="flex items-center justify-between gap-2">
                   <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
-                  <Badge variant={BadgeVariant.AMBER} className="tracking-tight font-semibold">{AdminI18n.t('users.custom')}</Badge>
+                  <Badge variant={BadgeVariant.AMBER} className="tracking-tight font-medium">{AdminI18n.t('users.custom')}</Badge>
                </div>
                <div className="flex items-center justify-between gap-2">
                   <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.scope')}</span>
-                  <span className="text-xs font-semibold tracking-tight text-slate-600 dark:text-slate-300">
+                  <span className="text-xs font-medium tracking-tight text-slate-600 dark:text-slate-300">
                     {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.selectedCount', { count: permissionCount })}
                   </span>
                </div>
@@ -35,7 +35,7 @@ export class NewRoleSummarySidebar extends PureReactor {
             <div className="flex flex-col gap-2">
               <Button
                 type="submit"
-                className="w-full h-9 text-xs font-semibold rounded-lg text-white"
+                className="w-full h-9 text-xs font-medium rounded-lg text-white"
                 isLoading={loading}
                 icon={<FrameworkIcons.Check size={15} />}
               >
@@ -43,7 +43,7 @@ export class NewRoleSummarySidebar extends PureReactor {
               </Button>
               <Button
                 variant={ButtonVariant.GHOST}
-                className="w-full h-9 text-xs font-semibold text-slate-500"
+                className="w-full h-9 text-xs font-medium text-slate-500"
                 onClick={onCancel}
               >
                 {AdminI18n.t('users.cancel')}

@@ -98,7 +98,7 @@ export class SystemLocalesField extends Reactor {
                 onClick={() => this.toggle(option.value)}
                 disabled={this.isReadOnly}
                 aria-pressed={isSelected}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-colors ${
+                className={`px-2.5 py-1 text-[12px] font-medium rounded-lg border transition-colors ${
                   isSelected
                     ? isDark ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-200' : 'bg-indigo-50 border-indigo-200 text-indigo-700'
                     : isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-500 hover:text-slate-800'
@@ -112,7 +112,7 @@ export class SystemLocalesField extends Reactor {
                   type="button"
                   onClick={() => this.moveEarlier(option.value)}
                   title={AdminI18n.t('ui.locales.moveEarlier')}
-                  className="ms-0.5 px-1 py-1 text-[11px] text-slate-400 hover:text-indigo-500 transition-colors"
+                  className="ms-0.5 px-1 py-1 text-[12px] text-slate-400 hover:text-indigo-500 transition-colors"
                 >
                   ↑
                 </button>

@@ -36,7 +36,7 @@ export class JobsQueueTable extends AdminComponent {
 
   private get columns(): Array<{ header: string; id: string; accessor: (row: any) => ReactNode }> {
     return [
-      { header: AdminI18n.t('jobs.queue.job'), id: 'job', accessor: (row) => <div className="flex flex-col"><span className="text-[13px] font-semibold text-slate-700 dark:text-white">{row.name}</span><span className="text-[11px] text-slate-400">{row.queue}</span></div> },
+      { header: AdminI18n.t('jobs.queue.job'), id: 'job', accessor: (row) => <div className="flex flex-col"><span className="text-[13px] font-medium text-slate-700 dark:text-white">{row.name}</span><span className="text-[12px] text-slate-400">{row.queue}</span></div> },
       { header: AdminI18n.t('jobs.queue.state'), id: 'state', accessor: (row) => <Badge variant={row.state === 'failed' ? BadgeVariant.DANGER : row.state === 'active' ? BadgeVariant.INFO : BadgeVariant.GRAY}>{AdminI18n.optional(`jobs.queue.states.${row.state}`) || row.state}</Badge> },
       { header: AdminI18n.t('jobs.queue.runs'), id: 'runAt', accessor: (row) => <span className="text-[12px] text-slate-500 tabular-nums">{row.runAt ? RelativeTimeFormatter.fromNow(row.runAt) : AdminI18n.t('jobs.queue.whenFree')}</span> },
       { header: AdminI18n.t('jobs.queue.attempts'), id: 'attempts', accessor: (row) => <span className="text-[12px] text-slate-500 tabular-nums">{row.attemptsMade} / {row.attempts}</span> },
@@ -48,7 +48,7 @@ export class JobsQueueTable extends AdminComponent {
     return (
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.queue.heading')}</h2>
+          <h2 className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.queue.heading')}</h2>
           <p className="text-[12px] text-slate-500">{AdminI18n.t('jobs.queue.subheading')}</p>
         </div>
         <div className={`${AdminClass.SURFACE} overflow-hidden`}>

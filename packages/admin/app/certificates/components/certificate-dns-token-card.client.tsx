@@ -106,7 +106,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
 
   render(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
-    const label = `block text-xs font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-700'}`;
+    const label = `block text-xs font-medium mb-1 ${dark ? 'text-slate-300' : 'text-slate-700'}`;
 
     return (
       <Card title={AdminI18n.t('certificates.cloudflareApiToken')}>
@@ -128,7 +128,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
           ) : null}
         </div>
 
-        <p className={`mt-2 text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`mt-2 text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
           {this.message || this.provenance}
         </p>
       </Card>

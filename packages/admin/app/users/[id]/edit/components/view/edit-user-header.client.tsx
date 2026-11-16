@@ -27,11 +27,11 @@ export class EditUserHeader extends PureReactor {
         subtitle={AdminI18n.t('users.updateProfileInformationAndSecurity')}
         actions={
           <>
-            <Button variant={ButtonVariant.GHOST} className="px-4 h-9 rounded-lg font-semibold text-xs" onClick={this.onCancel}>
+            <Button variant={ButtonVariant.GHOST} className="px-4 h-9 rounded-lg font-medium text-xs" onClick={this.onCancel}>
               {AdminI18n.t('users.cancel')}
             </Button>
             <Button
-              className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
+              className="px-4 h-9 rounded-lg font-medium text-xs text-white"
               icon={<FrameworkIcons.Check size={15} />}
               isLoading={this.saving}
               onClick={(e: FormEvent) => this.onSubmit(e)}

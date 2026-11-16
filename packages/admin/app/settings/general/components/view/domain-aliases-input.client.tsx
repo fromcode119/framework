@@ -69,7 +69,7 @@ export class DomainAliasesInput extends Reactor {
           onKeyDown={this.handleKeyDown}
           placeholder="https://alias.example.com"
           disabled={this.disabled}
-          className="flex-1 font-bold"
+          className="flex-1 font-medium"
         />
         <Button
           onClick={this.addAlias}
@@ -85,7 +85,7 @@ export class DomainAliasesInput extends Reactor {
           {value.map((alias) => (
             <span
               key={alias}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold tracking-tight ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-tight ${
                 isDark
                   ? 'bg-slate-800 text-slate-200 border border-slate-700'
                   : 'bg-slate-100 text-slate-700 border border-slate-200'

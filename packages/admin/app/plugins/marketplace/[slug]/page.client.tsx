@@ -166,7 +166,7 @@ export class MarketplaceDetailPage extends AdminComponent {
         <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => { this.consentSlugs = []; void this.fetchData(); }} />
         <button
           onClick={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}
-          className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-semibold transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
+          className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-medium transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
         >
           <FrameworkIcons.Left size={16} />
           {AdminI18n.t('plugins.list.backToMarketplace')}

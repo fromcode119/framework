@@ -18,7 +18,7 @@ export class DetailBox extends PureReactor {
     return (
       <section className={this.className ?? ''}>
         <div className="mb-2 flex min-h-7 items-center justify-between gap-3">
-          <h3 className={`text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{this.title}</h3>
+          <h3 className={`text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{this.title}</h3>
           {this.action ?? null}
         </div>
         {this.children}

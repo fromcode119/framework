@@ -52,7 +52,7 @@ export class DashboardWidgetCard extends Reactor {
 
   render(): ReactNode {
     const link = this.href ? (
-      <AdminLink href={this.href} className="inline-flex items-center gap-1 text-[12px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+      <AdminLink href={this.href} className="inline-flex items-center gap-1 text-[12px] font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
         {this.linkLabel || AdminI18n.t('dashboard.widgets.open')} <FrameworkIcons.ArrowRight size={13} />
       </AdminLink>
     ) : undefined;

@@ -109,7 +109,7 @@ export class McpTokensPanel extends AdminComponent {
     return (
       <Card className="p-5">
         <div className="mb-4">
-          <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+          <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{title}</h2>
           <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
         </div>
         {children}
@@ -124,7 +124,7 @@ export class McpTokensPanel extends AdminComponent {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.integrations.shownOnce')}</Badge>
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+            <span className="text-sm font-medium text-slate-900 dark:text-white">
               {AdminI18n.t('settings.integrations.copyThisKeyNowIt')}
             </span>
           </div>

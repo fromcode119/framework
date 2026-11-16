@@ -78,7 +78,7 @@ export class StatCard extends PureReactor {
         <p className="fc-stat__label text-[12px] font-medium text-slate-400 dark:text-slate-500 mb-1">
           {stat.label}
         </p>
-        <h4 className="fc-stat__value text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+        <h4 className="fc-stat__value text-xl font-medium text-slate-900 dark:text-white tracking-tight leading-none">
           {stat.value}
         </h4>
         {stat.subtext && (

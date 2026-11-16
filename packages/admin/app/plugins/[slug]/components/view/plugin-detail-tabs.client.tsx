@@ -33,7 +33,7 @@ export class PluginDetailTabs extends PureReactor {
       : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
     return (
       <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center whitespace-nowrap border-b-2 py-3 text-[13px] transition-colors ${active ? 'font-semibold' : 'font-medium'} ${tone} ${className}`}>
+        className={`-mb-px flex items-center whitespace-nowrap border-b-2 py-3 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone} ${className}`}>
         {label}
       </button>
     );

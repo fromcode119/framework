@@ -12,7 +12,7 @@ export class DashboardWidgetPicker extends PureReactor {
   render(): ReactNode {
     return (
       <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-        <h2 className="text-[13px] font-semibold text-slate-900 dark:text-white">{AdminI18n.t('dashboard.widgets.addTitle')}</h2>
+        <h2 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('dashboard.widgets.addTitle')}</h2>
         {this.available.length === 0 ? (
           <p className="mt-1 text-[12px] text-slate-500">{AdminI18n.t('dashboard.widgets.allAdded')}</p>
         ) : (
@@ -28,8 +28,8 @@ export class DashboardWidgetPicker extends PureReactor {
                     <FrameworkIcons.Plus size={14} />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-slate-800 dark:text-slate-100">{definition.label}</span>
-                    {definition.source ? <span className="block text-[11px] text-slate-400">{definition.source}</span> : null}
+                    <span className="block text-[13px] font-medium text-slate-800 dark:text-slate-100">{definition.label}</span>
+                    {definition.source ? <span className="block text-[12px] text-slate-400">{definition.source}</span> : null}
                     {definition.description ? <span className="mt-1 block text-[12px] text-slate-500">{definition.description}</span> : null}
                   </span>
                 </button>

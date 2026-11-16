@@ -184,7 +184,7 @@ export class UpdatesPage extends AdminComponent {
             <button
               onClick={() => this.fetchStatus(true) /* look again, not from the api's memory */}
               disabled={loading}
-              className={`flex items-center gap-2 h-9 px-4 rounded-lg text-xs font-semibold tracking-tight transition-all active:scale-95 ${
+              className={`flex items-center gap-2 h-9 px-4 rounded-lg text-xs font-medium tracking-tight transition-all active:scale-95 ${
                 theme === ThemeMode.DARK
                   ? 'bg-slate-800 text-slate-100 hover:bg-slate-700'
                   : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -209,10 +209,10 @@ export class UpdatesPage extends AdminComponent {
               <div className="flex-1 space-y-5">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    <h2 className={`text-2xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AppEnv.PRODUCT_NAME}</h2>
+                    <h2 className={`text-2xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AppEnv.PRODUCT_NAME}</h2>
                     <Badge
                       variant={hasUpdate ? 'warning' : latestVersionUnknown ? 'gray' : 'success'}
-                      className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full"
+                      className="px-3 py-1 text-[12px] font-medium tracking-tight rounded-full"
                     >
                       {hasUpdate ? AdminI18n.t('settings.updates.updateAvailable') : latestVersionUnknown ? AdminI18n.t('settings.updates.updateCheckFailed') : AdminI18n.t('settings.updates.frameworkUpToDate')}
                     </Badge>
@@ -225,26 +225,26 @@ export class UpdatesPage extends AdminComponent {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.installedVersion')}</div>
-                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{installedVersion ? `v${installedVersion}` : '-'}</div>
+                    <div className="text-[12px] font-medium tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.installedVersion')}</div>
+                    <div className={`font-mono font-medium text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{installedVersion ? `v${installedVersion}` : '-'}</div>
                   </div>
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.latestRegistryVersion')}</div>
+                    <div className="text-[12px] font-medium tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.latestRegistryVersion')}</div>
                     {/* NEVER echo the installed version here. That is what made an unreachable
                         registry look like "you are current". */}
-                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? AdminI18n.t('settings.updates.unknown') : `v${latestVersion}`}</div>
+                    <div className={`font-mono font-medium text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? AdminI18n.t('settings.updates.unknown') : `v${latestVersion}`}</div>
                   </div>
                 </div>
 
                 {latestVersionUnknown && (
-                  <p className="text-[11px] font-medium leading-relaxed text-rose-500">
+                  <p className="text-[12px] font-medium leading-relaxed text-rose-500">
                     {this.checkError || AdminI18n.t('settings.updates.theRegistryDidNotReport')}
                   </p>
                 )}
 
                 {hasUpdate && (
                   <div className={`mt-5 p-5 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
-                    <div className="flex items-center gap-2.5 text-amber-600 font-semibold tracking-tight mb-2">
+                    <div className="flex items-center gap-2.5 text-amber-600 font-medium tracking-tight mb-2">
                       <div className="p-1.5 bg-amber-500/10 rounded-lg">
                         <FrameworkIcons.Warning size={18} />
                       </div>
@@ -264,7 +264,7 @@ export class UpdatesPage extends AdminComponent {
                       <button
                         onClick={this.openConfirm}
                         disabled={updating}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
                       >
                         {updating ? AdminI18n.t('settings.updates.applyingUpdate') : AdminI18n.t('settings.updates.installCore', { version: latestVersion })}
                       </button>
@@ -280,7 +280,7 @@ export class UpdatesPage extends AdminComponent {
           <PluginAutoUpdatePanel />
 
           {status?.lastUpdated && (
-            <div className="text-center text-[10px] font-bold tracking-tight text-slate-500 opacity-40">
+            <div className="text-center text-[12px] font-medium tracking-tight text-slate-500 opacity-40">
               {AdminI18n.t('settings.updates.lastRegistrySync', { at: new Date(status.lastUpdated).toLocaleString() })}
             </div>
           )}

@@ -55,7 +55,7 @@ export class MediaRelationFieldView extends PureReactor {
   private renderEmpty(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-semibold ${dark ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
+      <div className={`px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-medium ${dark ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
         {AdminI18n.t('ui.media.none')}
       </div>
     );
@@ -84,7 +84,7 @@ export class MediaRelationFieldView extends PureReactor {
     // Selected, but no file could be resolved for it (deleted, or unreadable): say which id is stored.
     const many = this.hasMany && this.selectedIds.length > 1;
     return (
-      <div className="px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-800">
+      <div className="px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-800">
         {AdminI18n.t(many ? 'ui.media.selectedIds' : 'ui.media.selectedId', { ids: this.selectedIds.join(', ') })}
       </div>
     );

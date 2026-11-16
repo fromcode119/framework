@@ -47,7 +47,7 @@ export class ActivityPageHeader extends PureReactor {
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
               <button
                 onClick={this.selectSystemMode}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${
                   mode === ActivityMode.SYSTEM
                     ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                     : 'text-slate-500 hover:text-slate-700'
@@ -57,7 +57,7 @@ export class ActivityPageHeader extends PureReactor {
               </button>
               <button
                 onClick={this.selectSecurityMode}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${
                   mode === ActivityMode.SECURITY
                     ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-sm'
                     : 'text-slate-500 hover:text-slate-700'
@@ -77,7 +77,7 @@ export class ActivityPageHeader extends PureReactor {
               <Button
                 type="submit"
                 variant={ButtonVariant.SECONDARY}
-                className="px-4 h-9 rounded-lg font-semibold text-xs"
+                className="px-4 h-9 rounded-lg font-medium text-xs"
                 icon={<FrameworkIcons.Search size={15} />}
               >
                 {AdminI18n.t('activity.filterHistory')}

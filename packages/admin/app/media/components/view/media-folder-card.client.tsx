@@ -59,8 +59,8 @@ export class MediaFolderCard extends PureReactor {
           <FrameworkIcons.Folder size={viewMode === ViewMode.GRID ? 32 : 20} />
         </div>
         <div className={viewMode === ViewMode.GRID ? "mt-4" : ""}>
-          <div className={`font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
-          {viewMode === ViewMode.GRID && <div className="text-[10px] text-slate-500 tracking-wide font-semibold mt-1">{AdminI18n.t('media.folder')}</div>}
+          <div className={`font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
+          {viewMode === ViewMode.GRID && <div className="text-[12px] text-slate-500 tracking-wide font-medium mt-1">{AdminI18n.t('media.folder')}</div>}
         </div>
 
         <div className={`absolute top-2 end-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === ViewMode.LIST ? 'static ms-auto opacity-100' : ''}`}>

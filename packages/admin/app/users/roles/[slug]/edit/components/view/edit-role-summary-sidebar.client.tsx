@@ -28,7 +28,7 @@ export class EditRoleSummarySidebar extends PureReactor {
                </div>
                <div className="flex flex-col gap-1">
                   <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.selectedScope')}</span>
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                     {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.actionsSelected', { permissionCount: permissionCount })}
                   </span>
                </div>
@@ -43,7 +43,7 @@ export class EditRoleSummarySidebar extends PureReactor {
             </Button>}
             <Button
               variant={ButtonVariant.GHOST}
-              className="w-full h-11 font-bold text-slate-400"
+              className="w-full h-11 font-medium text-slate-400"
               onClick={onCancel}
             >
               {AdminI18n.t('users.cancel')}
@@ -52,7 +52,7 @@ export class EditRoleSummarySidebar extends PureReactor {
         </Card>
 
         <Card title={AdminI18n.t('users.securityNote')}>
-           <p className="text-xs text-slate-500 font-bold leading-relaxed italic">
+           <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
              {AdminI18n.t('users.changesToRolePermissionsAre')}
            </p>
         </Card>

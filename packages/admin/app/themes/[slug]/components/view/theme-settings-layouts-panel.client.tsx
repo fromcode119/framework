@@ -43,14 +43,14 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               className="w-full"
             />
             {LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale) ? (
-              <p className="text-[11px] text-slate-500 mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
+              <p className="text-[12px] text-slate-500 mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
             ) : null}
             {isUnavailable ? (
-              <p className="text-[11px] text-amber-600 mt-2">
+              <p className="text-[12px] text-amber-600 mt-2">
                 {AdminI18n.t('themes.layoutNoLongerProvided', { layout: tempDefaultLayout })}
               </p>
             ) : null}
-            <p className="text-[11px] text-slate-500 mt-2">
+            <p className="text-[12px] text-slate-500 mt-2">
               {AdminI18n.t('themes.aPageThatPicksA')}
             </p>
           </div>

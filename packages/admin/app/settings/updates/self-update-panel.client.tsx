@@ -137,14 +137,14 @@ export class SelfUpdatePanel extends AdminComponent {
           label={AdminI18n.t('settings.updates.selfUpdate.automatic')}
           description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
         />
-        <p className={`text-[11px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
-        {this.deployLine && !this.held ? <p className="text-[11px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
+        <p className={`text-[12px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
+        {this.deployLine && !this.held ? <p className="text-[12px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
         {this.held ? (
           <button
             type="button"
             onClick={() => { this.confirmRestart = true; }}
             disabled={this.restarting}
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
           >
             {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
           </button>

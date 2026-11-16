@@ -64,8 +64,8 @@ export class PersonEditPage extends PersonEditPageActions {
       return (
         <SiteScopeGate what={AdminI18n.t('users.people2', { routeId: this.routeId })}>
           <div className="w-full flex flex-col items-center justify-center gap-4 py-20">
-            <p className="font-bold text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
-            <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">{AdminI18n.t('users.backToPeople')}</AdminLink>
+            <p className="font-medium text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
+            <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-medium text-sm">{AdminI18n.t('users.backToPeople')}</AdminLink>
           </div>
         </SiteScopeGate>
       );
@@ -87,26 +87,26 @@ export class PersonEditPage extends PersonEditPageActions {
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
             <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
               <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
-              {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
-              {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-bold dark:bg-emerald-500/10">{notice}</div> : null}
+              {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{error}</div> : null}
+              {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-medium dark:bg-emerald-500/10">{notice}</div> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {this.field(AdminI18n.t('users.firstName2'), 'firstName')}
                 {this.field(AdminI18n.t('users.lastName2'), 'lastName')}
               </div>
               {this.field(AdminI18n.t('users.displayName'), 'displayName')}
               {this.field('Email', 'email', 'email', linked)}
-              {linked ? <p className="-mt-3 text-[11px] text-slate-400">{AdminI18n.t('users.thisPersonHasALogin')}</p> : null}
+              {linked ? <p className="-mt-3 text-[12px] text-slate-400">{AdminI18n.t('users.thisPersonHasALogin')}</p> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {this.field('Phone', 'phone', 'tel')}
                 {this.field(AdminI18n.t('users.birthDate'), 'birthDate', 'date')}
               </div>
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">{AdminI18n.t('users.saveChanges')}</Button>
+                <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.saveChanges')}</Button>
                 {linked ? (
                   <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}
-                    className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
+                    className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
                 ) : null}
-                <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</AdminLink>
+                <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</AdminLink>
               </div>
             </form>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />
@@ -128,17 +128,17 @@ export class PersonEditPage extends PersonEditPageActions {
                       ...users.map((u) => ({ label: `${u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #${u.id}`, value: String(u.id) })),
                     ]}
                   />
-                  <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.apply')}</Button>
-                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.cancel')}</Button>
+                  <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.apply')}</Button>
+                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.cancel')}</Button>
                 </>
               ) : (
                 <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.UserCheck size={14} />}
                   onClick={() => { this.reassignOpen = true; this.reassignTo = linked ? String(person.userId) : '__none__'; }}
-                  className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.reassignUnlinkLogin')}</Button>
+                  className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.reassignUnlinkLogin')}</Button>
               )}
-              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.deletePerson')}</Button>
+              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.deletePerson')}</Button>
             </div>
-            <p className="text-[11px] text-slate-400 mt-3">{AdminI18n.t('users.deletingRemovesThePersonRecord')}</p>
+            <p className="text-[12px] text-slate-400 mt-3">{AdminI18n.t('users.deletingRemovesThePersonRecord')}</p>
           </div>
 
           {/* The admin's own confirmation, as every other destructive action uses — not a second pair of

@@ -108,11 +108,11 @@ export class SidebarNotifications extends AdminComponent {
     return (
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-[13px] font-semibold text-slate-900 dark:text-white">{AdminI18n.t('shell.notifications.title')}</h3>
-          {this.unread ? <span className="text-[11px] text-slate-400 dark:text-slate-500">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
+          <h3 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.notifications.title')}</h3>
+          {this.unread ? <span className="text-[12px] text-slate-400 dark:text-slate-500">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="text-[12px] font-semibold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <button type="button" onClick={this.readAll} className="text-[12px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
             {AdminI18n.t('shell.notifications.markAllRead')}
           </button>
         ) : null}
@@ -136,7 +136,7 @@ export class SidebarNotifications extends AdminComponent {
         </span>
       );
     }
-    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[11px] font-semibold leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
+    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[12px] font-medium leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
     if (this.isMini) {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>

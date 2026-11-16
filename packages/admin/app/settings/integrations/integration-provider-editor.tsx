@@ -102,8 +102,8 @@ export class IntegrationProviderEditor extends PureReactor {
     return (
       <div className="md:col-span-2">
         <div className="mb-1.5 flex items-center justify-between gap-2">
-          <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.status')}</span>
-          <span className="inline-flex h-6 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.status')}</span>
+          <span className="inline-flex h-6 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[12px] font-medium tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
             <FrameworkIcons.Lock size={10} />
             {AdminI18n.t('ui.field.readOnly')}
           </span>
@@ -118,7 +118,7 @@ export class IntegrationProviderEditor extends PureReactor {
       <div>
         <Select value={this.editor.providerKey} onChange={this.onChooseProvider} options={this.providerOptions}
           label={AdminI18n.t('settings.integrations.provider')} searchable={false} size={FieldSize.MD} />
-        {this.single ? <p className="mt-1 text-[11px] text-slate-500">{AdminI18n.t('settings.integrations.oneProviderAtATime')}</p> : null}
+        {this.single ? <p className="mt-1 text-[12px] text-slate-500">{AdminI18n.t('settings.integrations.oneProviderAtATime')}</p> : null}
       </div>
     );
   }
@@ -148,7 +148,7 @@ export class IntegrationProviderEditor extends PureReactor {
         {this.confirmingRemove ? (
           <>
             <button type="button" onClick={this.onConfirmRemove} disabled={this.removing}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-rose-600 bg-rose-600 px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-rose-500 disabled:opacity-50">
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-rose-600 bg-rose-600 px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-rose-500 disabled:opacity-50">
               {this.removing ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Trash size={14} />}
               {AdminI18n.t('settings.integrations.removeProvider')}
             </button>
@@ -159,7 +159,7 @@ export class IntegrationProviderEditor extends PureReactor {
           </>
         ) : (
           <button type="button" onClick={this.onRequestRemove}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400">
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400">
             <FrameworkIcons.Trash size={14} />
             {AdminI18n.t('settings.integrations.removeProvider')}
           </button>
@@ -173,7 +173,7 @@ export class IntegrationProviderEditor extends PureReactor {
     if (this.single) {
       return (
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">{integration.label}</h2>
+          <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
           {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
         </div>
       );
@@ -184,11 +184,11 @@ export class IntegrationProviderEditor extends PureReactor {
     return (
       <div className="space-y-2">
         <button type="button" onClick={this.onBack}
-          className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200">
+          className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200">
           <FrameworkIcons.ArrowLeft size={13} />
           {AdminI18n.t('settings.integrations.backTo', { label: integration.label })}
         </button>
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="text-base font-medium text-slate-900 dark:text-white">{title}</h2>
       </div>
     );
   }

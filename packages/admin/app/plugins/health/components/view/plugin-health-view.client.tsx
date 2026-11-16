@@ -42,7 +42,7 @@ export class PluginHealthView extends PureReactor {
       return (
         <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Activity size={32} className="text-slate-300 dark:text-slate-700" /></div>
-          <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.healthReportUnavailable')}</h3>
+          <h3 className={`text-lg font-medium mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.healthReportUnavailable')}</h3>
           <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.couldNotLoadThePlatform')}</p>
         </div>
       );
@@ -65,7 +65,7 @@ export class PluginHealthView extends PureReactor {
         <div className="flex flex-wrap items-center gap-2">
           {summaryStats.map((s) => (
             <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-              <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
+              <span className={`text-sm font-medium tabular-nums ${s.tone}`}>{s.value}</span>
               <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
             </div>
           ))}
@@ -108,9 +108,9 @@ export class PluginHealthView extends PureReactor {
                       <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'}`}><FrameworkIcons.Shield size={18} strokeWidth={1.5} /></div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
+                          <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
                           <Badge variant={BadgeVariant.AMBER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
-                          {drift ? <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval', { drift: drift })} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{drift}</span> : null}
+                          {drift ? <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval', { drift: drift })} className="shrink-0 text-[12px] font-medium tabular-nums text-amber-600 dark:text-amber-400">{drift}</span> : null}
                         </div>
                         <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.heldPendingReApprovalOf')}</p>
                       </div>
@@ -139,7 +139,7 @@ export class PluginHealthView extends PureReactor {
                     <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20' : 'bg-rose-50 text-rose-600 ring-1 ring-rose-100'}`}><FrameworkIcons.Alert size={18} strokeWidth={1.5} /></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
+                        <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
                         <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.list.error')}</Badge>
                       </div>
                       <p className="text-xs leading-snug truncate text-rose-500 font-medium">{entry.error || AdminI18n.t('plugins.list.pluginFailedToInitialize')}</p>
@@ -152,7 +152,7 @@ export class PluginHealthView extends PureReactor {
         ) : (
           <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
             <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.CheckCircle size={32} className="text-emerald-500" /></div>
-            <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.everythingLooksHealthy')}</h3>
+            <h3 className={`text-lg font-medium mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.everythingLooksHealthy')}</h3>
             <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.noHeldCapabilityChangesNo')}</p>
           </div>
         )}

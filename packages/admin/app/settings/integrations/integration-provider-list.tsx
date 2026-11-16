@@ -57,10 +57,10 @@ export class IntegrationProviderList extends PureReactor {
         onKeyDown={(event) => this.handleRowKey(event, provider.id)}
         className="flex cursor-pointer items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-indigo-500/50">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-semibold text-slate-900 dark:text-slate-100">{provider.name || definition?.label || provider.providerKey}</p>
+          <p className="truncate text-[13px] font-medium text-slate-900 dark:text-slate-100">{provider.name || definition?.label || provider.providerKey}</p>
           {summary ? <p className="mt-0.5 truncate text-[12px] text-slate-500">{summary}</p> : null}
         </div>
-        <span className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-semibold text-indigo-600 dark:text-indigo-400">
+        <span className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-indigo-600 dark:text-indigo-400">
           {AdminI18n.t('settings.integrations.edit')}
           <FrameworkIcons.ChevronRight size={14} />
         </span>
@@ -78,13 +78,13 @@ export class IntegrationProviderList extends PureReactor {
       <div className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">{integration.label}</h2>
+            <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
             <p className="mt-1 text-[12px] text-slate-500">
               {[integration.description, AdminI18n.t('settings.integrations.severalProvidersAtOnce')].filter(Boolean).join(' ')}
             </p>
           </div>
           <button type="button" onClick={this.onAddProvider}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800">
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800">
             <FrameworkIcons.Plus size={14} />
             {AdminI18n.t('settings.integrations.addProvider')}
           </button>
@@ -92,7 +92,7 @@ export class IntegrationProviderList extends PureReactor {
 
         {this.activeProviders.length === 0 ? (
           <div className="rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center dark:border-slate-800">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.noProvidersConfigured')}</p>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.noProvidersConfigured')}</p>
             <p className="mt-1 text-xs text-slate-500">{AdminI18n.t('settings.integrations.noProvidersYetHint')}</p>
           </div>
         ) : (

@@ -33,7 +33,7 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
         <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
           <FrameworkIcons.Search size={20} className="text-slate-400" />
         </div>
-        <p className="font-semibold text-slate-400 text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
+        <p className="font-medium text-slate-400 text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
       </div>
     );
   }

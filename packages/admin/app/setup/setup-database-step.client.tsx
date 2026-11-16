@@ -95,7 +95,7 @@ export class SetupDatabaseStep extends PureReactor {
 
   private locationClass(active: boolean): string {
     return [
-      'flex-1 rounded-lg border px-3 py-2 text-[12px] font-semibold transition-colors',
+      'flex-1 rounded-lg border px-3 py-2 text-[12px] font-medium transition-colors',
       active
         ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300'
         : 'border-slate-200 text-slate-500 dark:border-slate-800 hover:border-indigo-300',
@@ -116,7 +116,7 @@ export class SetupDatabaseStep extends PureReactor {
     const server = this.server!;
     const field = (name: keyof ISetupDatabaseServer, label: string, type = 'text', placeholder = '') => (
       <label className="block">
-        <span className="mb-1 block text-[11px] font-semibold text-slate-500">{label}</span>
+        <span className="mb-1 block text-[12px] font-medium text-slate-500">{label}</span>
         <Input name={name} type={type} value={server[name]} onChange={this.handleServerField} placeholder={placeholder} />
       </label>
     );
@@ -136,7 +136,7 @@ export class SetupDatabaseStep extends PureReactor {
 
         {this.selected?.needsOwnerRole && (
           <>
-            <p className="text-[11px] leading-relaxed text-slate-500">
+            <p className="text-[12px] leading-relaxed text-slate-500">
               {this.text('setup.database.ownerRoleHelp')}
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -167,7 +167,7 @@ export class SetupDatabaseStep extends PureReactor {
               className={this.optionClass(driver.value, driver.isAvailable)}
             >
               <span className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {this.text(`setup.database.drivers.${driver.value}.name`)}
                 </span>
                 <span className="text-[12px] font-medium text-slate-400">
@@ -176,7 +176,7 @@ export class SetupDatabaseStep extends PureReactor {
                     : this.text('setup.database.unavailable')}
                 </span>
               </span>
-              <span className="mt-1 block text-[11px] leading-relaxed text-slate-500">
+              <span className="mt-1 block text-[12px] leading-relaxed text-slate-500">
                 {this.text(`setup.database.drivers.${driver.value}.note`)}
               </span>
             </button>
@@ -230,8 +230,8 @@ class SetupDatabaseFact extends PureReactor {
   render(): ReactNode {
     return (
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <dt className="text-[11px] text-slate-500">{this.label}</dt>
-        <dd className="font-mono text-[11px] text-slate-700 dark:text-slate-300 break-all">{this.value}</dd>
+        <dt className="text-[12px] text-slate-500">{this.label}</dt>
+        <dd className="font-mono text-[12px] text-slate-700 dark:text-slate-300 break-all">{this.value}</dd>
       </div>
     );
   }

@@ -46,7 +46,7 @@ export class JobRunsPanel extends AdminComponent {
     if (!this.runs.length) return <p className="px-6 py-4 text-[12px] text-slate-400">{AdminI18n.t('jobs.noRuns')}</p>;
     return (
       <div className="px-6 py-4 space-y-2">
-        <p className="text-[11px] font-semibold text-slate-500 tracking-wide">{AdminI18n.t('jobs.recentRuns', { count: this.runs.length })}</p>
+        <p className="text-[12px] font-medium text-slate-500 tracking-wide">{AdminI18n.t('jobs.recentRuns', { count: this.runs.length })}</p>
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {this.runs.map((run) => <li key={run.id} className="py-2">{this.renderRun(run)}</li>)}
         </ul>
@@ -62,13 +62,13 @@ export class JobRunsPanel extends AdminComponent {
         <div className="flex flex-wrap items-center gap-3">
           <JobRunStatusBadge status={String(run.status)} />
           <span className="text-[12px] text-slate-600 dark:text-slate-300 tabular-nums">{run.startedAt ? new Date(run.startedAt).toLocaleString(AdminI18n.locale) : ''}</span>
-          <span className="text-[11px] text-slate-400 tabular-nums">{JobDuration.text(run.durationMs)}</span>
-          {sites.length ? <span className="text-[11px] text-slate-500">{AdminI18n.t('jobs.sitesRan', { count: sites.length, failed: failedSites.length })}</span> : null}
+          <span className="text-[12px] text-slate-400 tabular-nums">{JobDuration.text(run.durationMs)}</span>
+          {sites.length ? <span className="text-[12px] text-slate-500">{AdminI18n.t('jobs.sitesRan', { count: sites.length, failed: failedSites.length })}</span> : null}
         </div>
         {run.error ? <p className="text-[12px] text-rose-700 dark:text-rose-300 break-words">{run.error}</p> : null}
         {failedSites.map((site) => (
           <p key={site.id} className="text-[12px] text-rose-700 dark:text-rose-300 break-words">
-            <span className="font-semibold">{site.site}</span>: {site.error}
+            <span className="font-medium">{site.site}</span>: {site.error}
           </p>
         ))}
       </div>

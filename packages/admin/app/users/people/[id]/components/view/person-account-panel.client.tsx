@@ -35,13 +35,13 @@ export class PersonAccountPanel extends PureReactor {
       return (
         <div className={card}>
           <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
-          <p className="text-[13px] font-bold text-slate-400 mb-4">{AdminI18n.t('users.noLoginAccountIsLinked')}</p>
+          <p className="text-[13px] font-medium text-slate-400 mb-4">{AdminI18n.t('users.noLoginAccountIsLinked')}</p>
           <Button variant={ButtonVariant.SECONDARY} isLoading={granting} disabled={!person.email}
             icon={<FrameworkIcons.Plus size={14} />} onClick={onGrantLogin}
-            className="h-9 px-4 rounded-xl font-bold tracking-tight text-[11px]">
+            className="h-9 px-4 rounded-xl font-medium tracking-tight text-[12px]">
             {AdminI18n.t('users.createLoginAccount')}
           </Button>
-          {!person.email ? <p className="text-[11px] text-slate-400 mt-2">{AdminI18n.t('users.anEmailIsRequiredTo')}</p> : null}
+          {!person.email ? <p className="text-[12px] text-slate-400 mt-2">{AdminI18n.t('users.anEmailIsRequiredTo')}</p> : null}
         </div>
       );
     }
@@ -49,23 +49,23 @@ export class PersonAccountPanel extends PureReactor {
     return (
       <div className={card}>
         <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
-        <div className="flex items-center gap-2 text-[13px] font-bold text-emerald-500 mb-3">
+        <div className="flex items-center gap-2 text-[13px] font-medium text-emerald-500 mb-3">
           <FrameworkIcons.UserCheck size={16} /> {AdminI18n.t('users.linkedUser', { id: account.id })}
         </div>
         <div className="space-y-1.5 mb-4">
-          <div className="text-[12px] font-bold text-slate-500">{account.email}</div>
-          {account.username ? <div className="text-[11px] text-slate-400">@{account.username}</div> : null}
+          <div className="text-[12px] font-medium text-slate-500">{account.email}</div>
+          {account.username ? <div className="text-[12px] text-slate-400">@{account.username}</div> : null}
         </div>
         <div className="mb-4">
           <div className="text-[12px] font-medium text-slate-400 mb-1.5">{AdminI18n.t('users.roles')}</div>
           <div className="flex flex-wrap gap-1.5">
             {account.roles.length
-              ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)} className="font-bold tracking-tight">{r}</Badge>)
-              : <span className="text-[11px] text-slate-400">{AdminI18n.t('users.noRoles')}</span>}
+              ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)} className="font-medium tracking-tight">{r}</Badge>)
+              : <span className="text-[12px] text-slate-400">{AdminI18n.t('users.noRoles')}</span>}
           </div>
         </div>
         <AdminLink href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}
-          className="inline-flex items-center gap-1.5 text-[12px] font-bold text-indigo-600 hover:text-indigo-700">
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 hover:text-indigo-700">
           {AdminI18n.t('users.openUserRecord')} <FrameworkIcons.Right size={14} />
         </AdminLink>
       </div>

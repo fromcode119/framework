@@ -109,7 +109,7 @@ export class VisualMenuField extends PureReactor {
     if (f.type === 'relationship') {
        return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+          {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
           <TagField
             {...fieldProps}
             collectionSlug={this.collectionSlug}
@@ -126,7 +126,7 @@ export class VisualMenuField extends PureReactor {
     if (f.type === 'select') {
       return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+          {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
           <Select {...fieldProps} options={f.options || []} />
         </div>
       );
@@ -134,8 +134,8 @@ export class VisualMenuField extends PureReactor {
 
     return (
       <div className="flex flex-col gap-0.5">
-        {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
-        <Input {...fieldProps} type="text" inputClassName="font-semibold h-8 text-xs" />
+        {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
+        <Input {...fieldProps} type="text" inputClassName="font-medium h-8 text-xs" />
       </div>
     );
   }
@@ -152,7 +152,7 @@ export class VisualMenuField extends PureReactor {
                 <FrameworkIcons.Layout size={14} />
             </div>
             <div>
-                <span className={`text-[10px] font-semibold tracking-wide ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('ui.menuField.structure')}</span>
+                <span className={`text-[12px] font-medium tracking-wide ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('ui.menuField.structure')}</span>
             </div>
          </div>
       </div>
@@ -221,7 +221,7 @@ export class VisualMenuField extends PureReactor {
         }`}
       >
         <FrameworkIcons.Plus size={14} />
-        <span className="text-[10px] font-semibold tracking-wide">{AdminI18n.t('ui.menuField.add')}</span>
+        <span className="text-[12px] font-medium tracking-wide">{AdminI18n.t('ui.menuField.add')}</span>
       </button>
     </div>
     );

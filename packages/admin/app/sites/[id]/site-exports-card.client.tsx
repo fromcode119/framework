@@ -51,13 +51,13 @@ export class SiteExportsCard extends PureReactor {
                   <FrameworkIcons.Package size={18} strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className={`text-sm font-semibold tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <span className={`text-sm font-medium tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
                     {new Date(entry.modifiedAt).toLocaleString()}
                   </span>
                   <p className={`text-xs leading-snug truncate font-mono ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{entry.filename}</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
-                  <span className={`text-[11px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <span className={`text-[12px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                     {SiteExportsCard.megabytes(entry.sizeBytes)}
                   </span>
                   <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download className="no-underline">

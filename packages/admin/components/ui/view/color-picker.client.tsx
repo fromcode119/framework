@@ -122,7 +122,7 @@ export class ColorPicker extends AdminComponent {
 
             <div className="flex flex-col gap-4">
                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold tracking-wide text-slate-400">{AdminI18n.t('ui.color.hex')}</span>
+                  <span className="text-[12px] font-medium tracking-wide text-slate-400">{AdminI18n.t('ui.color.hex')}</span>
                   <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
                </div>
                <input
@@ -136,7 +136,7 @@ export class ColorPicker extends AdminComponent {
             <div className={`mt-6 pt-6 border-t flex justify-end ${theme === ThemeMode.DARK ? 'border-white/5' : 'border-slate-100'}`}>
                <button
                 onClick={() => (this.isOpen = false)}
-                className="w-full h-10 bg-indigo-600 text-white rounded-lg text-[10px] font-semibold tracking-wide hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all active:scale-[0.98]"
+                className="w-full h-10 bg-indigo-600 text-white rounded-lg text-[12px] font-medium tracking-wide hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all active:scale-[0.98]"
                >
                  {AdminI18n.t('ui.color.confirm')}
                </button>

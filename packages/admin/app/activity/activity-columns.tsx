@@ -16,10 +16,10 @@ export class ActivityColumnsFactory {
 
           return (
             <div className="flex flex-col gap-1">
-              <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${levelStyle}`}>
+              <span className={`px-2.5 py-1 rounded-lg border text-[12px] font-mono font-medium w-fit tracking-tighter ${levelStyle}`}>
                  {AdminI18n.optional(`activity.level.${String(row.level || '').toUpperCase()}`) || row.level}
               </span>
-              <span className="text-[10px] font-semibold text-slate-400 tracking-wide ps-1">
+              <span className="text-[12px] font-medium text-slate-400 tracking-wide ps-1">
                 {String(row.id).includes('-') ? row.id.split('-')[0] : `LOG-${row.id}`}
               </span>
             </div>
@@ -35,14 +35,14 @@ export class ActivityColumnsFactory {
           const actor = row.actor_id || row.context?.email || AdminI18n.t('activity.system');
           return (
             <div className="flex items-center gap-3">
-              <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[10px] font-semibold border-2 ${
+              <div className={`h-9 w-9 rounded-full flex items-center justify-center text-[12px] font-medium border-2 ${
                 theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-500'
               }`}>
                 {actor[0].toUpperCase()}
               </div>
               <div className="flex flex-col">
-                <span className="text-[13px] font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
-                <span className="text-[10px] font-semibold text-slate-400 mt-1 tracking-tight">
+                <span className="text-[13px] font-medium text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
+                <span className="text-[12px] font-medium text-slate-400 mt-1 tracking-tight">
                   {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : AdminI18n.t('activity.internal'))}
                 </span>
               </div>
@@ -56,7 +56,7 @@ export class ActivityColumnsFactory {
         accessor: (row: any) => (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+            <span className="font-medium text-[12px] text-slate-500 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
@@ -65,10 +65,10 @@ export class ActivityColumnsFactory {
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">
-            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+            <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">
                {new Date(row.timestamp || row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
-            <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
+            <span className="text-[8px] font-medium text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.timestamp || row.createdAt).toLocaleDateString()}
             </span>
           </div>
@@ -98,7 +98,7 @@ export class ActivityColumnsFactory {
 
           return (
             <div className="flex flex-col gap-1">
-              <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${style}`}>
+              <span className={`px-2.5 py-1 rounded-lg border text-[12px] font-mono font-medium w-fit tracking-tighter ${style}`}>
                  {row.status}
               </span>
             </div>
@@ -110,10 +110,10 @@ export class ActivityColumnsFactory {
         id: 'plugin',
         accessor: (row: any) => (
           <div className="flex items-center gap-2">
-            <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-semibold">
+            <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[12px] font-medium">
                {row.pluginSlug ? row.pluginSlug[0].toUpperCase() : 'S'}
             </div>
-            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
+            <span className="font-medium text-[12px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
@@ -122,8 +122,8 @@ export class ActivityColumnsFactory {
         id: 'action',
         accessor: (row: any) => (
           <div className="flex flex-col">
-             <span className="text-xs font-semibold text-slate-700 dark:text-white tracking-tight">{row.action}</span>
-             <span className="text-[10px] font-medium text-slate-400 mt-0.5">{row.resource}</span>
+             <span className="text-xs font-medium text-slate-700 dark:text-white tracking-tight">{row.action}</span>
+             <span className="text-[12px] font-medium text-slate-400 mt-0.5">{row.resource}</span>
           </div>
         )
       },
@@ -132,10 +132,10 @@ export class ActivityColumnsFactory {
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">
-            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+            <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300">
                {new Date(row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
-            <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
+            <span className="text-[8px] font-medium text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.createdAt).toLocaleDateString()}
             </span>
           </div>

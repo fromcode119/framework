@@ -20,13 +20,13 @@ export class StatCard extends PureReactor {
           {icon}
         </div>
         {trend && (
-          <div className={`flex items-center gap-1 text-[11px] font-semibold ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+          <div className={`flex items-center gap-1 text-[12px] font-medium ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
             {trend.isPositive ? '↑' : '↓'} {trend.value}%
           </div>
         )}
       </div>
-      <p className="text-[11px] font-semibold text-slate-500 tracking-wide">{title}</p>
-      <h3 className="text-xl font-bold mt-0.5 text-slate-900 dark:text-white tracking-tight">{value}</h3>
+      <p className="text-[12px] font-medium text-slate-500 tracking-wide">{title}</p>
+      <h3 className="text-xl font-medium mt-0.5 text-slate-900 dark:text-white tracking-tight">{value}</h3>
     </div>
   );
   }

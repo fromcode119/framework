@@ -35,7 +35,7 @@ export class LocaleRegistryCard extends PureReactor {
           {/* An empty registry says so. It used to be impossible to see: the page seeded a hardcoded
               English row, so "nothing configured" was indistinguishable from "English configured". */}
           {locales.length === 0 && (
-            <p className="text-[11px] font-medium text-[var(--muted-foreground)]">
+            <p className="text-[12px] font-medium text-[var(--muted-foreground)]">
               {AdminI18n.t('settings.localization.noLocalesConfiguredAddOne')}
             </p>
           )}
@@ -82,7 +82,7 @@ export class LocaleRegistryCard extends PureReactor {
                       type="button"
                       onClick={() => removeLocale(locale.id)}
                       disabled={locales.length <= 1}
-                      className={`px-3 py-2 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${
+                      className={`px-3 py-2 rounded-lg text-[12px] font-medium tracking-wide transition-all ${
                         locales.length <= 1
                           ? 'opacity-40 cursor-not-allowed bg-slate-200 text-slate-500'
                           : theme === ThemeMode.DARK

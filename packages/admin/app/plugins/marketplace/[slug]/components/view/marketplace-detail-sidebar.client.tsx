@@ -54,7 +54,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
                   <button
                     onClick={onInstall}
                     disabled={installing}
-                    className={`w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold transition-all shadow-sm active:scale-95 group disabled:opacity-60 disabled:cursor-not-allowed ${
+                    className={`w-full flex items-center justify-center gap-3 py-3 rounded-xl font-medium transition-all shadow-sm active:scale-95 group disabled:opacity-60 disabled:cursor-not-allowed ${
                       theme === ThemeMode.DARK
                         ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
                         : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/30'
@@ -70,7 +70,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
                          <FrameworkIcons.Refresh size={20} strokeWidth={3} />
                       </div>
                       <div className="text-[12px] font-medium text-amber-600 mb-1">{AdminI18n.t('plugins.list.updateAvailable')}</div>
-                      <div className={`text-base font-bold mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: plugin.version })}</div>
+                      <div className={`text-base font-medium mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: plugin.version })}</div>
 
                       <button
                         onClick={onInstall}

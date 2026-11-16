@@ -88,14 +88,14 @@ export class DateTimePickerPopover extends PureReactor {
                   <p className="text-[12px] font-medium text-slate-400">
                     {AdminI18n.t('ui.date.selected')}
                   </p>
-                  <p className={`truncate text-[13px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+                  <p className={`truncate text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                     {selectedSummary}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={onJumpToSelected}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
+                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
                     theme === ThemeMode.DARK
                       ? 'text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95'
                       : 'text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 active:scale-95'
@@ -120,7 +120,7 @@ export class DateTimePickerPopover extends PureReactor {
                 <button
                   type="button"
                   onClick={onToggleJumpView}
-                  className={`flex h-8 items-center justify-center gap-2 rounded-xl px-3 text-[13px] font-semibold tracking-tight transition-all duration-150 ${
+                  className={`flex h-8 items-center justify-center gap-2 rounded-xl px-3 text-[13px] font-medium tracking-tight transition-all duration-150 ${
                     theme === ThemeMode.DARK
                       ? 'bg-slate-700/40 text-white hover:bg-indigo-500/20 hover:text-indigo-100 active:scale-[0.98] ring-1 ring-white/5'
                       : 'bg-white text-slate-900 hover:bg-indigo-50 hover:text-indigo-700 active:scale-[0.98] shadow-sm ring-1 ring-black/5'

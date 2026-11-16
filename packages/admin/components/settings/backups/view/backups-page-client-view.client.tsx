@@ -41,7 +41,7 @@ export class BackupsPageClientView extends PureReactor {
             <Card className="border border-rose-200 bg-rose-50/80 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-base font-bold tracking-tight">{AdminI18n.t('settings.components.backupInventoryFailedToLoad')}</h2>
+                  <h2 className="text-base font-medium tracking-tight">{AdminI18n.t('settings.components.backupInventoryFailedToLoad')}</h2>
                   <p className="mt-2 text-sm">{controller.backupState.errorMessage}</p>
                 </div>
               </div>

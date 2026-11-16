@@ -86,7 +86,7 @@ export class DateTimePickerGranularPopover extends PureReactor {
         >
           <div className="mb-4 flex items-center justify-between">
             {this.navButton(-1)}
-            <p className={`text-[15px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <p className={`text-[15px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {isYearMode ? `${this.pageStart} – ${this.pageStart + 11}` : this.visibleYear}
             </p>
             {this.navButton(1)}
@@ -95,13 +95,13 @@ export class DateTimePickerGranularPopover extends PureReactor {
             {isYearMode
               ? years.map((year) => (
                   <button key={year} type="button" onClick={() => this.onPick(year, null)}
-                    className={`rounded-xl px-3 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${this.cellClasses(year === this.selectedYear)}`}>
+                    className={`rounded-xl px-3 py-2.5 text-[13px] font-medium tracking-tight transition-all duration-150 ${this.cellClasses(year === this.selectedYear)}`}>
                     {year}
                   </button>
                 ))
               : DateTimePickerConstants.monthLabels().map((label, monthIndex) => (
                   <button key={label} type="button" onClick={() => this.onPick(this.visibleYear, monthIndex)}
-                    className={`rounded-xl px-3 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${this.cellClasses(this.visibleYear === this.selectedYear && monthIndex === this.selectedMonth)}`}>
+                    className={`rounded-xl px-3 py-2.5 text-[13px] font-medium tracking-tight transition-all duration-150 ${this.cellClasses(this.visibleYear === this.selectedYear && monthIndex === this.selectedMonth)}`}>
                     {label.slice(0, 3)}
                   </button>
                 ))}

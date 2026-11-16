@@ -65,7 +65,7 @@ export class ConfirmDialog extends PureReactor {
               <FrameworkIcons.Warning size={24} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
                 {this.title}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">

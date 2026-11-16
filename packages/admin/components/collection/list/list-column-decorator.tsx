@@ -141,7 +141,7 @@ export class ListColumnDecorator {
           <div className="min-w-0">
             <div className="truncate font-medium text-slate-900 dark:text-slate-100">{accessor(row)}</div>
             {parts.length ? (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[11px] font-medium text-slate-400 dark:text-slate-500">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12px] font-medium text-slate-400 dark:text-slate-500">
                 {parts.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="text-slate-300 dark:text-slate-600">·</span>, part] : [part]))}
               </div>
             ) : null}

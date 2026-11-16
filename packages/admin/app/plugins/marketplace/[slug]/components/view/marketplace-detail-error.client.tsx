@@ -13,9 +13,9 @@ export class MarketplaceDetailError extends PureReactor {
         <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
            <FrameworkIcons.Alert size={40} className="text-red-500" />
         </div>
-        <h2 className="text-xl font-semibold">{AdminI18n.t('plugins.list.error')}</h2>
+        <h2 className="text-xl font-medium">{AdminI18n.t('plugins.list.error')}</h2>
         <p className="text-slate-500">{this.error || AdminI18n.t('plugins.list.pluginNotFound')}</p>
-        <button onClick={this.onBack} className="text-indigo-600 font-semibold hover:underline">
+        <button onClick={this.onBack} className="text-indigo-600 font-medium hover:underline">
           {AdminI18n.t('plugins.list.backToMarketplace')}
         </button>
       </div>

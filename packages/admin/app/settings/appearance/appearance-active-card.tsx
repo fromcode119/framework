@@ -60,7 +60,7 @@ export class AppearanceActiveCard extends PureReactor {
                     <FrameworkIcons.Palette size={18} />
                   </span>
                   <span>
-                    <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}</span>
+                    <span className={`block text-sm font-medium tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}</span>
                     <span className="flex items-center gap-2">
                       <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
                       {catalog?.updateAvailable && (

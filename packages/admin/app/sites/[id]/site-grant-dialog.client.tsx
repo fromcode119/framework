@@ -72,7 +72,7 @@ export class SiteGrantDialog extends AdminComponent {
                 <FrameworkIcons.Plus size={16} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('sites.grantAccess')}</h3>
+                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('sites.grantAccess')}</h3>
                 <p className={`mt-1 text-sm leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {AdminI18n.t('sites.theAccountMustAlreadyExist')}
                 </p>

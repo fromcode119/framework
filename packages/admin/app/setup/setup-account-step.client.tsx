@@ -83,10 +83,10 @@ export class SetupAccountStep extends PureReactor {
               <FrameworkIcons.Shield size={16} />
             </div>
             <div>
-              <h4 className="text-xs font-semibold mb-1 tracking-wide text-indigo-900 dark:text-indigo-300">
+              <h4 className="text-xs font-medium mb-1 tracking-wide text-indigo-900 dark:text-indigo-300">
                 {this.text('setup.account.noticeTitle')}
               </h4>
-              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+              <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
                 {this.text('setup.account.noticeBody')}
               </p>
             </div>

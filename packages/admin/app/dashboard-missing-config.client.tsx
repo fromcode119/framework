@@ -51,7 +51,7 @@ export class DashboardMissingConfig extends AdminComponent {
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.done ? 'bg-emerald-500' : 'bg-amber-500'}`} />
               <span className="shrink-0 text-[12px] text-slate-700 dark:text-slate-200">{String(item.title)}</span>
               <span
-                className={`min-w-0 flex-1 truncate text-end text-[11px] ${
+                className={`min-w-0 flex-1 truncate text-end text-[12px] ${
                   item.done ? 'text-slate-500' : 'text-amber-600 dark:text-amber-500'
                 }`}
               >
@@ -63,7 +63,7 @@ export class DashboardMissingConfig extends AdminComponent {
                 * avoid. `whitespace-nowrap` keeps every action on one line whatever it says.
                 */}
               {item.actionLabel ? (
-                <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
+                <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
                   {String(item.actionLabel)}
                   <FrameworkIcons.ChevronRight size={13} />
                 </span>

@@ -79,7 +79,7 @@ export class PersonalDataPolicyRow extends PureReactor {
     return (
       <div className={`py-4 grid grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b last:border-0 ${this.isDark ? 'border-slate-800' : 'border-slate-100'}`}>
         <div>
-          <h3 className={`text-sm font-semibold tracking-tight ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.label}</h3>
+          <h3 className={`text-sm font-medium tracking-tight ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.label}</h3>
           <p className={`text-[12px] font-mono mt-0.5 ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{dataset.id}</p>
           {dataset.fields.length > 0 && (
             <p className={`text-[12px] mt-1 leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{dataset.fields.join(', ')}</p>

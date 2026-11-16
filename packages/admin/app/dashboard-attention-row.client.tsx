@@ -38,7 +38,7 @@ export class DashboardAttentionRow extends AdminComponent {
           {item.detail ? <span className="text-slate-400"> — {String(item.detail)}</span> : null}
         </span>
         {item.siteHost ? (
-          <span className="shrink-0 rounded border border-slate-200 px-1.5 text-[10px] text-slate-500 dark:border-slate-800">
+          <span className="shrink-0 rounded border border-slate-200 px-1.5 text-[12px] text-slate-500 dark:border-slate-800">
             {String(item.siteHost)}
           </span>
         ) : null}
@@ -46,7 +46,7 @@ export class DashboardAttentionRow extends AdminComponent {
           <button
             type="button"
             onClick={this.handleAction}
-            className="shrink-0 text-[11px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+            className="shrink-0 text-[12px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
           >
             {String(item.actionLabel)}
           </button>

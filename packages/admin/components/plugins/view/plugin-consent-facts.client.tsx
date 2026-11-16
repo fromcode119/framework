@@ -16,7 +16,7 @@ export class PluginConsentFacts extends PureReactor {
     const { summary } = this;
     return (
       <div className="space-y-3">
-        <h4 className="border-b border-slate-200 pb-1.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+        <h4 className="border-b border-slate-200 pb-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
           {AdminI18n.t('plugins.consent.facts.heading')}
         </h4>
         <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">

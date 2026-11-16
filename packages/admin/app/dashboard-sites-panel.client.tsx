@@ -65,9 +65,9 @@ export class DashboardSitesPanel extends AdminComponent {
               <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
                 {String(site.host || site.slug)}
               </span>
-              <span className="shrink-0 text-[11px] text-slate-500">{this.statusText(site)}</span>
+              <span className="shrink-0 text-[12px] text-slate-500">{this.statusText(site)}</span>
               {site.state && site.state !== 'active' ? (
-                <span className="shrink-0 rounded border border-amber-500/30 px-1.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                <span className="shrink-0 rounded border border-amber-500/30 px-1.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
                   {AdminI18n.optional(`sites.stateValue.${site.state}`) || String(site.state)}
                 </span>
               ) : null}

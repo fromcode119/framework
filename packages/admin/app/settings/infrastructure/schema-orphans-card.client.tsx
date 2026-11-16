@@ -77,13 +77,13 @@ export class SchemaOrphansCard extends AdminComponent {
     return (
       <li key={`${entry.table}.${entry.column}`} className="flex items-start justify-between gap-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
         <div className="min-w-0 text-sm">
-          <p className="font-mono font-semibold break-all">{entry.table}.{entry.column}</p>
+          <p className="font-mono font-medium break-all">{entry.table}.{entry.column}</p>
           <p className={`text-xs ${holdsData ? 'text-amber-600' : 'text-slate-500'}`}>{this.contents(entry)}</p>
           {entry.sample ? <p className="text-xs text-slate-500 break-all">{AdminI18n.t('settings.infrastructure.schemaOrphanSample', { sample: entry.sample })}</p> : null}
           {plugins.length ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.schemaOrphanInactivePlugins', { plugins: plugins.join(', ') })}</p> : null}
           <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.schemaOrphanSince', { time: new Date(entry.firstSeenAt).toLocaleString() })}</p>
         </div>
-        <Button onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />} className="h-9 px-3 rounded-xl text-[11px] font-bold shrink-0">
+        <Button onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />} className="h-9 px-3 rounded-xl text-[12px] font-medium shrink-0">
           {AdminI18n.t('settings.infrastructure.schemaOrphanDrop')}
         </Button>
       </li>

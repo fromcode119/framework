@@ -38,7 +38,7 @@ export class SecurityProtectionSummary extends PureReactor {
         <div className="flex gap-3">
           <Icon size={16} className="mt-0.5 text-indigo-500" />
           <div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">{title}</p>
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{title}</p>
             <p className="text-[13px] text-slate-500 dark:text-slate-400">{detail}</p>
           </div>
         </div>

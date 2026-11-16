@@ -13,7 +13,7 @@ export class BackupOperatorNotesCard extends AdminComponent {
     <Card>
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-1">
-          <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.operatorNotes')}</h2>
+          <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.operatorNotes')}</h2>
           <p className="text-sm text-slate-500">
             {AdminI18n.t('settings.components.createASystemSnapshotBefore')}
           </p>

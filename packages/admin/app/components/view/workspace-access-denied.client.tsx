@@ -48,7 +48,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
             <FrameworkIcons.Lock size={40} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.noAccess')}</h1>
+            <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.noAccess')}</h1>
             <p className="text-[13px] font-medium leading-relaxed text-slate-500">
               {name
                 ? <>{AdminI18n.t('shell.workspace.notMemberOf', { name })}</>
@@ -59,7 +59,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
           <button
             type="button"
             onClick={this.signOut}
-            className="w-full cursor-pointer rounded-lg bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
+            className="w-full cursor-pointer rounded-lg bg-slate-900 py-4 text-[12px] font-medium tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
           >
             {AdminI18n.t('shell.workspace.switchAccount')}
           </button>

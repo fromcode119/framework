@@ -9,7 +9,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class ReadOnlyAccessNotice {
   static render(): ReactNode {
     return (
-      <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs font-semibold text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 lg:px-8">
+      <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs font-medium text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 lg:px-8">
         <FrameworkIcons.Eye size={14} />
         {AdminI18n.t('shell.readOnlyInspector')}
       </div>

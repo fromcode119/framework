@@ -65,7 +65,7 @@ export class NotificationProvider extends Reactor {
             >
               <div className="mt-0.5">{this.icon(notification.type)}</div>
               <div className="flex-1">
-                <h4 className="text-sm font-bold tracking-tight">{notification.title}</h4>
+                <h4 className="text-sm font-medium tracking-tight">{notification.title}</h4>
                 <p className="mt-1 text-xs font-medium leading-relaxed text-white/80">{notification.message}</p>
               </div>
               <button

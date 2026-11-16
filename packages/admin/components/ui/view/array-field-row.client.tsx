@@ -89,7 +89,7 @@ export class ArrayFieldRow extends PureReactor {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
           {visibleFields.map((f: any) => (
             <div key={f.name} className={f.type === 'textarea' || f.type === 'relationship' || f.type === 'array' ? 'md:col-span-2' : ''}>
-              <label className={`block text-[11px] font-semibold tracking-wide mb-1.5 ${theme === ThemeMode.DARK ? 'text-slate-500/80' : 'text-slate-400'}`}>
+              <label className={`block text-[12px] font-medium tracking-wide mb-1.5 ${theme === ThemeMode.DARK ? 'text-slate-500/80' : 'text-slate-400'}`}>
                 {f.label || f.name}
               </label>
               {renderField(f, item, index)}

@@ -19,7 +19,7 @@ export class AppearanceElevationCard extends PureReactor {
     return (
       <div className={`${AdminClass.SURFACE} flex items-center justify-between gap-6 p-4`}>
         <div className="min-w-0">
-          <h3 className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.surfaceShadows')}</h3>
+          <h3 className="text-[13px] font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.surfaceShadows')}</h3>
           <p className="mt-0.5 text-[12px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
             {AdminI18n.t('settings.appearance.depthOnPanelsDialogsAnd')}
           </p>

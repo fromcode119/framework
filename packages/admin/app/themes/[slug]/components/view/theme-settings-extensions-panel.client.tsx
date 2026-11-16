@@ -37,7 +37,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
         <div className="space-y-5">
           {Object.entries(groupedThemeSettings).map(([group, keys]) => (
             <div key={group} className="space-y-4">
-              <h3 className={`text-[13px] font-semibold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group === 'General' ? AdminI18n.t('themes.general') : group}</h3>
+              <h3 className={`text-[13px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group === 'General' ? AdminI18n.t('themes.general') : group}</h3>
               {keys.map((key) => {
                 const schema = themeSettingsSchema[key];
                 const rawValue = tempSettings[key];
@@ -59,7 +59,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                       <div className="min-w-0">
                         <label className={UiFieldUtils.TEXT.LABEL}>{schema?.label || key}</label>
                         {schema?.description && (
-                          <p className="text-[11px] text-slate-500 mt-1">{schema.description}</p>
+                          <p className="text-[12px] text-slate-500 mt-1">{schema.description}</p>
                         )}
                       </div>
                       {schema?.integrationType && (
@@ -72,7 +72,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                     {isStructured ? (
                       <>
                         <StructuredReadOnlyField value={rawValue} theme={adminTheme} />
-                        <p className="text-[11px] text-slate-500 mt-2">{ThemeSettingsExtensionsPanel.provenanceOf(key, model)}</p>
+                        <p className="text-[12px] text-slate-500 mt-2">{ThemeSettingsExtensionsPanel.provenanceOf(key, model)}</p>
                       </>
                     ) : type === ThemeConfigFieldType.BOOLEAN ? (
                       <Switch checked={Boolean(rawValue)} onChange={(checked) => page.handleSettingChange(key, checked)} />

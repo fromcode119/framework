@@ -85,7 +85,7 @@ export class UserRolesPage extends AdminComponent {
 
     const dark = theme === ThemeMode.DARK;
     if (loading) return <Loader label={AdminI18n.t('users.loadingRoles')} className="py-20" />;
-    if (!user) return <div className="p-8 text-center font-semibold text-red-500">{AdminI18n.t('users.userNotFound2')}</div>;
+    if (!user) return <div className="p-8 text-center font-medium text-red-500">{AdminI18n.t('users.userNotFound2')}</div>;
 
     return (
       <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
@@ -96,7 +96,7 @@ export class UserRolesPage extends AdminComponent {
           subtitle={user.email}
           actions={
             <Button
-              className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
+              className="h-9 px-4 rounded-lg font-medium text-xs text-white"
               isLoading={saving}
               onClick={() => void this.handleSave()}
               icon={<FrameworkIcons.Save size={14} strokeWidth={2} />}
@@ -128,7 +128,7 @@ export class UserRolesPage extends AdminComponent {
                     <FrameworkIcons.Shield size={15} />
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-900'}`}>{role.name}</span>
+                    <span className={`block text-sm font-medium tracking-tight ${dark ? 'text-slate-100' : 'text-slate-900'}`}>{role.name}</span>
                     <span className="block text-xs font-medium text-slate-500 truncate">
                       {role.description || AdminI18n.t('users.noDescription')}{permCount ? ` · ${AdminI18n.t('users.permissionsCount', { count: permCount })}` : ''}
                     </span>

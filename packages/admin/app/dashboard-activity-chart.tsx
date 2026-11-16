@@ -59,7 +59,7 @@ export class DashboardActivityChart extends PureReactor {
 
   private errorSuffix(errors: number): ReactNode {
     if (!errors) return null;
-    return <span className="text-rose-500 font-semibold"> · {errors === 1 ? AdminI18n.t('dashboard.errorOne') : AdminI18n.t('dashboard.errorMany', { count: errors })}</span>;
+    return <span className="text-rose-500 font-medium"> · {errors === 1 ? AdminI18n.t('dashboard.errorOne') : AdminI18n.t('dashboard.errorMany', { count: errors })}</span>;
   }
 
   render(): ReactNode {
@@ -77,7 +77,7 @@ export class DashboardActivityChart extends PureReactor {
       return (
         <Card title={window.firstActiveLabel ? AdminI18n.t('dashboard.activitySince', { subject: this.subject, since: window.firstActiveLabel }) : AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
           <div className="flex items-baseline gap-2.5 mb-3">
-            <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{window.totalEvents}</span>
+            <span className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{window.totalEvents}</span>
             <span className="text-[12px] text-slate-500">
               {window.totalEvents === 1 ? AdminI18n.t('dashboard.eventWord') : AdminI18n.t('dashboard.eventsWord')}
               {this.errorSuffix(window.totalErrors)}
@@ -101,7 +101,7 @@ export class DashboardActivityChart extends PureReactor {
           ]}
           formatValue={(value) => String(Math.round(value))}
         />
-        <p className="mt-3 text-[11px] font-medium text-slate-400">
+        <p className="mt-3 text-[12px] font-medium text-slate-400">
           {AdminI18n.t('dashboard.loggedEventsInWindow', { count: window.totalEvents })}
         </p>
       </Card>

@@ -36,7 +36,7 @@ export class EditUserFormFields extends PureReactor {
       <>
         <Card title={AdminI18n.t('users.profileDetails')}>
            {locked ? (
-           <p className="text-xs font-bold text-slate-500 mt-2 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
+           <p className="text-xs font-medium text-slate-500 mt-2 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
              {AdminI18n.t('users.identityLockedNotice')}
            </p>
            ) : null}
@@ -83,7 +83,7 @@ export class EditUserFormFields extends PureReactor {
 
         {locked ? null : (
         <Card title={AdminI18n.t('users.securityCredentials')} icon={<FrameworkIcons.Shield size={18} className="text-amber-500" />}>
-           <p className="text-xs font-bold text-slate-500 mb-6 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
+           <p className="text-xs font-medium text-slate-500 mb-6 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
              {AdminI18n.t('users.leavePasswordFieldsBlankIf')}
            </p>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">

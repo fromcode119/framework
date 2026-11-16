@@ -65,7 +65,7 @@ export class PluginDetailHeader extends PureReactor {
     const tone = primary
       ? 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed'
       : (dark ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50');
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors ${primary ? 'font-semibold' : ''} ${tone}`}>{label}</button>;
+    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors ${primary ? 'font-medium' : ''} ${tone}`}>{label}</button>;
   }
 
   render(): ReactNode {

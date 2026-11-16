@@ -36,32 +36,32 @@ export class MediaPickerDetails extends PureReactor {
 
         <div>
           <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.filename')}</h4>
-          <p className="text-[11px] font-semibold text-slate-900 dark:text-white truncate">{item.filename}</p>
+          <p className="text-[12px] font-medium text-slate-900 dark:text-white truncate">{item.filename}</p>
         </div>
 
         {item.relativePath ? (
           <div>
             <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.themePath')}</h4>
-            <p className="text-[11px] font-semibold text-slate-900 dark:text-white break-all">{item.relativePath}</p>
+            <p className="text-[12px] font-medium text-slate-900 dark:text-white break-all">{item.relativePath}</p>
           </div>
         ) : null}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.format')}</h4>
-            <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{item.mimeType.split('/')[1]}</p>
+            <p className="text-[12px] font-medium text-slate-900 dark:text-white">{item.mimeType.split('/')[1]}</p>
           </div>
           {/* No size line for theme assets: the listing reports none, and a filled-in number would be invented. */}
           {item.filesize !== undefined ? (
             <div>
               <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.size')}</h4>
-              <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{(item.filesize / 1024).toFixed(1)} KB</p>
+              <p className="text-[12px] font-medium text-slate-900 dark:text-white">{(item.filesize / 1024).toFixed(1)} KB</p>
             </div>
           ) : null}
           {item.width ? (
             <div className="col-span-2">
               <h4 className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('mediaPicker.dimensions')}</h4>
-              <p className="text-[11px] font-semibold text-slate-900 dark:text-white">{AdminI18n.t('mediaPicker.pixels', { width: item.width, height: item.height })}</p>
+              <p className="text-[12px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('mediaPicker.pixels', { width: item.width, height: item.height })}</p>
             </div>
           ) : null}
         </div>
@@ -71,7 +71,7 @@ export class MediaPickerDetails extends PureReactor {
             onClick={this.handleConfirm}
             className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[1.02] transition-transform"
           >
-            <span className="text-[11px] font-semibold">{AdminI18n.t('mediaPicker.insertAsset')}</span>
+            <span className="text-[12px] font-medium">{AdminI18n.t('mediaPicker.insertAsset')}</span>
           </Button>
         </div>
       </div>

@@ -84,10 +84,10 @@ export class RedirectRulesCard extends PureReactor {
               if (event.key === 'Escape') this.cancelEdit();
             }}
           />
-          <Button onClick={() => this.saveEdit(redirect)} isLoading={this.busyId === redirect.id} className="h-8 px-3 rounded-lg font-semibold text-xs text-white">
+          <Button onClick={() => this.saveEdit(redirect)} isLoading={this.busyId === redirect.id} className="h-8 px-3 rounded-lg font-medium text-xs text-white">
             {AdminI18n.t('settings.redirects.save')}
           </Button>
-          <button type="button" onClick={this.cancelEdit} className={`text-xs font-semibold px-2 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>
+          <button type="button" onClick={this.cancelEdit} className={`text-xs font-medium px-2 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}>
             {AdminI18n.t('settings.redirects.cancel')}
           </button>
         </div>

@@ -98,10 +98,10 @@ export class SiteChangedElsewhereBar extends AdminComponent {
     const now = this.now;
     const opened = this.opened;
     if (!now || !opened) return null;
-    const button = 'inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 font-semibold text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20';
+    const button = 'inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 font-medium text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20';
     return (
       <div role="alert" className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 lg:px-8">
-        <span className="flex min-w-0 items-center gap-2 font-semibold">
+        <span className="flex min-w-0 items-center gap-2 font-medium">
           <FrameworkIcons.Warning size={14} />
           <span>{AdminI18n.t('shell.siteChanged.text', { now: this.nameOf(now), opened: this.nameOf(opened) })}</span>
         </span>

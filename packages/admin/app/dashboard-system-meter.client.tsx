@@ -46,8 +46,8 @@ export class DashboardSystemMeter extends PureReactor {
     return (
       <div className="space-y-1">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">{this.label}</span>
-          <span className="text-[10px] text-slate-400 tabular-nums">
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">{this.label}</span>
+          <span className="text-[12px] text-slate-400 tabular-nums">
             {this.readout}
             {fraction !== null ? ` · ${Math.round(fraction * 100)}%` : ''}
           </span>

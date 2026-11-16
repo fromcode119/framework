@@ -49,7 +49,7 @@ export class RolePermissionsEditor extends PureReactor {
     return (
       <Card title={AdminI18n.t('users.permissions')}>
         <div className="flex flex-col gap-3">
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[12px] text-slate-500">
             <AdminRichText k="users.permissionsExplained" />
           </p>
           {loadError ? <div className="fc-scope-notice"><span className="fc-scope-notice__text">{loadError}</span></div> : null}

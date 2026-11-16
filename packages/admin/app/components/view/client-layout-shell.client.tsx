@@ -71,14 +71,14 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
               <FrameworkIcons.User size={40} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.account.yours')}</h1>
+              <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.account.yours')}</h1>
               <p className="text-sm font-medium leading-relaxed text-slate-500">
-                <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-bold text-indigo-500' }} />
+                <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-medium text-indigo-500' }} />
               </p>
             </div>
             <button
               onClick={() => { window.location.href = accountUrl; }}
-              className="w-full rounded-lg bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
+              className="w-full rounded-lg bg-slate-900 py-4 text-[12px] font-medium tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
             >
               {AdminI18n.t('shell.account.goToMine')}
             </button>
@@ -87,7 +87,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
                 AuthUtils.purgeAuth();
                 authState.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
               }}
-              className="w-full text-[11px] font-semibold tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+              className="w-full text-[12px] font-medium tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
             >
               {AdminI18n.t('shell.account.signOut')}
             </button>

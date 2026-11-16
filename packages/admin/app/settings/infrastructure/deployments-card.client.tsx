@@ -71,7 +71,7 @@ export class DeploymentsCard extends AdminComponent {
       : rolling ? AdminI18n.t('settings.infrastructure.rollingWillRestart') : AdminI18n.t('settings.infrastructure.rollingNoRoom');
     return (
       <div className="mt-3 space-y-1 text-xs">
-        <p className={`font-semibold ${tone}`}>{headline}</p>
+        <p className={`font-medium ${tone}`}>{headline}</p>
         <p className="text-slate-500">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
         <p className="text-slate-500">
           {AdminI18n.t('settings.infrastructure.eitherModeAReleaseWith')}

@@ -49,7 +49,7 @@ export class PluginProcessCard extends AdminComponent {
         <div className="flex gap-4">
           <div className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>{icon}</div>
           <div>
-            <h3 className={`font-semibold text-sm ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
+            <h3 className={`font-medium text-sm ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{title}</h3>
             {description && <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>}
           </div>
         </div>
@@ -95,7 +95,7 @@ export class PluginProcessCard extends AdminComponent {
         {runtime.reportError && <p className="text-sm text-[var(--destructive)]">{AdminI18n.t('plugins.process.noAnswer', { reason: runtime.reportError })}</p>}
         {report && (
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-            <h3 className="font-semibold text-sm">{AdminI18n.t('plugins.detail.registeredWithTheApi')}</h3>
+            <h3 className="font-medium text-sm">{AdminI18n.t('plugins.detail.registeredWithTheApi')}</h3>
             <PluginProcessRegistrations registrations={report.registrations} />
           </div>
         )}

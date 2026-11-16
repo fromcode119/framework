@@ -31,15 +31,15 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           {this.shareId ? (
-            <span className="inline-flex items-center gap-2 text-[11px]">
+            <span className="inline-flex items-center gap-2 text-[12px]">
               <FrameworkIcons.Activity size={13} className="opacity-60" />
-              <span className="font-semibold">{String(this.data?.shareTitle || AdminI18n.t('media.share', { shareId: this.shareId }))}</span>
+              <span className="font-medium">{String(this.data?.shareTitle || AdminI18n.t('media.share', { shareId: this.shareId }))}</span>
               <button type="button" onClick={this.handleClearScope} className="text-indigo-500 hover:underline">
                 {AdminI18n.t('media.showAllShares')}
               </button>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-2 text-[11px] opacity-60">
+            <span className="inline-flex items-center gap-2 text-[12px] opacity-60">
               <FrameworkIcons.Activity size={13} /> {AdminI18n.t('media.everythingSentAcrossAllShares')}
             </span>
           )}

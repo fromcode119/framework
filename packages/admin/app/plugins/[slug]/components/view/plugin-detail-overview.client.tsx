@@ -42,7 +42,7 @@ export class PluginDetailOverview extends PureReactor {
     return (
       <div className="flex flex-wrap items-center gap-4">
         <div className="min-w-0 flex-1">
-          <div className={`text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.uninstallPlugin')}</div>
+          <div className={`text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.uninstallPlugin')}</div>
           <div className={`mt-0.5 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.detail.uninstallHint')}</div>
         </div>
         <button type="button" onClick={this.onOpenDeleteConfirm}

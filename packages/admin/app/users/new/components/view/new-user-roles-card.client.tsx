@@ -54,7 +54,7 @@ export class NewUserRolesCard extends PureReactor {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className={`text-sm font-bold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+                          <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                             {role.name || role.slug}
                           </p>
                           <p className="text-xs text-slate-500 mt-1">
@@ -65,7 +65,7 @@ export class NewUserRolesCard extends PureReactor {
                           <FrameworkIcons.Check size={16} />
                         </div>
                       </div>
-                      <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
+                      <div className="mt-3 flex items-center justify-between text-[12px] font-medium text-slate-500">
                         <span>{role.slug}</span>
                         <span>{AdminI18n.t('users.permissionsCount', { count: Array.isArray(role.permissions) ? role.permissions.length : 0 })}</span>
                       </div>
@@ -76,7 +76,7 @@ export class NewUserRolesCard extends PureReactor {
             )}
 
             {rolesError && (
-              <div className="text-sm text-rose-500 font-semibold">{rolesError}</div>
+              <div className="text-sm text-rose-500 font-medium">{rolesError}</div>
             )}
          </div>
       </Card>

@@ -52,9 +52,9 @@ export class SecondarySidebarPanelBody extends PureReactor {
                     <Icon name={item.icon || 'Circle'} size={16} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-semibold leading-tight">{AdminNavText.panelLabel(item)}</span>
+                    <span className="block text-[12px] font-medium leading-tight">{AdminNavText.panelLabel(item)}</span>
                     {item.description && (
-                      <span className={`mt-0.5 block text-[10px] ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>{item.description}</span>
+                      <span className={`mt-0.5 block text-[12px] ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>{item.description}</span>
                     )}
                   </span>
                 </AdminLink>

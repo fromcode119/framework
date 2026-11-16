@@ -23,11 +23,11 @@ export class PluginOverviewUpdate extends PureReactor {
       <div>
         <div className="flex flex-wrap items-center gap-3">
           <FrameworkIcons.Download size={16} className={dark ? 'text-indigo-300' : 'text-indigo-600'} />
-          <span className={`text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: this.item.version })}</span>
+          <span className={`text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: this.item.version })}</span>
           <span className="flex-1" />
           {this.canUpdate ? (
             <button type="button" onClick={this.onUpdate} disabled={this.isUpdating}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-medium text-white hover:bg-indigo-500 disabled:opacity-60">
               {this.isUpdating ? <FrameworkIcons.Loader size={13} className="animate-spin" /> : <FrameworkIcons.Zap size={13} />}
               {this.isUpdating ? AdminI18n.t('plugins.detail.updating') : AdminI18n.t('plugins.detail.updateAvailable')}
             </button>

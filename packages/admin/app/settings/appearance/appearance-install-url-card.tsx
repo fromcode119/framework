@@ -24,7 +24,7 @@ export class AppearanceInstallUrlCard extends PureReactor {
     return (
       <Card title={AdminI18n.t('settings.appearance.installFromAPackageUrl')}>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <Input value={this.url} onChange={this.handleChange} placeholder="https://…/my-appearance.zip" className="flex-1 font-bold" />
+          <Input value={this.url} onChange={this.handleChange} placeholder="https://…/my-appearance.zip" className="flex-1 font-medium" />
           <Button icon={<FrameworkIcons.Download size={14} />} onClick={this.onInstall} disabled={this.busy || !this.url.trim()}>{AdminI18n.t('settings.appearance.install')}</Button>
         </div>
         <p className="text-[13px] text-slate-500 mt-2 leading-relaxed">

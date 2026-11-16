@@ -69,7 +69,7 @@ export class CertificateHostTable extends AdminComponent {
     if (entry.state !== 'waiting_for_dns' || !addresses.length) return null;
     const dark = this.isDark;
     return (
-      <p className={`mt-0.5 text-[11px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
+      <p className={`mt-0.5 text-[12px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
         {AdminI18n.t('certificates.pointHostAt', { host: entry.host, addresses: addresses.join(', ') })}
       </p>
     );
@@ -88,14 +88,14 @@ export class CertificateHostTable extends AdminComponent {
       // that already has one. Name where it lives, so the operator can go to it.
       if (entry.coveredByHost) {
         return (
-          <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <span className={`text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
             {entry.coveredByExpiryDate ? AdminI18n.t('certificates.servedByWildcardUntil', { host: entry.coveredByHost, date: entry.coveredByExpiryDate }) : AdminI18n.t('certificates.servedByWildcard', { host: entry.coveredByHost })}
           </span>
         );
       }
 
       return (
-        <span className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <span className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
           {this.terminatesTls
             ? AdminI18n.t('certificates.nothingStoredThisHostCannot')
             : AdminI18n.t('certificates.nothingStoredHereTlsFor')}
@@ -103,7 +103,7 @@ export class CertificateHostTable extends AdminComponent {
       );
     }
     return (
-      <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <span className={`text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
         {entry.issuer ? `${entry.issuer} · ` : ''}{AdminI18n.t('certificates.until', { date: entry.expiryDate })}
         {entry.isUploaded ? AdminI18n.t('certificates.uploadedNotRenewedAutomatically') : ''}
         {/*
@@ -134,11 +134,11 @@ export class CertificateHostTable extends AdminComponent {
 
         <div className="flex-1 min-w-0 basis-56">
           <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold tracking-tight truncate font-mono ${dark ? 'text-white' : 'text-slate-900'}`}>{entry.host}</span>
+            <span className={`text-sm font-medium tracking-tight truncate font-mono ${dark ? 'text-white' : 'text-slate-900'}`}>{entry.host}</span>
             <CertificateStateBadge entry={entry} />
           </div>
           <div className="truncate">
-            <span className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <span className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               {entry.roleLabel}{this.showSite && entry.tenantSlug ? ` · ${entry.tenantSlug}` : ''} ·{' '}
             </span>
             {this.renderMeta(entry)}
@@ -148,7 +148,7 @@ export class CertificateHostTable extends AdminComponent {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 ms-auto">
-          <span className={`text-[11px] tabular-nums ${
+          <span className={`text-[12px] tabular-nums ${
             entry.needsAttention ? (dark ? 'text-amber-400' : 'text-amber-600') : (dark ? 'text-slate-500' : 'text-slate-400')}`}
           >
             {entry.remainingLabel}

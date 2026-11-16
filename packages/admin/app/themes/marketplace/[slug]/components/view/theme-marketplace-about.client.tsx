@@ -52,7 +52,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
                             <FrameworkIcons.Check size={14} strokeWidth={3} />
                           </div>
                           <div className="flex-1 space-y-1">
-                            <p className={`text-[13px] font-semibold leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
+                            <p className={`text-[13px] font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
                               {change}
                             </p>
                           </div>

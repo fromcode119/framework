@@ -57,7 +57,7 @@ export class BuildOverview extends SourcesPageActions {
       >
         <BuildSourceForm build={this.editingBuild} busy={this.savingSource} mode={this.editorMode} onCancel={this.closeEditor} onSubmit={this.saveSource} />
         {this.editorError ? (
-          <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+          <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
             {this.editorError}
           </div>
         ) : null}
@@ -90,7 +90,7 @@ export class BuildOverview extends SourcesPageActions {
           <CompactPageHeader title={AdminI18n.t('sources.sources')} subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')} icon={<Hammer size={20} />} actions={this.renderHeaderActions()} />
           <div className="p-4 lg:p-6 fc-page-stack">
             {this.error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{this.error}</div>
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{this.error}</div>
             ) : null}
             <ListToolbar search={this.search} onSearch={this.setSearch} placeholder={AdminI18n.t('sources.searchSources')} theme={this.theme} filters={this.filters} total={matching.length} />
             <SourcesTable

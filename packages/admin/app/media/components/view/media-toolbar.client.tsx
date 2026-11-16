@@ -74,7 +74,7 @@ export class MediaToolbar extends PureReactor {
               <span className="flex items-center gap-2">
                 <button
                   onClick={this.goToRoot}
-                  className={`font-semibold tracking-wide transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
+                  className={`font-medium tracking-wide transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
                 >
                   {AdminI18n.t('media.rootLibrary')}
                 </button>
@@ -84,7 +84,7 @@ export class MediaToolbar extends PureReactor {
                     <button
                       data-folder-id={folder.id}
                       onClick={this.goToFolder}
-                      className={`font-semibold tracking-wide transition-colors ${index === folderPath.length - 1 ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
+                      className={`font-medium tracking-wide transition-colors ${index === folderPath.length - 1 ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
                     >
                       {folder.name}
                     </button>
@@ -97,7 +97,7 @@ export class MediaToolbar extends PureReactor {
                 <Slot name="admin.media.header.actions" />
                 <Button
                   variant={ButtonVariant.SECONDARY}
-                  className="px-3 h-9 rounded-lg font-semibold text-xs whitespace-nowrap"
+                  className="px-3 h-9 rounded-lg font-medium text-xs whitespace-nowrap"
                   onClick={this.openFolderPrompt}
                   icon={<FrameworkIcons.FolderPlus size={15} strokeWidth={2.5} />}
                 >
@@ -110,14 +110,14 @@ export class MediaToolbar extends PureReactor {
                 {this.selectedCount > 0 ? (
                   <>
                     <Button
-                      className="px-4 h-9 rounded-lg font-semibold text-xs whitespace-nowrap"
+                      className="px-4 h-9 rounded-lg font-medium text-xs whitespace-nowrap"
                       variant={ButtonVariant.GHOST}
                       onClick={this.onClearSelection}
                     >
                       {AdminI18n.t('media.clearCount', { count: this.selectedCount })}
                     </Button>
                     <Button
-                      className="px-4 h-9 rounded-lg font-semibold text-xs text-white whitespace-nowrap"
+                      className="px-4 h-9 rounded-lg font-medium text-xs text-white whitespace-nowrap"
                       onClick={this.onShareSelected}
                       icon={<FrameworkIcons.Share size={15} strokeWidth={3} />}
                     >
@@ -126,7 +126,7 @@ export class MediaToolbar extends PureReactor {
                   </>
                 ) : null}
                 <Button
-                  className="px-4 h-9 rounded-lg font-semibold text-xs text-white whitespace-nowrap"
+                  className="px-4 h-9 rounded-lg font-medium text-xs text-white whitespace-nowrap"
                   onClick={this.openFilePicker}
                   disabled={uploading}
                   icon={uploading ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Upload size={15} strokeWidth={3} />}

@@ -18,14 +18,14 @@ export class MarketplaceEmptyState extends PureReactor {
         <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slow">
           <FrameworkIcons.Plugins size={32} className="text-slate-300 dark:text-slate-700" />
         </div>
-        <h3 className={`text-lg font-bold mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+        <h3 className={`text-lg font-medium mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
           {AdminI18n.t(this.configured ? 'plugins.list.noPluginsFound' : 'plugins.list.noMarketplaceSet')}
         </h3>
         <p className="text-slate-500 font-medium">
           {AdminI18n.t(this.configured ? 'plugins.list.tryADifferentSearchTerm' : 'plugins.list.noMarketplaceSetHelp')}
         </p>
         {!this.configured && (
-          <AdminLink href={AdminConstants.ROUTES.SETTINGS.GENERAL} className="inline-block mt-4 text-sm font-semibold text-indigo-500 hover:text-indigo-400">
+          <AdminLink href={AdminConstants.ROUTES.SETTINGS.GENERAL} className="inline-block mt-4 text-sm font-medium text-indigo-500 hover:text-indigo-400">
             {AdminI18n.t('plugins.list.openGeneralSettings')}
           </AdminLink>
         )}

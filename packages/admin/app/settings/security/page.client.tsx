@@ -180,13 +180,13 @@ export class SecuritySettingsPage extends AdminComponent {
               <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                 {this.canManagePlatform && <button
                   onClick={this.showDashboardTab}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   {AdminI18n.t('settings.security.dashboard')}
                 </button>}
                 <button
                   onClick={this.showSettingsTab}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   {AdminI18n.t('settings.security.settings')}
                 </button>

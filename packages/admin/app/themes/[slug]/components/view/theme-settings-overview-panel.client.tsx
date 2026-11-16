@@ -40,9 +40,9 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
     return (
       <div className="flex flex-wrap items-center gap-3">
         <FrameworkIcons.Download size={16} className={dark ? 'text-indigo-300' : 'text-indigo-600'} />
-        <span className={`flex-1 text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.versionReady', { version })}</span>
+        <span className={`flex-1 text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.versionReady', { version })}</span>
         <button type="button" onClick={this.update} disabled={updating}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-medium text-white hover:bg-indigo-500 disabled:opacity-60">
           {updating ? <FrameworkIcons.Loader size={13} className="animate-spin" /> : <FrameworkIcons.Zap size={13} />}
           {updating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
         </button>
@@ -71,7 +71,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
             {AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}
           </span>
           {active ? null : (
-            <button type="button" onClick={this.activate} className="inline-flex h-8 items-center rounded-lg bg-indigo-600 px-3.5 text-[13px] font-semibold text-white hover:bg-indigo-500">
+            <button type="button" onClick={this.activate} className="inline-flex h-8 items-center rounded-lg bg-indigo-600 px-3.5 text-[13px] font-medium text-white hover:bg-indigo-500">
               {AdminI18n.t('themes.activate')}
             </button>
           )}

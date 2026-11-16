@@ -40,7 +40,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
             {AdminI18n.t('themes.marketplacePremium')}
           </Badge>
           <div className="flex items-center gap-3">
-            <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <h1 className={`text-xl font-medium tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {theme.name}
             </h1>
             {allVersions.length > 1 && (

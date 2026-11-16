@@ -75,7 +75,7 @@ export class FieldSelectControl extends PureReactor {
             {selectedValues.map((selected) => (
               <span
                 key={selected}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${
                   theme === ThemeMode.DARK
                     ? 'bg-slate-900 border-slate-700 text-slate-200'
                     : 'bg-slate-50 border-slate-200 text-slate-700'

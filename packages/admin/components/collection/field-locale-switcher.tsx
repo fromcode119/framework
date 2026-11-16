@@ -32,8 +32,8 @@ export class FieldLocaleSwitcher extends PureReactor {
         <button
           type="button"
           onClick={onToggle}
-          className={`inline-flex items-center gap-1.5 rounded-[var(--radius)] border font-semibold tracking-wide transition-all ${
-            compact ? 'h-7 px-2 text-[10px]' : 'px-2.5 py-1 text-[10px]'
+          className={`inline-flex items-center gap-1.5 rounded-[var(--radius)] border font-medium tracking-wide transition-all ${
+            compact ? 'h-7 px-2 text-[12px]' : 'px-2.5 py-1 text-[12px]'
           } ${
             theme === ThemeMode.DARK
               ? 'bg-slate-900 border-slate-700 text-slate-200 hover:border-indigo-500/60'
@@ -62,7 +62,7 @@ export class FieldLocaleSwitcher extends PureReactor {
               // stays; the menu says why it has nothing to switch to and where that is set.
               <p className={`px-2.5 py-2 text-xs font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
                 {AdminI18n.t('ui.locale.noneConfigured')}{' '}
-                <AdminLink className="font-semibold text-indigo-600 underline dark:text-indigo-300" href={AdminPathUtils.toAdminPath('/settings/localization')}>
+                <AdminLink className="font-medium text-indigo-600 underline dark:text-indigo-300" href={AdminPathUtils.toAdminPath('/settings/localization')}>
                   {AdminI18n.t('ui.locale.configure')}
                 </AdminLink>
               </p>

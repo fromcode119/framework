@@ -110,7 +110,7 @@ export class GeneralSystemCards extends PureReactor {
             ]}
             theme={theme}
             className="w-full md:w-80"
-            triggerClassName="font-bold rounded-xl"
+            triggerClassName="font-medium rounded-xl"
           />
         </SettingRow>
         <SettingRow
@@ -162,7 +162,7 @@ export class GeneralSystemCards extends PureReactor {
                 searchable
                 theme={theme}
                 className="w-full md:w-80"
-                triggerClassName="font-bold rounded-xl"
+                triggerClassName="font-medium rounded-xl"
               />
             </SettingRow>
             {this.shown('time_format') && (
@@ -177,7 +177,7 @@ export class GeneralSystemCards extends PureReactor {
                   options={this.timeFormatOptions}
                   theme={theme}
                   className="w-full md:w-80"
-                  triggerClassName="font-bold rounded-xl"
+                  triggerClassName="font-medium rounded-xl"
                 />
               </SettingRow>
             )}
@@ -195,7 +195,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email}
                   onChange={this.changeNotificationEmail}
-                  className="w-full md:w-80 font-bold"
+                  className="w-full md:w-80 font-medium"
                   placeholder="hello@example.com"
                 />
               </SettingRow>
@@ -210,7 +210,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email_cc}
                   onChange={this.changeNotificationEmailCc}
-                  className="w-full md:w-80 font-bold"
+                  className="w-full md:w-80 font-medium"
                   placeholder="ops@example.com, sales@example.com"
                 />
               </SettingRow>

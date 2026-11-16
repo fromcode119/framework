@@ -34,7 +34,7 @@ export class PluginDetailResources extends PureReactor {
               <div className="flex gap-4">
                 <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Zap size={20} /></div>
                 <div>
-                  <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.memoryHeapLimit')}</h3>
+                  <h3 className={`font-medium text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.memoryHeapLimit')}</h3>
                   <p className="text-sm text-slate-500 mt-1 max-w-sm">{AdminI18n.t('plugins.detail.maximumRamAllocatedToThe')}</p>
                 </div>
               </div>
@@ -44,7 +44,7 @@ export class PluginDetailResources extends PureReactor {
               <div className="flex gap-4">
                 <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Clock size={20} /></div>
                 <div>
-                  <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.executionTimeout')}</h3>
+                  <h3 className={`font-medium text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.executionTimeout')}</h3>
                   <p className="text-sm text-slate-500 mt-1 max-w-sm">{AdminI18n.t('plugins.detail.killPluginExecutionIfIt')}</p>
                 </div>
               </div>

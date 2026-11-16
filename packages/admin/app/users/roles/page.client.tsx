@@ -113,7 +113,7 @@ export class RolesPage extends AdminComponent {
           subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
           actions={!this.canCreate ? null :
             <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
-              <Button className="px-4 h-9 rounded-lg font-semibold text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
+              <Button className="px-4 h-9 rounded-lg font-medium text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
                 {AdminI18n.t('users.createRole')}
               </Button>
             </AdminLink>

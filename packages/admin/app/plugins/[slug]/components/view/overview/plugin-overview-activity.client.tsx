@@ -34,7 +34,7 @@ export class PluginOverviewActivity extends PureReactor {
             {this.logs.map((log) => (
               <div key={log.id || `${log.timestamp}-${log.message}`} className={`flex items-start gap-3 border-t py-2 text-[13px] first:border-t-0 ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
                 <time className={`w-20 shrink-0 tabular-nums ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{new Date(log.timestamp).toLocaleTimeString(AdminI18n.locale)}</time>
-                <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${this.level(log.level)}`}>{log.level}</span>
+                <span className={`rounded px-1.5 py-0.5 text-[12px] font-medium ${this.level(log.level)}`}>{log.level}</span>
                 <span className={`min-w-0 break-words ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{log.message}</span>
               </div>
             ))}

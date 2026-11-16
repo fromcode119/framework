@@ -82,7 +82,7 @@ export class PluginAutoUpdatePanel extends AdminComponent {
           label={AdminI18n.t('settings.updates.pluginAuto.automatic')}
           description={AdminI18n.t('settings.updates.pluginAuto.automaticExplained')}
         />
-        <p className={`text-[11px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
+        <p className={`text-[12px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
       </div>
     );
   }

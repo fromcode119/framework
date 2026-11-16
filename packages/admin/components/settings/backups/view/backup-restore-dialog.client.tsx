@@ -65,7 +65,7 @@ export class BackupRestoreDialog extends AdminComponent {
                   <FrameworkIcons.Warning size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold tracking-tight">{AdminI18n.t('settings.components.previewRestore')}</h3>
+                  <h3 className="text-xl font-medium tracking-tight">{AdminI18n.t('settings.components.previewRestore')}</h3>
                   <p className="text-sm text-slate-500">{AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}</p>
                 </div>
               </div>
@@ -81,7 +81,7 @@ export class BackupRestoreDialog extends AdminComponent {
             <div className="space-y-5">
               <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
                 <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.selectedBackup')}</div>
-                <div className="mt-3 text-base font-bold tracking-tight">{state.backup.displayName}</div>
+                <div className="mt-3 text-base font-medium tracking-tight">{state.backup.displayName}</div>
                 <div className="mt-1 text-sm text-slate-500">{state.backup.filename}</div>
               </div>
 
@@ -93,7 +93,7 @@ export class BackupRestoreDialog extends AdminComponent {
                       key={scope.value}
                       type="button"
                       onClick={() => onTargetScopeChange(scope)}
-                      className={`rounded-xl border px-4 py-3 text-sm font-bold tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
+                      className={`rounded-xl border px-4 py-3 text-sm font-medium tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
                     >
                       {scope === RestoreTargetScope.SYSTEM ? AdminI18n.t('settings.components.systemRoot') : scope === RestoreTargetScope.PLUGIN ? AdminI18n.t('settings.components.pluginSlug') : AdminI18n.t('settings.components.themeSlug')}
                     </button>

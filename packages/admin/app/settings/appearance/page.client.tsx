@@ -192,7 +192,7 @@ export class AppearanceSettingsPage extends AdminComponent {
       return (
         <div className="p-12">
           <Card className="p-6 max-w-2xl">
-            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.lockedByThisWorkspaceS')}</h2>
+            <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.lockedByThisWorkspaceS')}</h2>
             <p className="text-sm text-slate-500 mt-2">
               <AdminRichText k="settings.appearance.workspaceLocked" vars={{ slug: WorkspaceAppearanceLock.slug, appearance: WorkspaceAppearanceLock.appearance }} />
             </p>

@@ -20,7 +20,7 @@ export class ThemeOverviewColours extends PureReactor {
               <div key={swatch.key} className="min-w-0">
                 <div className={`h-14 rounded-lg border ${dark ? 'border-white/10' : 'border-black/5'}`} style={{ backgroundColor: swatch.value }} />
                 <div className={`mt-1.5 truncate text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`} title={swatch.label}>{swatch.label}</div>
-                <div className={`font-mono text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{swatch.value}</div>
+                <div className={`font-mono text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{swatch.value}</div>
               </div>
             ))}
           </div>

@@ -79,7 +79,7 @@ export class MediaAssetInfoDialog extends AdminComponent {
                 <FrameworkIcons.File size={24} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.assetDetails')}</h3>
+                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.assetDetails')}</h3>
                 <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
                   {AdminI18n.t('media.thisFileShipsInsideThe')}
                 </p>

@@ -124,8 +124,8 @@ export class CertificatesSettingsCard extends AdminComponent {
   render(): ReactNode {
     if (!this.isLoaded) return null;
     const dark = this.theme === ThemeMode.DARK;
-    const label = `block text-xs font-semibold mb-1.5 ${dark ? 'text-slate-300' : 'text-slate-600'}`;
-    const help = `mt-1.5 text-[11px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`;
+    const label = `block text-xs font-medium mb-1.5 ${dark ? 'text-slate-300' : 'text-slate-600'}`;
+    const help = `mt-1.5 text-[12px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`;
 
     return (
       <Card title={AdminI18n.t('settings.infrastructure.certificates')}>
@@ -155,7 +155,7 @@ export class CertificatesSettingsCard extends AdminComponent {
               value={this.addresses}
               onChange={this.onAddresses}
               placeholder={'203.0.113.10'}
-              inputClassName="h-24 font-mono text-[11px] resize-y"
+              inputClassName="h-24 font-mono text-[12px] resize-y"
             />
             <p className={help}>
               {AdminI18n.t('settings.infrastructure.onePerLineTheseAre')}
@@ -189,9 +189,9 @@ export class CertificatesSettingsCard extends AdminComponent {
             ) : null}
           </div>
           {this.cloudflareTokenMessage ? (
-            <p className={`mt-2 text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.cloudflareTokenMessage}</p>
+            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.cloudflareTokenMessage}</p>
           ) : (
-            <p className={`mt-2 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               {this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard')}
             </p>
           )}

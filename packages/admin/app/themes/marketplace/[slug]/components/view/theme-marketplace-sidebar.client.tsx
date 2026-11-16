@@ -36,7 +36,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               </div>
               <div>
                 <h4 className={`text-sm font-medium leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>{AdminI18n.t('themes.upgradeAvailable')}</h4>
-                <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-amber-500/70' : 'text-amber-700'}`}>
+                <p className={`text-[12px] font-medium mt-1 leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-amber-500/70' : 'text-amber-700'}`}>
                   {AdminI18n.t('themes.versionBringsImprovements', { version: theme.version })}
                 </p>
               </div>
@@ -56,12 +56,12 @@ export class ThemeMarketplaceSidebar extends PureReactor {
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
               <div className={`text-[12px] font-medium mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.installedRelease')}</div>
-              <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : AdminI18n.t('themes.notInstalled')}</div>
+              <div className={`text-lg font-medium ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : AdminI18n.t('themes.notInstalled')}</div>
             </div>
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
               <div className={`text-[12px] font-medium mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.marketplaceRelease')}</div>
-              <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
+              <div className={`text-lg font-medium ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
             </div>
 
             <div className="w-full space-y-4">

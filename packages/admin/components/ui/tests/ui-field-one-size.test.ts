@@ -18,7 +18,7 @@ describe('UiFieldUtils — one field size', () => {
   });
 
   it('drops a caller height or text size meant for a line of text', () => {
-    const classes = UiFieldUtils.getFieldClasses(FieldSize.MD, 'h-9 sm:h-[34px] text-[10px] text-sm ps-8');
+    const classes = UiFieldUtils.getFieldClasses(FieldSize.MD, 'h-9 sm:h-[34px] text-[12px] text-sm ps-8');
     expect(heightOf(classes)).toEqual(['h-10']);
     // The size itself is the `fc-field` token in admin.css — one place, not a utility on every field.
     expect(textSizeOf(classes)).toEqual([]);

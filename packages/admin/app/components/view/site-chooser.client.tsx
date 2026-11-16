@@ -63,10 +63,10 @@ export class SiteChooser extends AdminComponent {
       >
         <FrameworkIcons.Globe size={15} className="shrink-0 text-indigo-500" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-semibold text-slate-900 dark:text-white">{site.label}</span>
-          <span className="block truncate text-[11px] text-slate-500">{site.primaryHost}</span>
+          <span className="block truncate text-[13px] font-medium text-slate-900 dark:text-white">{site.label}</span>
+          <span className="block truncate text-[12px] text-slate-500">{site.primaryHost}</span>
         </span>
-        {this.failed === site.id ? <span className="text-[11px] font-semibold text-rose-500">{AdminI18n.t('shell.chooser.unavailable')}</span> : null}
+        {this.failed === site.id ? <span className="text-[12px] font-medium text-rose-500">{AdminI18n.t('shell.chooser.unavailable')}</span> : null}
         {busy ? null : <FrameworkIcons.ChevronRight size={14} className="shrink-0 text-slate-400" />}
       </button>
     );
@@ -82,11 +82,11 @@ export class SiteChooser extends AdminComponent {
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
         <div className="w-full max-w-md space-y-5">
           <div className="space-y-1.5">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl font-medium tracking-tight text-slate-900 dark:text-white">
               {AdminI18n.t(this.isEmpty ? 'shell.chooser.noAccess' : 'shell.site.choose')}
             </h1>
             <p className="text-[12px] leading-relaxed text-slate-500">
-              <AdminRichText k="shell.chooser.signedInAs" vars={{ email: this.auth.user?.email }} classes={{ strong: 'font-semibold text-indigo-500' }} />{' '}
+              <AdminRichText k="shell.chooser.signedInAs" vars={{ email: this.auth.user?.email }} classes={{ strong: 'font-medium text-indigo-500' }} />{' '}
               {this.isEmpty
                 ? AdminI18n.t('shell.chooser.emptyText')
                 : AdminI18n.t('shell.chooser.text')}
@@ -96,7 +96,7 @@ export class SiteChooser extends AdminComponent {
           <button
             type="button"
             onClick={this.signOut}
-            className="w-full text-[11px] font-semibold tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+            className="w-full text-[12px] font-medium tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
           >
             {AdminI18n.t('shell.account.signOut')}
           </button>

@@ -58,7 +58,7 @@ export class MediaGrid extends PureReactor {
            <div className="p-4 bg-indigo-500/10 rounded-full text-indigo-500 mb-4 text-3xl">
               <FrameworkIcons.Media />
            </div>
-           <h3 className={`text-xl font-bold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.noAssetsYet')}</h3>
+           <h3 className={`text-xl font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.noAssetsYet')}</h3>
            <p className="text-slate-500 mt-2">{AdminI18n.t('media.uploadYourFirstImageVideo')}</p>
            <Button size={FieldSize.SM} className="mt-6" onClick={this.openFilePicker}>
               <FrameworkIcons.Upload size={18} />

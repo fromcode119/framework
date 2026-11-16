@@ -29,7 +29,7 @@ export class PendingReleaseList extends PureReactor {
         <ol className="space-y-3">
           {this.releases.map((release) => (
             <li key={release.version} className="border-s-2 border-slate-200 ps-3 dark:border-slate-700">
-              <p className="font-mono text-[12px] font-semibold text-slate-800 dark:text-slate-100">
+              <p className="font-mono text-[12px] font-medium text-slate-800 dark:text-slate-100">
                 v{release.version}
               </p>
               {release.notes ? (

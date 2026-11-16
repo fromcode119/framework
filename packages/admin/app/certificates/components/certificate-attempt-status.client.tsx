@@ -43,12 +43,12 @@ export class CertificateAttemptStatus extends AdminComponent {
     return (
       <>
         {entry.lastError ? (
-          <p className={`mt-0.5 text-[11px] font-mono truncate ${dark ? 'text-red-400' : 'text-red-600'}`}>
+          <p className={`mt-0.5 text-[12px] font-mono truncate ${dark ? 'text-red-400' : 'text-red-600'}`}>
             {last ? `${CertificateAttemptStatus.time(last)} — ` : ''}{entry.lastError}
           </p>
         ) : null}
         {next ? (
-          <p className={`mt-0.5 text-[11px] ${dark ? 'text-sky-300' : 'text-sky-700'}`}>{next}</p>
+          <p className={`mt-0.5 text-[12px] ${dark ? 'text-sky-300' : 'text-sky-700'}`}>{next}</p>
         ) : null}
       </>
     );

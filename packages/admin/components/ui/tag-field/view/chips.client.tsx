@@ -67,8 +67,8 @@ export class TagFieldChips extends PureReactor {
               title={unresolved ? AdminI18n.t('ui.tags.missingRecord', { id: tag }) : undefined}
             >
               <div className="flex flex-col leading-tight">
-                 <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>
-                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[10px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
+                 <span className="text-[12px] font-medium leading-none mb-0">{label}</span>
+                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[12px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
               </div>
               <button
                 type="button"
@@ -108,7 +108,7 @@ export class TagFieldChips extends PureReactor {
                         onChange(hasMany ? newTags : '');
                     }
                 } }
-                className={`w-full bg-transparent outline-none ${inputTextSizeClass} font-semibold ${
+                className={`w-full bg-transparent outline-none ${inputTextSizeClass} font-medium ${
                     theme === ThemeMode.DARK ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'
                 }`}
                 />

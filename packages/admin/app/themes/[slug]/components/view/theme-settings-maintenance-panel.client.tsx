@@ -23,7 +23,7 @@ export class ThemeSettingsMaintenancePanel extends PureReactor {
     return (
       <div className="flex flex-wrap items-center gap-4 py-4 first:pt-0 last:pb-0">
         <div className="min-w-0 flex-1">
-          <div className={`text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{title}</div>
+          <div className={`text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{title}</div>
           <div className={`mt-0.5 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{hint}</div>
         </div>
         {action}

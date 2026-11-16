@@ -90,7 +90,7 @@ export class UserProfilePage extends AdminComponent {
     if (!user) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
-          <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
+          <h1 className="text-2xl font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
           <AdminLink href={AdminConstants.ROUTES.USERS.LIST}>
             <Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToDatabase')}</Button>
           </AdminLink>

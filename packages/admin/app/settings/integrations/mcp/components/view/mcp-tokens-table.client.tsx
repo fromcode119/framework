@@ -64,7 +64,7 @@ export class McpTokensTable extends AdminComponent {
           <tbody>
             {this.tokens.map((token) => (
               <tr key={token.tokenId} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                <td className="py-3 pe-4 font-semibold text-slate-900 dark:text-white">{token.label}</td>
+                <td className="py-3 pe-4 font-medium text-slate-900 dark:text-white">{token.label}</td>
                 {this.multiTenant ? <td className="py-3 pe-4">{this.siteCell(token)}</td> : null}
                 <td className="py-3 pe-4">{this.scopesCell(token)}</td>
                 <td className="py-3 pe-4 text-slate-500">{token.createdAt || '—'}</td>

@@ -27,7 +27,7 @@ export class SectionCard extends PureReactor {
               </div>
             )}
             <div className="min-w-0">
-              <h2 title={this.subtitleAsHint ? subtitle : undefined} className="text-[13px] font-semibold tracking-tight text-slate-800 dark:text-white truncate">{title}</h2>
+              <h2 title={this.subtitleAsHint ? subtitle : undefined} className="text-[13px] font-medium tracking-tight text-slate-800 dark:text-white truncate">{title}</h2>
               {subtitle && !this.subtitleAsHint && (
                 <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
               )}

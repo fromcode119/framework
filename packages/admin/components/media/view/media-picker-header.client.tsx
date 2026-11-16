@@ -23,7 +23,7 @@ export class MediaPickerHeader extends PureReactor {
   }
 
   private tabClass(active: boolean): string {
-    return `px-3 h-8 rounded-md text-[11px] font-semibold transition-colors ${
+    return `px-3 h-8 rounded-md text-[12px] font-medium transition-colors ${
       active
         ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
         : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'

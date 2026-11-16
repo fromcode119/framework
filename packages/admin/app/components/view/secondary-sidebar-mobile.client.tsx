@@ -57,7 +57,7 @@ export class SecondarySidebarMobile extends PureReactor {
           >
             <div className="flex min-w-0 flex-1 flex-col">
             <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]">
-              <h2 className="text-[13px] font-bold text-slate-900 dark:text-white">{AdminI18n.t('shell.nav.secondaryTitle')}</h2>
+              <h2 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.nav.secondaryTitle')}</h2>
               <button
                 type="button"
                 onClick={this.onClose}

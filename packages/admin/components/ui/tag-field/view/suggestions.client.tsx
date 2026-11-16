@@ -40,7 +40,7 @@ export class TagFieldSuggestions extends PureReactor {
           theme === ThemeMode.DARK ? 'bg-[#0f172a] border-slate-800' : 'bg-white/90 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
         }`}>
           {sourceUnavailableMessage && (
-            <div className={`px-3.5 py-3 rounded-lg text-[11px] font-semibold ${
+            <div className={`px-3.5 py-3 rounded-lg text-[12px] font-medium ${
               theme === ThemeMode.DARK
                 ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
                 : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -52,7 +52,7 @@ export class TagFieldSuggestions extends PureReactor {
           {suggestions.length > 0 && (
             <>
                 <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-slate-400">{suggestionsLabel}</span>
+                    <span className="text-[12px] font-medium text-slate-400">{suggestionsLabel}</span>
                     <FrameworkIcons.Search size={10} className="text-slate-400" />
                 </div>
                 {suggestions.map((suggestion) => (
@@ -70,9 +70,9 @@ export class TagFieldSuggestions extends PureReactor {
                     }`}
                     >
                     <div className="flex flex-col leading-tight">
-                        <span className="font-semibold">{suggestion.label}</span>
+                        <span className="font-medium">{suggestion.label}</span>
                         {!sourceCollection && suggestion.label !== suggestion.value && (
-                           <span className="text-[10px] opacity-50 font-medium tracking-wide">{suggestion.value}</span>
+                           <span className="text-[12px] opacity-50 font-medium tracking-wide">{suggestion.value}</span>
                         )}
                     </div>
                     <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
@@ -98,10 +98,10 @@ export class TagFieldSuggestions extends PureReactor {
                     <FrameworkIcons.Plus size={16} strokeWidth={3} />
                 </div>
                 <div className="flex-1">
-                    <span className="font-semibold text-[10px] block leading-none">
+                    <span className="font-medium text-[12px] block leading-none">
                       {AdminI18n.t(allowCreate ? 'ui.tags.create' : 'ui.tags.useCustom', { label: createEntityLabel })}
                     </span>
-                    <span className="font-semibold text-[13px] block mt-1">"{inputValue}"</span>
+                    <span className="font-medium text-[13px] block mt-1">"{inputValue}"</span>
                 </div>
               </button>
           )}
