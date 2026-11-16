@@ -12,22 +12,18 @@ import { RecordSectionFields } from '@/components/collection/edit/record-section
  * about the schema and not about the record.
  */
 export class RecordSectionCount {
-  /** Whether the field's own type says its value is a list, whatever it currently holds. */
-  private static declaresAList(field: any): boolean {
-    return String(field?.type || '') === 'array';
-  }
-
-  /** The number to put in the section's head, or `null` when the section is not one list. */
+  /** The number to put in the section's head, or `null` when there is nothing to count. */
   static of(fields: any[], record: Record<string, any>): number | null {
     const data = (fields || []).filter((field: any) => RecordSectionFields.readsAsData(field));
     if (data.length !== 1) return null;
     const value = record?.[data[0].name];
-    if (Array.isArray(value)) return value.length;
-    // A set of keyed values counts its keys, as a metadata section does.
-    if (value && typeof value === 'object') return Object.keys(value).length;
-    // Nothing stored yet: only a field DECLARED as a list has a count of none. A price section holds
-    // one field the console reads as data and no list at all, and "Price 0" read as the price being
-    // zero — a number whose meaning the reader cannot recover is worse than no number.
-    return RecordSectionCount.declaresAList(data[0]) ? 0 : null;
+    const size = Array.isArray(value) ? value.length
+      : (value && typeof value === 'object') ? Object.keys(value).length
+        : 0;
+    // A count is drawn only when there is something to count. A zero beside a section's name borrows
+    // that name's meaning: "Variants 0" reads as a number of variants, but "Price 0" reads as the
+    // price being zero, and the console cannot know which of its sections are named for a countable
+    // thing. An empty section already says so in its own rows, each with a dash.
+    return size > 0 ? size : null;
   }
 }
