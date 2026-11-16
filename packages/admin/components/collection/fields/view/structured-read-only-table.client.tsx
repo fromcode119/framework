@@ -6,6 +6,8 @@ import { StructuredReadOnlyTableService } from '@/components/collection/fields/s
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { Input } from '@/components/ui/view/input.client';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FiltersButton } from '@/components/ui/list-toolbar/view/filters-button.client';
 import { StructuredReadOnlyTableFoot } from '@/components/collection/fields/view/structured-read-only-table-foot.client';
@@ -172,11 +174,16 @@ export class StructuredReadOnlyTable extends PureReactor {
             </button>
           } />
         ) : null}
-        <label className="fc-sro-table__search-field">
-          <FrameworkIcons.Search size={15} />
-          <input type="search" aria-label={label} placeholder={label} value={this.search}
-            onChange={(event) => { this.search = event.target.value; this.page = 1; }} />
-        </label>
+        {/* The console's own field, so the table's search is the one height and look every list has. */}
+        <Input
+          size={FieldSize.SM}
+          type="search"
+          value={this.search}
+          aria-label={label}
+          placeholder={label}
+          onChange={(event: any) => { this.search = String(event?.target?.value ?? ''); this.page = 1; }}
+          className="fc-sro-table__search-field"
+        />
       </div>
     );
   }

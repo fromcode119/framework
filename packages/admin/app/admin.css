@@ -1575,36 +1575,13 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-table__tool:hover,
 .fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-sro-table__search-field {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 184px;
-  min-width: 0;
-  height: 30px;
-  padding-inline: 8px;
-  border: 1px solid var(--fc-border);
-  border-radius: var(--fc-control-radius);
-  background: var(--fc-surface-muted);
-  color: var(--fc-text-muted);
-}
-.fc-sro-table__search-field svg { flex: none; }
-.fc-sro-table__search-field:focus-within { outline: 2px solid var(--ring); outline-offset: 1px; }
-.fc-sro-table__search-field input {
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--fc-text);
-  font-size: 13px;
-}
+/* The table's own search: the console's field, held to the width a toolbar can give it. */
+.fc-sro-table__search-field { width: min(184px, 100%); min-width: 0; }
 .fc-sro-table__search { width: min(240px, 100%); }
 @container (max-width: 420px) {
   .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head {
     padding-inline: 16px;
   }
-  .fc-record-card__table-tools .fc-sro-table__search-field { padding-inline: 6px; }
 }
 /* The line that closes the table: how much of it is on screen, and the way to the rest. */
 .fc-sro-table__foot {
