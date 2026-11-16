@@ -100,7 +100,8 @@ export class AdminMenuBuilderService {
             ...this.withPermission(item, slug, pluginCollections),
             path: effectivePath,
             pluginSlug: slug,
-            group: item.group || p.admin.group || p.name
+            group: item.group || p.admin.group || p.name,
+            blockKey: AdminMenuAreaService.blockKeyOf(p)
           });
         });
       }
@@ -159,6 +160,9 @@ export class AdminMenuBuilderService {
                 // The collection's own key, as its dictionary spells it: the path is lower-cased, so
                 // `admin.collections.deliverySlots.label` could not be found from `/shop/deliveryslots`.
                 collectionKey: String(col.shortSlug || col.slug),
+                // The BLOCK this page reads under: a courier's cities belong inside delivery, not
+                // beside it. A table is its plugin's, so it joins whatever block the plugin named.
+                blockKey: AdminMenuAreaService.blockKeyOf(p),
                 // The permission that opens this screen is reading its collection — the same name the
                 // collections API checks, so the menu never offers a list the API then refuses.
                 permission: PermissionNames.collection(slug, PermissionNames.collectionKey(col), CollectionPermissionAction.READ),

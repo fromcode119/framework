@@ -117,6 +117,9 @@ export class AdminSchemaLocalizer {
       // The plugin's own name, translated: inside a shared area the menu draws one row per plugin
       // and names it with this, so a block of pages is never named after whichever page sorts first.
       next.pluginLabel = this.text(slug, 'admin.label', adminLabelOf(slug));
+      // A block is named by the plugin that OWNS that work, in its own dictionary — never by the
+      // plugin whose page happens to be read under it.
+      if (item.blockOwnerSlug) next.blockLabel = this.text(String(item.blockOwnerSlug), 'admin.label', item.blockLabel);
       // An AREA's row is named by the area, in the reader's language — not by the plugin that happens
       // to own its first page. Without this the row would read the raw area key above its own pages.
       if (item.isArea && next.group) next.label = next.group;

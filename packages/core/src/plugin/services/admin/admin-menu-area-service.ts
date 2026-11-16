@@ -39,25 +39,34 @@ export class AdminMenuAreaService {
    */
   static order(items: any[], allPlugins: ILoadedPlugin[]): any[] {
     const ownerSlug = AdminMenuAreaService.ownerOf(items, allPlugins);
+    const stamped = items.map((item) => AdminMenuAreaService.withBlock(item, allPlugins));
     const blocks = new Map<string, any[]>();
-    items.forEach((item) => {
-      const slug = String(item.pluginSlug || '');
-      if (!blocks.has(slug)) blocks.set(slug, []);
-      (blocks.get(slug) as any[]).push(item);
+    stamped.forEach((item) => {
+      const key = String(item.blockKey || item.pluginSlug || '');
+      if (!blocks.has(key)) blocks.set(key, []);
+      (blocks.get(key) as any[]).push(item);
     });
     const ordered: any[] = [];
     [...blocks.entries()]
-      .map(([slug, list]) => ({
-        slug,
-        list: [...list].sort((a, b) => (a.priority || 0) - (b.priority || 0)),
-      }))
-      .map((block) => ({ ...block, owner: block.slug === ownerSlug, name: AdminMenuAreaService.nameOf(block.slug, allPlugins) }))
-      .sort((a, b) => Number(b.owner) - Number(a.owner) || a.name.localeCompare(b.name) || a.slug.localeCompare(b.slug))
-      .forEach(({ slug, list }) => {
-        const label = String(allPlugins.find((p) => p.manifest.slug === slug)?.manifest.admin?.label || '').trim();
+      .map(([key, list]) => {
+        const home = String(list[0]?.blockOwnerSlug || list[0]?.pluginSlug || '');
+        return {
+          key,
+          home,
+          // Inside a piece of work, the plugin that owns it comes first — a courier's pages read after
+          // the delivery they belong to, never before it.
+          list: [...list].sort((a, b) => Number(String(b.pluginSlug) === home) - Number(String(a.pluginSlug) === home)
+            || (a.priority || 0) - (b.priority || 0)),
+          owner: home === ownerSlug,
+          name: AdminMenuAreaService.nameOf(home, allPlugins),
+        };
+      })
+      .sort((a, b) => Number(b.owner) - Number(a.owner) || a.name.localeCompare(b.name) || a.key.localeCompare(b.key))
+      .forEach(({ home, list }) => {
+        const label = String(allPlugins.find((p) => p.manifest.slug === home)?.manifest.admin?.label || '').trim();
         list.forEach((item) => {
-          const isLanding = String(item.path || '') === `/${slug}`;
-          ordered.push(isLanding && label ? { ...item, label } : item);
+          const isLanding = String(item.path || '') === `/${item.pluginSlug}`;
+          ordered.push(isLanding && label && String(item.pluginSlug) === home ? { ...item, label } : item);
         });
       });
     return ordered;
@@ -80,5 +89,46 @@ export class AdminMenuAreaService {
   private static nameOf(slug: string, allPlugins: ILoadedPlugin[]): string {
     const plugin = allPlugins.find((candidate) => candidate?.manifest?.slug === slug);
     return String(plugin?.manifest?.admin?.label || plugin?.manifest?.name || slug);
+  }
+
+  /**
+   * The BLOCK a plugin's pages read under — a piece of WORK inside an area, named by a key several
+   * plugins share, exactly as an area is. `admin.block: "delivery"` files a plugin's pages into it;
+   * `admin.blocks: [{ key: "delivery" }]` says which plugin owns that work and therefore names it.
+   *
+   * The menu is a tree of work, not of plugins: a courier adapter's one table belongs inside delivery,
+   * not beside it, and a plugin that owns no work of its own has no row at all.
+   */
+  static blockKeyOf(manifest: any): string {
+    const joined = StringUtils.slugify(String(manifest?.admin?.block ?? ''), '');
+    if (joined) return joined;
+    // The plugin that OWNS one piece of work reads under it too, without having to say so twice.
+    // Declaring several leaves its own pages where they are, since none of them is the obvious one.
+    const owned = (manifest?.admin as { blocks?: Array<{ key?: string }> } | undefined)?.blocks;
+    return Array.isArray(owned) && owned.length === 1 ? StringUtils.slugify(String(owned[0]?.key ?? ''), '') : '';
+  }
+
+  /** The plugin that OWNS a block (`admin.blocks`), whose name the block is read by. */
+  static blockOwner(key: string, allPlugins: ILoadedPlugin[]): ILoadedPlugin | null {
+    if (!key) return null;
+    for (const plugin of allPlugins) {
+      const blocks = (plugin?.manifest?.admin as { blocks?: Array<{ key?: string }> } | undefined)?.blocks;
+      if (Array.isArray(blocks) && blocks.some((block) => StringUtils.slugify(String(block?.key ?? ''), '') === key)) return plugin;
+    }
+    return null;
+  }
+
+  /** A page of a block carries the block's key and the name of the plugin that owns that work. */
+  private static withBlock(item: any, allPlugins: ILoadedPlugin[]): any {
+    const key = String(item?.blockKey || '');
+    if (!key) return item;
+    const owner = AdminMenuAreaService.blockOwner(key, allPlugins);
+    if (!owner) return item;
+    return {
+      ...item,
+      blockOwnerSlug: String(owner.manifest.slug || ''),
+      blockLabel: String(owner.manifest.admin?.label || owner.manifest.name || ''),
+      blockPath: `/${owner.manifest.slug}`,
+    };
   }
 }
