@@ -63,7 +63,7 @@ export class LocalizedField extends AdminComponent {
             <select
               value={activeLocale}
               onChange={this.onSelect}
-              className="h-8 rounded-lg border border-slate-300 bg-white px-2.5 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+              className="h-8 rounded-lg border border-slate-300 bg-white px-2.5 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
             >
               {localeRegistry.map((locale) => (
                 <option key={locale.code} value={locale.code}>

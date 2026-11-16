@@ -25,11 +25,11 @@ export class CollectionNotFound extends PureReactor {
         <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
       </div>
       
-      <h2 className={`text-4xl font-semibold tracking-tight mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+      <h2 className={`text-4xl font-medium tracking-tight mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
         {AdminI18n.t('collection.notFound.title')}
       </h2>
       
-      <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-10 px-6">
+      <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-10 px-6">
         {AdminI18n.t('collection.notFound.text', { collection: slug, plugin: pluginSlug })}
       </p>
 
@@ -37,7 +37,7 @@ export class CollectionNotFound extends PureReactor {
         <Button 
           variant={ButtonVariant.GHOST}
           onClick={this.goBack}
-          className="rounded-xl px-8 font-semibold tracking-wide text-xs text-slate-400"
+          className="rounded-xl px-8 font-medium tracking-wide text-xs text-slate-400"
         >
           {AdminI18n.t('common.goBack')}
         </Button>
@@ -45,7 +45,7 @@ export class CollectionNotFound extends PureReactor {
           variant={ButtonVariant.PRIMARY} 
           as={AdminLink}
           href="/"
-          className="rounded-xl px-10 py-5 font-semibold tracking-wide text-xs shadow-2xl shadow-indigo-500/30"
+          className="rounded-xl px-10 py-5 font-medium tracking-wide text-xs shadow-2xl shadow-indigo-500/30"
           icon={<FrameworkIcons.Layout size={18} />}
         >
           {AdminI18n.t('common.toDashboard')}

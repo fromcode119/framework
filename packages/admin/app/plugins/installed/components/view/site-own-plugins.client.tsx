@@ -155,9 +155,9 @@ export class SiteOwnPlugins extends AdminComponent {
                   description={plugin.running ? plugin.description : plugin.needsApproval ? AdminI18n.t('plugins.list.waitsForYourApproval') : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
                 />
                 {plugin.needsApproval ? (
-                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
+                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
                 ) : null}
-                <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-semibold text-rose-500 hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
+                <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium text-rose-500 hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
               </div>
             ))}
           </div>

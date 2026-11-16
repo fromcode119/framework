@@ -106,7 +106,7 @@ export class SelectMenu extends PureReactor {
                   <button
                     type="button"
                     onClick={() => onCreate?.(searchValue.trim())}
-                    className={`w-full text-start px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-semibold ${
+                    className={`w-full text-start px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-medium ${
                       theme === ThemeMode.DARK
                         ? 'text-indigo-300 hover:bg-indigo-500/10'
                         : 'text-indigo-600 hover:bg-indigo-50'
@@ -121,7 +121,7 @@ export class SelectMenu extends PureReactor {
                   <div className="px-4 py-8 text-center">
                     {/* An empty list while the owner is still searching is not an empty catalogue: saying
                         "no results" there is a wrong answer the operator cannot tell from a right one. */}
-                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">
+                    <p className="text-[12px] font-medium text-slate-500 tracking-wide opacity-50">
                       {AdminI18n.t(searching ? 'ui.select.searching' : 'ui.select.noResults')}
                     </p>
                   </div>
@@ -134,7 +134,7 @@ export class SelectMenu extends PureReactor {
                     return (
                     <div key={group.name} className="mb-0.5 last:mb-0">
                       {showGroupHeaders && (
-                        <div className={`px-3.5 pt-2 pb-1 text-[10px] font-semibold tracking-wide ${
+                        <div className={`px-3.5 pt-2 pb-1 text-[12px] font-medium tracking-wide ${
                           theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'
                         }`}>
                           {group.name === 'Options' ? AdminI18n.t('ui.select.options') : group.name}
@@ -143,7 +143,7 @@ export class SelectMenu extends PureReactor {
                       {sections.map((section) => (
                         <div key={`${group.name}:${section.name || 'default'}`}>
                           {showSectionHeaders && section.name ? (
-                            <div className={`px-4 pt-1 pb-1 text-[10px] font-semibold tracking-wide ${
+                            <div className={`px-4 pt-1 pb-1 text-[12px] font-medium tracking-wide ${
                               theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'
                             }`}>
                               {section.name}
@@ -162,7 +162,7 @@ export class SelectMenu extends PureReactor {
                                 : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
                           }`}
                         >
-                          <span className={`relative z-10 font-semibold truncate`}>
+                          <span className={`relative z-10 font-medium truncate`}>
                             {opt.label}
                           </span>
                           {(selectedOption && selectedOption === opt) ? (
@@ -193,7 +193,7 @@ export class SelectMenu extends PureReactor {
               </div>
 
               {menuNote ? (
-                <div className={`border-t px-3.5 py-2 text-[10px] font-semibold tracking-wide ${
+                <div className={`border-t px-3.5 py-2 text-[12px] font-medium tracking-wide ${
                   isDarkTheme ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
                 }`}>
                   {menuNote}

@@ -48,7 +48,7 @@ export class BackupListCard extends AdminComponent {
       <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.managedArchives')}</h2>
+            <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.managedArchives')}</h2>
             <p className="text-sm text-slate-500">
               {AdminI18n.t('settings.components.systemRestoreAlwaysRequiresA')}
             </p>
@@ -70,7 +70,7 @@ export class BackupListCard extends AdminComponent {
       {downloadProgress ? (
         <div className="px-8 pt-6">
           <div className={`rounded-lg border px-5 py-4 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
-            <div className="flex items-center justify-between gap-4 text-[11px] font-semibold text-slate-500">
+            <div className="flex items-center justify-between gap-4 text-[12px] font-medium text-slate-500">
               <span>{SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress)}</span>
               <span>{SystemBackupPageUtils.getDownloadProgressDetail(downloadProgress)}</span>
             </div>
@@ -89,7 +89,7 @@ export class BackupListCard extends AdminComponent {
           <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
             <FrameworkIcons.Database size={28} />
           </div>
-          <h3 className={`mt-5 text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.noBackupsIndexedYet')}</h3>
+          <h3 className={`mt-5 text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.noBackupsIndexedYet')}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
             {AdminI18n.t('settings.components.createASystemBackupTo2')}
           </p>
@@ -101,7 +101,7 @@ export class BackupListCard extends AdminComponent {
               <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h3 className={`text-base font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group.label}</h3>
+                    <h3 className={`text-base font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group.label}</h3>
                     <Badge variant={BadgeVariant.GRAY}>{group.items.length}</Badge>
                   </div>
                   <p className="text-sm text-slate-500">{SystemBackupPageUtils.getGroupDescription(group.key)}</p>
@@ -112,19 +112,19 @@ export class BackupListCard extends AdminComponent {
                 <table className="min-w-full divide-y divide-slate-200/80 text-start dark:divide-slate-800">
                   <thead>
                     <tr className="text-[12px] text-slate-500">
-                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.backup')}</th>
-                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.scope')}</th>
-                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.modified')}</th>
-                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.size')}</th>
-                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.storage')}</th>
-                      <th className="px-5 py-4 font-bold text-end">{AdminI18n.t('settings.components.actions')}</th>
+                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.backup')}</th>
+                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.scope')}</th>
+                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.modified')}</th>
+                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.size')}</th>
+                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.storage')}</th>
+                      <th className="px-5 py-4 font-medium text-end">{AdminI18n.t('settings.components.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800">
                     {group.items.map((item) => (
                       <tr key={item.id}>
                         <td className="px-5 py-4 align-top">
-                          <div className={`font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{item.displayName}</div>
+                          <div className={`font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{item.displayName}</div>
                           <div className="mt-1 text-xs text-slate-500">{item.filename}</div>
                         </td>
                         <td className="px-5 py-4 align-top">

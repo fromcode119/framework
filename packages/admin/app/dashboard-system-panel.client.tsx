@@ -78,7 +78,7 @@ export class DashboardSystemPanel extends AdminComponent {
     if (this.failed) {
       return (
         <div className={`p-3 ${AdminClass.SURFACE}`}>
-          <p className="text-[11px] text-slate-500">{AdminI18n.t('dashboard.systemPanel.failed')}</p>
+          <p className="text-[12px] text-slate-500">{AdminI18n.t('dashboard.systemPanel.failed')}</p>
         </div>
       );
     }
@@ -90,10 +90,10 @@ export class DashboardSystemPanel extends AdminComponent {
     return (
       <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
         <div className="flex items-center justify-between gap-3 px-3 py-2">
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
             {String(this.host?.host?.hostname || AdminI18n.t('dashboard.systemPanel.thisMachine'))}
           </span>
-          <span className="text-[10px] text-slate-400">{this.processLine}</span>
+          <span className="text-[12px] text-slate-400">{this.processLine}</span>
         </div>
 
         <div className="px-3 py-2 space-y-2">

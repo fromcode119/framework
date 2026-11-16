@@ -47,7 +47,7 @@ export class SiteStatStrip extends PureReactor {
             key={stat.label}
             className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${dark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}
           >
-            <span className={`text-sm font-bold tabular-nums ${stat.tone}`}>{stat.value}</span>
+            <span className={`text-sm font-medium tabular-nums ${stat.tone}`}>{stat.value}</span>
             <span className={`text-[12px] font-medium ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{stat.label}</span>
           </div>
         ))}

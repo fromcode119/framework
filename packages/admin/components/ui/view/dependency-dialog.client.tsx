@@ -77,7 +77,7 @@ export class DependencyDialog extends AdminComponent {
               <FrameworkIcons.Warning size={24} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
                 {AdminI18n.t(hasMissing ? 'ui.dependencies.missingTitle' : 'ui.dependencies.inactiveTitle')}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
@@ -136,7 +136,7 @@ export class DependencyDialog extends AdminComponent {
               </Button>
             )}
 
-            <div className={`p-4 rounded-xl text-[10px] font-medium leading-tight ${theme === ThemeMode.DARK ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
+            <div className={`p-4 rounded-xl text-[12px] font-medium leading-tight ${theme === ThemeMode.DARK ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
               {AdminI18n.t('ui.dependencies.forceWarning')}
             </div>
 

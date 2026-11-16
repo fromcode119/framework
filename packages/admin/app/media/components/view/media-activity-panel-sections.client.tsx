@@ -54,7 +54,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
                 onChange={(value: string | null) => this.patch({ fromIso: value || '' })}
               />
             </div>
-            <span className="text-[11px] opacity-50">–</span>
+            <span className="text-[12px] opacity-50">–</span>
             <div className="w-36 flex-shrink-0">
               <DateTimePicker
                 value={this.toIso || undefined}
@@ -68,7 +68,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
               type="button"
               disabled={!this.customWindow()}
               onClick={() => void this.load()}
-              className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40 bg-indigo-600 text-white"
+              className="rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all disabled:opacity-40 bg-indigo-600 text-white"
             >
               {AdminI18n.t('media.apply')}
             </button>
@@ -93,7 +93,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {cells.map(([label, value]) => (
             <div key={label} className="min-w-0">
-              <p className="text-[17px] font-semibold tabular-nums leading-none">{value}</p>
+              <p className="text-[17px] font-medium tabular-nums leading-none">{value}</p>
               <p className="mt-1 text-[12px] opacity-50 truncate">{label}</p>
             </div>
           ))}
@@ -117,9 +117,9 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`px-4 py-3 ${AdminClass.SURFACE}`}>
         <div className="mb-2 flex items-center gap-4">
-          <p className="text-[13px] font-semibold flex-1">{AdminI18n.t('media.opensAndDownloadsPerDay')}</p>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> {AdminI18n.t('media.opens')}</span>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> {AdminI18n.t('media.downloads')}</span>
+          <p className="text-[13px] font-medium flex-1">{AdminI18n.t('media.opensAndDownloadsPerDay')}</p>
+          <span className="inline-flex items-center gap-1.5 text-[12px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> {AdminI18n.t('media.opens')}</span>
+          <span className="inline-flex items-center gap-1.5 text-[12px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> {AdminI18n.t('media.downloads')}</span>
         </div>
         <PluginTrendChart
           xLabels={ticks}
@@ -140,22 +140,22 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">{AdminI18n.t('media.notOpenedYet')}</p>
-          <p className="mt-0.5 text-[10px] opacity-55">{AdminI18n.t('media.liveLinksNobodyHasOpened')}</p>
+          <p className="text-[13px] font-medium">{AdminI18n.t('media.notOpenedYet')}</p>
+          <p className="mt-0.5 text-[12px] opacity-55">{AdminI18n.t('media.liveLinksNobodyHasOpened')}</p>
         </div>
         {!rows.length ? (
-          <p className="px-4 py-4 text-[11px] opacity-55">{AdminI18n.t('media.everyoneHasOpenedWhatYou')}</p>
+          <p className="px-4 py-4 text-[12px] opacity-55">{AdminI18n.t('media.everyoneHasOpenedWhatYou')}</p>
         ) : rows.map((row: any, index: number) => (
           <div key={`${row.email}-${row.shareId}-${index}`} className={`flex items-center justify-between gap-3 px-4 py-2.5 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
             <div className="min-w-0">
               <p className="text-[12px] font-medium truncate">{row.email}</p>
-              <p className="text-[10px] opacity-55 truncate">
+              <p className="text-[12px] opacity-55 truncate">
                 {this.shareLink(row.shareId, row.shareTitle)}
                 {this.formatWhen(row.sentAt) ? ` · ${AdminI18n.t('media.sentAt', { when: this.formatWhen(row.sentAt) })}` : ''}
               </p>
             </div>
             {row.expiresAt ? (
-              <Badge variant={BadgeVariant.WARNING} className="text-[10px] flex-shrink-0">
+              <Badge variant={BadgeVariant.WARNING} className="text-[12px] flex-shrink-0">
                 {AdminI18n.t('media.expiresAt', { when: this.formatWhen(row.expiresAt) })}
               </Badge>
             ) : null}
@@ -172,12 +172,12 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">{AdminI18n.t('media.mostDownloaded')}</p>
+          <p className="text-[13px] font-medium">{AdminI18n.t('media.mostDownloaded')}</p>
         </div>
         {rows.map((row: any) => (
           <div key={row.mediaId} className="flex items-center justify-between gap-3 px-4 py-2">
             <span className="text-[12px] truncate">{row.name || `#${row.mediaId}`}</span>
-            <span className="text-[12px] font-semibold tabular-nums flex-shrink-0">{row.downloads}</span>
+            <span className="text-[12px] font-medium tabular-nums flex-shrink-0">{row.downloads}</span>
           </div>
         ))}
       </Card>
@@ -191,13 +191,13 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">{AdminI18n.t('media.refused')}</p>
-          <p className="mt-0.5 text-[10px] opacity-55">{MediaActivityLabels.REFUSAL_NOTE}</p>
+          <p className="text-[13px] font-medium">{AdminI18n.t('media.refused')}</p>
+          <p className="mt-0.5 text-[12px] opacity-55">{MediaActivityLabels.REFUSAL_NOTE}</p>
         </div>
         {rows.map((row: any) => (
           <div key={row.outcome} className="flex items-center justify-between gap-3 px-4 py-2">
             <span className="text-[12px]">{MediaActivityLabels.outcome(row.outcome)}</span>
-            <span className="text-[12px] font-semibold tabular-nums">{row.count}</span>
+            <span className="text-[12px] font-medium tabular-nums">{row.count}</span>
           </div>
         ))}
       </Card>
@@ -210,10 +210,10 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">{AdminI18n.t('media.recentActivity')}</p>
+          <p className="text-[13px] font-medium">{AdminI18n.t('media.recentActivity')}</p>
         </div>
         {!rows.length ? (
-          <p className="px-4 py-4 text-[11px] opacity-55">{AdminI18n.t('media.nothingRecordedInThisRange')}</p>
+          <p className="px-4 py-4 text-[12px] opacity-55">{AdminI18n.t('media.nothingRecordedInThisRange')}</p>
         ) : rows.map((row: any) => (
           <div key={row.id} className={`flex items-center justify-between gap-3 px-4 py-2 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <div className="min-w-0">
@@ -221,15 +221,15 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
                 <span className="opacity-80">{row.email || AdminI18n.t('media.unknownRecipient')}</span>
                 <span className="opacity-50"> · {MediaActivityLabels.action(row)}</span>
               </p>
-              <p className="text-[10px] opacity-45 truncate">{row.shareId ? this.shareLink(row.shareId, row.shareTitle) : null}</p>
+              <p className="text-[12px] opacity-45 truncate">{row.shareId ? this.shareLink(row.shareId, row.shareTitle) : null}</p>
             </div>
-            <span className="text-[10px] opacity-45 flex-shrink-0">{this.formatWhen(row.at)}</span>
+            <span className="text-[12px] opacity-45 flex-shrink-0">{this.formatWhen(row.at)}</span>
           </div>
         ))}
         {this.data?.eventsHasMore ? (
           <div className={`flex justify-center px-4 py-2.5 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <button type="button" disabled={this.loadingMore} onClick={this.handleMoreEvents}
-              className="text-[11px] font-semibold text-indigo-500 hover:underline disabled:opacity-50">
+              className="text-[12px] font-medium text-indigo-500 hover:underline disabled:opacity-50">
               {this.loadingMore ? AdminI18n.t('media.loading') : AdminI18n.t('media.loadMore')}
             </button>
           </div>

@@ -57,7 +57,7 @@ export class DashboardPageHeader extends PureReactor {
           </>
         }
         actions={
-          <div className="px-4 h-9 rounded-lg border flex items-center gap-2 text-xs font-semibold tracking-tight bg-white border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+          <div className="px-4 h-9 rounded-lg border flex items-center gap-2 text-xs font-medium tracking-tight bg-white border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
             <FrameworkIcons.Clock size={15} className="text-indigo-500" />
             {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>

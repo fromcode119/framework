@@ -83,13 +83,13 @@ export class DynamicPluginPage extends AdminComponent {
                <Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} fallback={
                  <div className="min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
                     <FrameworkIcons.Info className="text-slate-300 dark:text-slate-700 mb-4" size={48} />
-                    <h3 className={`text-lg font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
+                    <h3 className={`text-lg font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
                        {AdminI18n.t('shell.pluginPage.workspace', { name: effectivePath[effectivePath.length - 1].replace(/-/g, ' ') })}
                     </h3>
                     <p className="text-slate-500 text-sm max-w-sm mt-2">
                        <AdminRichText k="shell.pluginPage.noComponent" vars={{ path: pathname, plugin: pluginSlug }} classes={{ code: 'text-indigo-500 font-mono' }} />
                     </p>
-                    <AdminLink href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20">
+                    <AdminLink href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-indigo-600/20">
                        {AdminI18n.t('shell.pluginPage.backToMarketplace')}
                     </AdminLink>
                  </div>

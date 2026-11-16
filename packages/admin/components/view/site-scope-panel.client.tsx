@@ -22,7 +22,7 @@ export class SiteScopePanel extends PureReactor {
     return (
       <div className="p-6 w-full">
         <div className={`${AdminClass.SURFACE} p-6`}>
-          <h1 className="text-[13px] font-semibold text-slate-900 dark:text-white">{AdminI18n.t('ui.view.theseSettingsBelongToA')}</h1>
+          <h1 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('ui.view.theseSettingsBelongToA')}</h1>
           <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-slate-500">{this.detail}</p>
         </div>
       </div>

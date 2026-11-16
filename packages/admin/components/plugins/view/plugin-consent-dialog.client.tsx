@@ -95,7 +95,7 @@ export class PluginConsentDialog extends AdminComponent {
                 <FrameworkIcons.ShieldCheck size={24} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 id="plugin-consent-title" className="text-lg font-bold tracking-tight text-slate-900 dark:text-white break-words">
+                <h3 id="plugin-consent-title" className="text-lg font-medium tracking-tight text-slate-900 dark:text-white break-words">
                   {AdminI18n.t('plugins.consent.title', { name: summary.name, version: summary.version })}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">

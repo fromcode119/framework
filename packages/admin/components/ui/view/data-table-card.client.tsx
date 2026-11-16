@@ -73,7 +73,7 @@ export class DataTableCard<T extends { id: any }> extends PureReactor {
         ) : null}
         <div className="flex-1 min-w-0">
           {titleColumn ? (
-            <div className="min-w-0 text-[14px] font-semibold leading-snug text-slate-900 dark:text-slate-100">{this.value(titleColumn)}</div>
+            <div className="min-w-0 text-[14px] font-medium leading-snug text-slate-900 dark:text-slate-100">{this.value(titleColumn)}</div>
           ) : null}
           {this.renderDetails(rest)}
           {actions ? <div className="mt-2 flex flex-wrap items-center justify-end gap-2" onClick={this.stop}>{actions}</div> : null}

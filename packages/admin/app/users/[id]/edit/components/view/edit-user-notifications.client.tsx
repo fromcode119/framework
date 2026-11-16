@@ -113,7 +113,7 @@ export class EditUserNotifications extends AdminComponent {
     if (!rows.length) return null;
     return (
       <Card title={title} icon={<FrameworkIcons.Bell size={18} className="text-indigo-500" />}>
-        <p className="text-xs font-bold text-slate-500 mb-4">{intro}</p>
+        <p className="text-xs font-medium text-slate-500 mb-4">{intro}</p>
         <div className="divide-y divide-slate-200/60 dark:divide-slate-700/50">
           {rows.map((row) => (
             <div key={row.key} className="py-3">
@@ -140,7 +140,7 @@ export class EditUserNotifications extends AdminComponent {
     return (
       <div className="space-y-6">
         {this.failed ? (
-          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-bold flex items-center gap-3">
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-medium flex items-center gap-3">
             <FrameworkIcons.Warning size={18} />
             {AdminI18n.t('users.notifications.failed')}
           </div>

@@ -38,7 +38,7 @@ export class SourceDetails extends PureReactor {
   private renderFact(label: string, value: ReactNode): ReactNode {
     return (
       <div className="min-w-0">
-        <dt className="text-[11px] text-slate-500 dark:text-slate-400">{label}</dt>
+        <dt className="text-[12px] text-slate-500 dark:text-slate-400">{label}</dt>
         <dd className="truncate text-[12px] font-medium text-slate-800 dark:text-slate-200">{value}</dd>
       </div>
     );
@@ -51,7 +51,7 @@ export class SourceDetails extends PureReactor {
     return (
       <>
         <span className="block truncate">{build.publishToSite}</span>
-        <span className="block whitespace-normal text-[11px] font-normal text-slate-500 dark:text-slate-400">{build.lastPublish || AdminI18n.t('sources.notPublishedYet')}</span>
+        <span className="block whitespace-normal text-[12px] font-normal text-slate-500 dark:text-slate-400">{build.lastPublish || AdminI18n.t('sources.notPublishedYet')}</span>
       </>
     );
   }

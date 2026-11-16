@@ -104,11 +104,11 @@ export class Lightbox extends Reactor {
           />
 
           <div className="absolute -bottom-16 start-0 end-0 text-center space-y-1">
-             <p className="text-white text-[11px] font-semibold tracking-widest drop-shadow-xl opacity-80">
+             <p className="text-white text-[12px] font-medium tracking-widest drop-shadow-xl opacity-80">
                 {title || AdminI18n.t('ui.lightbox.title')}
              </p>
              {images.length > 1 && (
-               <p className="text-white/30 text-[10px] font-medium tracking-widest">
+               <p className="text-white/30 text-[12px] font-medium tracking-widest">
                   {currentIndex + 1} / {images.length}
                </p>
              )}

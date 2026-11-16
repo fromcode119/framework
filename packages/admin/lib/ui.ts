@@ -39,19 +39,19 @@ export class UiFieldUtils {
 
   static readonly TEXT = {
     LABEL: 'text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1',
-    ERROR: 'text-[11px] font-bold text-rose-500 mt-1 ms-0.5',
-    SUBTEXT: 'text-[11px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed',
+    ERROR: 'text-[12px] font-medium text-rose-500 mt-1 ms-0.5',
+    SUBTEXT: 'text-[12px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed',
     /**
      * Provenance line under an EMPTY field: what the site uses instead, and who decided it. Amber
      * rather than the neutral subtext grey because "something you did not set is being published" is a
      * state the operator must notice, but it is not an error — the value is legitimately configured,
      * just somewhere else.
      */
-    PROVENANCE: 'text-[11px] font-medium text-amber-600/90 mt-1 ms-0.5 leading-relaxed',
-    PROVENANCE_VALUE: 'font-bold tabular-nums',
+    PROVENANCE: 'text-[12px] font-medium text-amber-600/90 mt-1 ms-0.5 leading-relaxed',
+    PROVENANCE_VALUE: 'font-medium tabular-nums',
     PROVENANCE_LINK: 'underline underline-offset-2 hover:text-amber-700',
     /** Empty field that resolves to nothing at all — informational, so it stays in the quiet grey. */
-    PROVENANCE_NONE: 'text-[11px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed'
+    PROVENANCE_NONE: 'text-[12px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed'
   };
 
   /** True for a class that would give a single-line field its own height or text size. */

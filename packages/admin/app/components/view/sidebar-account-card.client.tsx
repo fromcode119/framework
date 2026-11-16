@@ -205,10 +205,10 @@ export class SidebarAccountCard extends AdminComponent {
   }
 
   private avatar(size: AvatarSize): ReactElement {
-    const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[11px]' : 'h-9 w-9 text-[13px]';
+    const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[12px]' : 'h-9 w-9 text-[13px]';
     return (
       <span
-        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 font-semibold text-white ring-1 ring-inset ring-white/15`}
+        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 font-medium text-white ring-1 ring-inset ring-white/15`}
       >
         {this.initial}
       </span>
@@ -221,7 +221,7 @@ export class SidebarAccountCard extends AdminComponent {
       <div className="flex items-center gap-3">
         {this.avatar(AvatarSize.MEDIUM)}
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[13px] font-semibold leading-tight text-slate-900 dark:text-white">
+          <span className="truncate text-[13px] font-medium leading-tight text-slate-900 dark:text-white">
             {this.displayName}
           </span>
           <span className="truncate text-[12px] leading-tight text-slate-500 dark:text-slate-400">
@@ -245,11 +245,11 @@ export class SidebarAccountCard extends AdminComponent {
       <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
         {this.avatar(AvatarSize.SMALL)}
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[13px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
+          <span className="truncate text-[13px] font-medium leading-tight text-slate-800 dark:text-slate-100">
             {this.displayName}
           </span>
           {this.subtitle ? (
-            <span className={`truncate text-[11px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
+            <span className={`truncate text-[12px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
           ) : null}
         </span>
         {/*

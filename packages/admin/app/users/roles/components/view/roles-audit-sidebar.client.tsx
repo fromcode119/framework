@@ -39,11 +39,11 @@ export class RolesAuditSidebar extends PureReactor {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className={`truncate text-xs font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{log.message}</span>
-                      <span className="shrink-0 text-[10px] text-slate-400">
+                      <span className="shrink-0 text-[12px] text-slate-400">
                         {new Date(log.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[12px] text-slate-400">
                       {log.plugin_slug && log.plugin_slug !== 'system' ? log.plugin_slug.charAt(0).toUpperCase() + log.plugin_slug.slice(1) : AdminI18n.t('activity.system')}
                     </span>
                   </div>
@@ -55,9 +55,9 @@ export class RolesAuditSidebar extends PureReactor {
           </div>
 
           <div className={`mt-3 flex items-center justify-between border-t pt-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ` · ${AdminI18n.t('users.maintenance')}` : ''}</span>
+            <span className="text-[12px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ` · ${AdminI18n.t('users.maintenance')}` : ''}</span>
             <AdminLink href={AdminConstants.ROUTES.ACTIVITY}>
-              <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[10px] text-slate-500">{AdminI18n.t('users.viewLogs')}</Button>
+              <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[12px] text-slate-500">{AdminI18n.t('users.viewLogs')}</Button>
             </AdminLink>
           </div>
         </Card>

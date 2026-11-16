@@ -32,7 +32,7 @@ export class BackupSummaryCard extends AdminComponent {
               <FrameworkIcons.Database size={24} />
             </div>
             <div>
-              <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {AdminI18n.t('settings.components.backupInventory')}
               </h2>
               <p className="text-sm text-slate-500">
@@ -55,13 +55,13 @@ export class BackupSummaryCard extends AdminComponent {
         <div className="grid w-full gap-4 sm:grid-cols-3 lg:max-w-2xl">
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.totalBackups')}</div>
-            <div className={`mt-3 text-3xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{totalBackups}</div>
+            <div className={`mt-3 text-3xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{totalBackups}</div>
             <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.groupedInventoryAcrossManagedBackup')}</p>
           </div>
 
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.indexedSize')}</div>
-            <div className={`mt-3 text-3xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <div className={`mt-3 text-3xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {SystemBackupPageUtils.formatBytes(totalBytes)}
             </div>
             <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.visibleArchiveSizeAcrossCurrent')}</p>
@@ -69,7 +69,7 @@ export class BackupSummaryCard extends AdminComponent {
 
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
             <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.latestSnapshot')}</div>
-            <div className={`mt-3 text-sm font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <div className={`mt-3 text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {latestBackup ? latestBackup.displayName : AdminI18n.t('settings.components.noSnapshotsYet')}
             </div>
             <p className="mt-2 text-xs text-slate-500">

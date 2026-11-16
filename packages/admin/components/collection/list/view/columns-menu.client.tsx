@@ -29,7 +29,7 @@ export class CollectionColumnsMenu extends PureReactor {
         <div className="px-2.5 py-2 mb-1 text-[12px] font-medium text-slate-500/80">
           {AdminI18n.t('collection.list.visibleColumns')}
         </div>
-        <div className="px-2.5 pb-2 text-[10px] leading-relaxed text-slate-400">
+        <div className="px-2.5 pb-2 text-[12px] leading-relaxed text-slate-400">
           {AdminI18n.t('collection.list.pinnedHint')}
         </div>
         <div className="max-h-80 overflow-auto pe-1 space-y-0.5 custom-scrollbar">
@@ -54,7 +54,7 @@ export class CollectionColumnsMenu extends PureReactor {
                 >
                   <FrameworkIcons.Check size={11} className="text-white scale-110" strokeWidth={3} />
                 </div>
-                <span className={`text-xs font-bold truncate ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                <span className={`text-xs font-medium truncate ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
                   {column.header}
                 </span>
               </button>
@@ -113,7 +113,7 @@ export class CollectionColumnsMenu extends PureReactor {
                   key={column.id}
                   type="button"
                   onClick={() => toggleColumn(column.id)}
-                  className={`w-full px-2.5 py-2.5 rounded-xl text-start text-xs font-bold transition-all flex items-center gap-3 ${
+                  className={`w-full px-2.5 py-2.5 rounded-xl text-start text-xs font-medium transition-all flex items-center gap-3 ${
                     isDark
                       ? 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'

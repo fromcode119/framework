@@ -15,23 +15,23 @@ export class AdminTypography {
     '4XL': 'text-4xl',  // 36px
 
     // Common UI patterns
-    LABEL: 'text-[11px] font-semibold text-slate-500/80 tracking-wide',
-    SUBTEXT: 'text-[11px] font-medium text-slate-400 leading-relaxed',
-    DETAIL: 'text-xs font-semibold leading-relaxed',
-    NAV: 'text-xs font-semibold',
+    LABEL: 'text-[12px] font-medium text-slate-500/80 tracking-wide',
+    SUBTEXT: 'text-[12px] font-medium text-slate-400 leading-relaxed',
+    DETAIL: 'text-xs font-medium leading-relaxed',
+    NAV: 'text-xs font-medium',
 
     // Headings (admin UI)
     HEADING: {
-      SUBTLE: 'text-lg font-bold tracking-tight',
+      SUBTLE: 'text-lg font-medium tracking-tight',
     },
   };
 
   static readonly UI_TEXT = {
-    LABEL: 'text-[11px] font-semibold text-slate-500/80 tracking-wide',
-    CAPTION: 'text-xs font-semibold',
-    BODY: 'text-sm font-semibold leading-relaxed',
-    H1: 'text-2xl font-bold tracking-tight',
-    H2: 'text-xl font-bold tracking-tight',
-    H3: 'text-lg font-bold tracking-tight',
+    LABEL: 'text-[12px] font-medium text-slate-500/80 tracking-wide',
+    CAPTION: 'text-xs font-medium',
+    BODY: 'text-sm font-medium leading-relaxed',
+    H1: 'text-2xl font-medium tracking-tight',
+    H2: 'text-xl font-medium tracking-tight',
+    H3: 'text-lg font-medium tracking-tight',
   };
 }

@@ -36,7 +36,7 @@ export class SetupLanguageStep extends PureReactor {
         <div className="space-y-2">
           {AdminDictionary.locales.map((option) => (
             <button key={option} type="button" value={option} onClick={this.handleClick} className={this.optionClass(option)}>
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{AdminDictionary.label(option)}</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{AdminDictionary.label(option)}</span>
               <span className="text-[12px] font-medium text-slate-400">{option}</span>
             </button>
           ))}

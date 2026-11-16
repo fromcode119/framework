@@ -20,16 +20,16 @@ export class DashboardActivityFeed extends PureReactor {
       <Card noPadding className="overflow-hidden border-0 bg-white shadow-sm ring-1 ring-slate-100 dark:bg-transparent dark:shadow-none dark:ring-0">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
            <div>
-            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('dashboard.systemEvents')}</h3>
+            <h3 className="font-medium text-sm tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('dashboard.systemEvents')}</h3>
             {/* Not "Real-time lifecycle telemetry": this list is a slice of one system-logs fetch made
                 on dashboard load, with no stream and no polling. */}
-            <p className="text-[11px] text-slate-400 mt-0.5">{AdminI18n.t('dashboard.systemEventsHint')}</p>
+            <p className="text-[12px] text-slate-400 mt-0.5">{AdminI18n.t('dashboard.systemEventsHint')}</p>
            </div>
            <Button
              variant={ButtonVariant.GHOST}
              size={FieldSize.SM}
              onClick={onViewAll}
-             className="text-[11px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
+             className="text-[12px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
            >
               {AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} className="ms-1.5 group-hover:translate-x-0.5 transition-transform" />
            </Button>
@@ -52,11 +52,11 @@ export class DashboardActivityFeed extends PureReactor {
                   <p className="text-[13px] font-medium truncate text-slate-700 dark:text-slate-200">
                     {item.title}
                   </p>
-                  <span className="text-[11px] text-indigo-500 dark:text-indigo-400">
+                  <span className="text-[12px] text-indigo-500 dark:text-indigo-400">
                     {item.plugin && item.plugin !== 'system' ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
                   </span>
                 </div>
-                <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
+                <span className="shrink-0 text-[12px] tabular-nums text-slate-400">
                   {new Date(item.timestamp).toLocaleTimeString(AdminI18n.locale, { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -68,7 +68,7 @@ export class DashboardActivityFeed extends PureReactor {
                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-3">
                  <FrameworkIcons.Search size={20} className="text-slate-300" />
                </div>
-               <p className="text-[11px] font-medium text-slate-500">{AdminI18n.t('dashboard.noTelemetry')}</p>
+               <p className="text-[12px] font-medium text-slate-500">{AdminI18n.t('dashboard.noTelemetry')}</p>
             </div>
           )}
         </div>

@@ -79,23 +79,23 @@ export class MoveDialog extends AdminComponent {
           theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
         }`}>
         <div className="p-6">
-          <h3 className={`text-xl font-bold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+          <h3 className={`text-xl font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
             {title}
           </h3>
           
           <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800/10 mb-4">
             <button
               onClick={() => this.openFolder(null)}
-              className={`text-[10px] font-semibold tracking-wide ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`text-[12px] font-medium tracking-wide ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
             >
               {AdminI18n.t('ui.move.root')}
             </button>
             {path.map((folder) => (
               <Fragment key={folder.id}>
-                <span className="text-slate-400 text-[10px]">/</span>
+                <span className="text-slate-400 text-[12px]">/</span>
                 <button
                   onClick={() => this.openFolder(folder.id)}
-                  className={`text-[10px] font-semibold tracking-wide ${currentParentId === folder.id ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
+                  className={`text-[12px] font-medium tracking-wide ${currentParentId === folder.id ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
                 >
                   {folder.name}
                 </button>
@@ -140,7 +140,7 @@ export class MoveDialog extends AdminComponent {
               {AdminI18n.t('common.cancel')}
             </Button>
             <Button
-              className="flex-1 px-6 py-2.5 rounded-xl font-semibold tracking-wide text-[11px]"
+              className="flex-1 px-6 py-2.5 rounded-xl font-medium tracking-wide text-[12px]"
               onClick={() => onConfirm(currentParentId)}
               isLoading={isLoading}
               icon={<FrameworkIcons.Check size={18} />}

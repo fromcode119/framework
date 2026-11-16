@@ -29,7 +29,7 @@ export class PluginManifestModal extends AdminComponent {
   private section(title: string, body: ReactNode): ReactNode {
     return (
       <section>
-        <h4 className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">{title}</h4>
+        <h4 className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">{title}</h4>
         {body}
       </section>
     );
@@ -77,7 +77,7 @@ export class PluginManifestModal extends AdminComponent {
               <FrameworkIcons.Package size={24} />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 id="plugin-definition-title" className="break-words text-lg font-bold tracking-tight text-slate-900 dark:text-white">{manifest.name}</h3>
+              <h3 id="plugin-definition-title" className="break-words text-lg font-medium tracking-tight text-slate-900 dark:text-white">{manifest.name}</h3>
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {AdminI18n.t('plugins.detail.definition.subtitle', { slug: manifest.slug, version: manifest.version })}

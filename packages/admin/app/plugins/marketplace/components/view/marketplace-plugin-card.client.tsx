@@ -76,7 +76,7 @@ export class MarketplacePluginCard extends PureReactor {
                   {AdminI18n.t('plugins.list.featured')}
                 </Badge>
               )}
-              <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-semibold">
+              <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-medium">
                 {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.available'))}
               </Badge>
             </div>
@@ -84,7 +84,7 @@ export class MarketplacePluginCard extends PureReactor {
 
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <h3 className={`text-base font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-1 flex-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <h3 className={`text-base font-medium tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-1 flex-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {MarketplacePluginCopy.label(plugin, installed)}
               </h3>
               {isVerified && (

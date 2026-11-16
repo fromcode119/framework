@@ -189,7 +189,7 @@ export class SiteAccessCard extends AdminComponent {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <span className={`text-sm font-semibold tracking-tight ${this.isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.name}</span>
+                    <span className={`text-sm font-medium tracking-tight ${this.isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.name}</span>
                     <p className={`text-xs leading-snug truncate ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {blocked
                         ? <AdminLink className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
@@ -198,7 +198,7 @@ export class SiteAccessCard extends AdminComponent {
                   </div>
 
                   <div className="flex items-center gap-5 shrink-0">
-                    <span className={`hidden lg:inline text-[11px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{plugin.version}</span>
+                    <span className={`hidden lg:inline text-[12px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{plugin.version}</span>
                     <Badge
                       variant={blocked ? BadgeVariant.AMBER : (enabled ? BadgeVariant.SUCCESS : BadgeVariant.GRAY)}
                       className="shrink-0 justify-center w-[68px]"

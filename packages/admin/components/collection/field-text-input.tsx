@@ -96,7 +96,7 @@ export class FieldTextInput extends PureReactor {
           </div>
         )}
         {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
-          <div className="absolute top-1/2 -translate-y-1/2 end-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
+          <div className="absolute top-1/2 -translate-y-1/2 end-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[12px] font-medium tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
             <FrameworkIcons.Refresh size={8} />
             {AdminI18n.t('ui.field.auto')}
           </div>

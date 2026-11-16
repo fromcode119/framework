@@ -68,7 +68,7 @@ export class LoginOtpInput extends PureReactor {
           <Input
             key={index}
             ref={(el: Input | null) => { this.boxes[index] = el; }}
-            inputClassName={`text-center font-semibold${this.invalid ? ' !border-rose-500' : ''}`}
+            inputClassName={`text-center font-medium${this.invalid ? ' !border-rose-500' : ''}`}
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={LoginOtpInput.LENGTH}

@@ -48,7 +48,7 @@ export class FiltersButton extends PureReactor {
           // Below 640px the word is dropped and only the funnel is left, so the button has to say what
           // it is some other way — otherwise a phone shows an unlabelled square beside the search box.
           aria-label={AdminI18n.t('ui.listToolbar.filters')}
-          className={`h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-semibold inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
+          className={`h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-medium inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
         >
           <FrameworkIcons.Filter size={15} />
           <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>

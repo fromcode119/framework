@@ -69,7 +69,7 @@ export class JobsPage extends AdminComponent {
         <div className="w-full p-6 fc-page-stack">
           <section className="space-y-3">
             <div>
-              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.scheduledHeading')}</h2>
+              <h2 className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.scheduledHeading')}</h2>
               <p className="text-[12px] text-slate-500">{AdminI18n.t('jobs.scheduledHint')}</p>
             </div>
             <div className={`${AdminClass.SURFACE} overflow-hidden`}>

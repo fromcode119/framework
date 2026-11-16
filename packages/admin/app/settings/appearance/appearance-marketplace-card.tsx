@@ -26,7 +26,7 @@ export class AppearanceMarketplaceCard extends PureReactor {
                 <FrameworkIcons.Palette size={18} />
               </span>
               <div>
-                <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}{it.version ? ` · v${it.version}` : ''}</span>
+                <span className={`block text-sm font-medium tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}{it.version ? ` · v${it.version}` : ''}</span>
                 <span className="block text-[13px] text-slate-500 max-w-md leading-relaxed">{it.description || it.author}</span>
               </div>
             </div>

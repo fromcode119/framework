@@ -57,7 +57,7 @@ export class MarketplaceDetailHeader extends PureReactor {
            <div className="flex-1">
               <div className="flex justify-between items-start">
                  <div className="flex items-center gap-3">
-                    <h2 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{MarketplacePluginCopy.label(plugin, installedPlugin)}</h2>
+                    <h2 className={`text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{MarketplacePluginCopy.label(plugin, installedPlugin)}</h2>
                     {allVersions.length > 1 && (
                       <div className="ms-4">
                         <Dropdown
@@ -93,7 +93,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                     </div>
                     <div>
                        <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.developer')}</div>
-                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author}</div>
+                       <div className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author}</div>
                     </div>
                  </div>
                  )}
@@ -104,7 +104,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                       </div>
                       <div>
                          <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.officialSite')}</div>
-                         <a href={plugin.homepage} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-indigo-500 hover:underline">{AdminI18n.t('plugins.list.visitHomepage')}</a>
+                         <a href={plugin.homepage} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-500 hover:underline">{AdminI18n.t('plugins.list.visitHomepage')}</a>
                       </div>
                    </div>
                  )}
@@ -114,7 +114,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                     </div>
                     <div>
                        <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.version')}</div>
-                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>v{plugin.version}</div>
+                       <div className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>v{plugin.version}</div>
                     </div>
                  </div>
               </div>

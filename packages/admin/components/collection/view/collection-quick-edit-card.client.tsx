@@ -49,15 +49,15 @@ export class CollectionQuickEditCard extends PureReactor {
     const tone = status.type === NotificationType.SUCCESS
       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30'
       : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30';
-    return <div className={`mb-4 rounded-xl border px-4 py-2.5 text-[13px] font-semibold ${tone}`}>{status.message}</div>;
+    return <div className={`mb-4 rounded-xl border px-4 py-2.5 text-[13px] font-medium ${tone}`}>{status.message}</div>;
   }
 
   private renderFields(): ReactNode {
     if (this.isLoadingRow) {
-      return <div className="py-10 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>;
+      return <div className="py-10 text-center text-sm font-medium text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>;
     }
     if (!this.quickEditFields.length) {
-      return <div className="py-6 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.noFields')}</div>;
+      return <div className="py-6 text-center text-sm font-medium text-slate-500">{AdminI18n.t('collection.quickEdit.noFields')}</div>;
     }
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
@@ -91,7 +91,7 @@ export class CollectionQuickEditCard extends PureReactor {
             <button
               type="button"
               onClick={this.onClose}
-              className="flex-1 sm:flex-none h-9 px-4 rounded-lg border text-[13px] font-semibold bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="flex-1 sm:flex-none h-9 px-4 rounded-lg border text-[13px] font-medium bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
               {AdminI18n.t('common.cancel')}
             </button>
@@ -99,7 +99,7 @@ export class CollectionQuickEditCard extends PureReactor {
               type="button"
               onClick={this.onSave}
               disabled={this.isLoadingRow || this.isSavingRow}
-              className="flex-1 sm:flex-none h-9 px-4 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="flex-1 sm:flex-none h-9 px-4 rounded-lg text-[13px] font-medium inline-flex items-center justify-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
             >
               <FrameworkIcons.Save size={14} />
               {AdminI18n.t(this.isSavingRow ? 'collection.quickEdit.saving' : 'collection.quickEdit.saveChanges')}

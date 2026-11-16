@@ -54,8 +54,8 @@ export class RolePermissionGroup extends PureReactor {
       <label className="flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/60 px-3 py-2.5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
         {this.box(group.all)}
         <span className="flex flex-col gap-0.5">
-          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('users.everythingIn', { group: group.label })}</span>
-          <span className="text-[11px] text-slate-500">{AdminI18n.t('users.everythingInHint', { group: group.label })}</span>
+          <span className="text-xs font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('users.everythingIn', { group: group.label })}</span>
+          <span className="text-[12px] text-slate-500">{AdminI18n.t('users.everythingInHint', { group: group.label })}</span>
         </span>
       </label>
     );
@@ -69,9 +69,9 @@ export class RolePermissionGroup extends PureReactor {
           <label key={permission.name} className="flex items-start gap-3 py-2.5">
             {this.box(permission.name)}
             <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{permission.label}</span>
-              <span className="text-[11px] text-slate-500">{permission.description}</span>
-              <code className="text-[10px] text-slate-400">{permission.name}</code>
+              <span className="text-xs font-medium text-slate-800 dark:text-slate-100">{permission.label}</span>
+              <span className="text-[12px] text-slate-500">{permission.description}</span>
+              <code className="text-[12px] text-slate-400">{permission.name}</code>
             </span>
           </label>
         ))}
@@ -107,7 +107,7 @@ export class RolePermissionGroup extends PureReactor {
                         disabled={this.readOnly}
                         onChange={(on: boolean) => this.change(RolePermissionSelection.setAll(this.selected, names, on))}
                       />
-                      <span className="font-semibold text-slate-700 dark:text-slate-200">{collection.label}</span>
+                      <span className="font-medium text-slate-700 dark:text-slate-200">{collection.label}</span>
                     </span>
                   </td>
                   {RolePermissionSelection.ACTIONS.map((action) => (
@@ -135,7 +135,7 @@ export class RolePermissionGroup extends PureReactor {
         <button type="button" onClick={this.toggleOpen} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start">
           <span className="flex items-center gap-2">
             {this.expanded ? <FrameworkIcons.ChevronDown size={14} className="text-slate-400" /> : <FrameworkIcons.ChevronRight size={14} className="text-slate-400" />}
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.label}</span>
+            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{group.label}</span>
           </span>
           <span className={`text-[12px] font-medium tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
             {AdminI18n.t('users.countOfTotal', { count, total })}

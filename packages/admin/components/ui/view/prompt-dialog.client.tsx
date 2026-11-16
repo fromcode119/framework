@@ -104,7 +104,7 @@ export class PromptDialog extends AdminComponent {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <h3 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {title}
             </h3>
             {description && (

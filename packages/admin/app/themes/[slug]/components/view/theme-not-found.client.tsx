@@ -22,15 +22,15 @@ export class ThemeNotFound extends PureReactor {
         <div className="p-8 rounded-xl mb-8 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200 dark:shadow-black/50">
           <FrameworkIcons.Palette size={64} className="text-rose-500" strokeWidth={1} />
         </div>
-        <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('themes.notAvailableHere', { slug: this.themeSlug })}</h1>
-        <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-8 px-6">{AdminI18n.t('themes.notAvailableHereHelp')}</p>
+        <h1 className="text-4xl font-medium tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('themes.notAvailableHere', { slug: this.themeSlug })}</h1>
+        <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-8 px-6">{AdminI18n.t('themes.notAvailableHereHelp')}</p>
         <div className="flex items-center gap-4">
           <AdminLink href={this.themesHref}>
-            <Button variant={ButtonVariant.PRIMARY} className="rounded-xl px-10 py-5 font-bold tracking-tight text-[13px]" icon={<FrameworkIcons.Palette size={18} />}>
+            <Button variant={ButtonVariant.PRIMARY} className="rounded-xl px-10 py-5 font-medium tracking-tight text-[13px]" icon={<FrameworkIcons.Palette size={18} />}>
               {AdminI18n.t('themes.manageThemes')}
             </Button>
           </AdminLink>
-          <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} className="rounded-xl px-8 font-bold tracking-tight text-[13px]" icon={<FrameworkIcons.Left size={16} />}>
+          <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} className="rounded-xl px-8 font-medium tracking-tight text-[13px]" icon={<FrameworkIcons.Left size={16} />}>
             {AdminI18n.t('plugins.list.goBack')}
           </Button>
         </div>

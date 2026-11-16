@@ -46,8 +46,8 @@ export class DateTimePickerFooter extends PureReactor {
                   <FrameworkIcons.Clock size={15} />
                </div>
                <div className="flex min-w-0 flex-col">
-                  <span className={`text-[11px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
-                  <span className="truncate text-[10px] font-medium text-slate-400 tracking-tight">{timezone}</span>
+                  <span className={`text-[12px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
+                  <span className="truncate text-[12px] font-medium text-slate-400 tracking-tight">{timezone}</span>
                </div>
             </div>
 
@@ -62,7 +62,7 @@ export class DateTimePickerFooter extends PureReactor {
                   onChange={this.changeHours}
                 />
               </div>
-              <span className={`pb-2 text-[15px] font-bold ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
+              <span className={`pb-2 text-[15px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
                 <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper
@@ -82,7 +82,7 @@ export class DateTimePickerFooter extends PureReactor {
             <button
               type="button"
               onClick={() => onQuickAction(0)}
-              className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
+              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
                 theme === ThemeMode.DARK
                   ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                   : 'bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 ring-1 ring-black/5'
@@ -93,7 +93,7 @@ export class DateTimePickerFooter extends PureReactor {
             <button
               type="button"
               onClick={() => onQuickAction(1)}
-              className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
+              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
                 theme === ThemeMode.DARK
                   ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                   : 'bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 ring-1 ring-black/5'
@@ -104,7 +104,7 @@ export class DateTimePickerFooter extends PureReactor {
             <button
               type="button"
               onClick={onClear}
-              className={`rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
+              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
                 theme === ThemeMode.DARK
                   ? 'bg-slate-700/40 text-slate-200 hover:bg-rose-500/10 hover:text-rose-300 active:scale-95 ring-1 ring-white/5'
                   : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 ring-1 ring-black/5'
@@ -117,7 +117,7 @@ export class DateTimePickerFooter extends PureReactor {
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.MD}
-              className="w-full rounded-xl font-semibold text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
+              className="w-full rounded-xl font-medium text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
               onClick={onClose}
             >
               {AdminI18n.t('ui.date.apply')}

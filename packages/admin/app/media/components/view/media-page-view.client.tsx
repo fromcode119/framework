@@ -185,7 +185,7 @@ export class MediaPageView extends PureReactor {
             That is a brand line and a marketing sentence: it told the operator nothing about their
             library and cost more vertical space than the row of files above it. A footer here earns
             its place only by stating what is actually on screen. */}
-        <div className={`px-6 py-3 border-t mt-auto text-[11px] ${
+        <div className={`px-6 py-3 border-t mt-auto text-[12px] ${
           this.theme === ThemeMode.DARK ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
         }`}>
           {(this.items || []).length === 1 ? AdminI18n.t('media.fileOne') : AdminI18n.t('media.fileMany', { count: (this.items || []).length })}

@@ -128,9 +128,9 @@ export class DashboardWidgetFrame extends PureReactor {
         title={AdminI18n.t('dashboard.widgets.dragHint')}
       >
         <FrameworkIcons.Grid size={14} className="shrink-0 text-slate-400" />
-        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-slate-700 dark:text-slate-200">{label}</span>
+        <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-slate-700 dark:text-slate-200">{label}</span>
         {this.definition.source ? (
-          <span className="hidden shrink-0 text-[11px] text-slate-400 sm:inline">{this.definition.source}</span>
+          <span className="hidden shrink-0 text-[12px] text-slate-400 sm:inline">{this.definition.source}</span>
         ) : null}
         {this.renderSizes()}
         {this.iconButton(<FrameworkIcons.ChevronUp size={14} />, AdminI18n.t('dashboard.widgets.moveEarlier', { label }), () => this.onShift(-1), this.isFirst)}
@@ -151,7 +151,7 @@ export class DashboardWidgetFrame extends PureReactor {
             onClick={() => this.onResize(size)}
             aria-pressed={size === this.size}
             title={AdminI18n.t(`dashboard.widgets.size.${size.value}`)}
-            className={`rounded-md px-1.5 text-[11px] font-semibold leading-5 ${size === this.size ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+            className={`rounded-md px-1.5 text-[12px] font-medium leading-5 ${size === this.size ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
           >
             {AdminI18n.t(`dashboard.widgets.sizeShort.${size.value}`)}
           </button>

@@ -235,14 +235,14 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
           <div className="flex flex-wrap items-center gap-2">
             {summary.map((s) => (
               <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-                <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
+                <span className={`text-sm font-medium tabular-nums ${s.tone}`}>{s.value}</span>
                 <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             ))}
             {this.updatingAll ? (
               /* The button is GONE while the batch runs — in its place, the server's own progress
                  messages counting down to the restart. */
-              <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
+              <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
                 <span className="h-3 w-3 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
                 <span className="normal-case tracking-normal">{this.updateAllProgress || AdminI18n.t('plugins.list.updatingPlugins')}</span>
               </div>

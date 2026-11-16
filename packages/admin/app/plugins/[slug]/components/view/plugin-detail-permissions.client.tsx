@@ -34,7 +34,7 @@ export class PluginDetailPermissions extends PureReactor {
         ) : (
           <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl">
             <FrameworkIcons.Shield className="text-slate-200 dark:text-slate-800 mb-3" size={40} />
-            <p className="text-slate-500 font-semibold text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
+            <p className="text-slate-500 font-medium text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
             <p className="text-[12px] text-slate-400 mt-0.5">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
           </div>
         )}

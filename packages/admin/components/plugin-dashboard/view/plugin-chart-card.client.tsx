@@ -24,7 +24,7 @@ export class PluginChartCard extends PureReactor {
       {/* Header */}
       <div className={`flex items-start justify-between ${noPadding ? 'px-4 pt-4 pb-3' : 'mb-3'}`}>
         <div className="flex-1 min-w-0">
-          <h3 className="text-[13px] font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
+          <h3 className="text-[13px] font-medium text-slate-800 dark:text-slate-100 tracking-tight">
             {title}
           </h3>
           {subtitle && (

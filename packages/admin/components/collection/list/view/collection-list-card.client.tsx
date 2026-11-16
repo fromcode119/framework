@@ -63,7 +63,7 @@ export class CollectionListCard extends PureReactor {
     const meta = this.meta;
     if (!meta.length) return null;
     return (
-      <div className="mt-1 flex items-center gap-1.5 min-w-0 text-[11px] font-medium text-slate-500 dark:text-slate-400 overflow-hidden whitespace-nowrap">
+      <div className="mt-1 flex items-center gap-1.5 min-w-0 text-[12px] font-medium text-slate-500 dark:text-slate-400 overflow-hidden whitespace-nowrap">
         {meta.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="text-slate-300 dark:text-slate-600">·</span>, part] : [part]))}
       </div>
     );
@@ -83,7 +83,7 @@ export class CollectionListCard extends PureReactor {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
-                <div className="min-w-0 line-clamp-2 text-[13px] font-semibold leading-snug text-slate-900 dark:text-slate-100">
+                <div className="min-w-0 line-clamp-2 text-[13px] font-medium leading-snug text-slate-900 dark:text-slate-100">
                   {this.cell(layout.titleField) ?? `#${row.id}`}
                 </div>
                 {/* Beside the title where the list is wide enough; under it, with the actions, where it is not. */}
@@ -93,8 +93,8 @@ export class CollectionListCard extends PureReactor {
                 // The label sits ABOVE the value: beside it, a long one ("Lifetime Value (LTV)") left the
                 // title a sliver of the card.
                 <div className="shrink-0 max-w-[45%] flex flex-col items-end text-end leading-tight">
-                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label max-w-full truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
-                  <span className="text-[13px] font-bold text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
+                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label max-w-full truncate text-[12px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
+                  <span className="text-[13px] font-medium text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
                 </div>
               ) : null}
             </div>

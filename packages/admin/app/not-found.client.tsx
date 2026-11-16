@@ -21,11 +21,11 @@ export class NotFound extends AdminComponent {
           <FrameworkIcons.Search size={64} strokeWidth={1.5} />
         </div>
 
-        <h1 className={`text-6xl font-semibold mb-4 tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+        <h1 className={`text-6xl font-medium mb-4 tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
           404
         </h1>
 
-        <h2 className={`text-2xl font-semibold mb-4 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
+        <h2 className={`text-2xl font-medium mb-4 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
           {AdminI18n.t('notFound.title')}
         </h2>
 
@@ -36,7 +36,7 @@ export class NotFound extends AdminComponent {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={this.goBack}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all border ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all border ${
               theme === ThemeMode.DARK
                 ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
@@ -48,7 +48,7 @@ export class NotFound extends AdminComponent {
 
           <AdminLink
             href="/"
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/20"
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-600/20"
           >
             <FrameworkIcons.Home size={18} />
             <span>{AdminI18n.t('nav.items.dashboard')}</span>

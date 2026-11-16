@@ -22,7 +22,7 @@ export class PluginSettingsEmpty extends PureReactor {
     return (
       <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
         <FrameworkIcons.Settings size={28} className="mb-1 text-slate-300 dark:text-slate-600" />
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
           {AdminI18n.t(this.waiting ? 'plugins.list.settingsWaitingTitle' : 'plugins.list.thisPluginHasNoConfigurable')}
         </p>
         {this.waiting ? (

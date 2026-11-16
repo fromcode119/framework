@@ -59,7 +59,7 @@ export class ThemeSettingsHeader extends PureReactor {
         {this.openSite(dark)}
         {activeTab === ThemeSettingsTab.SETTINGS ? (
           <button type="button" onClick={this.save} disabled={isSaving}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
             {isSaving ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Check size={14} />}
             {AdminI18n.t('themes.saveChanges')}
           </button>

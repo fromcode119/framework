@@ -71,10 +71,10 @@ export class MediaItemCard extends MediaItemCardState {
           {this.isReadOnly || item.optimizedUrl ? (
             <span className="absolute bottom-2 start-2 z-10 flex gap-1">
               {this.isReadOnly ? (
-                <span className="rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">{AdminI18n.t('media.theme')}</span>
+                <span className="rounded-md bg-white/90 px-1.5 py-0.5 text-[12px] font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">{AdminI18n.t('media.theme')}</span>
               ) : null}
               {item.optimizedUrl ? (
-                <span className="rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">WebP</span>
+                <span className="rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[12px] font-medium text-white shadow-sm">WebP</span>
               ) : null}
             </span>
           ) : null}
@@ -157,7 +157,7 @@ export class MediaItemCard extends MediaItemCardState {
           <div className={`text-[13px] font-medium leading-snug truncate ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`} title={item.originalName}>
             {item.originalName}
           </div>
-          <div className="mt-0.5 truncate text-[11px] tabular-nums text-slate-500">
+          <div className="mt-0.5 truncate text-[12px] tabular-nums text-slate-500">
             {[this.sizeLabel, item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'].filter(Boolean).join(' · ')}
           </div>
         </div>
@@ -184,23 +184,23 @@ export class MediaItemCard extends MediaItemCardState {
               type="button"
               onClick={this.onEdit}
               title={AdminI18n.t('media.openDetails')}
-              className={`block w-full cursor-pointer truncate text-start font-semibold text-sm hover:underline ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
+              className={`block w-full cursor-pointer truncate text-start font-medium text-sm hover:underline ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
             >
               {item.originalName}
             </button>
          </div>
-         <div className="hidden md:block w-20 text-end text-[11px] text-slate-500 font-medium tabular-nums flex-shrink-0">
+         <div className="hidden md:block w-20 text-end text-[12px] text-slate-500 font-medium tabular-nums flex-shrink-0">
             {this.sizeLabel}
          </div>
-         <div className="hidden lg:block w-24 text-[11px] text-slate-500 font-medium truncate flex-shrink-0">
+         <div className="hidden lg:block w-24 text-[12px] text-slate-500 font-medium truncate flex-shrink-0">
             {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
          </div>
          <div className="hidden lg:flex w-24 items-center gap-1 flex-shrink-0">
-            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.theme')}</Badge> : null}
+            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.theme')}</Badge> : null}
             {String(item.visibility || 'public') === 'private' ? (
-              <Badge variant={BadgeVariant.WARNING} className="text-[10px]">{AdminI18n.t('media.private')}</Badge>
+              <Badge variant={BadgeVariant.WARNING} className="text-[12px]">{AdminI18n.t('media.private')}</Badge>
             ) : null}
-            {item.optimizedUrl ? <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">WebP</Badge> : null}
+            {item.optimizedUrl ? <Badge variant={BadgeVariant.SUCCESS} className="text-[12px]">WebP</Badge> : null}
          </div>
          <div className="flex items-center gap-0.5 flex-shrink-0">
             {/* The row's counterpart to the grid bar's Details — see the note there. */}

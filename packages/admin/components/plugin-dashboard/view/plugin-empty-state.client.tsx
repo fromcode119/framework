@@ -30,7 +30,7 @@ export class PluginEmptyState extends PureReactor {
       )}
 
       {/* Title */}
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-tight mb-1">
+      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 tracking-tight mb-1">
         {title}
       </h3>
 
@@ -45,7 +45,7 @@ export class PluginEmptyState extends PureReactor {
       {action && (
         <button
           onClick={action.onClick}
-          className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+          className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium transition-colors"
         >
           {action.label}
         </button>

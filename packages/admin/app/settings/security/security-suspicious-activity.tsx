@@ -19,7 +19,7 @@ export class SecuritySuspiciousActivity extends PureReactor {
             this.plugins.map((plugin) => (
               <div key={plugin.slug} className="flex items-center justify-between p-3 rounded-xl bg-red-500/5 border border-red-500/10">
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">{plugin.slug}</span>
+                  <span className="text-sm font-medium">{plugin.slug}</span>
                   <span className="text-[12px] text-slate-500 mt-0.5">{AdminI18n.t('settings.security.denialsRecorded', { count: plugin.count })}</span>
                 </div>
                 <div className="h-2 w-2 rounded-full bg-red-500" />

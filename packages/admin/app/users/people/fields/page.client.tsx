@@ -76,8 +76,8 @@ export class PersonFieldsPage extends AdminComponent {
     return [
       { header: AdminI18n.t('users.fields.label'), id: 'label', accessor: (field: IPersonFieldDefinition) => (
         <div>
-          <div className="font-bold tracking-tight">{PersonFieldWords.pick(field.label, field.key)}</div>
-          <div className="text-[11px] font-mono text-slate-500">{field.key}</div>
+          <div className="font-medium tracking-tight">{PersonFieldWords.pick(field.label, field.key)}</div>
+          <div className="text-[12px] font-mono text-slate-500">{field.key}</div>
         </div>
       ) },
       { header: AdminI18n.t('users.fields.type'), id: 'type', accessor: (field: IPersonFieldDefinition) => AdminI18n.t(`users.fields.types.${field.type}`) },
@@ -98,10 +98,10 @@ export class PersonFieldsPage extends AdminComponent {
             title={AdminI18n.t('users.fields.title')} subtitle={AdminI18n.t('users.fields.subtitle')}
             actions={this.editing ? null : (
               <Button variant={ButtonVariant.PRIMARY} type="button" icon={<FrameworkIcons.Plus size={14} />} onClick={() => this.open(null)}
-                className="h-9 px-4 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.fields.add')}</Button>
+                className="h-9 px-4 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.fields.add')}</Button>
             )} />
           <div className="w-full p-6 fc-page-stack">
-            {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{this.error}</div> : null}
+            {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{this.error}</div> : null}
             {this.editing ? (
               <PersonFieldEditor key={this.current?.key ?? 'new'} field={this.current} locales={this.locales} theme={theme}
                 onCancel={() => { this.editing = false; }}
@@ -112,7 +112,7 @@ export class PersonFieldsPage extends AdminComponent {
                 onRowClick={(field: IPersonFieldDefinition) => this.open(field)}
                 actions={(field: IPersonFieldDefinition) => (
                   <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />}
-                    onClick={() => { this.removing = field; }} className="h-8 px-3 rounded-lg text-[11px] font-bold">{AdminI18n.t('users.fields.delete')}</Button>
+                    onClick={() => { this.removing = field; }} className="h-8 px-3 rounded-lg text-[12px] font-medium">{AdminI18n.t('users.fields.delete')}</Button>
                 )} />
             )}
           </div>

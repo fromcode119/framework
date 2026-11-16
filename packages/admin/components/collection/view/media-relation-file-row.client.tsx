@@ -28,7 +28,7 @@ export class MediaRelationFileRow extends PureReactor {
             ? <img src={preview.url} alt="" className="w-full h-full object-cover" />
             : <FrameworkIcons.File size={16} />}
         </div>
-        <a href={preview.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 truncate text-xs font-semibold text-slate-700 dark:text-slate-200 hover:underline">
+        <a href={preview.url} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-0 truncate text-xs font-medium text-slate-700 dark:text-slate-200 hover:underline">
           {filename}
         </a>
         <button

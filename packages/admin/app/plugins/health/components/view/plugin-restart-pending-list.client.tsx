@@ -35,7 +35,7 @@ export class PluginRestartPendingList extends PureReactor {
             <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-sky-500/10 text-sky-400 ring-1 ring-sky-500/20' : 'bg-sky-50 text-sky-600 ring-1 ring-sky-100'}`}><FrameworkIcons.Refresh size={18} strokeWidth={1.5} /></div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
+                <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
                 <Badge variant={BadgeVariant.INFO} className="shrink-0">{AdminI18n.t('plugins.list.notTheInstalledVersion')}</Badge>
               </div>
               <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>

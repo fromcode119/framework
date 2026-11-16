@@ -23,7 +23,7 @@ export class DashboardSectionHeading extends PureReactor {
           {this.label}
         </h2>
         {this.count !== undefined && this.count !== null && this.count !== '' ? (
-          <span className="rounded-full bg-slate-100 px-1.5 text-[10px] font-semibold leading-[16px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+          <span className="rounded-full bg-slate-100 px-1.5 text-[12px] font-medium leading-[16px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
             {this.count}
           </span>
         ) : null}

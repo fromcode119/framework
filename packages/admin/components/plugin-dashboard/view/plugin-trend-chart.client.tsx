@@ -98,7 +98,7 @@ export class PluginTrendChart extends PureReactor {
               );
             })}
           </div>
-          <div className="flex items-center gap-4 text-[10px] font-medium text-slate-400 shrink-0">
+          <div className="flex items-center gap-4 text-[12px] font-medium text-slate-400 shrink-0">
             <span>{firstLabel}</span>
             <span>{lastLabel}</span>
           </div>

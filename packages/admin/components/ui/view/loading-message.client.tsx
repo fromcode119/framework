@@ -51,7 +51,7 @@ export class LoadingMessage extends PureReactor {
     return (
       <p
         key={phrase}
-        className={`animate-in fade-in duration-500 text-[11px] font-medium tracking-tight ${this.className ?? 'text-slate-500 dark:text-slate-400'}`}
+        className={`animate-in fade-in duration-500 text-[12px] font-medium tracking-tight ${this.className ?? 'text-slate-500 dark:text-slate-400'}`}
       >
         {phrase}
       </p>

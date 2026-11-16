@@ -50,7 +50,7 @@ export class MediaShareActivity extends AdminComponent {
   private renderStat(label: string, value: number): ReactNode {
     return (
       <div key={label} className="min-w-0">
-        <p className="text-[15px] font-semibold tabular-nums leading-none">{value}</p>
+        <p className="text-[15px] font-medium tabular-nums leading-none">{value}</p>
         <p className="mt-1 text-[12px] opacity-50 truncate">{label}</p>
       </div>
     );
@@ -68,19 +68,19 @@ export class MediaShareActivity extends AdminComponent {
       <div key={row.grantId} className={`flex items-center justify-between gap-3 px-4 py-2 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
         <div className="min-w-0">
           <p className="text-[12px] font-medium truncate">{row.email}</p>
-          <p className="text-[10px] opacity-55">{summary}</p>
+          <p className="text-[12px] opacity-55">{summary}</p>
         </div>
         {row.lastAt ? (
-          <span className="text-[10px] opacity-45 flex-shrink-0">{AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) })}</span>
+          <span className="text-[12px] opacity-45 flex-shrink-0">{AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) })}</span>
         ) : (
-          <Badge variant={BadgeVariant.GRAY} className="text-[10px] flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
+          <Badge variant={BadgeVariant.GRAY} className="text-[12px] flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
         )}
       </div>
     );
   }
 
   render(): ReactNode {
-    if (this.loading) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.loadingActivity')}</p>;
+    if (this.loading) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.loadingActivity')}</p>;
 
     const dark = this.theme === ThemeMode.DARK;
     const recipients: any[] = Array.isArray(this.data?.recipients) ? this.data.recipients : [];

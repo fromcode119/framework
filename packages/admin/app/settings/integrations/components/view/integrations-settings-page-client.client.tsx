@@ -57,7 +57,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
       : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
     return (
       <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-semibold' : 'font-medium'} ${tone}`}>
+        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone}`}>
         {icon}
         {label}
       </button>
@@ -138,7 +138,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (!integration.providers.length) {
       return (
         <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">{integration.label}</h2>
+          <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
           {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
         </div>
       );

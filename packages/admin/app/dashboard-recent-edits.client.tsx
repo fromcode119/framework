@@ -71,8 +71,8 @@ export class DashboardRecentEdits extends AdminComponent {
                     it as raw JSON ({"en":"Home"}) in this panel. */}
                 {AdminServices.getInstance().localization.resolveAnyString(edit.title)}
               </span>
-              <span className="shrink-0 text-[11px] text-slate-500">{this.collectionName(edit)}</span>
-              <span className="shrink-0 text-[10px] text-slate-400 tabular-nums">
+              <span className="shrink-0 text-[12px] text-slate-500">{this.collectionName(edit)}</span>
+              <span className="shrink-0 text-[12px] text-slate-400 tabular-nums">
                 {RelativeTimeFormatter.fromNow(edit.editedAt, '')}
               </span>
             </button>

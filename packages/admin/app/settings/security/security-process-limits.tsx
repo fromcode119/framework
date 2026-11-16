@@ -31,12 +31,12 @@ export class SecurityProcessLimits extends PureReactor {
           <div className="pt-2 space-y-4">
             {ordered.map((group) => (
               <div key={`${group.memoryMb}|${group.timeoutMs}`}>
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-200">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
                   {AdminI18n.t('settings.security.processLimitsGroup', { count: group.slugs.length, memory: group.memoryMb, seconds: Math.round(group.timeoutMs / 100) / 10 })}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {group.slugs.sort().map((slug) => (
-                    <span key={slug} className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{slug}</span>
+                    <span key={slug} className="px-2 py-0.5 rounded-md text-[12px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{slug}</span>
                   ))}
                 </div>
               </div>

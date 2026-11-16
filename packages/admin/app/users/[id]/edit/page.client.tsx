@@ -152,7 +152,7 @@ export class EditUserPage extends AdminComponent {
               />
 
               {errors.global && (
-                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-bold flex items-center gap-3">
+                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-medium flex items-center gap-3">
                     <FrameworkIcons.Warning size={18} />
                     {errors.global}
                  </div>

@@ -11,20 +11,20 @@ export class DateTimePickerDayClassNames {
       months: "flex flex-col",
       month: "space-y-2",
       month_caption: "hidden",
-      caption_label: "text-sm font-bold text-indigo-600",
+      caption_label: "text-sm font-medium text-indigo-600",
       nav: "hidden",
       button_previous: "hidden",
       button_next: "hidden",
       month_grid: "w-full border-separate border-spacing-0.5",
       weekdays: "mb-0.5",
-      weekday: "h-6 w-9 p-0 text-center align-middle text-slate-400 font-bold text-[10px] uppercase tracking-wider",
+      weekday: "h-6 w-9 p-0 text-center align-middle text-slate-400 font-medium text-[12px] uppercase tracking-wider",
       weeks: "",
       week: "",
       day: "h-9 w-9 p-0 text-center align-middle",
-      day_button: `flex h-8 w-8 items-center justify-center rounded-xl p-0 font-semibold text-[13px] tracking-tight transition-all duration-150 mx-auto
+      day_button: `flex h-8 w-8 items-center justify-center rounded-xl p-0 font-medium text-[13px] tracking-tight transition-all duration-150 mx-auto
         ${theme === ThemeMode.DARK
-          ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-300 [[data-today=true]_&]:font-bold'
-          : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-600 [[data-today=true]_&]:font-bold'}`,
+          ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-300 [[data-today=true]_&]:font-medium'
+          : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-600 [[data-today=true]_&]:font-medium'}`,
       selected: theme === ThemeMode.DARK
         ? "!bg-indigo-500 hover:!bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-2 ring-indigo-400/50 scale-105"
         : "!bg-indigo-600 hover:!bg-indigo-600 shadow-xl shadow-indigo-600/40 ring-2 ring-indigo-500/60 scale-105",

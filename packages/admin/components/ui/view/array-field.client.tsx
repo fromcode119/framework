@@ -155,7 +155,7 @@ export class ArrayField extends Reactor {
         }`}>
           <FrameworkIcons.Plus size={20} strokeWidth={3} />
         </div>
-        <span className="text-[10px] font-semibold tracking-widest">{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
+        <span className="text-[12px] font-medium tracking-widest">{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
       </button>
     </div>
     );

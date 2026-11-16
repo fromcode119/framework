@@ -28,7 +28,7 @@ export class SetupFrame extends PureReactor {
             <div className={`inline-flex items-center justify-center w-16 h-16 ${AdminClass.SURFACE} mb-4`}>
               <FrameworkIcons.Orbit size={42} className="text-indigo-600 dark:text-indigo-500" />
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-950 dark:text-white">
+            <h1 className="text-3xl font-medium tracking-tight mb-2 text-slate-950 dark:text-white">
               {AdminDictionary.translate(this.locale, 'setup.title')}
             </h1>
             <p className="text-slate-500 font-medium text-sm leading-relaxed max-w-[340px] mx-auto">
@@ -40,7 +40,7 @@ export class SetupFrame extends PureReactor {
 
           <div className="text-center mt-5 flex items-center justify-center gap-4 opacity-40 text-slate-500">
             <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
-            <span className="text-[10px] font-semibold tracking-wide">{this.buildLine}</span>
+            <span className="text-[12px] font-medium tracking-wide">{this.buildLine}</span>
             <div className="h-[2px] w-8 bg-slate-200 dark:bg-slate-800 rounded-full" />
           </div>
         </div>

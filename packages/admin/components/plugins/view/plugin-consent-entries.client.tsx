@@ -25,7 +25,7 @@ export class PluginConsentEntries extends PureReactor {
           if (!entries.length) return null;
           return (
             <section key={group.risk} aria-label={AdminI18n.t(group.heading)}>
-              <h4 className={`border-b pb-1.5 text-xs font-semibold ${group.tone} ${group.rule}`}>
+              <h4 className={`border-b pb-1.5 text-xs font-medium ${group.tone} ${group.rule}`}>
                 {AdminI18n.t(group.heading)} ({entries.length})
               </h4>
               <ul className="mt-2 space-y-2.5">

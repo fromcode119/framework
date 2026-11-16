@@ -32,7 +32,7 @@ export class FilterPanel extends PureReactor {
   private renderFilter(filter: ListFilter): ReactNode {
     return (
       <div key={filter.key} className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
-        <p className="mb-2 text-[12px] font-semibold text-slate-500 dark:text-slate-400">{filter.label}</p>
+        <p className="mb-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">{filter.label}</p>
         <div className="flex flex-wrap gap-1.5">
           {filter.options.map((option) => {
             const chosen = option.value === filter.value;
@@ -42,7 +42,7 @@ export class FilterPanel extends PureReactor {
                 type="button"
                 aria-pressed={chosen}
                 onClick={() => filter.apply(option.value)}
-                className={`h-8 px-3 rounded-full border text-[12px] font-semibold transition-colors ${
+                className={`h-8 px-3 rounded-full border text-[12px] font-medium transition-colors ${
                   chosen
                     ? 'bg-indigo-600 border-indigo-600 text-white'
                     : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:border-indigo-500/60'
@@ -71,9 +71,9 @@ export class FilterPanel extends PureReactor {
         >
           <div className="relative flex items-center justify-between px-4 pt-5 pb-3 sm:pt-3 border-b border-slate-200 dark:border-slate-800">
             <span className="absolute left-1/2 top-2 -translate-x-1/2 h-1 w-9 rounded-full bg-slate-300 dark:bg-slate-700 sm:hidden" />
-            <span className="text-sm font-bold text-slate-900 dark:text-white">{AdminI18n.t('ui.listToolbar.filters')}</span>
+            <span className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('ui.listToolbar.filters')}</span>
             {anyActive ? (
-              <button type="button" onClick={this.clearAll} className="text-[12px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400">
+              <button type="button" onClick={this.clearAll} className="text-[12px] font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
                 {AdminI18n.t('ui.listToolbar.clearFilters')}
               </button>
             ) : null}
@@ -83,7 +83,7 @@ export class FilterPanel extends PureReactor {
             <button
               type="button"
               onClick={this.onClose}
-              className="w-full h-10 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700"
+              className="w-full h-10 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
             >
               <FrameworkIcons.Check size={15} />
               {AdminI18n.t('ui.listToolbar.showResults', { count: this.total })}

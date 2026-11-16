@@ -129,7 +129,7 @@ export class McpTokenCreateForm extends AdminComponent {
     return (
       <Card className="p-5">
         <div className="mb-4">
-          <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.createAToken')}</h2>
+          <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.createAToken')}</h2>
           <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}</p>
         </div>
         <div className="flex flex-col gap-5">
@@ -139,7 +139,7 @@ export class McpTokenCreateForm extends AdminComponent {
           </div>
           <div className="flex flex-col gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.scopes')}</h3>
+              <h3 className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.scopes')}</h3>
               <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.scopesOnlyNarrowWhatThis')}</p>
             </div>
             {this.renderScopes()}

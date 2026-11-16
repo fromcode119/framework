@@ -53,7 +53,7 @@ export class PluginOverviewCard extends PureReactor {
         </p>
 
         {/* Value */}
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">
+        <h3 className="text-xl font-medium text-slate-900 dark:text-white tracking-tight leading-none">
           {value}
         </h3>
 

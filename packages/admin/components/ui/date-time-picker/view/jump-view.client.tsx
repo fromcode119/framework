@@ -66,7 +66,7 @@ export class DateTimePickerJumpView extends PureReactor {
               onClick={this.toggleYearGrid}
               aria-label={AdminI18n.t('ui.date.chooseYear')}
               aria-expanded={isYearGridOpen}
-              className={`mt-0.5 flex items-center justify-center gap-1.5 rounded-lg px-2 py-0.5 text-[17px] font-semibold tracking-tight transition-all duration-150 ${
+              className={`mt-0.5 flex items-center justify-center gap-1.5 rounded-lg px-2 py-0.5 text-[17px] font-medium tracking-tight transition-all duration-150 ${
                 theme === ThemeMode.DARK ? 'text-white hover:bg-indigo-500/20' : 'text-slate-900 hover:bg-indigo-50'
               }`}
             >
@@ -94,7 +94,7 @@ export class DateTimePickerJumpView extends PureReactor {
                   key={year}
                   type="button"
                   onClick={() => this.pickYear(year)}
-                  className={`rounded-xl px-4 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${cellClasses(year === currentVisibleYear)}`}
+                  className={`rounded-xl px-4 py-2.5 text-[13px] font-medium tracking-tight transition-all duration-150 ${cellClasses(year === currentVisibleYear)}`}
                 >
                   {year}
                 </button>
@@ -104,7 +104,7 @@ export class DateTimePickerJumpView extends PureReactor {
                   key={label}
                   type="button"
                   onClick={() => onJumpMonthSelect(monthIndex)}
-                  className={`rounded-xl px-4 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${cellClasses(visibleMonth.getMonth() === monthIndex)}`}
+                  className={`rounded-xl px-4 py-2.5 text-[13px] font-medium tracking-tight transition-all duration-150 ${cellClasses(visibleMonth.getMonth() === monthIndex)}`}
                 >
                   {label.slice(0, 3)}
                 </button>

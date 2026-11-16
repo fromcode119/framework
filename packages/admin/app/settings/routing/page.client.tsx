@@ -171,15 +171,15 @@ export class RoutingPage extends RoutingPageActions {
                     }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <code className="text-indigo-500 font-semibold text-sm px-2 py-1 bg-indigo-500/10 rounded-lg">
+                    <code className="text-indigo-500 font-medium text-sm px-2 py-1 bg-indigo-500/10 rounded-lg">
                       {tag.label}
                     </code>
                     <FrameworkIcons.Plus size={14} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   </div>
-                  <p className={`text-[12px] font-bold mb-1 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>
+                  <p className={`text-[12px] font-medium mb-1 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>
                     {tag.description}
                   </p>
-                  <p className="text-[10px] text-slate-500 font-medium">
+                  <p className="text-[12px] text-slate-500 font-medium">
                     {AdminI18n.t('settings.routing.example')} <span className="italic">{tag.example}</span>
                   </p>
                 </button>

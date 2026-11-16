@@ -108,7 +108,7 @@ export class ThemesMarketplacePage extends AdminComponent {
               <div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3">
                 <FrameworkIcons.ShoppingBag size={24} className="text-slate-300 dark:text-slate-700" />
               </div>
-              <h3 className={`text-base font-bold mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.marketplaceEmpty')}</h3>
+              <h3 className={`text-base font-medium mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.marketplaceEmpty')}</h3>
               <p className="text-slate-500 font-medium text-sm">{AdminI18n.t('themes.checkYourMarketplaceConnectionOr')}</p>
             </div>
           ) : (
@@ -137,7 +137,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                       </div>
 
                       <div className="space-y-2">
-                        <h3 className={`text-lg font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'} group-hover:text-indigo-600 transition-colors`}>
+                        <h3 className={`text-lg font-medium tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'} group-hover:text-indigo-600 transition-colors`}>
                           {t.name}
                         </h3>
                         <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>

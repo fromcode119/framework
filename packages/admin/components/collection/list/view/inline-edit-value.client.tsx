@@ -128,7 +128,7 @@ export class InlineEditValue extends PureReactor {
           className="z-[9998] rounded-xl border p-3 shadow-xl bg-white border-slate-200 shadow-slate-900/10 dark:bg-slate-900 dark:border-slate-700"
         >
           {this.loading ? (
-            <p className="py-3 text-center text-[12px] font-semibold text-slate-400">{AdminI18n.t('collection.quickEdit.loading')}</p>
+            <p className="py-3 text-center text-[12px] font-medium text-slate-400">{AdminI18n.t('collection.quickEdit.loading')}</p>
           ) : this.choices.length ? this.renderChoices() : (
             <FieldRenderer
               field={this.field}
@@ -141,12 +141,12 @@ export class InlineEditValue extends PureReactor {
               record={this.record}
             />
           )}
-          {this.error ? <p className="mt-2 text-[12px] font-semibold text-rose-600">{this.error}</p> : null}
+          {this.error ? <p className="mt-2 text-[12px] font-medium text-rose-600">{this.error}</p> : null}
           {this.choices.length && !this.loading ? null : <div className="mt-3 flex items-center justify-end gap-2">
-            <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border text-[12px] font-semibold border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border text-[12px] font-medium border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
               {AdminI18n.t('common.cancel')}
             </button>
-            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg text-[12px] font-semibold inline-flex items-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
+            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg text-[12px] font-medium inline-flex items-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
               <FrameworkIcons.Check size={13} />
               {AdminI18n.t(this.saving ? 'collection.quickEdit.saving' : 'common.save')}
             </button>
@@ -160,7 +160,7 @@ export class InlineEditValue extends PureReactor {
     const current = String(this.value ?? '');
     return (
       <div>
-        <p className="mb-2 text-[12px] font-semibold text-slate-500 dark:text-slate-400">{this.field.label || this.field.name}</p>
+        <p className="mb-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">{this.field.label || this.field.name}</p>
         <div className="flex flex-col gap-1">
           {this.choices.map((choice) => (
             <button
@@ -170,7 +170,7 @@ export class InlineEditValue extends PureReactor {
               onClick={this.pick}
               disabled={this.saving}
               aria-pressed={choice.value === current}
-              className={`h-9 px-3 rounded-lg text-start text-[13px] font-semibold inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
+              className={`h-9 px-3 rounded-lg text-start text-[13px] font-medium inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
                 choice.value === current
                   ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
                   : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'

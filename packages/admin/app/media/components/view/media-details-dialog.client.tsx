@@ -95,7 +95,7 @@ export class MediaDetailsDialog extends AdminComponent {
               <FrameworkIcons.Edit size={24} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <h3 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {AdminI18n.t('media.editDetails')}
               </h3>
               <p className={`mt-1 text-sm leading-relaxed truncate ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`} title={item.originalName}>
@@ -152,7 +152,7 @@ export class MediaDetailsDialog extends AdminComponent {
                   { value: 'private', label: AdminI18n.t('media.privateOnlyReachableThroughA') },
                 ]}
               />
-              <p className="mt-1 text-[10px] text-slate-500">
+              <p className="mt-1 text-[12px] text-slate-500">
                 {AdminI18n.t('media.changingThisMovesTheFile')}
               </p>
             </div>

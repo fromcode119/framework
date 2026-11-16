@@ -61,7 +61,7 @@ export class DateTimePickerTimePopover extends PureReactor {
               }`}>
                 <FrameworkIcons.Clock size={15} />
               </div>
-              <span className={`text-[11px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
+              <span className={`text-[12px] font-medium tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
             </div>
 
             <div className="flex shrink-0 items-end gap-1.5">
@@ -69,7 +69,7 @@ export class DateTimePickerTimePopover extends PureReactor {
                 <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
-              <span className={`pb-2 text-[15px] font-bold ${dark ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
+              <span className={`pb-2 text-[15px] font-medium ${dark ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
                 <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />
@@ -81,7 +81,7 @@ export class DateTimePickerTimePopover extends PureReactor {
             <button
               type="button"
               onClick={onClear}
-              className={`self-start rounded-lg px-3 py-1.5 text-[11px] font-semibold tracking-tight transition-all duration-150 ${
+              className={`self-start rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
                 dark
                   ? 'bg-slate-700/40 text-slate-200 hover:bg-rose-500/10 hover:text-rose-300 active:scale-95 ring-1 ring-white/5'
                   : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 ring-1 ring-black/5'
@@ -92,7 +92,7 @@ export class DateTimePickerTimePopover extends PureReactor {
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.MD}
-              className="w-full rounded-xl font-semibold text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
+              className="w-full rounded-xl font-medium text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
               onClick={onClose}
             >
               {AdminI18n.t('ui.date.done')}

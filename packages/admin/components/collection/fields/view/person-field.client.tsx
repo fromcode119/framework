@@ -123,16 +123,16 @@ export class PersonField extends Reactor {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950/40">
         <div className="min-w-0">
-          <div className="text-[13.5px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</div>
+          <div className="text-[13.5px] font-medium text-slate-800 dark:text-slate-100">{person.name}</div>
           <div className="text-[12px] text-slate-500 dark:text-slate-400">
             {[person.email, person.phone].filter(Boolean).join(' · ') || AdminI18n.t('ui.person.noContact')}
             {' · '}
             {AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{AdminI18n.t('ui.person.source', { id: person.id })}</div>
+          <div className="mt-1 text-[12px] text-slate-400 dark:text-slate-500">{AdminI18n.t('ui.person.source', { id: person.id })}</div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <AdminLink href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[12px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</AdminLink>
+          <AdminLink href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[12px] font-medium text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</AdminLink>
           {this.readOnly ? null : (
             <Button type="button" size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.unlink}>{AdminI18n.t('ui.person.choose')}</Button>
           )}
@@ -153,7 +153,7 @@ export class PersonField extends Reactor {
           <li key={person.id}>
             <button type="button" onClick={() => this.pick(person)} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-start hover:bg-slate-50 dark:hover:bg-slate-800/60">
               <span className="min-w-0">
-                <span className="block truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</span>
+                <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-100">{person.name}</span>
                 <span className="block truncate text-[12px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>
               </span>
               <span className="shrink-0 text-[12px] font-medium text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>

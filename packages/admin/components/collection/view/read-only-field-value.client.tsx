@@ -93,7 +93,7 @@ export class ReadOnlyFieldValue extends PureReactor {
       <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
           <FrameworkIcons.Lock size={11} className="shrink-0 text-slate-400 dark:text-slate-500" />
-          <p className="text-[10px] font-semibold leading-relaxed text-slate-500 dark:text-slate-400">{provenance}</p>
+          <p className="text-[12px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">{provenance}</p>
         </div>
         <div className="min-h-[34px] bg-slate-50 px-3 py-2 dark:bg-slate-950/40">
           <span className={valueClass}>{empty ? (this.emptyLabel || AdminI18n.t('ui.field.notSet')) : text}</span>

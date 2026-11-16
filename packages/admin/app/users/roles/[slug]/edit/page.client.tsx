@@ -126,7 +126,7 @@ export class EditRolePage extends AdminComponent {
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
               {editable ? null : (
-                <p className="text-xs font-bold text-slate-500 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
+                <p className="text-xs font-medium text-slate-500 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
                   {AdminI18n.t('users.platformRoleLockedHint')}
                 </p>
               )}

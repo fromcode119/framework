@@ -26,10 +26,10 @@ export class SecurityDashboard extends PureReactor {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-semibold tracking-wide text-slate-500">{label}</span>
+          <span className="text-[12px] font-medium tracking-wide text-slate-500">{label}</span>
           <Icon size={16} className={tone} />
         </div>
-        <div className="text-3xl font-bold">{value}</div>
+        <div className="text-3xl font-medium">{value}</div>
         <div className="text-[12px] text-slate-500 mt-2">{note}</div>
       </Card>
     );

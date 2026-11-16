@@ -58,7 +58,7 @@ export class UploadPreviewDialog extends PureReactor {
               <FrameworkIcons.Warning size={24} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
                 {title}
               </h3>
               {description ? (

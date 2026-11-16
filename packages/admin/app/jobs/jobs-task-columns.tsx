@@ -21,8 +21,8 @@ export class JobsTaskColumns {
     const short = row.pluginSlug && name.startsWith(`${row.pluginSlug}:`) ? name.slice(row.pluginSlug.length + 1) : name;
     return (
       <div className="flex flex-col">
-        <span className="text-[13px] font-semibold text-slate-700 dark:text-white">{short}</span>
-        <span className="text-[11px] text-slate-400">{row.pluginSlug ? AdminI18n.t('jobs.ownedBy', { owner: row.pluginSlug }) : AdminI18n.t('jobs.platform')}</span>
+        <span className="text-[13px] font-medium text-slate-700 dark:text-white">{short}</span>
+        <span className="text-[12px] text-slate-400">{row.pluginSlug ? AdminI18n.t('jobs.ownedBy', { owner: row.pluginSlug }) : AdminI18n.t('jobs.platform')}</span>
       </div>
     );
   }
@@ -34,8 +34,8 @@ export class JobsTaskColumns {
       <div className="flex flex-wrap items-center gap-2">
         <JobRunStatusBadge status={String(last.status)} />
         <span className="text-[12px] text-slate-500 tabular-nums">{RelativeTimeFormatter.fromNow(last.startedAt)}</span>
-        {last.durationMs !== null ? <span className="text-[11px] text-slate-400 tabular-nums">{JobDuration.text(last.durationMs)}</span> : null}
-        {row.failedLastDay > 0 ? <span className="text-[11px] font-semibold text-rose-600">{AdminI18n.t('jobs.failedLastDay', { count: row.failedLastDay })}</span> : null}
+        {last.durationMs !== null ? <span className="text-[12px] text-slate-400 tabular-nums">{JobDuration.text(last.durationMs)}</span> : null}
+        {row.failedLastDay > 0 ? <span className="text-[12px] font-medium text-rose-600">{AdminI18n.t('jobs.failedLastDay', { count: row.failedLastDay })}</span> : null}
       </div>
     );
   }

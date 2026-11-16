@@ -44,12 +44,12 @@ export class NotificationRow extends PureReactor {
           {CoercionUtils.toString(notification.body)}
         </p>
         <div className="mt-2.5 flex items-center justify-between gap-3">
-          <p className="min-w-0 truncate text-[11px] text-slate-400 dark:text-slate-500">
+          <p className="min-w-0 truncate text-[12px] text-slate-400 dark:text-slate-500">
             {[NotificationTime.absolute(notification.createdAt), source].filter(Boolean).join(', ')}
           </p>
           {this.link ? (
             <button type="button" onClick={this.follow}
-              className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+              className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
               {AdminI18n.t('shell.notifications.open')}
               <FrameworkIcons.ArrowRight size={12} />
             </button>
@@ -69,11 +69,11 @@ export class NotificationRow extends PureReactor {
           <span aria-hidden="true" className={`mt-[7px] h-2 w-2 shrink-0 rounded-full ${unread ? 'bg-indigo-600' : 'bg-transparent'}`} />
           <span className="min-w-0 flex-1">
             <span className="flex items-baseline justify-between gap-3">
-              <span className={`text-[13px] leading-snug ${unread ? 'font-semibold text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+              <span className={`text-[13px] leading-snug ${unread ? 'font-medium text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
                 {CoercionUtils.toString(notification.title)}
               </span>
               <time dateTime={CoercionUtils.toString(notification.createdAt)} title={NotificationTime.absolute(notification.createdAt)}
-                className="shrink-0 text-[11px] tabular-nums text-slate-400 dark:text-slate-500">
+                className="shrink-0 text-[12px] tabular-nums text-slate-400 dark:text-slate-500">
                 {NotificationTime.relative(notification.createdAt)}
               </time>
             </span>

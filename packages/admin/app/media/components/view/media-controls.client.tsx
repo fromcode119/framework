@@ -83,7 +83,7 @@ export class MediaControls extends PureReactor {
               <FrameworkIcons.Upload size={18} />
             </div>
             <div className="text-sm">
-              <div className={`font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <div className={`font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {isDragOver ? AdminI18n.t('media.dropFilesToUpload') : AdminI18n.t('media.dragFilesHere')}
               </div>
               <div className="text-xs text-slate-500">{AdminI18n.t('media.uploadImagesVideosOrDocuments')}</div>
@@ -112,7 +112,7 @@ export class MediaControls extends PureReactor {
               <button
                 key={tab.key}
                 onClick={() => this.setActiveView(tab.key)}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${this.activeView === tab.key
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all ${this.activeView === tab.key
                   ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
                   : 'text-slate-500 hover:text-slate-700'}`}
               >

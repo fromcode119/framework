@@ -24,18 +24,18 @@ export class SourceVersionsPanel extends SourceVersionsActions {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <span className="text-slate-500 dark:text-slate-400">
           {AdminI18n.t('sources.installedLabel')}{' '}
-          <strong className="font-semibold text-slate-900 dark:text-white">
+          <strong className="font-medium text-slate-900 dark:text-white">
             {this.versions?.installed ? `v${this.versions.installed}` : AdminI18n.t('sources.notInstalled')}
           </strong>
         </span>
         <span className="text-slate-500 dark:text-slate-400">
           {AdminI18n.t('sources.lastBuiltLabel')}{' '}
-          <strong className="font-semibold text-slate-900 dark:text-white">
+          <strong className="font-medium text-slate-900 dark:text-white">
             {this.versions?.built ? `v${this.versions.built}` : AdminI18n.t('sources.never')}
           </strong>
         </span>
         {this.versionsDiffer ? (
-          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-600">
+          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600">
             {AdminI18n.t('sources.builtVersionIsNotThe')}
           </span>
         ) : null}

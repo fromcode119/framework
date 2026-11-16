@@ -19,9 +19,9 @@ export class PluginNotFound extends PureReactor {
         <FrameworkIcons.Zap size={64} className="text-rose-500 relative z-10 animate-pulse" strokeWidth={1} />
       </div>
 
-      <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('plugins.list.moduleNotFound')}</h1>
+      <h1 className="text-4xl font-medium tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('plugins.list.moduleNotFound')}</h1>
 
-      <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-4 px-6">
+      <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-4 px-6">
         {AdminI18n.t('plugins.list.nothingServing', { path: `/${pluginSlug}` })}
       </p>
 
@@ -32,7 +32,7 @@ export class PluginNotFound extends PureReactor {
         <AdminLink href="/plugins">
           <Button
             variant={ButtonVariant.PRIMARY}
-            className="rounded-xl px-10 py-5 font-bold tracking-tight text-[13px] shadow-2xl shadow-rose-500/20 bg-rose-500 hover:bg-rose-600 border-none transition-all hover:scale-105 active:scale-95"
+            className="rounded-xl px-10 py-5 font-medium tracking-tight text-[13px] shadow-2xl shadow-rose-500/20 bg-rose-500 hover:bg-rose-600 border-none transition-all hover:scale-105 active:scale-95"
             icon={<FrameworkIcons.Plugins size={18} />}
           >
             {AdminI18n.t('plugins.list.managePlugins')}
@@ -41,7 +41,7 @@ export class PluginNotFound extends PureReactor {
         <Button
           variant={ButtonVariant.GHOST}
           onClick={() => window.history.back()}
-          className="rounded-xl px-8 font-bold tracking-tight text-[13px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all"
+          className="rounded-xl px-8 font-medium tracking-tight text-[13px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all"
           icon={<FrameworkIcons.Left size={16} />}
         >
           {AdminI18n.t('plugins.list.goBack')}

@@ -39,7 +39,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
       <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.createBackup')}</h2>
+            <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.createBackup')}</h2>
             <p className="text-sm text-slate-500">
               {AdminI18n.t('settings.components.pickExactlyWhatGoesInto')}
             </p>
@@ -177,7 +177,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-4">
-                      <h3 className={`text-sm font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{option.label}</h3>
+                      <h3 className={`text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{option.label}</h3>
                       <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
                         {isSelected ? AdminI18n.t('settings.components.included') : AdminI18n.t('settings.components.optional')}
                       </span>
@@ -195,7 +195,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.selectedScope')}</p>
-              <p className={`mt-2 text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <p className={`mt-2 text-sm font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {BackupSectionOptions.describeSections(createSections)}
               </p>
             </div>
@@ -209,7 +209,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
 
           {importProgress ? (
             <div className="mt-5 space-y-2">
-              <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
+              <div className="flex items-center justify-between gap-3 text-[12px] font-medium text-slate-500">
                 <span>{importProgress.label}</span>
                 <span>{SystemBackupPageUtils.formatProgressPercent(importProgress.percent)}</span>
               </div>
@@ -224,7 +224,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
 
           {createProgress ? (
             <div className="mt-5 space-y-2">
-              <div className="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-500">
+              <div className="flex items-center justify-between gap-3 text-[12px] font-medium text-slate-500">
                 <span>{createProgress.label}</span>
                 <span>{SystemBackupPageUtils.formatProgressPercent(createProgress.percent)}</span>
               </div>

@@ -37,7 +37,7 @@ export class IntegrationSetupAddresses extends PureReactor {
   private renderAddress(address: IIntegrationSetupAddress): ReactNode {
     return (
       <div key={address.path} className="space-y-1">
-        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">{address.label}</p>
+        <p className="text-xs font-medium text-slate-700 dark:text-slate-300">{address.label}</p>
         <div className="flex items-center gap-2">
           <code className="flex-1 min-w-0 truncate rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-800 dark:text-slate-200">
             {this.fullAddress(address)}
@@ -45,7 +45,7 @@ export class IntegrationSetupAddresses extends PureReactor {
           <button
             type="button"
             onClick={() => void this.copy(address)}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             {this.copiedPath === address.path ? <FrameworkIcons.Check size={12} /> : <FrameworkIcons.Copy size={12} />}
             {this.copiedPath === address.path ? AdminI18n.t('settings.integrations.setupAddressCopied') : AdminI18n.t('settings.integrations.setupAddressCopy')}
@@ -61,7 +61,7 @@ export class IntegrationSetupAddresses extends PureReactor {
     return (
       <div className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 space-y-3">
         <div>
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.setupAddresses')}</p>
+          <p className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.setupAddresses')}</p>
           <p className="text-xs text-slate-500 mt-0.5">
             {this.storefrontUrl
               ? AdminI18n.t('settings.integrations.setupAddressesHint')

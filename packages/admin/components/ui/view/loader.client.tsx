@@ -33,7 +33,7 @@ export class Loader extends AdminComponent {
         </div>
         <div className="flex flex-col items-center gap-2">
           {label ? (
-            <p className={`font-medium text-[11px] tracking-tight transition-colors duration-500 ${
+            <p className={`font-medium text-[12px] tracking-tight transition-colors duration-500 ${
               theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'
             }`}>
               {label}

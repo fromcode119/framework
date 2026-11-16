@@ -72,12 +72,12 @@ export class CertificateUploadDialog extends AdminComponent {
                 <FrameworkIcons.Lock size={15} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-base font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('certificates.uploadCertificate')}</h3>
+                <h3 className={`text-base font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('certificates.uploadCertificate')}</h3>
                 <p className={`mt-0.5 text-xs leading-relaxed font-mono truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.host}</p>
               </div>
             </div>
 
-            <label className={`block text-[11px] font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+            <label className={`block text-[12px] font-medium mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
               {AdminI18n.t('certificates.certificateChainPem')}
             </label>
             <TextArea
@@ -85,10 +85,10 @@ export class CertificateUploadDialog extends AdminComponent {
               onChange={this.onCertificate}
               spellCheck={false}
               placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
-              inputClassName="h-28 font-mono text-[11px] leading-snug"
+              inputClassName="h-28 font-mono text-[12px] leading-snug"
             />
 
-            <label className={`block text-[11px] font-semibold mt-3 mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+            <label className={`block text-[12px] font-medium mt-3 mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
               {AdminI18n.t('certificates.privateKeyPem')}
             </label>
             <TextArea
@@ -96,9 +96,9 @@ export class CertificateUploadDialog extends AdminComponent {
               onChange={this.onKey}
               spellCheck={false}
               placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
-              inputClassName="h-28 font-mono text-[11px] leading-snug"
+              inputClassName="h-28 font-mono text-[12px] leading-snug"
             />
-            <p className={`mt-1.5 text-[11px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <p className={`mt-1.5 text-[12px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               {AdminI18n.t('certificates.storedEncryptedItIsNever')}
             </p>
 

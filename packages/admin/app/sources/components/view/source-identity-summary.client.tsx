@@ -32,7 +32,7 @@ export class SourceIdentitySummary extends PureReactor {
         <span className="mt-0.5 shrink-0">{this.icon}</span>
         {this.detected ? (
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
               {this.slug}
               <span className="ms-2 text-xs font-medium text-slate-500 dark:text-slate-400">{this.kind} · {this.vendor}</span>
             </p>

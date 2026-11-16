@@ -29,9 +29,9 @@ export class LoadErrorPanel extends PureReactor {
         <div className="flex items-start gap-3">
           <FrameworkIcons.Warning size={16} className="mt-0.5 shrink-0 text-rose-500" />
           <div className="min-w-0 flex-1">
-            <h3 className="text-[13px] font-semibold tracking-tight text-rose-600 dark:text-rose-400">{this.title}</h3>
-            <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted-foreground)] break-words">{this.message}</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted-foreground)]">
+            <h3 className="text-[13px] font-medium tracking-tight text-rose-600 dark:text-rose-400">{this.title}</h3>
+            <p className="mt-1 text-[12px] leading-relaxed text-[var(--muted-foreground)] break-words">{this.message}</p>
+            <p className="mt-1 text-[12px] leading-relaxed text-[var(--muted-foreground)]">
               {AdminI18n.t('ui.loadError.hint')}
             </p>
           </div>

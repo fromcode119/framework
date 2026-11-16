@@ -17,10 +17,10 @@ export class ThemeMarketplaceVerifiedCard extends PureReactor {
           </div>
           <div>
             <div className="text-[12px] font-medium text-emerald-600">{AdminI18n.t('themes.verified')}</div>
-            <div className={`text-xs font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.officialUiAudit')}</div>
+            <div className={`text-xs font-medium ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.officialUiAudit')}</div>
           </div>
         </div>
-        <p className={`text-[11px] leading-relaxed font-semibold ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`text-[12px] leading-relaxed font-medium ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
           {AdminI18n.t('themes.thisThemeHasBeenManually')}
         </p>
       </div>

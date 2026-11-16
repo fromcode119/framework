@@ -27,7 +27,7 @@ export class DashboardSupportCard extends PureReactor {
                {AdminI18n.t('dashboard.developerGuide')}
                <FrameworkIcons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Button>
-            <div className="pt-2 flex items-center justify-center gap-4 text-[10px] font-semibold tracking-wide text-slate-400">
+            <div className="pt-2 flex items-center justify-center gap-4 text-[12px] font-medium tracking-wide text-slate-400">
                <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
             </div>
          </div>

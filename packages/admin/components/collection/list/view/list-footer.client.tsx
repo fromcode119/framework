@@ -26,7 +26,7 @@ export class ListFooter extends PureReactor {
             {/* The record count is NOT repeated here: the table's own footer already says "1 — 10 of 15
                 records" inside the card, and the same number printed again just under it read as two
                 different facts. What is left is what this row is for — the three ways out of the list. */}
-            <div className="flex items-center gap-3 text-xs font-semibold tracking-wide text-slate-400">
+            <div className="flex items-center gap-3 text-xs font-medium tracking-wide text-slate-400">
               <button
                 onClick={() => this.handleExport(ExportFormat.JSON)}
                 className="inline-flex min-h-6 items-center rounded-md px-1.5 hover:text-indigo-500 transition-colors"

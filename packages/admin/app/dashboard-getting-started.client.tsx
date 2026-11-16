@@ -46,7 +46,7 @@ export class DashboardGettingStarted extends AdminComponent {
     const isNext = String(step.key) === this.firstUndoneKey;
     return (
       <span
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold ${
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[12px] font-medium ${
           isNext ? 'border-indigo-500 text-indigo-500' : 'border-slate-300 text-slate-400 dark:border-slate-700'
         }`}
       >
@@ -58,7 +58,7 @@ export class DashboardGettingStarted extends AdminComponent {
   render(): ReactNode {
     return (
       <div className={`${AdminClass.SURFACE} p-5`}>
-        <h2 className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
+        <h2 className="text-[15px] font-medium tracking-tight text-slate-900 dark:text-white">
           {AdminI18n.t(this.inSite ? 'dashboard.setup.titleSite' : 'dashboard.setup.titlePlatform')}
         </h2>
         <p className="mt-1 mb-4 max-w-xl text-[12px] leading-relaxed text-slate-500">
@@ -72,7 +72,7 @@ export class DashboardGettingStarted extends AdminComponent {
             deployment serves the hosts in its own environment. */}
         {this.storefront ? (
           <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[12px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
-            <span className="font-semibold">{AdminI18n.t(this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite'))}</span>
+            <span className="font-medium">{AdminI18n.t(this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite'))}</span>
             <span className="text-slate-400">·</span>
             <span className="truncate">
               {this.inSite
@@ -89,18 +89,18 @@ export class DashboardGettingStarted extends AdminComponent {
             <div key={String(step.key)} className="flex items-center gap-3 py-3">
               {this.marker(step, position + 1)}
               <div className="min-w-0 flex-1">
-                <div className={`text-[13px] font-semibold ${step.done ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'}`}>
+                <div className={`text-[13px] font-medium ${step.done ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'}`}>
                   {String(step.title)}
                 </div>
                 {!step.done ? (
-                  <div className="text-[11px] leading-relaxed text-slate-500">{String(step.detail)}</div>
+                  <div className="text-[12px] leading-relaxed text-slate-500">{String(step.detail)}</div>
                 ) : null}
               </div>
               {!step.done ? (
                 <button
                   type="button"
                   onClick={() => this.go(String(step.actionPath))}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
                     String(step.key) === this.firstUndoneKey
                       ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                       : 'border border-slate-200 text-slate-600 hover:border-indigo-300 dark:border-slate-800 dark:text-slate-300'

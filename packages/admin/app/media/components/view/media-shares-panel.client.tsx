@@ -141,20 +141,20 @@ export class MediaSharesPanel extends AdminComponent {
 
   private renderGrants(shareId: number): ReactNode {
     const grants = this.grantsByShare[shareId];
-    if (!grants) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.loading')}</p>;
-    if (!grants.length) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.noRecipients')}</p>;
+    if (!grants) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.loading')}</p>;
+    if (!grants.length) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.noRecipients')}</p>;
 
     return grants.map((grant: any) => (
       <div key={grant.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
         <div className="min-w-0">
           <p className="text-[12px] font-medium truncate">{grant.email}</p>
-          <p className="text-[10px] opacity-55">
+          <p className="text-[12px] opacity-55">
             {this.grantStatus(grant)}
             {this.formatDate(grant.expiresAt) ? ` · ${AdminI18n.t('media.expiresAt', { when: this.formatDate(grant.expiresAt) })}` : ''}
           </p>
         </div>
         {grant.revokedAt ? (
-          <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.revoked')}</Badge>
+          <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.revoked')}</Badge>
         ) : (
           <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>{AdminI18n.t('media.revoke')}</Button>
         )}
@@ -197,8 +197,8 @@ export class MediaSharesPanel extends AdminComponent {
       return (
         <Card className={`px-6 py-12 text-center ${AdminClass.SURFACE}`}>
           <FrameworkIcons.Share size={28} className="mx-auto mb-3 opacity-25" />
-          <p className="text-sm font-semibold">{AdminI18n.t('media.nothingSharedYet')}</p>
-          <p className="mt-1 text-[11px] opacity-60">
+          <p className="text-sm font-medium">{AdminI18n.t('media.nothingSharedYet')}</p>
+          <p className="mt-1 text-[12px] opacity-60">
             {AdminI18n.t('media.selectFilesInTheLibrary')}
           </p>
         </Card>
@@ -212,16 +212,16 @@ export class MediaSharesPanel extends AdminComponent {
             <div className="flex items-start justify-between gap-3 px-4 py-3">
               <button type="button" className="text-start min-w-0 flex-1" onClick={() => this.handleToggle(share.id)}>
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-semibold truncate">{share.title}</span>
+                  <span className="text-[13px] font-medium truncate">{share.title}</span>
                   {share.activeCount === 0 ? (
-                    <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.allRevoked')}</Badge>
+                    <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.allRevoked')}</Badge>
                   ) : (
-                    <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">
+                    <Badge variant={BadgeVariant.SUCCESS} className="text-[12px]">
                       {AdminI18n.t('media.activeCount', { count: share.activeCount })}
                     </Badge>
                   )}
                 </div>
-                <p className="mt-0.5 text-[10px] opacity-55">
+                <p className="mt-0.5 text-[12px] opacity-55">
                   {AdminI18n.t('media.recipientCount', { count: share.recipientCount })}
                   {this.formatDate(share.createdAt) ? ` · ${this.formatDate(share.createdAt)}` : ''}
                 </p>

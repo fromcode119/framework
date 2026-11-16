@@ -71,17 +71,17 @@ export class IntegrationFieldInput extends PureReactor {
     const file = this.hasSavedSecret ? null : this.chosenFile;
     return (
       <div className="md:col-span-2">
-        <span className="mb-1.5 block text-[12px] font-semibold text-slate-700 dark:text-slate-300">{`${field.label}${field.required ? ' *' : ''}`}</span>
+        <span className="mb-1.5 block text-[12px] font-medium text-slate-700 dark:text-slate-300">{`${field.label}${field.required ? ' *' : ''}`}</span>
         <FileDropzone accept={accept.join(',')} file={file} onSelect={this.handleFileChosen}
           hint={AdminI18n.t('settings.integrations.fileTypes', { types: accept.join(', ') })} />
-        {this.failedFileName ? <p className="mt-1 text-[11px] text-rose-600">{AdminI18n.t('settings.integrations.fileReadFailed', { name: this.failedFileName })}</p> : null}
+        {this.failedFileName ? <p className="mt-1 text-[12px] text-rose-600">{AdminI18n.t('settings.integrations.fileReadFailed', { name: this.failedFileName })}</p> : null}
         {this.hasSavedSecret && (
-          <div className="mt-2 flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 flex items-center gap-2 text-[12px] text-emerald-600 dark:text-emerald-400">
             <FrameworkIcons.CheckCircle size={12} />
             <span>{AdminI18n.t('settings.integrations.fileSavedChooseToReplace')}</span>
           </div>
         )}
-        {field.description ? <p className="mt-1 text-[11px] text-slate-500">{field.description}</p> : null}
+        {field.description ? <p className="mt-1 text-[12px] text-slate-500">{field.description}</p> : null}
       </div>
     );
   }
@@ -116,7 +116,7 @@ export class IntegrationFieldInput extends PureReactor {
           size={FieldSize.MD}
         />
         {field.description && (
-          <p className="mt-1 text-[11px] text-slate-500">{field.description}</p>
+          <p className="mt-1 text-[12px] text-slate-500">{field.description}</p>
         )}
       </div>
     );
@@ -160,7 +160,7 @@ export class IntegrationFieldInput extends PureReactor {
           placeholder={isDynamicFieldLoading ? AdminI18n.t('settings.integrations.loadingOptions') : undefined}
         />
         {helperText && (
-          <p className="mt-1 text-[11px] text-slate-500">{helperText}</p>
+          <p className="mt-1 text-[12px] text-slate-500">{helperText}</p>
         )}
       </div>
     );
@@ -181,14 +181,14 @@ export class IntegrationFieldInput extends PureReactor {
           size={FieldSize.MD}
         />
         {field.type === IntegrationFieldType.PASSWORD && this.hasSavedSecret && (
-          <div className="mt-2 flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400">
+          <div className="mt-2 flex items-center gap-2 text-[12px] text-emerald-600 dark:text-emerald-400">
             <FrameworkIcons.CheckCircle size={12} />
             <span>{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</span>
           </div>
         )}
         {/* The saved-secret line above already says to leave it blank; repeating it under it was noise. */}
         {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew && !this.hasSavedSecret)) && (
-          <p className="mt-1 text-[11px] text-slate-500">
+          <p className="mt-1 text-[12px] text-slate-500">
             {field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}
           </p>
         )}

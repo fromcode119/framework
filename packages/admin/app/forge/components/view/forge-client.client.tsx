@@ -14,7 +14,7 @@ export class ForgeClient extends PureReactor {
         fallback={
           <div className="flex h-full min-h-0 items-center justify-center p-6">
             <div className={`max-w-lg ${AdminClass.SURFACE} p-6 text-center`}>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{AppEnv.AI_NAME}</h1>
+              <h1 className="text-xl font-medium tracking-tight text-slate-900 dark:text-slate-100">{AppEnv.AI_NAME}</h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
                 <AdminRichText k="shell.forge.noExtension" />
               </p>

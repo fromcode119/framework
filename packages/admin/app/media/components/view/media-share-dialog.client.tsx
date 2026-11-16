@@ -165,14 +165,14 @@ export class MediaShareDialog extends AdminComponent {
         {groups.map((group) => (
           <div key={group.shareId} className="mb-4 last:mb-0">
             <div className="flex items-center justify-between gap-3">
-              <p className={`text-[11px] font-semibold truncate ${dark ? 'text-white' : 'text-slate-900'}`}>{group.shareTitle}</p>
+              <p className={`text-[12px] font-medium truncate ${dark ? 'text-white' : 'text-slate-900'}`}>{group.shareTitle}</p>
               <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeShare(group.shareId)}>{AdminI18n.t('media.revokeAll')}</Button>
             </div>
             {group.grants.map((grant: any) => (
               <div key={grant.id} className="flex items-center justify-between gap-3 py-1.5 ps-3">
                 <div className="min-w-0">
-                  <p className={`text-[11px] truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{grant.email}</p>
-                  <p className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{this.grantStatus(grant)}</p>
+                  <p className={`text-[12px] truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{grant.email}</p>
+                  <p className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{this.grantStatus(grant)}</p>
                 </div>
                 {grant.revokedAt ? null : (
                   <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id)}>{AdminI18n.t('media.revoke')}</Button>
@@ -191,7 +191,7 @@ export class MediaShareDialog extends AdminComponent {
 
     const dark = this.theme === ThemeMode.DARK;
     const labelClass = `block text-[12px] font-medium mb-1.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`;
-    const hintClass = `mt-1 text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`;
+    const hintClass = `mt-1 text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`;
     const subtitle = items.length === 1 ? String(items[0].originalName || items[0].filename || '') : AdminI18n.t('media.filesSelected', { length: items.length });
 
     return (
@@ -207,7 +207,7 @@ export class MediaShareDialog extends AdminComponent {
                 <FrameworkIcons.Share size={24} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.shareFiles')}</h3>
+                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.shareFiles')}</h3>
                 <p className={`mt-1 text-sm leading-relaxed truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`} title={subtitle}>{subtitle}</p>
               </div>
               <button onClick={this.onClose} className={`p-1 rounded-lg transition-colors ${dark ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}>
@@ -216,7 +216,7 @@ export class MediaShareDialog extends AdminComponent {
             </div>
 
             {this.publicCount ? (
-              <div className={`mb-6 rounded-xl border p-3 text-[11px] leading-relaxed ${dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+              <div className={`mb-6 rounded-xl border p-3 text-[12px] leading-relaxed ${dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
                 {this.publicCount === items.length ? AdminI18n.t('media.theseFilesArePublic') : AdminI18n.t('media.ofTheseFilesArePublic', { publicCount: this.publicCount })}
                 {' '}{AdminI18n.t('media.sendingMovesToPrivate')}
               </div>
@@ -271,7 +271,7 @@ export class MediaShareDialog extends AdminComponent {
                 disabled={this.busy}
               />
 
-              {this.notice ? <p className={`text-[11px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{this.notice}</p> : null}
+              {this.notice ? <p className={`text-[12px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{this.notice}</p> : null}
 
               <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button" disabled={this.busy}>{AdminI18n.t('media.close')}</Button>

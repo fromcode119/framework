@@ -49,7 +49,7 @@ export class CollectionListCards extends PureReactor {
         <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
           <FrameworkIcons.Search size={20} className="text-slate-400" />
         </div>
-        <p className="font-semibold text-slate-400 text-[12px]">{this.emptyMessage || AdminI18n.t('ui.table.empty')}</p>
+        <p className="font-medium text-slate-400 text-[12px]">{this.emptyMessage || AdminI18n.t('ui.table.empty')}</p>
       </div>
     );
   }
@@ -77,7 +77,7 @@ export class CollectionListCards extends PureReactor {
       <Fragment key={section.id}>
         <div data-row-id={section.id} className={`px-4 py-2 bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 first:border-t-0 ${this.sectionClassName?.(section) || ''}`}>
           <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{section.label}</span>
-          <span className="ms-2 text-[11px] font-semibold text-slate-400">{section.rows.length}</span>
+          <span className="ms-2 text-[12px] font-medium text-slate-400">{section.rows.length}</span>
         </div>
         {section.rows.map((row) => this.renderCard(row))}
       </Fragment>
