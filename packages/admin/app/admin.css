@@ -1534,7 +1534,6 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   line-height: 1;
   white-space: nowrap;
 }
-.fc-chips { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 /* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
@@ -1596,6 +1595,17 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   transition: color 120ms ease, background-color 120ms ease;
 }
 .fc-sro-table__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+/* A picture in a table cell IS the cell: a label/value row prints the thumbnail and its address, because
+   there the address is the value, but down a column that address is the same noise on every row. */
+.fc-sro-table__thumb {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--radius);
+  object-fit: cover;
+  background: var(--fc-surface-muted);
+}
 /* What a value will do, said where it is typed: a link no player accepts, a code no courier takes.
    Not an error — the value is kept and saved — so it is said in the muted voice, not in red. */
 .fc-field-note { margin: 4px 0 0; font-size: var(--fc-label-text); color: var(--fc-text-muted); }

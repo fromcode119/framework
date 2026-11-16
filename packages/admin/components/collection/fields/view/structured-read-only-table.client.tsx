@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { StructuredReadOnlyValue } from '@/components/collection/fields/view/structured-read-only-value.client';
+import { StructuredReadOnlyCell } from '@/components/collection/fields/view/structured-read-only-cell.client';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
 import { StructuredReadOnlyTableService } from '@/components/collection/fields/structured-read-only-table-service';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
@@ -20,6 +20,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class StructuredReadOnlyTable extends PureReactor {
   @prop declare node: IStructuredNode;
   @prop declare keyLabels?: Record<string, string>;
+  /** The columns to draw, in order — the owning field's `admin.tableColumns`. Empty draws every column. */
+  @prop declare columns?: readonly string[];
   /** What the filter above the table holds, already lower-cased; empty shows every row. */
   @prop declare filterLower?: string;
   /**
@@ -38,7 +40,7 @@ export class StructuredReadOnlyTable extends PureReactor {
    * same ones every list in the console uses.
    */
   private get filters(): ListFilter[] {
-    return StructuredReadOnlyTableService.filterableColumns(this.node).map((entry) => new ListFilter(
+    return StructuredReadOnlyTableService.filterableColumns(this.node, this.columns).map((entry) => new ListFilter(
       entry.column,
       StructuredReadOnlyFieldService.keyLabel(entry.column, this.keyLabels),
       [{ label: AdminI18n.t('collection.list.filterAll'), value: '' }, ...entry.values.map((value) => ({ label: value, value }))],
@@ -106,10 +108,10 @@ export class StructuredReadOnlyTable extends PureReactor {
   }
 
   render(): ReactNode {
-    const columns = this.node.tableColumns ?? [];
+    const columns = StructuredReadOnlyTableService.columnsFor(this.node, this.columns);
     const all = this.node.tableRows ?? [];
     const needle = String(this.filterLower || '').trim();
-    const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle)) : all;
+    const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle, columns)) : all;
     const rows = this.ordered(this.narrowed(matching));
     const filters = this.filters;
     return (
@@ -136,7 +138,7 @@ export class StructuredReadOnlyTable extends PureReactor {
           <tbody>
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {columns.map((column) => <td key={column}><StructuredReadOnlyValue node={row[column]} /></td>)}
+                {columns.map((column) => <td key={column}><StructuredReadOnlyCell node={row[column]} /></td>)}
                 {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}
               </tr>
             ))}

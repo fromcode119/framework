@@ -24,6 +24,23 @@ export class StructuredReadOnlyTableService {
     return node.kind === StructuredNodeKind.ARRAY_TABLE && (node.tableRows ?? []).length > 1;
   }
 
+  /**
+   * The columns a table draws, in order.
+   *
+   * `declared` is the owning field's `admin.tableColumns`: the plugin says WHICH of its keys a reader
+   * needs at a glance and in what order, because only the plugin knows that a variant is read by its
+   * name, its article number and its options, while "default" and "popular" are settings one opens a
+   * row to change. A key the rows do not hold is not drawn, and a declaration that matches nothing
+   * is ignored rather than leaving an empty table. Nothing is hidden: every key is still in the
+   * section's own editor, which the ⋯ of each row opens.
+   */
+  static columnsFor(node: IStructuredNode, declared?: readonly string[]): string[] {
+    const present = node.tableColumns ?? [];
+    if (!declared?.length) return present;
+    const picked = declared.filter((column) => present.includes(column));
+    return picked.length ? picked : present;
+  }
+
   /** Past this many distinct values a column is searched, not picked from. */
   private static readonly FILTERABLE_VALUE_LIMIT = 12;
   /**
@@ -40,11 +57,11 @@ export class StructuredReadOnlyTableService {
    * no row is in. A column where every row says the same thing is left out — there is nothing to
    * narrow — and so is one with a different value in every row, which is what the search is for.
    */
-  static filterableColumns(node: IStructuredNode): Array<{ column: string; values: string[] }> {
+  static filterableColumns(node: IStructuredNode, declared?: readonly string[]): Array<{ column: string; values: string[] }> {
     const rows = node.tableRows ?? [];
     if (node.kind !== StructuredNodeKind.ARRAY_TABLE || rows.length < StructuredReadOnlyTableService.FILTERABLE_TABLE_ROWS) return [];
     const out: Array<{ column: string; values: string[] }> = [];
-    for (const column of node.tableColumns ?? []) {
+    for (const column of StructuredReadOnlyTableService.columnsFor(node, declared)) {
       const seen: string[] = [];
       for (const row of rows) {
         const text = StructuredReadOnlyTableService.cellText(row[column]).trim();
@@ -61,10 +78,14 @@ export class StructuredReadOnlyTableService {
     return StructuredReadOnlyTableService.nodeText(node);
   }
 
-  /** Whether a row of a table holds the text, in any of its columns. */
-  static tableRowMatches(row: Record<string, IStructuredNode>, needle: string): boolean {
+  /**
+   * Whether a row of a table holds the text, in any of the columns being DRAWN. A search that found a
+   * row by a value the table does not show leaves the reader looking for it.
+   */
+  static tableRowMatches(row: Record<string, IStructuredNode>, needle: string, columns?: readonly string[]): boolean {
     if (!needle) return true;
-    return Object.values(row).some((node) => StructuredReadOnlyTableService.nodeText(node).toLowerCase().includes(needle));
+    const nodes = columns?.length ? columns.map((column) => row[column]) : Object.values(row);
+    return nodes.some((node) => StructuredReadOnlyTableService.nodeText(node).toLowerCase().includes(needle));
   }
 
   /**

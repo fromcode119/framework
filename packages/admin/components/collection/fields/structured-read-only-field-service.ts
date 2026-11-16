@@ -82,7 +82,10 @@ export class StructuredReadOnlyFieldService {
         if (text === null) return null;
         parts.push(text ? `${entry.key}: ${text}` : entry.key);
       }
-      return { kind: StructuredNodeKind.SCALAR, scalarValue: parts.join(' · ') };
+      // The entries ride along with the text they were folded into: a table cell draws them as one chip
+      // per value (a variant's `Размер: S`), while every text path — search, sort, filter, Copy as JSON —
+      // still reads the one line. Nothing is added or dropped either way.
+      return { kind: StructuredNodeKind.SCALAR, scalarValue: parts.join(' · '), entries };
     }
     if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) {
       const items = node.items ?? [];
@@ -240,6 +243,17 @@ export class StructuredReadOnlyFieldService {
 
   static isLink(value: unknown): value is string {
     return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
+  }
+
+  /**
+   * A picture of this site, written as the path it is served from (`/uploads/variant-s.webp`) rather
+   * than a full address — what a plugin stores when the file lives on the installation itself.
+   */
+  static isImagePath(value: unknown): boolean {
+    if (StructuredReadOnlyFieldService.isImageLink(value)) return true;
+    if (typeof value !== 'string') return false;
+    const text = value.trim();
+    return text.startsWith('/') && !text.startsWith('//') && StructuredReadOnlyFieldService.IMAGE_EXTENSION_PATTERN.test(text);
   }
 
   static isImageLink(value: unknown): boolean {

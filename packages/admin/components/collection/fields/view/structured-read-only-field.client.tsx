@@ -50,6 +50,17 @@ export class StructuredReadOnlyField extends Reactor {
     return declared && typeof declared === 'object' ? declared as Record<string, string> : undefined;
   }
 
+  /**
+   * The columns the owning field asks a table of its value to draw, in order. The plugin names which
+   * of its keys are read at a glance; the framework draws what it is told, exactly as with the labels.
+   */
+  private get declaredColumns(): string[] | undefined {
+    const declared = this.field?.admin?.tableColumns;
+    if (!Array.isArray(declared)) return undefined;
+    const picked = declared.filter((column: unknown) => typeof column === 'string' && column.trim()).map((column: string) => column.trim());
+    return picked.length ? picked : undefined;
+  }
+
   @bound
   private handleFilterChange(next: string): void {
     this.filterText = next;
@@ -72,7 +83,7 @@ export class StructuredReadOnlyField extends Reactor {
               className="fc-sro__filter"
             />
           ) : null}
-          <StructuredReadOnlyTable node={node} keyLabels={this.keyLabels} filterLower={needle} editRow={this.editRow} />
+          <StructuredReadOnlyTable node={node} keyLabels={this.keyLabels} columns={this.declaredColumns} filterLower={needle} editRow={this.editRow} />
         </>
       );
     }

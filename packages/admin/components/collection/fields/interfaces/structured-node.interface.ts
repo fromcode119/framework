@@ -10,7 +10,10 @@ export interface IStructuredNode {
   kind: StructuredNodeKind;
   /** Set only when `kind === StructuredNodeKind.SCALAR`. */
   scalarValue?: unknown;
-  /** Set only when `kind === StructuredNodeKind.OBJECT`. */
+  /**
+   * Set when `kind === StructuredNodeKind.OBJECT` — and on a SCALAR that an object was folded into for a
+   * table cell, which keeps the entries it was made of so the cell can draw them as chips.
+   */
   entries?: IStructuredEntry[];
   /** Set when `kind === StructuredNodeKind.ARRAY` or `'array-table'` — every item, in order. */
   items?: IStructuredNode[];
