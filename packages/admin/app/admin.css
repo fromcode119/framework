@@ -109,6 +109,22 @@
   --fc-card-pad-x: 24px;
   --fc-card-body-pad: 4px var(--fc-card-pad-x);
 
+  /* ── How the console moves ────────────────────────────────────────────────────────────────────────
+   * Two durations and one curve, for everything. A thing the operator asked for — a menu, a dialog —
+   * arrives in --fc-dur-overlay; a thing that answers the pointer — a hover, a press, a switch — in
+   * --fc-dur-ui. Nothing else gets a number of its own, because a console with six durations reads as
+   * six different programs.
+   *
+   * Before this the console had NO motion on anything it opens: the dropdown's markup asked for
+   * `animate-in fade-in-0 zoom-in-95 duration-150`, classes no stylesheet here ever defined, so every
+   * menu and every dialog appeared between two frames with `animation-name: none`. The intent was in
+   * the markup and the implementation was never written. */
+  --fc-dur-ui: 150ms;
+  --fc-dur-overlay: 200ms;
+  --fc-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* How far an overlay travels on its way in. Further than this reads as a slide; nearer, as nothing. */
+  --fc-rise: 8px;
+
   /* ── One page rhythm ──────────────────────────────────────────────────────────────────────────────
    * Every console screen is inset by THESE two values and no others. Before this, each page carried its
    * own padding utility — 191 roots said `p-4`, 115 said `p-6`, 33 said `p-8`, the collection list said
@@ -1550,6 +1566,19 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    an empty section is the same kind of card as a full one instead of a paragraph where content belongs.
    Not `__missing`, which is the warning colour and means a REQUIRED value is absent. */
 .fc-record-card__value--none { color: var(--fc-text-muted); }
+/* A handful of short values reads as chips, not as a line of commas: four sizes are four things the
+   product comes in, and a sentence hides that. The chip is the console's quietest label — no colour,
+   because colour on this page means state and nothing else. */
+.fc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.fc-chip {
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
 
 /* ── Dashboard ───────────────────────────────────────────────────────────────
    One dense page: every widget is a compact card; figures read as a row of label + value, not a tile
@@ -1613,3 +1642,45 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-update-alert__actions { display: flex; align-items: center; gap: 4px; margin-inline-start: auto; }
 .fc-update-alert__primary.fc-update-alert__primary { background: var(--fc-dashboard-alert-accent); color: #fff; }
 .fc-update-alert__primary.fc-update-alert__primary:hover { background: color-mix(in srgb, var(--fc-dashboard-alert-accent) 85%, #000); }
+
+/* ── Motion ──────────────────────────────────────────────────────────────────────────────────────
+ * Everything the console opens arrives the same way: it fades in while rising and settling the last
+ * few per cent of its size. One curve, two durations (`--fc-dur-*` at the top of this file), and only
+ * `opacity` and `transform`, so nothing an animation does can move the page under it.
+ *
+ * `.fc-enter` is the whole vocabulary. It sets no transform-origin of its own, so a panel that belongs
+ * to a point on screen (a menu under its ⋯) keeps the origin it already declares and grows out of the
+ * control that opened it. A sheet hinged to the bottom edge of a phone sets `--fc-enter-from` further
+ * and drops the scale, because a panel the width of the screen reads as sliding, not as appearing.
+ *
+ * Nothing here runs for a reader who asked for less motion: the rule below turns every one of them off
+ * and leaves the finished state, which is what the element looks like anyway once it has arrived. */
+@keyframes fc-enter {
+  from { opacity: 0; transform: translateY(var(--fc-enter-from, var(--fc-rise))) scale(var(--fc-enter-scale, 0.97)); }
+  to { opacity: 1; transform: none; }
+}
+
+.fc-enter {
+  animation: fc-enter var(--fc-enter-dur, var(--fc-dur-overlay)) var(--fc-ease) both;
+  /* The panel is painted on its own layer for the length of the animation, so a long menu does not
+     repaint the page behind it frame by frame. */
+  will-change: opacity, transform;
+}
+.fc-enter--fade { --fc-enter-from: 0px; --fc-enter-scale: 1; }
+/* A menu answers the pointer, so it arrives at the pointer's speed and travels half as far: it is
+   already beside the control that opened it. */
+.fc-enter--menu { --fc-enter-dur: var(--fc-dur-ui); --fc-enter-from: 4px; }
+
+/* A dialog and the ground it darkens: the ground only fades, so the darkening never looks like it is
+   moving; the panel rises into place over it. */
+.fc-sheet__backdrop { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; --fc-enter-from: 0px; --fc-enter-scale: 1; }
+.fc-sheet__panel { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; }
+/* On a phone the sheet is the width of the screen and hinged to the bottom edge: it travels further and
+   does not scale, because a full-width panel that grows reads as a mistake. */
+@media (max-width: 639px) {
+  .fc-sheet__panel { --fc-enter-from: 24px; --fc-enter-scale: 1; transform-origin: bottom center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-enter, .fc-sheet__panel, .fc-sheet__backdrop { animation: none; }
+}

@@ -94,7 +94,13 @@ export class Dropdown extends DropdownPositioning {
             // the account menu's avatar + gap left ~150px for the email, so any real address rendered
             // truncated (a long email address). `w-max` grows to fit, `min-w-56` keeps the previous
             // width as the minimum for short menus, and the cap keeps it on-screen.
-            className={`w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] rounded-xl border z-[9999] animate-in fade-in-0 zoom-in-95 duration-150 ${
+            // The panel arrives once it has been MEASURED, never before: it is laid out hidden to be
+            // measured, and an animation started then would be over by the time anything was on screen.
+            // It asked for `animate-in fade-in-0 zoom-in-95`, which no stylesheet here defines, so until
+            // now the menu simply appeared between two frames.
+            className={`w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] rounded-xl border z-[9999] ${
+              this.positioned ? 'fc-enter fc-enter--menu' : ''
+            } ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'
             } bg-white border-slate-200 shadow-lg shadow-slate-900/[0.08]
               dark:bg-slate-900 dark:border-slate-800 dark:shadow-black/40`}

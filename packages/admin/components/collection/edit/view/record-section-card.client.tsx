@@ -6,6 +6,7 @@ import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { Card } from '@/components/ui/view/card.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
+import { RecordSectionChips } from '@/components/collection/edit/record-section-chips';
 import { RecordSectionCardEditing } from '@/components/collection/edit/view/record-section-card-editing.client';
 import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
@@ -85,8 +86,17 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     if (kind === 'richText') {
       return FieldRendererUtils.resolveRenderableText(raw).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
+    const chips = RecordSectionChips.of(raw);
+    if (chips) {
+      return (
+        <span className={AdminClass.of('chips')}>
+          {chips.map((chip, at) => <span key={`${chip}-${at}`} className={AdminClass.of('chip')}>{chip}</span>)}
+        </span>
+      );
+    }
     return RecordCellRenderers.renderCellValue({ columnName: field.name, field, header: FieldDisplayLabel.of(field), raw, row: this.formData });
   }
+
 
   /**
    * A section with fields of which none is filled in or drawn by a control of its own.
