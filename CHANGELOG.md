@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.592] - 2026-11-16
+
+### Added
+
+- **admin**: a table in a record is framed like a table ([#1485](https://github.com/fromcode119/framework/pull/1485))
+- **admin**: a field names the columns a table of its value draws ([#1481](https://github.com/fromcode119/framework/pull/1481))
+- **admin**: a chip input, so several short values stop needing a form ([#1479](https://github.com/fromcode119/framework/pull/1479))
+
+### Fixed
+
+- **core**: the note under a row speaks the console's language ([#1484](https://github.com/fromcode119/framework/pull/1484))
+- **admin**: a chip is read at the strength of the text beside it ([#1483](https://github.com/fromcode119/framework/pull/1483))
+- **core**: a field declares the row options the console already reads ([#1482](https://github.com/fromcode119/framework/pull/1482))
+- **admin**: a table in a record says its range, carries its toolbar, and shows every row's way in ([#1480](https://github.com/fromcode119/framework/pull/1480))
+
 ## [0.2.591] - 2026-11-16
 
 ### Added
