@@ -49,10 +49,15 @@
   --fc-sheet-canvas: var(--fc-canvas);
   --fc-sheet-surface: var(--fc-surface);
   --fc-sheet-border: var(--fc-border);
-  --fc-sheet-radius: var(--radius);
-  --fc-sheet-gap: 12px;
+  /* A dialog is a surface the record sits under, so it takes a card's corner, not a control's. */
+  --fc-sheet-radius: 8px;
+  /* The dialog is the record's own editor, so it is measured like the record: the gap between two
+     fields is the gap between two facts, its head reads at the size of a section's head, and it is
+     narrower than the page behind it. At 720px it was wider than the column it was editing, which is
+     what made it read as "stretched" — one field per row across a width built for two. */
+  --fc-sheet-gap: 16px;
   --fc-sheet-pad: 16px;
-  --fc-sheet-title: 15px;
+  --fc-sheet-title: var(--fc-text-lg);
   --fc-sheet-shadow: 0 -8px 32px rgb(15 23 42 / 0.16);
   /* What a phone keeps visible above a sheet, so the page it belongs to is still in sight. */
   --fc-sheet-phone-top: 44px;
@@ -220,9 +225,13 @@
   --border: var(--fc-border);
   --input: var(--fc-border);
   --ring: var(--fc-brand);
-  /* ONE surface radius, equal to Tailwind's `rounded-xl` — the class the whole admin was swept to.
-     A token that disagrees with the utility class is how every panel ended up a slightly different shape. */
-  --radius: 0.75rem;
+  /* ONE control radius for the console, and it is the control's — not a surface's.
+     Everything a hand uses (a field, a select, a button, a menu) takes this corner; a surface that
+     holds them takes 8px, and a card 8px. The token used to be 12px while `--fc-control-radius` said
+     6px and a card said 8px: three corners on one screen, which is enough to make a page look
+     unsettled without anyone being able to name why. The rule in `UiFieldUtils` still holds — a control
+     that needs another corner changes THIS, never a hardcoded Tailwind step. */
+  --radius: 6px;
   /* Concrete value, NOT var(--radius): BrandTokenStyleService appends `--radius: var(--fc-radius)`
      at runtime, so a var() here creates a custom-property cycle whenever the active theme defines
      no --theme-radius — both variables go invalid and every rounded-[var(--radius)] corner renders
@@ -1165,6 +1174,10 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   .fc-field {
     font-size: var(--fc-field-text);
     font-weight: var(--fc-field-weight);
+    /* A field is a control, so it takes the console's control corner. It was taking `--radius` (12px)
+       while the ⋯ beside it took 6px and the card around it 8px — three corners on one screen, which
+       is enough to make a page look unsettled without anyone being able to name why. */
+    border-radius: var(--fc-control-radius);
   }
 }
 
@@ -1281,11 +1294,13 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   .fc-sheet {
     align-items: center;
     padding: 24px;
-    --fc-field-text: 12px;
+    /* Read at 13px on the record, so edited at 13px here: the sheet used to show the value one step
+       smaller than the row it replaces. The LABEL stays at 12px — it is a label, and quieter. */
+    --fc-field-text: var(--fc-text-sm);
     --fc-field-weight: 500;
   }
   .fc-sheet__panel {
-    width: min(720px, 100%);
+    width: min(560px, 100%);
     max-height: calc(100dvh - 96px);
     background: var(--fc-sheet-canvas);
     border: 1px solid var(--fc-sheet-border);
@@ -1618,6 +1633,20 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    an empty section is the same kind of card as a full one instead of a paragraph where content belongs.
    Not `__missing`, which is the warning colour and means a REQUIRED value is absent. */
 .fc-record-card__value--none { color: var(--fc-text-muted); }
+/* How many things the section holds, beside its name — the console's quietest number, so it reads as
+   part of the heading rather than as a badge competing with the record's state. */
+.fc-record-card__count {
+  flex: none;
+  margin-inline-start: -4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+  font-size: var(--fc-text-xs);
+  font-weight: var(--fc-weight-strong);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
 /* A handful of short values reads as chips, not as a line of commas: four sizes are four things the
    product comes in, and a sentence hides that. The chip is the console's quietest label — no colour,
    because colour on this page means state and nothing else. */

@@ -7,6 +7,7 @@ import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { Card } from '@/components/ui/view/card.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
 import { RecordSectionChips } from '@/components/collection/edit/record-section-chips';
+import { RecordSectionCount } from '@/components/collection/edit/record-section-count';
 import { RecordSectionCardEditing } from '@/components/collection/edit/view/record-section-card-editing.client';
 import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
@@ -240,6 +241,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
         {title || editable ? (
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>{title}</h2>
+            {RecordSectionCount.of(this.section.fields, this.formData) !== null
+              ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
+              : null}
             <div className={`${card}__aside`}>{this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}</div>
             {this.renderMenu(editable)}
           </div>
