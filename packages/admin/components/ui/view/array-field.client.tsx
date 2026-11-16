@@ -4,6 +4,7 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { FrameworkIcons } from '@fromcode119/react';
 import { ArrayFieldRow } from '@/components/ui/view/array-field-row.client';
 import { ArrayFieldRowRenderer } from '@/components/ui/view/array-field-row-renderer.client';
+import { ArrayFieldTable } from '@/components/ui/view/array-field-table.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ArrayField extends Reactor {
@@ -95,10 +96,27 @@ export class ArrayField extends Reactor {
     );
   }
 
+  /** A row list reads as a table when the field asks for one: the names once, in a header. */
+  private get isTable(): boolean {
+    return this.field?.admin?.layout === 'table' && Array.isArray(this.field?.fields) && this.field.fields.length > 0;
+  }
+
   render(): React.ReactNode {
     const { field, theme } = this;
     const items = this.items;
     const { draggedIndex, isHandleHovered } = this;
+
+    if (this.isTable) {
+      return (
+        <ArrayFieldTable
+          field={field}
+          items={items}
+          renderField={this.renderField}
+          onAdd={this.handleAddItem}
+          onRemove={this.handleRemoveItem}
+        />
+      );
+    }
 
     return (
     <div className="space-y-4">

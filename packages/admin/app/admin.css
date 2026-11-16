@@ -1501,6 +1501,42 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table__menu:focus-visible { opacity: 1; }
 .fc-sro-table__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 @media (hover: none) { .fc-sro-table__menu { opacity: 1; } }
+/* What a value will do, said where it is typed: a link no player accepts, a code no courier takes.
+   Not an error — the value is kept and saved — so it is said in the muted voice, not in red. */
+.fc-field-note { margin: 4px 0 0; font-size: var(--fc-label-text); color: var(--fc-text-muted); }
+
+/* ROWS OF DECLARED SUB-FIELDS, as a table: the names once in a header, one line per row.
+   The read-only twin is .fc-sro-table and the two share their measurements, because a list of rows
+   should not change shape when it becomes editable — only its cells do. */
+.fc-rows { display: flex; flex-direction: column; gap: 10px; }
+.fc-rows__scroll { overflow-x: auto; }
+.fc-rows table { width: 100%; border-collapse: collapse; }
+.fc-rows th {
+  height: var(--fc-field-h);
+  padding: 0 12px 8px 0;
+  border-bottom: 1px solid var(--fc-border);
+  text-align: start;
+  font-size: var(--fc-control-text);
+  font-weight: 500;
+  color: var(--fc-text-muted);
+  white-space: nowrap;
+}
+.fc-rows td { padding: 6px 12px 6px 0; border-bottom: var(--fc-record-rule); vertical-align: middle; }
+.fc-rows th:last-child, .fc-rows td:last-child { padding-inline-end: 0; }
+.fc-rows tr:last-child td { border-bottom: 0; }
+.fc-rows__tools-head, .fc-rows__tools-cell { width: 1%; text-align: end; }
+.fc-rows__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--fc-control-h);
+  height: var(--fc-control-h);
+  border-radius: var(--fc-control-radius);
+  color: var(--fc-text-muted);
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+.fc-rows__remove:hover { background: var(--fc-danger-soft); color: var(--fc-danger); }
 .fc-record-card__empty {
   padding: 8px 0;
   font-size: var(--fc-record-text);
