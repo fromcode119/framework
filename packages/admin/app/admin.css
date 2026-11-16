@@ -1552,9 +1552,72 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
   padding: 8px var(--fc-sro-inset);
 }
+/* What the table is narrowed to, under its toolbar. The line is held whether or not anything is
+   picked: a strip that appears with the first filter pushes the rows down just as someone reaches
+   for one. Chips do not wrap — they scroll, so the line is one height however many there are. */
+.fc-sro-table__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 45px;
+  padding: 8px var(--fc-sro-inset);
+  border-top: 1px solid var(--fc-border);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.fc-sro-table__filters::-webkit-scrollbar { display: none; }
+/* A picked value: the column it narrows, the value, and the way to drop it — one object, so the
+   value is never read apart from the column it belongs to. */
+.fc-sro-filter {
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  height: 28px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  font-size: 13px;
+  font-weight: var(--fc-weight-strong);
+  overflow: hidden;
+}
+.fc-sro-filter__name,
+.fc-sro-filter__value {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 8px;
+  white-space: nowrap;
+}
+.fc-sro-filter__name { color: var(--fc-text-muted); border-inline-end: 1px solid var(--fc-border); }
+.fc-sro-filter__value { color: var(--fc-text); }
+.fc-sro-filter__drop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  border: 0;
+  border-inline-start: 1px solid var(--fc-border);
+  background: transparent;
+  color: var(--fc-text-muted);
+  cursor: pointer;
+}
+.fc-sro-filter__drop:hover { background: var(--fc-surface); color: var(--fc-text); }
+.fc-sro-filter__clear-all {
+  flex: none;
+  height: 28px;
+  padding-inline: 8px;
+  border: 0;
+  border-radius: var(--fc-control-radius);
+  background: transparent;
+  color: var(--fc-text-muted);
+  font-size: 13px;
+  font-weight: var(--fc-weight-strong);
+  cursor: pointer;
+}
+.fc-sro-filter__clear-all:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-card__table-tools .fc-sro-table__tools { padding: 0; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
@@ -1563,8 +1626,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-width: 30px;
-  height: 30px;
+  /* The same box as the search beside it: the console has ONE field height, so a button standing in
+     a row with a field takes that height rather than a figure of its own. */
+  min-width: var(--fc-field-h);
+  height: var(--fc-field-h);
   padding-inline: 6px;
   border: 1px solid var(--fc-border);
   border-radius: var(--fc-control-radius);

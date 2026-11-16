@@ -11,6 +11,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FiltersButton } from '@/components/ui/list-toolbar/view/filters-button.client';
 import { StructuredReadOnlyTableFoot } from '@/components/collection/fields/view/structured-read-only-table-foot.client';
+import { StructuredTableFilterBar } from '@/components/collection/fields/view/structured-table-filter-bar.client';
 import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -79,6 +80,18 @@ export class StructuredReadOnlyTable extends PureReactor {
       '',
       (value: string) => { this.picked = { ...this.picked, [entry.column]: value }; this.page = 1; },
     ));
+  }
+
+  /** Drops one column's filter, leaving the rest of the narrowing alone. */
+  @bound private clearFilter(column: string): void {
+    this.picked = { ...this.picked, [column]: '' };
+    this.page = 1;
+  }
+
+  /** Drops every filter at once — the way back to the whole table from a narrowed one. */
+  @bound private clearFilters(): void {
+    this.picked = {};
+    this.page = 1;
   }
 
   /** The rows left once every picked value is honoured. */
@@ -203,6 +216,12 @@ export class StructuredReadOnlyTable extends PureReactor {
     return (
       <div className="fc-sro-table">
         {toolbar}
+        {/* What the table is narrowed to, on a line of its own under its toolbar — held even when
+            nothing is picked, so turning a filter on does not shift the rows under the pointer. */}
+        {this.toolbarTarget
+          ? <StructuredTableFilterBar picked={this.picked} keyLabels={this.keyLabels}
+              onClear={this.clearFilter} onClearAll={this.clearFilters} />
+          : null}
         <div className="fc-sro-table__scroll">
           <table>
             <thead>
