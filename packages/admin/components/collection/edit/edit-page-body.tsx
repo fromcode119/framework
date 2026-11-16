@@ -113,7 +113,7 @@ export class EditPageBody extends PureReactor {
               {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
+              <p className="font-medium text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
               <p className="text-sm opacity-90">{status.message}</p>
             </div>
             <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">

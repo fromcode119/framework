@@ -28,7 +28,7 @@ export class CollectionCreateDisabled extends PureReactor {
         <div className={`p-6 rounded-xl mb-6 ${dark ? 'bg-slate-900' : 'bg-white shadow-lg shadow-slate-200'}`}>
           <FrameworkIcons.Lock size={40} className="text-indigo-500" strokeWidth={1.25} />
         </div>
-        <h2 className={`text-xl font-semibold mb-3 ${dark ? 'text-white' : 'text-slate-900'}`}>
+        <h2 className={`text-xl font-medium mb-3 ${dark ? 'text-white' : 'text-slate-900'}`}>
           {AdminI18n.t('collection.notCreatedByHand', { title: this.title })}
         </h2>
         <p className="text-slate-500 text-center max-w-md leading-relaxed mb-8">

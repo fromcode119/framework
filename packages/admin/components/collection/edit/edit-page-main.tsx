@@ -109,7 +109,7 @@ export class EditPageMain extends PureReactor {
     return (
       <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
         {collapsible ? this.renderToggle(section, open) : section.title ? (
-          <h2 className="mb-4 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
+          <h2 className="mb-4 text-[14px] font-medium tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
         ) : null}
         {open ? (
           /* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */
@@ -138,11 +138,11 @@ export class EditPageMain extends PureReactor {
         className={`flex w-full items-center gap-2 text-start ${open ? 'mb-4' : ''}`}
       >
         <Chevron size={15} className="shrink-0 text-slate-400" />
-        <h2 className="min-w-0 flex-1 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
+        <h2 className="min-w-0 flex-1 text-[14px] font-medium tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
         <span className="shrink-0 text-[12px] text-slate-500">
           {AdminI18n.t('collection.edit.sectionFieldCount', { count: section.fields.length })}
           {' · '}
-          <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+          <span className="font-medium text-indigo-600 dark:text-indigo-400">
             {AdminI18n.t(open ? 'collection.edit.sectionHide' : 'collection.edit.sectionShow')}
           </span>
         </span>

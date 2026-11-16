@@ -49,7 +49,7 @@ export class RevisionModal extends PureReactor {
           <div className="flex justify-between items-center mb-6">
              <div>
                 <h2 className="text-xs font-medium text-indigo-500">{AdminI18n.t('collection.revision.title', { version: selectedRevision.version })}</h2>
-                <p className="text-[11px] text-slate-500 font-medium mt-1">{AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}</p>
+                <p className="text-[12px] text-slate-500 font-medium mt-1">{AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}</p>
              </div>
              <div className="flex items-center gap-4">
                 <button 
@@ -88,13 +88,13 @@ export class RevisionModal extends PureReactor {
                       <div key={key} className={`grid grid-cols-2 group border-b border-slate-100 dark:border-slate-800 last:border-0 ${hasChanged ? 'bg-indigo-500/5' : ''}`}>
                          <div className="p-4 border-e border-slate-100 dark:border-slate-800">
                             <span className="text-[12px] font-medium text-slate-400 block mb-1">{key}</span>
-                            <div className="text-[11px] font-semibold text-slate-500 line-clamp-3">
+                            <div className="text-[12px] font-medium text-slate-500 line-clamp-3">
                                {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(curVal))}
                             </div>
                          </div>
                          <div className="p-4">
                             <span className="text-[12px] font-medium text-indigo-500 block mb-1">{key}</span>
-                            <div className={`text-[11px] font-semibold line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
+                            <div className={`text-[12px] font-medium line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
                                {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(val))}
                             </div>
                          </div>
@@ -108,7 +108,7 @@ export class RevisionModal extends PureReactor {
                      return JSON.stringify(curVal) !== JSON.stringify(revVal);
                 }).length === 0 && (
                   <div className="p-12 text-center">
-                     <p className="text-xs text-slate-400 font-semibold italic">{AdminI18n.t('collection.revision.noChanges')}</p>
+                     <p className="text-xs text-slate-400 font-medium italic">{AdminI18n.t('collection.revision.noChanges')}</p>
                   </div>
                 )}
              </div>

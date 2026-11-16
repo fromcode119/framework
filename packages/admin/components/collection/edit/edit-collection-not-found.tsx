@@ -26,7 +26,7 @@ export class EditCollectionNotFound extends PureReactor {
           {AdminI18n.t('collection.notFound.title')}
         </h2>
 
-        <p className="text-slate-500 font-bold text-center max-w-sm leading-relaxed mb-10 px-6">
+        <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-10 px-6">
           {AdminI18n.t('collection.notFound.text', { collection: slug, plugin: pluginSlug })}
         </p>
 
