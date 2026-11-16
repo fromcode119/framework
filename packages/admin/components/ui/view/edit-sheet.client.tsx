@@ -9,9 +9,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * The one place a piece of a record is edited: a panel with a title, the fields, and Cancel / Save.
  *
- * On a phone it rises from the bottom edge across the full width. From 640px nothing floats: it is drawn
- * in place, where it is rendered, so put it inside the card whose values it edits. Which of the two is
- * decided by `admin.css` alone. It draws NOTHING of its own look in this file — every colour, radius
+ * On a phone it rises from the bottom edge across the full width; from 640px it is a dialog centred over
+ * the record. Which of the two is decided by `admin.css` alone. It draws NOTHING of its own look in this file — every colour, radius
  * and gap is a `--fc-sheet-*` token there, so the console's style (or an appearance's) changes in one
  * place instead of on every screen that edits something.
  *
@@ -50,10 +49,18 @@ export class EditSheet extends PureReactor {
   }
 
   render(): ReactNode {
-    if (!this.isOpen) return null;
+    if (!this.isOpen || !Platform.isBrowser) return null;
     const sheet = AdminClass.of('sheet');
-    // Rendered where it stands, never through a portal: from 640px it IS part of the card it edits.
-    return (
+    /*
+     * Through a portal, onto `body`.
+     *
+     * It used to be drawn where it stood, which was right while a desktop sheet was PART of the card it
+     * edits. It is a dialog over the whole record now, and a fixed overlay obeys the nearest ancestor
+     * that makes a stacking context, not the page: rendered inside the card, its z-index counted only
+     * among the card's own children, so the navigation drew straight over it. `body` has no ancestor to
+     * lose to.
+     */
+    return this.portal(
       <div className={sheet} role="dialog" aria-label={this.title}>
         <div className={`${sheet}__backdrop`} onClick={this.close} />
         <div className={`${sheet}__panel`}>

@@ -59,10 +59,11 @@ describe('RecordSectionCard', () => {
     const dialog = screen.getByRole('dialog', { name: 'Customer' });
     expect(dialog).toHaveTextContent('ORD-000002');
     for (const name of ['fullName', 'phone', 'note', 'email', 'items']) expect(dialog.querySelector(`[aria-label="field ${name}"]`)).not.toBeNull();
-    // The fields sit inside the card (in place of its rows from 640px), not in a layer over the page.
-    const card = dialog.closest('.fc-record-card');
-    expect(card).not.toBeNull();
-    expect(card).toHaveClass('fc-record-card--editing');
+    // It is a dialog OVER the record, so it is drawn on `body` and not inside the card it edits. A
+    // fixed overlay rendered inside the card obeys the card's stacking context, and the navigation
+    // drew straight over it — which is what this assertion used to require.
+    expect(dialog.closest('.fc-record-card')).toBeNull();
+    expect(dialog.parentElement).toBe(document.body);
   });
 
   it('puts the values back on Cancel', () => {

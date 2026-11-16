@@ -122,14 +122,14 @@ export class MediaRelationFieldView extends PureReactor {
     return (
       <div className="space-y-3">
         {this.renderSelection()}
-        <button
-          type="button"
-          onClick={this.handleOpen}
-          className="inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius)] bg-indigo-600 text-white text-[11px] font-semibold tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all"
-        >
+        {/* Choosing a file is never the main thing a form does. This was a hand-written button in solid
+            indigo at its own height and its own text size — the console's primary look, worn by a
+            secondary action, which inside the edit dialog stood level with Save. The compact view beside
+            it already used the shared control; both do now. */}
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>
           {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
           {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
-        </button>
+        </Button>
         {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );
