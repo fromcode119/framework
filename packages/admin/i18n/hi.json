@@ -533,7 +533,8 @@
       "filter": "कुंजी से फ़िल्टर करें…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "अभी तक कुछ दर्ज नहीं है।",
-      "noMatch": "इस फ़िल्टर से कुछ मेल नहीं खाता।"
+      "noMatch": "इस फ़िल्टर से कुछ मेल नहीं खाता।",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "प्राप्तकर्ता का नाम",

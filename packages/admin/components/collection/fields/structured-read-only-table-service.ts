@@ -17,8 +17,11 @@ export class StructuredReadOnlyTableService {
 
   /** A table the operator will look THROUGH rather than read: it gets the filter above it. */
   static isSearchableTable(node: IStructuredNode): boolean {
-    return node.kind === StructuredNodeKind.ARRAY_TABLE
-      && (node.tableRows ?? []).length > StructuredReadOnlyTableService.SEARCHABLE_TABLE_ROWS;
+    // Every table carries its search, not only a long one. A toolbar that appears once a list crosses
+    // a line teaches the reader that this table is a different kind of thing from the one above it,
+    // and leaves them hunting for a box that was there yesterday. The console this one is measured
+    // against puts the same toolbar on a table of four rows and on a table of four hundred.
+    return node.kind === StructuredNodeKind.ARRAY_TABLE && (node.tableRows ?? []).length > 1;
   }
 
   /** Past this many distinct values a column is searched, not picked from. */

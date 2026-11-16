@@ -533,7 +533,8 @@
       "filter": "Filter berdasarkan kunci…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Belum ada yang tercatat.",
-      "noMatch": "Tidak ada yang cocok dengan filter tersebut."
+      "noMatch": "Tidak ada yang cocok dengan filter tersebut.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Nama penerima",

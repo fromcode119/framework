@@ -533,7 +533,8 @@
       "filter": "Filtreeri võtme järgi…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Midagi pole veel salvestatud.",
-      "noMatch": "Filtrile ei vasta midagi."
+      "noMatch": "Filtrile ei vasta midagi.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Saaja nimi",

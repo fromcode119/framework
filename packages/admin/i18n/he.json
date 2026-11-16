@@ -533,7 +533,8 @@
       "filter": "סינון לפי מפתח…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "עדיין לא נרשם דבר.",
-      "noMatch": "אין תוצאות התואמות לסינון."
+      "noMatch": "אין תוצאות התואמות לסינון.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "שם הנמען",

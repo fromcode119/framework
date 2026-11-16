@@ -533,7 +533,8 @@
       "filter": "Filtriraj po ključu…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Još ništa nije zabilježeno.",
-      "noMatch": "Ništa ne odgovara tom filtru."
+      "noMatch": "Ništa ne odgovara tom filtru.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Ime primatelja",

@@ -533,7 +533,8 @@
       "filter": "التصفية حسب المفتاح…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "لم يُسجَّل شيء بعد.",
-      "noMatch": "لا توجد نتائج تطابق عامل التصفية هذا."
+      "noMatch": "لا توجد نتائج تطابق عامل التصفية هذا.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "اسم المستلم",

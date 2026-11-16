@@ -533,7 +533,8 @@
       "filter": "Filtrér efter nøgle…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Intet registreret endnu.",
-      "noMatch": "Intet matcher filteret."
+      "noMatch": "Intet matcher filteret.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Modtagerens navn",

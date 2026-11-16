@@ -533,7 +533,8 @@
       "filter": "Filtra per chiave…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ancora nessun dato registrato.",
-      "noMatch": "Nessun risultato per questo filtro."
+      "noMatch": "Nessun risultato per questo filtro.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Nome destinatario",

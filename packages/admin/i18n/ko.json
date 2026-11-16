@@ -533,7 +533,8 @@
       "filter": "키로 필터…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "아직 기록된 내용이 없습니다.",
-      "noMatch": "필터와 일치하는 항목이 없습니다."
+      "noMatch": "필터와 일치하는 항목이 없습니다.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "수령인 이름",

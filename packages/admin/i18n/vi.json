@@ -533,7 +533,8 @@
       "filter": "Lọc theo khóa…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Chưa có dữ liệu nào được ghi nhận.",
-      "noMatch": "Không có kết quả khớp với bộ lọc."
+      "noMatch": "Không có kết quả khớp với bộ lọc.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Tên người nhận",

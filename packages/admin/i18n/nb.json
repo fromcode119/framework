@@ -533,7 +533,8 @@
       "filter": "Filtrer etter nøkkel …",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ingenting registrert ennå.",
-      "noMatch": "Ingenting samsvarer med filteret."
+      "noMatch": "Ingenting samsvarer med filteret.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Mottakers navn",
