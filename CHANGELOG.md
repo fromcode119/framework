@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.591] - 2026-11-16
+
+### Added
+
+- **admin**: the menu lists WORK, and a plugin may have no row at all ([#1476](https://github.com/fromcode119/framework/pull/1476))
+- **admin**: the editor is measured like the record, and a section says how much it holds ([#1471](https://github.com/fromcode119/framework/pull/1471))
+- **admin**: the console moves when it opens something, and short lists read as chips ([#1467](https://github.com/fromcode119/framework/pull/1467))
+- **admin**: a field declares rows, and the framework draws them ([#1464](https://github.com/fromcode119/framework/pull/1464))
+
+### Fixed
+
+- **admin**: a console control is 32px ([#1477](https://github.com/fromcode119/framework/pull/1477))
+- **admin**: a section is counted only when there is something to count ([#1475](https://github.com/fromcode119/framework/pull/1475))
+- **admin**: an area reads as one line per plugin ([#1474](https://github.com/fromcode119/framework/pull/1474))
+- **admin**: the section count means something, sits by its name, and the radius claim is withdrawn ([#1473](https://github.com/fromcode119/framework/pull/1473))
+- **admin**: the console has two weights, and 12px is the floor ([#1472](https://github.com/fromcode119/framework/pull/1472))
+- **admin**: the record's name is the head of the first card, not a card of its own ([#1470](https://github.com/fromcode119/framework/pull/1470))
+- **admin**: the last of the console's third weight, and two rows left off the rhythm ([#1469](https://github.com/fromcode119/framework/pull/1469))
+- **admin**: one type scale for the record page, and a flat leading instead of ratios ([#1468](https://github.com/fromcode119/framework/pull/1468))
+- **admin**: an empty section names its rows instead of apologising ([#1466](https://github.com/fromcode119/framework/pull/1466))
+- **admin**: the edit dialog belongs over the page, not inside the card ([#1465](https://github.com/fromcode119/framework/pull/1465))
+
 ## [0.2.590] - 2026-11-15
 
 ### Added
