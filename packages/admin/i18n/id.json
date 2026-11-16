@@ -4830,5 +4830,11 @@
         "description": "Situs atau layanan Anda tidak aktif atau bermasalah, dan saat sudah pulih."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

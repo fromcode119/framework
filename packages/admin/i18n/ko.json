@@ -4830,5 +4830,11 @@
         "description": "사이트 또는 서비스가 중단되었거나 상태가 좋지 않을 때와 복구되었을 때."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

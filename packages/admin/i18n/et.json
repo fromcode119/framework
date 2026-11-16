@@ -4830,5 +4830,11 @@
         "description": "Sinu sait või teenus on maas või talitlushäiretega ning millal see taastub."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

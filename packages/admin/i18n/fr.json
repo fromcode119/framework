@@ -4830,5 +4830,11 @@
         "description": "Votre site ou un service est hors service ou en mauvais état, ainsi que son rétablissement."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

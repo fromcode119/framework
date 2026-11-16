@@ -4830,5 +4830,11 @@
         "description": "Seu site ou um serviço está fora do ar ou com problemas, e quando se recupera."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

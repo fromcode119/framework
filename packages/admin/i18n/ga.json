@@ -4830,5 +4830,11 @@
         "description": "Tá do shuíomh nó seirbhís as feidhm nó neamhshláintiúil, agus nuair a thagann sé ar ais."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

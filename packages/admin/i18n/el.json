@@ -4830,5 +4830,11 @@
         "description": "Ο ιστότοπός σας ή μια υπηρεσία είναι εκτός λειτουργίας ή δυσλειτουργεί, καθώς και όταν επανέλθει."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

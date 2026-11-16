@@ -4830,5 +4830,11 @@
         "description": "A webhelye vagy egy szolgáltatás nem elérhető vagy hibás, valamint amikor helyreáll."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

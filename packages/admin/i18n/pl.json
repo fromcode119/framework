@@ -4830,5 +4830,11 @@
         "description": "Twoja witryna lub usługa nie działa albo działa nieprawidłowo, a także kiedy wróci do normy."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

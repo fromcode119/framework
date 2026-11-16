@@ -4830,5 +4830,11 @@
         "description": "您的網站或某項服務停止運作或狀況不佳，以及恢復正常時。"
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

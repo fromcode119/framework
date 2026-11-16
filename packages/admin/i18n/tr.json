@@ -4830,5 +4830,11 @@
         "description": "Siteniz veya bir hizmet çalışmıyor ya da sağlıksız durumda; ayrıca düzeldiğinde."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

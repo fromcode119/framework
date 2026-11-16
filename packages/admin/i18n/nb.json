@@ -4830,5 +4830,11 @@
         "description": "Nettstedet ditt eller en tjeneste er nede eller fungerer dårlig, og når det er tilbake."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

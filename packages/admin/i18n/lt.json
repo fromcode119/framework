@@ -4830,5 +4830,11 @@
         "description": "Jūsų svetainė ar paslauga neveikia arba veikia netinkamai, taip pat kai ji atsigauna."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

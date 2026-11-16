@@ -4830,5 +4830,11 @@
         "description": "Trang web hoặc một dịch vụ của bạn ngừng hoạt động hoặc không ổn định, và khi nó phục hồi."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

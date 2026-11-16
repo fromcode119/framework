@@ -4830,5 +4830,11 @@
         "description": "ไซต์ของคุณหรือบริการหยุดทำงานหรือผิดปกติ และเมื่อกลับมาใช้งานได้"
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

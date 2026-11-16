@@ -4830,5 +4830,11 @@
         "description": "आपकी साइट या कोई सेवा बंद है या ठीक से काम नहीं कर रही, और जब वह फिर से चालू हो जाए।"
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

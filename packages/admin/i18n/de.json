@@ -4830,5 +4830,11 @@
         "description": "Ihre Website oder ein Dienst ist ausgefallen oder gestört, sowie wenn sie wieder läuft."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

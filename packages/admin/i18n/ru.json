@@ -4830,5 +4830,11 @@
         "description": "Ваш сайт или сервис недоступен или работает со сбоями, а также когда он восстановится."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

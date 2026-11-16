@@ -4830,5 +4830,11 @@
         "description": "您的站点或某项服务宕机或运行异常，以及恢复正常时。"
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

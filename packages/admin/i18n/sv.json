@@ -4830,5 +4830,11 @@
         "description": "Din webbplats eller en tjänst ligger nere eller fungerar dåligt, och när den är tillbaka."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }
