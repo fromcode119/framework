@@ -53,29 +53,32 @@ export class NavSectionPages {
 
 
   /**
-   * An AREA holds the pages of several plugins, so it is read as one line per PLUGIN: its name, and its
-   * pages under it only while you are inside it — the same rule every section keeps.
+   * An AREA is read as its pieces of WORK, each one line: its name, and its pages under it only while
+   * you are inside it — the same rule every section keeps.
    *
-   * Flat, those pages were ordered by a number each plugin picks for itself, so "Съдържание" opened with
-   * a Facebook connection screen and listed CMS eighth, under two rows both reading "Формуляри". A
-   * plugin with a single page stays that page: a line that opens a list of one says nothing.
+   * The unit is the work, not the plugin. A plugin says which work its pages belong to (`admin.block`),
+   * so a courier adapter's one table reads inside delivery and the adapter itself has no row anywhere.
+   * A plugin that names no work is one piece of work of its own, under its own name — the fallback, not
+   * the rule. A single page is a line of its own: a line that opens a list of one says nothing.
    */
   private static blocks(pages: any[]): Array<{ kind: 'page'; page: any } | { kind: 'group'; name: string; pages: any[]; href?: string }> | null {
-    const slugs = new Set(pages.map((page) => String(page?.pluginSlug || '')).filter(Boolean));
-    if (slugs.size < 2) return null;
+    const keyOf = (page: any): string => String(page?.blockKey || page?.pluginSlug || '');
+    const keys = new Set(pages.map(keyOf).filter(Boolean));
+    if (keys.size < 2) return null;
     const order: string[] = [];
     const blocks = new Map<string, any[]>();
     pages.forEach((page) => {
-      const slug = String(page?.pluginSlug || '');
-      if (!blocks.has(slug)) { blocks.set(slug, []); order.push(slug); }
-      (blocks.get(slug) as any[]).push(page);
+      const key = keyOf(page);
+      if (!blocks.has(key)) { blocks.set(key, []); order.push(key); }
+      (blocks.get(key) as any[]).push(page);
     });
-    return order.map((slug) => {
-      const list = blocks.get(slug) as any[];
+    return order.map((key) => {
+      const list = blocks.get(key) as any[];
       if (list.length === 1) return { kind: 'page' as const, page: list[0] };
-      const landing = list.find((page) => NavUtils.normalizePath(page?.path) === `/${slug}`);
+      const home = String(list[0]?.blockPath || `/${list[0]?.pluginSlug || ''}`);
+      const landing = list.find((page) => NavUtils.normalizePath(page?.path) === home);
       const rest = landing ? list.filter((page) => page !== landing) : list;
-      const name = String(landing?.label || list[0]?.pluginLabel || list[0]?.label || '').trim();
+      const name = String(list[0]?.blockLabel || landing?.label || list[0]?.pluginLabel || list[0]?.label || '').trim();
       return { kind: 'group' as const, name, pages: rest, href: String(landing?.path || rest[0]?.path || '') };
     });
   }

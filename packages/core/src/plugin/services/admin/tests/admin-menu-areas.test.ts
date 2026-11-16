@@ -82,3 +82,30 @@ describe('the order of plugins inside an area', () => {
     expect(order).toEqual(['writing', 'alerts', 'boards']);
   });
 });
+
+/**
+ * A piece of WORK, not a plugin, is what the menu lists. An adapter files its pages into the work it
+ * serves (`admin.block`), the plugin that owns that work declares it (`admin.blocks`), and nothing
+ * names another plugin: the key is shared vocabulary, exactly as an area key is.
+ */
+describe('work declared across plugins', () => {
+  const build3 = (plugins: any[]) => new AdminMenuBuilderService(logger, new AdminSystemNavigationMetadataService())
+    .build(plugins.map((manifest) => ({ manifest } as any)), plugins, new Map());
+
+  const parcels = { slug: 'parcels', name: 'Parcels', admin: { group: 'Commerce', label: 'Delivery', blocks: [{ key: 'delivery' }], menu: [{ label: 'Overview', path: '/parcels', priority: 1 }, { label: 'Methods', path: '/parcels/methods', priority: 2 }], slots: [{ slot: 'admin.plugin.parcels.content' }] } };
+  const carrier = { slug: 'carrier', name: 'Carrier', admin: { group: 'Commerce', label: 'Carrier', block: 'delivery', menu: [{ label: 'Offices', path: '/carrier/offices' }], slots: [{ slot: 'admin.plugin.carrier.content' }] } };
+
+  it('carries the work and its owner on every page that joined it', () => {
+    const area = build3([carrier, parcels]).find((item) => item.isArea);
+    const offices = area.children.find((child: any) => child.path === '/carrier/offices');
+    expect(offices.blockKey).toBe('delivery');
+    expect(offices.blockOwnerSlug).toBe('parcels');
+    expect(offices.blockPath).toBe('/parcels');
+  });
+
+  it('reads the owner of the work before whoever joined it, whatever they numbered themselves', () => {
+    const area = build3([carrier, parcels]).find((item) => item.isArea);
+    expect(area.children.map((child: any) => child.path))
+      .toEqual(['/parcels', '/parcels/methods', '/carrier/offices']);
+  });
+});

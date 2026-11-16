@@ -93,3 +93,36 @@ describe('NavSectionPages.arrange — an area of several plugins', () => {
     expect(mailer.kind === 'group' && mailer.pages).toHaveLength(2);
   });
 });
+
+describe('NavSectionPages.arrange — the work is the unit, not the plugin', () => {
+  const page = (slug: string, path: string, label: string, extra: Record<string, unknown> = {}) =>
+    ({ path, label, pluginSlug: slug, group: 'Commerce', ...extra });
+
+  const delivery = { blockKey: 'delivery', blockLabel: 'Delivery', blockPath: '/parcels', blockOwnerSlug: 'parcels' };
+
+  const area = [
+    page('shop', '/shop', 'Shop', { pluginLabel: 'Shop' }),
+    page('shop', '/shop/orders', 'Orders', { pluginLabel: 'Shop' }),
+    page('parcels', '/parcels', 'Delivery', { ...delivery, pluginLabel: 'Delivery' }),
+    page('parcels', '/parcels/methods', 'Methods', { ...delivery, pluginLabel: 'Delivery' }),
+    page('carrier', '/carrier/offices', 'Offices', { ...delivery, pluginLabel: 'Carrier' }),
+  ];
+
+  it('reads an adapter inside the work it serves, never as a line of its own', () => {
+    const entries = NavSectionPages.arrange(area, 'Commerce');
+    expect(entries.map((entry) => (entry.kind === 'group' ? entry.name : entry.page.path))).toEqual(['Shop', 'Delivery']);
+  });
+
+  it('names the work after the plugin that owns it, not after whoever contributed a page', () => {
+    const block = NavSectionPages.arrange(area, 'Commerce')[1];
+    expect(block.kind === 'group' && block.name).toBe('Delivery');
+    expect(block.kind === 'group' && block.href).toBe('/parcels');
+    expect(block.kind === 'group' && block.pages.map((p: any) => p.path)).toEqual(['/parcels/methods', '/carrier/offices']);
+  });
+
+  it('gives a plugin whose only page joined another plugin\'s work no row at all', () => {
+    const entries = NavSectionPages.arrange(area, 'Commerce');
+    const rows = entries.map((entry) => (entry.kind === 'group' ? entry.name : entry.page.label));
+    expect(rows).not.toContain('Carrier');
+  });
+});
