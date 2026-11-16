@@ -56,3 +56,29 @@ describe('admin menu areas', () => {
     expect(menu.find((item) => item.label === 'Dashboard')?.isGroup).toBeUndefined();
   });
 });
+
+/**
+ * WHO comes first inside an area is the platform's to say. Ordered by the first page's number — which
+ * every plugin picks for itself, starting at 1 — an area opened with whichever plugin wrote the
+ * smallest one, and the plugin that declares the area could sit last.
+ */
+describe('the order of plugins inside an area', () => {
+  const build2 = (plugins: any[]) => new AdminMenuBuilderService(logger, new AdminSystemNavigationMetadataService())
+    .build(plugins.map((manifest) => ({ manifest } as any)), plugins, new Map());
+
+  const owner = { slug: 'writing', name: 'Writing', admin: { group: 'Content', label: 'Writing', areas: [{ key: 'content' }], menu: [{ label: 'Overview', path: '/writing', priority: 1 }, { label: 'Pages', path: '/writing/pages', priority: 2 }], slots: [{ slot: 'admin.plugin.writing.content' }] } };
+  const early = { slug: 'alerts', name: 'Alerts', admin: { group: 'Content', label: 'Alerts', menu: [{ label: 'Connection', path: '/alerts/connection', priority: 0 }], slots: [{ slot: 'admin.plugin.alerts.content' }] } };
+  const later = { slug: 'boards', name: 'Boards', admin: { group: 'Content', label: 'Boards', menu: [{ label: 'Boards', path: '/boards', priority: 0 }], slots: [{ slot: 'admin.plugin.boards.content' }] } };
+
+  it('puts the plugin that declares the area first, whatever the others numbered themselves', () => {
+    const area = build2([early, later, owner]).find((item) => item.isArea);
+    expect(area.children[0].pluginSlug).toBe('writing');
+  });
+
+  it('orders the rest by their own names, not by a number they chose', () => {
+    const area = build2([early, later, owner]).find((item) => item.isArea);
+    const order: string[] = [];
+    area.children.forEach((child: any) => { if (!order.includes(child.pluginSlug)) order.push(child.pluginSlug); });
+    expect(order).toEqual(['writing', 'alerts', 'boards']);
+  });
+});

@@ -15,6 +15,8 @@ import { NavUtils } from '@/lib/nav-utils';
 export class NavSectionPages {
   /** Each line under an open section of the menu: a page, or a sub-menu holding several. */
   static arrange(pages: any[], sectionLabel = ''): Array<{ kind: 'page'; page: any } | { kind: 'group'; name: string; pages: any[] }> {
+    const byPlugin = NavSectionPages.blocks(pages);
+    if (byPlugin) return byPlugin;
     const section = String(sectionLabel || '').trim().toLocaleLowerCase();
     const groupOf = (page: any): string => {
       const group = String(page?.group || '').trim();
@@ -47,6 +49,35 @@ export class NavSectionPages {
     });
     // Pages standing on their own first, then the sub-menus, each keeping the order it was declared in.
     return [...entries.filter((entry) => entry.kind === 'page'), ...entries.filter((entry) => entry.kind === 'group')];
+  }
+
+
+  /**
+   * An AREA holds the pages of several plugins, so it is read as one line per PLUGIN: its name, and its
+   * pages under it only while you are inside it — the same rule every section keeps.
+   *
+   * Flat, those pages were ordered by a number each plugin picks for itself, so "Съдържание" opened with
+   * a Facebook connection screen and listed CMS eighth, under two rows both reading "Формуляри". A
+   * plugin with a single page stays that page: a line that opens a list of one says nothing.
+   */
+  private static blocks(pages: any[]): Array<{ kind: 'page'; page: any } | { kind: 'group'; name: string; pages: any[]; href?: string }> | null {
+    const slugs = new Set(pages.map((page) => String(page?.pluginSlug || '')).filter(Boolean));
+    if (slugs.size < 2) return null;
+    const order: string[] = [];
+    const blocks = new Map<string, any[]>();
+    pages.forEach((page) => {
+      const slug = String(page?.pluginSlug || '');
+      if (!blocks.has(slug)) { blocks.set(slug, []); order.push(slug); }
+      (blocks.get(slug) as any[]).push(page);
+    });
+    return order.map((slug) => {
+      const list = blocks.get(slug) as any[];
+      if (list.length === 1) return { kind: 'page' as const, page: list[0] };
+      const landing = list.find((page) => NavUtils.normalizePath(page?.path) === `/${slug}`);
+      const rest = landing ? list.filter((page) => page !== landing) : list;
+      const name = String(landing?.label || list[0]?.pluginLabel || list[0]?.label || '').trim();
+      return { kind: 'group' as const, name, pages: rest, href: String(landing?.path || rest[0]?.path || '') };
+    });
   }
 
   /** Whether a sub-menu holds the page now open. */

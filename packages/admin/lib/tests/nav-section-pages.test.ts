@@ -43,3 +43,53 @@ describe('NavSectionPages.holds', () => {
     expect(NavSectionPages.holds(group, '')).toBe(false);
   });
 });
+
+describe('NavSectionPages.arrange — an area of several plugins', () => {
+  const from = (slug: string, path: string, label: string, pluginLabel: string) => ({ path, label, pluginSlug: slug, pluginLabel, group: 'Content' });
+
+  const area = [
+    from('writing', '/writing', 'Writing', 'Writing'),
+    from('writing', '/writing/articles', 'Articles', 'Writing'),
+    from('writing', '/writing/pages', 'Pages', 'Writing'),
+    from('intake', '/intake', 'Intake', 'Intake'),
+    from('intake', '/intake/submissions', 'Submissions', 'Intake'),
+    from('ranking', '/ranking', 'Ranking', 'Ranking'),
+  ];
+
+  it('draws one line per plugin, named by the plugin', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    expect(entries.map((entry) => (entry.kind === 'page' ? entry.page.path : `group:${entry.name}`)))
+      .toEqual(['group:Writing', 'group:Intake', '/ranking']);
+  });
+
+  it('opens the plugin line at the plugin itself, and does not repeat it below', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    const block = entries[0];
+    expect(block.kind === 'group' && block.href).toBe('/writing');
+    expect(block.kind === 'group' && block.pages.map((page: any) => page.path)).toEqual(['/writing/articles', '/writing/pages']);
+  });
+
+  it('keeps a plugin with one page as that page', () => {
+    const entries = NavSectionPages.arrange(area, 'Content');
+    expect(entries[2]).toMatchObject({ kind: 'page' });
+  });
+
+  it('leaves a section of one plugin exactly as it was', () => {
+    const own = [from('charts', '/charts', 'Overview', 'Charts'), from('charts', '/charts/profiles', 'Profiles', 'Charts')];
+    const entries = NavSectionPages.arrange(own, 'Charts');
+    expect(entries.every((entry) => entry.kind === 'page')).toBe(true);
+  });
+
+  it('names a plugin that has no landing page after the plugin, not after its first page', () => {
+    const mixed = [
+      from('writing', '/writing', 'Writing', 'Writing'),
+      from('writing', '/writing/pages', 'Pages', 'Writing'),
+      from('mailer', '/mailer/lists', 'Lists', 'Mailer'),
+      from('mailer', '/mailer/campaigns', 'Campaigns', 'Mailer'),
+    ];
+    const entries = NavSectionPages.arrange(mixed, 'Content');
+    expect(entries.map((entry) => (entry.kind === 'group' ? entry.name : entry.page.path))).toEqual(['Writing', 'Mailer']);
+    const mailer = entries[1];
+    expect(mailer.kind === 'group' && mailer.pages).toHaveLength(2);
+  });
+});
