@@ -130,6 +130,43 @@ describe('RecordSectionCard', () => {
     // An empty locked field has nothing to read and nothing to type: the card did not show it either.
     expect(dialog.querySelector('[aria-label="field stamp"]')).toBeNull();
   });
+
+  /**
+   * A section none of whose fields is filled in states its own shape. It used to print one sentence,
+   * "nothing filled in yet", which told the reader the one thing they already knew and hid the one thing
+   * they needed: which fields the section offers.
+   */
+  it('names the rows of a section with nothing filled in, each with a dash, and says nothing else', () => {
+    mount({ formData: { fullName: '', phone: '', note: '', email: '' }, section: { key: 'customer', title: 'Customer', fields: fields.filter((field) => !field.required) } });
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.getByText('Phone')).toBeInTheDocument();
+    expect(screen.getByText('Note')).toBeInTheDocument();
+    // Name, Phone, Note and Items: the data field has no table to draw while it is empty, so it is a row too.
+    expect(screen.getByText('Items')).toBeInTheDocument();
+    expect(screen.getAllByText('\u2013')).toHaveLength(4);
+    expect(screen.queryByText(/nothing filled in/i)).toBeNull();
+  });
+
+  /**
+   * A field whose value would be read as a table draws nothing while it is empty, so the section would
+   * say nothing at all. Named with a dash it still states what it holds.
+   */
+  it('names an empty section whose only field reads as data', () => {
+    const data = [{ name: 'choiceGroups', type: 'array', label: 'Choice groups' }];
+    mount({ formData: {}, section: { key: 'choices', title: 'Choices', fields: data } });
+    expect(screen.getByText('Choice groups')).toBeInTheDocument();
+    expect(screen.getByText('\u2013')).toBeInTheDocument();
+  });
+
+  /**
+   * A field drawn in place by its own component (a picture, a block document) keeps that component's own
+   * empty state — its "add an image" — and is not named a second time as a dash.
+   */
+  it('draws no dash for an empty section whose field owns its control', () => {
+    const own = [{ name: 'images', type: 'media', label: 'Images', admin: { component: 'MediaField' } }];
+    mount({ formData: {}, section: { key: 'media', title: 'Media', fields: own } });
+    expect(screen.queryByText('\u2013')).toBeNull();
+  });
 });
 
 describe('RecordSectionFields', () => {
@@ -140,4 +177,6 @@ describe('RecordSectionFields', () => {
     expect(RecordSectionFields.isEmpty({ type: 'number' }, 0)).toBe(false);
     expect(RecordSectionFields.isEmpty({ type: 'boolean' }, true)).toBe(false);
   });
+
+
 });

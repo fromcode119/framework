@@ -155,6 +155,37 @@ export class RecordSectionCard extends RecordSectionCardEditing {
   }
 
   /**
+   * A section none of whose fields is filled in: its rows, each with a dash.
+   *
+   * It used to be one sentence — "nothing filled in yet" — which is the one thing the reader already knew.
+   * Which fields the section offers, and therefore what Edit would ask for, was not said anywhere. Counted
+   * on one product: five of sixteen cards were that sentence, so a quarter of the record page carried no
+   * information at all, in a shape no other card on the page had. The dash row is the card's own row, so
+   * an empty section now reads as the same kind of thing as a full one.
+   *
+   * A section with no rows to name (one a plugin's slot fills, one whose only field draws its own control)
+   * draws nothing: a card is allowed to be short.
+   */
+  private renderNamedRows(): ReactNode {
+    const card = AdminClass.of('record-card');
+    const named = RecordSectionFields.blankFields(this.section.fields);
+    if (!named.length) return null;
+    return (
+      <dl className={`${card}__rows`}>
+        {named.map((field: any) => (
+          <div key={field.name} className={`${card}__row`}>
+            <dt className={`${card}__label`}>{FieldDisplayLabel.of(field)}</dt>
+            <dd className={`${card}__value ${card}__value--none`}>{RecordSectionCard.NO_VALUE}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  /** An en dash stands for a value nobody has set — the same mark every record page worth copying uses. */
+  private static readonly NO_VALUE = '–';
+
+  /**
    * A field whose value is data, read as the structured table the console draws for any recorded value.
    * Its own control is not drawn here — the section's Edit opens it with the real thing.
    */
@@ -208,7 +239,7 @@ export class RecordSectionCard extends RecordSectionCardEditing {
           {this.recordPart?.(RecordPartPlace.LEAD)}
           {this.renderRows()}
           {this.recordPart?.(RecordPartPlace.BODY)}
-          {this.slot('body', this.isBlank() ? <p className={`${card}__empty`}>{AdminI18n.t('collection.edit.nothingFilledIn')}</p> : null)}
+          {this.slot('body', this.isBlank() ? this.renderNamedRows() : null)}
         </div>
       </Card>
     );
