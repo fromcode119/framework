@@ -534,7 +534,11 @@
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Wala pang naitala.",
       "noMatch": "Walang tumutugma sa filter na iyan.",
-      "tableRange": "{{from}} — {{to}} of {{total}}"
+      "tableRange": "{{from}} — {{to}} of {{total}}",
+      "noImage": "No picture",
+      "tablePages": "page {{page}} of {{pages}}",
+      "tablePrev": "Previous",
+      "tableNext": "Next"
     },
     "address": {
       "recipient": "Pangalan ng tatanggap",

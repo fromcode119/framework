@@ -26,4 +26,6 @@ export interface IStructuredNode {
    * came from, so a field that asked for `options` still gets the columns `options` became.
    */
   tableColumnOrigins?: Record<string, string>;
+  /** Set only for an ARRAY_TABLE — the columns no row fills. */
+  tableEmptyColumns?: string[];
 }

@@ -8,7 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FiltersButton } from '@/components/ui/list-toolbar/view/filters-button.client';
-import { Input } from '@/components/ui/view/input.client';
+import { StructuredReadOnlyTableFoot } from '@/components/collection/fields/view/structured-read-only-table-foot.client';
 import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -23,11 +23,16 @@ export class StructuredReadOnlyTable extends PureReactor {
   @prop declare keyLabels?: Record<string, string>;
   /** The columns to draw, in order — the owning field's `admin.tableColumns`. Empty draws every column. */
   @prop declare columns?: readonly string[];
-  /** Whether this table is long enough to be looked THROUGH, and so carries a search in its toolbar. */
-  @prop declare searchable?: boolean;
+  /** The columns that hold a picture, as the field declared them. */
+  @prop declare media?: readonly string[];
+  /** What the section's own search holds, already lower-cased; empty shows every row. */
+  @prop declare searchLower?: string;
 
-  /** What the search holds. Nothing is stored: it is how this table is being read now, not a setting. */
-  @state private searchText = '';
+  /** How many rows are read at once, after which the table pages. */
+  private static readonly PAGE_SIZE = 20;
+
+  @state private page = 1;
+
   /**
    * Opens the editor this value is changed in. Given one, every row ends in a ⋯ offering it — the way
    * into the row from the row itself, instead of back up to the card's head. It is the SECTION's editor:
@@ -111,28 +116,35 @@ export class StructuredReadOnlyTable extends PureReactor {
     );
   }
 
+  @bound private goToPage(next: number): void {
+    this.page = next;
+  }
+
+  /**
+   * What narrows this table, beyond the search its SECTION carries in its head: a filter per column
+   * worth offering one. The search is the section's because it belongs beside the section's name, the
+   * way every list in the console carries it, and a field cannot reach up into the head to put it there.
+   */
+  private renderTools(total: number): ReactNode {
+    const filters = this.filters;
+    if (!filters.length) return null;
+    return <div className="fc-sro-table__tools"><FiltersButton filters={filters} total={total} /></div>;
+  }
+
   render(): ReactNode {
     const columns = StructuredReadOnlyTableService.columnsFor(this.node, this.columns);
     const all = this.node.tableRows ?? [];
-    const needle = this.searchText.trim().toLowerCase();
+    const needle = String(this.searchLower || '').trim();
     const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle, columns)) : all;
     const rows = this.ordered(this.narrowed(matching));
-    const filters = this.filters;
+    const size = StructuredReadOnlyTable.PAGE_SIZE;
+    const pages = Math.max(1, Math.ceil(rows.length / size));
+    const page = Math.min(this.page, pages);
+    const shown = rows.slice((page - 1) * size, page * size);
+    const toolbar = this.renderTools(rows.length);
     return (
       <div className="fc-sro-table">
-        {this.searchable || filters.length ? (
-          <div className="fc-sro-table__tools">
-            {filters.length ? <FiltersButton filters={filters} total={rows.length} /> : null}
-            {this.searchable ? (
-              <Input
-                value={this.searchText}
-                onChange={(event: any) => { this.searchText = String(event?.target?.value ?? ''); }}
-                placeholder={AdminI18n.t('ui.structured.filter')}
-                className="fc-sro-table__search"
-              />
-            ) : null}
-          </div>
-        ) : null}
+        {toolbar}
         <table>
           <thead>
             <tr>
@@ -148,20 +160,26 @@ export class StructuredReadOnlyTable extends PureReactor {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, rowIndex) => (
+            {shown.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {columns.map((column) => <td key={column}><StructuredReadOnlyCell node={row[column]} /></td>)}
+                {columns.map((column) => (
+                  <td key={column} className={this.media?.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
+                    <StructuredReadOnlyCell node={row[column]} media={this.media?.includes(column)} />
+                  </td>
+                ))}
                 {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}
               </tr>
             ))}
           </tbody>
         </table>
-        {/* How many rows there are, always — not only while a search is narrowing them. A table that
-            states its own size tells the reader whether what they are looking at is all of it, which is
-            the first question anyone asks of a list. */}
-        <p className="fc-sro-table__count">
-          {AdminI18n.t('ui.structured.tableRange', { from: rows.length ? 1 : 0, to: rows.length, total: all.length })}
-        </p>
+        <StructuredReadOnlyTableFoot
+          from={rows.length ? (page - 1) * size + 1 : 0}
+          to={(page - 1) * size + shown.length}
+          total={rows.length}
+          page={page}
+          pages={pages}
+          onPage={this.goToPage}
+        />
       </div>
     );
   }

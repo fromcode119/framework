@@ -534,7 +534,11 @@
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Chưa có dữ liệu nào được ghi nhận.",
       "noMatch": "Không có kết quả khớp với bộ lọc.",
-      "tableRange": "{{from}} — {{to}} of {{total}}"
+      "tableRange": "{{from}} — {{to}} of {{total}}",
+      "noImage": "No picture",
+      "tablePages": "page {{page}} of {{pages}}",
+      "tablePrev": "Previous",
+      "tableNext": "Next"
     },
     "address": {
       "recipient": "Tên người nhận",

@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyValue } from '@/components/collection/fields/view/structured-read-only-value.client';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
+import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
 
 /**
@@ -21,6 +23,8 @@ import type { IStructuredNode } from '@/components/collection/fields/interfaces/
  */
 export class StructuredReadOnlyCell extends PureReactor {
   @prop declare node?: IStructuredNode;
+  /** Whether this cell's column holds a picture, as the field declared it. */
+  @prop declare media?: boolean;
 
   /** The entries a table cell draws as chips — present only on a value folded from an object. */
   private get chips(): Array<{ key: string; text: string }> | null {
@@ -57,6 +61,15 @@ export class StructuredReadOnlyCell extends PureReactor {
     }
     const source = this.imageSource;
     if (source) return <img src={source} alt="" title={source} className="fc-sro-table__thumb" />;
+    // A column of pictures keeps its frame where there is no picture: an empty frame says this one has
+    // none, where a blank cell reads as a column that failed to draw.
+    if (this.media) {
+      return (
+        <span className="fc-sro-table__thumb fc-sro-table__thumb--none" title={AdminI18n.t('ui.structured.noImage')}>
+          <FrameworkIcons.Image size={14} />
+        </span>
+      );
+    }
     return <StructuredReadOnlyValue node={this.node} />;
   }
 }

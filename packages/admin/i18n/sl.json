@@ -534,7 +534,11 @@
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ničesar še ni zabeleženega.",
       "noMatch": "Temu filtru nič ne ustreza.",
-      "tableRange": "{{from}} — {{to}} of {{total}}"
+      "tableRange": "{{from}} — {{to}} of {{total}}",
+      "noImage": "No picture",
+      "tablePages": "page {{page}} of {{pages}}",
+      "tablePrev": "Previous",
+      "tableNext": "Next"
     },
     "address": {
       "recipient": "Ime prejemnika",

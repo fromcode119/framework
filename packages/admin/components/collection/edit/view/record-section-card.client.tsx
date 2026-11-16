@@ -1,10 +1,10 @@
 import type { ReactNode, RefObject } from 'react';
-import { prop, state, ref } from '@fromcode119/react-class-components';
-import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { prop, state, ref, bound } from '@fromcode119/react-class-components';
+import { Slot } from '@fromcode119/react';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
-import { Dropdown } from '@/components/ui/view/dropdown.client';
-import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { Card } from '@/components/ui/view/card.client';
+import { RecordSectionSearch } from '@/components/collection/edit/view/record-section-search.client';
+import { RecordSectionMenu } from '@/components/collection/edit/view/record-section-menu.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
 import { RecordSectionChips } from '@/components/collection/edit/record-section-chips';
 import { RecordSectionCount } from '@/components/collection/edit/record-section-count';
@@ -193,6 +193,27 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     );
   }
 
+  /** What the section's search holds. Nothing is stored: it is how the card is being read now. */
+  @state private searchText = '';
+
+  /** How many rows the section's own data holds — what decides whether a search is worth offering. */
+  private get dataRowCount(): number {
+    return this.section.fields
+      .filter((field: any) => RecordSectionFields.readsAsData(field))
+      .map((field: any) => this.formData?.[field.name])
+      .filter((value: unknown) => Array.isArray(value))
+      .reduce((most: number, value: any) => Math.max(most, value.length), 0);
+  }
+
+  /** What a record part or a plugin adds to this section's ⋯. */
+  @bound private offers(): ReactNode {
+    return <>{this.recordPart?.(RecordPartPlace.MENU)}{this.slot('menu')}</>;
+  }
+
+  @bound private onSearch(next: string): void {
+    this.searchText = next;
+  }
+
   /** An en dash stands for a value nobody has set — the same mark every record page worth copying uses. */
   private static readonly NO_VALUE = '–';
 
@@ -215,6 +236,8 @@ export class RecordSectionCard extends RecordSectionCardEditing {
           // real controls live. It is not scoped to the row it sits on, because the value is one field of
           // the record and the sheet edits that field whole.
           onEditRow: this.openSheet,
+          // What the section's own search holds; the table narrows itself to it.
+          searchText: this.searchText,
         },
         })}
       </section>
@@ -246,8 +269,17 @@ export class RecordSectionCard extends RecordSectionCardEditing {
                 ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
                 : null}
             </h2>
-            <div className={`${card}__aside`}>{this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}</div>
-            {this.renderMenu(editable)}
+            <div className={`${card}__aside`}>
+              <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />
+              {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
+            </div>
+            <RecordSectionMenu
+              editable={editable}
+              hasOffers={this.hasMenu}
+              offers={this.offers}
+              probeRef={this.menuProbe}
+              onEdit={this.openSheet}
+            />
           </div>
         ) : null}
         <div className={`${card}__body`}>
@@ -261,33 +293,4 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     );
   }
 
-  /**
-   * The card's ⋯: everything this section can be asked to do. Editing is its first item, and under it
-   * what a part or a plugin offers (a refund under the payments). Every card head therefore carries ONE
-   * control, of one shape, in one place — which is the point: a head that sometimes held a text button,
-   * sometimes a button and a ⋯, and sometimes nothing read as three different designs on one page. The
-   * offers are drawn once, out of sight, to learn whether there are any.
-   */
-  private renderMenu(editable: boolean): ReactNode {
-    const card = AdminClass.of('record-card');
-    const label = AdminI18n.t('collection.edit.sectionActions');
-    const offers = () => <>{this.recordPart?.(RecordPartPlace.MENU)}{this.slot('menu')}</>;
-    const probe = <span key="probe" ref={this.menuProbe} hidden>{offers()}</span>;
-    if (!this.hasMenu && !editable) return probe;
-    const items = editable
-      ? [{ label: AdminI18n.t('collection.edit.editSection'), onClick: this.openSheet, icon: <FrameworkIcons.Edit size={14} /> }]
-      : [];
-    return [probe,
-      <Dropdown
-        key="menu"
-        align={HorizontalAlign.RIGHT}
-        items={items}
-        footer={offers()}
-        trigger={
-          <span role="button" tabIndex={0} aria-label={label} title={label} className={`${card}__menu`}>
-            <FrameworkIcons.More size={18} />
-          </span>
-        }
-      />];
-  }
 }

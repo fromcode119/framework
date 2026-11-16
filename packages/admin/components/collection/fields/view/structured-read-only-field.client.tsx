@@ -61,6 +61,14 @@ export class StructuredReadOnlyField extends Reactor {
     return picked.length ? picked : undefined;
   }
 
+  /** The columns of a table of this value that hold a picture, as the field declared them. */
+  private get mediaColumns(): string[] | undefined {
+    const declared = this.field?.admin?.tableMedia;
+    if (!Array.isArray(declared)) return undefined;
+    const picked = declared.filter((column: unknown) => typeof column === 'string' && column.trim()).map((column: string) => column.trim());
+    return picked.length ? picked : undefined;
+  }
+
   @bound
   private handleFilterChange(next: string): void {
     this.filterText = next;
@@ -77,7 +85,8 @@ export class StructuredReadOnlyField extends Reactor {
           node={node}
           keyLabels={this.keyLabels}
           columns={this.declaredColumns}
-          searchable={StructuredReadOnlyTableService.isSearchableTable(node)}
+          media={this.mediaColumns}
+          searchLower={String(this.field?.admin?.searchText ?? '').trim().toLowerCase()}
           editRow={this.editRow}
         />
       );

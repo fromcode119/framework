@@ -534,7 +534,11 @@
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Mitään ei ole vielä tallennettu.",
       "noMatch": "Suodattimella ei löytynyt mitään.",
-      "tableRange": "{{from}} — {{to}} of {{total}}"
+      "tableRange": "{{from}} — {{to}} of {{total}}",
+      "noImage": "No picture",
+      "tablePages": "page {{page}} of {{pages}}",
+      "tablePrev": "Previous",
+      "tableNext": "Next"
     },
     "address": {
       "recipient": "Vastaanottajan nimi",
