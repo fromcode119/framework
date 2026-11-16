@@ -74,14 +74,14 @@ export class PermalinkInput extends AdminComponent {
         >
           <div className="flex items-start justify-between gap-3 w-full">
              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-[12px] leading-tight text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
-                <span className={`text-[13px] leading-tight font-medium break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
+                <span className="text-[12px] text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
+                <span className={`text-[13px] font-medium break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
                   {displayValue}{suffix}
                 </span>
              </div>
              <div className="flex items-start gap-2 shrink-0 pt-0.5">
                 {isCustomMode && (
-                   <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-600 text-[12px] font-medium rounded-lg border border-indigo-500/20">
+                   <div className="fc-chip flex items-center">
                       {AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}
                    </div>
                 )}

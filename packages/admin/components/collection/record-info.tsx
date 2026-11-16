@@ -14,18 +14,18 @@ export class RecordInfo extends PureReactor {
     <Card title={AdminI18n.t('collection.info.title')}>
       <div className="space-y-4">
         <div className="flex justify-between items-center text-xs">
-          <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.id')}</span>
+          <span className="text-slate-400 font-medium tracking-wide">{AdminI18n.t('collection.info.id')}</span>
           <span className="text-slate-500 font-medium tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">{id}</span>
         </div>
         {createdAt && (
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.created')}</span>
+            <span className="text-slate-400 font-medium tracking-wide">{AdminI18n.t('collection.info.created')}</span>
             <span className="text-slate-500 font-medium">{new Date(createdAt).toLocaleString()}</span>
           </div>
         )}
         {updatedAt && (
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.updated')}</span>
+            <span className="text-slate-400 font-medium tracking-wide">{AdminI18n.t('collection.info.updated')}</span>
             <span className="text-slate-500 font-medium">{new Date(updatedAt).toLocaleString()}</span>
           </div>
         )}

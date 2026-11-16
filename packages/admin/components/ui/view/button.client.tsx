@@ -83,7 +83,7 @@ export class Button extends PureReactor {
 
   return (
     <Component
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
       {...props}
     >
       {isLoading ? (
