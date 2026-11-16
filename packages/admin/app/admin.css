@@ -1449,6 +1449,15 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
 .fc-sro-table { overflow-x: auto; }
+/* Inside a record card the table takes the card's own width, exactly as a row of facts does. Held inside
+   the body's padding it got 485px of a 533px card and started scrolling sideways over 48px of blank
+   margin — a product's four variants, which fit, read as a table too small for them. The scroll stays
+   for a table that is genuinely wider than the card; it no longer appears because of padding. */
+.fc-record-card__body > * .fc-sro-table,
+.fc-record-card__body > .fc-sro-table {
+  margin-inline: calc(-1 * var(--fc-card-pad-x));
+  padding-inline: var(--fc-card-pad-x);
+}
 .fc-sro-table__tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .fc-sro-table__sort {
   display: inline-flex;
