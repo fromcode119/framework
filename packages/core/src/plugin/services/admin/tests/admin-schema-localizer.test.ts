@@ -38,6 +38,24 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[1].extendedBy).toBe('seo');
   });
 
+  it('translates the note under a row whose value is not the shape the runtime accepts', () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.videos.fields.url.label': 'Връзка', 'shop.admin.collections.catalog.fields.videos.fields.url.patternNote': 'Не е връзка, която плеърът приема.' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products',
+      shortSlug: 'catalog',
+      fields: [
+        {
+          name: 'videos',
+          label: 'Videos',
+          fields: [{ name: 'url', label: 'Link', admin: { pattern: '^https?://', patternNote: 'Not a link the player accepts.' } }],
+          admin: { layout: 'table' },
+        },
+      ],
+    });
+    const url = out.fields[0].fields[0];
+    expect([url.label, url.admin.patternNote, url.admin.pattern]).toEqual(['Връзка', 'Не е връзка, която плеърът приема.', '^https?://']);
+  });
+
   it("translates the related-records panel's title and empty hint", () => {
     const words = { ...dictionary, 'shop.admin.collections.catalog.recordLinks.title': 'Свързани записи' };
     const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
