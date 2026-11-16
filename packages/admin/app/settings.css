@@ -12,8 +12,8 @@
   --fc-settings-card-gap: var(--fc-stack-gap);
   --fc-settings-card-radius: 12px;
   /* The card's head against the rows under it. They were 14px/600 over 13px/600 — one pixel and the
-     same weight apart, so a section's name read as another setting. Medusa's settings put a 16px/600
-     heading over 12px/500 rows; this keeps our scale and restores the step. */
+     same weight apart, so a section's name read as another setting. The settings screens this one
+     follows put a 16px/600 heading over 12px/500 rows; this keeps our scale and restores the step. */
   --fc-settings-title: var(--fc-card-title);
   --fc-settings-label: 13px;
   --fc-settings-text: 12px;

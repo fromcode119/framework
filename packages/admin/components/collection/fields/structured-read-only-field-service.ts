@@ -2,6 +2,8 @@ import { StructuredNodeKind } from '@/components/collection/fields/enums/structu
 import { CoercionUtils } from '@fromcode119/core/client';
 import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import type { IStructuredTable } from '@/components/collection/fields/interfaces/structured-table.interface';
+import { StructuredTableSplitService } from '@/components/collection/fields/structured-table-split-service';
 import { TagFieldUtils } from '@/components/ui/tag-field/utils';
 
 /**
@@ -53,7 +55,7 @@ export class StructuredReadOnlyFieldService {
     const items = value.map((item) => StructuredReadOnlyFieldService.classify(item));
     const table = StructuredReadOnlyFieldService.buildTable(items);
     return table
-      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows }
+      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows, tableColumnOrigins: table.columnOrigins }
       : { kind: StructuredNodeKind.ARRAY, items };
   }
 
@@ -109,7 +111,7 @@ export class StructuredReadOnlyFieldService {
    * indexed rows: a product with four variants printed fourteen label/value rows per variant, 2 457px
    * of them, because each variant carries `options`. A list of four things is a table of four rows.
    */
-  private static buildTable(items: IStructuredNode[]): { columns: string[]; rows: Record<string, IStructuredNode>[] } | null {
+  private static buildTable(items: IStructuredNode[]): IStructuredTable | null {
     if (items.length === 0 || !items.every((item) => item.kind === StructuredNodeKind.OBJECT)) return null;
     const inlined = new Map<IStructuredNode, IStructuredNode>();
     for (const item of items) {
@@ -150,7 +152,7 @@ export class StructuredReadOnlyFieldService {
       return row;
     });
 
-    return { columns, rows };
+    return StructuredTableSplitService.split(items, columns, rows);
   }
 
   /** Top-level key/item count — the "(n keys)" a group label shows. */

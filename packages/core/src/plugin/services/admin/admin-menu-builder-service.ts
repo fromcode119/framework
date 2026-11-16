@@ -189,8 +189,8 @@ export class AdminMenuBuilderService {
      * plugin and a carrier adapter for it both name the same area, and each still got a top-level row
      * of its own — as did every payment adapter beside the plugin it extends. The menu followed the
      * plugins rather than the work, which is what makes a console with dozens of them unusable.
-     * Medusa's dashboard does the same thing the other way round — a fixed core, and an extension that
-     * names a core route is drawn inside it rather than beside it.
+     * The consoles this one is measured against do the same thing the other way round — a fixed core, and
+     * an extension that names a core route is drawn inside it rather than beside it.
      *
      * The area is a shared key, not a name one plugin takes from another: `commerce` is translated by
      * each plugin's own `admin.groups.commerce`, exactly as the related-records parts work.

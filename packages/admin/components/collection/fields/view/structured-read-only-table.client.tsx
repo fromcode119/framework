@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FiltersButton } from '@/components/ui/list-toolbar/view/filters-button.client';
+import { Input } from '@/components/ui/view/input.client';
 import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -22,8 +23,11 @@ export class StructuredReadOnlyTable extends PureReactor {
   @prop declare keyLabels?: Record<string, string>;
   /** The columns to draw, in order — the owning field's `admin.tableColumns`. Empty draws every column. */
   @prop declare columns?: readonly string[];
-  /** What the filter above the table holds, already lower-cased; empty shows every row. */
-  @prop declare filterLower?: string;
+  /** Whether this table is long enough to be looked THROUGH, and so carries a search in its toolbar. */
+  @prop declare searchable?: boolean;
+
+  /** What the search holds. Nothing is stored: it is how this table is being read now, not a setting. */
+  @state private searchText = '';
   /**
    * Opens the editor this value is changed in. Given one, every row ends in a ⋯ offering it — the way
    * into the row from the row itself, instead of back up to the card's head. It is the SECTION's editor:
@@ -110,15 +114,23 @@ export class StructuredReadOnlyTable extends PureReactor {
   render(): ReactNode {
     const columns = StructuredReadOnlyTableService.columnsFor(this.node, this.columns);
     const all = this.node.tableRows ?? [];
-    const needle = String(this.filterLower || '').trim();
+    const needle = this.searchText.trim().toLowerCase();
     const matching = needle ? all.filter((row) => StructuredReadOnlyTableService.tableRowMatches(row, needle, columns)) : all;
     const rows = this.ordered(this.narrowed(matching));
     const filters = this.filters;
     return (
       <div className="fc-sro-table">
-        {filters.length ? (
+        {this.searchable || filters.length ? (
           <div className="fc-sro-table__tools">
-            <FiltersButton filters={filters} total={rows.length} />
+            {filters.length ? <FiltersButton filters={filters} total={rows.length} /> : null}
+            {this.searchable ? (
+              <Input
+                value={this.searchText}
+                onChange={(event: any) => { this.searchText = String(event?.target?.value ?? ''); }}
+                placeholder={AdminI18n.t('ui.structured.filter')}
+                className="fc-sro-table__search"
+              />
+            ) : null}
           </div>
         ) : null}
         <table>

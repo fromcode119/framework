@@ -37,7 +37,16 @@ export class StructuredReadOnlyTableService {
   static columnsFor(node: IStructuredNode, declared?: readonly string[]): string[] {
     const present = node.tableColumns ?? [];
     if (!declared?.length) return present;
-    const picked = declared.filter((column) => present.includes(column));
+    // A column that was split into one per key answers to the name the field asked for: a field that
+    // declared `options` gets the columns `options` became, in the place it put them.
+    const origins = node.tableColumnOrigins ?? {};
+    const picked: string[] = [];
+    for (const column of declared) {
+      for (const name of present) {
+        if (picked.includes(name)) continue;
+        if (name === column || origins[name] === column) picked.push(name);
+      }
+    }
     return picked.length ? picked : present;
   }
 

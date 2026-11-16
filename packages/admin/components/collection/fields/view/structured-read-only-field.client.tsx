@@ -70,21 +70,16 @@ export class StructuredReadOnlyField extends Reactor {
     const node = this.rootNode;
     if (node.kind === StructuredNodeKind.EMPTY) return <p className="fc-sro__absent">{AdminI18n.t('ui.structured.empty')}</p>;
     if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
-      // A long table is looked THROUGH, so it carries the same filter every list in the console has.
-      const searchable = StructuredReadOnlyTableService.isSearchableTable(node);
-      const needle = searchable ? this.filterText.trim().toLowerCase() : '';
+      // The search belongs to the TABLE, beside its filter, not on a row of its own above it: a field
+      // the width of the card standing over four rows reads as the section's own control.
       return (
-        <>
-          {searchable ? (
-            <Input
-              value={this.filterText}
-              onChange={(event: any) => this.handleFilterChange(event?.target?.value ?? '')}
-              placeholder={AdminI18n.t('ui.structured.filter')}
-              className="fc-sro__filter"
-            />
-          ) : null}
-          <StructuredReadOnlyTable node={node} keyLabels={this.keyLabels} columns={this.declaredColumns} filterLower={needle} editRow={this.editRow} />
-        </>
+        <StructuredReadOnlyTable
+          node={node}
+          keyLabels={this.keyLabels}
+          columns={this.declaredColumns}
+          searchable={StructuredReadOnlyTableService.isSearchableTable(node)}
+          editRow={this.editRow}
+        />
       );
     }
     if (StructuredReadOnlyFieldService.isValueList(node)) return <StructuredReadOnlyList node={node} />;
