@@ -142,7 +142,10 @@ export class StructuredReadOnlyTable extends PureReactor {
             ))}
           </tbody>
         </table>
-        {needle || rows.length !== all.length ? <p className="fc-sro-table__count">{rows.length} / {all.length}</p> : null}
+        {/* How many rows there are, always — not only while a search is narrowing them. A table that
+            states its own size tells the reader whether what they are looking at is all of it, which is
+            the first question anyone asks of a list. */}
+        <p className="fc-sro-table__count">{rows.length === all.length ? all.length : `${rows.length} / ${all.length}`}</p>
       </div>
     );
   }
