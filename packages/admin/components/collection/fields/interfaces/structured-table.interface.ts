@@ -6,4 +6,6 @@ export interface IStructuredTable {
   rows: Record<string, IStructuredNode>[];
   /** For a column that was split out of another: the name of the column it came from. */
   columnOrigins?: Record<string, string>;
+  /** The columns no row fills — left out of a table the framework arranged, kept in one a field declared. */
+  emptyColumns?: string[];
 }

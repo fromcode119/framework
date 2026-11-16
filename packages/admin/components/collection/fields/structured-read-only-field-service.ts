@@ -55,7 +55,7 @@ export class StructuredReadOnlyFieldService {
     const items = value.map((item) => StructuredReadOnlyFieldService.classify(item));
     const table = StructuredReadOnlyFieldService.buildTable(items);
     return table
-      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows, tableColumnOrigins: table.columnOrigins }
+      ? { kind: StructuredNodeKind.ARRAY_TABLE, items, tableColumns: table.columns, tableRows: table.rows, tableColumnOrigins: table.columnOrigins, tableEmptyColumns: table.emptyColumns }
       : { kind: StructuredNodeKind.ARRAY, items };
   }
 
@@ -129,19 +129,19 @@ export class StructuredReadOnlyFieldService {
       });
     });
 
-    // A column no row fills is not drawn. A product's variants carry fourteen keys and fill six of
-    // them, so eight columns said "not recorded" four times each — noise standing where a value would
-    // be. Nothing is hidden by this: an empty column has nothing in it, and the section's sheet still
-    // holds every key, filled or not.
+    // Which columns no row fills. A value nobody has recorded is NOISE in a column nobody asked for —
+    // a product's variants carry fourteen keys and an arbitrary payload has more — so a table the
+    // framework arranged by itself leaves those out. A table whose field DECLARED its columns keeps
+    // them all: there the empty column is the answer to a question the operator asked ("which of these
+    // has no picture, which has no stock"), and dropping it hides the very thing they came to see.
+    // Who decides is {@link StructuredReadOnlyTableService.columnsFor}; this only says which are empty.
     const holdsSomething = (node?: IStructuredNode): boolean => {
       if (!node || node.kind === StructuredNodeKind.EMPTY) return false;
       // A blank string is no value either, however it was stored.
       if (node.kind === StructuredNodeKind.SCALAR) return String(node.scalarValue ?? '').trim() !== '';
       return true;
     };
-    const filled = columns.filter((column) => items.some((item) => holdsSomething(item.entries?.find((entry) => entry.key === column)?.node)));
-    columns.length = 0;
-    columns.push(...filled);
+    const empty = columns.filter((column) => !items.some((item) => holdsSomething(item.entries?.find((entry) => entry.key === column)?.node)));
 
     const rows = items.map((item) => {
       const row: Record<string, IStructuredNode> = {};
@@ -152,7 +152,7 @@ export class StructuredReadOnlyFieldService {
       return row;
     });
 
-    return StructuredTableSplitService.split(items, columns, rows);
+    return { ...StructuredTableSplitService.split(items, columns, rows), emptyColumns: empty };
   }
 
   /** Top-level key/item count — the "(n keys)" a group label shows. */

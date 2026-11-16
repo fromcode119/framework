@@ -1557,6 +1557,31 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   padding-block: 10px;
 }
 .fc-sro-table__search { width: 240px; }
+/* In the section's head the toolbar is one of the head's own controls, so it takes no room of its own. */
+.fc-record-card__aside > .fc-sro-table__tools { padding-block: 0; }
+/* The line that closes the table: how much of it is on screen, and the way to the rest. */
+.fc-sro-table__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 14px;
+  border-top: var(--fc-record-rule);
+}
+.fc-sro-table__pager { display: inline-flex; align-items: center; gap: 8px; }
+.fc-sro-table__pages { font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
+.fc-sro-table__page {
+  height: var(--fc-control-h);
+  padding-inline: 10px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface);
+  font-size: 12px;
+  color: var(--fc-text);
+  cursor: pointer;
+}
+.fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
+.fc-sro-table__page:disabled { color: var(--fc-text-muted); cursor: default; }
 .fc-sro-table__sort {
   display: inline-flex;
   align-items: center;
@@ -1569,15 +1594,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   white-space: nowrap;
 }
 .fc-sro-table__sort:hover { color: var(--fc-text); }
-/* The table says its own size on a line that closes it, the way the rules between its rows open it. */
-.fc-sro-table__count {
-  margin: 0;
-  padding-block: 14px;
-  border-top: var(--fc-record-rule);
-  font-size: 12px;
-  color: var(--fc-text-muted);
-  font-variant-numeric: tabular-nums;
-}
+/* The table says its own size on the line that closes it. */
+.fc-sro-table__count { font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
 .fc-sro-table table { width: 100%; border-collapse: collapse; }
 /* The head of a table is a BAND, not a line of small grey words: it is what tells the eye where the
    table starts and holds the names the rows are read against. Measured against the same table in the
@@ -1627,6 +1645,15 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 /* A picture in a table cell IS the cell: a label/value row prints the thumbnail and its address, because
    there the address is the value, but down a column that address is the same noise on every row. */
+/* A column of pictures keeps its width and its frame on every row: the empty frame says this variant
+   has no picture, where a blank cell reads as a column that failed to draw. */
+.fc-sro-table__media-cell { width: 1%; padding-inline-end: 16px; }
+.fc-sro-table__thumb--none {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fc-text-muted);
+}
 .fc-sro-table__thumb {
   display: block;
   width: 32px;

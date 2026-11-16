@@ -36,9 +36,13 @@ export class StructuredReadOnlyTableService {
    */
   static columnsFor(node: IStructuredNode, declared?: readonly string[]): string[] {
     const present = node.tableColumns ?? [];
-    if (!declared?.length) return present;
+    // Nobody declared anything: the framework arranged this table by itself, so a column no row fills
+    // is left out — it is a key of the payload, not a question anyone asked.
+    const empty = node.tableEmptyColumns ?? [];
+    if (!declared?.length) return present.filter((column) => !empty.includes(column));
     // A column that was split into one per key answers to the name the field asked for: a field that
-    // declared `options` gets the columns `options` became, in the place it put them.
+    // declared `options` gets the columns `options` became, in the place it put them. A declared column
+    // is drawn whether or not a row fills it: "no picture on any of them" is an answer, not an absence.
     const origins = node.tableColumnOrigins ?? {};
     const picked: string[] = [];
     for (const column of declared) {

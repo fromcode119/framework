@@ -571,7 +571,11 @@
       "more": "Още {{count}} стойности под тези — напишете ключ горе, за да намерите стойност.",
       "empty": "Още няма записано.",
       "noMatch": "Нищо не съвпада с филтъра.",
-      "tableRange": "{{from}} — {{to}} от {{total}}"
+      "tableRange": "{{from}} — {{to}} от {{total}}",
+      "noImage": "Няма снимка",
+      "tablePages": "страница {{page}} от {{pages}}",
+      "tablePrev": "Назад",
+      "tableNext": "Напред"
     },
     "address": {
       "recipient": "Име на получателя",
