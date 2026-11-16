@@ -70,7 +70,7 @@
 
 /* ── Section card: title, one line under it, then its rows edge to edge ───────────────────────── */
 .fc-card__head { margin-bottom: 12px; }
-.fc-card__title { margin: 0; font-size: var(--fc-settings-title); font-weight: 600; letter-spacing: -0.01em; color: var(--card-foreground); }
+.fc-card__title { margin: 0; font-size: var(--fc-settings-title); font-weight: var(--fc-weight-strong); letter-spacing: -0.01em; color: var(--card-foreground); }
 .fc-card__desc { margin: 2px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
 .fc-surface:has(> .fc-settings-row) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
 .fc-surface:has(> .fc-settings-row) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); }

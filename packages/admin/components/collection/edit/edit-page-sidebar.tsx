@@ -177,7 +177,7 @@ export class EditPageSidebar extends PureReactor {
                 {AdminI18n.t('ui.permalink.disable')}
               </button>
             )}
-            <p className="mt-3 text-[12px] text-slate-400 font-medium leading-relaxed">
+            <p className="mt-3 text-[12px] text-slate-400 font-medium">
               {AdminI18n.t('collection.edit.permalinkHint')}
             </p>
           </Card>

@@ -912,7 +912,7 @@ html.dark {
 .fc-record-part__title--link:hover { text-decoration: underline; }
 .fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: var(--fc-text-xs); font-weight: var(--fc-weight-strong); line-height: var(--fc-leading); background: var(--fc-surface-muted); color: var(--fc-text-muted); }
 .fc-record-part__meta { font-size: 12px; color: var(--fc-text-muted); }
-.fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fc-text); }
+.fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: var(--fc-weight-strong); font-variant-numeric: tabular-nums; color: var(--fc-text); }
 .fc-record-part__action { position: relative; flex: none; width: var(--fc-control-h); height: var(--fc-control-h); display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
 .fc-record-part__action::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-part__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
