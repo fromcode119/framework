@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.593] - 2026-11-16
+
+### Added
+
+- **admin**: record tables arranged from their values, named from the dictionary ([#1488](https://github.com/fromcode119/framework/pull/1488))
+- **admin**: a declared column is drawn, and the table carries its head and its foot ([#1487](https://github.com/fromcode119/framework/pull/1487))
+
 ## [0.2.592] - 2026-11-16
 
 ### Added
