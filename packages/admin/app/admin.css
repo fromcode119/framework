@@ -1704,12 +1704,18 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   cursor: pointer;
 }
 .fc-chip__remove:hover { background: var(--fc-surface); color: var(--fc-text); }
+/* A chip carries a VALUE — a variant's size, a tag, a recipient — so it is read at the strength of the
+   text beside it. It used to be muted grey on near-white with no edge: in a table the size of a variant
+   came out fainter than the article number next to it, which is the wrong way round, and without an edge
+   it hardly read as a chip at all. */
 .fc-chip {
   padding: 1px 7px;
-  border-radius: 4px;
+  border: 1px solid var(--fc-border);
+  border-radius: 6px;
   background: var(--fc-surface-muted);
-  color: var(--fc-text-muted);
+  color: var(--fc-text);
   font-size: 12px;
+  font-weight: var(--fc-weight-strong);
   line-height: 18px;
   white-space: nowrap;
 }
