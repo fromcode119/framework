@@ -14,12 +14,14 @@ describe('UiFieldUtils — one field size', () => {
     const md = UiFieldUtils.getFieldClasses(FieldSize.MD);
     expect(UiFieldUtils.getFieldClasses(FieldSize.SM)).toBe(md);
     expect(UiFieldUtils.getFieldClasses(FieldSize.LG)).toBe(md);
-    expect(heightOf(md)).toEqual(['h-10']);
+    // The height itself is `--fc-field-h` in admin.css — one place, so a field and the button beside
+    // it cannot drift apart the way a literal `h-10` here and a token there always eventually do.
+    expect(heightOf(md)).toEqual(['h-[var(--fc-field-h)]']);
   });
 
   it('drops a caller height or text size meant for a line of text', () => {
     const classes = UiFieldUtils.getFieldClasses(FieldSize.MD, 'h-9 sm:h-[34px] text-[12px] text-sm ps-8');
-    expect(heightOf(classes)).toEqual(['h-10']);
+    expect(heightOf(classes)).toEqual(['h-[var(--fc-field-h)]']);
     // The size itself is the `fc-field` token in admin.css — one place, not a utility on every field.
     expect(textSizeOf(classes)).toEqual([]);
     expect(classes.split(' ')).toContain('fc-field');

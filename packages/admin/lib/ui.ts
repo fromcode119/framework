@@ -17,8 +17,10 @@ export class UiFieldUtils {
     shadowFocus: 'ring-4 ring-indigo-500/10',
   };
 
-  private static readonly ONE_SIZE_LAYOUT = 'py-2 px-3.5 h-10 leading-none';
-  private static readonly ONE_SIZE_CONTAINER = 'min-h-[var(--fc-field-h)] py-2 px-3.5 leading-none';
+  /* The height comes from the token, never from a Tailwind step beside it: `h-10` here and
+     `--fc-field-h` there is how the two drift apart the moment one of them is changed. */
+  private static readonly ONE_SIZE_LAYOUT = 'py-1.5 px-3 h-[var(--fc-field-h)] leading-none';
+  private static readonly ONE_SIZE_CONTAINER = 'min-h-[var(--fc-field-h)] py-1.5 px-3 leading-none';
 
   static readonly FIELD = {
     base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} fc-field ${UiFieldUtils.COMMON.shadow}`,
