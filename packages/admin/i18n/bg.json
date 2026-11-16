@@ -575,7 +575,9 @@
       "noImage": "Няма снимка",
       "tablePages": "страница {{page}} от {{pages}}",
       "tablePrev": "Назад",
-      "tableNext": "Напред"
+      "tableNext": "Напред",
+      "filterClear": "Премахни филтъра",
+      "filterClearAll": "Изчисти всички"
     },
     "address": {
       "recipient": "Име на получателя",

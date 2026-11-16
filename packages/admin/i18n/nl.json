@@ -538,7 +538,9 @@
       "noImage": "No picture",
       "tablePages": "page {{page}} of {{pages}}",
       "tablePrev": "Previous",
-      "tableNext": "Next"
+      "tableNext": "Next",
+      "filterClear": "Remove filter",
+      "filterClearAll": "Clear all"
     },
     "address": {
       "recipient": "Naam ontvanger",
