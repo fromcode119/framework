@@ -4,6 +4,7 @@ import { CollectionListLayout } from '@/components/collection/list/collection-li
 import { CollectionListMediaCellValue } from '@/components/collection/list/view/media-cell-value.client';
 import { MediaRelationFieldUtils } from '@/components/collection/media-relation-field-utils';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -79,7 +80,7 @@ export class CollectionListCard extends PureReactor {
             <Checkbox checked={this.selected} presentational />
           </button>
           {this.handle ? <div className="shrink-0 self-start">{this.handle}</div> : null}
-          {hasMedia ? <div className="shrink-0"><CollectionListMediaCellValue raw={row[layout.mediaField]} thumbnail /></div> : null}
+          {hasMedia ? <div className="shrink-0"><CollectionListMediaCellValue raw={row[layout.mediaField]} thumbnail /></div> : layout.mediaField ? <span title={AdminI18n.t('ui.structured.noImage')} className="w-14 h-14 rounded-lg shrink-0 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400"><FrameworkIcons.Image size={16} /></span> : null}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
