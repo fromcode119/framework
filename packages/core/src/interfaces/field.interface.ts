@@ -188,5 +188,32 @@ export interface IField {
     section?: string;
     /** `section` as declared, before translation; set by the schema localizer. Names the section's slots. */
     sectionKey?: string;
+    /**
+     * The section this field sits in is drawn across the whole form instead of sharing the two columns
+     * (`full`): for a value whose control needs the width — a list of rows, a block document.
+     */
+    sectionLayout?: string;
+    /**
+     * This field's `component` IS how the value reads on a saved record, not a control behind Edit.
+     *
+     * The console decides for itself whether a field is read as a value or drawn by its own component,
+     * and it is right for nearly every field; a plugin whose component already presents the value — a
+     * block editor, a list of rows — says so here. Without it such a field is read as data, which for
+     * a `json` array means the card prints the array's indices.
+     */
+    inPlace?: boolean;
+    /**
+     * How a list of rows is laid out: `table` names the columns once in a header and gives each row one
+     * line; left out, the rows stack as cards, which is what a reorderable list wants.
+     */
+    layout?: string;
+    /**
+     * The shape a text value must have for the runtime to use it, as a regular expression, with
+     * `patternNote` the words shown under the box when it does not. It never blocks typing or saving —
+     * it states what will happen, which is the whole reason a field can say this instead of a plugin
+     * drawing its own control to print one warning.
+     */
+    pattern?: string;
+    patternNote?: string;
   };
 }
