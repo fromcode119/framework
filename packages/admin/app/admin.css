@@ -32,7 +32,10 @@
   /* The height of a control that stands beside FIELDS — an input, a stepper, a button in a form row.
      Its compact counterpart is --fc-control-h, for a card's head and the controls among read values.
      Two heights, each with a job; a screen that invents a third is the defect this token exists for. */
-  --fc-field-h: 40px;
+  /* 32px, the height of a console control. At 40 every field, select and button in the admin stood a
+     quarter taller than the record page it sits on — measured against the console this one is held to,
+     whose fields are 32 and whose buttons are 28. A form of eight fields spent 64px on nothing. */
+  --fc-field-h: 32px;
   --fc-field-text: 12px;
   /* The console's text scale, so that a plugin drawing on a record uses the console's sizes instead of
      inventing its own. An order page carried ELEVEN sizes — 9, 9.5, 10, 11, 11.5, 12, 12.5, 13, 14, 16,

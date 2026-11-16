@@ -83,7 +83,7 @@ export class FilterPanel extends PureReactor {
             <button
               type="button"
               onClick={this.onClose}
-              className="w-full h-10 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
+              className="w-full h-[var(--fc-field-h)] rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
             >
               <FrameworkIcons.Check size={15} />
               {AdminI18n.t('ui.listToolbar.showResults', { count: this.total })}

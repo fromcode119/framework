@@ -24,7 +24,7 @@ export class BooleanToggleField extends PureReactor {
     const isDark = theme === ThemeMode.DARK;
     return (
       <div
-        className={`flex h-10 w-full items-center justify-between gap-3 rounded-lg border px-3 transition-colors ${
+        className={`flex h-[var(--fc-field-h)] w-full items-center justify-between gap-3 rounded-lg border px-3 transition-colors ${
           isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white'
         } ${disabled ? 'opacity-70' : ''}`}
       >
