@@ -533,7 +533,8 @@
       "filter": "Φιλτράρισμα κατά κλειδί…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Δεν έχει καταγραφεί τίποτα ακόμη.",
-      "noMatch": "Τίποτα δεν ταιριάζει με αυτό το φίλτρο."
+      "noMatch": "Τίποτα δεν ταιριάζει με αυτό το φίλτρο.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Όνομα παραλήπτη",

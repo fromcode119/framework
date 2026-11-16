@@ -533,7 +533,8 @@
       "filter": "Filtrovat podle klíče…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Zatím nic nezaznamenáno.",
-      "noMatch": "Filtru nic neodpovídá."
+      "noMatch": "Filtru nic neodpovídá.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Jméno příjemce",

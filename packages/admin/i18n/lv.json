@@ -533,7 +533,8 @@
       "filter": "Filtrēt pēc atslēgas…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Vēl nekas nav reģistrēts.",
-      "noMatch": "Filtram nekas neatbilst."
+      "noMatch": "Filtram nekas neatbilst.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Saņēmēja vārds",

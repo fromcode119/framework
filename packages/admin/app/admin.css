@@ -1593,13 +1593,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   border-radius: var(--fc-control-radius);
   color: var(--fc-text-muted);
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 120ms ease, background-color 120ms ease;
+  transition: color 120ms ease, background-color 120ms ease;
 }
-.fc-sro-table tr:hover .fc-sro-table__menu,
-.fc-sro-table__menu:focus-visible { opacity: 1; }
 .fc-sro-table__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-@media (hover: none) { .fc-sro-table__menu { opacity: 1; } }
 /* What a value will do, said where it is typed: a link no player accepts, a code no courier takes.
    Not an error — the value is kept and saved — so it is said in the muted voice, not in red. */
 .fc-field-note { margin: 4px 0 0; font-size: var(--fc-label-text); color: var(--fc-text-muted); }

@@ -533,7 +533,8 @@
       "filter": "Filtrați după cheie…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Nimic înregistrat încă.",
-      "noMatch": "Nimic nu corespunde acestui filtru."
+      "noMatch": "Nimic nu corespunde acestui filtru.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Numele destinatarului",

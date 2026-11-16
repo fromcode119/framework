@@ -533,7 +533,8 @@
       "filter": "Фільтр за ключем…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ще нічого не записано.",
-      "noMatch": "Нічого не відповідає фільтру."
+      "noMatch": "Нічого не відповідає фільтру.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Ім’я одержувача",

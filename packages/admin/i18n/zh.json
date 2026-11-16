@@ -533,7 +533,8 @@
       "filter": "按键筛选…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "暂无记录。",
-      "noMatch": "没有符合筛选条件的内容。"
+      "noMatch": "没有符合筛选条件的内容。",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "收件人姓名",

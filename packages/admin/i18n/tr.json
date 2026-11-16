@@ -533,7 +533,8 @@
       "filter": "Anahtara göre filtrele…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Henüz kayıt yok.",
-      "noMatch": "Bu filtreyle eşleşen bir şey yok."
+      "noMatch": "Bu filtreyle eşleşen bir şey yok.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Alıcı adı",

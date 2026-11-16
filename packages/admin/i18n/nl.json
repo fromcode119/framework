@@ -533,7 +533,8 @@
       "filter": "Filteren op sleutel…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Nog niets vastgelegd.",
-      "noMatch": "Niets komt overeen met dat filter."
+      "noMatch": "Niets komt overeen met dat filter.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Naam ontvanger",

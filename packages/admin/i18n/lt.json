@@ -533,7 +533,8 @@
       "filter": "Filtruoti pagal raktą…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Kol kas nieko neužfiksuota.",
-      "noMatch": "Pagal šį filtrą nieko nerasta."
+      "noMatch": "Pagal šį filtrą nieko nerasta.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Gavėjo vardas",

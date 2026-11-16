@@ -533,7 +533,8 @@
       "filter": "Tapis mengikut kunci…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Belum ada apa-apa direkodkan.",
-      "noMatch": "Tiada yang sepadan dengan penapis itu."
+      "noMatch": "Tiada yang sepadan dengan penapis itu.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Nama penerima",

@@ -533,7 +533,8 @@
       "filter": "Филтрирај по клуч…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Сè уште нема ништо запишано.",
-      "noMatch": "Ништо не одговара на тој филтер."
+      "noMatch": "Ништо не одговара на тој филтер.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Име на примач",

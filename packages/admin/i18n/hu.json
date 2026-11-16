@@ -533,7 +533,8 @@
       "filter": "Szűrés kulcs szerint…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Még nincs rögzítve semmi.",
-      "noMatch": "Nincs a szűrőnek megfelelő találat."
+      "noMatch": "Nincs a szűrőnek megfelelő találat.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Címzett neve",

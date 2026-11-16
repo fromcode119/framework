@@ -533,7 +533,8 @@
       "filter": "Scag de réir eochrach…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Níl aon rud taifeadta fós.",
-      "noMatch": "Níl aon rud a mheaitseálann an scagaire sin."
+      "noMatch": "Níl aon rud a mheaitseálann an scagaire sin.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Ainm an fhaighteora",

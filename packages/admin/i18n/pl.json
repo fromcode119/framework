@@ -533,7 +533,8 @@
       "filter": "Filtruj według klucza…",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Nic jeszcze nie zapisano.",
-      "noMatch": "Nic nie pasuje do tego filtra."
+      "noMatch": "Nic nie pasuje do tego filtra.",
+      "tableRange": "{{from}} — {{to}} of {{total}}"
     },
     "address": {
       "recipient": "Nazwa odbiorcy",
