@@ -845,6 +845,28 @@ html.dark {
 .fc-copy-value__button::before { content: ''; position: absolute; inset: -6px; }
 .fc-copy-value__button:hover { color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+/* The record's name is the HEAD of the card that follows it, not a card of its own.
+ *
+ * It had its own card: 115px of border, shadow and padding whose whole content was the name, one
+ * summary line and the record's ⋯ — and then a 12px gutter before the first thing the record
+ * actually says. Measured on a product page, the first row of data began 257px down the screen
+ * where Medusa's began at 125. Joined, the two read as one card with a title, which is how every
+ * record page worth copying draws it, and the record starts where the reader is already looking.
+ *
+ * The section under it keeps its own heading and its own ⋯: our record ⋯ acts on the record and the
+ * section's acts on that section, so collapsing them would take one of the two away. */
+.fc-edit-column > .fc-record-head:has(+ .fc-record-card) {
+  margin-bottom: calc(-1 * var(--fc-record-gap));
+  padding: 16px var(--fc-card-pad-x);
+  border-bottom: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+.fc-edit-column > .fc-record-head + .fc-record-card {
+  border-top: 1px solid var(--fc-border);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
 .fc-record-head__main { flex: 1 1 16rem; min-width: 0; display: grid; gap: 2px; }
 /* On a phone the actions stay beside the title, at its top, instead of taking a row of their own. */
 /* On a phone the number and date take the whole line; the states and ⋯ follow on a row of their own. */
