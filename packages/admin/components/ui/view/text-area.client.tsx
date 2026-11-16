@@ -40,7 +40,10 @@ export class TextArea extends PureReactor {
         <textarea
           {...props}
           value={value}
-          className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
+          /* Two rows to start, and it grows with what is in it (`fc-textarea`, which carries
+             `field-sizing: content`). A flat 100px box held one line of text in the height of eight:
+             on a 519px dialog the two description fields alone were 200px of blank. */
+          className={`${UiFieldUtils.getFieldClasses(size, `fc-textarea resize-y h-auto min-h-[56px] ${inputClassName}`)}
             ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
         />
         {error && (
