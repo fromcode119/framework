@@ -9,8 +9,9 @@ import { ExtensionTrees } from './cli/extension-trees';
  *
  * Such a field renders as `JSON.stringify` in a textarea. Asking an operator to hand-edit a blob is
  * the same failure as a half-wired field: the control does not do what it implies. Every json field
- * resolves to a real control (`admin.component`), a read-only display (`StructuredReadOnlyField` with
- * an `admin.description` naming who writes it), or deletion.
+ * resolves to a real control — its own `admin.component`, or declared `fields` which the framework
+ * draws as rows — a read-only display (`StructuredReadOnlyField` with an `admin.description` naming
+ * who writes it), or deletion.
  *
  * `admin.hidden` is NOT a resolution. A hidden value still ships and still drives behaviour with no
  * control anyone can point at, which is the Rule Zero violation the whole rule exists to prevent.
@@ -57,8 +58,13 @@ export class JsonFieldControlGuard {
   private static verdict(block: string): string | null {
     if (/hidden:\s*true/.test(block)) return 'hidden — Rule Zero violation, the operator cannot see it';
 
+    // A field that DECLARES its sub-fields already says what it holds, and the framework draws it as
+    // rows — so it needs no component, and demanding one is what pushed plugins into writing a control
+    // per list (videos, specifications, prices-per-currency) when none of them had a shape of its own.
+    if (/\bfields:\s*\[/.test(block)) return null;
+
     const component = (block.match(/component:\s*['"]([^'"]+)['"]/) ?? [])[1] ?? '';
-    if (!component) return 'no admin.component — renders a raw JSON textarea';
+    if (!component) return 'no admin.component and no declared fields — renders a raw JSON textarea';
 
     if (component === 'StructuredReadOnlyField' && !/description:\s*['"`]/.test(block)) {
       return 'display without admin.description naming who writes it';

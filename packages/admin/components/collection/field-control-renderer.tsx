@@ -14,6 +14,7 @@ import { TagFieldLocal } from '@/components/collection/view/tag-field-local.clie
 import { RelationshipSelectLocal } from '@/components/collection/view/relationship-select-local.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
+import { FieldRowListService } from '@/components/collection/field-row-list-service';
 import { PermalinkField } from '@/components/ui/view/permalink-field.client';
 import { FieldCustomComponent } from '@/components/collection/field-custom-component';
 import { FieldSelectControl } from '@/components/collection/field-select-control';
@@ -149,7 +150,7 @@ export class FieldControlRenderer extends PureReactor {
           localeSwitcher={localeSwitcher}
           wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
         />
-      ) : field.type === 'json' ? (
+      ) : field.type === 'json' && !FieldRowListService.isRowList(field) ? (
         <FieldTextualControl
           resolvedFieldDescription={resolvedFieldDescription}
           kind={TextualFieldKind.JSON}
@@ -165,11 +166,12 @@ export class FieldControlRenderer extends PureReactor {
           localeSwitcher={localeSwitcher}
           wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
         />
-      ) : field.type === 'array' ? (
+      ) : field.type === 'array' || FieldRowListService.isRowList(field) ? (
+        /* Declared sub-fields mean rows, json or array alike — see FieldRowListService. */
         wrapWithReadOnlyOverride(
           <ArrayField
             field={field}
-            value={currentValue}
+            value={FieldRowListService.rowsOf(currentValue)}
             onChange={updateValue}
             theme={theme}
             collectionSlug={collectionSlug}

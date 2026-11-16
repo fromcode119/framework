@@ -10,6 +10,7 @@ import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.cl
 import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { RelationshipSelectLocal } from '@/components/collection/view/relationship-select-local.client';
 import { TagFieldLocal } from '@/components/collection/view/tag-field-local.client';
+import { FieldPatternService } from '@/components/collection/field-pattern-service';
 
 /**
  * Resolves the correct admin control for a single array sub-field, mirroring the
@@ -160,12 +161,16 @@ export class ArrayFieldRowRenderer extends PureReactor {
       );
     }
 
+    const patternNote = FieldPatternService.noteFor(f, val);
     return (
-      <Input
-        {...fieldProps}
-        type="text"
-        size={FieldSize.SM}
-      />
+      <>
+        <Input
+          {...fieldProps}
+          type="text"
+          size={FieldSize.SM}
+        />
+        {patternNote ? <p className="fc-field-note">{patternNote}</p> : null}
+      </>
     );
   }
 }

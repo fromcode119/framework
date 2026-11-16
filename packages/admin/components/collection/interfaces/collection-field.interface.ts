@@ -15,6 +15,14 @@ export interface ICollectionField {
   options?: { label: string; value: any }[];
   relationTo?: string | string[];
   hasMany?: boolean;
+  /**
+   * The sub-fields of one ROW, for a field that holds a list of them.
+   *
+   * `array` has always meant this. A `json` field that declares them means the same thing and is drawn
+   * the same way — which is what stops a plugin from writing a control per list. Each sub-field is an
+   * ordinary field: text, number, select, boolean or relationship, with its own label and admin options.
+   */
+  fields?: ICollectionField[];
   admin?: {
     component?: string;
     handlesLocalization?: boolean;
@@ -58,6 +66,19 @@ export interface ICollectionField {
     hideLabel?: boolean;
     position?: FieldPosition;
     description?: string;
+    /**
+     * How a list of rows is laid out: `table` names the columns once in a header and gives each row one
+     * line; left out, the rows stack as cards, which is what a reorderable list wants.
+     */
+    layout?: string;
+    /**
+     * The shape a text value must have for the runtime to use it, as a regular expression, with
+     * `patternNote` the words shown under the box when it does not. It never blocks typing or saving —
+     * it states what will happen, which is the whole reason a field can say this instead of a plugin
+     * drawing its own control to print one warning. See `FieldPatternService`.
+     */
+    pattern?: string;
+    patternNote?: string;
     sourceCollection?: string;
     sourceField?: string;
     autofill?: Record<string, string | readonly string[]>;
