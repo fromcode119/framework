@@ -4830,5 +4830,11 @@
         "description": "Vaše spletno mesto ali storitev ne deluje ali je v slabem stanju, in ko se obnovi."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

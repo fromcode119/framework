@@ -4830,5 +4830,11 @@
         "description": "Your site or a service is down or unhealthy, and when it recovers."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

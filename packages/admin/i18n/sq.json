@@ -4830,5 +4830,11 @@
         "description": "Faqja juaj ose një shërbim është jashtë funksionit ose në gjendje të keqe, dhe kur rikuperohet."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

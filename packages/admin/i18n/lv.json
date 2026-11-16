@@ -4830,5 +4830,11 @@
         "description": "Jūsu vietne vai pakalpojums nedarbojas vai darbojas kļūdaini, kā arī kad tas atjaunojas."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

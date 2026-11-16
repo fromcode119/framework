@@ -4830,5 +4830,11 @@
         "description": "Down o hindi maayos ang iyong site o isang serbisyo, at kapag bumalik na ito."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

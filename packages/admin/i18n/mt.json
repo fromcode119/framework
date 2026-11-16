@@ -4830,5 +4830,11 @@
         "description": "Is-sit tiegħek jew servizz mhuwiex qed jaħdem jew mhuwiex f'saħħtu, u meta jirkupra."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

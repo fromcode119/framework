@@ -4830,5 +4830,11 @@
         "description": "Váš web alebo služba nefunguje alebo má problémy, a keď sa obnoví."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

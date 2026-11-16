@@ -4830,5 +4830,11 @@
         "description": "Site-ul tău sau un serviciu este oprit sau nefuncțional, și când își revine."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

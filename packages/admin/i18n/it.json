@@ -4830,5 +4830,11 @@
         "description": "Il tuo sito o un servizio non è raggiungibile o non funziona correttamente, e quando torna operativo."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

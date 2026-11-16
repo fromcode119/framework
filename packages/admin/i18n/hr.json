@@ -4830,5 +4830,11 @@
         "description": "Vaša stranica ili usluga ne radi ili je u lošem stanju, kao i kada se oporavi."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

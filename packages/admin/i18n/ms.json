@@ -4830,5 +4830,11 @@
         "description": "Tapak atau perkhidmatan anda tidak berfungsi atau bermasalah, dan apabila ia pulih."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

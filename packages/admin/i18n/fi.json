@@ -4830,5 +4830,11 @@
         "description": "Sivustosi tai palvelu on alhaalla tai toimii huonosti, sekä kun se palautuu."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

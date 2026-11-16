@@ -4830,5 +4830,11 @@
         "description": "Je site of een dienst is offline of werkt niet goed, en wanneer dit is hersteld."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

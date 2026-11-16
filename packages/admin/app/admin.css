@@ -1659,6 +1659,45 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    product comes in, and a sentence hides that. The chip is the console's quietest label — no colour,
    because colour on this page means state and nothing else. */
 .fc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+/* The same chip, inside a control that is typed into. The box is a field: it takes the field's own
+   height as a MINIMUM and grows with its rows, because a list of values is not a line of text. */
+.fc-chip-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--fc-field-h);
+  padding: 4px 8px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--radius);
+  background: var(--fc-surface);
+  cursor: text;
+}
+.fc-chip-input:focus-within { border-color: var(--fc-brand); box-shadow: 0 0 0 4px var(--fc-brand-soft, rgb(99 102 241 / 0.1)); }
+.fc-chip-input--locked { background: var(--fc-surface-muted); cursor: default; }
+.fc-chip-input__entry {
+  flex: 1 1 6ch;
+  min-width: 6ch;
+  border: 0;
+  outline: none;
+  background: none;
+  font-size: var(--fc-field-text);
+  color: var(--fc-text);
+}
+.fc-chip--removable { display: inline-flex; align-items: center; gap: 4px; padding-inline-end: 3px; }
+.fc-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--fc-text-muted);
+  cursor: pointer;
+}
+.fc-chip__remove:hover { background: var(--fc-surface); color: var(--fc-text); }
 .fc-chip {
   padding: 1px 7px;
   border-radius: 4px;

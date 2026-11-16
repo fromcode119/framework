@@ -8,6 +8,7 @@ import { PersonFieldPicker } from '@/components/collection/fields/view/person-fi
 import { PersonField } from '@/components/collection/fields/view/person-field.client';
 import { HtmlEditorField } from '@/components/collection/fields/view/html-editor-field.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
+import { ChipInputField } from '@/components/ui/view/chip-input-field.client';
 
 /**
  * Owns the framework's built-in collection field components and registers them into the live
@@ -23,6 +24,8 @@ export class AdminFieldComponentBootstrapService {
     CountryField,
     ThemeLayoutField,
     StructuredReadOnlyField,
+    // Several short values in one box — sizes, tags, the labels of a choice.
+    ChipInputField,
     AddressField,
     PersonField,
     // One of the site's person fields, by key — where a question's answer is saved.

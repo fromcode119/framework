@@ -4830,5 +4830,11 @@
         "description": "サイトまたはサービスが停止または不安定になったとき、および復旧したとき。"
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

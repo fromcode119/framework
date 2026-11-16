@@ -4830,5 +4830,11 @@
         "description": "האתר שלכם או שירות אינם זמינים או אינם תקינים, וגם כשהם חוזרים לפעול."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

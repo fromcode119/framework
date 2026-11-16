@@ -4830,5 +4830,11 @@
         "description": "موقعك أو إحدى الخدمات متوقفة أو غير سليمة، وعند عودتها للعمل."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }

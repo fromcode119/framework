@@ -4830,5 +4830,11 @@
         "description": "Tu sitio o un servicio está caído o en mal estado, y cuándo se recupera."
       }
     }
+  },
+  "fields": {
+    "chipInput": {
+      "placeholder": "Type and press Enter",
+      "remove": "Remove {{value}}"
+    }
   }
 }
