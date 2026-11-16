@@ -167,6 +167,21 @@ describe('RecordSectionCard', () => {
     mount({ formData: {}, section: { key: 'media', title: 'Media', fields: own } });
     expect(screen.queryByText('\u2013')).toBeNull();
   });
+
+  /** A handful of short values reads as chips, so four sizes are four things and not a sentence. */
+  it('reads a short list of values as chips', () => {
+    const list = [{ name: 'sizes', type: 'json', label: 'Sizes' }];
+    mount({ formData: { sizes: ['S', 'M', 'L', 'XL'] }, section: { key: 'sizes', title: 'Sizes', fields: list } });
+    ['S', 'M', 'L', 'XL'].forEach((size) => expect(screen.getByText(size)).toBeInTheDocument());
+  });
+
+  /** Above the limits it is not a handful of labels any more, and the table says more than chips would. */
+  it('leaves a long list to the table it already draws', () => {
+    const many = Array.from({ length: 13 }, (_, at) => `v${at}`);
+    const list = [{ name: 'sizes', type: 'json', label: 'Sizes' }];
+    mount({ formData: { sizes: many }, section: { key: 'sizes', title: 'Sizes', fields: list } });
+    expect(document.querySelector('.fc-chip')).toBeNull();
+  });
 });
 
 describe('RecordSectionFields', () => {
