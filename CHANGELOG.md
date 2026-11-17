@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.597] - 2026-11-17
+
+### Added
+
+- **admin**: a record page waits in its own shape instead of saying its fields are empty ([#1497](https://github.com/fromcode119/framework/pull/1497))
+
+### Fixed
+
+- **admin**: the loading shape draws cards, not bars on the page ([#1498](https://github.com/fromcode119/framework/pull/1498))
+
 ## [0.2.596] - 2026-11-17
 
 ### Added
