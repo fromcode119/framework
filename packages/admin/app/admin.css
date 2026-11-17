@@ -111,11 +111,18 @@
      corners on two things that both labelled a state. Change these three and the whole console moves. */
   /* The card: its corner and the room inside it, both measured on the record pages this one follows. */
   --fc-card-radius: 8px;
+  /* A card is lifted off the page by a shadow that CARRIES its 1px ring, the way the record pages
+     this console follows draw it — a flat border reads as a box drawn on the page rather than a card
+     standing on it. Measured from the target's own tokens. */
+  --fc-card-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 1px 2px -1px rgb(0 0 0 / .08), 0 2px 4px 0 rgb(0 0 0 / .04);
+  --fc-control-shadow: 0 1px 2px 0 rgb(0 0 0 / .12), 0 0 0 1px rgb(0 0 0 / .08);
   --fc-control-h: 28px;
   --fc-control-radius: 6px;
   --fc-control-text: 12px;
-  /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner. */
-  --fc-badge-h: 24px;
+  /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner.
+     20px, measured on the target, where every tag on a record is the same height as a line of its
+     own text plus its ring. Ours stood at 24 beside a 20px line and read as a button that failed. */
+  --fc-badge-h: 20px;
   --fc-card-pad-x: 24px;
   --fc-card-body-pad: 4px var(--fc-card-pad-x);
 
@@ -395,12 +402,13 @@ html.dark {
 
 .fc-surface {
   border-radius: var(--fc-card-radius);
-  /* The edge comes from the SAME token an appearance can repaint (--fc-border), not a literal — a
-     hardcoded #fff here made every top-level panel edgeless in light mode while nested ones (which
-     read var(--border) below) kept a real slate-200 edge, so cards looked inconsistently borderless. */
-  border: 1px solid var(--fc-border);
+  /* The ring is carried by the SHADOW, not by a border: measured on the record pages this console
+     follows, a card is a 1px ring at 8% black plus two soft drops, which lifts it off the page. A
+     flat 1px border draws a box ON the page instead, and it also ate a pixel of every card's inside.
+     The ring is still one token, so an appearance repaints it in one place. */
+  border: 0;
   background: var(--card);
-  box-shadow: var(--fc-elevation-surface);
+  box-shadow: var(--fc-card-shadow);
 }
 
 .dark .fc-surface,
@@ -1415,9 +1423,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
      starting at the midpoint. A narrow label column put every value hard against its label and left
      the right half of the card empty. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  /* 16 and 16, measured on the target: the halves stand apart and the row breathes. Ours was 12 and
+     14, which is a quarter tighter than the pages it is meant to read like. */
+  gap: 16px;
+  align-items: center;
   margin-inline: calc(-1 * var(--fc-card-pad-x));
-  padding: 14px var(--fc-card-pad-x);
+  padding: 16px var(--fc-card-pad-x);
   font-size: var(--fc-record-text);
   line-height: var(--fc-leading);
 }
@@ -1448,9 +1459,14 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-more__go { margin-inline-start: auto; }
 .fc-record-more__count { color: var(--fc-text-muted); white-space: nowrap; }
 .fc-record-more__go { flex: none; margin-inline-start: auto; color: var(--fc-text-muted); }
-.fc-record-card__label { color: var(--fc-text-muted); }
+/* The LABEL carries the weight and the value does not — measured 13/20 500 against 13/20 400, both
+   in the muted ink. Ours separated them by colour instead, which makes a card of facts read as a
+   list of answers with the questions faded out. A line the operator typed stays broken where they
+   broke it. */
+.fc-record-card__label { font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
 .fc-record-card__value {
   min-width: 0;
+  white-space: pre-line;
   color: var(--fc-text);
   overflow-wrap: anywhere;
   display: -webkit-box;
@@ -1545,7 +1561,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: inline-flex;
   align-items: center;
   min-height: var(--fc-badge-h);
-  padding: 0 8px;
+  padding: 0 4px;
   border: 1px solid transparent;
   border-radius: var(--fc-control-radius);
   font-size: var(--fc-control-text);
