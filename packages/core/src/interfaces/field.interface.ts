@@ -110,7 +110,7 @@ export interface IField {
     }[];
     /**
      * Where a row of a structured data table LEADS, as a path with `{key}` standing for that row's
-     * value of `key` — for example `/ecommerce/inventory?search={sku}`.
+     * value of `key` — for example `/<plugin>/<list>?search={sku}`.
      *
      * A row of a table is a thing in its own right, and the console used to offer only "edit this
      * field", which opened the whole field in a drawer: clicking a variant to change its stock

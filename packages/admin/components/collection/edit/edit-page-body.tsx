@@ -6,6 +6,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
+import { RecordDeclaredFields } from '@/components/collection/edit/record-declared-fields';
 import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
@@ -98,18 +99,7 @@ export class EditPageBody extends PureReactor {
       />
     ) : null;
 
-    /**
-     * Every field the COLLECTION declares — not every field this page happens to draw.
-     *
-     * It was the drawn ones, and that made the stored record accuse 65 keys on a product of having no
-     * field when most of them have one: `sku` and `slug` are edited on the page, they simply live in a
-     * section the operator had not opened. The record also writes keys of its own — `createdAt`, the
-     * built card and page, the last movement — which no form will ever own, and listing those as
-     * missing sends the operator looking for fields that must not exist.
-     */
-    const renderedFieldNames = ((collection as any)?.fields || [])
-      .map((field: any) => String(field?.name || ''))
-      .filter(Boolean);
+    const renderedFieldNames = RecordDeclaredFields.of(collection);
 
     return (
     <div className="flex-1 w-full">
