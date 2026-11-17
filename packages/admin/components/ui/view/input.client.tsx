@@ -44,7 +44,7 @@ export class Input extends PureReactor {
     const error = this.error;
 
     return (
-      <div className={`flex flex-col gap-1 w-full ${className}`}>
+      <div className={`fc-field-stack w-full ${className}`}>
         {this.label && <label className={UiFieldUtils.TEXT.LABEL}>{this.label}</label>}
         <input
           ref={this.elementRef}

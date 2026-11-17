@@ -198,7 +198,7 @@ export class Select extends Reactor {
     const showGroupHeaders = SelectUtils.showGroupHeaders(groupedFilteredOptions);
 
     return (
-    <div className={`flex flex-col gap-1 w-full ${className}`}>
+    <div className={`fc-field-stack w-full ${className}`}>
       {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
       <div className="relative w-full" ref={this.triggerRef}>
         <button

@@ -2220,7 +2220,37 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
  * over; it takes its own, on its own fields, and the two stop fighting inside one toolbar.
  * A switch keeps its round track: it is a rail with a knob running in it, and at 6px it stops
  * reading as one. That is the only control the console draws round. */
-.fc-field { border-radius: var(--fc-control-radius); }
+/* ---------- The field ----------
+   The whole control, drawn once: 32px tall, 6px corner, 13/20, filled with the quiet surface and
+   edged by the same shadow a button carries, so a field and a button in one row are the same object
+   seen twice. Focus states the field, it does not decorate it: the edge goes to the brand colour.
+   No flat border, no coloured halo, and no --radius — that one is the SITE's brand radius, replaced
+   at runtime, so the console's own fields changed shape with whichever site was open. */
+.fc-field {
+  height: var(--fc-field-h);
+  border: 0;
+  border-radius: var(--fc-control-radius);
+  padding: 6px 8px;
+  background: var(--fc-surface-muted);
+  color: var(--fc-text);
+  font-size: var(--fc-control-text);
+  line-height: 20px;
+  font-weight: 400;
+  box-shadow: var(--fc-control-shadow);
+  transition: box-shadow .15s ease, background-color .15s ease;
+}
+.fc-field::placeholder { color: var(--fc-text-muted); }
+.fc-field:hover:not(:disabled):not(:focus) { background: var(--fc-surface-hover, var(--fc-surface-muted)); }
+.fc-field:focus, .fc-field:focus-visible { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-field:disabled { color: var(--fc-text-muted); }
+/* A box of several lines is not a line: it keeps the height its own content needs. */
+textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
+
+/* A field's name, and the room between the two. 8px holds a label to its field; 32px between fields is
+   what keeps a long form readable as fields rather than as one grid of boxes. */
+.fc-field-label { display: flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-field-stack { display: flex; flex-direction: column; gap: 8px; }
+.fc-form-stack { display: flex; flex-direction: column; gap: 32px; }
 
 /* ---------- The button ----------
    A pressable thing is 28px tall, reads 13/20 and carries its 1px edge in the SHADOW, like the card.
@@ -2298,3 +2328,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-head__menu > svg, .fc-record-head__copy svg, .fc-record-part__action > svg,
 .fc-sro-table__menu > svg, .fc-sro-table__tool > svg { width: 15px; height: 15px; display: block; }
+
+/* 32px between one field and the next, as the dialogs this follows set it. 24 put a label close
+   enough to the field above it to read as that field's second line. */
+.fc-edit-fields__grid { row-gap: 32px; }
