@@ -11,6 +11,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 export class MoveDialog extends AdminComponent {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
@@ -109,9 +110,7 @@ export class MoveDialog extends AdminComponent {
                 <FrameworkIcons.Loader className="animate-spin text-indigo-500" size={24} />
               </div>
             ) : folders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-24 text-slate-500 text-sm">
-                <p>{AdminI18n.t('ui.move.empty')}</p>
-              </div>
+              <EmptyState inline title={AdminI18n.t('ui.move.empty')} />
             ) : (
               folders.map((folder) => (
                 <button

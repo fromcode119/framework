@@ -6,6 +6,7 @@ import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-tren
 import { DashboardActivityWindow } from '@/app/dashboard-activity-window';
 import { DashboardActivityBars } from '@/app/dashboard-activity-bars.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /**
  * Activity for the scope the console is in, in whichever of three forms the data can honestly
@@ -68,7 +69,7 @@ export class DashboardActivityChart extends PureReactor {
     if (window.isEmpty) {
       return (
         <Card title={AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
-          <p data-empty-state className="text-[12px] text-slate-500">{this.emptyCopy}</p>
+          <EmptyState inline title={this.emptyCopy} />
         </Card>
       );
     }

@@ -12,6 +12,7 @@ import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 export class ThemesMarketplacePage extends AdminComponent {
   private mounted = false;
@@ -104,13 +105,11 @@ export class ThemesMarketplacePage extends AdminComponent {
       <div className="w-full space-y-6 animate-in fade-in duration-500">
         <div className="w-full">
           {themes.length === 0 ? (
-            <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
-              <div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-3">
-                <FrameworkIcons.ShoppingBag size={24} className="text-slate-300 dark:text-slate-700" />
-              </div>
-              <h3 className={`text-base font-medium mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.marketplaceEmpty')}</h3>
-              <p className="text-slate-500 font-medium text-sm">{AdminI18n.t('themes.checkYourMarketplaceConnectionOr')}</p>
-            </div>
+            <EmptyState
+              icon={<FrameworkIcons.ShoppingBag size={22} />}
+              title={AdminI18n.t('themes.marketplaceEmpty')}
+              hint={AdminI18n.t('themes.checkYourMarketplaceConnectionOr')}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
               {themes.map(t => {

@@ -4,6 +4,7 @@ import { FrameworkIcons, PushDevice } from '@fromcode119/react';
 import { NotificationRow } from '@/app/components/view/notification-row.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /**
  * What the sidebar's notifications button opens: the list, newest first, with the on-this-device
@@ -32,10 +33,7 @@ export class NotificationPanel extends PureReactor {
 
   private get empty(): ReactNode {
     return (
-      <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
-        <FrameworkIcons.Bell size={26} className="text-slate-300 dark:text-slate-600" />
-        <p className="max-w-[16rem] text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">{AdminI18n.t('shell.notifications.empty')}</p>
-      </div>
+      <EmptyState icon={<FrameworkIcons.Bell size={22} />} title={AdminI18n.t('shell.notifications.empty')} />
     );
   }
 

@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { DataTableCard } from '@/components/ui/view/data-table-card.client';
 import { Column } from '@/components/ui/column';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /**
  * A {@link DataTable} below desktop width. Every plugin screen built on DataTable used to keep its table on
@@ -29,12 +30,7 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
 
   private renderEmpty(): ReactNode {
     return (
-      <div className="px-6 py-16 flex flex-col items-center text-center">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
-          <FrameworkIcons.Search size={20} className="text-slate-400" />
-        </div>
-        <p className="font-medium text-slate-400 text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
-      </div>
+      <EmptyState icon={<FrameworkIcons.Search size={22} />} title={this.emptyMessage ?? AdminI18n.t('ui.table.empty')} />
     );
   }
 
