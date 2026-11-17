@@ -69,13 +69,13 @@ export class PermalinkInput extends AdminComponent {
           className={`group relative min-h-[56px] px-3.5 py-2 rounded-lg border transition-all overflow-hidden ${
             disabled
               ? 'opacity-50 cursor-not-allowed'
-              : 'cursor-pointer hover:border-indigo-500/50 bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
+              : 'cursor-pointer hover:shadow-[var(--fc-control-shadow)] bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
           }`}
         >
           <div className="flex items-start justify-between gap-3 w-full">
              <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-[12px] text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
-                <span className={`text-[13px] font-medium break-all ${isCustomMode ? 'text-indigo-600' : 'text-slate-900 dark:text-white'}`}>
+                <span className={`text-[13px] font-medium break-all ${isCustomMode ? 'text-[color:var(--primary)]' : 'text-slate-900 dark:text-white'}`}>
                   {displayValue}{suffix}
                 </span>
              </div>
@@ -85,7 +85,7 @@ export class PermalinkInput extends AdminComponent {
                       {AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}
                    </div>
                 )}
-                <div className="text-slate-400 group-hover:text-indigo-500 transition-colors">
+                <div className="text-slate-400 group-hover:text-[color:var(--primary)] transition-colors">
                    <FrameworkIcons.Edit size={12} />
                 </div>
              </div>
@@ -122,7 +122,7 @@ export class PermalinkInput extends AdminComponent {
           }}
           className={`w-full rounded-lg border px-3 py-2 text-start text-[12px] font-medium transition-colors ${
             useAbsolutePath
-              ? 'border-indigo-500/40 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+              ? 'bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] text-[color:var(--primary)]'
               : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
           }`}
         >
@@ -132,7 +132,7 @@ export class PermalinkInput extends AdminComponent {
         </button>
 
         <div className="flex flex-col gap-2">
-          <div className={`${UiFieldUtils.getFieldClasses(FieldSize.MD, 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-2xl bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
+          <div className={`${UiFieldUtils.getFieldClasses(FieldSize.MD, 'ring-2 ring-[color:var(--primary)] bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
              <div className="flex items-center gap-1 text-[12px] font-medium text-slate-400 opacity-60 leading-none mb-1">
                 <FrameworkIcons.Layout size={10} />
                 <span className="truncate">{baseUrl}{useAbsolutePath ? '/' : finalPrefix}</span>

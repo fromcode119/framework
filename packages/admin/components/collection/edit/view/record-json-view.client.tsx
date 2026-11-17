@@ -40,12 +40,20 @@ export class RecordJsonView extends Reactor {
     }
   }
 
-  /** Keys on the record that no rendered field covers — the ones worth noticing. */
+  /**
+   * The record's own bookkeeping: written when it is created and when it is saved, by the platform and
+   * never by anyone at a keyboard. A form field for them would be a lie, so naming them as missing
+   * fields sent the operator looking for controls that must not exist.
+   */
+  private static readonly WRITTEN_BY_THE_RECORD = new Set(['id', 'createdat', 'updatedat', 'tenantid']);
+
+  /** Keys the collection declares no field for — the ones worth noticing. */
   private get unsurfacedKeys(): string[] {
-    const rendered = new Set((this.renderedFieldNames || []).map((name) => String(name).toLowerCase()));
+    const declared = new Set((this.renderedFieldNames || []).map((name) => String(name).toLowerCase()));
     return Object.keys(this.formData || {})
       .filter((key) => !key.startsWith('_'))
-      .filter((key) => !rendered.has(key.toLowerCase()))
+      .filter((key) => !declared.has(key.toLowerCase()))
+      .filter((key) => !RecordJsonView.WRITTEN_BY_THE_RECORD.has(key.toLowerCase()))
       .sort();
   }
 
@@ -145,7 +153,9 @@ export class RecordJsonView extends Reactor {
 
   render(): ReactNode {
     const unsurfaced = this.unsurfacedKeys;
-    const buttonClass = 'h-9 px-3 rounded-[var(--radius)] border border-slate-200 bg-white text-[12px] font-medium text-slate-600 transition-colors hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
+    // The console's button, like everything else that is pressed. It stood at 9 units tall with the
+    // SITE's brand radius, which is replaced at runtime, so these three changed shape per site.
+    const buttonClass = 'fc-btn';
 
     return (
       <div className="space-y-4">
@@ -171,7 +181,7 @@ export class RecordJsonView extends Reactor {
         </div>
 
         {unsurfaced.length > 0 && (
-          <div className="rounded-[var(--radius)] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
+          <div className="rounded-[var(--fc-control-radius)] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
             <p className="text-[12px] font-medium text-amber-700 dark:text-amber-400">
               {AdminI18n.t(unsurfaced.length === 1 ? 'collection.json.unsurfacedOne' : 'collection.json.unsurfacedMany', { count: unsurfaced.length })}
             </p>
@@ -180,7 +190,7 @@ export class RecordJsonView extends Reactor {
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {unsurfaced.map((key) => (
-                <span key={key} className="rounded-[var(--radius)] bg-white/70 px-2 py-1 font-mono text-[12px] text-amber-800 dark:bg-slate-900/60 dark:text-amber-300">
+                <span key={key} className="rounded-[var(--fc-control-radius)] bg-white/70 px-2 py-1 font-mono text-[12px] text-amber-800 dark:bg-slate-900/60 dark:text-amber-300">
                   {key}
                 </span>
               ))}
@@ -191,7 +201,7 @@ export class RecordJsonView extends Reactor {
         {/* Highlighted layer UNDER a transparent textarea: real editing (caret, selection, undo,
             IME) with colour. Both share identical font, padding and line-height, and scroll is
             synced — any mismatch shows up immediately as drifting text. */}
-        <div className={`relative rounded-[var(--radius)] border transition-colors ${
+        <div className={`relative rounded-[var(--fc-control-radius)] border transition-colors ${
           this.error
             ? 'border-rose-300 bg-rose-50/40 dark:border-rose-500/40 dark:bg-rose-500/5'
             : 'border-slate-200 bg-white focus-within:border-indigo-500 dark:border-slate-700 dark:bg-slate-950'

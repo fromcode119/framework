@@ -42,11 +42,10 @@ export class FilterPanel extends PureReactor {
                 type="button"
                 aria-pressed={chosen}
                 onClick={() => filter.apply(option.value)}
-                className={`h-8 px-3 rounded-full border text-[12px] font-medium transition-colors ${
-                  chosen
-                    ? 'bg-indigo-600 border-indigo-600 text-white'
-                    : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-300 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:border-indigo-500/60'
-                }`}
+                /* One of several choices, only one of which is on: the console's tab. A pill in the
+                   brand's solid colour read as the page's primary action - the loudest thing on a
+                   toolbar was "All". */
+                className={`fc-tab${chosen ? ' fc-tab--on' : ''}`}
               >
                 {option.label}
               </button>

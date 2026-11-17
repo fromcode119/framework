@@ -2332,3 +2332,10 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 /* 32px between one field and the next, as the dialogs this follows set it. 24 put a label close
    enough to the field above it to read as that field's second line. */
 .fc-edit-fields__grid { row-gap: 32px; }
+
+/* One of several choices, one on at a time: flat until chosen, and then simply the surface, lifted
+   by the same edge a button carries. A solid brand-coloured pill made the quietest control on the
+   screen the loudest thing on it. */
+.fc-tab { display: inline-flex; align-items: center; height: var(--fc-control-h); padding: 4px 8px; border: 0; border-radius: var(--fc-control-radius); background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.fc-tab:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow); }

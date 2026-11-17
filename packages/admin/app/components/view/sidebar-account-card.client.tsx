@@ -208,7 +208,7 @@ export class SidebarAccountCard extends AdminComponent {
     const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[12px]' : 'h-9 w-9 text-[13px]';
     return (
       <span
-        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 font-medium text-white ring-1 ring-inset ring-white/15`}
+        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] font-medium text-white ring-1 ring-inset ring-white/15`}
       >
         {this.initial}
       </span>

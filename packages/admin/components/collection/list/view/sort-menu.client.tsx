@@ -53,7 +53,7 @@ export class SortMenu extends PureReactor {
         trigger={
           <span
             title={AdminI18n.t('collection.list.sortBy')}
-            className="h-[var(--fc-field-h)] px-4 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--secondary)] text-[var(--secondary-foreground)] text-[12px] font-medium inline-flex items-center gap-2 leading-none fc-elevated-control transition-colors hover:brightness-98"
+            className="h-[var(--fc-field-h)] px-4 rounded-[var(--fc-control-radius)] border border-[var(--border)] bg-[var(--secondary)] text-[var(--secondary-foreground)] text-[12px] font-medium inline-flex items-center gap-2 leading-none fc-elevated-control transition-colors hover:brightness-98"
           >
             <Icon size={15} />
             <span className="hidden lg:inline max-w-[9rem] truncate">{current?.header || AdminI18n.t('collection.list.sortBy')}</span>
