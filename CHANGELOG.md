@@ -6,10 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
-## [0.2.599] - 2026-11-17
+## [0.2.600] - 2026-11-17
 
 ### Added
 
+- **admin**: plugins get the console's empty state ([#1504](https://github.com/fromcode119/framework/pull/1504))
 - **admin**: the console says "there is nothing here" in one voice ([#1502](https://github.com/fromcode119/framework/pull/1502))
 
 ## [0.2.598] - 2026-11-17
