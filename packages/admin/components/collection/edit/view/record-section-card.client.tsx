@@ -254,7 +254,7 @@ export class RecordSectionCard extends RecordSectionCardEditing {
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>
               {title}
-              {!tableField && RecordSectionCount.of(this.section.fields, this.formData) !== null
+              {RecordSectionCount.of(this.section.fields, this.formData) !== null
                 ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
                 : null}
             </h2>
