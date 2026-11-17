@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} kulcs, amelyekhez az űrlapon nincs vezérlő",
       "unsurfacedHint": "Itt szerkesztheti őket, de ami fontos, annak saját mezőt érdemes adni.",
       "invalidState": "Érvénytelen JSON – {{error}}. Az űrlap az utolsó érvényes változatot tartja meg.",
-      "validState": "Érvényes JSON – az űrlap szinkronban van."
+      "validState": "Érvényes JSON – az űrlap szinkronban van.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Rekordadatok",

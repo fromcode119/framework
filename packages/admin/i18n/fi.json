@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} avainta, joille lomakkeessa ei ole kenttää",
       "unsurfacedHint": "Voit muokata niitä tässä, mutta tärkeille tiedoille kannattaa tehdä oikea kenttä.",
       "invalidState": "Virheellinen JSON – {{error}}. Lomake säilyttää viimeisimmän kelvollisen version.",
-      "validState": "Kelvollinen JSON – lomake on synkronoitu."
+      "validState": "Kelvollinen JSON – lomake on synkronoitu.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Tietueen tiedot",

@@ -11,6 +11,7 @@ import { CollectionRecordLinksPanel } from '@/components/collection/edit/collect
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
+import { RecordJsonCard } from '@/components/collection/edit/view/record-json-card.client';
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
@@ -97,6 +98,10 @@ export class EditPageBody extends PureReactor {
       />
     ) : null;
 
+    /** Every field name the page itself draws, so the stored record can mark what it does not. */
+    const renderedFieldNames = [...standardMainFieldSections, ...fullWidthMainFieldSections, ...sidebarFieldSections]
+      .flatMap((section: any) => (section?.fields || []).map((field: any) => String(field?.name || '')));
+
     return (
     <div className="flex-1 w-full">
       {/*
@@ -147,16 +152,7 @@ export class EditPageBody extends PureReactor {
         {this.advancedView ? (
           <div className="pb-32 space-y-6">
             {this.head}
-            <RecordJsonView
-              formData={formData}
-              setFormData={setFormData}
-              collectionSlug={resolvedSlug || slug}
-              renderedFieldNames={[
-                ...standardMainFieldSections,
-                ...fullWidthMainFieldSections,
-                ...sidebarFieldSections,
-              ].flatMap((section: any) => (section?.fields || []).map((field: any) => String(field?.name || '')))}
-            />
+            <RecordJsonView formData={formData} setFormData={setFormData} collectionSlug={resolvedSlug || slug} renderedFieldNames={renderedFieldNames} />
           </div>
         ) : (
         <>
@@ -226,6 +222,15 @@ export class EditPageBody extends PureReactor {
                 clearSaveError={() => setStatus(null)}
                 sectionSlotBase={sectionSlotBase}
                 slotProps={slotProps}
+              />
+            )}
+            {/* The record as it is stored, under everything the page draws from it. */}
+            {!isNew && (
+              <RecordJsonCard
+                formData={formData}
+                setFormData={setFormData}
+                collectionSlug={resolvedSlug || slug}
+                renderedFieldNames={renderedFieldNames}
               />
             )}
             {/* What else this record holds: one row per section the page does not draw, at its foot. */}

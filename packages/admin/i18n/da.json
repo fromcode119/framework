@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} nøgler, som formularen ikke har noget felt til",
       "unsurfacedHint": "Du kan redigere dem her, men alt, der er vigtigt, bør have et rigtigt felt.",
       "invalidState": "Ugyldig JSON — {{error}}. Formularen beholder den seneste gyldige version.",
-      "validState": "Gyldig JSON — formularen er synkroniseret."
+      "validState": "Gyldig JSON — formularen er synkroniseret.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Postoplysninger",

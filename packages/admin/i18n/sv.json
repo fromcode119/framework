@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} nycklar som formuläret saknar kontroll för",
       "unsurfacedHint": "Du kan redigera dem här, men allt som är viktigt förtjänar ett riktigt fält.",
       "invalidState": "Ogiltig JSON – {{error}}. Formuläret behåller den senaste giltiga versionen.",
-      "validState": "Giltig JSON – formuläret är synkroniserat."
+      "validState": "Giltig JSON – formuläret är synkroniserat.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Postinformation",

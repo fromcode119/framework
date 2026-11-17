@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} sleutels zonder bedieningselement in het formulier",
       "unsurfacedHint": "U kunt ze hier bewerken, maar alles wat belangrijk is, verdient een echt veld.",
       "invalidState": "Ongeldige JSON — {{error}}. Het formulier behoudt de laatste geldige versie.",
-      "validState": "Geldige JSON — het formulier is gesynchroniseerd."
+      "validState": "Geldige JSON — het formulier is gesynchroniseerd.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Recordinfo",

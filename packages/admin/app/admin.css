@@ -2160,3 +2160,45 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 /* A row that leads somewhere says so under the pointer, like every other row in the console that does. */
 .fc-sro-table__row--link { cursor: pointer; }
+
+/* ── The record as it is stored, at the foot of the record ───────────────────────────────────────
+ * RecordJsonCard. One line: the name, how many keys this record holds, and the way in. The count is
+ * the one pill on a record with round ends — every other badge keeps the 6px corner — because it
+ * counts rather than labels, which is how the record pages this console follows draw it. */
+.fc-record-json .fc-record-card__head { border-bottom: 0; }
+.fc-record-json__count {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-inline-start: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--fc-border);
+  border-radius: 9999px;
+  background: var(--fc-surface-muted);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--fc-weight-strong);
+  color: var(--fc-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Opened, it is the console's drawer in the dark: the stored record is read like code, and code is
+   read on a dark ground in every tool that shows it. The drawer's own geometry is untouched. */
+.fc-sheet--json {
+  --fc-sheet-canvas: #18181b;
+  --fc-sheet-surface: #18181b;
+  --fc-sheet-border: #27272a;
+  --fc-text: rgb(255 255 255 / .88);
+  --fc-text-muted: rgb(255 255 255 / .56);
+  --fc-surface: #27272a;
+  --fc-surface-muted: #27272a;
+  --fc-border: #3f3f46;
+}
+.fc-sheet--json .fc-sheet__body { color: var(--fc-text); }
+.fc-sheet--json textarea {
+  background: #27272a;
+  border-color: #3f3f46;
+  color: rgb(255 255 255 / .88);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 18.2px;
+}

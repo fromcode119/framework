@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} 個鍵在表單中沒有對應的控制項",
       "unsurfacedHint": "您可以在此編輯，但重要的資料應設置正式的欄位。",
       "invalidState": "無效的 JSON — {{error}}。表單會保留最後一個有效版本。",
-      "validState": "有效的 JSON — 表單已同步。"
+      "validState": "有效的 JSON — 表單已同步。",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "紀錄資訊",

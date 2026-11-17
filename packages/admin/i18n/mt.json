@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} ċwievet li l-formola m'għandhiex kontroll għalihom",
       "unsurfacedHint": "Tista' teditjahom hawn, imma kull ma huwa importanti jistħoqqlu qasam proprju.",
       "invalidState": "JSON mhux validu — {{error}}. Il-formola żżomm l-aħħar verżjoni valida.",
-      "validState": "JSON validu — il-formola hija sinkronizzata."
+      "validState": "JSON validu — il-formola hija sinkronizzata.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informazzjoni tar-Rekord",

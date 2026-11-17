@@ -291,7 +291,9 @@
       "unsurfacedMany": "Raktų, kuriems formoje nėra valdiklio: {{count}}",
       "unsurfacedHint": "Juos galite redaguoti čia, tačiau tai, kas svarbu, verta turėti tikrą lauką.",
       "invalidState": "Netinkamas JSON — {{error}}. Forma išlaiko paskutinę tinkamą versiją.",
-      "validState": "Tinkamas JSON — forma sinchronizuota."
+      "validState": "Tinkamas JSON — forma sinchronizuota.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Įrašo informacija",

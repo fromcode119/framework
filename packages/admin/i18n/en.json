@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} keys the form has no control for",
       "unsurfacedHint": "You can edit them here, but anything that matters deserves a real field.",
       "invalidState": "Invalid JSON — {{error}}. The form keeps the last valid version.",
-      "validState": "Valid JSON — the form is in sync."
+      "validState": "Valid JSON — the form is in sync.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Details",

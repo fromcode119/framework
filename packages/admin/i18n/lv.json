@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} atslēgas, kurām veidlapā nav vadīklu",
       "unsurfacedHint": "Tās var rediģēt šeit, taču visam svarīgajam vajadzētu būt īstam laukam.",
       "invalidState": "Nederīgs JSON — {{error}}. Veidlapa saglabā pēdējo derīgo versiju.",
-      "validState": "Derīgs JSON — veidlapa ir sinhronizēta."
+      "validState": "Derīgs JSON — veidlapa ir sinhronizēta.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Ieraksta informācija",

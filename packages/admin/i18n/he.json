@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} מפתחות שאין להם פקד בטופס",
       "unsurfacedHint": "ניתן לערוך אותם כאן, אך כל מה שחשוב ראוי לשדה אמיתי.",
       "invalidState": "JSON לא תקין — {{error}}. הטופס שומר את הגרסה התקינה האחרונה.",
-      "validState": "JSON תקין — הטופס מסונכרן."
+      "validState": "JSON תקין — הטופס מסונכרן.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "פרטי הרשומה",

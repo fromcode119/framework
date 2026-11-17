@@ -291,7 +291,9 @@
       "unsurfacedMany": "Formda denetimi olmayan {{count}} anahtar",
       "unsurfacedHint": "Bunları burada düzenleyebilirsiniz, ancak önemli olan her şey gerçek bir alanı hak eder.",
       "invalidState": "Geçersiz JSON — {{error}}. Form son geçerli sürümü korur.",
-      "validState": "Geçerli JSON — form senkronize."
+      "validState": "Geçerli JSON — form senkronize.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Kayıt Bilgisi",

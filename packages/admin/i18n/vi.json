@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} khóa không có điều khiển trong biểu mẫu",
       "unsurfacedHint": "Bạn có thể chỉnh sửa chúng tại đây, nhưng những gì quan trọng nên có một trường riêng.",
       "invalidState": "JSON không hợp lệ — {{error}}. Biểu mẫu giữ phiên bản hợp lệ gần nhất.",
-      "validState": "JSON hợp lệ — biểu mẫu đã được đồng bộ."
+      "validState": "JSON hợp lệ — biểu mẫu đã được đồng bộ.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Thông tin bản ghi",
