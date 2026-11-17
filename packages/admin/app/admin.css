@@ -1714,6 +1714,27 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table :is(th, td):last-child { padding-inline-end: var(--fc-sro-inset); }
 .fc-sro-table tr:last-child td { border-bottom: 0; }
 .fc-sro-table tbody tr:hover { background: var(--fc-surface-muted); }
+/* The first column stays put while the rest of the row scrolls sideways. A table wider than its card
+   is read by scrolling, and a row whose name has scrolled out of sight is a row of values belonging to
+   nobody — so the column that identifies the row is pinned, with a hairline that says where the pinned
+   part ends. The hairline is drawn by ::after rather than a border, because a border on a sticky cell
+   scrolls away with the cell's own box in Safari. */
+.fc-sro-table :is(th, td):first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--fc-surface);
+}
+.fc-sro-table thead :first-child { background: var(--fc-surface-muted); }
+.fc-sro-table tbody tr:hover > :first-child { background: var(--fc-surface-muted); }
+.fc-sro-table :is(th, td):first-child::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: -1px;
+  width: 1px;
+  background: var(--fc-border);
+}
 /* The ⋯ at the end of a row: the way into the row from the row itself. The column takes only its own
    width and the control is quiet until the row is under the pointer, so a table still reads as a table. */
 .fc-sro-table__menu-head, .fc-sro-table__menu-cell { width: 1%; padding-inline-end: 0; text-align: end; }
