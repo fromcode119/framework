@@ -24,14 +24,9 @@ import { Input } from '@/components/ui/view/input.client';
 export class ImportPlanRecords extends Reactor {
   @prop declare records: ImportPlanRecord[];
   @state private query = '';
-  @state private showEmpty = false;
 
   @bound private onQuery(event: { target: { value: string } }): void {
     this.query = event.target.value;
-  }
-
-  @bound private toggleEmpty(): void {
-    this.showEmpty = !this.showEmpty;
   }
 
   /** Matches the name an operator can actually see, and the physical one a developer would search for. */
@@ -76,27 +71,27 @@ export class ImportPlanRecords extends Reactor {
     );
   }
 
-  /** Named by owning plugin, exactly as the old "Empty" group named them — the same grouping rule, folded. */
+  /**
+   * The kinds that arrive empty, named by owning plugin. They used to sit behind a Show / Hide fold;
+   * a line naming each plugin and its tables is a few lines, and a fold over a few lines only asks
+   * the operator to click to find out whether it was worth clicking.
+   */
   private renderEmpty(): ReactNode {
     const empty = this.matching.filter((record) => record.isEmpty);
     if (!empty.length) return null;
     const groups = ImportPlanGrouping.byPlugin(empty.map((record) => record.table));
     return (
       <>
-        <div className="fc-import-rec__fold" onClick={this.toggleEmpty} role="button" tabIndex={0} aria-expanded={this.showEmpty}
-          onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.toggleEmpty(); } }}>
+        <div className="fc-import-rec__fold">
           <span><AdminRichText k="sites.importPlan.kindsEmpty" vars={{ count: empty.length.toLocaleString() }} /></span>
-          <span className="fc-import-rec__fold-action">{this.showEmpty ? AdminI18n.t('sites.importPlan.hide') : AdminI18n.t('sites.importPlan.show')}</span>
         </div>
-        {this.showEmpty ? (
-          <div className="fc-import-rec__foldbox">
-            {groups.map((group) => (
-              <p key={group.key} className="fc-import-rec__foldline">
-                <strong>{group.key}</strong> — {group.tables.map((table) => table.label ?? table.name).join(', ')}
-              </p>
-            ))}
-          </div>
-        ) : null}
+        <div className="fc-import-rec__foldbox">
+          {groups.map((group) => (
+            <p key={group.key} className="fc-import-rec__foldline">
+              <strong>{group.key}</strong> — {group.tables.map((table) => table.label ?? table.name).join(', ')}
+            </p>
+          ))}
+        </div>
       </>
     );
   }

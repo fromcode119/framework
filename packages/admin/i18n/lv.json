@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} atslēgas, kurām veidlapā nav vadīklu",
       "unsurfacedHint": "Tās var rediģēt šeit, taču visam svarīgajam vajadzētu būt īstam laukam.",
       "invalidState": "Nederīgs JSON — {{error}}. Veidlapa saglabā pēdējo derīgo versiju.",
-      "validState": "Derīgs JSON — veidlapa ir sinhronizēta."
+      "validState": "Derīgs JSON — veidlapa ir sinhronizēta.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Ieraksta informācija",
@@ -357,7 +359,8 @@
     "import": "Importēt",
     "reset": "Atiestatīt",
     "notScheduledYet": "vēl nav ieplānots",
-    "more": "Citas darbības"
+    "more": "Citas darbības",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Atvērt"
     },
     "address": {
       "recipient": "Saņēmēja vārds",

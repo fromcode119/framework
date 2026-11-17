@@ -291,7 +291,9 @@
       "unsurfacedMany": "フォームに入力欄のないキーが {{count}} 個あります",
       "unsurfacedHint": "ここで編集できますが、重要な項目には専用のフィールドを用意することをおすすめします。",
       "invalidState": "無効な JSON — {{error}}。フォームには最後の有効なバージョンが保持されます。",
-      "validState": "有効な JSON — フォームと同期しています。"
+      "validState": "有効な JSON — フォームと同期しています。",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "レコード情報",
@@ -357,7 +359,8 @@
     "import": "インポート",
     "reset": "リセット",
     "notScheduledYet": "未スケジュール",
-    "more": "その他の操作"
+    "more": "その他の操作",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "開く"
     },
     "address": {
       "recipient": "受取人名",

@@ -23,10 +23,15 @@ export class ImportPlanDetail extends Reactor {
   @prop declare theme: Record<string, any> | null;
   @prop declare warnings: string[];
   @prop declare exportWarnings: string[];
-  @state private tab: ImportPlanDetailTab | null = null;
+  /**
+   * One of these is always showing. The chips used to toggle: clicking the open one closed it and
+   * left the panel empty, so the same control both chose a thing and hid everything — a fold wearing
+   * the clothes of a tab. A tab strip chooses; it never chooses nothing.
+   */
+  @state private tab: ImportPlanDetailTab = ImportPlanDetailTab.RECORDS;
 
   @bound private select(tab: ImportPlanDetailTab): void {
-    this.tab = this.tab === tab ? null : tab;
+    this.tab = tab;
   }
 
   private chip(tab: ImportPlanDetailTab, label: string, count: string, warn = false): ReactNode {
@@ -36,11 +41,11 @@ export class ImportPlanDetail extends Reactor {
         type="button"
         className={`fc-import-detail__chip${warn ? ' fc-import-detail__chip--warn' : ''}${open ? ' fc-import-detail__chip--open' : ''}`}
         onClick={() => this.select(tab)}
-        aria-expanded={open}
+        role="tab"
+        aria-selected={open}
       >
         {label}
         <span className="fc-import-detail__chip-count">{count}</span>
-        <span className="fc-import-detail__chip-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
       </button>
     );
   }
@@ -102,7 +107,7 @@ export class ImportPlanDetail extends Reactor {
           <h4 className="fc-import-detail__title">{AdminI18n.t('sites.importPlan.fullDetail')}</h4>
           <span className="fc-import-detail__hint">{AdminI18n.t('sites.importPlan.nothingIsHiddenOpenAny')}</span>
         </div>
-        <div className="fc-import-detail__chips">
+        <div className="fc-import-detail__chips" role="tablist">
           {this.chip(ImportPlanDetailTab.RECORDS, AdminI18n.t('sites.importPlan.everythingInTheArchive'), kinds.toLocaleString())}
           {this.chip(ImportPlanDetailTab.EXTENSIONS, AdminI18n.t('sites.importPlan.pluginsAndTheme'), extensions)}
           {this.warnings.length ? this.chip(ImportPlanDetailTab.WARNINGS, AdminI18n.t('sites.importPlan.warnings'), this.warnings.length.toLocaleString(), true) : null}

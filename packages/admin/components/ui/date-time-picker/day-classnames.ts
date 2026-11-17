@@ -1,39 +1,36 @@
 import { ThemeMode } from '@fromcode119/core/client';
 
 /**
- * Builds the {@link DayPicker} `classNames` map for the date-time picker, themed
- * for light/dark. Extracted verbatim from the picker render to keep the popover
- * component under the file-size limit; the produced styling is identical.
+ * The {@link DayPicker} `classNames` map, in the console's own classes.
+ *
+ * It used to carry a design of its own — 36px cells with a 12px corner, an indigo fill under a ring
+ * and a shadow, and cells that grew on hover and shrank on click. None of that exists anywhere else
+ * in this console, so the calendar read as a widget borrowed from another product. Every class here
+ * now names something `admin.css` draws, which is also why `theme` no longer changes any of them:
+ * the tokens already do.
  */
 export class DateTimePickerDayClassNames {
-  static build(theme: ThemeMode): Record<string, string> {
+  static build(_theme: ThemeMode): Record<string, string> {
     return {
-      months: "flex flex-col",
-      month: "space-y-2",
-      month_caption: "hidden",
-      caption_label: "text-sm font-medium text-indigo-600",
-      nav: "hidden",
-      button_previous: "hidden",
-      button_next: "hidden",
-      month_grid: "w-full border-separate border-spacing-0.5",
-      weekdays: "mb-0.5",
-      weekday: "h-6 w-9 p-0 text-center align-middle text-slate-400 font-medium text-[12px] uppercase tracking-wider",
-      weeks: "",
-      week: "",
-      day: "h-9 w-9 p-0 text-center align-middle",
-      day_button: `flex h-8 w-8 items-center justify-center rounded-xl p-0 font-medium text-[13px] tracking-tight transition-all duration-150 mx-auto
-        ${theme === ThemeMode.DARK
-          ? 'text-slate-100 hover:bg-slate-700/50 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-300 [[data-today=true]_&]:font-medium'
-          : 'text-slate-700 hover:bg-slate-100 hover:scale-105 active:scale-95 [[data-selected=true]_&]:!text-white [[data-today=true]_&]:text-indigo-600 [[data-today=true]_&]:font-medium'}`,
-      selected: theme === ThemeMode.DARK
-        ? "!bg-indigo-500 hover:!bg-indigo-500 shadow-xl shadow-indigo-500/40 ring-2 ring-indigo-400/50 scale-105"
-        : "!bg-indigo-600 hover:!bg-indigo-600 shadow-xl shadow-indigo-600/40 ring-2 ring-indigo-500/60 scale-105",
-      today: theme === ThemeMode.DARK
-        ? "ring-2 ring-indigo-400/30"
-        : "ring-2 ring-indigo-500/30",
-      outside: "pointer-events-none opacity-0",
-      disabled: "opacity-20 cursor-not-allowed",
-      hidden: "pointer-events-none opacity-0",
+      months: 'flex flex-col',
+      month: 'space-y-2',
+      month_caption: 'hidden',
+      caption_label: 'hidden',
+      nav: 'hidden',
+      button_previous: 'hidden',
+      button_next: 'hidden',
+      month_grid: 'fc-cal__grid',
+      weekdays: '',
+      weekday: 'fc-cal__weekday',
+      weeks: '',
+      week: '',
+      day: 'fc-cal__cell',
+      day_button: 'fc-cal__day',
+      selected: 'fc-cal--on',
+      today: 'fc-cal--today',
+      outside: 'pointer-events-none opacity-0',
+      disabled: 'opacity-20 cursor-not-allowed',
+      hidden: 'pointer-events-none opacity-0',
     };
   }
 }

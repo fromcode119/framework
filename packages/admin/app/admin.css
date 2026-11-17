@@ -18,6 +18,8 @@
   --fc-surface-muted: #f8fafc;
   --fc-canvas: #f8fafc;
   --fc-text: #0f172a;
+  /* A control that is present and cannot be pressed: greyed, not faded. */
+  --fc-text-faint: #a1a1aa;
   --fc-text-muted: #64748b;
   --fc-border: #e2e8f0;
   --fc-success: #059669;
@@ -83,6 +85,8 @@
      what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
      for short facts; the main column keeps the rest. */
   --fc-record-side: 440px;
+  /* The form column of a record page, the figure the target page keeps. */
+  --fc-record-main: 1120px;
   --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
@@ -105,17 +109,40 @@
   /* A card's head and body, so every card on a page — the record's own and a plugin's — keeps one rhythm. */
   /* 16 + 16 of padding around a 28px control, plus the rule under it: the height of every card head,
      whether or not that head holds anything but its title. */
-  --fc-card-head-height: 61px;
+  /* 16 + a 24px line + 16. The target's card head is its name and nothing else; ours stood at 61,
+     which is a head sized for a control that is no longer in it. */
+  /* 60, measured: 16 + the 28px action + 16. It was 56, which is the height of its text, so every
+     card's head sat 4px shallower than the pages this console follows. */
+  --fc-card-head-height: 60px;
   /* EVERY control the operator can click: one height, one corner, one text size. Counted on a product
      record before this: 22, 24, 28, 32 and 40 px side by side in the same header, and two different
      corners on two things that both labelled a state. Change these three and the whole console moves. */
   /* The card: its corner and the room inside it, both measured on the record pages this one follows. */
   --fc-card-radius: 8px;
+  /* A card is lifted off the page by a shadow that CARRIES its 1px ring, the way the record pages
+     this console follows draw it — a flat border reads as a box drawn on the page rather than a card
+     standing on it. Measured from the target's own tokens. */
+  --fc-card-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 1px 2px -1px rgb(0 0 0 / .08), 0 2px 4px 0 rgb(0 0 0 / .04);
+  --fc-control-shadow: 0 1px 2px 0 rgb(0 0 0 / .12), 0 0 0 1px rgb(0 0 0 / .08);
   --fc-control-h: 28px;
   --fc-control-radius: 6px;
-  --fc-control-text: 12px;
-  /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner. */
-  --fc-badge-h: 24px;
+  /* 13/20 for anything with words on it — a control, a label, a value, a table cell. Measured on the
+     record pages this console follows, where 12px appears on ONE thing only: a tag. Ours read 12 all
+     through, which is what made a record look like a printout of a record rather than the record. */
+  --fc-control-text: 13px;
+  --fc-badge-text: 12px;
+  /* A solid button keeps the BRAND's colour — the near-black of the pages this follows is their brand,
+     not a measurement to copy. The edge is the same colour, so the ring reads as the button's own. */
+  /* The console's own primary, NOT `--primary`: that one is the SITE's brand accent, replaced per
+     site at runtime, so the Save button changed colour depending on which shop was open. */
+  --fc-btn-primary: #27272a;
+  --fc-btn-primary-edge: #18181b;
+  --fc-btn-danger: var(--destructive);
+  --fc-btn-danger-edge: var(--destructive);
+  /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner.
+     20px, measured on the target, where every tag on a record is the same height as a line of its
+     own text plus its ring. Ours stood at 24 beside a 20px line and read as a button that failed. */
+  --fc-badge-h: 20px;
   --fc-card-pad-x: 24px;
   --fc-card-body-pad: 4px var(--fc-card-pad-x);
 
@@ -395,12 +422,13 @@ html.dark {
 
 .fc-surface {
   border-radius: var(--fc-card-radius);
-  /* The edge comes from the SAME token an appearance can repaint (--fc-border), not a literal — a
-     hardcoded #fff here made every top-level panel edgeless in light mode while nested ones (which
-     read var(--border) below) kept a real slate-200 edge, so cards looked inconsistently borderless. */
-  border: 1px solid var(--fc-border);
+  /* The ring is carried by the SHADOW, not by a border: measured on the record pages this console
+     follows, a card is a 1px ring at 8% black plus two soft drops, which lifts it off the page. A
+     flat 1px border draws a box ON the page instead, and it also ate a pixel of every card's inside.
+     The ring is still one token, so an appearance repaints it in one place. */
+  border: 0;
   background: var(--card);
-  box-shadow: var(--fc-elevation-surface);
+  box-shadow: var(--fc-card-shadow);
 }
 
 .dark .fc-surface,
@@ -650,7 +678,6 @@ html.dark {
 .fc-import-detail__chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: var(--fc-weight-strong); color: var(--muted-foreground); border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
 .fc-import-detail__chip:hover { color: var(--foreground); }
 .fc-import-detail__chip-count { font-variant-numeric: tabular-nums; background: var(--muted); border-radius: 5px; padding: 1px 6px; font-size: 11px; }
-.fc-import-detail__chip-caret { font-size: 9px; opacity: 0.7; }
 .fc-import-detail__chip--warn { color: var(--fc-warning-strong); border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); }
 .fc-import-detail__chip--warn .fc-import-detail__chip-count { background: var(--fc-warning-mark); }
 .fc-import-detail__chip--open { color: var(--primary); border-color: var(--primary); background: var(--muted); }
@@ -770,10 +797,15 @@ html.dark {
    Viewport breakpoints (`lg:grid-cols-3`) measured the window, so with the menu and a plugin's
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
-.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
+.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size;
+  /* A record is read, not scanned across a 2.5K screen: 1120 of form + 16 + 440 of sidebar, centred.
+     Uncapped, one row of two fields stretched each field to ~790px and every card read as empty. */
+  max-width: calc(var(--fc-record-main) + 16px + var(--fc-record-side)); margin-inline: auto; }
 /* A page whose body is a column of cards: one gap, the console's. */
 .fc-page-stack { display: flex; flex-direction: column; gap: var(--fc-stack-gap); }
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
+/* 12 between one card and the next, 16 between the two columns — the gap the record pages this
+   console follows keep. One figure for both made the columns read as one wide column of cards. */
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
@@ -837,10 +869,113 @@ html.dark {
   .fc-checkbox__box[data-checked="true"], .fc-checkbox__dash { animation: none; }
   .fc-checkbox__box svg path { animation: none; stroke-dashoffset: 0; }
 }
-.fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
+/* A menu is a stack of CONTROLS, so a row carries the console's control height and corner rather than
+   a shape of its own: measured at 36px tall with an 8px corner and 12px of side padding, beside the
+   28px/6px controls of the very head that opens it. */
+.fc-menu-action { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 6px 8px; border-radius: var(--fc-control-radius); font-size: 13px; line-height: 20px; font-weight: 500; text-align: start; color: var(--fc-text); }
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
 .fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
+/* The row the menu is currently on: the console's quiet wash, not a filled indigo band. */
+.fc-menu-action[aria-current="true"] { background: var(--fc-surface-muted); }
+
+/* ── The number box's − and + ────────────────────────────────────────────────────────────────────
+ * They were a square of 2.5rem minus a border: the 40px field's buttons, kept after the field became
+ * 32. A 38px button then stood inside a 32px box and pushed out of it top and bottom, and the input
+ * reserved 40px of padding at each end for them. Each button is now the FIELD's own height, so it
+ * fills its end of the box exactly, and the padding it reserves is the same figure.
+ * The field carries no border any more (an edge in the shadow), so there is nothing to inset by 1px. */
+.fc-stepper { position: relative; min-width: 7.5rem; }
+.fc-stepper__btn { position: absolute; top: 0; display: flex; align-items: center; justify-content: center;
+  width: var(--fc-field-h); height: var(--fc-field-h); color: var(--fc-text-muted);
+  border-radius: var(--fc-control-radius); transition: color .12s, background-color .12s; }
+.fc-stepper__btn:hover:not(:disabled) { color: var(--fc-text); background: var(--fc-surface); }
+.fc-stepper__btn:disabled { opacity: .4; }
+.fc-stepper__btn--less { inset-inline-start: 0; }
+.fc-stepper__btn--more { inset-inline-end: 0; }
+/* Specific enough to beat `.fc-field`'s own padding, which is declared later in this file. */
+.fc-field.fc-stepper__input { padding-inline: var(--fc-field-h); text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ── The on/off switch ───────────────────────────────────────────────────────────────────────────
+ * 32×18, the figure the record pages this console follows keep. It was 44×24 — a phone's own switch —
+ * which stood taller than the 32px field next to it and read as the loudest thing in a drawer. */
+.fc-switch { position: relative; display: inline-flex; align-items: center; flex: none;
+  width: 32px; height: 18px; border-radius: 9999px; cursor: pointer;
+  background: #d4d4d8; transition: background-color .15s ease-out; }
+.fc-switch::before { content: ''; position: absolute; inset: -11px -6px; }
+/* Blue, not the site's brand accent: a switch is a state, not a brand surface. */
+.fc-switch--on { background: #3b82f6; }
+.fc-switch:disabled { cursor: not-allowed; opacity: .5; }
+.fc-switch:focus { outline: none; }
+.fc-switch:focus-visible { box-shadow: 0 0 0 2px var(--fc-surface), 0 0 0 4px var(--primary); }
+.fc-switch__knob { pointer-events: none; display: block; width: 14px; height: 14px; border-radius: 9999px;
+  background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .12); transform: translateX(2px);
+  transition: transform .15s ease-out; }
+.fc-switch--on .fc-switch__knob { transform: translateX(16px); }
+[dir="rtl"] .fc-switch__knob { transform: translateX(-2px); }
+[dir="rtl"] .fc-switch--on .fc-switch__knob { transform: translateX(-16px); }
+/* The sentence under a switch's label: the console's quiet 13/20.8. */
+.fc-switch__hint { font-size: var(--fc-control-text); line-height: 20.8px; font-weight: 400; color: var(--fc-text-muted); }
+
+/* ── A dialog that takes the window ──────────────────────────────────────────────────────────────
+ * The drawer's sibling: where the drawer edits a piece of a record that stays visible behind it,
+ * this replaces the page, for work that needs the room (creating a variant). Measured against the
+ * record pages this console follows: 8px in from every edge, head 45px, foot 61px, and ONE centred
+ * column of at most 720px, so a form does not stretch across a 2.5K screen because it may. */
+.fc-focus { position: fixed; inset: 0; z-index: 2147483000; }
+.fc-focus__backdrop { position: absolute; inset: 0; background: rgb(24 24 27 / .4); }
+.fc-focus__panel { position: absolute; inset: 8px; display: flex; flex-direction: column;
+  overflow: hidden; border-radius: var(--fc-card-radius); background: var(--fc-surface);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 8px 16px 0 rgb(0 0 0 / .08), 0 16px 32px 0 rgb(0 0 0 / .08); }
+.fc-focus__head { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex: none; padding: 8px 16px; border-bottom: 1px solid var(--fc-border); }
+.fc-focus__head-start { display: flex; align-items: center; gap: 8px; }
+/* The key that closes it, drawn as the key it is — and it IS the button, so a pointer can use it. */
+.fc-focus__esc { display: inline-flex; align-items: center; justify-content: center; height: 20px;
+  min-width: 20px; padding: 0 4px; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow);
+  font-size: 11px; line-height: 16px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-focus__esc:hover { color: var(--fc-text); }
+.fc-focus__tabs { display: inline-flex; gap: 4px; }
+.fc-focus__body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  background: var(--fc-surface-muted); }
+.fc-focus__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.fc-focus__form { width: 100%; max-width: 720px; margin-inline: auto;
+  display: flex; flex-direction: column; gap: 32px; padding: 32px 24px; }
+.fc-focus__foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: none;
+  padding: 16px; border-top: 1px solid var(--fc-border); background: var(--fc-surface); }
+@media (max-width: 640px) {
+  .fc-focus__panel { inset: 0; border-radius: 0; }
+  .fc-focus__form { padding: 24px 16px; }
+}
+
+/* ── The calendar ────────────────────────────────────────────────────────────────────────────────
+ * It was a product of its own: 12px corners everywhere, a blurred pane under shadow-2xl, indigo
+ * fills with a ring and a shadow, cells that grew on hover and shrank on click, and 36px day squares.
+ * Beside a 32px field and a 28px button it read as a widget borrowed from somewhere else. Now it is
+ * the console's sheet, the console's corner, and the console's text. */
+.fc-cal__sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 8px; }
+.fc-cal__sum-label { font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-cal__sum-value { font-size: var(--fc-control-text); line-height: 20px; font-weight: 500; color: var(--fc-text); }
+.fc-cal__bar { display: grid; grid-template-columns: var(--fc-control-h) minmax(0, 1fr) var(--fc-control-h);
+  align-items: center; gap: 8px; margin-bottom: 8px; }
+.fc-cal__cell { width: 32px; height: 32px; padding: 0; text-align: center; vertical-align: middle; }
+.fc-cal__weekday { height: 24px; width: 32px; padding: 0; text-align: center; vertical-align: middle;
+  font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-cal__day { display: flex; align-items: center; justify-content: center; margin-inline: auto;
+  width: 28px; height: 28px; border-radius: var(--fc-control-radius);
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: 400; color: var(--fc-text); }
+.fc-cal__day:hover { background: var(--fc-surface-muted); }
+.fc-cal--on .fc-cal__day, .fc-cal--on > .fc-cal__day { background: var(--fc-btn-primary); color: rgb(255 255 255 / .92); }
+.fc-cal--today .fc-cal__day { box-shadow: inset 0 0 0 1px var(--fc-border); }
+.fc-cal__grid { width: 100%; border-collapse: separate; border-spacing: 2px; }
+/* A month or a year in the jump view, and the quick rows under the calendar: the console's button. */
+.fc-cal__chip { display: flex; align-items: center; justify-content: center; height: var(--fc-control-h);
+  padding: 4px 8px; border-radius: var(--fc-control-radius); background: var(--fc-surface);
+  box-shadow: var(--fc-control-shadow); color: var(--fc-text);
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-cal__chip:hover { background: var(--fc-surface-muted); }
+.fc-cal__chip--on { background: var(--fc-btn-primary); color: rgb(255 255 255 / .92); box-shadow: none; }
 .fc-menu-action__icon { flex: none; display: inline-flex; color: var(--fc-text-muted); }
 .fc-menu-action[aria-busy="true"] .fc-menu-action__icon svg { animation: fc-menu-action-spin 1s linear infinite; }
 @keyframes fc-menu-action-spin { to { transform: rotate(360deg); } }
@@ -848,7 +983,7 @@ html.dark {
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
-.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
 .fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
 .fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
 .fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
@@ -901,7 +1036,7 @@ html.dark {
 .fc-record-head__menu::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-head__copy:hover,
 .fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
 .fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -1297,10 +1432,15 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 
 /* From 640px the sheet is a dialog: centred over the page, a panel of its own, the record untouched
  * behind it. The fields read at the console's own size, not the phone's. */
+/* From 640px the sheet is a DRAWER, pinned to the right edge with 8px of air around it and the full
+ * height of the window — the shape the record pages this console follows use for editing a section,
+ * and the shape the owner asked for. Centred over the page it covered the record it was editing;
+ * at the edge the record stays readable beside it. */
 @media (min-width: 640px) {
   .fc-sheet {
-    align-items: center;
-    padding: 24px;
+    align-items: stretch;
+    justify-content: flex-end;
+    padding: 8px;
     /* Read at 13px on the record, so edited at 13px here: the sheet used to show the value one step
        smaller than the row it replaces. The LABEL stays at 12px — it is a label, and quieter. */
     --fc-field-text: var(--fc-text-sm);
@@ -1308,17 +1448,24 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   }
   .fc-sheet__panel {
     width: min(560px, 100%);
-    max-height: calc(100dvh - 96px);
+    height: 100%;
+    max-height: none;
     background: var(--fc-sheet-canvas);
     border: 1px solid var(--fc-sheet-border);
     border-radius: var(--fc-sheet-radius);
     box-shadow: 0 24px 64px rgb(15 23 42 / 0.24);
   }
-  .fc-sheet__body { padding: var(--fc-sheet-pad); }
+  /* The dialog keeps the card's own inset, 24px, not the phone's 16: measured against the record
+     pages this one follows, whose drawer is 560px wide with 24px on each side, so a field in it is
+     510px. Ours was 16, which put the field 16px wider than the row it replaces and made the head,
+     the body and the foot line up with nothing. The vertical padding is 16 in all three bands. */
+  .fc-sheet { --fc-sheet-pad: 24px; }
+  .fc-sheet__head { padding: 16px var(--fc-sheet-pad); }
+  .fc-sheet__body { padding: 16px var(--fc-sheet-pad); }
   .fc-sheet__group { padding: 0; background: transparent; border: 0; }
   .fc-sheet__foot {
     justify-content: flex-end;
-    padding: 12px var(--fc-sheet-pad);
+    padding: 16px var(--fc-sheet-pad);
   }
   .fc-sheet__foot > * { flex: 0 0 auto; }
 }
@@ -1350,6 +1497,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-card__title {
   min-width: 0;
   font-size: var(--fc-card-title);
+  /* 16/24, measured. It inherited 20, which is the line of a ROW, not of a heading. */
+  line-height: 24px;
   font-weight: 500;
   color: var(--card-foreground);
 }
@@ -1400,12 +1549,20 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
      starting at the midpoint. A narrow label column put every value hard against its label and left
      the right half of the card empty. */
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  /* 16 and 16, measured on the target: the halves stand apart and the row breathes. Ours was 12 and
+     14, which is a quarter tighter than the pages it is meant to read like. */
+  gap: 16px;
+  align-items: center;
   margin-inline: calc(-1 * var(--fc-card-pad-x));
-  padding: 14px var(--fc-card-pad-x);
+  padding: 16px var(--fc-card-pad-x);
   font-size: var(--fc-record-text);
   line-height: var(--fc-leading);
 }
+/* A row that can be acted on by itself: the two halves, then a 28px column for its own control.
+   Measured on the reference section for this screen — `1fr 1fr 28px`, gap 16, so the row stands 61px
+   and the action lines up with the card's own. */
+.fc-record-card__row--act { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--fc-control-h); }
+
 /* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
    the wrong answer: the name of the product and its description ended up on one line, each cut to half
    the card, and the eye had two label columns to follow instead of one. Every record page worth copying
@@ -1433,10 +1590,17 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-more__go { margin-inline-start: auto; }
 .fc-record-more__count { color: var(--fc-text-muted); white-space: nowrap; }
 .fc-record-more__go { flex: none; margin-inline-start: auto; color: var(--fc-text-muted); }
-.fc-record-card__label { color: var(--fc-text-muted); }
+/* The LABEL carries the weight and the value does not — measured 13/20 500 against 13/20 400, both
+   in the muted ink. Ours separated them by colour instead, which makes a card of facts read as a
+   list of answers with the questions faded out. A line the operator typed stays broken where they
+   broke it. */
+.fc-record-card__label { font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
 .fc-record-card__value {
   min-width: 0;
-  color: var(--fc-text);
+  white-space: pre-line;
+  /* The same tone as its label, measured: a row is one fact read in one voice. Ours printed the
+     value near-black against a muted label, which made every card read as a list of headings. */
+  color: var(--fc-text-muted);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -1513,12 +1677,18 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: inline-flex;
   max-width: 100%;
   align-items: center;
-  padding: 2px 8px;
+  /* A tag, as the record pages this console follows draw one: the height of its own line of text
+     plus its ring, filled with the quiet tone so a row of them reads as a list of values rather than
+     a row of empty buttons. */
+  height: var(--fc-badge-h);
+  padding: 0 4px;
   border: 1px solid var(--fc-border);
-  border-radius: 6px;
-  background: var(--fc-surface);
-  font-size: 12px;
-  color: var(--fc-text);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  font-size: var(--fc-badge-text);
+  font-weight: var(--fc-weight-strong);
+  line-height: 20px;
+  color: var(--fc-text-muted);
   overflow-wrap: anywhere;
 }
 .fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
@@ -1530,7 +1700,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: inline-flex;
   align-items: center;
   min-height: var(--fc-badge-h);
-  padding: 0 8px;
+  padding: 0 4px;
   border: 1px solid transparent;
   border-radius: var(--fc-control-radius);
   font-size: var(--fc-control-text);
@@ -1623,29 +1793,32 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-filter__clear-all:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-card__table-tools .fc-sro-table__tools { padding: 0; }
+/* What a table's field offers for making one more row stands IN the card's tool row, at its own
+   width. The field renderer wraps every control in a full-width form row, which here stretched a
+   28px button across the head and pushed the tools off it. */
+.fc-record-card__aside > .fc-field-row { width: auto; grid-column: auto; }
+.fc-record-card__aside > .fc-field-row > * { margin: 0; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
 .fc-sro-table__tool {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  /* Shape, corner and edge come from the one button rule at the foot of this file; what is left here
+     is only how it stands in a toolbar. */
   gap: 4px;
-  /* The same box as the search beside it: the console has ONE field height, so a button standing in
-     a row with a field takes that height rather than a figure of its own. */
-  min-width: var(--fc-field-h);
-  height: var(--fc-field-h);
-  padding-inline: 6px;
-  border: 1px solid var(--fc-border);
-  border-radius: var(--fc-control-radius);
-  background: var(--fc-surface);
-  color: var(--fc-text-muted);
-  font-size: 12px;
   cursor: pointer;
 }
 .fc-sro-table__tool:hover,
 .fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
-/* The table's own search: the console's field, held to the width a toolbar can give it. */
-.fc-sro-table__search-field { width: min(184px, 100%); min-width: 0; }
+/* The table's own search: the console's field, held to the width a toolbar can give it.
+   Its CORNER is the toolbar's, not the form's. The console carries two radii on purpose — 12px for a
+   field in a form, 6px for the small controls of a record card — and this one field stands between
+   two 6px buttons, so at 12px it was visibly rounder than the things it is pressed beside. A field
+   that has left a form takes the shape of the row it joined. */
+.fc-sro-table__search-field {
+  width: min(183px, 100%); min-width: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15' fill='none' stroke='%2371717a' stroke-width='1.3' stroke-linecap='round'%3E%3Ccircle cx='6.5' cy='6.5' r='4.5'/%3E%3Cpath d='M10 10l3 3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 6.5px 50%;
+}
+
 .fc-sro-table__search { width: min(240px, 100%); }
 @container (max-width: 420px) {
   .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head {
@@ -1658,23 +1831,20 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px var(--fc-sro-inset);
+  /* 64 tall at 16/12, measured; ours was 57 at 14/24. */
+  padding: 16px 12px;
   border-top: var(--fc-record-rule);
 }
 .fc-sro-table__pager { display: inline-flex; align-items: center; gap: 4px; }
 .fc-sro-table__pages { font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
 .fc-sro-table__page {
-  height: var(--fc-control-h);
-  padding-inline: 10px;
-  border: 0;
-  border-radius: var(--fc-control-radius);
-  background: transparent;
-  font-size: 12px;
-  color: var(--fc-text);
   cursor: pointer;
 }
 .fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
-.fc-sro-table__page:disabled { color: var(--fc-text-muted); opacity: .65; cursor: default; }
+/* A pager button is the taller kind — 32 at 6/12, measured — and when it is disabled it keeps its
+   full opacity and loses its edge: the reference greys the text and leaves everything else alone,
+   where ours faded the whole control to .65 and kept its shadow. */
+
 .fc-sro-table__sort {
   display: inline-flex;
   align-items: center;
@@ -2077,4 +2247,317 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   .fc-record-card__label { flex: 0 1 auto; }
   .fc-record-card__value { flex: 1 1 45%; min-width: 0; }
   .fc-record-card__head, .fc-record-card__body { padding-inline: 16px; }
+}
+
+/* The sheet a menu opens in: the card's corner, and 4px around its rows so the first and the last do
+   not sit against the edge. It was rounded-xl (12px) against the card's 8 and the controls' 6. */
+.fc-menu-sheet { padding: 4px; border-radius: var(--fc-card-radius); }
+
+/* ── Asking before something cannot be undone ────────────────────────────────────────────────────
+ * ConfirmDialog. Measured against the record pages this one follows: 400px wide, 24px of inset on
+ * every side, title 16/24 and the two buttons at the end of their row. Ours was 448 wide with 20px
+ * of inset, an 18px title, a blurred backdrop and two buttons stretched to half the width each — a
+ * question that looked heavier than what it asks.
+ * The mark stays, where the reference has none: it is the one thing that says, before the words are
+ * read, that this one deletes. */
+.fc-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.fc-confirm__backdrop { position: fixed; inset: 0; background: var(--fc-scrim, rgb(24 24 27 / .4)); }
+.fc-confirm__panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-card-radius);
+  box-shadow: 0 24px 64px rgb(15 23 42 / .24);
+}
+.fc-confirm__top { display: flex; align-items: flex-start; gap: 12px; }
+.fc-confirm__mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+}
+.fc-confirm__mark--danger { background: var(--fc-danger-soft, #fff1f2); color: var(--fc-danger); }
+.fc-confirm__text { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.fc-confirm__title { margin: 0; font-size: 16px; line-height: 24px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-confirm__body { margin: 0; font-size: 14px; line-height: 20px; color: var(--fc-text-muted); }
+.fc-confirm__foot { display: flex; justify-content: flex-end; gap: 8px; }
+/* On a phone the two answers take the width, because a 400px row of two buttons at the end leaves
+   them small and far from the thumb. */
+@media (max-width: 479px) {
+  .fc-confirm__foot { flex-direction: column-reverse; }
+  .fc-confirm__foot > * { width: 100%; }
+}
+/* A row that leads somewhere says so under the pointer, like every other row in the console that does. */
+.fc-sro-table__row--link { cursor: pointer; }
+
+/* ── The record as it is stored, at the foot of the record ───────────────────────────────────────
+ * RecordJsonCard. One line: the name, how many keys this record holds, and the way in. The count is
+ * the one pill on a record with round ends — every other badge keeps the 6px corner — because it
+ * counts rather than labels, which is how the record pages this console follows draw it. */
+.fc-record-json .fc-record-card__head { border-bottom: 0; }
+.fc-record-json__count {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-inline-start: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--fc-border);
+  border-radius: 9999px;
+  background: var(--fc-surface-muted);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: var(--fc-weight-strong);
+  color: var(--fc-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* The record's JSON is read on a dark ground: #18181b for the drawer, #27272a for the code box, with
+   the key, the string, the number and the null each in their own tone — measured, §9б. I turned this
+   light once, reading a complaint about the drawer (its title printed twice, and its two text layers
+   wrapping at different columns, both since fixed) as a complaint about its colour. */
+.fc-sheet--json {
+  --fc-sheet-canvas: #18181b;
+  --fc-sheet-surface: #18181b;
+  --fc-sheet-border: #27272a;
+  --fc-text: rgb(255 255 255 / .88);
+  --fc-text-muted: rgb(255 255 255 / .56);
+  --fc-surface: #27272a;
+  --fc-surface-muted: #27272a;
+  --fc-border: #3f3f46;
+}
+.fc-sheet--json .fc-sheet__body { color: var(--fc-text); }
+/* No bottom rule under its head, and no Cancel/Save under its body: the drawer records nothing. */
+.fc-sheet--json .fc-sheet__head { border-bottom: 0; }
+.fc-sheet--json .fc-sheet__foot { display: none; }
+/* No padding on the BOX: the coloured layer is `inset: 0` inside it, so any padding here shifts the
+   typing layer by it and the two texts print over each other. The 12px is on the layers themselves. */
+.fc-sheet--json .fc-record-json__box { background: #27272a; box-shadow: none; padding: 0;
+  border-radius: 8px 8px 4px 4px; }
+.fc-sheet--json .fc-record-json__layer { color: rgb(255 255 255 / .88); }
+.fc-sheet--json .fc-record-json__note { background: #27272a; box-shadow: none; }
+.fc-json-key { color: rgb(255 255 255 / .88); }
+.fc-json-punct { color: rgb(255 255 255 / .56); }
+.fc-json-str { color: #10b981; }
+.fc-json-nil { color: #f43f5e; }
+.fc-json-num { color: #f97316; }
+
+/* The code box is a field, like every other box in this console: quiet fill, 6px corner, the edge in
+   the shadow. The caret and the coloured layer sit inside it. */
+.fc-record-json__box { position: relative; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); }
+.fc-record-json__box:focus-within { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-record-json__box[data-invalid="true"] { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
+.fc-record-json__layer { padding: 12px; font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px; line-height: 18.2px; color: var(--fc-text);
+  /* The coloured layer and the textarea must wrap at the SAME column. The textarea reserves a
+     scrollbar and the layer did not, so every wrapped line drifted by its width and the two texts
+     printed over each other. A stable gutter on both gives them one content width. */
+  scrollbar-gutter: stable; }
+textarea.fc-record-json__layer { caret-color: var(--fc-text); }
+/* The note about keys no field shows: the console's quiet card, not an amber banner. */
+.fc-record-json__note { border-radius: var(--fc-control-radius); background: var(--fc-surface-muted);
+  box-shadow: var(--fc-control-shadow); padding: 12px; color: var(--fc-text-muted); }
+
+/* ── ONE corner for every control in the console ─────────────────────────────────────────────────
+ * Counted on a record page: 30 controls at 6px, the form fields at 12 and a pair of nav tools at 8,
+ * with a fully round chip and stepper beside them in the editor. `--radius` is the SITE's brand
+ * corner — it is set per site at runtime and the storefront reads it — so the admin cannot take it
+ * over; it takes its own, on its own fields, and the two stop fighting inside one toolbar.
+ * A switch keeps its round track: it is a rail with a knob running in it, and at 6px it stops
+ * reading as one. That is the only control the console draws round. */
+/* ---------- The field ----------
+   The whole control, drawn once: 32px tall, 6px corner, 13/20, filled with the quiet surface and
+   edged by the same shadow a button carries, so a field and a button in one row are the same object
+   seen twice. Focus states the field, it does not decorate it: the edge goes to the brand colour.
+   No flat border, no coloured halo, and no --radius — that one is the SITE's brand radius, replaced
+   at runtime, so the console's own fields changed shape with whichever site was open. */
+.fc-field {
+  height: var(--fc-field-h);
+  border: 0;
+  border-radius: var(--fc-control-radius);
+  padding: 6px 8px;
+  background: var(--fc-surface-muted);
+  color: var(--fc-text);
+  font-size: var(--fc-control-text);
+  line-height: 20px;
+  font-weight: 400;
+  box-shadow: var(--fc-control-shadow);
+  transition: box-shadow .15s ease, background-color .15s ease;
+}
+.fc-field::placeholder { color: var(--fc-text-muted); }
+.fc-field:hover:not(:disabled):not(:focus) { background: var(--fc-surface-hover, var(--fc-surface-muted)); }
+.fc-field:focus, .fc-field:focus-visible { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+/* A select while its list is open wears the edge a focused field wears. It used to take an indigo
+   1px border and a 4px indigo ring — a shape no other control in this console has. */
+.fc-field--open { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-field:disabled { color: var(--fc-text-muted); }
+/* A box of several lines is not a line: it keeps the height its own content needs. */
+textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
+
+/* A field's name, and the room between the two. 8px holds a label to its field; 32px between fields is
+   what keeps a long form readable as fields rather than as one grid of boxes. */
+.fc-field-label { display: flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-field-stack { display: flex; flex-direction: column; gap: 8px; }
+.fc-form-stack { display: flex; flex-direction: column; gap: 32px; }
+
+/* ---------- The button ----------
+   A pressable thing is 28px tall, reads 13/20 and carries its 1px edge in the SHADOW, like the card.
+   That edge is what makes it sit on the page instead of being drawn on it; a flat border made every
+   button look like an input. A solid button adds a hairline of light along its top edge, which is the
+   only thing that tells a filled rectangle from a painted one.
+
+   These are classes, not utilities in TSX: the console's buttons took `rounded-[var(--radius)]`, and
+   `--radius` is the SITE's brand radius, replaced at runtime by BrandTokenStyleService — so the
+   console's own corner changed with whichever site was open. */
+.fc-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: fit-content; height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px 8px;
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong);
+  background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow);
+  cursor: pointer; transition: background-color .15s ease, color .15s ease;
+}
+.fc-btn:disabled { pointer-events: none; opacity: .5; }
+.fc-btn--primary {
+  background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(0 0 0 / .4), 0 0 0 1px var(--fc-btn-primary-edge);
+}
+.fc-btn--danger {
+  background: var(--fc-btn-danger); color: #fff;
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(190 18 60 / .4), 0 0 0 1px var(--fc-btn-danger-edge);
+}
+/* A button that rides INSIDE a field — the language chip over a text box. At the console's 28px it
+   left 2px of air above and below in a 32px field and read as a second control stacked on the first.
+   20px leaves 6px each side, so the field keeps its shape and the chip sits in it. */
+.fc-btn--mini { height: 20px; padding: 0 6px; gap: 4px; font-size: 12px; line-height: 16px; }
+.fc-btn--mini > svg { width: 11px; height: 11px; }
+/* A glyph beside a label — the "what is this" mark, the lock on a read-only field. 20px, square,
+   no ground of its own. They were 24px round buttons that filled with indigo on hover. */
+.fc-btn--glyph { width: 20px; height: 20px; padding: 0; background: transparent; box-shadow: none;
+  color: var(--fc-text-muted); border-radius: var(--fc-control-radius); }
+.fc-btn--glyph:hover:not(:disabled) { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--glyph[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--glyph > svg { width: 13px; height: 13px; }
+.fc-btn--ghost { background: transparent; box-shadow: none; color: var(--fc-text-muted); }
+.fc-btn--ghost:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--primary:hover, .fc-btn--danger:hover { filter: brightness(1.08); }
+.fc-btn:not(.fc-btn--ghost):not(.fc-btn--primary):not(.fc-btn--danger):hover { background: var(--fc-surface-muted); }
+
+/* An icon alone is a square of the same height, and it carries NO edge until it is raised: a row of
+   bordered 28px squares beside a value reads as a row of empty inputs. */
+.fc-btn--icon { width: var(--fc-control-h); padding: 4px; background: transparent; box-shadow: none; color: var(--fc-text-muted); }
+.fc-btn--icon:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--icon.fc-btn--raised { background: var(--fc-surface); box-shadow: var(--fc-control-shadow); }
+.fc-btn--icon > svg { width: 15px; height: 15px; display: block; }
+
+/* ---------- One button, everywhere ----------
+   Six classes drew a pressable thing on a single record — 20, 28 and 32px tall, two with a flat
+   border, two with none, three different paddings — and that is the real reason the page read as
+   several pages stitched together. The names stay, because each one still says WHERE the button
+   stands; what a button LOOKS like is decided once, here, by the same rules as .fc-btn. */
+.fc-record-head__button,
+.fc-record-part__button,
+.fc-sro-table__page {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: var(--fc-control-h); min-height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px 8px;
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong);
+  background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow);
+  white-space: nowrap;
+}
+.fc-record-head__button:hover,
+.fc-record-part__button:hover,
+.fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
+
+/* An icon alone carries NO edge — a row of ringed squares beside a value reads as empty inputs. */
+.fc-record-head__menu,
+.fc-record-head__copy,
+.fc-record-part__action,
+.fc-sro-table__menu,
+.fc-sro-table__tool {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--fc-control-h); height: var(--fc-control-h); min-height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px;
+  background: transparent; box-shadow: none; color: var(--fc-text-muted);
+}
+.fc-record-head__menu:hover,
+.fc-record-head__copy:hover,
+.fc-record-part__action:hover,
+.fc-sro-table__menu:hover,
+.fc-sro-table__tool:hover,
+.fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-head__menu > svg, .fc-record-head__copy svg, .fc-record-part__action > svg,
+.fc-sro-table__menu > svg, .fc-sro-table__tool > svg { width: 15px; height: 15px; display: block; }
+
+/* 32px between one field and the next, as the dialogs this follows set it. 24 put a label close
+   enough to the field above it to read as that field's second line. */
+.fc-edit-fields__grid { row-gap: 32px; }
+
+/* One of several choices, one on at a time: flat until chosen, and then simply the surface, lifted
+   by the same edge a button carries. A solid brand-coloured pill made the quietest control on the
+   screen the loudest thing on it. */
+.fc-tab { display: inline-flex; align-items: center; height: var(--fc-control-h); padding: 4px 8px; border: 0; border-radius: var(--fc-control-radius); background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.fc-tab:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow); }
+
+/* ---------- The drawer, by the dialogs' own measurements ----------
+   A title reads 16/24 like every other card's name, the line under it 13/20.8 like every value, and
+   32px stands between one field and the next — the same distance the form on the page keeps, so a
+   piece edited in the drawer and the same piece read on the page are one rhythm. */
+.fc-sheet__title { font-size: 16px; line-height: 24px; font-weight: var(--fc-weight-strong); }
+.fc-sheet__subtitle { font-size: var(--fc-control-text); line-height: 20.8px; color: var(--fc-text-muted); }
+.fc-sheet__body { row-gap: 32px; }
+/* A line across the whole drawer, not across the text: it separates GROUPS, and a rule that stops
+   short of the edges reads as an underline of the thing above it. */
+.fc-sheet__body .fc-divider { height: 1px; background: var(--fc-border); margin-inline: calc(-1 * var(--fc-sheet-pad, 24px)); border: 0; }
+
+/* ---------- A card that is ONE line ----------
+   A thing the record holds that is opened rather than read — the stored record, the metadata. It is a
+   line, not a card with a head and a body: a 56px head over nothing is a card pretending to have
+   content. Name, how much of it there is, and the way in.  */
+.fc-record-card--summary > .fc-record-card__head { min-height: 0; height: auto; padding: 16px var(--fc-card-pad-x); border-bottom: 0; }
+.fc-record-card--summary .fc-record-card__title { font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); }
+
+/* ── Two controls of the table that are NOT the console's standard size ──────────────────────────
+ * Declared here, after the one-shape rules at the foot of this file, because they are exceptions to
+ * them and were being overwritten by them where they stood before.
+ *
+ * The search is 183 x 28 with its glass inside it, measured: as the 32px form field it stood taller
+ * than the two tool buttons beside it and broke the 28px line of the row. The pager's buttons are
+ * the taller 32px kind at 6/12, which is what makes the foot 64 rather than 57; disabled, they keep
+ * their full opacity and lose their edge, instead of fading the whole control away. */
+/* The class is on the field's WRAPPER, so the box itself is reached through it — and through the
+   tool row as well, because the box also carries a utility class for its height, which ties on
+   specificity and is emitted after this file. */
+.fc-sro-table__tools > .fc-sro-table__search-field > .fc-field,
+.fc-sro-table__search-field.fc-field-stack > .fc-field {
+  height: var(--fc-control-h);
+  padding: 4px 8px 4px 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15' fill='none' stroke='%2371717a' stroke-width='1.3' stroke-linecap='round'%3E%3Ccircle cx='6.5' cy='6.5' r='4.5'/%3E%3Cpath d='M10 10l3 3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 6.5px 50%;
+}
+.fc-sro-table__foot .fc-sro-table__page { height: 32px; min-height: 32px; padding: 6px 12px; }
+.fc-sro-table__foot .fc-sro-table__page:disabled {
+  color: var(--fc-text-faint); opacity: 1; cursor: default; box-shadow: none;
 }

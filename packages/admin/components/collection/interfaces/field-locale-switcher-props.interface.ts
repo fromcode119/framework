@@ -1,7 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 
 export interface IFieldLocaleSwitcherProps {
-  compact?: boolean;
   theme: ThemeMode;
   activeLocale: string;
   activeLocaleCode: string;

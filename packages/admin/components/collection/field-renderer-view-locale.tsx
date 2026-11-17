@@ -146,19 +146,18 @@ export abstract class FieldRendererViewLocale extends FieldRendererViewAccess {
    * subtrees were skipped, and the switcher kept rendering with the state it was first called with. The
    * button was live and the menu could never appear — indistinguishable from a dead control.
    */
-  protected get localeSwitcherProp(): (compact?: boolean) => ReactNode {
+  protected get localeSwitcherProp(): () => ReactNode {
     // Referenced so the closure identity changes with the state the switcher renders from.
     void this.isLocaleMenuOpen;
     void this.activeLocale;
-    return (compact?: boolean) => this.localeSwitcher(compact ?? false);
+    return () => this.localeSwitcher();
   }
 
-  @bound protected localeSwitcher(compact: boolean = false): ReactNode {
+  @bound protected localeSwitcher(): ReactNode {
     const localeRegistry = this.localeRegistry;
     const activeLocaleMeta = localeRegistry.find((item) => item.code === this.activeLocale) || localeRegistry[0];
     return (
       <FieldLocaleSwitcher
-        compact={compact}
         theme={this.theme}
         activeLocale={this.activeLocale}
         activeLocaleCode={activeLocaleMeta?.code || this.activeLocale || 'en'}

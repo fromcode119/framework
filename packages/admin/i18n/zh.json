@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} 个键在表单中没有对应控件",
       "unsurfacedHint": "您可以在此编辑它们，但重要的数据应设置为正式字段。",
       "invalidState": "无效的 JSON — {{error}}。表单保留最后一个有效版本。",
-      "validState": "JSON 有效 — 表单已同步。"
+      "validState": "JSON 有效 — 表单已同步。",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "记录信息",
@@ -357,7 +359,8 @@
     "import": "导入",
     "reset": "重置",
     "notScheduledYet": "尚未安排",
-    "more": "更多操作"
+    "more": "更多操作",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "打开"
     },
     "address": {
       "recipient": "收件人姓名",

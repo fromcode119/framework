@@ -4,7 +4,6 @@ import {PureReactor, prop, Platform} from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ConfirmDialog extends PureReactor {
@@ -47,51 +46,25 @@ export class ConfirmDialog extends PureReactor {
 
     return (
     <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={this.onClose}
-        />
-
-        {/* Dialog */}
-        <div className={`relative w-full max-w-md my-auto ${AdminClass.SURFACE} p-5 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300`}>
-          <div className="flex items-start gap-3">
-            <div className={`p-2.5 rounded-lg flex-shrink-0 ${
-              variant === ButtonVariant.DANGER
-                ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-500'
-                : 'bg-[var(--muted)] text-[var(--primary)]'
-            }`}>
-              <FrameworkIcons.Warning size={24} />
+      <div className="fc-confirm">
+        <div className="fc-confirm__backdrop" onClick={this.onClose} />
+        <div className="fc-confirm__panel">
+          <div className="fc-confirm__top">
+            <span className={`fc-confirm__mark${variant === ButtonVariant.DANGER ? ' fc-confirm__mark--danger' : ''}`}>
+              <FrameworkIcons.Warning size={18} />
+            </span>
+            <div className="fc-confirm__text">
+              <h3 className="fc-confirm__title">{this.title}</h3>
+              <p className="fc-confirm__body">{this.description}</p>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
-                {this.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                {this.description}
-              </p>
-            </div>
-            <button
-              onClick={this.onClose}
-              className="p-1 rounded-lg transition-colors hover:bg-slate-50 text-slate-400 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-white"
-            >
-              <FrameworkIcons.Close size={20} />
-            </button>
           </div>
 
-          <div className="mt-5 flex flex-col sm:flex-row gap-2">
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="w-full sm:w-auto sm:flex-1"
-              onClick={this.onClose}
-              disabled={isLoading}
-            >
+          <div className="fc-confirm__foot">
+            <Button variant={ButtonVariant.GHOST} onClick={this.onClose} disabled={isLoading}>
               {cancelLabel}
             </Button>
             <Button
               variant={variant === ButtonVariant.DANGER ? ButtonVariant.DANGER : ButtonVariant.PRIMARY}
-              className="w-full sm:w-auto sm:flex-1"
               onClick={this.onConfirm}
               isLoading={isLoading}
             >

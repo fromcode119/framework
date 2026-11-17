@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} nycklar som formuläret saknar kontroll för",
       "unsurfacedHint": "Du kan redigera dem här, men allt som är viktigt förtjänar ett riktigt fält.",
       "invalidState": "Ogiltig JSON – {{error}}. Formuläret behåller den senaste giltiga versionen.",
-      "validState": "Giltig JSON – formuläret är synkroniserat."
+      "validState": "Giltig JSON – formuläret är synkroniserat.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Postinformation",
@@ -357,7 +359,8 @@
     "import": "Importera",
     "reset": "Återställ",
     "notScheduledYet": "inte schemalagd än",
-    "more": "Fler åtgärder"
+    "more": "Fler åtgärder",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Öppna"
     },
     "address": {
       "recipient": "Mottagarens namn",

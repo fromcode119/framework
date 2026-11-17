@@ -291,7 +291,9 @@
       "unsurfacedMany": "Klucze bez kontrolki w formularzu: {{count}}",
       "unsurfacedHint": "Możesz je tu edytować, ale wszystko, co istotne, powinno mieć własne pole.",
       "invalidState": "Nieprawidłowy JSON — {{error}}. Formularz zachowuje ostatnią poprawną wersję.",
-      "validState": "Prawidłowy JSON — formularz jest zsynchronizowany."
+      "validState": "Prawidłowy JSON — formularz jest zsynchronizowany.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informacje o rekordzie",
@@ -357,7 +359,8 @@
     "import": "Importuj",
     "reset": "Resetuj",
     "notScheduledYet": "jeszcze nie zaplanowano",
-    "more": "Więcej działań"
+    "more": "Więcej działań",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Otwórz"
     },
     "address": {
       "recipient": "Nazwa odbiorcy",

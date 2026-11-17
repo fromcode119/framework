@@ -9,7 +9,6 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminLink } from '@/components/view/admin-link.client';
 
 export class FieldLocaleSwitcher extends PureReactor {
-  @prop declare compact?: boolean;
   @prop declare theme: ThemeMode;
   @prop declare activeLocale: string;
   @prop declare activeLocaleCode: string;
@@ -20,7 +19,6 @@ export class FieldLocaleSwitcher extends PureReactor {
   @prop declare menuRef: Ref<HTMLDivElement>;
 
   render(): ReactNode {
-    const compact = this.compact ?? false;
     const { theme, activeLocale, activeLocaleCode, localeRegistry, isOpen, onToggle, onSelect, menuRef } = this;
     return (
       // Raise the switcher's own stacking context while the menu is open. The wrapper that positions it
@@ -32,13 +30,9 @@ export class FieldLocaleSwitcher extends PureReactor {
         <button
           type="button"
           onClick={onToggle}
-          className={`inline-flex items-center gap-1.5 rounded-[var(--radius)] border font-medium tracking-wide transition-all ${
-            compact ? 'h-7 px-2 text-[12px]' : 'px-2.5 py-1 text-[12px]'
-          } ${
-            theme === ThemeMode.DARK
-              ? 'bg-slate-900 border-slate-700 text-slate-200 hover:border-indigo-500/60'
-              : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-400'
-          }`}
+          // The console has ONE pressable shape. This chip drew its own: a 1px border, 12px text and
+          // an indigo hover, so beside a 13/20 .fc-btn in the same drawer it read as a different kit.
+          className="fc-btn fc-btn--mini"
         >
           <FrameworkIcons.Globe size={11} />
           <span>{(activeLocaleCode || activeLocale || 'en').toUpperCase()}</span>
@@ -51,10 +45,11 @@ export class FieldLocaleSwitcher extends PureReactor {
           // raising only this menu left the next field's chip painted over it.
           <div
             role="menu"
-            className={`absolute end-0 mt-2 min-w-[220px] rounded-xl border shadow-xl z-30 p-1.5 ${
+            // The sheet every other menu in this console opens in, at the card's corner.
+            className={`fc-menu-sheet absolute end-0 mt-2 min-w-[220px] border shadow-lg z-30 ${
               theme === ThemeMode.DARK
-                ? 'bg-slate-950 border-slate-800'
-                : 'bg-white border-slate-200'
+                ? 'bg-slate-900 border-slate-800 shadow-black/40'
+                : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
             }`}
           >
             {localeRegistry.length ? null : (
@@ -74,16 +69,11 @@ export class FieldLocaleSwitcher extends PureReactor {
                   key={locale.code}
                   type="button"
                   onClick={() => onSelect(locale.code)}
-                  className={`w-full text-start px-2.5 py-2 rounded-[var(--radius)] text-xs font-medium transition-colors flex items-center justify-between ${
-                    isActive
-                      ? 'bg-indigo-600 text-white'
-                      : theme === ThemeMode.DARK
-                        ? 'text-slate-200 hover:bg-slate-800'
-                        : 'text-slate-700 hover:bg-slate-50'
-                  }`}
+                  className="fc-menu-action justify-between"
+                  aria-current={isActive ? 'true' : undefined}
                 >
                   <span className="truncate">{locale.label}</span>
-                  <span className={`ms-2 ${isActive ? 'text-indigo-100' : 'opacity-70'}`}>{locale.code.toUpperCase()}</span>
+                  <span className="fc-menu-action__detail ms-2">{locale.code.toUpperCase()}</span>
                 </button>
               );
             })}

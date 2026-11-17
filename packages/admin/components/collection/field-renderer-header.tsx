@@ -20,7 +20,7 @@ export class FieldRendererHeader extends PureReactor {
   @prop declare componentHandlesLocalization: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
   @prop declare onRequestReadOnlyOverride: () => void;
-  @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  @prop declare localeSwitcher: () => ReactNode;
   /** The control that opens this field's explanation, when it is not already printed below. */
   @prop declare help?: ReactNode;
   /** The description as a line under the name, on a settings row — see `FieldSummary`. */
@@ -67,7 +67,7 @@ export class FieldRendererHeader extends PureReactor {
             </span>
           )}
           {isFieldReadOnly && <FieldLockControl label={label} canUnlock={canRequestReadOnlyOverride} onUnlock={onRequestReadOnlyOverride} />}
-          {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher(false)}
+          {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher()}
         </div>
       </div>
     );

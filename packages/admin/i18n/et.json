@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} võtit, millele vormis juhtelementi pole",
       "unsurfacedHint": "Saate neid siin muuta, kuid oluliste andmete jaoks tasub luua päris väli.",
       "invalidState": "Vigane JSON — {{error}}. Vorm säilitab viimase kehtiva versiooni.",
-      "validState": "Kehtiv JSON — vorm on sünkroonis."
+      "validState": "Kehtiv JSON — vorm on sünkroonis.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Kirje teave",
@@ -357,7 +359,8 @@
     "import": "Impordi",
     "reset": "Lähtesta",
     "notScheduledYet": "pole veel ajastatud",
-    "more": "Rohkem toiminguid"
+    "more": "Rohkem toiminguid",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Ava"
     },
     "address": {
       "recipient": "Saaja nimi",

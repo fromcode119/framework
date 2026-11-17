@@ -22,7 +22,7 @@ export interface IFieldControlRendererProps {
   slugManuallyEdited?: boolean;
   isLocalizedField: boolean;
   shouldInlineLocaleSwitcher: boolean;
-  localeSwitcher: (compact?: boolean) => React.ReactNode;
+  localeSwitcher: () => React.ReactNode;
   record?: Record<string, any>;
   onPatch?: (partial: Record<string, any>) => void;
 }

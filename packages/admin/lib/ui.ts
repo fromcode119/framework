@@ -5,11 +5,11 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
  */
 export class UiFieldUtils {
   static readonly COMMON = {
-    // ONE radius token for every control. `Button` renders `rounded-[var(--radius)]` (.75rem), so a
-    // hardcoded `rounded-lg` (.5rem) here made every input/select visibly rounder-or-flatter than the
-    // button sitting next to it (Save vs the Published dropdown were 8px vs 12px at the same height).
-    // Anything that needs a different radius must change `--radius`, not re-hardcode a Tailwind step.
-    radius: 'rounded-[var(--radius)]',
+    // ONE radius token for every control, and it is the CONSOLE's, not the site's. This read
+    // `--radius`, which BrandTokenStyleService replaces at runtime with the active brand's radius —
+    // so the console's controls changed corner with whichever site happened to be open. Anything that
+    // needs a different corner changes `--fc-control-radius`, not a Tailwind step beside it.
+    radius: 'rounded-[var(--fc-control-radius)]',
     radiusInner: 'rounded-md',
     transition: 'transition-all duration-200',
     shadow: 'shadow-sm',
@@ -23,9 +23,13 @@ export class UiFieldUtils {
   private static readonly ONE_SIZE_CONTAINER = 'min-h-[var(--fc-field-h)] py-1.5 px-3 leading-none';
 
   static readonly FIELD = {
-    base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} fc-field ${UiFieldUtils.COMMON.shadow}`,
-    light: 'bg-white border-slate-200 text-slate-900 caret-slate-900 placeholder:text-slate-400 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 autofill:[-webkit-text-fill-color:#0f172a] autofill:shadow-[inset_0_0_0px_1000px_#ffffff]',
-    dark: 'dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:caret-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-500/50 dark:focus:border-indigo-500 dark:focus:ring-0 dark:[color-scheme:dark] dark:autofill:[-webkit-text-fill-color:#f8fafc] dark:autofill:caret-white dark:autofill:shadow-[inset_0_0_0px_1000px_rgb(2,6,23)]',
+    /* A field is drawn by ONE class in admin.css — corner, ink, edge, the colour it fills with and
+       what focus does to it. What stood here was a white box with a flat border that turned indigo on
+       hover, a brand radius that changed with whichever site was open, and a 4px indigo halo on focus:
+       three decisions a stylesheet cannot see and no appearance can switch off. */
+    base: 'w-full box-border appearance-none outline-none fc-field',
+    light: '',
+    dark: '',
     /**
      * ONE size. Every text field, select, number field and date field in the console is the same
      * height with the same text, whatever `size` a caller asks for: three sizes meant a row could hold
@@ -40,7 +44,9 @@ export class UiFieldUtils {
   };
 
   static readonly TEXT = {
-    LABEL: 'text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1',
+    /* A label reads like everything else that carries words — 13/20, in the record's own ink, not a
+       12px grey caption. Grey-and-small is what made a form look like the small print of a form. */
+    LABEL: 'fc-field-label',
     ERROR: 'text-[12px] font-medium text-rose-500 mt-1 ms-0.5',
     SUBTEXT: 'text-[12px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed',
     /**

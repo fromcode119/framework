@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} مفاتيح ليس لها عناصر تحكم في النموذج",
       "unsurfacedHint": "يمكنك تعديلها هنا، لكن ما كان مهمًا منها يستحق حقلًا حقيقيًا.",
       "invalidState": "JSON غير صالح — {{error}}. يحتفظ النموذج بآخر إصدار صالح.",
-      "validState": "JSON صالح — النموذج متزامن."
+      "validState": "JSON صالح — النموذج متزامن.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "معلومات السجل",
@@ -357,7 +359,8 @@
     "import": "استيراد",
     "reset": "إعادة تعيين",
     "notScheduledYet": "لم تتم الجدولة بعد",
-    "more": "إجراءات أخرى"
+    "more": "إجراءات أخرى",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "فتح"
     },
     "address": {
       "recipient": "اسم المستلم",

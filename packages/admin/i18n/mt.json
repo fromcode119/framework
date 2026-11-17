@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} ċwievet li l-formola m'għandhiex kontroll għalihom",
       "unsurfacedHint": "Tista' teditjahom hawn, imma kull ma huwa importanti jistħoqqlu qasam proprju.",
       "invalidState": "JSON mhux validu — {{error}}. Il-formola żżomm l-aħħar verżjoni valida.",
-      "validState": "JSON validu — il-formola hija sinkronizzata."
+      "validState": "JSON validu — il-formola hija sinkronizzata.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informazzjoni tar-Rekord",
@@ -357,7 +359,8 @@
     "import": "Importa",
     "reset": "Irrisettja",
     "notScheduledYet": "għadu mhux skedat",
-    "more": "Aktar azzjonijiet"
+    "more": "Aktar azzjonijiet",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Open"
     },
     "address": {
       "recipient": "Isem ir-riċevitur",

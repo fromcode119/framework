@@ -37,7 +37,6 @@ export interface IBuildSourceFormState {
   /** The server's reason the repository could not be read; empty when it was read and declares nothing. */
   inspectFailure: string;
   /** Whether the provider, token and publish-target fields are shown. */
-  advancedOpen: boolean;
   gitSecret: string;
   gitUrl: string;
   slug: string;

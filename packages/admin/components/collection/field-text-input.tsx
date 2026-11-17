@@ -21,7 +21,7 @@ export class FieldTextInput extends PureReactor {
   @prop declare slugManuallyEdited?: boolean;
   @prop declare isLocalizedField: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
-  @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  @prop declare localeSwitcher: () => ReactNode;
   /** The field's description — shown in the read-only lock bar instead of as a line below. */
   @prop declare resolvedFieldDescription?: string;
   @prop declare wrapWithReadOnlyOverride: (node: ReactNode, roundedClass?: string) => ReactNode;
@@ -87,7 +87,7 @@ export class FieldTextInput extends PureReactor {
           inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}
         />
         {isLocalizedField && shouldInlineLocaleSwitcher && (
-          <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
+          <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
         )}
         {field.name === 'slug' && slugWarning && (
           <div className="absolute top-full start-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">

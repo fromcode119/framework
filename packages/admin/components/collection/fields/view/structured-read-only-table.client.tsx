@@ -61,7 +61,12 @@ export class StructuredReadOnlyTable extends PureReactor {
    * into the row from the row itself, instead of back up to the card's head. It is the SECTION's editor:
    * the value is one field of the record, so the sheet opens it whole, and the menu says nothing else.
    */
-  @prop declare editRow?: () => void;
+  @prop declare editRow?: (rowKey?: string) => void;
+  /** Identifies one row over its own columns, so the editor can be given the row and not the field. */
+  @prop declare rowKeyTemplate?: string;
+  /** Where a row leads, as the field declared it: a path with `{key}` for that row's value of `key`. */
+  @prop declare rowHref?: string;
+  @prop declare navigate?: (href: string) => void;
 
   /** The value picked per column; a column with no entry is not narrowed. */
   @state private picked: Record<string, string> = {};
@@ -134,15 +139,24 @@ export class StructuredReadOnlyTable extends PureReactor {
     return this.sortDescending ? sorted.reverse() : sorted;
   }
 
-  /** One ⋯ per row, the same one on each: what this row can be asked for is to be edited. */
-  private renderRowMenu(): ReactNode {
+  /**
+   * One ⋯ per row. Where the field says what identifies a row (`tableRowKey`), the edit is given THAT
+   * row and the editor opens on it alone; without one it opens the whole field, which is right for
+   * the field and wrong for the row — asking to change one variant showed every variant with it.
+   * Where the field says where a row leads, that way out stands first.
+   */
+  private renderRowMenu(row: Record<string, IStructuredNode>): ReactNode {
     const open = this.editRow;
     if (!open) return null;
     const label = AdminI18n.t('collection.edit.editSection');
+    const href = StructuredReadOnlyTableService.rowHref(this.rowHref, row);
+    const go = href && this.navigate
+      ? [{ label: AdminI18n.t('ui.structured.openRow'), onClick: () => this.navigate?.(href), icon: <FrameworkIcons.ArrowRight size={14} /> }]
+      : [];
     return (
       <Dropdown
         align={HorizontalAlign.RIGHT}
-        items={[{ label, onClick: open, icon: <FrameworkIcons.Edit size={14} /> }]}
+        items={[...go, { label, onClick: () => open(StructuredReadOnlyTableService.rowHref(this.rowKeyTemplate, row) || undefined), icon: <FrameworkIcons.Edit size={14} /> }]}
         trigger={
           <button type="button" aria-label={label} title={label} className="fc-sro-table__menu">
             <FrameworkIcons.More size={16} />
@@ -213,6 +227,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const shown = rows.slice((page - 1) * size, page * size);
     const toolbar = this.renderTools(rows.length);
     const media = this.node.tableMediaColumns ?? [];
+    const badges = this.node.tableBadgeColumns ?? [];
     return (
       <div className="fc-sro-table">
         {toolbar}
@@ -245,13 +260,22 @@ export class StructuredReadOnlyTable extends PureReactor {
                 <tr><td colSpan={columns.length + (this.editRow ? 1 : 0)}>{AdminI18n.t('ui.structured.noMatch')}</td></tr>
               ) : null}
               {shown.map((row, rowIndex) => (
-                <tr key={rowIndex}>
+                <tr
+                  key={rowIndex}
+                  className={StructuredReadOnlyTableService.rowHref(this.rowHref, row) && this.navigate ? 'fc-sro-table__row--link' : undefined}
+                  onClick={() => {
+                    const href = StructuredReadOnlyTableService.rowHref(this.rowHref, row);
+                    if (href) this.navigate?.(href);
+                  }}
+                >
                   {columns.map((column) => (
                     <td key={column} className={media.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
-                      <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />
+                      {badges.includes(column) && StructuredReadOnlyTableService.cellText(row[column])
+                        ? <span className="fc-sro__chip">{StructuredReadOnlyTableService.cellText(row[column])}</span>
+                        : <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />}
                     </td>
                   ))}
-                  {this.editRow ? <td className="fc-sro-table__menu-cell">{this.renderRowMenu()}</td> : null}
+                  {this.editRow ? <td className="fc-sro-table__menu-cell" onClick={(event) => event.stopPropagation()}>{this.renderRowMenu(row)}</td> : null}
                 </tr>
               ))}
             </tbody>

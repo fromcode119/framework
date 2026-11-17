@@ -49,7 +49,7 @@ export class FieldControlRenderer extends PureReactor {
   @prop declare slugManuallyEdited?: boolean;
   @prop declare isLocalizedField: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
-  @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  @prop declare localeSwitcher: () => ReactNode;
   @prop declare record?: Record<string, any>;
   @prop declare onPatch?: (partial: Record<string, any>) => void;
 

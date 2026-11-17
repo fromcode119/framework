@@ -291,7 +291,9 @@
       "unsurfacedMany": "Kľúče, pre ktoré formulár nemá ovládací prvok: {{count}}",
       "unsurfacedHint": "Môžete ich upraviť tu, no všetko dôležité si zaslúži skutočné pole.",
       "invalidState": "Neplatný JSON — {{error}}. Formulár si ponecháva poslednú platnú verziu.",
-      "validState": "Platný JSON — formulár je synchronizovaný."
+      "validState": "Platný JSON — formulár je synchronizovaný.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informácie o zázname",
@@ -357,7 +359,8 @@
     "import": "Importovať",
     "reset": "Obnoviť pôvodné",
     "notScheduledYet": "zatiaľ nenaplánované",
-    "more": "Ďalšie akcie"
+    "more": "Ďalšie akcie",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Otvoriť"
     },
     "address": {
       "recipient": "Meno príjemcu",

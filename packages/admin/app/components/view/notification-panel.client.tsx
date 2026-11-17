@@ -15,7 +15,6 @@ import { EmptyState } from '@/components/ui/view/empty-state.client';
  */
 export class NotificationPanel extends PureReactor {
   @prop declare notifications: Array<Record<string, any>>;
-  @prop declare expandedId: number | null;
   @prop declare deviceOn: boolean;
   @prop declare onToggle: (notification: Record<string, any>) => void;
   @prop declare onFollow: (link: string) => void;
@@ -27,7 +26,7 @@ export class NotificationPanel extends PureReactor {
    */
   private get list(): ReactNode {
     return this.notifications.map((row) => (
-      <NotificationRow key={row.id} notification={row} expanded={this.expandedId === Number(row.id)} onToggle={this.onToggle} onFollow={this.onFollow} />
+      <NotificationRow key={row.id} notification={row} onToggle={this.onToggle} onFollow={this.onFollow} />
     ));
   }
 

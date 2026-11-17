@@ -291,7 +291,9 @@
       "unsurfacedMany": "Ključeva bez kontrole u obrascu: {{count}}",
       "unsurfacedHint": "Ovdje ih možete uređivati, ali sve važno zaslužuje pravo polje.",
       "invalidState": "Nevaljan JSON — {{error}}. Obrazac zadržava posljednju valjanu verziju.",
-      "validState": "Valjan JSON — obrazac je usklađen."
+      "validState": "Valjan JSON — obrazac je usklađen.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Podaci o zapisu",
@@ -357,7 +359,8 @@
     "import": "Uvezi",
     "reset": "Poništi",
     "notScheduledYet": "još nije zakazano",
-    "more": "Više radnji"
+    "more": "Više radnji",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Otvori"
     },
     "address": {
       "recipient": "Ime primatelja",

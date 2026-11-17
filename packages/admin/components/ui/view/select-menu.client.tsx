@@ -77,16 +77,19 @@ export class SelectMenu extends PureReactor {
                 // Sources form's Provider, Branch and Type — opened its list BEHIND the dialog, unpickable.
                 zIndex: 2147483600
               }}
-              className={`max-h-[300px] flex flex-col rounded-lg border shadow-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-300 overflow-hidden ${
+              // The sheet every menu in this console opens in. It used to be its own object: a 12px
+              // corner, a blurred translucent pane and shadow-2xl, so the list a field opened looked
+              // nothing like the list the card's menu opened two rows above it.
+              className={`fc-menu-sheet max-h-[300px] flex flex-col border shadow-lg overflow-hidden ${
                 theme === ThemeMode.DARK
-                  ? 'bg-slate-950/95 border-slate-800/80 backdrop-blur-3xl'
-                  : 'bg-white/95 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
+                  ? 'bg-slate-900 border-slate-800 shadow-black/40'
+                  : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
               }`}
             >
               {searchable && (
-                <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="p-1 pb-2 border-b border-[color:var(--fc-border)]">
                   <div className="relative group">
-                    <div className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                    <div className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[color:var(--fc-text-muted)]">
                       <FrameworkIcons.Search size={12} />
                     </div>
                     <input
@@ -95,24 +98,20 @@ export class SelectMenu extends PureReactor {
                       placeholder={AdminI18n.t('ui.select.search')}
                       value={searchValue}
                       onChange={(e) => onSearchChange(e.target.value)}
-                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `ps-8 ${searchInputThemeClasses}`)}
+                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `ps-7 ${searchInputThemeClasses}`)}
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto p-1 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto scrollbar-hide">
                 {canCreate && (
                   <button
                     type="button"
                     onClick={() => onCreate?.(searchValue.trim())}
-                    className={`w-full text-start px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-medium ${
-                      theme === ThemeMode.DARK
-                        ? 'text-indigo-300 hover:bg-indigo-500/10'
-                        : 'text-indigo-600 hover:bg-indigo-50'
-                    }`}
+                    className="fc-menu-action"
                   >
-                    <FrameworkIcons.Plus size={12} className="flex-shrink-0" />
+                    <FrameworkIcons.Plus size={15} className="fc-menu-action__icon" />
                     <span className="truncate">{this.createLabel ?? AdminI18n.t('ui.select.create', { value: searchValue.trim() })}</span>
                   </button>
                 )}
@@ -121,7 +120,7 @@ export class SelectMenu extends PureReactor {
                   <div className="px-4 py-8 text-center">
                     {/* An empty list while the owner is still searching is not an empty catalogue: saying
                         "no results" there is a wrong answer the operator cannot tell from a right one. */}
-                    <p className="text-[12px] font-medium text-slate-500 tracking-wide opacity-50">
+                    <p className="text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">
                       {AdminI18n.t(searching ? 'ui.select.searching' : 'ui.select.noResults')}
                     </p>
                   </div>
@@ -134,18 +133,14 @@ export class SelectMenu extends PureReactor {
                     return (
                     <div key={group.name} className="mb-0.5 last:mb-0">
                       {showGroupHeaders && (
-                        <div className={`px-3.5 pt-2 pb-1 text-[12px] font-medium tracking-wide ${
-                          theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'
-                        }`}>
+                        <div className="px-2 pt-2 pb-1 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
                           {group.name === 'Options' ? AdminI18n.t('ui.select.options') : group.name}
                         </div>
                       )}
                       {sections.map((section) => (
                         <div key={`${group.name}:${section.name || 'default'}`}>
                           {showSectionHeaders && section.name ? (
-                            <div className={`px-4 pt-1 pb-1 text-[12px] font-medium tracking-wide ${
-                              theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'
-                            }`}>
+                            <div className="px-3 pt-1 pb-1 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
                               {section.name}
                             </div>
                           ) : null}
@@ -154,19 +149,14 @@ export class SelectMenu extends PureReactor {
                           key={`${group.name}:${section.name}:${typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}:${opt.label}`}
                           type="button"
                           onClick={() => onSelect(SelectUtils.normalizeValue(opt.value))}
-                          className={`w-full text-start ${section.name ? 'ps-8 pe-3' : 'px-3.5'} py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
-                            (selectedOption && selectedOption === opt)
-                              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                              : theme === ThemeMode.DARK
-                                ? 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
-                          }`}
+                          aria-current={selectedOption && selectedOption === opt ? 'true' : undefined}
+                          className={`fc-menu-action justify-between group ${section.name ? 'ps-6' : ''}`}
                         >
-                          <span className={`relative z-10 font-medium truncate`}>
+                          <span className="min-w-0 flex-1 truncate">
                             {opt.label}
                           </span>
                           {(selectedOption && selectedOption === opt) ? (
-                            <FrameworkIcons.Check size={12} className="relative z-10 flex-shrink-0" />
+                            <FrameworkIcons.Check size={15} className="fc-menu-action__icon" />
                           ) : this.onDelete && opt.deletable ? (
                             <span
                               role="button"
@@ -176,13 +166,11 @@ export class SelectMenu extends PureReactor {
                                 event.stopPropagation();
                                 this.onDelete?.(SelectUtils.normalizeValue(opt.value));
                               }}
-                              className="relative z-10 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                              className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-[color:var(--fc-text-muted)] hover:text-[color:var(--fc-danger)]"
                             >
-                              <FrameworkIcons.Trash size={11} />
+                              <FrameworkIcons.Trash size={13} />
                             </span>
-                          ) : (
-                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all transform scale-0 group-hover:scale-100 flex-shrink-0" />
-                          )}
+                          ) : null}
                         </button>
                           ))}
                         </div>
@@ -193,9 +181,7 @@ export class SelectMenu extends PureReactor {
               </div>
 
               {menuNote ? (
-                <div className={`border-t px-3.5 py-2 text-[12px] font-medium tracking-wide ${
-                  isDarkTheme ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
-                }`}>
+                <div className="border-t border-[color:var(--fc-border)] px-2 py-2 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
                   {menuNote}
                 </div>
               ) : null}

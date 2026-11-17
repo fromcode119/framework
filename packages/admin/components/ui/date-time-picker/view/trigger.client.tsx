@@ -34,13 +34,13 @@ export class DateTimePickerTrigger extends PureReactor {
     return (
       <div
         onClick={this.handleToggle}
-        className={`${UiFieldUtils.getFieldClasses(size, `cursor-pointer flex items-center justify-between transition-all duration-150 ${isOpen ? 'ring-2 ring-indigo-500/50' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`${UiFieldUtils.getFieldClasses(size, `cursor-pointer flex items-center justify-between transition-all duration-150 ${isOpen ? 'fc-field--open' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2">
            {this.granularity.isTimeOfDay
-             ? <FrameworkIcons.Clock size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />
-             : <FrameworkIcons.Calendar size={17} className={`transition-colors ${isOpen ? 'text-indigo-500' : 'text-slate-400'}`} />}
-           <span className={`tracking-tight ${!value ? 'text-slate-400 font-normal' : 'font-medium'}`}>
+             ? <FrameworkIcons.Clock size={15} className="text-[color:var(--fc-text-muted)]" />
+             : <FrameworkIcons.Calendar size={15} className="text-[color:var(--fc-text-muted)]" />}
+           <span className={`truncate ${!value ? 'text-[color:var(--fc-text-muted)]' : ''}`}>
              {value && !this.granularity.usesCalendar
                ? this.granularity.formatValue(value)
                : value && utcDate
@@ -60,7 +60,7 @@ export class DateTimePickerTrigger extends PureReactor {
         {value && !disabled && (
           <div
             onClick={this.handleClear}
-            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all duration-150 active:scale-90"
+            className="fc-btn fc-btn--icon"
           >
             <FrameworkIcons.Close size={15} />
           </div>

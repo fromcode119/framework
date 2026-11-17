@@ -291,7 +291,9 @@
       "unsurfacedMany": "Klíče bez ovládacího prvku ve formuláři: {{count}}",
       "unsurfacedHint": "Můžete je upravit zde, ale cokoli důležitého si zaslouží skutečné pole.",
       "invalidState": "Neplatný JSON — {{error}}. Formulář si ponechává poslední platnou verzi.",
-      "validState": "Platný JSON — formulář je synchronizován."
+      "validState": "Platný JSON — formulář je synchronizován.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informace o záznamu",
@@ -357,7 +359,8 @@
     "import": "Importovat",
     "reset": "Obnovit výchozí",
     "notScheduledYet": "zatím nenaplánováno",
-    "more": "Další akce"
+    "more": "Další akce",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Otevřít"
     },
     "address": {
       "recipient": "Jméno příjemce",

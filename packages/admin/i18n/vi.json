@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} khóa không có điều khiển trong biểu mẫu",
       "unsurfacedHint": "Bạn có thể chỉnh sửa chúng tại đây, nhưng những gì quan trọng nên có một trường riêng.",
       "invalidState": "JSON không hợp lệ — {{error}}. Biểu mẫu giữ phiên bản hợp lệ gần nhất.",
-      "validState": "JSON hợp lệ — biểu mẫu đã được đồng bộ."
+      "validState": "JSON hợp lệ — biểu mẫu đã được đồng bộ.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Thông tin bản ghi",
@@ -357,7 +359,8 @@
     "import": "Nhập",
     "reset": "Đặt lại",
     "notScheduledYet": "chưa được lên lịch",
-    "more": "Thao tác khác"
+    "more": "Thao tác khác",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Mở"
     },
     "address": {
       "recipient": "Tên người nhận",

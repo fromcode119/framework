@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} key na walang kontrol sa form",
       "unsurfacedHint": "Maaari mo silang i-edit dito, pero ang anumang mahalaga ay dapat magkaroon ng totoong field.",
       "invalidState": "Di-wastong JSON — {{error}}. Pinapanatili ng form ang huling wastong bersyon.",
-      "validState": "Wastong JSON — naka-sync ang form."
+      "validState": "Wastong JSON — naka-sync ang form.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Impormasyon ng Record",
@@ -357,7 +359,8 @@
     "import": "I-import",
     "reset": "I-reset",
     "notScheduledYet": "hindi pa naka-iskedyul",
-    "more": "Iba pang aksyon"
+    "more": "Iba pang aksyon",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Open"
     },
     "address": {
       "recipient": "Pangalan ng tatanggap",

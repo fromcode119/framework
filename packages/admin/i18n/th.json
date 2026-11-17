@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} คีย์ที่ฟอร์มไม่มีตัวควบคุม",
       "unsurfacedHint": "คุณแก้ไขได้ที่นี่ แต่ข้อมูลที่สำคัญควรมีฟิลด์จริง",
       "invalidState": "JSON ไม่ถูกต้อง — {{error}} ฟอร์มจะคงเวอร์ชันล่าสุดที่ถูกต้องไว้",
-      "validState": "JSON ถูกต้อง — ฟอร์มซิงค์แล้ว"
+      "validState": "JSON ถูกต้อง — ฟอร์มซิงค์แล้ว",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "ข้อมูลรายการ",
@@ -357,7 +359,8 @@
     "import": "นำเข้า",
     "reset": "รีเซ็ต",
     "notScheduledYet": "ยังไม่ได้กำหนดเวลา",
-    "more": "การดำเนินการเพิ่มเติม"
+    "more": "การดำเนินการเพิ่มเติม",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "เปิด"
     },
     "address": {
       "recipient": "ชื่อผู้รับ",

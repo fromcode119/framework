@@ -46,53 +46,45 @@ export class DateTimePickerTimePopover extends PureReactor {
         <div
           ref={popoverRef}
           style={{ position: 'fixed', top: coords.top, left: coords.left, width: 'min(260px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', zIndex: 9999 }}
-          className={`animate-in zoom-in-95 slide-in-from-top-2 rounded-xl p-4 duration-200 ${
+          className={`fc-menu-sheet border p-2 shadow-lg ${
             dark
-              ? 'bg-slate-900 ring-1 ring-white/10 shadow-2xl shadow-black/50'
-              : 'bg-white ring-1 ring-black/10 shadow-2xl shadow-slate-900/20'
+              ? 'bg-slate-900 border-slate-800 shadow-black/40'
+              : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
           }`}
         >
           <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center shadow-sm transition-all duration-150 ${
-                dark
-                  ? 'bg-indigo-500/10 text-indigo-300 ring-1 ring-indigo-400/20'
-                  : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/20'
-              }`}>
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 text-[color:var(--fc-text-muted)]">
                 <FrameworkIcons.Clock size={15} />
-              </div>
-              <span className={`text-[12px] font-medium tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
+              </span>
+              <span className="fc-cal__sum-value">{AdminI18n.t('ui.date.time')}</span>
             </div>
 
             <div className="flex shrink-0 items-end gap-1.5">
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
+                <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
-              <span className={`pb-2 text-[15px] font-medium ${dark ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
+              <span className="pb-1.5 text-[13px] font-medium text-[color:var(--fc-text-muted)]">:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
+                <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />
               </div>
             </div>
           </div>
 
-          <div className={`mt-3 flex flex-col gap-2.5 border-t pt-3 ${dark ? 'border-white/5' : 'border-slate-200/80'}`}>
+          <div className="mt-2 flex flex-col gap-2 border-t border-[color:var(--fc-border)] pt-2">
             <button
               type="button"
               onClick={onClear}
-              className={`self-start rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
-                dark
-                  ? 'bg-slate-700/40 text-slate-200 hover:bg-rose-500/10 hover:text-rose-300 active:scale-95 ring-1 ring-white/5'
-                  : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 ring-1 ring-black/5'
-              }`}
+              className="fc-btn self-start"
             >
               {AdminI18n.t('ui.date.clear')}
             </button>
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.MD}
-              className="w-full rounded-xl font-medium text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
+              className="w-full"
               onClick={onClose}
             >
               {AdminI18n.t('ui.date.done')}

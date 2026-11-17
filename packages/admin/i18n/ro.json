@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} chei pentru care formularul nu are control",
       "unsurfacedHint": "Le puteți edita aici, dar orice este important merită un câmp propriu.",
       "invalidState": "JSON nevalid — {{error}}. Formularul păstrează ultima versiune validă.",
-      "validState": "JSON valid — formularul este sincronizat."
+      "validState": "JSON valid — formularul este sincronizat.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informații înregistrare",
@@ -357,7 +359,8 @@
     "import": "Importă",
     "reset": "Resetează",
     "notScheduledYet": "încă neprogramat",
-    "more": "Mai multe acțiuni"
+    "more": "Mai multe acțiuni",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Deschide"
     },
     "address": {
       "recipient": "Numele destinatarului",

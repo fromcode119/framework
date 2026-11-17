@@ -44,8 +44,6 @@ export class BuildSourceForm extends BuildSourceFormFields {
   private renderAdvanced(): ReactNode {
     return (
       <BuildSourceAdvancedFields
-        open={this.advancedOpen}
-        onToggle={this.toggleAdvanced}
         provider={this.state.provider}
         providerOptions={this.state.providers.map((entry) => ({ label: entry.label, value: entry.key }))}
         providerPlaceholder={this.state.providers.length === 0 ? AdminI18n.t('sources.readingProviders') : AdminI18n.t('sources.selectAProvider')}

@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} Schlüssel ohne Steuerelement im Formular",
       "unsurfacedHint": "Sie können sie hier bearbeiten, aber alles Wichtige sollte ein eigenes Feld erhalten.",
       "invalidState": "Ungültiges JSON – {{error}}. Das Formular behält die letzte gültige Version.",
-      "validState": "Gültiges JSON – das Formular ist synchron."
+      "validState": "Gültiges JSON – das Formular ist synchron.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Datensatzinfo",
@@ -357,7 +359,8 @@
     "import": "Importieren",
     "reset": "Zurücksetzen",
     "notScheduledYet": "noch nicht geplant",
-    "more": "Weitere Aktionen"
+    "more": "Weitere Aktionen",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Öffnen"
     },
     "address": {
       "recipient": "Name des Empfängers",

@@ -105,9 +105,48 @@ export interface IField {
     tableLayout?: readonly {
       readonly key: string;
       readonly media?: boolean;
+      /**
+       * Read this column's value as a TAG, not as text — the reference prints an option's value
+       * ("S", "Тъмносин меланж") as the same badge the record's own rows use for it.
+       */
+      readonly badge?: boolean;
       /** Use the values of a nested group as the display text, falling back to the named key. */
       readonly join?: { readonly from: string; readonly separator: string };
     }[];
+    /**
+     * Where a row of a structured data table LEADS, as a path with `{key}` standing for that row's
+     * value of `key` — for example `/<plugin>/<list>?search={sku}`.
+     *
+     * A row of a table is a thing in its own right, and the console used to offer only "edit this
+     * field", which opened the whole field in a drawer: clicking a variant to change its stock
+     * showed every variant and every other value with it. When a field declares this, the row goes
+     * to where that thing actually lives, and the drawer stays for editing the field as a whole.
+     *
+     * The framework never knows which path that is — only that the schema named one.
+     */
+    tableRowHref?: string;
+    /**
+     * What identifies ONE row of a structured data table, as a template over its columns — the same
+     * `{key}` substitution `tableRowHref` uses, for example `{key}`.
+     *
+     * Needed by `tableRowComponent`: the console reads a row's cells, it does not know which entry of
+     * the stored value produced them.
+     */
+    tableRowKey?: string;
+    /**
+     * The component that edits ONE row of a structured data table, opened from that row's menu.
+     *
+     * Without it the row's menu can only offer "edit this field", which opens the whole field in a
+     * drawer: asking to change one variant showed every variant, and the one that was wanted had to
+     * be found again inside. The component is given the row's `tableRowKey` value as `admin.rowKey`.
+     */
+    tableRowComponent?: string;
+    /**
+     * The component that makes ONE MORE of what a structured data table lists, drawn in the card's
+     * own tool row beside the table's search. The console cannot know what creating one means — only
+     * that the field offers it.
+     */
+    tableCreate?: string;
     /** Read a `component` field on the card as a plain value row; the component edits it with the section. */
     readAsValue?: boolean;
     /**

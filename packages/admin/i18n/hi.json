@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} कुंजियाँ जिनके लिए फ़ॉर्म में कोई नियंत्रण नहीं है",
       "unsurfacedHint": "आप इन्हें यहाँ संपादित कर सकते हैं, लेकिन जो भी महत्वपूर्ण है उसके लिए एक वास्तविक फ़ील्ड होना चाहिए।",
       "invalidState": "अमान्य JSON — {{error}}। फ़ॉर्म अंतिम मान्य संस्करण बनाए रखता है।",
-      "validState": "मान्य JSON — फ़ॉर्म सिंक में है।"
+      "validState": "मान्य JSON — फ़ॉर्म सिंक में है।",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "रिकॉर्ड जानकारी",
@@ -357,7 +359,8 @@
     "import": "इम्पोर्ट करें",
     "reset": "रीसेट करें",
     "notScheduledYet": "अभी शेड्यूल नहीं किया गया",
-    "more": "और कार्रवाइयाँ"
+    "more": "और कार्रवाइयाँ",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "खोलें"
     },
     "address": {
       "recipient": "प्राप्तकर्ता का नाम",

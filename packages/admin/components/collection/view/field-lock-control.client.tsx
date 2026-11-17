@@ -18,7 +18,7 @@ export class FieldLockControl extends PureReactor {
   render(): ReactNode {
     if (!this.canUnlock) {
       return (
-        <span role="img" aria-label={AdminI18n.t('ui.field.readOnly')} title={AdminI18n.t('ui.field.readOnly')} className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-slate-300 dark:text-slate-600">
+        <span role="img" aria-label={AdminI18n.t('ui.field.readOnly')} title={AdminI18n.t('ui.field.readOnly')} className="fc-btn fc-btn--glyph shrink-0 opacity-60">
           <FrameworkIcons.Lock size={12} />
         </span>
       );
@@ -30,7 +30,7 @@ export class FieldLockControl extends PureReactor {
         onClick={this.onUnlock}
         title={title}
         aria-label={title}
-        className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full before:absolute before:-inset-1.5 before:content-[''] text-slate-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-500 dark:hover:bg-indigo-500/15 dark:hover:text-indigo-300"
+        className="fc-btn fc-btn--glyph shrink-0"
       >
         <FrameworkIcons.Lock size={12} />
       </button>

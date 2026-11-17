@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} nøkler som skjemaet ikke har noe felt for",
       "unsurfacedHint": "Du kan redigere dem her, men alt som er viktig, bør ha et eget felt.",
       "invalidState": "Ugyldig JSON – {{error}}. Skjemaet beholder den siste gyldige versjonen.",
-      "validState": "Gyldig JSON – skjemaet er synkronisert."
+      "validState": "Gyldig JSON – skjemaet er synkronisert.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Oppføringsinfo",
@@ -357,7 +359,8 @@
     "import": "Importer",
     "reset": "Tilbakestill",
     "notScheduledYet": "ikke planlagt ennå",
-    "more": "Flere handlinger"
+    "more": "Flere handlinger",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Åpne"
     },
     "address": {
       "recipient": "Mottakers navn",

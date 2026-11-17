@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} claves sin control en el formulario",
       "unsurfacedHint": "Puede editarlas aquí, pero todo lo importante merece un campo propio.",
       "invalidState": "JSON no válido: {{error}}. El formulario conserva la última versión válida.",
-      "validState": "JSON válido: el formulario está sincronizado."
+      "validState": "JSON válido: el formulario está sincronizado.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Información del registro",
@@ -357,7 +359,8 @@
     "import": "Importar",
     "reset": "Restablecer",
     "notScheduledYet": "aún no programado",
-    "more": "Más acciones"
+    "more": "Más acciones",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Abrir"
     },
     "address": {
       "recipient": "Nombre del destinatario",

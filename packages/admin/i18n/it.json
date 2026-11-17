@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} chiavi senza controllo nel modulo",
       "unsurfacedHint": "Puoi modificarle qui, ma ciò che conta merita un campo vero e proprio.",
       "invalidState": "JSON non valido: {{error}}. Il modulo mantiene l'ultima versione valida.",
-      "validState": "JSON valido: il modulo è sincronizzato."
+      "validState": "JSON valido: il modulo è sincronizzato.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Informazioni record",
@@ -357,7 +359,8 @@
     "import": "Importa",
     "reset": "Reimposta",
     "notScheduledYet": "non ancora pianificato",
-    "more": "Altre azioni"
+    "more": "Altre azioni",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Apri"
     },
     "address": {
       "recipient": "Nome destinatario",

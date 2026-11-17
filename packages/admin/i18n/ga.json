@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} eochair nach bhfuil rialtán ag an bhfoirm dóibh",
       "unsurfacedHint": "Is féidir iad a chur in eagar anseo, ach tuilleann aon rud tábhachtach réimse ceart.",
       "invalidState": "JSON neamhbhailí — {{error}}. Coinníonn an fhoirm an leagan bailí deireanach.",
-      "validState": "JSON bailí — tá an fhoirm sioncronaithe."
+      "validState": "JSON bailí — tá an fhoirm sioncronaithe.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Eolas an Taifid",
@@ -357,7 +359,8 @@
     "import": "Iompórtáil",
     "reset": "Athshocraigh",
     "notScheduledYet": "gan sceideal fós",
-    "more": "Tuilleadh gníomhartha"
+    "more": "Tuilleadh gníomhartha",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Open"
     },
     "address": {
       "recipient": "Ainm an fhaighteora",

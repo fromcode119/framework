@@ -22,7 +22,7 @@ export class MediaRelationFileRow extends PureReactor {
     const { preview } = this;
     const filename = preview.filename || String(preview.id);
     return (
-      <div className="flex items-center gap-3 px-2 h-12 rounded-[var(--radius)] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
+      <div className="flex items-center gap-3 px-2 h-12 rounded-[var(--fc-control-radius)] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
         <div className="w-8 h-8 shrink-0 rounded overflow-hidden bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400">
           {this.isImage && preview.url
             ? <img src={preview.url} alt="" className="w-full h-full object-cover" />

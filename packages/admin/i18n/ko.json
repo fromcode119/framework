@@ -291,7 +291,9 @@
       "unsurfacedMany": "양식에 컨트롤이 없는 키 {{count}}개",
       "unsurfacedHint": "여기서 편집할 수 있지만, 중요한 값이라면 별도의 필드를 두는 것이 좋습니다.",
       "invalidState": "잘못된 JSON — {{error}}. 양식은 마지막으로 유효했던 버전을 유지합니다.",
-      "validState": "유효한 JSON — 양식과 동기화되었습니다."
+      "validState": "유효한 JSON — 양식과 동기화되었습니다.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "레코드 정보",
@@ -357,7 +359,8 @@
     "import": "가져오기",
     "reset": "초기화",
     "notScheduledYet": "아직 예약되지 않음",
-    "more": "추가 작업"
+    "more": "추가 작업",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "열기"
     },
     "address": {
       "recipient": "수령인 이름",

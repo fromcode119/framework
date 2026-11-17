@@ -291,7 +291,9 @@
       "unsurfacedMany": "Raktų, kuriems formoje nėra valdiklio: {{count}}",
       "unsurfacedHint": "Juos galite redaguoti čia, tačiau tai, kas svarbu, verta turėti tikrą lauką.",
       "invalidState": "Netinkamas JSON — {{error}}. Forma išlaiko paskutinę tinkamą versiją.",
-      "validState": "Tinkamas JSON — forma sinchronizuota."
+      "validState": "Tinkamas JSON — forma sinchronizuota.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Įrašo informacija",
@@ -357,7 +359,8 @@
     "import": "Importuoti",
     "reset": "Atstatyti",
     "notScheduledYet": "dar nesuplanuota",
-    "more": "Daugiau veiksmų"
+    "more": "Daugiau veiksmų",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Atidaryti"
     },
     "address": {
       "recipient": "Gavėjo vardas",

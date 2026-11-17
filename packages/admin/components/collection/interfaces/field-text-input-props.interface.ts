@@ -13,6 +13,6 @@ export interface IFieldTextInputProps {
   slugManuallyEdited?: boolean;
   isLocalizedField: boolean;
   shouldInlineLocaleSwitcher: boolean;
-  localeSwitcher: (compact?: boolean) => React.ReactNode;
+  localeSwitcher: () => React.ReactNode;
   wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
 }

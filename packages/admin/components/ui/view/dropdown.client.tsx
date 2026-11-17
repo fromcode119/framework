@@ -98,7 +98,7 @@ export class Dropdown extends DropdownPositioning {
             // measured, and an animation started then would be over by the time anything was on screen.
             // It asked for `animate-in fade-in-0 zoom-in-95`, which no stylesheet here defines, so until
             // now the menu simply appeared between two frames.
-            className={`w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] rounded-xl border z-[9999] ${
+            className={`fc-menu-sheet w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] border z-[9999] ${
               this.positioned ? 'fc-enter fc-enter--menu' : ''
             } ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'
@@ -143,7 +143,7 @@ export class Dropdown extends DropdownPositioning {
                       * three-option language group was split between its second and third choice.
                       */}
                     {isDanger && groupIdx !== 0 && idx === group.items.length - 1 && !item.section && (
-                      <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+                      <div className="my-1 h-px bg-[color:var(--fc-border)]" />
                     )}
                     <button
                       title={item.label}
@@ -151,21 +151,21 @@ export class Dropdown extends DropdownPositioning {
                         item.onClick();
                         this.isOpen = false;
                       }}
-                      className={`flex items-center w-full gap-3 px-3 py-2 text-[13px] font-medium rounded-lg transition-colors ${
-                        isDanger
-                          ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10'
-                          : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-                      }`}
+                      // The console's menu row: 32px, 13/20, a 6px corner. It drew its own with a
+                      // 12px corner and 12px of side padding, so this menu and the card's menu —
+                      // which open two rows apart — were different objects.
+                      className="fc-menu-action"
+                      data-danger={isDanger ? 'true' : undefined}
                     >
                       {item.icon && (
-                        <span className={`flex-shrink-0 ${isDanger ? 'text-rose-500' : 'text-slate-400'}`}>
+                        <span className="fc-menu-action__icon">
                           {item.icon}
                         </span>
                       )}
-                      <span className="min-w-0 flex-1 text-start">
-                        <span className="block truncate">{item.label}</span>
+                      <span className="fc-menu-action__text">
+                        <span className="fc-menu-action__label">{item.label}</span>
                         {item.detail ? (
-                          <span className="block truncate text-[12px] font-normal text-slate-400">{item.detail}</span>
+                          <span className="fc-menu-action__detail">{item.detail}</span>
                         ) : null}
                       </span>
                       {/*

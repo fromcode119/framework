@@ -13,5 +13,5 @@ export interface IFieldRendererHeaderProps {
   componentHandlesLocalization: boolean;
   shouldInlineLocaleSwitcher: boolean;
   onRequestReadOnlyOverride: () => void;
-  localeSwitcher: (compact?: boolean) => React.ReactNode;
+  localeSwitcher: () => React.ReactNode;
 }

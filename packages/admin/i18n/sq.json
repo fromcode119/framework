@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} çelësa për të cilët formulari nuk ka kontroll",
       "unsurfacedHint": "Mund t'i redaktoni këtu, por çdo gjë e rëndësishme meriton një fushë të vërtetë.",
       "invalidState": "JSON i pavlefshëm — {{error}}. Formulari ruan versionin e fundit të vlefshëm.",
-      "validState": "JSON i vlefshëm — formulari është i sinkronizuar."
+      "validState": "JSON i vlefshëm — formulari është i sinkronizuar.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Të dhënat e regjistrimit",
@@ -357,7 +359,8 @@
     "import": "Importo",
     "reset": "Rivendos",
     "notScheduledYet": "ende i paplanifikuar",
-    "more": "Më shumë veprime"
+    "more": "Më shumë veprime",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Hap"
     },
     "address": {
       "recipient": "Emri i marrësit",

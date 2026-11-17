@@ -291,7 +291,9 @@
       "unsurfacedMany": "{{count}} kunci yang tiada kawalan dalam borang",
       "unsurfacedHint": "Anda boleh mengeditnya di sini, tetapi apa-apa yang penting wajar mempunyai medan sebenar.",
       "invalidState": "JSON tidak sah — {{error}}. Borang mengekalkan versi sah yang terakhir.",
-      "validState": "JSON sah — borang telah diselaraskan."
+      "validState": "JSON sah — borang telah diselaraskan.",
+      "keys": "{{count}} keys",
+      "open": "Open"
     },
     "info": {
       "title": "Maklumat Rekod",
@@ -357,7 +359,8 @@
     "import": "Import",
     "reset": "Set semula",
     "notScheduledYet": "belum dijadualkan",
-    "more": "Lagi tindakan"
+    "more": "Lagi tindakan",
+    "escKey": "esc"
   },
   "ui": {
     "table": {
@@ -540,7 +543,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Buka"
     },
     "address": {
       "recipient": "Nama penerima",

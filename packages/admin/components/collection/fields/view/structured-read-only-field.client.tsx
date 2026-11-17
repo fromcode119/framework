@@ -39,9 +39,9 @@ export class StructuredReadOnlyField extends Reactor {
   }
 
   /** Opens the editor the read value belongs to, offered from the ⋯ of every row of a table. */
-  private get editRow(): (() => void) | undefined {
+  private get editRow(): ((rowKey?: string) => void) | undefined {
     const declared = this.field?.admin?.onEditRow;
-    return typeof declared === 'function' ? declared as () => void : undefined;
+    return typeof declared === 'function' ? declared as (rowKey?: string) => void : undefined;
   }
 
   /** What the plugin's dictionary calls its keys (`fields.<field>.keyLabels`), put on the field by the console's localizer. */
@@ -67,6 +67,9 @@ export class StructuredReadOnlyField extends Reactor {
           keyLabels={this.keyLabels}
           searchLower={String(this.field?.admin?.searchText ?? '').trim().toLowerCase()}
           editRow={this.editRow}
+          rowKeyTemplate={this.field?.admin?.tableRowKey}
+          rowHref={this.field?.admin?.tableRowHref}
+          navigate={this.field?.admin?.navigate}
           toolbarTarget={this.field?.admin?.tableToolbar}
         />
       );
