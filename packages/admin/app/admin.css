@@ -105,7 +105,9 @@
   /* A card's head and body, so every card on a page — the record's own and a plugin's — keeps one rhythm. */
   /* 16 + 16 of padding around a 28px control, plus the rule under it: the height of every card head,
      whether or not that head holds anything but its title. */
-  --fc-card-head-height: 61px;
+  /* 16 + a 24px line + 16. The target's card head is its name and nothing else; ours stood at 61,
+     which is a head sized for a control that is no longer in it. */
+  --fc-card-head-height: 56px;
   /* EVERY control the operator can click: one height, one corner, one text size. Counted on a product
      record before this: 22, 24, 28, 32 and 40 px side by side in the same header, and two different
      corners on two things that both labelled a state. Change these three and the whole console moves. */
@@ -118,7 +120,17 @@
   --fc-control-shadow: 0 1px 2px 0 rgb(0 0 0 / .12), 0 0 0 1px rgb(0 0 0 / .08);
   --fc-control-h: 28px;
   --fc-control-radius: 6px;
-  --fc-control-text: 12px;
+  /* 13/20 for anything with words on it — a control, a label, a value, a table cell. Measured on the
+     record pages this console follows, where 12px appears on ONE thing only: a tag. Ours read 12 all
+     through, which is what made a record look like a printout of a record rather than the record. */
+  --fc-control-text: 13px;
+  --fc-badge-text: 12px;
+  /* A solid button keeps the BRAND's colour — the near-black of the pages this follows is their brand,
+     not a measurement to copy. The edge is the same colour, so the ring reads as the button's own. */
+  --fc-btn-primary: var(--primary);
+  --fc-btn-primary-edge: var(--primary);
+  --fc-btn-danger: var(--destructive);
+  --fc-btn-danger-edge: var(--destructive);
   /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner.
      20px, measured on the target, where every tag on a record is the same height as a line of its
      own text plus its ring. Ours stood at 24 beside a 20px line and read as a button that failed. */
@@ -859,7 +871,7 @@ html.dark {
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
-.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
 .fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
 .fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
 .fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
@@ -912,7 +924,7 @@ html.dark {
 .fc-record-head__menu::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-head__copy:hover,
 .fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: var(--fc-badge-h); padding: 0 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
 .fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -1657,20 +1669,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
 .fc-sro-table__tool {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  /* Shape, corner and edge come from the one button rule at the foot of this file; what is left here
+     is only how it stands in a toolbar. */
   gap: 4px;
-  /* The same box as the search beside it: the console has ONE field height, so a button standing in
-     a row with a field takes that height rather than a figure of its own. */
-  min-width: var(--fc-field-h);
-  height: var(--fc-field-h);
-  padding-inline: 6px;
-  border: 1px solid var(--fc-border);
-  border-radius: var(--fc-control-radius);
-  background: var(--fc-surface);
-  color: var(--fc-text-muted);
-  font-size: 12px;
   cursor: pointer;
 }
 .fc-sro-table__tool:hover,
@@ -1700,13 +1701,6 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro-table__pager { display: inline-flex; align-items: center; gap: 4px; }
 .fc-sro-table__pages { font-size: 12px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
 .fc-sro-table__page {
-  height: var(--fc-control-h);
-  padding-inline: 10px;
-  border: 0;
-  border-radius: var(--fc-control-radius);
-  background: transparent;
-  font-size: 12px;
-  color: var(--fc-text);
   cursor: pointer;
 }
 .fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
@@ -2227,3 +2221,80 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
  * A switch keeps its round track: it is a rail with a knob running in it, and at 6px it stops
  * reading as one. That is the only control the console draws round. */
 .fc-field { border-radius: var(--fc-control-radius); }
+
+/* ---------- The button ----------
+   A pressable thing is 28px tall, reads 13/20 and carries its 1px edge in the SHADOW, like the card.
+   That edge is what makes it sit on the page instead of being drawn on it; a flat border made every
+   button look like an input. A solid button adds a hairline of light along its top edge, which is the
+   only thing that tells a filled rectangle from a painted one.
+
+   These are classes, not utilities in TSX: the console's buttons took `rounded-[var(--radius)]`, and
+   `--radius` is the SITE's brand radius, replaced at runtime by BrandTokenStyleService — so the
+   console's own corner changed with whichever site was open. */
+.fc-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: fit-content; height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px 8px;
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong);
+  background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow);
+  cursor: pointer; transition: background-color .15s ease, color .15s ease;
+}
+.fc-btn:disabled { pointer-events: none; opacity: .5; }
+.fc-btn--primary {
+  background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(0 0 0 / .4), 0 0 0 1px var(--fc-btn-primary-edge);
+}
+.fc-btn--danger {
+  background: var(--fc-btn-danger); color: #fff;
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(190 18 60 / .4), 0 0 0 1px var(--fc-btn-danger-edge);
+}
+.fc-btn--ghost { background: transparent; box-shadow: none; color: var(--fc-text-muted); }
+.fc-btn--ghost:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--primary:hover, .fc-btn--danger:hover { filter: brightness(1.08); }
+.fc-btn:not(.fc-btn--ghost):not(.fc-btn--primary):not(.fc-btn--danger):hover { background: var(--fc-surface-muted); }
+
+/* An icon alone is a square of the same height, and it carries NO edge until it is raised: a row of
+   bordered 28px squares beside a value reads as a row of empty inputs. */
+.fc-btn--icon { width: var(--fc-control-h); padding: 4px; background: transparent; box-shadow: none; color: var(--fc-text-muted); }
+.fc-btn--icon:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--icon.fc-btn--raised { background: var(--fc-surface); box-shadow: var(--fc-control-shadow); }
+.fc-btn--icon > svg { width: 15px; height: 15px; display: block; }
+
+/* ---------- One button, everywhere ----------
+   Six classes drew a pressable thing on a single record — 20, 28 and 32px tall, two with a flat
+   border, two with none, three different paddings — and that is the real reason the page read as
+   several pages stitched together. The names stay, because each one still says WHERE the button
+   stands; what a button LOOKS like is decided once, here, by the same rules as .fc-btn. */
+.fc-record-head__button,
+.fc-record-part__button,
+.fc-sro-table__page {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: var(--fc-control-h); min-height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px 8px;
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong);
+  background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow);
+  white-space: nowrap;
+}
+.fc-record-head__button:hover,
+.fc-record-part__button:hover,
+.fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
+
+/* An icon alone carries NO edge — a row of ringed squares beside a value reads as empty inputs. */
+.fc-record-head__menu,
+.fc-record-head__copy,
+.fc-record-part__action,
+.fc-sro-table__menu,
+.fc-sro-table__tool {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--fc-control-h); height: var(--fc-control-h); min-height: var(--fc-control-h);
+  border: 0; border-radius: var(--fc-control-radius); padding: 4px;
+  background: transparent; box-shadow: none; color: var(--fc-text-muted);
+}
+.fc-record-head__menu:hover,
+.fc-record-head__copy:hover,
+.fc-record-part__action:hover,
+.fc-sro-table__menu:hover,
+.fc-sro-table__tool:hover,
+.fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-head__menu > svg, .fc-record-head__copy svg, .fc-record-part__action > svg,
+.fc-sro-table__menu > svg, .fc-sro-table__tool > svg { width: 15px; height: 15px; display: block; }

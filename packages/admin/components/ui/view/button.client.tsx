@@ -50,31 +50,25 @@ export class Button extends PureReactor {
   // `as="a"` with an href is the same link: a raw <a> would skip the console mount and send a mounted
   // console's click to the storefront, so it renders through AdminLink like a bare href does.
   const Component = this.href && (!this.as || this.as === 'a') ? AdminLink : (this.as ?? 'button');
-  // Solid variants carry elevation via `fc-elevated-control`, NOT a hardcoded `shadow-sm`: the token
-  // behind it is what the Appearance → Surface shadows switch turns off. A literal utility here would
-  // survive the switch and leave buttons the only elevated thing on a flat admin.
-  const variants: Record<string, any> = {
-    primary: 'bg-[var(--primary)] hover:brightness-95 text-[var(--primary-foreground)] fc-elevated-control',
-    secondary: 'bg-[var(--secondary)] border border-[var(--border)] text-[var(--secondary-foreground)] fc-elevated-control hover:brightness-98',
-    danger: 'bg-[var(--destructive)] hover:brightness-95 text-[var(--destructive-foreground)] fc-elevated-control',
-    ghost: 'hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]',
-    outline: 'border border-[var(--border)] bg-transparent text-[var(--foreground)] hover:bg-[var(--muted)]',
+  // Every variant is a CLASS now, matching the record pages this console follows: 28px tall, 13/20,
+  // the 1px edge carried by the shadow so a button sits on the page. The utilities that stood here
+  // used `rounded-[var(--radius)]`, and --radius is the SITE's brand radius — BrandTokenStyleService
+  // replaces it at runtime, so the console's own buttons changed corner with whichever site was open.
+  const variants: Record<string, string> = {
+    primary: 'fc-btn--primary',
+    secondary: '',
+    danger: 'fc-btn--danger',
+    ghost: 'fc-btn--ghost',
+    outline: '',
   };
 
-  /**
-   * Two heights, not four. A button took 32, 40, 44 or 40px depending on the `size` its caller happened
-   * to pass, which is how one order page came to hold seven different control heights: a "Create
-   * shipment" at 32 beside a field at 40 beside a copy button at 28.
-   *
-   * `sm` is the COMPACT control — a card's head, a toolbar, the controls among read values.
-   * `md` and `lg` are the FIELD height — a button standing in a form row, beside inputs.
-   * The keys stay so that no caller has to change; what they resolve to is now the console's two tokens.
-   */
+  // One height for a button, the control height — not four. The `size` keys stay so no caller has to
+  // change; `icon` is the square shape, which the stylesheet draws without an edge until it is raised.
   const sizes: Record<string, string> = {
-    sm: 'h-[var(--fc-control-h)] px-3 text-[length:var(--fc-control-text)]',
-    md: 'h-[var(--fc-field-h)] px-4 text-[length:var(--fc-control-text)]',
-    lg: 'h-[var(--fc-field-h)] px-6 text-[length:var(--fc-control-text)]',
-    icon: 'h-[var(--fc-field-h)] w-[var(--fc-field-h)] p-0',
+    sm: '',
+    md: '',
+    lg: 'px-3',
+    icon: 'fc-btn--icon',
   };
 
   const spinnerColor = variant === ButtonVariant.PRIMARY || variant === ButtonVariant.DANGER
@@ -83,7 +77,7 @@ export class Button extends PureReactor {
 
   return (
     <Component
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
+      className={`fc-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
       {...props}
     >
       {isLoading ? (
