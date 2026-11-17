@@ -2013,3 +2013,35 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-skeleton__row { display: flex; align-items: center; gap: 16px; min-height: var(--fc-field-h); }
 .fc-skeleton__label { width: 112px; height: 11px; flex: none; }
 .fc-skeleton__value { flex: 1 1 auto; max-width: 320px; height: 11px; }
+
+/* ── There is nothing here, said once ────────────────────────────────────────────────────────────
+ * EmptyState. The console used to say this in a different voice every time — four components of its
+ * own and a dozen hand-written blocks, icons at 28/48/56/64px, titles at 13/14/18/20px, two dashed
+ * borders and a button painted indigo in the markup. One shape, from the tokens, everywhere. */
+.fc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+/* Inside a card row or a table cell the page has already given its room; the block only fills it. */
+.fc-empty--inline { padding: 24px; }
+.fc-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+}
+/* The words keep a measure: a hint that runs the width of a wide card is read as a paragraph. */
+.fc-empty__text { display: flex; flex-direction: column; gap: 4px; max-width: 44ch; }
+.fc-empty__title { font-size: var(--fc-record-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-empty__hint { font-size: var(--fc-record-text); line-height: 20.8px; color: var(--fc-text-muted); }
+.fc-empty__action { margin-top: 4px; }
+/* The way out of an empty state, when it is a link rather than a button. */
+.fc-empty__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; }

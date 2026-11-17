@@ -10,6 +10,7 @@ import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 import { Column } from '@/components/ui/column';
 import { DataTableSection } from '@/components/ui/data-table-section';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends PureReactor {
@@ -144,13 +145,8 @@ export class DataTable<T extends { id: any }> extends PureReactor {
   private renderEmpty(totalColumns: number): ReactNode {
     return (
       <tr>
-        <td colSpan={totalColumns} className="px-6 py-24 text-center">
-          <div className="flex flex-col items-center justify-center">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
-              <FrameworkIcons.Search size={22} className="text-slate-400" />
-            </div>
-            <p className="font-medium text-slate-400 tracking-wide text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
-          </div>
+        <td colSpan={totalColumns}>
+          <EmptyState icon={<FrameworkIcons.Search size={22} />} title={this.emptyMessage ?? AdminI18n.t('ui.table.empty')} />
         </td>
       </tr>
     );

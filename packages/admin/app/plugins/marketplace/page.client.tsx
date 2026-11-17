@@ -263,7 +263,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
           {loading ? (
             <MarketplaceLoadingGrid theme={theme} />
           ) : filtered.length === 0 ? (
-            <MarketplaceEmptyState theme={theme} configured={Boolean(this.catalogSource) || Boolean(this.searchQuery)} />
+            <MarketplaceEmptyState configured={Boolean(this.catalogSource) || Boolean(this.searchQuery)} />
           ) : (
             filtered.map(plugin => {
               const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /** Aggregates the recent activity log by source (plugin/system) into a compact share bar list. */
 export class DashboardActivityBreakdown extends PureReactor {
@@ -24,7 +25,7 @@ export class DashboardActivityBreakdown extends PureReactor {
     return (
       <Card title={AdminI18n.t('dashboard.activityBySource')}>
         {rows.length === 0 ? (
-          <p data-empty-state className="text-xs text-slate-400 py-2">{AdminI18n.t('dashboard.noActivityWindow')}</p>
+          <EmptyState inline title={AdminI18n.t('dashboard.noActivityWindow')} />
         ) : (
           <div className="space-y-2">
             {rows.map((r) => (

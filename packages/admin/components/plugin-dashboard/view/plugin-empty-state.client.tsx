@@ -1,56 +1,32 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
+/**
+ * A plugin dashboard's empty block. It keeps its own props, because plugins call it by this name;
+ * what it draws is the console's one empty state — it used to draw a dashed box of its own with an
+ * indigo button painted into the markup.
+ */
 export class PluginEmptyState extends PureReactor {
   @prop declare icon?: ReactNode;
   @prop declare title: string;
   @prop declare description?: string;
-  @prop declare action?: {
-    label: string;
-    onClick: () => void;
-  };
-  @prop declare className?: string;
+  @prop declare action?: { label: string; onClick: () => void };
 
   render(): ReactNode {
-    const icon = this.icon;
-    const title = this.title;
-    const description = this.description;
     const action = this.action;
-    const className = this.className ?? "";
     return (
-    <div
-      data-empty-state
-      className={`fc-empty-state flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/70 bg-slate-50/40 py-12 px-6 text-center dark:bg-slate-800/20 dark:border-slate-700/50 ${className}`}
-    >
-      {/* Icon */}
-      {icon && (
-        <div className="mb-3 h-12 w-12 flex items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
-          {icon}
-        </div>
-      )}
-
-      {/* Title */}
-      <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 tracking-tight mb-1">
-        {title}
-      </h3>
-
-      {/* Description */}
-      {description && (
-        <p className="text-[13px] text-slate-500 dark:text-slate-400 max-w-md mb-4 leading-relaxed">
-          {description}
-        </p>
-      )}
-
-      {/* Action Button */}
-      {action && (
-        <button
-          onClick={action.onClick}
-          className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium transition-colors"
-        >
-          {action.label}
-        </button>
-      )}
-    </div>
-  );
+      <EmptyState
+        icon={this.icon}
+        title={this.title}
+        hint={this.description}
+        action={action ? (
+          <Button variant={ButtonVariant.PRIMARY} size={FieldSize.SM} onClick={action.onClick}>{action.label}</Button>
+        ) : null}
+      />
+    );
   }
 }

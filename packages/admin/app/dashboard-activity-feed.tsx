@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 export class DashboardActivityFeed extends PureReactor {
   @prop declare activity: any[];
@@ -64,12 +65,7 @@ export class DashboardActivityFeed extends PureReactor {
           ))}
 
           {!hasMainContent && activity.length === 0 && !loadingActivity && (
-            <div data-empty-state className="py-12 flex flex-col items-center justify-center text-center">
-               <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-3">
-                 <FrameworkIcons.Search size={20} className="text-slate-300" />
-               </div>
-               <p className="text-[12px] font-medium text-slate-500">{AdminI18n.t('dashboard.noTelemetry')}</p>
-            </div>
+            <EmptyState icon={<FrameworkIcons.Search size={22} />} title={AdminI18n.t('dashboard.noTelemetry')} />
           )}
         </div>
       </Card>
