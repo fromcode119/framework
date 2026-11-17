@@ -2045,3 +2045,36 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-empty__action { margin-top: 4px; }
 /* The way out of an empty state, when it is a link rather than a button. */
 .fc-empty__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── A fact row in a card too narrow to hold both halves ─────────────────────────────────────────
+ * The row is two equal halves, which is right while they are wide enough to hold a name and a value.
+ * On a phone the card is 353px, so each half is 145px, and a Bulgarian label does not fit in 145px:
+ * measured on a product page at 390px, five of 25 labels broke across two to four lines — "Разреши
+ * кодове за отстъпка" took two lines to be answered by "Да".
+ *
+ * The record pages this one follows stack the row at that width, label above value. Measured here,
+ * that fixes the wrapping and makes the card a third longer: the 25 rows went from 1395px to 1829px,
+ * because every short row now takes two lines to say what fitted on one.
+ *
+ * So the row wraps instead of stacking: the two halves sit on one line while they fit, and the value
+ * drops under its label only on the rows that need it. Measured: 1363px — nothing wrapped mid-label,
+ * and the card is shorter than it is today.
+ *
+ * The query is on the CARD, not the window, because a card is narrow wherever it stands — the side
+ * column of a wide screen is 440px and keeps its two halves. */
+@container (max-width: 400px) {
+  .fc-record-card__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 12px;
+    row-gap: 2px;
+    /* A phone gives the card 16px of inset, not 24: the two columns of a desktop card are not there
+       to be cleared, and 48px of the 353 were going to the edges. */
+    padding-inline: 16px;
+    margin-inline: -16px;
+  }
+  .fc-record-card__label { flex: 0 1 auto; }
+  .fc-record-card__value { flex: 1 1 45%; min-width: 0; }
+  .fc-record-card__head, .fc-record-card__body { padding-inline: 16px; }
+}
