@@ -1780,6 +1780,11 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-filter__clear-all:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-card__table-tools .fc-sro-table__tools { padding: 0; }
+/* What a table's field offers for making one more row stands IN the card's tool row, at its own
+   width. The field renderer wraps every control in a full-width form row, which here stretched a
+   28px button across the head and pushed the tools off it. */
+.fc-record-card__aside > .fc-field-row { width: auto; grid-column: auto; }
+.fc-record-card__aside > .fc-field-row > * { margin: 0; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
 .fc-sro-table__tool {

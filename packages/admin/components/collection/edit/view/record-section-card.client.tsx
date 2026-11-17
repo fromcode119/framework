@@ -268,6 +268,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
               {tableField
                 ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
                 : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
+              {/* Making one more of what the table lists stands beside the table's own tools, where
+                  the record pages this console follows put it. */}
+              {this.renderTableCreate()}
               {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
             </div>
             <RecordSectionMenu

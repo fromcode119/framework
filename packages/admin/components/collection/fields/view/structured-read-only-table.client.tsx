@@ -61,7 +61,9 @@ export class StructuredReadOnlyTable extends PureReactor {
    * into the row from the row itself, instead of back up to the card's head. It is the SECTION's editor:
    * the value is one field of the record, so the sheet opens it whole, and the menu says nothing else.
    */
-  @prop declare editRow?: () => void;
+  @prop declare editRow?: (rowKey?: string) => void;
+  /** Identifies one row over its own columns, so the editor can be given the row and not the field. */
+  @prop declare rowKeyTemplate?: string;
   /** Where a row leads, as the field declared it: a path with `{key}` for that row's value of `key`. */
   @prop declare rowHref?: string;
   @prop declare navigate?: (href: string) => void;
@@ -138,9 +140,10 @@ export class StructuredReadOnlyTable extends PureReactor {
   }
 
   /**
-   * One ⋯ per row. Editing opens the whole FIELD, which is right for the field and wrong for the row:
-   * asking to change one variant's stock showed every variant with it. Where the field says where a
-   * row leads, that way out stands first, and the edit stays for the field as a whole.
+   * One ⋯ per row. Where the field says what identifies a row (`tableRowKey`), the edit is given THAT
+   * row and the editor opens on it alone; without one it opens the whole field, which is right for
+   * the field and wrong for the row — asking to change one variant showed every variant with it.
+   * Where the field says where a row leads, that way out stands first.
    */
   private renderRowMenu(row: Record<string, IStructuredNode>): ReactNode {
     const open = this.editRow;
@@ -153,7 +156,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     return (
       <Dropdown
         align={HorizontalAlign.RIGHT}
-        items={[...go, { label, onClick: open, icon: <FrameworkIcons.Edit size={14} /> }]}
+        items={[...go, { label, onClick: () => open(StructuredReadOnlyTableService.rowHref(this.rowKeyTemplate, row) || undefined), icon: <FrameworkIcons.Edit size={14} /> }]}
         trigger={
           <button type="button" aria-label={label} title={label} className="fc-sro-table__menu">
             <FrameworkIcons.More size={16} />
