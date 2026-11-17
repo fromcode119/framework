@@ -205,7 +205,7 @@ export class Select extends Reactor {
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center text-start group overflow-hidden relative ${triggerClassName}`)} ${triggerThemeClasses} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center text-start group overflow-hidden relative ${triggerClassName}`)} ${triggerThemeClasses} ${isOpen ? 'fc-field--open' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <span className={`relative z-10 min-w-0 flex-1 truncate ${!selectedOption ? emptyLabelThemeClasses : ''}`}>
              <div className="flex flex-col leading-none">
@@ -225,13 +225,12 @@ export class Select extends Reactor {
             {isLoading ? (
               <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
             ) : (
-              <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-indigo-500' : chevronThemeClasses}`}>
-                <FrameworkIcons.Down size={14} />
+              <span className={`transition-transform duration-150 ${isOpen ? 'rotate-180' : ''} ${chevronThemeClasses}`}>
+                <FrameworkIcons.Down size={15} />
               </span>
             )}
           </span>
 
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/[0.03] to-indigo-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 pointer-events-none" />
         </button>
 
         {/*

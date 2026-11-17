@@ -359,7 +359,8 @@
     "import": "Importuoti",
     "reset": "Atstatyti",
     "notScheduledYet": "dar nesuplanuota",
-    "more": "Daugiau veiksmų"
+    "more": "Daugiau veiksmų",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

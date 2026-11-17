@@ -140,22 +140,11 @@ export class ArrayField extends Reactor {
          />
       ))}
 
-      <button
-        onClick={this.handleAddItem}
-        className={`w-full py-6 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all group ${
-          theme === ThemeMode.DARK
-            ? 'border-slate-800 hover:border-indigo-500/50 bg-slate-900/10 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400'
-            : 'border-slate-200 hover:border-indigo-300 bg-slate-50/50 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'
-        }`}
-      >
-        <div className={`p-3 rounded-lg transition-all shadow-sm ${
-          theme === ThemeMode.DARK
-            ? 'bg-slate-800 group-hover:bg-indigo-500 group-hover:text-white'
-            : 'bg-white group-hover:bg-indigo-600 group-hover:text-white shadow-slate-200'
-        }`}>
-          <FrameworkIcons.Plus size={20} strokeWidth={3} />
-        </div>
-        <span className="text-[12px] font-medium tracking-widest">{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
+      {/* The console's button. It used to be a 126px dashed drop-zone with a boxed plus inside it
+          that turned indigo on hover — the tallest thing in a drawer, for "add one more row". */}
+      <button type="button" onClick={this.handleAddItem} className="fc-btn">
+        <FrameworkIcons.Plus size={15} />
+        <span>{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
       </button>
     </div>
     );

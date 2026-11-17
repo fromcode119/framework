@@ -359,7 +359,8 @@
     "import": "Impordi",
     "reset": "Lähtesta",
     "notScheduledYet": "pole veel ajastatud",
-    "more": "Rohkem toiminguid"
+    "more": "Rohkem toiminguid",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

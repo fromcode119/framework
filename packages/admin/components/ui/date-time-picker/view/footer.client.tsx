@@ -36,24 +36,20 @@ export class DateTimePickerFooter extends PureReactor {
         {showTime && (
           /* Label and fields share ONE row. Stacked, they cost ~110px of a popover that already
              overflowed the viewport; side by side they cost ~44px and read the same. */
-          <div className={`mt-3 pt-3 flex items-center justify-between gap-3 ${theme === ThemeMode.DARK ? 'border-t border-white/5' : 'border-t border-slate-200/80'}`}>
-            <div className="flex min-w-0 items-center gap-2.5">
-               <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center shadow-sm transition-all duration-150 ${
-                 theme === ThemeMode.DARK
-                   ? 'bg-indigo-500/10 text-indigo-300 ring-1 ring-indigo-400/20'
-                   : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/20'
-               }`}>
+          <div className="mt-2 pt-2 flex items-center justify-between gap-3 border-t border-[color:var(--fc-border)]">
+            <div className="flex min-w-0 items-center gap-2">
+               <span className="shrink-0 text-[color:var(--fc-text-muted)]">
                   <FrameworkIcons.Clock size={15} />
-               </div>
+               </span>
                <div className="flex min-w-0 flex-col">
-                  <span className={`text-[12px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
-                  <span className="truncate text-[12px] font-medium text-slate-400 tracking-tight">{timezone}</span>
+                  <span className="fc-cal__sum-value">{AdminI18n.t('ui.date.time')}</span>
+                  <span className="fc-cal__sum-label truncate">{timezone}</span>
                </div>
             </div>
 
             <div className="flex shrink-0 items-end gap-1.5">
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
+                <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper
                   size={FieldSize.SM}
                   min={0}
@@ -62,9 +58,9 @@ export class DateTimePickerFooter extends PureReactor {
                   onChange={this.changeHours}
                 />
               </div>
-              <span className={`pb-2 text-[15px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
+              <span className="pb-1.5 text-[13px] font-medium text-[color:var(--fc-text-muted)]">:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
+                <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper
                   size={FieldSize.SM}
                   min={0}
@@ -77,38 +73,26 @@ export class DateTimePickerFooter extends PureReactor {
           </div>
         )}
 
-        <div className={`mt-3 pt-3 flex flex-col gap-2.5 ${theme === ThemeMode.DARK ? 'border-t border-white/5' : 'border-t border-slate-200/80'}`}>
+        <div className="mt-2 pt-2 flex flex-col gap-2 border-t border-[color:var(--fc-border)]">
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => onQuickAction(0)}
-              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
-                  : 'bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 ring-1 ring-black/5'
-              }`}
+              className="fc-btn"
             >
               {AdminI18n.t('ui.date.today')}
             </button>
             <button
               type="button"
               onClick={() => onQuickAction(1)}
-              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-700/40 text-slate-200 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
-                  : 'bg-slate-100 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 ring-1 ring-black/5'
-              }`}
+              className="fc-btn"
             >
               {AdminI18n.t('ui.date.tomorrow')}
             </button>
             <button
               type="button"
               onClick={onClear}
-              className={`rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-700/40 text-slate-200 hover:bg-rose-500/10 hover:text-rose-300 active:scale-95 ring-1 ring-white/5'
-                  : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 ring-1 ring-black/5'
-              }`}
+              className="fc-btn"
             >
               {AdminI18n.t('ui.date.clear')}
             </button>
@@ -117,7 +101,7 @@ export class DateTimePickerFooter extends PureReactor {
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.MD}
-              className="w-full rounded-xl font-medium text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
+              className="w-full"
               onClick={onClose}
             >
               {AdminI18n.t('ui.date.apply')}

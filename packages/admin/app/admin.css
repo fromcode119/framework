@@ -83,6 +83,8 @@
      what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
      for short facts; the main column keeps the rest. */
   --fc-record-side: 440px;
+  /* The form column of a record page, the figure the target page keeps. */
+  --fc-record-main: 1120px;
   --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
@@ -127,8 +129,10 @@
   --fc-badge-text: 12px;
   /* A solid button keeps the BRAND's colour — the near-black of the pages this follows is their brand,
      not a measurement to copy. The edge is the same colour, so the ring reads as the button's own. */
-  --fc-btn-primary: var(--primary);
-  --fc-btn-primary-edge: var(--primary);
+  /* The console's own primary, NOT `--primary`: that one is the SITE's brand accent, replaced per
+     site at runtime, so the Save button changed colour depending on which shop was open. */
+  --fc-btn-primary: #27272a;
+  --fc-btn-primary-edge: #18181b;
   --fc-btn-danger: var(--destructive);
   --fc-btn-danger-edge: var(--destructive);
   /* A state is not a control: it is read, never pressed, so it is shorter — and it keeps the corner.
@@ -789,10 +793,15 @@ html.dark {
    Viewport breakpoints (`lg:grid-cols-3`) measured the window, so with the menu and a plugin's
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
-.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
+.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size;
+  /* A record is read, not scanned across a 2.5K screen: 1120 of form + 16 + 440 of sidebar, centred.
+     Uncapped, one row of two fields stretched each field to ~790px and every card read as empty. */
+  max-width: calc(var(--fc-record-main) + 16px + var(--fc-record-side)); margin-inline: auto; }
 /* A page whose body is a column of cards: one gap, the console's. */
 .fc-page-stack { display: flex; flex-direction: column; gap: var(--fc-stack-gap); }
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
+/* 12 between one card and the next, 16 between the two columns — the gap the record pages this
+   console follows keep. One figure for both made the columns read as one wide column of cards. */
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
@@ -863,6 +872,106 @@ html.dark {
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
 .fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
+/* The row the menu is currently on: the console's quiet wash, not a filled indigo band. */
+.fc-menu-action[aria-current="true"] { background: var(--fc-surface-muted); }
+
+/* ── The number box's − and + ────────────────────────────────────────────────────────────────────
+ * They were a square of 2.5rem minus a border: the 40px field's buttons, kept after the field became
+ * 32. A 38px button then stood inside a 32px box and pushed out of it top and bottom, and the input
+ * reserved 40px of padding at each end for them. Each button is now the FIELD's own height, so it
+ * fills its end of the box exactly, and the padding it reserves is the same figure.
+ * The field carries no border any more (an edge in the shadow), so there is nothing to inset by 1px. */
+.fc-stepper { position: relative; min-width: 7.5rem; }
+.fc-stepper__btn { position: absolute; top: 0; display: flex; align-items: center; justify-content: center;
+  width: var(--fc-field-h); height: var(--fc-field-h); color: var(--fc-text-muted);
+  border-radius: var(--fc-control-radius); transition: color .12s, background-color .12s; }
+.fc-stepper__btn:hover:not(:disabled) { color: var(--fc-text); background: var(--fc-surface); }
+.fc-stepper__btn:disabled { opacity: .4; }
+.fc-stepper__btn--less { inset-inline-start: 0; }
+.fc-stepper__btn--more { inset-inline-end: 0; }
+/* Specific enough to beat `.fc-field`'s own padding, which is declared later in this file. */
+.fc-field.fc-stepper__input { padding-inline: var(--fc-field-h); text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ── The on/off switch ───────────────────────────────────────────────────────────────────────────
+ * 32×18, the figure the record pages this console follows keep. It was 44×24 — a phone's own switch —
+ * which stood taller than the 32px field next to it and read as the loudest thing in a drawer. */
+.fc-switch { position: relative; display: inline-flex; align-items: center; flex: none;
+  width: 32px; height: 18px; border-radius: 9999px; cursor: pointer;
+  background: #d4d4d8; transition: background-color .15s ease-out; }
+.fc-switch::before { content: ''; position: absolute; inset: -11px -6px; }
+/* Blue, not the site's brand accent: a switch is a state, not a brand surface. */
+.fc-switch--on { background: #3b82f6; }
+.fc-switch:disabled { cursor: not-allowed; opacity: .5; }
+.fc-switch:focus { outline: none; }
+.fc-switch:focus-visible { box-shadow: 0 0 0 2px var(--fc-surface), 0 0 0 4px var(--primary); }
+.fc-switch__knob { pointer-events: none; display: block; width: 14px; height: 14px; border-radius: 9999px;
+  background: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / .12); transform: translateX(2px);
+  transition: transform .15s ease-out; }
+.fc-switch--on .fc-switch__knob { transform: translateX(16px); }
+[dir="rtl"] .fc-switch__knob { transform: translateX(-2px); }
+[dir="rtl"] .fc-switch--on .fc-switch__knob { transform: translateX(-16px); }
+/* The sentence under a switch's label: the console's quiet 13/20.8. */
+.fc-switch__hint { font-size: var(--fc-control-text); line-height: 20.8px; font-weight: 400; color: var(--fc-text-muted); }
+
+/* ── A dialog that takes the window ──────────────────────────────────────────────────────────────
+ * The drawer's sibling: where the drawer edits a piece of a record that stays visible behind it,
+ * this replaces the page, for work that needs the room (creating a variant). Measured against the
+ * record pages this console follows: 8px in from every edge, head 45px, foot 61px, and ONE centred
+ * column of at most 720px, so a form does not stretch across a 2.5K screen because it may. */
+.fc-focus { position: fixed; inset: 0; z-index: 2147483000; }
+.fc-focus__backdrop { position: absolute; inset: 0; background: rgb(24 24 27 / .4); }
+.fc-focus__panel { position: absolute; inset: 8px; display: flex; flex-direction: column;
+  overflow: hidden; border-radius: var(--fc-card-radius); background: var(--fc-surface);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 8px 16px 0 rgb(0 0 0 / .08), 0 16px 32px 0 rgb(0 0 0 / .08); }
+.fc-focus__head { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex: none; padding: 8px 16px; border-bottom: 1px solid var(--fc-border); }
+.fc-focus__head-start { display: flex; align-items: center; gap: 8px; }
+/* The key that closes it, drawn as the key it is — and it IS the button, so a pointer can use it. */
+.fc-focus__esc { display: inline-flex; align-items: center; justify-content: center; height: 20px;
+  min-width: 20px; padding: 0 4px; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow);
+  font-size: 11px; line-height: 16px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-focus__esc:hover { color: var(--fc-text); }
+.fc-focus__tabs { display: inline-flex; gap: 4px; }
+.fc-focus__body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  background: var(--fc-surface-muted); }
+.fc-focus__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.fc-focus__form { width: 100%; max-width: 720px; margin-inline: auto;
+  display: flex; flex-direction: column; gap: 32px; padding: 32px 24px; }
+.fc-focus__foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: none;
+  padding: 16px; border-top: 1px solid var(--fc-border); background: var(--fc-surface); }
+@media (max-width: 640px) {
+  .fc-focus__panel { inset: 0; border-radius: 0; }
+  .fc-focus__form { padding: 24px 16px; }
+}
+
+/* ── The calendar ────────────────────────────────────────────────────────────────────────────────
+ * It was a product of its own: 12px corners everywhere, a blurred pane under shadow-2xl, indigo
+ * fills with a ring and a shadow, cells that grew on hover and shrank on click, and 36px day squares.
+ * Beside a 32px field and a 28px button it read as a widget borrowed from somewhere else. Now it is
+ * the console's sheet, the console's corner, and the console's text. */
+.fc-cal__sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 8px; }
+.fc-cal__sum-label { font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-cal__sum-value { font-size: var(--fc-control-text); line-height: 20px; font-weight: 500; color: var(--fc-text); }
+.fc-cal__bar { display: grid; grid-template-columns: var(--fc-control-h) minmax(0, 1fr) var(--fc-control-h);
+  align-items: center; gap: 8px; margin-bottom: 8px; }
+.fc-cal__cell { width: 32px; height: 32px; padding: 0; text-align: center; vertical-align: middle; }
+.fc-cal__weekday { height: 24px; width: 32px; padding: 0; text-align: center; vertical-align: middle;
+  font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-cal__day { display: flex; align-items: center; justify-content: center; margin-inline: auto;
+  width: 28px; height: 28px; border-radius: var(--fc-control-radius);
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: 400; color: var(--fc-text); }
+.fc-cal__day:hover { background: var(--fc-surface-muted); }
+.fc-cal--on .fc-cal__day, .fc-cal--on > .fc-cal__day { background: var(--fc-btn-primary); color: rgb(255 255 255 / .92); }
+.fc-cal--today .fc-cal__day { box-shadow: inset 0 0 0 1px var(--fc-border); }
+.fc-cal__grid { width: 100%; border-collapse: separate; border-spacing: 2px; }
+/* A month or a year in the jump view, and the quick rows under the calendar: the console's button. */
+.fc-cal__chip { display: flex; align-items: center; justify-content: center; height: var(--fc-control-h);
+  padding: 4px 8px; border-radius: var(--fc-control-radius); background: var(--fc-surface);
+  box-shadow: var(--fc-control-shadow); color: var(--fc-text);
+  font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-cal__chip:hover { background: var(--fc-surface-muted); }
+.fc-cal__chip--on { background: var(--fc-btn-primary); color: rgb(255 255 255 / .92); box-shadow: none; }
 .fc-menu-action__icon { flex: none; display: inline-flex; color: var(--fc-text-muted); }
 .fc-menu-action[aria-busy="true"] .fc-menu-action__icon svg { animation: fc-menu-action-spin 1s linear infinite; }
 @keyframes fc-menu-action-spin { to { transform: rotate(360deg); } }
@@ -1555,12 +1664,18 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: inline-flex;
   max-width: 100%;
   align-items: center;
-  padding: 2px 8px;
+  /* A tag, as the record pages this console follows draw one: the height of its own line of text
+     plus its ring, filled with the quiet tone so a row of them reads as a list of values rather than
+     a row of empty buttons. */
+  height: var(--fc-badge-h);
+  padding: 0 4px;
   border: 1px solid var(--fc-border);
-  border-radius: 6px;
-  background: var(--fc-surface);
-  font-size: 12px;
-  color: var(--fc-text);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  font-size: var(--fc-badge-text);
+  font-weight: var(--fc-weight-strong);
+  line-height: 20px;
+  color: var(--fc-text-muted);
   overflow-wrap: anywhere;
 }
 .fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
@@ -2190,27 +2305,25 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   color: var(--fc-text-muted);
   font-variant-numeric: tabular-nums;
 }
-/* Opened, it is the console's drawer in the dark: the stored record is read like code, and code is
-   read on a dark ground in every tool that shows it. The drawer's own geometry is untouched. */
-.fc-sheet--json {
-  --fc-sheet-canvas: #18181b;
-  --fc-sheet-surface: #18181b;
-  --fc-sheet-border: #27272a;
-  --fc-text: rgb(255 255 255 / .88);
-  --fc-text-muted: rgb(255 255 255 / .56);
-  --fc-surface: #27272a;
-  --fc-surface-muted: #27272a;
-  --fc-border: #3f3f46;
-}
-.fc-sheet--json .fc-sheet__body { color: var(--fc-text); }
-.fc-sheet--json textarea {
-  background: #27272a;
-  border-color: #3f3f46;
-  color: rgb(255 255 255 / .88);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
-  line-height: 18.2px;
-}
+/* The record's JSON is read in the console's own drawer. It used to repaint the whole drawer dark —
+   the head, the buttons and the ground — on the argument that code is read on a dark ground, and the
+   result was one black panel in a white console. Only the code box itself is a field now. */
+/* The code box is a field, like every other box in this console: quiet fill, 6px corner, the edge in
+   the shadow. The caret and the coloured layer sit inside it. */
+.fc-record-json__box { position: relative; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); }
+.fc-record-json__box:focus-within { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-record-json__box[data-invalid="true"] { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
+.fc-record-json__layer { padding: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px; line-height: 20px; color: var(--fc-text);
+  /* The coloured layer and the textarea must wrap at the SAME column. The textarea reserves a
+     scrollbar and the layer did not, so every wrapped line drifted by its width and the two texts
+     printed over each other. A stable gutter on both gives them one content width. */
+  scrollbar-gutter: stable; }
+textarea.fc-record-json__layer { caret-color: var(--fc-text); }
+/* The note about keys no field shows: the console's quiet card, not an amber banner. */
+.fc-record-json__note { border-radius: var(--fc-control-radius); background: var(--fc-surface-muted);
+  box-shadow: var(--fc-control-shadow); padding: 12px; color: var(--fc-text-muted); }
 
 /* ── ONE corner for every control in the console ─────────────────────────────────────────────────
  * Counted on a record page: 30 controls at 6px, the form fields at 12 and a pair of nav tools at 8,
@@ -2241,6 +2354,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-field::placeholder { color: var(--fc-text-muted); }
 .fc-field:hover:not(:disabled):not(:focus) { background: var(--fc-surface-hover, var(--fc-surface-muted)); }
 .fc-field:focus, .fc-field:focus-visible { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+/* A select while its list is open wears the edge a focused field wears. It used to take an indigo
+   1px border and a 4px indigo ring — a shape no other control in this console has. */
+.fc-field--open { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .fc-field:disabled { color: var(--fc-text-muted); }
 /* A box of several lines is not a line: it keeps the height its own content needs. */
 textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
@@ -2277,6 +2393,18 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
   background: var(--fc-btn-danger); color: #fff;
   box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(190 18 60 / .4), 0 0 0 1px var(--fc-btn-danger-edge);
 }
+/* A button that rides INSIDE a field — the language chip over a text box. At the console's 28px it
+   left 2px of air above and below in a 32px field and read as a second control stacked on the first.
+   20px leaves 6px each side, so the field keeps its shape and the chip sits in it. */
+.fc-btn--mini { height: 20px; padding: 0 6px; gap: 4px; font-size: 12px; line-height: 16px; }
+.fc-btn--mini > svg { width: 11px; height: 11px; }
+/* A glyph beside a label — the "what is this" mark, the lock on a read-only field. 20px, square,
+   no ground of its own. They were 24px round buttons that filled with indigo on hover. */
+.fc-btn--glyph { width: 20px; height: 20px; padding: 0; background: transparent; box-shadow: none;
+  color: var(--fc-text-muted); border-radius: var(--fc-control-radius); }
+.fc-btn--glyph:hover:not(:disabled) { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--glyph[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-btn--glyph > svg { width: 13px; height: 13px; }
 .fc-btn--ghost { background: transparent; box-shadow: none; color: var(--fc-text-muted); }
 .fc-btn--ghost:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-btn--primary:hover, .fc-btn--danger:hover { filter: brightness(1.08); }
@@ -2338,3 +2466,21 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-tab { display: inline-flex; align-items: center; height: var(--fc-control-h); padding: 4px 8px; border: 0; border-radius: var(--fc-control-radius); background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-tab:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow); }
+
+/* ---------- The drawer, by the dialogs' own measurements ----------
+   A title reads 16/24 like every other card's name, the line under it 13/20.8 like every value, and
+   32px stands between one field and the next — the same distance the form on the page keeps, so a
+   piece edited in the drawer and the same piece read on the page are one rhythm. */
+.fc-sheet__title { font-size: 16px; line-height: 24px; font-weight: var(--fc-weight-strong); }
+.fc-sheet__subtitle { font-size: var(--fc-control-text); line-height: 20.8px; color: var(--fc-text-muted); }
+.fc-sheet__body { row-gap: 32px; }
+/* A line across the whole drawer, not across the text: it separates GROUPS, and a rule that stops
+   short of the edges reads as an underline of the thing above it. */
+.fc-sheet__body .fc-divider { height: 1px; background: var(--fc-border); margin-inline: calc(-1 * var(--fc-sheet-pad, 24px)); border: 0; }
+
+/* ---------- A card that is ONE line ----------
+   A thing the record holds that is opened rather than read — the stored record, the metadata. It is a
+   line, not a card with a head and a body: a 56px head over nothing is a card pretending to have
+   content. Name, how much of it there is, and the way in.  */
+.fc-record-card--summary > .fc-record-card__head { min-height: 0; height: auto; padding: 16px var(--fc-card-pad-x); border-bottom: 0; }
+.fc-record-card--summary .fc-record-card__title { font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); }

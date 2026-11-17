@@ -359,7 +359,8 @@
     "import": "Importa",
     "reset": "Irrisettja",
     "notScheduledYet": "għadu mhux skedat",
-    "more": "Aktar azzjonijiet"
+    "more": "Aktar azzjonijiet",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

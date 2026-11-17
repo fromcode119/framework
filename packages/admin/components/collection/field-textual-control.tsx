@@ -26,7 +26,7 @@ export class FieldTextualControl extends PureReactor {
   @prop declare label: string;
   @prop declare isLocalizedField: boolean;
   @prop declare shouldInlineLocaleSwitcher: boolean;
-  @prop declare localeSwitcher: (compact?: boolean) => React.ReactNode;
+  @prop declare localeSwitcher: () => React.ReactNode;
   /** The field's description — shown in the read-only lock bar instead of as a line below. */
   @prop declare resolvedFieldDescription?: string;
   @prop declare wrapWithReadOnlyOverride: (node: React.ReactNode, roundedClass?: string) => React.ReactNode;
@@ -59,7 +59,7 @@ export class FieldTextualControl extends PureReactor {
             inputClassName={switcher ? 'pr-16' : ''}
           />
           {switcher && (
-            <div className="absolute end-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
+            <div className="absolute end-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
           )}
         </div>
       );
@@ -82,7 +82,7 @@ export class FieldTextualControl extends PureReactor {
             inputClassName={`font-mono text-[12px] ${switcher ? 'pr-16' : ''}`}
           />
           {switcher && (
-            <div className="absolute end-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
+            <div className="absolute end-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
           )}
         </div>
       );
@@ -100,7 +100,7 @@ export class FieldTextualControl extends PureReactor {
           inputClassName={switcher ? 'pr-16' : ''}
         />
         {switcher && (
-          <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
+          <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
         )}
       </div>
     );

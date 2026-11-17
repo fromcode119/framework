@@ -359,7 +359,8 @@
     "import": "Importovat",
     "reset": "Obnovit výchozí",
     "notScheduledYet": "zatím nenaplánováno",
-    "more": "Další akce"
+    "more": "Další akce",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

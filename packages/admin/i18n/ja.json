@@ -359,7 +359,8 @@
     "import": "インポート",
     "reset": "リセット",
     "notScheduledYet": "未スケジュール",
-    "more": "その他の操作"
+    "more": "その他の操作",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

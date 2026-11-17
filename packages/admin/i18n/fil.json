@@ -359,7 +359,8 @@
     "import": "I-import",
     "reset": "I-reset",
     "notScheduledYet": "hindi pa naka-iskedyul",
-    "more": "Iba pang aksyon"
+    "more": "Iba pang aksyon",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

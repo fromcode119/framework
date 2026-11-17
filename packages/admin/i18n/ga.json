@@ -359,7 +359,8 @@
     "import": "Iompórtáil",
     "reset": "Athshocraigh",
     "notScheduledYet": "gan sceideal fós",
-    "more": "Tuilleadh gníomhartha"
+    "more": "Tuilleadh gníomhartha",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

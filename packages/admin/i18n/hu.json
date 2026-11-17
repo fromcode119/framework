@@ -359,7 +359,8 @@
     "import": "Importálás",
     "reset": "Visszaállítás",
     "notScheduledYet": "még nincs ütemezve",
-    "more": "További műveletek"
+    "more": "További műveletek",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

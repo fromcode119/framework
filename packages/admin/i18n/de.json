@@ -359,7 +359,8 @@
     "import": "Importieren",
     "reset": "Zurücksetzen",
     "notScheduledYet": "noch nicht geplant",
-    "more": "Weitere Aktionen"
+    "more": "Weitere Aktionen",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

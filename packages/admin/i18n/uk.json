@@ -359,7 +359,8 @@
     "import": "Імпорт",
     "reset": "Скинути",
     "notScheduledYet": "ще не заплановано",
-    "more": "Інші дії"
+    "more": "Інші дії",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

@@ -359,7 +359,8 @@
     "import": "Nhập",
     "reset": "Đặt lại",
     "notScheduledYet": "chưa được lên lịch",
-    "more": "Thao tác khác"
+    "more": "Thao tác khác",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

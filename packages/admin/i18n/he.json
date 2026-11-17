@@ -359,7 +359,8 @@
     "import": "ייבוא",
     "reset": "איפוס",
     "notScheduledYet": "טרם תוזמן",
-    "more": "פעולות נוספות"
+    "more": "פעולות נוספות",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

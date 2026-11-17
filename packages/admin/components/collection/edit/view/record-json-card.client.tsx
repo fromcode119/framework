@@ -33,7 +33,7 @@ export class RecordJsonCard extends Reactor {
   render(): ReactNode {
     return (
       <>
-        <section className="fc-surface fc-record-card fc-record-json">
+        <section className="fc-surface fc-record-card fc-record-card--summary fc-record-json">
           <div className="fc-record-card__head">
             <h2 className="fc-record-card__title">
               {AdminI18n.t('collection.json.title')}

@@ -359,7 +359,8 @@
     "import": "İçe Aktar",
     "reset": "Sıfırla",
     "notScheduledYet": "henüz zamanlanmadı",
-    "more": "Diğer işlemler"
+    "more": "Diğer işlemler",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

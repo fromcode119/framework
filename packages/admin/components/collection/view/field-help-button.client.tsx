@@ -23,9 +23,7 @@ export class FieldHelpButton extends PureReactor {
         aria-expanded={this.open}
         aria-label={AdminI18n.t('ui.field.about', { label: this.label })}
         title={AdminI18n.t('ui.field.about', { label: this.label })}
-        className={`relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full before:absolute before:-inset-1.5 before:content-[''] transition-colors ${
-          this.open ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300' : 'text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300'
-        }`}
+        className="fc-btn fc-btn--glyph shrink-0"
       >
         <FrameworkIcons.Info size={13} />
       </button>

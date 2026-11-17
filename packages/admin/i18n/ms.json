@@ -359,7 +359,8 @@
     "import": "Import",
     "reset": "Set semula",
     "notScheduledYet": "belum dijadualkan",
-    "more": "Lagi tindakan"
+    "more": "Lagi tindakan",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

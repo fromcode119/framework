@@ -359,7 +359,8 @@
     "import": "Tuo",
     "reset": "Palauta",
     "notScheduledYet": "ei vielä ajoitettu",
-    "more": "Lisää toimintoja"
+    "more": "Lisää toimintoja",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

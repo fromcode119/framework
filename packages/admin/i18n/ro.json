@@ -359,7 +359,8 @@
     "import": "Importă",
     "reset": "Resetează",
     "notScheduledYet": "încă neprogramat",
-    "more": "Mai multe acțiuni"
+    "more": "Mai multe acțiuni",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

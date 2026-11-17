@@ -359,7 +359,8 @@
     "import": "Uvezi",
     "reset": "Poništi",
     "notScheduledYet": "još nije zakazano",
-    "more": "Više radnji"
+    "more": "Više radnji",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

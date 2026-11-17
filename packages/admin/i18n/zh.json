@@ -359,7 +359,8 @@
     "import": "导入",
     "reset": "重置",
     "notScheduledYet": "尚未安排",
-    "more": "更多操作"
+    "more": "更多操作",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

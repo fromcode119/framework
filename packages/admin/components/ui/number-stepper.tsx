@@ -143,11 +143,8 @@ export class NumberStepper extends PureReactor {
 
   render(): ReactNode {
     const { disabled, error, placeholder } = this;
-    // One size for every field (UiFieldUtils), so the buttons are always the 40px box's.
-    // Each button is a square the input's own height (minus its border), inside the box at either end.
-    const btn = `absolute top-px flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-colors h-[calc(2.5rem_-_2px)] w-10`;
     return (
-      <div className="relative min-w-[7.5rem]">
+      <div className="fc-stepper">
         <Input
           type="text"
           role="spinbutton"
@@ -164,14 +161,14 @@ export class NumberStepper extends PureReactor {
           placeholder={placeholder}
           disabled={disabled}
           error={error}
-          inputClassName="px-10 text-center tabular-nums"
+          inputClassName="fc-stepper__input"
         />
         <button type="button" disabled={disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement}
-          className={`${btn} start-px rounded-l-[calc(var(--fc-control-radius)_-_1px)]`}>
+          className="fc-stepper__btn fc-stepper__btn--less">
           <FrameworkIcons.Minus size={15} strokeWidth={2.25} />
         </button>
         <button type="button" disabled={disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment}
-          className={`${btn} end-px rounded-r-[calc(var(--fc-control-radius)_-_1px)]`}>
+          className="fc-stepper__btn fc-stepper__btn--more">
           <FrameworkIcons.Plus size={15} strokeWidth={2.25} />
         </button>
       </div>

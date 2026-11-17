@@ -396,7 +396,8 @@
     "import": "Импорт",
     "reset": "Нулиране",
     "notScheduledYet": "още не е насрочено",
-    "more": "Още действия"
+    "more": "Още действия",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

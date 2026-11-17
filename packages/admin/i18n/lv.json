@@ -359,7 +359,8 @@
     "import": "Importēt",
     "reset": "Atiestatīt",
     "notScheduledYet": "vēl nav ieplānots",
-    "more": "Citas darbības"
+    "more": "Citas darbības",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

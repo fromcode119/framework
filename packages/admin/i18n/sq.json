@@ -359,7 +359,8 @@
     "import": "Importo",
     "reset": "Rivendos",
     "notScheduledYet": "ende i paplanifikuar",
-    "more": "Më shumë veprime"
+    "more": "Më shumë veprime",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

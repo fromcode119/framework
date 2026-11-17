@@ -77,72 +77,47 @@ export class DateTimePickerPopover extends PureReactor {
               overflowY: 'auto',
               zIndex: 9999
             }}
-            className={`p-4 rounded-xl animate-in zoom-in-95 slide-in-from-top-2 duration-200
-              ${theme === ThemeMode.DARK
-                ? 'bg-slate-900/98 backdrop-blur-2xl shadow-2xl shadow-black/40 ring-1 ring-white/5'
-                : 'bg-white/98 backdrop-blur-2xl shadow-2xl shadow-slate-950/10 ring-1 ring-black/5'}`}
+            // The sheet every menu in this console opens in, not a blurred pane of its own.
+            className={`fc-menu-sheet border p-2 shadow-lg ${
+              theme === ThemeMode.DARK
+                ? 'bg-slate-900 border-slate-800 shadow-black/40'
+                : 'bg-white border-slate-200 shadow-slate-900/[0.08]'}`}
           >
-            <div className={`mb-2.5 flex flex-col gap-2.5 rounded-xl p-3 ${theme === ThemeMode.DARK ? 'bg-slate-800/40 ring-1 ring-white/5' : 'bg-slate-50/80 ring-1 ring-black/5'}`}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[12px] font-medium text-slate-400">
-                    {AdminI18n.t('ui.date.selected')}
-                  </p>
-                  <p className={`truncate text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                    {selectedSummary}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={onJumpToSelected}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium tracking-tight transition-all duration-150 ${
-                    theme === ThemeMode.DARK
-                      ? 'text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 active:scale-95'
-                      : 'text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 active:scale-95'
-                  }`}
-                >
-                  {AdminI18n.t(pickerDate ? 'ui.date.jump' : 'ui.date.today')}
-                </button>
+            <div className="fc-cal__sum">
+              <div className="min-w-0">
+                <p className="fc-cal__sum-label">{AdminI18n.t('ui.date.selected')}</p>
+                <p className="fc-cal__sum-value truncate">{selectedSummary}</p>
               </div>
-              <div className="grid grid-cols-[34px_minmax(0,1fr)_34px] items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onShiftMonth(-1)}
-                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150 ${
-                    theme === ThemeMode.DARK
-                      ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
-                      : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
-                  }`}
-                  aria-label={AdminI18n.t('ui.date.previousMonth')}
-                >
-                  <FrameworkIcons.Left size={15} />
-                </button>
-                <button
-                  type="button"
-                  onClick={onToggleJumpView}
-                  className={`flex h-8 items-center justify-center gap-2 rounded-xl px-3 text-[13px] font-medium tracking-tight transition-all duration-150 ${
-                    theme === ThemeMode.DARK
-                      ? 'bg-slate-700/40 text-white hover:bg-indigo-500/20 hover:text-indigo-100 active:scale-[0.98] ring-1 ring-white/5'
-                      : 'bg-white text-slate-900 hover:bg-indigo-50 hover:text-indigo-700 active:scale-[0.98] shadow-sm ring-1 ring-black/5'
-                  }`}
-                  aria-label={AdminI18n.t('ui.date.chooseMonth')}
-                >
-                  <span>{DateTimePickerConstants.monthLabels()[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
-                  <FrameworkIcons.Down size={14} className={`transition-transform duration-200 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onShiftMonth(1)}
-                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-150 ${
-                    theme === ThemeMode.DARK
-                      ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
-                      : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
-                  }`}
-                  aria-label={AdminI18n.t('ui.date.nextMonth')}
-                >
-                  <FrameworkIcons.Right size={15} />
-                </button>
-              </div>
+              <button type="button" onClick={onJumpToSelected} className="fc-btn shrink-0">
+                {AdminI18n.t(pickerDate ? 'ui.date.jump' : 'ui.date.today')}
+              </button>
+            </div>
+            <div className="fc-cal__bar">
+              <button
+                type="button"
+                onClick={() => onShiftMonth(-1)}
+                className="fc-btn fc-btn--icon fc-btn--raised"
+                aria-label={AdminI18n.t('ui.date.previousMonth')}
+              >
+                <FrameworkIcons.Left size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={onToggleJumpView}
+                className="fc-btn w-full justify-center gap-2"
+                aria-label={AdminI18n.t('ui.date.chooseMonth')}
+              >
+                <span>{DateTimePickerConstants.monthLabels()[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
+                <FrameworkIcons.Down size={15} className={`transition-transform duration-150 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onShiftMonth(1)}
+                className="fc-btn fc-btn--icon fc-btn--raised"
+                aria-label={AdminI18n.t('ui.date.nextMonth')}
+              >
+                <FrameworkIcons.Right size={15} />
+              </button>
             </div>
             {isJumpViewOpen ? (
               <DateTimePickerJumpView

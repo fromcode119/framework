@@ -359,7 +359,8 @@
     "import": "가져오기",
     "reset": "초기화",
     "notScheduledYet": "아직 예약되지 않음",
-    "more": "추가 작업"
+    "more": "추가 작업",
+    "escKey": "esc"
   },
   "ui": {
     "table": {

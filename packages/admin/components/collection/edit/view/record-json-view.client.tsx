@@ -160,12 +160,9 @@ export class RecordJsonView extends Reactor {
     return (
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('collection.json.title')}</p>
-            <p className="mt-0.5 text-[12px] text-slate-500">
-              {AdminI18n.t('collection.json.hint')}
-            </p>
-          </div>
+          {/* No title here: the drawer's own head already carries it, and the two sat one under
+              the other, the same words twice. The sentence under it stays. */}
+          <p className="fc-switch__hint">{AdminI18n.t('collection.json.hint')}</p>
           <div className="flex items-center gap-2">
             <button type="button" onClick={this.onReformat} className={buttonClass}>{AdminI18n.t('collection.json.reformat')}</button>
             <button type="button" onClick={this.onImportClick} className={buttonClass}>{AdminI18n.t('collection.json.import')}</button>
@@ -181,16 +178,16 @@ export class RecordJsonView extends Reactor {
         </div>
 
         {unsurfaced.length > 0 && (
-          <div className="rounded-[var(--fc-control-radius)] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
-            <p className="text-[12px] font-medium text-amber-700 dark:text-amber-400">
+          <div className="fc-record-json__note">
+            <p className="text-[length:var(--fc-control-text)] font-medium leading-5">
               {AdminI18n.t(unsurfaced.length === 1 ? 'collection.json.unsurfacedOne' : 'collection.json.unsurfacedMany', { count: unsurfaced.length })}
             </p>
-            <p className="mt-0.5 text-[12px] text-amber-700/80 dark:text-amber-400/80">
+            <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 opacity-80">
               {AdminI18n.t('collection.json.unsurfacedHint')}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {unsurfaced.map((key) => (
-                <span key={key} className="rounded-[var(--fc-control-radius)] bg-white/70 px-2 py-1 font-mono text-[12px] text-amber-800 dark:bg-slate-900/60 dark:text-amber-300">
+                <span key={key} className="fc-sro__chip font-mono">
                   {key}
                 </span>
               ))}
@@ -201,15 +198,11 @@ export class RecordJsonView extends Reactor {
         {/* Highlighted layer UNDER a transparent textarea: real editing (caret, selection, undo,
             IME) with colour. Both share identical font, padding and line-height, and scroll is
             synced — any mismatch shows up immediately as drifting text. */}
-        <div className={`relative rounded-[var(--fc-control-radius)] border transition-colors ${
-          this.error
-            ? 'border-rose-300 bg-rose-50/40 dark:border-rose-500/40 dark:bg-rose-500/5'
-            : 'border-slate-200 bg-white focus-within:border-indigo-500 dark:border-slate-700 dark:bg-slate-950'
-        }`}>
+        <div className="fc-record-json__box" data-invalid={this.error ? 'true' : undefined}>
           <pre
             ref={this.highlightLayer}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre-wrap break-words p-4 font-mono text-[13px] leading-6 text-slate-800 dark:text-slate-100"
+            className="fc-record-json__layer pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre-wrap break-words"
             dangerouslySetInnerHTML={{ __html: `${RecordJsonView.highlight(this.draft)}\n` }}
           />
           <textarea
@@ -217,15 +210,15 @@ export class RecordJsonView extends Reactor {
             onChange={this.onDraftChange}
             onScroll={this.onScroll}
             spellCheck={false}
-            className="relative w-full min-h-[60vh] resize-y overflow-auto whitespace-pre-wrap break-words bg-transparent p-4 font-mono text-[13px] leading-6 text-transparent caret-slate-900 outline-none dark:caret-white"
+            className="fc-record-json__layer relative w-full min-h-[60vh] resize-y overflow-auto whitespace-pre-wrap break-words bg-transparent text-transparent outline-none"
           />
         </div>
 
         <div className="min-h-[20px]">
           {this.error
-            ? <p className="text-[12px] font-medium text-rose-600">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
-            : <p className="text-[12px] text-emerald-600">{AdminI18n.t('collection.json.validState')}</p>}
-          {this.notice && !this.error && <p className="mt-0.5 text-[12px] text-slate-500">{this.notice}</p>}
+            ? <p className="text-[length:var(--fc-control-text)] font-medium leading-5 text-[color:var(--fc-danger)]">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
+            : <p className="text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{AdminI18n.t('collection.json.validState')}</p>}
+          {this.notice && !this.error && <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{this.notice}</p>}
         </div>
       </div>
     );
