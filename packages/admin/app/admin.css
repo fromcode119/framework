@@ -1300,10 +1300,15 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 
 /* From 640px the sheet is a dialog: centred over the page, a panel of its own, the record untouched
  * behind it. The fields read at the console's own size, not the phone's. */
+/* From 640px the sheet is a DRAWER, pinned to the right edge with 8px of air around it and the full
+ * height of the window — the shape the record pages this console follows use for editing a section,
+ * and the shape the owner asked for. Centred over the page it covered the record it was editing;
+ * at the edge the record stays readable beside it. */
 @media (min-width: 640px) {
   .fc-sheet {
-    align-items: center;
-    padding: 24px;
+    align-items: stretch;
+    justify-content: flex-end;
+    padding: 8px;
     /* Read at 13px on the record, so edited at 13px here: the sheet used to show the value one step
        smaller than the row it replaces. The LABEL stays at 12px — it is a label, and quieter. */
     --fc-field-text: var(--fc-text-sm);
@@ -1311,7 +1316,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   }
   .fc-sheet__panel {
     width: min(560px, 100%);
-    max-height: calc(100dvh - 96px);
+    height: 100%;
+    max-height: none;
     background: var(--fc-sheet-canvas);
     border: 1px solid var(--fc-sheet-border);
     border-radius: var(--fc-sheet-radius);
