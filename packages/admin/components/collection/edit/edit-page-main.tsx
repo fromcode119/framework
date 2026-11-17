@@ -2,8 +2,6 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { RecordSectionRepeatedLabel } from '@/components/collection/edit/record-section-repeated-label';
 import { Card } from '@/components/ui/view/card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
@@ -44,7 +42,6 @@ export class EditPageMain extends PureReactor {
   @prop declare slotProps?: Record<string, any>;
 
   /** Collapsed sections (`admin.sectionCollapsed`) the operator has opened on this page. */
-  @state openSections: Record<string, boolean> = {};
 
   @bound renderField(field: any): ReactNode {
     return (
@@ -104,53 +101,24 @@ export class EditPageMain extends PureReactor {
         />
       );
     }
-    const collapsible = Boolean(section.title) && section.collapsed === true;
-    // A field with an error must be seen, so its section opens by itself.
-    const hasError = section.fields.some((field: any) => Boolean(this.fieldErrors?.[field.name]));
-    const open = !collapsible || hasError || this.openSections[section.key] === true;
     return (
       <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
-        {collapsible ? this.renderToggle(section, open) : section.title ? (
+        {section.title ? (
           /* A group's name reads the same on the form as on the record: 16/24. At 14 it sat between
              a label and a title and read as neither. */
           <h2 className="mb-4 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
         ) : null}
-        {open ? (
-          /* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */
-          <div className="fc-edit-fields">
-            <div className="fc-edit-fields__grid">
-              {section.fields.map((field: any) => this.renderField(RecordSectionRepeatedLabel.apply(field, section)))}
-            </div>
+        {/* Every group is open. A section that folded in place made the form a stack of shut drawers:
+            the operator had to guess which one held the field they wanted, opening each in turn, and a
+            field nobody opened was a field nobody filled. A card is as long as what it holds. */}
+        {/* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */}
+        <div className="fc-edit-fields">
+          <div className="fc-edit-fields__grid">
+            {section.fields.map((field: any) => this.renderField(RecordSectionRepeatedLabel.apply(field, section)))}
           </div>
-        ) : null}
-        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
+        </div>
+        {this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
       </Card>
-    );
-  }
-
-  /**
-   * The title row of a collapsible section: the title, how many fields it holds, and Show / Hide, all
-   * one button. Collapsed, the row still says what is inside, so nothing is out of sight unannounced.
-   */
-  private renderToggle(section: { key: string; title?: string; fields: any[] }, open: boolean): ReactNode {
-    const Chevron = open ? FrameworkIcons.ChevronDown : FrameworkIcons.ChevronRight;
-    return (
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => this.openSections = { ...this.openSections, [section.key]: !open }}
-        className={`flex w-full items-center gap-2 text-start ${open ? 'mb-4' : ''}`}
-      >
-        <Chevron size={15} className="shrink-0 text-slate-400" />
-        <h2 className="min-w-0 flex-1 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
-        <span className="shrink-0 text-[12px] text-slate-500">
-          {AdminI18n.t('collection.edit.sectionFieldCount', { count: section.fields.length })}
-          {' · '}
-          <span className="font-medium text-[color:var(--primary)]">
-            {AdminI18n.t(open ? 'collection.edit.sectionHide' : 'collection.edit.sectionShow')}
-          </span>
-        </span>
-      </button>
     );
   }
 

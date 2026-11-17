@@ -31,7 +31,6 @@ export class SidebarNotifications extends AdminComponent {
   @state private notifications: Array<Record<string, any>> = [];
   @state private unread = 0;
   @state private deviceOn = false;
-  @state private expandedId: number | null = null;
   @ref declare private dropdown: Ref<Dropdown>;
   private static readonly REFRESH_MS = 60_000;
 
@@ -67,7 +66,6 @@ export class SidebarNotifications extends AdminComponent {
    */
   @bound private toggle(notification: Record<string, any>): void {
     const id = Number(notification.id);
-    this.expandedId = this.expandedId === id ? null : id;
     if (notification.read) return;
     this.notifications = this.notifications.map((row) => (Number(row.id) === id ? { ...row, read: true } : row));
     this.unread = Math.max(0, this.unread - 1);
@@ -122,7 +120,7 @@ export class SidebarNotifications extends AdminComponent {
 
   private get panel(): ReactElement {
     return (
-      <NotificationPanel notifications={this.notifications} expandedId={this.expandedId} deviceOn={this.deviceOn}
+      <NotificationPanel notifications={this.notifications} deviceOn={this.deviceOn}
         onToggle={this.toggle} onFollow={this.follow} onToggleDevice={this.toggleDevice} />
     );
   }

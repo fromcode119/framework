@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Button } from '@/components/ui/view/button.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Loader } from '@/components/ui/view/loader.client';
 import { MediaShareController } from '@/app/media/media-share-controller';
@@ -89,12 +90,16 @@ export class MediaSharesPanel extends AdminComponent {
     }
   }
 
-  @bound private async handleToggle(shareId: number): Promise<void> {
-    if (this.expandedId === shareId) {
-      this.expandedId = null;
-      return;
-    }
+  @bound private closeShare(): void {
+    this.expandedId = null;
+  }
 
+  /** The share whose panel is open, or null. */
+  private get openedShare(): any {
+    return this.shares.find((share: any) => Number(share.id) === this.expandedId) ?? null;
+  }
+
+  @bound private async handleToggle(shareId: number): Promise<void> {
     this.expandedId = shareId;
     if (this.grantsByShare[shareId]) return;
 
@@ -248,9 +253,22 @@ export class MediaSharesPanel extends AdminComponent {
               </div>
             </div>
 
-            {this.expandedId === share.id ? this.renderExpanded(share.id, dark) : null}
           </Card>
         ))}
+        {/* One share, opened over the list. It used to unfold INSIDE the card, so reading a share's
+            activity pushed every share under it down the page, and two shares could never be compared
+            because opening the second closed nothing. A row opens its own panel. */}
+        {this.openedShare ? (
+          <EditSheet
+            isOpen
+            title={String(this.openedShare.title ?? AdminI18n.t('media.share'))}
+            saveLabel={AdminI18n.t('common.close')}
+            onClose={this.closeShare}
+            onSave={this.closeShare}
+          >
+            {this.renderExpanded(Number(this.openedShare.id), dark)}
+          </EditSheet>
+        ) : null}
         {this.hasMore ? (
           <div className="flex justify-center pt-1">
             <Button variant={ButtonVariant.SECONDARY} disabled={this.loadingMore} onClick={this.handleLoadMore}>

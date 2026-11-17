@@ -670,7 +670,6 @@ html.dark {
 .fc-import-detail__chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: var(--fc-weight-strong); color: var(--muted-foreground); border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
 .fc-import-detail__chip:hover { color: var(--foreground); }
 .fc-import-detail__chip-count { font-variant-numeric: tabular-nums; background: var(--muted); border-radius: 5px; padding: 1px 6px; font-size: 11px; }
-.fc-import-detail__chip-caret { font-size: 9px; opacity: 0.7; }
 .fc-import-detail__chip--warn { color: var(--fc-warning-strong); border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); }
 .fc-import-detail__chip--warn .fc-import-detail__chip-count { background: var(--fc-warning-mark); }
 .fc-import-detail__chip--open { color: var(--primary); border-color: var(--primary); background: var(--muted); }

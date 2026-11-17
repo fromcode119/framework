@@ -53,7 +53,6 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       inspecting: false,
       inspectFailed: false,
       inspectFailure: '',
-      advancedOpen: false,
       gitSecret: '',
       gitUrl: build?.gitUrl || '',
       slug: build?.slug || '',

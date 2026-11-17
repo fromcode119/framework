@@ -3,6 +3,7 @@ import { Reactor, bound, prop, state } from '@fromcode119/react-class-components
 import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 
 /**
  * One kind of record: what it is, how many, and whether it comes across.
@@ -10,26 +11,25 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * This replaced a row built from `LOWEST ID` / `HANDED OUT HERE` / a dump of column names. Those are
  * a proof that the import is correct, put in front of someone who cannot read them and was not
  * asking — re-numbering is invisible to an operator, because every reference moves with it. So the
- * row answers in sentences, and the mechanics sit behind a Technical button that says what it is.
+ * row answers in sentences, and the mechanics stand beside them.
  *
- * Nothing is hidden that has an effect: every id figure, every followed and unfollowed link, and
- * every dropped column is still here, one deliberate click away and still found by find-in-page once
- * open. A row with nothing to explain (arrives whole, ids untouched) does not open at all rather
- * than opening on a sentence repeating the line above it.
+ * The row OPENS, it does not unfold. Two folds used to sit inside this list - the row, and a
+ * Technical fold inside the row - so the list jumped under the pointer twice for one answer and two
+ * rows could never be read side by side. Everything the row has to say is in its panel: every id
+ * figure, every followed and unfollowed link, every dropped column, all found by find-in-page. A row
+ * with nothing to explain (arrives whole, ids untouched) does not open at all.
  */
 export class ImportPlanRecordRow extends Reactor {
   @prop declare record: ImportPlanRecord;
   @state private open = false;
-  @state private technical = false;
 
   @bound private toggle(): void {
     if (!this.canOpen) return;
-    this.open = !this.open;
+    this.open = true;
   }
 
-  @bound private toggleTechnical(event: { stopPropagation(): void }): void {
-    event.stopPropagation();
-    this.technical = !this.technical;
+  @bound private close(): void {
+    this.open = false;
   }
 
   /** A row earns a disclosure when it has something to say beyond its own summary line. */
@@ -50,11 +50,8 @@ export class ImportPlanRecordRow extends Reactor {
     const followed = record.followedLinks;
     return (
       <div className="fc-import-rec__techwrap">
-        <button type="button" className="fc-import-rec__tech" onClick={this.toggleTechnical} aria-expanded={this.technical}>
-          {AdminI18n.t('sites.importPlan.technical')} {this.technical ? '▴' : '▾'}
-        </button>
-        {this.technical ? (
-          <div className="fc-import-rec__techbox">
+        <h3 className="fc-import-rec__tech">{AdminI18n.t('sites.importPlan.technical')}</h3>
+        <div className="fc-import-rec__techbox">
             <dl className="fc-import-rec__dl">
               <dt>{AdminI18n.t('sites.importPlan.table')}</dt><dd className="fc-import-rec__mono">{table.name}</dd>
               <dt>{AdminI18n.t('sites.importPlan.ids2')}</dt><dd>{record.idMechanics}</dd>
@@ -77,15 +74,13 @@ export class ImportPlanRecordRow extends Reactor {
                 <><dt>{AdminI18n.t('sites.importPlan.columnsDropped')}</dt><dd className="fc-import-rec__mono fc-import-rec__lost"><ul>{table.droppedColumns.map((c) => <li key={c}>{c}</li>)}</ul></dd></>
               ) : null}
             </dl>
-          </div>
-        ) : null}
+        </div>
       </div>
     );
   }
 
   render(): ReactNode {
     const { record } = this;
-    const open = this.open && this.canOpen;
     return (
       <>
         <div
@@ -93,7 +88,6 @@ export class ImportPlanRecordRow extends Reactor {
           onClick={this.toggle}
           role={this.canOpen ? 'button' : undefined}
           tabIndex={this.canOpen ? 0 : undefined}
-          aria-expanded={this.canOpen ? open : undefined}
           onKeyDown={(event) => { if (this.canOpen && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); this.toggle(); } }}
         >
           <span className="fc-import-rec__name">{record.name}</span>
@@ -103,15 +97,24 @@ export class ImportPlanRecordRow extends Reactor {
             {record.answer}
           </span>
         </div>
-        {open ? (
-          <div className="fc-import-rec__detail">
-            {record.sentences.map((sentence) => (
-              <p key={sentence.text} className={sentence.warn ? 'fc-import-rec__line fc-import-rec__line--warn' : 'fc-import-rec__line'}>
-                {sentence.text}
-              </p>
-            ))}
-            {this.renderTechnical()}
-          </div>
+        {this.open && this.canOpen ? (
+          <EditSheet
+            isOpen
+            title={record.name}
+            subtitle={record.answer}
+            saveLabel={AdminI18n.t('common.close')}
+            onClose={this.close}
+            onSave={this.close}
+          >
+            <div className="fc-import-rec__detail">
+              {record.sentences.map((sentence) => (
+                <p key={sentence.text} className={sentence.warn ? 'fc-import-rec__line fc-import-rec__line--warn' : 'fc-import-rec__line'}>
+                  {sentence.text}
+                </p>
+              ))}
+              {this.renderTechnical()}
+            </div>
+          </EditSheet>
         ) : null}
       </>
     );

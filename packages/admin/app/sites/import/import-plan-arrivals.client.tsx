@@ -26,11 +26,6 @@ export class ImportPlanArrivals extends Reactor {
   @prop declare arriving: ImportPlanRecord[];
   @prop declare users: { total: number; existing: number; toCreate: number };
   @prop declare files: { count: number; colliding: number };
-  @state private showPlatform = false;
-
-  @bound private togglePlatform(): void {
-    this.showPlatform = !this.showPlatform;
-  }
 
   /**
    * The kinds worth NAMING: those a plugin owns and has given a name of its own.
@@ -119,20 +114,17 @@ export class ImportPlanArrivals extends Reactor {
             </div>
           ))}
           {platformRecords.length ? (
-            <button
-              type="button"
-              className="fc-import-plan__tile fc-import-plan__tile--rest"
-              onClick={this.togglePlatform}
-              aria-expanded={this.showPlatform}
-            >
+            <div className="fc-import-plan__tile fc-import-plan__tile--rest">
               <span className="fc-import-plan__tile-count">+{platformTotal.toLocaleString()}</span>
               <span className="fc-import-plan__tile-label">
-                {this.showPlatform ? AdminI18n.t('sites.importPlan.hideTheList') : AdminI18n.t('sites.importPlan.platformRecordsKindS', { count: platformRecords.length.toLocaleString() })}
+                {AdminI18n.t('sites.importPlan.platformRecordsKindS', { count: platformRecords.length.toLocaleString() })}
               </span>
-            </button>
+            </div>
           ) : null}
         </div>
-        {this.showPlatform ? this.renderPlatformDetail() : null}
+        {/* The list stands under the tile. It used to be a fold, and a fold over a handful of lines
+            only asks the operator to click to find out whether clicking was worth it. */}
+        {platformRecords.length ? this.renderPlatformDetail() : null}
       </div>
     );
   }

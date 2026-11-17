@@ -6,10 +6,6 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /** What each field of the source form does when changed, and the words the summaries show. */
 export abstract class BuildSourceFormFields extends BuildSourceFormRemote {
   /** Open when asked, and always while the repository could not be read: the token is the likely fix. */
-  protected get advancedOpen(): boolean {
-    return this.state.advancedOpen || Boolean(this.state.branchFailure);
-  }
-
   /** Read and declared, for THIS URL: a failed or running read never shows a name. */
   protected get identityRead(): boolean {
     return Boolean(this.state.slug) && !this.state.inspecting && !this.state.inspectFailed;
@@ -30,10 +26,6 @@ export abstract class BuildSourceFormFields extends BuildSourceFormRemote {
     if (this.isEdit && this.hasStoredToken) return AdminI18n.t('sources.tokenStored');
     if (this.isEdit && this.props.build?.usesEnvToken) return AdminI18n.t('sources.usingAppLevelGithubToken');
     return AdminI18n.t('sources.noToken');
-  }
-
-  @bound protected toggleAdvanced(): void {
-    this.setState({ advancedOpen: !this.advancedOpen });
   }
 
   @bound protected rereadBranches(): void {
