@@ -1340,7 +1340,11 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   justify-content: space-between;
   gap: 12px;
   min-height: var(--fc-card-head-height);
-  padding: 16px var(--fc-card-pad-x);
+  /* The band is the min-height, NOT padding added to whatever stands in it: with 16px above and below,
+     a head holding a 32px control measured 65px against every other head's 61, which is the one thing
+     this height was declared to prevent. The control centres itself in the band instead. */
+  padding-block: 0;
+  padding-inline: var(--fc-card-pad-x);
   border-bottom: var(--fc-record-rule);
 }
 .fc-record-card__title {
