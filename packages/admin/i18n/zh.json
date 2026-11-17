@@ -540,7 +540,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "打开"
     },
     "address": {
       "recipient": "收件人姓名",

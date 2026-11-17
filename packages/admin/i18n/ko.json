@@ -540,7 +540,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "열기"
     },
     "address": {
       "recipient": "수령인 이름",

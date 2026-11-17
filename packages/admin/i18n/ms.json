@@ -540,7 +540,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "Buka"
     },
     "address": {
       "recipient": "Nama penerima",

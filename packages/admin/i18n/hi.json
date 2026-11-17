@@ -540,7 +540,8 @@
       "tablePrev": "Previous",
       "tableNext": "Next",
       "filterClear": "Remove filter",
-      "filterClearAll": "Clear all"
+      "filterClearAll": "Clear all",
+      "openRow": "खोलें"
     },
     "address": {
       "recipient": "प्राप्तकर्ता का नाम",

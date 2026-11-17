@@ -108,6 +108,18 @@ export interface IField {
       /** Use the values of a nested group as the display text, falling back to the named key. */
       readonly join?: { readonly from: string; readonly separator: string };
     }[];
+    /**
+     * Where a row of a structured data table LEADS, as a path with `{key}` standing for that row's
+     * value of `key` — for example `/ecommerce/inventory?search={sku}`.
+     *
+     * A row of a table is a thing in its own right, and the console used to offer only "edit this
+     * field", which opened the whole field in a drawer: clicking a variant to change its stock
+     * showed every variant and every other value with it. When a field declares this, the row goes
+     * to where that thing actually lives, and the drawer stays for editing the field as a whole.
+     *
+     * The framework never knows which path that is — only that the schema named one.
+     */
+    tableRowHref?: string;
     /** Read a `component` field on the card as a plain value row; the component edits it with the section. */
     readAsValue?: boolean;
     /**

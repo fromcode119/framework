@@ -2158,3 +2158,5 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   .fc-confirm__foot { flex-direction: column-reverse; }
   .fc-confirm__foot > * { width: 100%; }
 }
+/* A row that leads somewhere says so under the pointer, like every other row in the console that does. */
+.fc-sro-table__row--link { cursor: pointer; }

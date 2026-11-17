@@ -577,7 +577,8 @@
       "tablePrev": "Назад",
       "tableNext": "Напред",
       "filterClear": "Премахни филтъра",
-      "filterClearAll": "Изчисти всички"
+      "filterClearAll": "Изчисти всички",
+      "openRow": "Отвори"
     },
     "address": {
       "recipient": "Име на получателя",

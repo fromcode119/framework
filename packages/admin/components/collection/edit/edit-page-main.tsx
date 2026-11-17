@@ -96,6 +96,7 @@ export class EditPageMain extends PureReactor {
           saveError={this.saveError}
           clearSaveError={this.clearSaveError}
           recordTitle={this.recordTitle}
+          navigate={this.navigate}
           slotBase={this.sectionSlotBase}
           slotProps={this.slotProps}
           recordPart={this.recordLinks ? (place: RecordPartPlace) => <CollectionRecordPart links={this.recordLinks!} sectionKey={section.key} navigate={this.navigate} place={place} /> : undefined}

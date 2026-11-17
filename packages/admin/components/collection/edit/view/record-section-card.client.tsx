@@ -173,6 +173,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
   }
 
 
+  /** The way to another record, for a table row that leads to one. */
+  @prop declare navigate?: (href: string) => void;
+
   /** What the section's search holds. Nothing is stored: it is how the card is being read now. */
   @state private searchText = '';
 
@@ -224,6 +227,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
           // the record and the sheet edits that field whole.
           onEditRow: RecordSectionFields.canEdit([field]) ? this.openSheet : undefined,
           tableToolbar: withToolbar ? this.tableToolbar : undefined,
+          // Where a ROW leads, straight from the field's own declaration, plus the way to get there.
+          tableRowHref: field?.admin?.tableRowHref,
+          navigate: this.navigate,
           // What the section's own search holds; the table narrows itself to it.
           searchText: this.searchText,
         },

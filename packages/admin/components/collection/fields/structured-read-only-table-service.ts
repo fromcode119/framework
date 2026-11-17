@@ -89,6 +89,22 @@ export class StructuredReadOnlyTableService {
   }
 
   /** One cell as the plain text a sort compares. */
+  /**
+   * Where this ROW leads, from the template the field declared: `{key}` stands for the row's value of
+   * `key`. A template whose keys the row cannot answer resolves to nothing, so a row that has no sku
+   * does not quietly link to a search for the empty string.
+   */
+  static rowHref(template: string | undefined, row: Record<string, IStructuredNode>): string {
+    if (!template) return '';
+    let missing = false;
+    const href = template.replace(/\{([^}]+)\}/g, (_match, key: string) => {
+      const value = StructuredReadOnlyTableService.cellText(row[key]).trim();
+      if (!value) missing = true;
+      return encodeURIComponent(value);
+    });
+    return missing ? '' : href;
+  }
+
   static cellText(node?: IStructuredNode): string {
     return StructuredReadOnlyTableService.nodeText(node);
   }

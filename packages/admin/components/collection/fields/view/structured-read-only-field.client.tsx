@@ -67,6 +67,8 @@ export class StructuredReadOnlyField extends Reactor {
           keyLabels={this.keyLabels}
           searchLower={String(this.field?.admin?.searchText ?? '').trim().toLowerCase()}
           editRow={this.editRow}
+          rowHref={this.field?.admin?.tableRowHref}
+          navigate={this.field?.admin?.navigate}
           toolbarTarget={this.field?.admin?.tableToolbar}
         />
       );
