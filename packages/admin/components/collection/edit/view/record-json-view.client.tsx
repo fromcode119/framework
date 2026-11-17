@@ -139,13 +139,15 @@ export class RecordJsonView extends Reactor {
     return escaped.replace(
       /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
       (match, str, colon, literal, num) => {
+        // The four tones, measured: a key is the body text, a string green, a number or `true`
+        // orange, a `null` or `false` rose, and the punctuation between them is quiet.
         if (str) {
           return colon
-            ? `<span class="text-sky-700 dark:text-sky-300">${str}</span><span class="text-slate-400">${colon}</span>`
-            : `<span class="text-emerald-700 dark:text-emerald-300">${str}</span>`;
+            ? `<span class="fc-json-key">${str}</span><span class="fc-json-punct">${colon}</span>`
+            : `<span class="fc-json-str">${str}</span>`;
         }
-        if (literal) return `<span class="text-purple-600 dark:text-purple-300">${literal}</span>`;
-        if (num) return `<span class="text-amber-600 dark:text-amber-300">${num}</span>`;
+        if (literal) return `<span class="${literal === 'true' ? 'fc-json-num' : 'fc-json-nil'}">${literal}</span>`;
+        if (num) return `<span class="fc-json-num">${num}</span>`;
         return match;
       },
     );

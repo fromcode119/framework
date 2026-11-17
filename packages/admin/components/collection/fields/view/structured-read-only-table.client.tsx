@@ -227,6 +227,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const shown = rows.slice((page - 1) * size, page * size);
     const toolbar = this.renderTools(rows.length);
     const media = this.node.tableMediaColumns ?? [];
+    const badges = this.node.tableBadgeColumns ?? [];
     return (
       <div className="fc-sro-table">
         {toolbar}
@@ -269,7 +270,9 @@ export class StructuredReadOnlyTable extends PureReactor {
                 >
                   {columns.map((column) => (
                     <td key={column} className={media.includes(column) ? 'fc-sro-table__media-cell' : undefined}>
-                      <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />
+                      {badges.includes(column) && StructuredReadOnlyTableService.cellText(row[column])
+                        ? <span className="fc-sro__chip">{StructuredReadOnlyTableService.cellText(row[column])}</span>
+                        : <StructuredReadOnlyCell node={row[column]} media={media.includes(column)} />}
                     </td>
                   ))}
                   {this.editRow ? <td className="fc-sro-table__menu-cell" onClick={(event) => event.stopPropagation()}>{this.renderRowMenu(row)}</td> : null}

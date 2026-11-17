@@ -105,6 +105,11 @@ export interface IField {
     tableLayout?: readonly {
       readonly key: string;
       readonly media?: boolean;
+      /**
+       * Read this column's value as a TAG, not as text — the reference prints an option's value
+       * ("S", "Тъмносин меланж") as the same badge the record's own rows use for it.
+       */
+      readonly badge?: boolean;
       /** Use the values of a nested group as the display text, falling back to the named key. */
       readonly join?: { readonly from: string; readonly separator: string };
     }[];

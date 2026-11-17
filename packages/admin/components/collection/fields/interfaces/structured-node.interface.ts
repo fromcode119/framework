@@ -30,4 +30,6 @@ export interface IStructuredNode {
   tableEmptyColumns?: string[];
   /** The columns whose values are pictures, worked out from the values themselves. */
   tableMediaColumns?: string[];
+  /** Columns whose value is read as a tag rather than as text. */
+  tableBadgeColumns?: string[];
 }

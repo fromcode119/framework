@@ -18,6 +18,8 @@
   --fc-surface-muted: #f8fafc;
   --fc-canvas: #f8fafc;
   --fc-text: #0f172a;
+  /* A control that is present and cannot be pressed: greyed, not faded. */
+  --fc-text-faint: #a1a1aa;
   --fc-text-muted: #64748b;
   --fc-border: #e2e8f0;
   --fc-success: #059669;
@@ -109,7 +111,9 @@
      whether or not that head holds anything but its title. */
   /* 16 + a 24px line + 16. The target's card head is its name and nothing else; ours stood at 61,
      which is a head sized for a control that is no longer in it. */
-  --fc-card-head-height: 56px;
+  /* 60, measured: 16 + the 28px action + 16. It was 56, which is the height of its text, so every
+     card's head sat 4px shallower than the pages this console follows. */
+  --fc-card-head-height: 60px;
   /* EVERY control the operator can click: one height, one corner, one text size. Counted on a product
      record before this: 22, 24, 28, 32 and 40 px side by side in the same header, and two different
      corners on two things that both labelled a state. Change these three and the whole console moves. */
@@ -1493,6 +1497,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-card__title {
   min-width: 0;
   font-size: var(--fc-card-title);
+  /* 16/24, measured. It inherited 20, which is the line of a ROW, not of a heading. */
+  line-height: 24px;
   font-weight: 500;
   color: var(--card-foreground);
 }
@@ -1592,7 +1598,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-record-card__value {
   min-width: 0;
   white-space: pre-line;
-  color: var(--fc-text);
+  /* The same tone as its label, measured: a row is one fact read in one voice. Ours printed the
+     value near-black against a muted label, which made every card read as a list of headings. */
+  color: var(--fc-text-muted);
   overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -1805,7 +1813,11 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    field in a form, 6px for the small controls of a record card — and this one field stands between
    two 6px buttons, so at 12px it was visibly rounder than the things it is pressed beside. A field
    that has left a form takes the shape of the row it joined. */
-.fc-sro-table__search-field { width: min(184px, 100%); min-width: 0; }
+.fc-sro-table__search-field {
+  width: min(183px, 100%); min-width: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15' fill='none' stroke='%2371717a' stroke-width='1.3' stroke-linecap='round'%3E%3Ccircle cx='6.5' cy='6.5' r='4.5'/%3E%3Cpath d='M10 10l3 3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 6.5px 50%;
+}
 
 .fc-sro-table__search { width: min(240px, 100%); }
 @container (max-width: 420px) {
@@ -1819,7 +1831,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px var(--fc-sro-inset);
+  /* 64 tall at 16/12, measured; ours was 57 at 14/24. */
+  padding: 16px 12px;
   border-top: var(--fc-record-rule);
 }
 .fc-sro-table__pager { display: inline-flex; align-items: center; gap: 4px; }
@@ -1828,7 +1841,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   cursor: pointer;
 }
 .fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
-.fc-sro-table__page:disabled { color: var(--fc-text-muted); opacity: .65; cursor: default; }
+/* A pager button is the taller kind — 32 at 6/12, measured — and when it is disabled it keeps its
+   full opacity and loses its edge: the reference greys the text and leaves everything else alone,
+   where ours faded the whole control to .65 and kept its shadow. */
+
 .fc-sro-table__sort {
   display: inline-flex;
   align-items: center;
@@ -2315,17 +2331,44 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   color: var(--fc-text-muted);
   font-variant-numeric: tabular-nums;
 }
-/* The record's JSON is read in the console's own drawer. It used to repaint the whole drawer dark —
-   the head, the buttons and the ground — on the argument that code is read on a dark ground, and the
-   result was one black panel in a white console. Only the code box itself is a field now. */
+/* The record's JSON is read on a dark ground: #18181b for the drawer, #27272a for the code box, with
+   the key, the string, the number and the null each in their own tone — measured, §9б. I turned this
+   light once, reading a complaint about the drawer (its title printed twice, and its two text layers
+   wrapping at different columns, both since fixed) as a complaint about its colour. */
+.fc-sheet--json {
+  --fc-sheet-canvas: #18181b;
+  --fc-sheet-surface: #18181b;
+  --fc-sheet-border: #27272a;
+  --fc-text: rgb(255 255 255 / .88);
+  --fc-text-muted: rgb(255 255 255 / .56);
+  --fc-surface: #27272a;
+  --fc-surface-muted: #27272a;
+  --fc-border: #3f3f46;
+}
+.fc-sheet--json .fc-sheet__body { color: var(--fc-text); }
+/* No bottom rule under its head, and no Cancel/Save under its body: the drawer records nothing. */
+.fc-sheet--json .fc-sheet__head { border-bottom: 0; }
+.fc-sheet--json .fc-sheet__foot { display: none; }
+/* No padding on the BOX: the coloured layer is `inset: 0` inside it, so any padding here shifts the
+   typing layer by it and the two texts print over each other. The 12px is on the layers themselves. */
+.fc-sheet--json .fc-record-json__box { background: #27272a; box-shadow: none; padding: 0;
+  border-radius: 8px 8px 4px 4px; }
+.fc-sheet--json .fc-record-json__layer { color: rgb(255 255 255 / .88); }
+.fc-sheet--json .fc-record-json__note { background: #27272a; box-shadow: none; }
+.fc-json-key { color: rgb(255 255 255 / .88); }
+.fc-json-punct { color: rgb(255 255 255 / .56); }
+.fc-json-str { color: #10b981; }
+.fc-json-nil { color: #f43f5e; }
+.fc-json-num { color: #f97316; }
+
 /* The code box is a field, like every other box in this console: quiet fill, 6px corner, the edge in
    the shadow. The caret and the coloured layer sit inside it. */
 .fc-record-json__box { position: relative; border-radius: var(--fc-control-radius);
   background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); }
 .fc-record-json__box:focus-within { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .fc-record-json__box[data-invalid="true"] { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
-.fc-record-json__layer { padding: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px; line-height: 20px; color: var(--fc-text);
+.fc-record-json__layer { padding: 12px; font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px; line-height: 18.2px; color: var(--fc-text);
   /* The coloured layer and the textarea must wrap at the SAME column. The textarea reserves a
      scrollbar and the layer did not, so every wrapped line drifted by its width and the two texts
      printed over each other. A stable gutter on both gives them one content width. */
@@ -2494,3 +2537,27 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    content. Name, how much of it there is, and the way in.  */
 .fc-record-card--summary > .fc-record-card__head { min-height: 0; height: auto; padding: 16px var(--fc-card-pad-x); border-bottom: 0; }
 .fc-record-card--summary .fc-record-card__title { font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); }
+
+/* ── Two controls of the table that are NOT the console's standard size ──────────────────────────
+ * Declared here, after the one-shape rules at the foot of this file, because they are exceptions to
+ * them and were being overwritten by them where they stood before.
+ *
+ * The search is 183 x 28 with its glass inside it, measured: as the 32px form field it stood taller
+ * than the two tool buttons beside it and broke the 28px line of the row. The pager's buttons are
+ * the taller 32px kind at 6/12, which is what makes the foot 64 rather than 57; disabled, they keep
+ * their full opacity and lose their edge, instead of fading the whole control away. */
+/* The class is on the field's WRAPPER, so the box itself is reached through it — and through the
+   tool row as well, because the box also carries a utility class for its height, which ties on
+   specificity and is emitted after this file. */
+.fc-sro-table__tools > .fc-sro-table__search-field > .fc-field,
+.fc-sro-table__search-field.fc-field-stack > .fc-field {
+  height: var(--fc-control-h);
+  padding: 4px 8px 4px 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15' fill='none' stroke='%2371717a' stroke-width='1.3' stroke-linecap='round'%3E%3Ccircle cx='6.5' cy='6.5' r='4.5'/%3E%3Cpath d='M10 10l3 3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 6.5px 50%;
+}
+.fc-sro-table__foot .fc-sro-table__page { height: 32px; min-height: 32px; padding: 6px 12px; }
+.fc-sro-table__foot .fc-sro-table__page:disabled {
+  color: var(--fc-text-faint); opacity: 1; cursor: default; box-shadow: none;
+}

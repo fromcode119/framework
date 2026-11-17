@@ -38,10 +38,14 @@ export class StructuredReadOnlyTableService {
   static applyLayout(node: IStructuredNode, layout: NonNullable<IField['admin']>['tableLayout']): IStructuredNode {
     if (!layout?.length || node.kind !== StructuredNodeKind.ARRAY_TABLE) return node;
     const media = layout.filter((column) => column.media).map((column) => column.key);
-    const columns = layout.flatMap(({ key }) => {
+    // A group (an option set) expands into a column per member, so the flag has to follow them:
+    // marking "options" would mark a column the table never draws.
+    const expand = (key: string): string[] => {
       const children = (node.tableColumns ?? []).filter((column) => node.tableColumnOrigins?.[column] === key);
       return children.length ? children : [key];
-    });
+    };
+    const badges = layout.filter((column) => column.badge).flatMap((column) => expand(column.key));
+    const columns = layout.flatMap(({ key }) => expand(key));
     const rows = (node.tableRows ?? []).map((row, index) => {
       const values = { ...row };
       for (const { key, join } of layout) {
@@ -53,7 +57,7 @@ export class StructuredReadOnlyTableService {
       }
       return values;
     });
-    return { ...node, tableColumns: columns, tableRows: rows, tableMediaColumns: media, tableEmptyColumns: [] };
+    return { ...node, tableColumns: columns, tableRows: rows, tableMediaColumns: media, tableBadgeColumns: badges, tableEmptyColumns: [] };
   }
 
   /** Past this many distinct values a column is searched, not picked from. */
