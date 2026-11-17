@@ -2004,7 +2004,6 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 @keyframes fc-skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 /* Movement that says only "still waiting" is not worth making anyone ill: the shape stays, the beat goes. */
 @media (prefers-reduced-motion: reduce) { .fc-skeleton { animation: none; } }
-.fc-skeleton-card { display: flex; flex-direction: column; gap: 12px; padding: var(--fc-card-pad-x); }
 .fc-skeleton__heading { width: 128px; height: 13px; }
 .fc-skeleton__crumbs { width: 220px; height: 13px; }
 .fc-skeleton__row { display: flex; align-items: center; gap: 16px; min-height: var(--fc-field-h); }
