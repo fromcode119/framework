@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { RecordSectionRepeatedLabel } from '@/components/collection/edit/record-section-repeated-label';
 import { Card } from '@/components/ui/view/card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
@@ -110,13 +111,15 @@ export class EditPageMain extends PureReactor {
     return (
       <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
         {collapsible ? this.renderToggle(section, open) : section.title ? (
-          <h2 className="mb-4 text-[14px] font-medium tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
+          /* A group's name reads the same on the form as on the record: 16/24. At 14 it sat between
+             a label and a title and read as neither. */
+          <h2 className="mb-4 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
         ) : null}
         {open ? (
           /* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */
           <div className="fc-edit-fields">
             <div className="fc-edit-fields__grid">
-              {section.fields.map(this.renderField)}
+              {section.fields.map((field: any) => this.renderField(RecordSectionRepeatedLabel.apply(field, section)))}
             </div>
           </div>
         ) : null}
@@ -139,11 +142,11 @@ export class EditPageMain extends PureReactor {
         className={`flex w-full items-center gap-2 text-start ${open ? 'mb-4' : ''}`}
       >
         <Chevron size={15} className="shrink-0 text-slate-400" />
-        <h2 className="min-w-0 flex-1 text-[14px] font-medium tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
+        <h2 className="min-w-0 flex-1 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
         <span className="shrink-0 text-[12px] text-slate-500">
           {AdminI18n.t('collection.edit.sectionFieldCount', { count: section.fields.length })}
           {' · '}
-          <span className="font-medium text-indigo-600 dark:text-indigo-400">
+          <span className="font-medium text-[color:var(--primary)]">
             {AdminI18n.t(open ? 'collection.edit.sectionHide' : 'collection.edit.sectionShow')}
           </span>
         </span>
