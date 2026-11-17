@@ -21,6 +21,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { CollectionEditControllerBuilder } from '@/components/collection/edit/view/collection-edit-controller-builder.client';
+import { RecordSkeleton } from '@/components/collection/edit/view/record-skeleton.client';
 
 export class CollectionEditPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -161,6 +162,10 @@ export class CollectionEditPageView extends Reactor {
       const controller = CollectionEditControllerBuilder.build(edit, { listHref: `/${pluginSlug}/${slug}`, canSave, canDelete: access.canDelete });
       return <>{<AppearanceEditor edit={controller} />}{dialogs}</>;
     }
+
+    // The record is still on the way. Drawing the form now would print "Not filled in" over every
+    // field it has, so the page holds the record's shape until the values are here to put in it.
+    if (this.loading && !edit.isNew) return <>{<RecordSkeleton />}{dialogs}</>;
 
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-500">

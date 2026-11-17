@@ -1988,3 +1988,25 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .fc-enter, .fc-sheet__panel, .fc-sheet__backdrop { animation: none; }
 }
+
+/* ── The shape a record page holds while its record is on the way ────────────────────────────────
+ * RecordSkeleton. The page used to draw itself at once from an empty form, so every field read
+ * "Not filled in" until the request came back — a record that HAS a name saying it has none. A bar
+ * says nothing, which is the point; it also keeps the page's own measurements, so the real cards
+ * land where the bars stood instead of shifting the page under the reader.
+ * The beat is the one the consoles this one follows use: two seconds, full to half and back. */
+.fc-skeleton {
+  display: block;
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  animation: fc-skeleton-pulse 2s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+@keyframes fc-skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+/* Movement that says only "still waiting" is not worth making anyone ill: the shape stays, the beat goes. */
+@media (prefers-reduced-motion: reduce) { .fc-skeleton { animation: none; } }
+.fc-skeleton-card { display: flex; flex-direction: column; gap: 12px; padding: var(--fc-card-pad-x); }
+.fc-skeleton__heading { width: 128px; height: 13px; }
+.fc-skeleton__crumbs { width: 220px; height: 13px; }
+.fc-skeleton__row { display: flex; align-items: center; gap: 16px; min-height: var(--fc-field-h); }
+.fc-skeleton__label { width: 112px; height: 11px; flex: none; }
+.fc-skeleton__value { flex: 1 1 auto; max-width: 320px; height: 11px; }
