@@ -6,11 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.603] - 2026-11-17
+
+### Changed
+
+- Product record: the console's own controls, measured against the reference ([#1510](https://github.com/fromcode119/framework/pull/1510))
+
 ## [0.2.602] - 2026-11-17
 
 ### Fixed
 
 - **admin**: a fact row wraps instead of squeezing on a narrow card ([#1508](https://github.com/fromcode119/framework/pull/1508))
+
+## [0.2.601] - 2026-11-17
+
+### Fixed
+
 - **admin**: a section with a table says how many it holds again ([#1506](https://github.com/fromcode119/framework/pull/1506))
 
 ## [0.2.600] - 2026-11-17
