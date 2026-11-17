@@ -167,11 +167,11 @@ export class NumberStepper extends PureReactor {
           inputClassName="px-10 text-center tabular-nums"
         />
         <button type="button" disabled={disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement}
-          className={`${btn} start-px rounded-l-[calc(var(--radius)_-_1px)]`}>
+          className={`${btn} start-px rounded-l-[calc(var(--fc-control-radius)_-_1px)]`}>
           <FrameworkIcons.Minus size={15} strokeWidth={2.25} />
         </button>
         <button type="button" disabled={disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment}
-          className={`${btn} end-px rounded-r-[calc(var(--radius)_-_1px)]`}>
+          className={`${btn} end-px rounded-r-[calc(var(--fc-control-radius)_-_1px)]`}>
           <FrameworkIcons.Plus size={15} strokeWidth={2.25} />
         </button>
       </div>

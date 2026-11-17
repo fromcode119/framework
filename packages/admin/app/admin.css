@@ -1665,7 +1665,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    two 6px buttons, so at 12px it was visibly rounder than the things it is pressed beside. A field
    that has left a form takes the shape of the row it joined. */
 .fc-sro-table__search-field { width: min(184px, 100%); min-width: 0; }
-.fc-sro-table__search-field .fc-field { border-radius: var(--fc-control-radius); }
+
 .fc-sro-table__search { width: min(240px, 100%); }
 @container (max-width: 420px) {
   .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head {
@@ -2202,3 +2202,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   font-size: 13px;
   line-height: 18.2px;
 }
+
+/* ── ONE corner for every control in the console ─────────────────────────────────────────────────
+ * Counted on a record page: 30 controls at 6px, the form fields at 12 and a pair of nav tools at 8,
+ * with a fully round chip and stepper beside them in the editor. `--radius` is the SITE's brand
+ * corner — it is set per site at runtime and the storefront reads it — so the admin cannot take it
+ * over; it takes its own, on its own fields, and the two stop fighting inside one toolbar.
+ * A switch keeps its round track: it is a rail with a knob running in it, and at 6px it stops
+ * reading as one. That is the only control the console draws round. */
+.fc-field { border-radius: var(--fc-control-radius); }
