@@ -98,7 +98,7 @@ export class Dropdown extends DropdownPositioning {
             // measured, and an animation started then would be over by the time anything was on screen.
             // It asked for `animate-in fade-in-0 zoom-in-95`, which no stylesheet here defines, so until
             // now the menu simply appeared between two frames.
-            className={`w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] rounded-xl border z-[9999] ${
+            className={`fc-menu-sheet w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] border z-[9999] ${
               this.positioned ? 'fc-enter fc-enter--menu' : ''
             } ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'

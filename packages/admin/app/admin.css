@@ -837,7 +837,10 @@ html.dark {
   .fc-checkbox__box[data-checked="true"], .fc-checkbox__dash { animation: none; }
   .fc-checkbox__box svg path { animation: none; stroke-dashoffset: 0; }
 }
-.fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
+/* A menu is a stack of CONTROLS, so a row carries the console's control height and corner rather than
+   a shape of its own: measured at 36px tall with an 8px corner and 12px of side padding, beside the
+   28px/6px controls of the very head that opens it. */
+.fc-menu-action { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 6px 8px; border-radius: var(--fc-control-radius); font-size: 13px; line-height: 20px; font-weight: 500; text-align: start; color: var(--fc-text); }
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
 .fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
@@ -1314,11 +1317,17 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
     border-radius: var(--fc-sheet-radius);
     box-shadow: 0 24px 64px rgb(15 23 42 / 0.24);
   }
-  .fc-sheet__body { padding: var(--fc-sheet-pad); }
+  /* The dialog keeps the card's own inset, 24px, not the phone's 16: measured against the record
+     pages this one follows, whose drawer is 560px wide with 24px on each side, so a field in it is
+     510px. Ours was 16, which put the field 16px wider than the row it replaces and made the head,
+     the body and the foot line up with nothing. The vertical padding is 16 in all three bands. */
+  .fc-sheet { --fc-sheet-pad: 24px; }
+  .fc-sheet__head { padding: 16px var(--fc-sheet-pad); }
+  .fc-sheet__body { padding: 16px var(--fc-sheet-pad); }
   .fc-sheet__group { padding: 0; background: transparent; border: 0; }
   .fc-sheet__foot {
     justify-content: flex-end;
-    padding: 12px var(--fc-sheet-pad);
+    padding: 16px var(--fc-sheet-pad);
   }
   .fc-sheet__foot > * { flex: 0 0 auto; }
 }
@@ -1644,8 +1653,13 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-sro-table__tool:hover,
 .fc-sro-table__tool[aria-expanded="true"] { background: var(--fc-surface-muted); color: var(--fc-text); }
-/* The table's own search: the console's field, held to the width a toolbar can give it. */
+/* The table's own search: the console's field, held to the width a toolbar can give it.
+   Its CORNER is the toolbar's, not the form's. The console carries two radii on purpose — 12px for a
+   field in a form, 6px for the small controls of a record card — and this one field stands between
+   two 6px buttons, so at 12px it was visibly rounder than the things it is pressed beside. A field
+   that has left a form takes the shape of the row it joined. */
 .fc-sro-table__search-field { width: min(184px, 100%); min-width: 0; }
+.fc-sro-table__search-field .fc-field { border-radius: var(--fc-control-radius); }
 .fc-sro-table__search { width: min(240px, 100%); }
 @container (max-width: 420px) {
   .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head {
@@ -2077,4 +2091,64 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   .fc-record-card__label { flex: 0 1 auto; }
   .fc-record-card__value { flex: 1 1 45%; min-width: 0; }
   .fc-record-card__head, .fc-record-card__body { padding-inline: 16px; }
+}
+
+/* The sheet a menu opens in: the card's corner, and 4px around its rows so the first and the last do
+   not sit against the edge. It was rounded-xl (12px) against the card's 8 and the controls' 6. */
+.fc-menu-sheet { padding: 4px; border-radius: var(--fc-card-radius); }
+
+/* ── Asking before something cannot be undone ────────────────────────────────────────────────────
+ * ConfirmDialog. Measured against the record pages this one follows: 400px wide, 24px of inset on
+ * every side, title 16/24 and the two buttons at the end of their row. Ours was 448 wide with 20px
+ * of inset, an 18px title, a blurred backdrop and two buttons stretched to half the width each — a
+ * question that looked heavier than what it asks.
+ * The mark stays, where the reference has none: it is the one thing that says, before the words are
+ * read, that this one deletes. */
+.fc-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.fc-confirm__backdrop { position: fixed; inset: 0; background: var(--fc-scrim, rgb(24 24 27 / .4)); }
+.fc-confirm__panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-card-radius);
+  box-shadow: 0 24px 64px rgb(15 23 42 / .24);
+}
+.fc-confirm__top { display: flex; align-items: flex-start; gap: 12px; }
+.fc-confirm__mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  color: var(--fc-text-muted);
+}
+.fc-confirm__mark--danger { background: var(--fc-danger-soft, #fff1f2); color: var(--fc-danger); }
+.fc-confirm__text { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.fc-confirm__title { margin: 0; font-size: 16px; line-height: 24px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-confirm__body { margin: 0; font-size: 14px; line-height: 20px; color: var(--fc-text-muted); }
+.fc-confirm__foot { display: flex; justify-content: flex-end; gap: 8px; }
+/* On a phone the two answers take the width, because a 400px row of two buttons at the end leaves
+   them small and far from the thumb. */
+@media (max-width: 479px) {
+  .fc-confirm__foot { flex-direction: column-reverse; }
+  .fc-confirm__foot > * { width: 100%; }
 }
