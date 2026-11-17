@@ -16,6 +16,8 @@ export type { IFileDropzoneProps } from '@/components/ui/view/interfaces/file-dr
 export * from '@/components/ui/view/page-heading.client';
 export * from '@/components/ui/view/compact-page-header.client';
 export * from '@/components/ui/view/card.client';
+// A plugin's admin screens say "there is nothing here" too, and there is one way to say it.
+export * from '@/components/ui/view/empty-state.client';
 // The record-screen panel and the read-only fact grid. Both were rebuilt inside individual plugins —
 // four different panel headers and three copies of the locked fact surface on ONE order screen —
 // because the panels that need them live in different plugins and a plugin may not import another
