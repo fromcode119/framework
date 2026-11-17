@@ -1552,6 +1552,11 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   font-size: var(--fc-record-text);
   line-height: var(--fc-leading);
 }
+/* A row that can be acted on by itself: the two halves, then a 28px column for its own control.
+   Measured on the reference section for this screen — `1fr 1fr 28px`, gap 16, so the row stands 61px
+   and the action lines up with the card's own. */
+.fc-record-card__row--act { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--fc-control-h); }
+
 /* ONE fact per row. Two of them side by side was tried, to stop a wide card reading empty, and it is
    the wrong answer: the name of the product and its description ended up on one line, each cut to half
    the card, and the eye had two label columns to follow instead of one. Every record page worth copying
