@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
-import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
-import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { RootFramework } from '@fromcode119/react';
 
 /**
- * ONE centred dialog: a scrim, a panel, a head and a foot.
+ * A question and its answers: a scrim, one 400px panel, a title, a line, the buttons.
  *
  * Everything that asks a short question or shows a short thing over the page is this — the delete
  * confirmation, the dependency warning, "move to", the upload preview, a revision. Each of them used
@@ -27,16 +24,10 @@ export class Dialog extends PureReactor {
   @prop declare title: string;
   /** One line under the title. */
   @prop declare description?: ReactNode;
-  /** The mark beside the title; without one the head is the title alone. */
-  @prop declare icon?: ReactNode;
-  @prop declare tone?: DialogTone;
-  @prop declare size?: DialogSize;
   /** The buttons. They sit at the end of the foot, and on a phone they stack and fill the width. */
   @prop declare foot?: ReactNode;
   /** Keeps the dialog open while something is in flight: Escape and the scrim stop closing it. */
   @prop declare busy?: boolean;
-  /** Hides the ✕. For a dialog that must be answered by its buttons. */
-  @prop declare noClose?: boolean;
   @prop declare children?: ReactNode;
 
   componentDidMount(): void {
@@ -71,30 +62,14 @@ export class Dialog extends PureReactor {
 
   render(): ReactNode {
     if (!this.isOpen || !Platform.isBrowser) return null;
-    const size = DialogSize.resolve(this.size ?? DialogSize.MEDIUM);
-    const tone = DialogTone.resolve(this.tone ?? DialogTone.NEUTRAL);
     return (
       <RootFramework>
         <div className="fc-dialog" role="dialog" aria-modal="true" aria-label={this.title}>
           <div className="fc-dialog__backdrop" onClick={this.close} />
-          <div className={`fc-dialog__panel fc-dialog__panel--${size}`}>
+          <div className="fc-dialog__panel">
             <div className="fc-dialog__head">
-              {this.icon ? <span className={`fc-dialog__mark fc-dialog__mark--${tone}`}>{this.icon}</span> : null}
-              <div className="fc-dialog__text">
-                <h3 className="fc-dialog__title">{this.title}</h3>
-                {this.description ? <p className="fc-dialog__description">{this.description}</p> : null}
-              </div>
-              {this.noClose ? null : (
-                <button
-                  type="button"
-                  className="fc-dialog__close"
-                  onClick={this.close}
-                  disabled={this.busy}
-                  aria-label={AdminI18n.t('common.close')}
-                >
-                  <FrameworkIcons.Close size={16} />
-                </button>
-              )}
+              <h3 className="fc-dialog__title">{this.title}</h3>
+              {this.description ? <p className="fc-dialog__description">{this.description}</p> : null}
             </div>
             {this.children ? <div className="fc-dialog__body">{this.children}</div> : null}
             {this.foot ? <div className="fc-dialog__foot">{this.foot}</div> : null}

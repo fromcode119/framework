@@ -2,9 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
-import { Dialog } from '@/components/ui/view/dialog.client';
-import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
-import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -43,15 +41,12 @@ export class UploadPreviewDialog extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Dialog
+      <EditSheet
         isOpen={this.isOpen}
         onClose={this.onClose}
         title={this.title}
-        description={this.description}
-        icon={<FrameworkIcons.Warning size={18} />}
-        tone={DialogTone.BRAND}
-        size={DialogSize.LARGE}
-        busy={this.isLoading ?? false}
+        subtitle={this.description}
+        saving={this.isLoading ?? false}
         foot={this.foot}
       >
         <div className="fc-upload-preview">
@@ -68,7 +63,7 @@ export class UploadPreviewDialog extends PureReactor {
             </section>
           ))}
         </div>
-      </Dialog>
+      </EditSheet>
     );
   }
 }

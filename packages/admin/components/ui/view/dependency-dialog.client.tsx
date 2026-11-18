@@ -3,8 +3,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
-import { Dialog } from '@/components/ui/view/dialog.client';
-import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IDependencyIssue } from '@/components/ui/interfaces/dependency-issue.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -85,14 +84,12 @@ export class DependencyDialog extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Dialog
+      <EditSheet
         isOpen={this.isOpen}
         onClose={this.onClose}
         title={AdminI18n.t(this.hasMissing ? 'ui.dependencies.missingTitle' : 'ui.dependencies.inactiveTitle')}
-        description={AdminI18n.t('ui.dependencies.intro', { plugin: this.pluginSlug })}
-        icon={<FrameworkIcons.Warning size={18} />}
-        tone={this.hasMissing ? DialogTone.DANGER : DialogTone.WARNING}
-        busy={this.isLoading ?? false}
+        subtitle={AdminI18n.t('ui.dependencies.intro', { plugin: this.pluginSlug })}
+        saving={this.isLoading ?? false}
         foot={this.foot}
       >
         <ul className="fc-dependency">
@@ -113,7 +110,7 @@ export class DependencyDialog extends PureReactor {
         </ul>
         {/* What forcing it means, where the button that does it is — not a block of its own above it. */}
         <p className="fc-dependency__warning">{AdminI18n.t('ui.dependencies.forceWarning')}</p>
-      </Dialog>
+      </EditSheet>
     );
   }
 }

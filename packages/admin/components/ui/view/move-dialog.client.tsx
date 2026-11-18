@@ -5,8 +5,7 @@ import type { ReactNode } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
-import { Dialog } from '@/components/ui/view/dialog.client';
-import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -100,13 +99,11 @@ export class MoveDialog extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Dialog
+      <EditSheet
         isOpen={this.isOpen}
         onClose={this.onClose}
         title={this.title ?? AdminI18n.t('ui.move.title')}
-        icon={<FrameworkIcons.Folder size={18} />}
-        size={DialogSize.SMALL}
-        busy={this.isLoading ?? false}
+        saving={this.isLoading ?? false}
         foot={this.foot}
       >
         {this.crumbs}
@@ -122,7 +119,7 @@ export class MoveDialog extends AdminComponent {
                 </button>
               ))}
         </div>
-      </Dialog>
+      </EditSheet>
     );
   }
 }

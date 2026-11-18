@@ -2375,15 +2375,19 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
  * question that looked heavier than what it asks.
  * The mark stays, where the reference has none: it is the one thing that says, before the words are
  * read, that this one deletes. */
-/* ── The dialog ──────────────────────────────────────────────────────────────────────────────────
- * One scrim, one panel, three widths. Everything that asks a short question or shows a short thing
- * over the page is drawn by `Dialog`, and only its size and tone change.
+/* ── The dialog: a question and its answers ──────────────────────────────────────────────────────
+ * Taken from the reference's own component rather than decided here: centred, ONE width of 400px, a
+ * rounded border and the flyout shadow; the head `24px 24px 0` with 4px between the title and its
+ * line; the foot `24px` with the answers at the end, 8px apart; no icon tile and no ✕, because a
+ * question is answered by its buttons.
  *
- * Measured 18.11.2026: five dialogs each drew their own — four copies of the same scrim, panels at
- * 20, 24 and 32px of padding, widths md/lg/2xl, close buttons in three greys, icon tiles hardcoded
- * rose, amber and indigo, and one at z-index 1000 against the others' 500.
+ * Anything larger than a question is NOT this. The reference divides them: a FORM is a drawer from
+ * the right (`.fc-sheet`), a whole task is a focus modal over the page. Ours used to make one
+ * centred box of all three, at 400 / 520 / 720, which is the thing it never does.
  *
- * The confirmation keeps its own narrow panel below; everything else uses these. */
+ * Measured 18.11.2026 before that: five dialogs each drew their own scrim and panel, at 20, 24 and
+ * 32px of padding, widths md/lg/2xl, close buttons in three greys, icon tiles hardcoded rose, amber
+ * and indigo, and one at z-index 1000 against the others' 500. */
 .fc-dialog {
   position: fixed;
   inset: 0;
@@ -2407,39 +2411,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   box-shadow: 0 24px 64px rgb(15 23 42 / .24);
   overflow: hidden;
 }
-/* Three widths and no fourth: a question, a short form, something to look at. */
-.fc-dialog__panel--sm { max-width: 400px; }
-.fc-dialog__panel--md { max-width: 520px; }
-.fc-dialog__panel--lg { max-width: 720px; }
-/* The head is the card's head: same height, same padding, same rule under it. */
-.fc-dialog__head {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px var(--fc-card-pad-x);
-  border-bottom: 1px solid var(--fc-border);
-}
-.fc-dialog__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+/* One width. A question that needs more room than this is not a question. */
+.fc-dialog__panel { max-width: 400px; }
+.fc-dialog__head { display: flex; flex-direction: column; gap: 4px; padding: 24px 24px 0; }
 .fc-dialog__title { margin: 0; font-size: var(--fc-card-title); line-height: 24px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-dialog__description { margin: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
-.fc-dialog__mark {
-  display: inline-flex; flex: none; align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: var(--fc-control-radius);
-  background: var(--fc-surface-muted); color: var(--fc-text-muted);
-}
-.fc-dialog__mark--danger { background: var(--fc-danger-soft); color: var(--fc-danger); }
-.fc-dialog__mark--warning { background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
-.fc-dialog__mark--brand { background: color-mix(in srgb, var(--fc-brand) 12%, transparent); color: var(--fc-brand); }
-.fc-dialog__close {
-  position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border-radius: var(--fc-control-radius);
-  color: var(--fc-text-muted);
-}
-/* A 28px control still gets a thumb's worth of hit area (WCAG 2.5.8). */
-.fc-dialog__close::before { content: ''; position: absolute; inset: -4px; }
-.fc-dialog__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-dialog__close:disabled { opacity: .5; }
-.fc-dialog__body { padding: var(--fc-card-pad-x); overflow-y: auto; }
+.fc-dialog__body { padding: 16px 24px 0; }
 /* What an upload is about to install: one block per kind, its entries under it. */
 .fc-upload-preview { display: flex; flex-direction: column; gap: 12px; max-height: 45vh; }
 .fc-upload-preview__section { padding: 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); }
@@ -2512,7 +2489,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* The restore dialog: one column, a rule between its blocks. */
 .fc-restore { display: flex; flex-direction: column; gap: 16px; }
 .fc-restore > * + * { padding-top: 16px; border-top: var(--fc-record-rule); }
-.fc-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px var(--fc-card-pad-x); border-top: 1px solid var(--fc-border); }
+/* No rule above the answers: the reference's prompt has none, and the question is short enough that
+   the foot is read as part of it rather than as a separate band. */
+.fc-dialog__foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 24px; }
 @media (max-width: 640px) {
   /* On a phone the answer is a full-width button, and the one that goes forward is on top.
      Written with the dialog in front of it on purpose: `.fc-btn` declares `width: fit-content`

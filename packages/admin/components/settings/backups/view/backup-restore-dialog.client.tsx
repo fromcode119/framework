@@ -4,9 +4,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
-import { Dialog } from '@/components/ui/view/dialog.client';
-import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
-import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
@@ -165,15 +163,12 @@ export class BackupRestoreDialog extends PureReactor {
   render(): ReactNode {
     if (!this.isOpen || !this.restoreState.backup) return null;
     return (
-      <Dialog
+      <EditSheet
         isOpen={this.isOpen}
         onClose={this.onClose}
         title={AdminI18n.t('settings.components.previewRestore')}
-        description={AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}
-        icon={<FrameworkIcons.Warning size={18} />}
-        tone={DialogTone.WARNING}
-        size={DialogSize.LARGE}
-        busy={this.isPreviewing || this.isRestoring}
+        subtitle={AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}
+        saving={this.isPreviewing || this.isRestoring}
         foot={this.foot}
       >
         {/* One column, in the order the work happens: what, where, the server's check, what it warns
@@ -186,7 +181,7 @@ export class BackupRestoreDialog extends PureReactor {
           {this.preview}
           {this.warnings}
         </div>
-      </Dialog>
+      </EditSheet>
     );
   }
 }

@@ -23,12 +23,18 @@ export class EditSheet extends PureReactor {
   /** One quiet line under the title naming the record, e.g. its number. */
   @prop declare subtitle?: ReactNode;
   @prop declare onClose: () => void;
-  @prop declare onSave: () => void;
+  @prop declare onSave?: () => void;
   @prop declare saving?: boolean;
   /** A save that failed, in words; shown above the buttons. */
   @prop declare error?: string;
   @prop declare saveLabel?: string;
   @prop declare cancelLabel?: string;
+  /**
+   * The buttons, when the drawer is not editing a piece of a record: a preview and a restore, an
+   * install and a cancel. Given one, `onSave`, `saveLabel` and `cancelLabel` are not read — the
+   * caller owns the foot. Without one the drawer keeps its own Cancel / Save.
+   */
+  @prop declare foot?: ReactNode;
   @prop declare children: ReactNode;
 
   // The page stops scrolling under the sheet only on a phone, where it floats; `admin.css` does that.
@@ -76,12 +82,16 @@ export class EditSheet extends PureReactor {
           <div className={`${sheet}__body`}>{this.children}</div>
           {this.error ? <div className={`${sheet}__error`} role="alert">{this.error}</div> : null}
           <div className={`${sheet}__foot`}>
-            <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
-              {this.cancelLabel ?? AdminI18n.t('common.cancel')}
-            </Button>
-            <Button type="button" variant={ButtonVariant.PRIMARY} onClick={this.onSave} isLoading={this.saving}>
-              {this.saveLabel ?? AdminI18n.t('common.save')}
-            </Button>
+            {this.foot ?? (
+              <>
+                <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
+                  {this.cancelLabel ?? AdminI18n.t('common.cancel')}
+                </Button>
+                <Button type="button" variant={ButtonVariant.PRIMARY} onClick={() => this.onSave?.()} isLoading={this.saving}>
+                  {this.saveLabel ?? AdminI18n.t('common.save')}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

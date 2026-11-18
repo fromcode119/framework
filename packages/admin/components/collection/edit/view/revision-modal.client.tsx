@@ -3,8 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type React from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Dialog } from '@/components/ui/view/dialog.client';
-import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
@@ -35,7 +34,6 @@ export class RevisionModal extends PureReactor {
           variant={ButtonVariant.GHOST}
           disabled={currentRevIndex >= revisions.length - 1}
           onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
-          icon={<FrameworkIcons.Left size={14} />}
         >
           {AdminI18n.t('collection.revision.older')}
         </Button>
@@ -60,7 +58,6 @@ export class RevisionModal extends PureReactor {
         <Button
           isLoading={restoringPermanently}
           onClick={() => handleHardRestore(selectedRevision.version)}
-          icon={<FrameworkIcons.Refresh size={14} />}
         >
           {AdminI18n.t('collection.revision.restorePermanently')}
         </Button>
@@ -87,14 +84,12 @@ export class RevisionModal extends PureReactor {
   if (!selectedRevision) return null;
 
   return (
-    <Dialog
+    <EditSheet
       isOpen
       onClose={() => setSelectedRevision(null)}
       title={AdminI18n.t('collection.revision.title', { version: selectedRevision.version })}
-      description={AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}
-      icon={<FrameworkIcons.Refresh size={18} />}
-      size={DialogSize.LARGE}
-      busy={restoringPermanently}
+      subtitle={AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}
+      saving={restoringPermanently}
       foot={this.foot}
     >
           <div className="fc-revision__filter">
@@ -156,7 +151,7 @@ export class RevisionModal extends PureReactor {
              </div>
           </div>
 
-    </Dialog>
+    </EditSheet>
   );
   }
 }
