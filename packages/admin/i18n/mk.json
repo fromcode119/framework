@@ -1725,6 +1725,7 @@
       "allUpToDate": "Сите инсталирани приклучоци се веќе на најновата верзија од маркетот.",
       "updatingPlugin": "Преостануваат {{remaining}} — {{pluginSlug}} се ажурира на v{{version}}...",
       "pluginUpdateFailed": "Ажурирањето на {{pluginSlug}} не успеа: {{error}} — се продолжува со останатите.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Сите ажурирања ({{count}}) се инсталирани — API се рестартира за приклучоците што работат во него...",
       "allUpdatesReplaced": "Сите ажурирања ({{count}}) се инсталирани; процесот на секој приклучок е заменет на место.",
       "pluginReloaded": "Приклучокот „{{pluginSlug}}“ е заменет и неговиот процес е рестартиран со новиот код. Не е потребно рестартирање на API.",

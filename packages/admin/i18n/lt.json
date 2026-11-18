@@ -1725,6 +1725,7 @@
       "allUpToDate": "Visi įdiegti papildiniai jau yra naujausios prekyvietės versijos.",
       "updatingPlugin": "Liko: {{remaining}} — {{pluginSlug}} atnaujinamas į v{{version}}...",
       "pluginUpdateFailed": "Nepavyko atnaujinti {{pluginSlug}}: {{error}} — tęsiama su likusiais.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Įdiegti visi atnaujinimai ({{count}}) — API paleidžiama iš naujo dėl jos viduje veikiančių papildinių...",
       "allUpdatesReplaced": "Įdiegti visi atnaujinimai ({{count}}); kiekvieno papildinio procesas pakeistas vietoje.",
       "pluginReloaded": "Papildinys „{{pluginSlug}}“ pakeistas, o jo procesas paleistas iš naujo su nauju kodu. API paleisti iš naujo nereikia.",

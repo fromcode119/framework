@@ -1725,6 +1725,7 @@
       "allUpToDate": "Všetky nainštalované pluginy už majú najnovšiu verziu z marketplace.",
       "updatingPlugin": "Zostáva: {{remaining}} — {{pluginSlug}} sa aktualizuje na v{{version}}...",
       "pluginUpdateFailed": "Aktualizácia {{pluginSlug}} zlyhala: {{error}} — pokračuje sa so zvyškom.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Všetky aktualizácie ({{count}}) sú nainštalované — API sa reštartuje kvôli pluginom, ktoré v ňom bežia...",
       "allUpdatesReplaced": "Všetky aktualizácie ({{count}}) sú nainštalované; proces každého pluginu bol nahradený za chodu.",
       "pluginReloaded": "Plugin „{{pluginSlug}}“ bol nahradený a jeho proces sa reštartoval s novým kódom. Reštart API nie je potrebný.",

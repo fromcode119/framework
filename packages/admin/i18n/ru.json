@@ -1725,6 +1725,7 @@
       "allUpToDate": "Все установленные плагины уже обновлены до последней версии из маркетплейса.",
       "updatingPlugin": "Осталось: {{remaining}} — обновление {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Не удалось обновить {{pluginSlug}}: {{error}} — продолжаем с остальными.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Все обновления установлены ({{count}}) — перезапуск API для плагинов, работающих внутри него...",
       "allUpdatesReplaced": "Все обновления установлены ({{count}}); процесс каждого плагина заменён на месте.",
       "pluginReloaded": "Плагин «{{pluginSlug}}» заменён, его процесс перезапущен с новым кодом. Перезапуск API не требуется.",

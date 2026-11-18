@@ -1725,6 +1725,7 @@
       "allUpToDate": "Tất cả plugin đã cài đều đang ở phiên bản mới nhất trên marketplace.",
       "updatingPlugin": "Còn {{remaining}} — đang cập nhật {{pluginSlug}} lên v{{version}}...",
       "pluginUpdateFailed": "Cập nhật {{pluginSlug}} thất bại: {{error}} — tiếp tục với các plugin còn lại.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Đã cài đặt toàn bộ {{count}} bản cập nhật — đang khởi động lại API cho các plugin chạy bên trong nó...",
       "allUpdatesReplaced": "Đã cài đặt toàn bộ {{count}} bản cập nhật; tiến trình của từng plugin đã được thay thế tại chỗ.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" đã được thay thế và tiến trình của nó đã khởi động lại với mã mới. Không cần khởi động lại API.",

@@ -1725,6 +1725,7 @@
       "allUpToDate": "Visiem instalētajiem spraudņiem jau ir jaunākā tirgus versija.",
       "updatingPlugin": "Atlikuši {{remaining}} — atjaunina {{pluginSlug}} uz v{{version}}...",
       "pluginUpdateFailed": "Spraudņa {{pluginSlug}} atjaunināšana neizdevās: {{error}} — turpina ar pārējiem.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Visi atjauninājumi ({{count}}) instalēti — restartē API spraudņiem, kas darbojas tajā...",
       "allUpdatesReplaced": "Visi atjauninājumi ({{count}}) instalēti; katra spraudņa process tika aizstāts uz vietas.",
       "pluginReloaded": "Spraudnis \"{{pluginSlug}}\" tika aizstāts, un tā process restartēts ar jauno kodu. API restartēšana nav nepieciešama.",

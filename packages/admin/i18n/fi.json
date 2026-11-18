@@ -1725,6 +1725,7 @@
       "allUpToDate": "Kaikki asennetut lisäosat ovat jo kauppapaikan uusimmassa versiossa.",
       "updatingPlugin": "{{remaining}} jäljellä — päivitetään {{pluginSlug}} versioon v{{version}}...",
       "pluginUpdateFailed": "Lisäosan {{pluginSlug}} päivitys epäonnistui: {{error}} — jatketaan muiden kanssa.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Kaikki {{count}} päivitystä asennettu — käynnistetään API uudelleen sen sisällä toimivia lisäosia varten...",
       "allUpdatesReplaced": "Kaikki {{count}} päivitystä asennettu; kunkin lisäosan prosessi korvattiin paikallaan.",
       "pluginReloaded": "Lisäosa \"{{pluginSlug}}\" korvattiin ja sen prosessi käynnistettiin uudelleen uudella koodilla. API:n uudelleenkäynnistystä ei tarvita.",

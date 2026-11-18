@@ -1725,6 +1725,7 @@
       "allUpToDate": "Semua plugin yang terpasang sudah menggunakan versi marketplace terbaru.",
       "updatingPlugin": "{{remaining}} tersisa — memperbarui {{pluginSlug}} ke v{{version}}...",
       "pluginUpdateFailed": "Pembaruan {{pluginSlug}} gagal: {{error}} — melanjutkan dengan yang lain.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Semua {{count}} pembaruan terpasang — memulai ulang API untuk plugin yang berjalan di dalamnya...",
       "allUpdatesReplaced": "Semua {{count}} pembaruan terpasang; proses setiap plugin diganti di tempat.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" telah diganti dan prosesnya dimulai ulang dengan kode baru. API tidak perlu dimulai ulang.",

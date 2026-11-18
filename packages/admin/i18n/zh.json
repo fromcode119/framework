@@ -1725,6 +1725,7 @@
       "allUpToDate": "所有已安装的插件均已是应用市场中的最新版本。",
       "updatingPlugin": "剩余 {{remaining}} 个 — 正在将 {{pluginSlug}} 更新至 v{{version}}...",
       "pluginUpdateFailed": "{{pluginSlug}} 更新失败：{{error}} — 继续更新其余插件。",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "已安装全部 {{count}} 项更新 — 正在为在 API 内运行的插件重启 API...",
       "allUpdatesReplaced": "已安装全部 {{count}} 项更新；各插件的进程已就地替换。",
       "pluginReloaded": "插件“{{pluginSlug}}”已替换，其进程已使用新代码重启。无需重启 API。",

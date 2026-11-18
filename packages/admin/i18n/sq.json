@@ -1725,6 +1725,7 @@
       "allUpToDate": "Çdo shtojcë e instaluar është tashmë në versionin më të ri të tregut.",
       "updatingPlugin": "{{remaining}} të mbetura — po përditësohet {{pluginSlug}} në v{{version}}...",
       "pluginUpdateFailed": "Përditësimi dështoi për {{pluginSlug}}: {{error}} — po vazhdohet me të tjerat.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "U instaluan të {{count}} përditësimet — po riniset API për shtojcat që ekzekutohen brenda saj...",
       "allUpdatesReplaced": "U instaluan të {{count}} përditësimet; procesi i secilës shtojcë u zëvendësua në vend.",
       "pluginReloaded": "Shtojca \"{{pluginSlug}}\" u zëvendësua dhe procesi i saj u rinis me kodin e ri. Nuk nevojitet rinisja e API-së.",

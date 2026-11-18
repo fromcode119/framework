@@ -1725,6 +1725,7 @@
       "allUpToDate": "Kurulu tüm eklentiler zaten mağazadaki en son sürümde.",
       "updatingPlugin": "{{remaining}} kaldı — {{pluginSlug}} v{{version}} sürümüne güncelleniyor...",
       "pluginUpdateFailed": "{{pluginSlug}} güncellenemedi: {{error}} — diğerleriyle devam ediliyor.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "{{count}} güncellemenin tümü kuruldu — API içinde çalışan eklentiler için API yeniden başlatılıyor...",
       "allUpdatesReplaced": "{{count}} güncellemenin tümü kuruldu; her eklentinin işlemi yerinde değiştirildi.",
       "pluginReloaded": "\"{{pluginSlug}}\" eklentisi değiştirildi ve işlemi yeni kodla yeniden başlatıldı. API'nin yeniden başlatılması gerekmiyor.",

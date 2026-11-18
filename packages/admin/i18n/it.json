@@ -1725,6 +1725,7 @@
       "allUpToDate": "Tutti i plugin installati sono già all'ultima versione disponibile nel marketplace.",
       "updatingPlugin": "{{remaining}} rimanenti — aggiornamento di {{pluginSlug}} alla v{{version}}...",
       "pluginUpdateFailed": "Aggiornamento di {{pluginSlug}} non riuscito: {{error}} — si prosegue con gli altri.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Tutti i {{count}} aggiornamenti installati — riavvio dell'API per i plugin che vi vengono eseguiti...",
       "allUpdatesReplaced": "Tutti i {{count}} aggiornamenti installati; il processo di ogni plugin è stato sostituito sul posto.",
       "pluginReloaded": "Il plugin \"{{pluginSlug}}\" è stato sostituito e il suo processo riavviato con il nuovo codice. Non è necessario riavviare l'API.",

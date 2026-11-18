@@ -1725,6 +1725,7 @@
       "allUpToDate": "インストール済みのすべてのプラグインは、マーケットプレイスの最新バージョンです。",
       "updatingPlugin": "残り {{remaining}} 件 — {{pluginSlug}} を v{{version}} に更新しています...",
       "pluginUpdateFailed": "{{pluginSlug}} の更新に失敗しました: {{error}} — 残りの処理を続行します。",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "{{count}} 件の更新をすべてインストールしました — API 内で動作するプラグインのために API を再起動しています...",
       "allUpdatesReplaced": "{{count}} 件の更新をすべてインストールしました。各プラグインのプロセスはその場で置き換えられました。",
       "pluginReloaded": "プラグイン「{{pluginSlug}}」を置き換え、新しいコードでプロセスを再起動しました。API の再起動は不要です。",

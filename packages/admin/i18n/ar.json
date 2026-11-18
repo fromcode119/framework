@@ -1725,6 +1725,7 @@
       "allUpToDate": "جميع الإضافات المثبتة محدّثة بالفعل إلى أحدث إصدار في المتجر.",
       "updatingPlugin": "المتبقي {{remaining}} — جارٍ تحديث {{pluginSlug}} إلى v{{version}}...",
       "pluginUpdateFailed": "فشل تحديث {{pluginSlug}}: {{error}} — جارٍ متابعة البقية.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "تم تثبيت جميع التحديثات ({{count}}) — جارٍ إعادة تشغيل API للإضافات التي تعمل داخلها...",
       "allUpdatesReplaced": "تم تثبيت جميع التحديثات ({{count}})؛ واستُبدلت عملية كل إضافة في مكانها.",
       "pluginReloaded": "تم استبدال الإضافة \"{{pluginSlug}}\" وأُعيد تشغيل عمليتها بالشيفرة الجديدة. لا حاجة لإعادة تشغيل API.",

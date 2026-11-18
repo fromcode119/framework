@@ -1725,6 +1725,7 @@
       "allUpToDate": "Alle geïnstalleerde plugins hebben al de nieuwste marketplaceversie.",
       "updatingPlugin": "Nog {{remaining}} te gaan — {{pluginSlug}} bijwerken naar v{{version}}...",
       "pluginUpdateFailed": "Update van {{pluginSlug}} mislukt: {{error}} — verder met de rest.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} update(s) geïnstalleerd — de API wordt herstart voor de plugin(s) die erin draaien...",
       "allUpdatesReplaced": "Alle {{count}} update(s) geïnstalleerd; het proces van elke plugin is ter plekke vervangen.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" is vervangen en het proces is herstart met de nieuwe code. Geen herstart van de API nodig.",

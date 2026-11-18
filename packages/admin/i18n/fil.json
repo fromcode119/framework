@@ -1725,6 +1725,7 @@
       "allUpToDate": "Nasa pinakabagong bersyon na sa marketplace ang lahat ng naka-install na plugin.",
       "updatingPlugin": "{{remaining}} pa ang natitira — ina-update ang {{pluginSlug}} sa v{{version}}...",
       "pluginUpdateFailed": "Nabigo ang update ng {{pluginSlug}}: {{error}} — itinutuloy ang iba.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Na-install ang lahat ng {{count}} update — nire-restart ang API para sa (mga) plugin na tumatakbo sa loob nito...",
       "allUpdatesReplaced": "Na-install ang lahat ng {{count}} update; pinalitan sa lugar ang proseso ng bawat plugin.",
       "pluginReloaded": "Napalitan ang plugin na \"{{pluginSlug}}\" at nag-restart ang proseso nito gamit ang bagong code. Hindi kailangang i-restart ang API.",

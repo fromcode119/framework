@@ -1725,6 +1725,7 @@
       "allUpToDate": "Minden telepített bővítmény már a piactér legújabb verzióján van.",
       "updatingPlugin": "Még {{remaining}} van hátra — a(z) {{pluginSlug}} frissítése a v{{version}} verzióra...",
       "pluginUpdateFailed": "A(z) {{pluginSlug}} frissítése sikertelen: {{error}} — a többivel folytatjuk.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Mind a(z) {{count}} frissítés telepítve — az API újraindítása az abban futó bővítmény(ek) miatt...",
       "allUpdatesReplaced": "Mind a(z) {{count}} frissítés telepítve; minden bővítmény folyamata helyben lecserélődött.",
       "pluginReloaded": "A(z) „{{pluginSlug}}” bővítmény lecserélődött, folyamata újraindult az új kóddal. Az API újraindítására nincs szükség.",

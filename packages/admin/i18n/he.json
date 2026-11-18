@@ -1725,6 +1725,7 @@
       "allUpToDate": "כל התוספים המותקנים כבר בגרסה העדכנית ביותר שלהם בחנות.",
       "updatingPlugin": "נותרו {{remaining}} — מעדכן את {{pluginSlug}} לגרסה v{{version}}...",
       "pluginUpdateFailed": "העדכון של {{pluginSlug}} נכשל: {{error}} — ממשיך עם השאר.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "כל {{count}} העדכונים הותקנו — מפעיל מחדש את ה-API עבור התוספים שפועלים בתוכו...",
       "allUpdatesReplaced": "כל {{count}} העדכונים הותקנו; התהליך של כל תוסף הוחלף במקומו.",
       "pluginReloaded": "התוסף \"{{pluginSlug}}\" הוחלף והתהליך שלו הופעל מחדש עם הקוד החדש. אין צורך להפעיל מחדש את ה-API.",

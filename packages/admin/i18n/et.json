@@ -1725,6 +1725,7 @@
       "allUpToDate": "Kõik paigaldatud pluginad on juba turu uusimas versioonis.",
       "updatingPlugin": "Jäänud {{remaining}} — plugina {{pluginSlug}} uuendamine versioonile v{{version}}...",
       "pluginUpdateFailed": "Plugina {{pluginSlug}} uuendamine ebaõnnestus: {{error}} — jätkatakse ülejäänutega.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Kõik uuendused ({{count}}) on paigaldatud — API taaskäivitatakse pluginate jaoks, mis töötavad selle sees...",
       "allUpdatesReplaced": "Kõik uuendused ({{count}}) on paigaldatud; iga plugina protsess asendati kohapeal.",
       "pluginReloaded": "Plugin „{{pluginSlug}}” asendati ja selle protsess taaskäivitati uue koodiga. API taaskäivitust pole vaja.",

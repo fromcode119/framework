@@ -1725,6 +1725,7 @@
       "allUpToDate": "Kull plugin installat diġà jinsab fl-aħħar verżjoni tiegħu fil-marketplace.",
       "updatingPlugin": "{{remaining}} fadal — qed jiġi aġġornat {{pluginSlug}} għal v{{version}}...",
       "pluginUpdateFailed": "L-aġġornament ta' {{pluginSlug}} falla: {{error}} — qed inkomplu bil-bqija.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "L-aġġornamenti kollha ({{count}}) ġew installati — qed terġa' tinbeda l-API għall-plugins li jaħdmu ġewwaha...",
       "allUpdatesReplaced": "L-aġġornamenti kollha ({{count}}) ġew installati; il-proċess ta' kull plugin ġie sostitwit f'postu.",
       "pluginReloaded": "Il-plugin \"{{pluginSlug}}\" ġie sostitwit u l-proċess tiegħu reġa' beda bil-kodiċi l-ġdid. M'hemmx bżonn li terġa' tinbeda l-API.",

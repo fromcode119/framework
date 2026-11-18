@@ -1725,6 +1725,7 @@
       "allUpToDate": "Svi instalirani dodaci već su na najnovijoj verziji s tržnice.",
       "updatingPlugin": "Preostalo: {{remaining}} — ažuriranje {{pluginSlug}} na v{{version}}...",
       "pluginUpdateFailed": "Ažuriranje nije uspjelo za {{pluginSlug}}: {{error}} — nastavlja se s ostalima.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Instalirana su sva ažuriranja ({{count}}) — ponovno pokretanje API-ja za dodatke koji rade unutar njega...",
       "allUpdatesReplaced": "Instalirana su sva ažuriranja ({{count}}); proces svakog dodatka zamijenjen je na mjestu.",
       "pluginReloaded": "Dodatak \"{{pluginSlug}}\" je zamijenjen, a njegov proces ponovno pokrenut s novim kodom. Ponovno pokretanje API-ja nije potrebno.",

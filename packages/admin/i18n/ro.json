@@ -1725,6 +1725,7 @@
       "allUpToDate": "Toate pluginurile instalate au deja cea mai recentă versiune din marketplace.",
       "updatingPlugin": "{{remaining}} rămase — se actualizează {{pluginSlug}} la v{{version}}...",
       "pluginUpdateFailed": "Actualizarea {{pluginSlug}} a eșuat: {{error}} — se continuă cu restul.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Toate cele {{count}} actualizări au fost instalate — se repornește API-ul pentru pluginurile care rulează în interiorul lui...",
       "allUpdatesReplaced": "Toate cele {{count}} actualizări au fost instalate; procesul fiecărui plugin a fost înlocuit pe loc.",
       "pluginReloaded": "Pluginul „{{pluginSlug}}” a fost înlocuit, iar procesul său a repornit cu noul cod. Nu este necesară repornirea API-ului.",

@@ -1725,6 +1725,7 @@
       "allUpToDate": "Alle installerede plugins har allerede den nyeste version fra markedspladsen.",
       "updatingPlugin": "{{remaining}} tilbage — opdaterer {{pluginSlug}} til v{{version}}...",
       "pluginUpdateFailed": "Opdatering af {{pluginSlug}} mislykkedes: {{error}} — fortsætter med resten.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} opdatering(er) er installeret — genstarter API'et for de plugins, der kører i det...",
       "allUpdatesReplaced": "Alle {{count}} opdatering(er) er installeret; hvert plugins proces blev udskiftet på stedet.",
       "pluginReloaded": "Pluginet \"{{pluginSlug}}\" blev udskiftet, og dets proces blev genstartet med den nye kode. Ingen genstart af API'et nødvendig.",

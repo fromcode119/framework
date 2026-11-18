@@ -1762,6 +1762,7 @@
       "allUpToDate": "Всички инсталирани плъгини вече са на последната си версия.",
       "updatingPlugin": "Остават {{remaining}} — обновяване на {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Обновяването на {{pluginSlug}} не успя: {{error}} — продължава с останалите.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Всички обновления ({{count}}) са инсталирани — API се рестартира заради плъгините, които работят в него...",
       "allUpdatesReplaced": "Всички обновления ({{count}}) са инсталирани; процесът на всеки плъгин е подменен на място.",
       "pluginReloaded": "Плъгинът „{{pluginSlug}}“ е подменен и процесът му е рестартиран с новия код. Не е нужен рестарт на API.",

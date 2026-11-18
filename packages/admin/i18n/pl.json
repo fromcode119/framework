@@ -1725,6 +1725,7 @@
       "allUpToDate": "Wszystkie zainstalowane wtyczki mają już najnowszą wersję z marketplace.",
       "updatingPlugin": "Pozostało: {{remaining}} — aktualizowanie {{pluginSlug}} do v{{version}}...",
       "pluginUpdateFailed": "Aktualizacja {{pluginSlug}} nie powiodła się: {{error}} — kontynuowanie z pozostałymi.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Zainstalowano wszystkie aktualizacje ({{count}}) — ponowne uruchamianie API dla wtyczek działających w jego obrębie...",
       "allUpdatesReplaced": "Zainstalowano wszystkie aktualizacje ({{count}}); proces każdej wtyczki został zastąpiony na miejscu.",
       "pluginReloaded": "Wtyczka „{{pluginSlug}}” została zastąpiona, a jej proces uruchomiony ponownie z nowym kodem. Ponowne uruchomienie API nie jest potrzebne.",

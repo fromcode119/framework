@@ -1725,6 +1725,7 @@
       "allUpToDate": "Alla installerade tillägg har redan den senaste versionen från marknadsplatsen.",
       "updatingPlugin": "{{remaining}} kvar — uppdaterar {{pluginSlug}} till v{{version}}...",
       "pluginUpdateFailed": "Uppdateringen misslyckades för {{pluginSlug}}: {{error}} — fortsätter med resten.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alla {{count}} uppdateringar har installerats — startar om API:t för de tillägg som körs i det...",
       "allUpdatesReplaced": "Alla {{count}} uppdateringar har installerats; varje tilläggs process ersattes på plats.",
       "pluginReloaded": "Tillägget \"{{pluginSlug}}\" ersattes och dess process startades om med den nya koden. Ingen omstart av API:t behövs.",

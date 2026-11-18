@@ -1725,6 +1725,7 @@
       "allUpToDate": "Tá gach breiseán suiteáilte ag an leagan is déanaí sa mhargadh cheana féin.",
       "updatingPlugin": "{{remaining}} fágtha — {{pluginSlug}} á nuashonrú go v{{version}}...",
       "pluginUpdateFailed": "Theip ar an nuashonrú do {{pluginSlug}}: {{error}} — ag leanúint leis an gcuid eile.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Suiteáladh gach nuashonrú ({{count}}) — an API á atosú do na breiseáin a ritheann laistigh de...",
       "allUpdatesReplaced": "Suiteáladh gach nuashonrú ({{count}}); athsholáthraíodh próiseas gach breiseáin ina áit.",
       "pluginReloaded": "Athsholáthraíodh an breiseán \"{{pluginSlug}}\" agus atosaíodh a phróiseas ar an gcód nua. Níl gá an API a atosú.",

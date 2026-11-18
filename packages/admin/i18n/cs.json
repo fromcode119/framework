@@ -1725,6 +1725,7 @@
       "allUpToDate": "Všechny nainstalované pluginy již mají nejnovější verzi z tržiště.",
       "updatingPlugin": "Zbývá {{remaining}} — aktualizace {{pluginSlug}} na v{{version}}...",
       "pluginUpdateFailed": "Aktualizace {{pluginSlug}} selhala: {{error}} — pokračuje se se zbytkem.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Všechny aktualizace ({{count}}) jsou nainstalovány — restartuje se API kvůli pluginům, které v něm běží...",
       "allUpdatesReplaced": "Všechny aktualizace ({{count}}) jsou nainstalovány; proces každého pluginu byl nahrazen za běhu.",
       "pluginReloaded": "Plugin „{{pluginSlug}}“ byl nahrazen a jeho proces restartován s novým kódem. Restart API není nutný.",
