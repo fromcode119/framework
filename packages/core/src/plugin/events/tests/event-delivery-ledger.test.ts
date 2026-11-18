@@ -70,6 +70,31 @@ describe('EventDeliveryLedger', () => {
     expect(authDb.calls.insert[0][1].payload).toBeNull();
   });
 
+  it('drops the payload for an event whose name carries a secret word anywhere (not only between delimiters)', async () => {
+    const db = fakeDb();
+    await EventDeliveryLedger.recordFailure({ db } as any, {
+      event: 'user:passwordReset', pluginSlug: 'p', payload: { email: 'a@b.c' }, error: 'e',
+    });
+    expect(db.calls.insert[0][1].payload).toBeNull();
+  });
+
+  it('scrubs secret-shaped substrings out of ordinary string values and the stored error', async () => {
+    const db = fakeDb();
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTYifQ.abcdef123456';
+    await EventDeliveryLedger.recordFailure({ db } as any, {
+      event: 'order:completed', pluginSlug: 'p',
+      payload: { callbackUrl: 'https://x.test/cb?order=9&access_token=SEKRET', note: `Bearer ${jwt}` },
+      error: new Error(`POST https://api.test/charge?api_key=LIVEKEY failed with ${jwt}`),
+    });
+    const stored = JSON.parse(db.calls.insert[0][1].payload);
+    expect(stored.callbackUrl).toBe('https://x.test/cb?order=9&access_token=[redacted]');
+    expect(stored.note).not.toContain(jwt);
+    const error = db.calls.insert[0][1].error;
+    expect(error).toContain('[redacted]');
+    expect(error).not.toContain('LIVEKEY');
+    expect(error).not.toContain(jwt);
+  });
+
   it('listOpenFailures maps rows to the console shape', async () => {
     const db = fakeDb();
     (db.find as any).mockResolvedValue([{ id: 3, event: 'x', plugin_slug: 'p', tenant_id: '5', attempts: 2, error: 'oops', payload: '{"n":1}', updated_at: 'now' }]);

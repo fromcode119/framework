@@ -42,9 +42,24 @@ export class EventDeliveryLedger {
 
   /** Keys whose VALUE is a secret, redacted before a payload is stored. */
   private static readonly SENSITIVE_KEY = /pass|secret|token|api[-_]?key|authorization|\bauth\b|otp|\bcode\b|\bpin\b|cvv|\bcard\b|ssn|private[-_]?key|credential|cookie|session/i;
-  /** Events whose payload is secret by nature: no payload of theirs is stored at all. */
-  private static readonly SENSITIVE_EVENT = /(^|[:.])(auth|password|token|secret|credential|session|login|signin|otp)([:.]|$)/i;
+  /** Events whose payload is secret by nature: no payload of theirs is stored at all. Matched ANYWHERE
+   * in the name (not only between delimiters), so `user:passwordReset` is caught as well as `auth:login`.
+   * Over-matching only drops more payloads, which is the safe direction. */
+  private static readonly SENSITIVE_EVENT = /auth|password|token|secret|credential|session|login|signin|otp|verif|mfa|2fa/i;
+  /** Secret-shaped substrings redacted out of any stored STRING (value or error), whatever its key:
+   * a JWT, a `Bearer …`/`Basic …` header, or a secret-looking URL query parameter. */
+  private static readonly JWT = /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{4,}/g;
+  private static readonly AUTH_SCHEME = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]{6,}/gi;
+  private static readonly URL_SECRET = /([?&][^=&\s]*(?:token|secret|password|api[_-]?key|access|sig|signature|otp|code|key)[^=&\s]*=)[^&\s#]+/gi;
   private static readonly MAX_PAYLOAD_CHARS = 8000;
+
+  /** Scrub secret-shaped substrings (JWT, auth scheme, URL query secret) out of a stored string. */
+  private static redactString(value: string): string {
+    return value
+      .replace(EventDeliveryLedger.JWT, '[redacted-jwt]')
+      .replace(EventDeliveryLedger.AUTH_SCHEME, '$1 [redacted]')
+      .replace(EventDeliveryLedger.URL_SECRET, '$1[redacted]');
+  }
 
   /**
    * The payload as it is safe to keep: nothing for an auth-type event, secret-named keys replaced with
@@ -73,6 +88,8 @@ export class EventDeliveryLedger {
       }
       return out;
     }
+    // A secret can ride in an ordinary-named string value (a callback URL with a token, a raw JWT).
+    if (typeof value === 'string') return EventDeliveryLedger.redactString(value);
     return value;
   }
 
@@ -84,7 +101,9 @@ export class EventDeliveryLedger {
     const db: any = (manager as any)?.db;
     if (!db) return;
     const tenantId = EventDeliveryLedger.currentTenant();
-    const message = String((input.error as any)?.message ?? input.error ?? '').slice(0, 2000);
+    // The error text is operator-facing and often carries the failing URL or response body, so scrub
+    // secret-shaped substrings out of it before storing, then cap the length.
+    const message = EventDeliveryLedger.redactString(String((input.error as any)?.message ?? input.error ?? '')).slice(0, 2000);
     try {
       const existing = await db.findOne(EventDeliveryLedger.table, {
         event: input.event, plugin_slug: input.pluginSlug, tenant_id: tenantId, status: 'failed',
