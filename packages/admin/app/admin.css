@@ -14,14 +14,26 @@
   --fc-brand: #4f46e5;
   --fc-brand-contrast: #ffffff;
   --fc-accent: #0f766e;
+  /* The console's greys are NEUTRAL, not blue.
+   *
+   * Read off the reference's own compiled tokens on 2026-11-18 and taken as they are: its base is
+   * #ffffff, its subtle/component/field surface #fafafa, its ink #18181b, its quiet ink #52525b and
+   * its border #e4e4e7 — the zinc family. Ours were the slate one: #f8fafc, #0f172a, #64748b,
+   * #e2e8f0, every one of them a step towards blue. Nothing else was as far from its look as this:
+   * the type scale already matches it to the pixel (12/13/14/16 on a flat 20, headings 18/28 and
+   * 16/24 at weight 500), so the blue grey was most of what made our screens read as a different
+   * product. */
   --fc-surface: #ffffff;
-  --fc-surface-muted: #f8fafc;
-  --fc-canvas: #f8fafc;
-  --fc-text: #0f172a;
+  --fc-surface-muted: #fafafa;
+  --fc-canvas: #fafafa;
+  --fc-text: #18181b;
   /* A control that is present and cannot be pressed: greyed, not faded. */
   --fc-text-faint: #a1a1aa;
-  --fc-text-muted: #64748b;
-  --fc-border: #e2e8f0;
+  --fc-text-muted: #52525b;
+  --fc-border: #e4e4e7;
+  /* The second border the reference keeps, for an edge that has to be seen against a filled surface
+     (a field's own ring, a chosen row). We had one border and used it for both. */
+  --fc-border-strong: #d4d4d8;
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
@@ -306,12 +318,17 @@ html.dark {
   --fc-danger-soft-border: #7f1d1d;
   --fc-danger-mark: #4c0519;
   --fc-danger-strong: #fda4af;
-  --fc-surface: #0f172a;
-  --fc-surface-muted: #1e293b;
-  --fc-canvas: #020617;
-  --fc-text: #e2e8f0;
-  --fc-text-muted: #94a3b8;
-  --fc-border: #1e293b;
+  /* The dark scheme, from the same source: its base is #212124, the page behind it #18181b, its
+     component surface #27272a, its ink #f4f4f5 and its quiet ink #a1a1aa, and its borders are WHITE
+     at 8% and 16% rather than a darker grey — which is what keeps an edge visible on a dark surface
+     without drawing a line of its own colour. Ours was slate again: #0f172a on #020617. */
+  --fc-surface: #212124;
+  --fc-surface-muted: #27272a;
+  --fc-canvas: #18181b;
+  --fc-text: #f4f4f5;
+  --fc-text-muted: #a1a1aa;
+  --fc-border: rgb(255 255 255 / .08);
+  --fc-border-strong: rgb(255 255 255 / .16);
   --fc-shadow: 0 18px 50px rgb(0 0 0 / 0.5);
   --background: var(--fc-canvas);
   --foreground: var(--fc-text);
