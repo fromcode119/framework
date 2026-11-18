@@ -10,30 +10,30 @@ describe('CapabilityProviderRegistry', () => {
   });
 
   it('keeps every provider of a capability, highest priority first', () => {
-    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'finance-payment-stripe', id: 'stripe', priority: 1 });
-    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'finance-payment-mypos', id: 'mypos', priority: 5 });
-    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'finance-payment-paypal', id: 'paypal' });
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'sample-pay-a', id: 'pay-a', priority: 1 });
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'sample-pay-b', id: 'pay-b', priority: 5 });
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'sample-pay-c', id: 'pay-c' });
 
-    expect(CapabilityProviderRegistry.providersOf('payment.method').map((p) => p.id)).toEqual(['mypos', 'stripe', 'paypal']);
-    expect(CapabilityProviderRegistry.oneOf('payment.method')?.id).toBe('mypos');
+    expect(CapabilityProviderRegistry.providersOf('payment.method').map((p) => p.id)).toEqual(['pay-b', 'pay-a', 'pay-c']);
+    expect(CapabilityProviderRegistry.oneOf('payment.method')?.id).toBe('pay-b');
   });
 
   it('re-providing the same (slug, id) replaces rather than duplicates', () => {
-    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'finance', label: 'old' });
-    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'finance', label: 'new' });
+    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'sample-finance', label: 'old' });
+    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'sample-finance', label: 'new' });
     const providers = CapabilityProviderRegistry.providersOf('tax.calculator');
     expect(providers).toHaveLength(1);
     expect(providers[0].label).toBe('new');
   });
 
   it('withdraw removes everything a disabled plugin provided', () => {
-    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'finance-payment-mypos', id: 'mypos' });
-    CapabilityProviderRegistry.provide({ capability: 'shipping.quote', slug: 'finance-payment-mypos', id: 'mypos-ship' });
-    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'finance-payment-stripe', id: 'stripe' });
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'sample-pay-b', id: 'pay-b' });
+    CapabilityProviderRegistry.provide({ capability: 'shipping.quote', slug: 'sample-pay-b', id: 'pay-b-ship' });
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'sample-pay-a', id: 'pay-a' });
 
-    CapabilityProviderRegistry.withdraw('finance-payment-mypos');
+    CapabilityProviderRegistry.withdraw('sample-pay-b');
 
-    expect(CapabilityProviderRegistry.providersOf('payment.method').map((p) => p.slug)).toEqual(['finance-payment-stripe']);
+    expect(CapabilityProviderRegistry.providersOf('payment.method').map((p) => p.slug)).toEqual(['sample-pay-a']);
     expect(CapabilityProviderRegistry.providersOf('shipping.quote')).toEqual([]);
   });
 
@@ -43,10 +43,10 @@ describe('CapabilityProviderRegistry', () => {
   });
 
   it('returns copies, so a consumer cannot mutate the shared registry', () => {
-    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'finance' });
+    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'sample-finance' });
     const got = CapabilityProviderRegistry.providersOf('tax.calculator')[0];
     (got as { slug: string }).slug = 'attacker';
-    expect(CapabilityProviderRegistry.providersOf('tax.calculator')[0].slug).toBe('finance');
+    expect(CapabilityProviderRegistry.providersOf('tax.calculator')[0].slug).toBe('sample-finance');
   });
 
   it('ignores a provider with no capability or no slug', () => {

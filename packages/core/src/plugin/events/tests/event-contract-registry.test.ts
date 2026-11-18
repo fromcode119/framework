@@ -11,12 +11,12 @@ describe('EventContractRegistry', () => {
 
   it('passes a payload that matches the declared schema and names what is wrong when it does not', () => {
     EventContractRegistry.define({
-      event: 'ecommerce:order:completed', owner: 'ecommerce',
+      event: 'sample-shop:order:completed', owner: 'sample-shop',
       schema: z.object({ orderId: z.number(), orderNumber: z.string() }),
     });
-    expect(EventContractRegistry.validate('ecommerce:order:completed', { orderId: 1, orderNumber: 'ORD-1' })).toBeNull();
+    expect(EventContractRegistry.validate('sample-shop:order:completed', { orderId: 1, orderNumber: 'ORD-1' })).toBeNull();
 
-    const error = EventContractRegistry.validate('ecommerce:order:completed', { orderId: 'nope' });
+    const error = EventContractRegistry.validate('sample-shop:order:completed', { orderId: 'nope' });
     expect(error).toContain('orderId');
     expect(error).toContain('orderNumber');
   });
@@ -34,13 +34,13 @@ describe('EventContractRegistry', () => {
 
   it('refuses to let one owner overwrite another owner\'s contract (no hijack)', () => {
     const strict = z.object({ orderId: z.number() });
-    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'ecommerce', schema: strict });
+    EventContractRegistry.define({ event: 'sample-shop:order:completed', owner: 'sample-shop', schema: strict });
     // A different plugin tries to redefine it (e.g. with a lax schema) — refused.
-    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'attacker', schema: z.any() });
-    expect(EventContractRegistry.get('ecommerce:order:completed')).toMatchObject({ owner: 'ecommerce' });
+    EventContractRegistry.define({ event: 'sample-shop:order:completed', owner: 'attacker', schema: z.any() });
+    expect(EventContractRegistry.get('sample-shop:order:completed')).toMatchObject({ owner: 'sample-shop' });
     // The real owner still may upgrade its own contract.
-    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'ecommerce', version: 2, schema: strict });
-    expect(EventContractRegistry.get('ecommerce:order:completed')).toMatchObject({ owner: 'ecommerce', version: 2 });
+    EventContractRegistry.define({ event: 'sample-shop:order:completed', owner: 'sample-shop', version: 2, schema: strict });
+    expect(EventContractRegistry.get('sample-shop:order:completed')).toMatchObject({ owner: 'sample-shop', version: 2 });
   });
 
   it('is strict everywhere but production, so a drift throws in dev and the gate', () => {

@@ -17,10 +17,10 @@ describe('EventIdempotency.once', () => {
   it('runs the effect and claims the key the first time', async () => {
     const db = fakeDb();
     const fn = vi.fn(async () => 'result');
-    const out = await EventIdempotency.once({ db } as never, 'order:completed:licensing', 'ORD-1', fn);
+    const out = await EventIdempotency.once({ db } as never, 'order:completed:sample-keys', 'ORD-1', fn);
     expect(out).toMatchObject({ ran: true, result: 'result' });
     expect(fn).toHaveBeenCalledTimes(1);
-    expect(db.calls.insert[0]).toMatchObject({ scope: 'order:completed:licensing', dedupe_key: 'ORD-1' });
+    expect(db.calls.insert[0]).toMatchObject({ scope: 'order:completed:sample-keys', dedupe_key: 'ORD-1' });
   });
 
   it('skips the effect when the key was already handled', async () => {

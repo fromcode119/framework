@@ -21,14 +21,14 @@ describe('EventDeliveryLedger', () => {
     const db = fakeDb();
     const manager: any = { db };
 
-    await EventDeliveryLedger.recordFailure(manager, { event: 'order:completed', pluginSlug: 'licensing', payload: { a: 1 }, error: new Error('boom') });
+    await EventDeliveryLedger.recordFailure(manager, { event: 'order:completed', pluginSlug: 'sample-keys', payload: { a: 1 }, error: new Error('boom') });
     expect(db.insert).toHaveBeenCalledTimes(1);
     const inserted = db.calls.insert[0][1];
-    expect(inserted).toMatchObject({ event: 'order:completed', plugin_slug: 'licensing', status: 'failed', attempts: 1, error: 'boom' });
+    expect(inserted).toMatchObject({ event: 'order:completed', plugin_slug: 'sample-keys', status: 'failed', attempts: 1, error: 'boom' });
     expect(inserted.payload).toBe(JSON.stringify({ a: 1 }));
 
     db.setExisting({ id: 7, attempts: 1 });
-    await EventDeliveryLedger.recordFailure(manager, { event: 'order:completed', pluginSlug: 'licensing', payload: { a: 2 }, error: new Error('again') });
+    await EventDeliveryLedger.recordFailure(manager, { event: 'order:completed', pluginSlug: 'sample-keys', payload: { a: 2 }, error: new Error('again') });
     expect(db.update).toHaveBeenCalledWith(expect.any(String), { id: 7 }, expect.objectContaining({ attempts: 2, error: 'again' }));
   });
 

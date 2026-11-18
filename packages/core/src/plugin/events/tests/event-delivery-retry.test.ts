@@ -64,10 +64,10 @@ describe('EventDeliveryLedger.retry', () => {
   });
 
   it('re-runs the current listener in the row\'s tenant and resolves the row on success', async () => {
-    const row = { id: 3, event: 'ord:done', pluginSlug: 'lms', tenantId: 42, payload: { orderId: 9 } };
+    const row = { id: 3, event: 'ord:done', pluginSlug: 'sample-courses', tenantId: 42, payload: { orderId: 9 } };
     const { manager, update, withTenant } = managerWithRow(row);
     const handler = vi.fn(async () => {});
-    EventListenerRegistry.register('ord:done', 'lms', handler);
+    EventListenerRegistry.register('ord:done', 'sample-courses', handler);
     try {
       const res = await EventDeliveryLedger.retry(manager, 3);
       expect(res.ok).toBe(true);
@@ -75,22 +75,22 @@ describe('EventDeliveryLedger.retry', () => {
       expect(withTenant).toHaveBeenCalledWith('42', expect.any(Function));
       expect(update).toHaveBeenCalledWith(expect.any(String), { id: 3 }, expect.objectContaining({ status: 'resolved' }));
     } finally {
-      EventListenerRegistry.unregister('ord:done', 'lms', handler);
+      EventListenerRegistry.unregister('ord:done', 'sample-courses', handler);
     }
   });
 
   it('reports the error when the retried listener throws, and does not resolve the row', async () => {
-    const row = { id: 4, event: 'ord:done2', pluginSlug: 'lms2', tenantId: null, payload: {} };
+    const row = { id: 4, event: 'ord:done2', pluginSlug: 'sample-courses2', tenantId: null, payload: {} };
     const { manager, update } = managerWithRow(row);
     const handler = vi.fn(async () => { throw new Error('still broken'); });
-    EventListenerRegistry.register('ord:done2', 'lms2', handler);
+    EventListenerRegistry.register('ord:done2', 'sample-courses2', handler);
     try {
       const res = await EventDeliveryLedger.retry(manager, 4);
       expect(res).toMatchObject({ ok: false });
       expect(res.error).toMatch(/still broken/);
       expect(update).not.toHaveBeenCalled();
     } finally {
-      EventListenerRegistry.unregister('ord:done2', 'lms2', handler);
+      EventListenerRegistry.unregister('ord:done2', 'sample-courses2', handler);
     }
   });
 });

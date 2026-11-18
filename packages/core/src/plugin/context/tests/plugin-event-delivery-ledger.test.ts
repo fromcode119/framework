@@ -13,22 +13,22 @@ describe('PluginEventDelivery.forHook — delivery outcomes reach the ledger', (
   it('records a failure when the listener throws, and still re-throws', async () => {
     vi.spyOn(PluginTenantAccess, 'isEnabledForCurrentTenant').mockReturnValue(true);
     const record = vi.spyOn(EventDeliveryLedger, 'recordFailure').mockResolvedValue();
-    const wrapped = PluginEventDelivery.forHook(activeManager('licensing'), 'licensing', async () => { throw new Error('key service down'); });
+    const wrapped = PluginEventDelivery.forHook(activeManager('sample-keys'), 'sample-keys', async () => { throw new Error('key service down'); });
 
-    await expect(wrapped({ orderId: 1 }, 'ecommerce:order:completed')).rejects.toThrow('key service down');
+    await expect(wrapped({ orderId: 1 }, 'sample-shop:order:completed')).rejects.toThrow('key service down');
     expect(record).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ event: 'ecommerce:order:completed', pluginSlug: 'licensing', payload: { orderId: 1 } }),
+      expect.objectContaining({ event: 'sample-shop:order:completed', pluginSlug: 'sample-keys', payload: { orderId: 1 } }),
     );
   });
 
   it('clears a prior failure when the listener succeeds', async () => {
     vi.spyOn(PluginTenantAccess, 'isEnabledForCurrentTenant').mockReturnValue(true);
     const resolved = vi.spyOn(EventDeliveryLedger, 'markResolved').mockResolvedValue();
-    const wrapped = PluginEventDelivery.forHook(activeManager('lms'), 'lms', async () => 'done');
+    const wrapped = PluginEventDelivery.forHook(activeManager('sample-courses'), 'sample-courses', async () => 'done');
 
-    expect(await wrapped({}, 'ecommerce:order:completed')).toBe('done');
-    expect(resolved).toHaveBeenCalledWith(expect.anything(), { event: 'ecommerce:order:completed', pluginSlug: 'lms' });
+    expect(await wrapped({}, 'sample-shop:order:completed')).toBe('done');
+    expect(resolved).toHaveBeenCalledWith(expect.anything(), { event: 'sample-shop:order:completed', pluginSlug: 'sample-courses' });
   });
 
   it('does not run or record when the plugin is inactive', async () => {

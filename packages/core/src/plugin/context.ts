@@ -44,11 +44,7 @@ import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
-import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
-import { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
-import type { IEventContract } from '@core/plugin/events/interfaces/event-contract.interface';
-import { EventIdempotency } from '@core/plugin/events/event-idempotency';
-import { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
+import { PluginEventsCapabilities } from '@core/plugin/context/plugin-events-capabilities';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
@@ -73,16 +69,11 @@ export class PluginContextFactory {
         manager.hooks.on(event, (handler as any)._wrapped);
       };
       const unsubscribe = (event: string, handler: any) => manager.hooks.off(event, (handler as any)._wrapped || handler);
-      // A payload that drifted from its event's declared contract throws in dev and the gate, and is
-      // logged in production — caught where it is emitted, not where a listener trips over it. An event
-      // with no declared contract is not checked.
-      const checkEventContract = (event: string, payload: unknown): void => {
-        const violation = EventContractRegistry.validate(event, payload);
-        if (!violation) return;
-        const message = `Event "${event}" payload does not match its contract: ${violation}`;
-        if (EventContractRegistry.strict) throw new Error(message);
-        pluginLogger.warn(message);
-      };
+      // The plugin's event / hook / capability surface (instrumented hooks, event contracts,
+      // idempotent effects, capability registry access) — built apart in PluginEventsCapabilities.
+      const { hooks, events, capabilities } = PluginEventsCapabilities.build(
+        plugin, manager, security, pluginLogger, subscribe, unsubscribe,
+      );
       // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
@@ -118,66 +109,11 @@ export class PluginContextFactory {
       const context: PluginContext = {
         db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
-        hooks: {
-          on: (event: string, handler: any) => {
-            subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h));
-            // Record which handler this plugin registered for this event, so a failed delivery can be
-            // retried against exactly this listener (see EventDeliveryLedger.retry).
-            EventListenerRegistry.register(event, plugin.manifest.slug, (handler as any)._wrapped);
-          },
-          off: (event: string, handler: any) => {
-            EventListenerRegistry.unregister(event, plugin.manifest.slug, (handler as any)._wrapped || handler);
-            unsubscribe(event, handler);
-          },
-          emit: (event: string, payload: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            checkEventContract(event, payload);
-            manager.hooks.emit(event, payload);
-          },
-          call: (event: string, payload: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            checkEventContract(event, payload);
-            return manager.hooks.call(event, payload);
-          }
-        },
-        // Declared events and idempotent effects. `define` records an event's payload contract (opt-in,
-        // validated on every emit/call — strict in dev and the gate, logged in production). `once` runs a
-        // side effect at most once per key for this plugin, so a retry or a duplicate callback does its
-        // work once (EventIdempotency).
-        events: {
-          define: (contract: IEventContract) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            const slug = plugin.manifest.slug;
-            // A plugin may declare only its OWN events — those prefixed with its slug — so it cannot
-            // hijack another plugin's contract. A site-owned plugin registers nothing in the
-            // process-global registry (two sites running a same-slug plugin would otherwise collide).
-            if (!contract?.event || !contract.event.startsWith(`${slug}:`)) {
-              throw new Error(`Plugin "${slug}" may only define events in its own namespace ("${slug}:…").`);
-            }
-            if (PluginOwners.ownerOf(slug)) return;
-            EventContractRegistry.define({ ...contract, owner: slug });
-          },
-          once: <T>(key: string, fn: () => Promise<T> | T) => EventIdempotency.once(manager, plugin.manifest.slug, key, fn),
-        },
-        // Ask for WHAT you need, not WHO provides it. `provide` registers this plugin (its slug is
-        // stamped here, so it cannot register as another); `all`/`one` return the providers, which the
-        // consumer calls through `context.plugins` — the end of `plugins.optional('org.fromcode:finance')`.
-        capabilities: {
-          provide: (capability: string, meta: { id?: string; label?: string; priority?: number } = {}) => {
-            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
-            // A site-owned plugin must not register in the process-global registry: its provider would
-            // be visible to, and callable by, every other site. Only platform plugins provide globally.
-            // (Per-site providers would need a tenant-scoped registry — a larger change for when a site
-            // plugin actually needs to offer a capability.)
-            if (PluginOwners.ownerOf(plugin.manifest.slug)) return;
-            CapabilityProviderRegistry.provide({
-              capability, slug: plugin.manifest.slug, namespace: plugin.manifest.namespace,
-              id: meta.id, label: meta.label, priority: meta.priority,
-            });
-          },
-          all: (capability: string) => CapabilityProviderRegistry.providersOf(capability),
-          one: (capability: string) => CapabilityProviderRegistry.oneOf(capability),
-        },
+        // Instrumented hooks, declared event contracts and idempotent effects (`events`), and the
+        // capability registry (`capabilities`) — all built in PluginEventsCapabilities above.
+        hooks,
+        events,
+        capabilities,
         // Fail-closed both ways: with auth wired this adapts the manager to the plugin contract
         // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every
         // member denies, so a plugin calls `context.auth.guard([...])` directly with no defensive

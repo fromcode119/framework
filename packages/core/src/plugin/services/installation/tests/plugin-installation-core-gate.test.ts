@@ -24,12 +24,12 @@ describe('PluginInstallationService — core compatibility gate', () => {
   it('refuses an update whose required core the running core does not meet, without downloading', async () => {
     const downloadAndInstall = vi.fn();
     const marketplace: any = {
-      getPluginInfo: vi.fn(async () => ({ slug: 'ecommerce', version: '0.1.483', engines: { core: '>=0.2.603' } })),
+      getPluginInfo: vi.fn(async () => ({ slug: 'sample-shop', version: '0.1.483', engines: { core: '>=0.2.603' } })),
       downloadAndInstall,
     };
     const svc = service(marketplace, '0.2.602');
 
-    const error = await svc.installOrUpdateFromMarketplace('ecommerce').catch((e) => e);
+    const error = await svc.installOrUpdateFromMarketplace('sample-shop').catch((e) => e);
     expect(error).toBeInstanceOf(PluginCoreIncompatibleError);
     expect(error.code).toBe('CORE_TOO_OLD');
     expect(String(error.message)).toContain('>=0.2.603');
@@ -38,23 +38,23 @@ describe('PluginInstallationService — core compatibility gate', () => {
 
   it('lets a compatible version through to the download step', async () => {
     const marketplace: any = {
-      getPluginInfo: vi.fn(async () => ({ slug: 'ecommerce', version: '0.1.491', engines: { core: '>=0.2.603' } })),
+      getPluginInfo: vi.fn(async () => ({ slug: 'sample-shop', version: '0.1.491', engines: { core: '>=0.2.603' } })),
       // Throw a sentinel right where the real download would start, to prove the gate let it past.
       downloadAndInstall: vi.fn(async () => { throw new Error('REACHED_DOWNLOAD'); }),
     };
     const svc = service(marketplace, '0.2.606');
-    await expect(svc.installOrUpdateFromMarketplace('ecommerce')).rejects.toThrow('REACHED_DOWNLOAD');
+    await expect(svc.installOrUpdateFromMarketplace('sample-shop')).rejects.toThrow('REACHED_DOWNLOAD');
   });
 
   it('updateAll holds back a newer version the core cannot run, and updates the rest', async () => {
     const plugins = new Map<string, any>([
-      ['ecommerce', { manifest: { slug: 'ecommerce', version: '0.1.480' } }],
-      ['lms', { manifest: { slug: 'lms', version: '0.1.0' } }],
+      ['sample-shop', { manifest: { slug: 'sample-shop', version: '0.1.480' } }],
+      ['sample-courses', { manifest: { slug: 'sample-courses', version: '0.1.0' } }],
     ]);
     const marketplace: any = {
       fetchCatalog: vi.fn(async () => [
-        { slug: 'ecommerce', version: '0.1.483', engines: { core: '>=0.2.603' } },
-        { slug: 'lms', version: '0.1.5' }, // no requirement → compatible
+        { slug: 'sample-shop', version: '0.1.483', engines: { core: '>=0.2.603' } },
+        { slug: 'sample-courses', version: '0.1.5' }, // no requirement → compatible
       ]),
     };
     const svc = service(marketplace, '0.2.602', plugins);
@@ -62,10 +62,10 @@ describe('PluginInstallationService — core compatibility gate', () => {
 
     const result = await svc.updateAllFromMarketplace();
 
-    expect(result.heldForCore.map((h) => h.slug)).toEqual(['ecommerce']);
+    expect(result.heldForCore.map((h) => h.slug)).toEqual(['sample-shop']);
     expect(result.heldForCore[0]).toMatchObject({ required: '>=0.2.603' });
     expect(install).toHaveBeenCalledTimes(1);
-    expect(install.mock.calls[0][0]).toBe('lms');
-    expect(result.updated).toEqual(['lms']);
+    expect(install.mock.calls[0][0]).toBe('sample-courses');
+    expect(result.updated).toEqual(['sample-courses']);
   });
 });
