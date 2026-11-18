@@ -166,6 +166,7 @@ export class StackService {
 
     await this.shell(record.root).stream('docker compose down --volumes --remove-orphans');
     this.store.forget(name);
+    this.store.releasePort(record.port);
   }
 
   list(): IStackRecord[] {

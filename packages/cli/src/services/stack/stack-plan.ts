@@ -18,6 +18,19 @@ import { StackLayout } from '@cli/services/stack/stack-layout';
  * `/etc/hosts` or resolved by dnsmasq.
  */
 export class StackPlan {
+  /**
+   * What the deploy topology sets for a server and a stack must not.
+   *
+   * The integrity checksum certifies a PACKED extension. A worktree is a working directory — its
+   * files differ from the artifact by construction — so with the check on, every mounted plugin
+   * fails to register with "Security Violation: Integrity check failed" and the stack shows none
+   * of the work it was started for. Measured: a mounted `logistics` was refused exactly this way.
+   *
+   * The deploy file states `true` as a literal rather than a default, so it cannot be answered in
+   * `.env`; this overlay is the only place that can.
+   */
+  private static readonly DEV_ENVIRONMENT = ['ENFORCE_PLUGIN_INTEGRITY=false'];
+
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
 
@@ -84,7 +97,9 @@ export class StackPlan {
 
     const runtime = this.runtimeMounts();
     for (const service of StackPlan.RUNTIME_SERVICES) {
-      lines.push(`  ${service}:`, '    volumes:');
+      lines.push(`  ${service}:`, '    environment:');
+      for (const line of StackPlan.DEV_ENVIRONMENT) lines.push(`      - ${line}`);
+      lines.push('    volumes:');
       for (const mount of runtime) lines.push(`      - ${mount}`);
     }
 
@@ -152,10 +167,58 @@ export class StackPlan {
   private pluginMounts(): string[] {
     return this.request.plugins
       .map((plugin) => {
-        const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, path.basename(plugin));
+        const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, StackPlan.slugOf(plugin));
         return container ? `${plugin}:${container}` : null;
       })
       .filter((mount): mount is string => mount !== null);
+  }
+
+  /**
+   * Dependencies a mounted plugin declares that are not mounted alongside it.
+   *
+   * A plugin whose dependency is absent is staged, installed and then NOT registered — the stack
+   * comes up looking fine and the plugin is simply not there, with the reason only in the api's
+   * log, 35 seconds after the command said the stack was ready. Measured: `logistics-boxnow`
+   * needs `logistics`, which needs `finance`.
+   *
+   * Reported rather than refused: the dependency may already be installed in the template, which
+   * this cannot see from outside.
+   */
+  missingDependencies(): Map<string, string[]> {
+    const mounted = new Set(this.request.plugins.map((plugin) => StackPlan.slugOf(plugin)));
+    const missing = new Map<string, string[]>();
+
+    for (const plugin of this.request.plugins) {
+      const absent = Object.keys(StackPlan.dependenciesOf(plugin)).filter((slug) => !mounted.has(slug));
+      if (absent.length) missing.set(StackPlan.slugOf(plugin), absent);
+    }
+    return missing;
+  }
+
+  /** What an extension's manifest says it needs, by slug. */
+  private static dependenciesOf(extension: string): Record<string, string> {
+    const manifest = path.join(extension, 'manifest.json');
+    if (!fs.existsSync(manifest)) return {};
+
+    const declared = (JSON.parse(fs.readFileSync(manifest, 'utf8')) as { dependencies?: Record<string, string> }).dependencies;
+    return declared ?? {};
+  }
+
+  /**
+   * The slug the platform knows an extension by, from its own manifest.
+   *
+   * NOT the directory name. A worktree is named for the change being made — `plugin-boxnow`,
+   * `ec-page` — while the manifest says `logistics-boxnow`, and the platform looks the extension up
+   * by slug. Mounted under the directory name it lands where nothing reads, and the plugin is
+   * simply absent with no error to explain it.
+   */
+  static slugOf(extension: string): string {
+    const manifest = path.join(extension, 'manifest.json');
+    if (fs.existsSync(manifest)) {
+      const slug = String((JSON.parse(fs.readFileSync(manifest, 'utf8')) as { slug?: string }).slug || '').trim();
+      if (slug) return slug;
+    }
+    return path.basename(extension);
   }
 
   /** The workspace folder of this worktree, as its own package.json declares it. */

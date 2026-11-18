@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { spawnSync } from 'child_process';
 import os from 'os';
 import path from 'path';
 import { StackPlan } from '@cli/services/stack/stack-plan';
@@ -74,17 +75,89 @@ export class StackStore {
     );
   }
 
+  /** Where a port is claimed, so two sessions starting at once cannot claim the same one. */
+  private get portsRoot(): string {
+    return path.join(this.root, '.ports');
+  }
+
   /**
-   * The lowest free port at or above the first.
+   * Claims the lowest free port at or above the first, and returns it.
    *
-   * Only stacks this tool made are consulted. A port another process holds is caught by compose
-   * when it tries to publish, which is a clearer failure than this guessing at the whole machine.
+   * Reading the recorded stacks is not enough on its own. The record is written after the port is
+   * chosen, so two sessions running `stack up` in the same second both read the same set, both pick
+   * the same number, and the second one dies when compose tries to publish it — after its other ten
+   * containers have already started. Several sessions working at once is the normal case here, not
+   * an edge one.
+   *
+   * So the port is claimed by creating a file that cannot be created twice (`wx`), which the
+   * filesystem settles rather than this code. A claim left behind by a stack that no longer exists
+   * is reclaimed, so a crash does not burn a port forever.
+   *
+   * The port is also checked for real, because the machine holds more than this tool's stacks —
+   * the hand-rolled ones took 8097 and 8101.
    */
-  nextPort(): number {
-    const taken = new Set(this.list().map((stack) => stack.port));
-    let port = StackStore.FIRST_PORT;
-    while (taken.has(port)) port += 1;
-    return port;
+  claimPort(name: string, preferred?: number): number {
+    fs.mkdirSync(this.portsRoot, { recursive: true });
+    const recorded = new Set(this.list().map((stack) => stack.port));
+
+    for (let port = preferred ?? StackStore.FIRST_PORT; port < StackStore.FIRST_PORT + StackStore.PORT_RANGE; port += 1) {
+      if (!preferred && recorded.has(port)) continue;
+      if (this.claim(port, name)) return port;
+      if (preferred) throw new Error(`Port ${port} is already taken.`);
+    }
+    throw new Error(`No free port between ${StackStore.FIRST_PORT} and ${StackStore.FIRST_PORT + StackStore.PORT_RANGE}.`);
+  }
+
+  /** How far above the first port to look before giving up. */
+  private static readonly PORT_RANGE = 200;
+
+  /** True when this call is the one that got the port. */
+  private claim(port: number, name: string): boolean {
+    const lock = path.join(this.portsRoot, String(port));
+
+    if (this.isAbandoned(lock)) fs.rmSync(lock, { force: true });
+
+    try {
+      fs.writeFileSync(lock, `${name}\n`, { flag: 'wx' });
+    } catch {
+      return false;
+    }
+
+    // Both of a stack's ports must be free, or it dies on the second one after everything started.
+    if (StackStore.inUse(port) || StackStore.inUse(StackPlan.tlsPortFor(port))) {
+      fs.rmSync(lock, { force: true });
+      return false;
+    }
+    return true;
+  }
+
+  /** Whether anything on this machine is already listening there. */
+  private static inUse(port: number): boolean {
+    const probe = spawnSync('nc', ['-z', '127.0.0.1', String(port)], { stdio: 'ignore' });
+    return probe.status === 0;
+  }
+
+  /**
+   * A claim whose stack never appeared, long enough ago that it cannot still be starting.
+   *
+   * The age matters. The port is claimed BEFORE the stack is recorded, so for a moment every live
+   * claim looks like one with no stack behind it — and reclaiming on that alone handed the same
+   * port to the next caller, which is the collision this was written to prevent. Caught by a test
+   * rather than by two sessions.
+   */
+  private isAbandoned(lock: string): boolean {
+    if (!fs.existsSync(lock)) return false;
+    if (Date.now() - fs.statSync(lock).mtimeMs < StackStore.CLAIM_GRACE_MS) return false;
+
+    return !this.exists(fs.readFileSync(lock, 'utf8').trim());
+  }
+
+  /** How long a claim is trusted before its stack has to exist. Generous: a stack can be slow. */
+  private static readonly CLAIM_GRACE_MS = 10 * 60 * 1000;
+
+  /** Gives a stack's ports back. */
+  releasePort(port: number): void {
+    fs.rmSync(path.join(this.portsRoot, String(port)), { force: true });
   }
 
   /** Removes the stack's files. The containers are the caller's job — they go first. */

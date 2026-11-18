@@ -46,8 +46,9 @@ export class StackCommandService {
             framework,
             plugins: (options.plugin as string[]).map((plugin) => path.resolve(plugin)),
             version: String(options.tag || StackCommandService.versionOf(framework)),
-            port: (options.port as number) || new StackStore().nextPort(),
+            port: new StackStore().claimPort(name, options.port as number | undefined),
           };
+          StackCommandService.reportDependencies(new StackPlan(request));
           await service.up(request, options.from ? String(options.from) : undefined);
 
           console.log(chalk.green(`\nStack "${name}" is up.`));
@@ -119,6 +120,23 @@ export class StackCommandService {
           console.log(chalk.green(`  removed ${record.name}`));
         }
       });
+  }
+
+  /**
+   * Says up front what a mounted plugin still needs.
+   *
+   * Said before the stack starts, because the alternative is finding it in the api's log after the
+   * command has already reported success — the plugin is installed but never registered, so the
+   * console simply does not show it and nothing on screen says why.
+   */
+  private static reportDependencies(plan: StackPlan): void {
+    const missing = plan.missingDependencies();
+    if (!missing.size) return;
+
+    console.log(chalk.yellow('\nThese are declared but not mounted:'));
+    for (const [slug, needs] of missing) console.log(`  ${slug} needs ${needs.join(', ')}`);
+    console.log(chalk.gray('  Each must already be installed in the template, or be mounted with --plugin,'));
+    console.log(chalk.gray('  or the plugin is installed and never registered.\n'));
   }
 
   /**
