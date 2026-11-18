@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.606] - 2026-11-18
+
+### Added
+
+- **frontend**: og:type from the head-data provider ([#1517](https://github.com/fromcode119/framework/pull/1517))
+
+### Fixed
+
+- **admin**: a field that names its values reads by their labels, whatever its type ([#1518](https://github.com/fromcode119/framework/pull/1518))
+- **admin**: an upload field of the media library gets the media picker ([#1516](https://github.com/fromcode119/framework/pull/1516))
+
 ## [0.2.605] - 2026-11-18
 
 ### Fixed
