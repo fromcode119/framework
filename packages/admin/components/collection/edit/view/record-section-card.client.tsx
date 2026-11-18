@@ -94,7 +94,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     if (kind === 'richText') {
       return FieldRendererUtils.resolveRenderableText(raw).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     }
-    const chips = RecordSectionChips.of(raw);
+    // Never a relationship: its value is a list of ids, and "Categories 5 55 75" is not a value
+    // anyone can read. The renderer below resolves the related records' names.
+    const chips = kind === 'relationship' ? null : RecordSectionChips.of(raw);
     if (chips) {
       return (
         <span className={AdminClass.of('chips')}>
