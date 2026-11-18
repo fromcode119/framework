@@ -102,16 +102,20 @@
   --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
-  --fc-nav-bg: var(--fc-surface);
+  /* Measured on the reference's own menu, 18.11.2026: the menu stands on the PAGE's quiet surface and
+     the row you are on is a WHITE pill on it — not a grey wash on a white menu, which is what ours
+     drew. Its rows are 28 tall with 4/8 of padding and a 6px corner, its words 13px: the quiet ink
+     for a row you are not on, the full ink for the one you are. */
+  --fc-nav-bg: var(--fc-canvas);
   --fc-nav-border: var(--fc-border);
   --fc-nav-text: var(--fc-text);
   --fc-nav-muted: var(--fc-text-muted);
-  --fc-nav-hover: color-mix(in srgb, var(--fc-text) 5%, transparent);
-  --fc-nav-active: color-mix(in srgb, var(--fc-text) 8%, transparent);
+  --fc-nav-hover: color-mix(in srgb, var(--fc-text) 4%, transparent);
+  --fc-nav-active: var(--fc-surface);
   /* The menu's text, at the size the consoles this one is measured against use for a "small" row. */
-  --fc-nav-size: 12px;
-  --fc-nav-row: 32px;
-  --fc-nav-radius: 8px;
+  --fc-nav-size: var(--fc-text-sm);
+  --fc-nav-row: 28px;
+  --fc-nav-radius: var(--fc-control-radius);
   --fc-nav-sub-indent: 38px;
   --fc-record-gap: var(--fc-stack-gap);
   /* The space between two stacked cards, ON EVERY SCREEN. Each page used to pick its own — a record
@@ -1252,7 +1256,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-item {
   position: relative; display: flex; align-items: center; gap: 10px;
   min-height: var(--fc-nav-row); padding-inline: 10px; border-radius: var(--fc-nav-radius);
-  color: var(--fc-nav-text); font-size: var(--fc-nav-size); font-weight: 500; line-height: 1.2;
+  /* A row you are NOT on is quiet; the one you are on takes the full ink — theirs does the same. */
+  color: var(--fc-nav-muted); font-size: var(--fc-nav-size); font-weight: 500; line-height: var(--fc-leading);
   transition: background-color 120ms ease;
 }
 .fc-nav-item:hover { background: var(--fc-nav-hover); }
