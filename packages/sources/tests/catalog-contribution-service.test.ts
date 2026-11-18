@@ -40,4 +40,14 @@ describe('CatalogContributionService.entriesFrom', () => {
     const [entry] = CatalogContributionService.entriesFrom([source({ changelog: undefined })]);
     expect(entry.notes).toBe('');
   });
+
+  it('carries the core requirement so the install gate can refuse an incompatible update up front', () => {
+    const [entry] = CatalogContributionService.entriesFrom([source({ requiredCore: '>=0.2.603' })]);
+    expect(entry.engines).toEqual({ core: '>=0.2.603' });
+  });
+
+  it('omits engines when the build declared no core requirement', () => {
+    const [entry] = CatalogContributionService.entriesFrom([source()]);
+    expect(entry.engines).toBeUndefined();
+  });
 });

@@ -10,6 +10,7 @@ import { PluginLifecycleController } from '@api/controllers/plugins/plugin-lifec
 import { RouteConstants } from '@fromcode119/core';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { PluginRuntimeController } from '@api/controllers/plugins/plugin-runtime-controller';
+import { EventDeliveryController } from '@api/controllers/plugins/event-delivery-controller';
 import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-offer-controller';
 import { SitePluginUploadController } from '@api/controllers/plugins/site-plugin-upload-controller';
 import { ProcessScratchDirectory } from '@fromcode119/core';
@@ -19,6 +20,7 @@ export class PluginRouter extends BaseRouter {
   private uploadController: PluginUploadController;
   private lifecycleController: PluginLifecycleController;
   private runtimeController: PluginRuntimeController;
+  private eventDeliveryController: EventDeliveryController;
   private siteOfferController: PluginSiteOfferController;
   private sitePluginController: SitePluginUploadController;
   private siteUpload: ReturnType<typeof SitePluginUploadController.receiver>;
@@ -35,6 +37,7 @@ export class PluginRouter extends BaseRouter {
     this.uploadController = new PluginUploadController(manager);
     this.lifecycleController = new PluginLifecycleController(manager);
     this.runtimeController = new PluginRuntimeController(manager);
+    this.eventDeliveryController = new EventDeliveryController(manager);
     this.siteOfferController = new PluginSiteOfferController(manager);
     const uploadsDir = ProcessScratchDirectory.make('fromcode-plugin-uploads-');
     const chunkDir = ProcessScratchDirectory.make('fromcode-plugin-upload-chunks-');
@@ -61,6 +64,9 @@ export class PluginRouter extends BaseRouter {
     // one customer every other customer's slugs, held reasons and load errors. In PLATFORM scope it
     // still reports the whole registry, which is the operator's view.
     this.get(RouteConstants.SEGMENTS.PLUGINS_HEALTH, this.auth.guard(['admin']), this.controller.health);
+    // Failed event deliveries are the operator's cross-site view: platform admin, like install/update.
+    this.get(RouteConstants.SEGMENTS.EVENT_DELIVERIES, this.auth.guard(['admin']), platform, this.eventDeliveryController.list);
+    this.post(RouteConstants.SEGMENTS.EVENT_DELIVERIES_RETRY, this.auth.guard(['admin']), platform, this.eventDeliveryController.retry);
     this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.getConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONFIG, this.auth.guard(['admin']), platform, this.controller.saveConfig);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_SANDBOX, this.auth.guard(['admin']), platform, this.controller.saveSandboxConfig);

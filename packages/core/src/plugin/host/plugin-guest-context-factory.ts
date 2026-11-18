@@ -52,6 +52,8 @@ export class PluginGuestContextFactory {
       db: this.database([{ name: 'db' }]),
       api: new PluginGuestApiFactory(this.registrar, this.handlers, this.http, this.boot).create(),
       hooks: this.hooks(register),
+      events: this.events(),
+      capabilities: this.capabilities(),
       auth: this.auth(),
       logger: this.logger(),
       plugin: { ...this.boot.plugin },
@@ -131,6 +133,37 @@ export class PluginGuestContextFactory {
       },
       emit: (event: string, payload: unknown) => { void remote.call('context', [{ name: 'hooks' }, { name: 'emit', args: PluginGuestRemote.portable([event, payload]) }]); },
       call: (event: string, payload: unknown) => remote.call('context', [{ name: 'hooks' }, { name: 'call', args: PluginGuestRemote.portable([event, payload]) }]),
+    };
+  }
+
+  /**
+   * `events` for an isolated plugin. An event's CONTRACT carries a zod schema, which does not cross the
+   * process boundary, so `define` is a local no-op here and an isolated plugin's events are validated
+   * only where they are emitted. `once` runs the effect; cross-process idempotency for isolated plugins
+   * is a known follow-up (tracked with the isolated delivery-ledger coverage), so it does not yet
+   * deduplicate — an isolated plugin that needs an at-most-once effect should keep running it in the api.
+   */
+  private events(): unknown {
+    return {
+      define: (_contract: unknown) => { /* schema is not portable across the process boundary */ },
+      once: async <T>(_key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; result?: T }> => ({ ran: true, result: await fn() }),
+    };
+  }
+
+  /**
+   * `capabilities` for an isolated plugin. `provide` routes to the host so the plugin registers as a
+   * provider (the common case — a sandboxed payment or shipping provider). Reading providers (`all`/
+   * `one`) is synchronous in-process and cannot be answered from another process, so an isolated plugin
+   * that needs to CONSUME a capability is told to do it in the api; this is loud, never a silent empty.
+   */
+  private capabilities(): unknown {
+    const remote = this.remote;
+    return {
+      provide: (capability: string, meta?: unknown) => {
+        void remote.call('context', [{ name: 'capabilities' }, { name: 'provide', args: PluginGuestRemote.portable([capability, meta]) }]);
+      },
+      all: (_capability: string) => { throw new Error('context.capabilities.all is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
+      one: (_capability: string) => { throw new Error('context.capabilities.one is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
     };
   }
 

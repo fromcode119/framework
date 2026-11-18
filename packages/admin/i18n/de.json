@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installiert",
       "health": "Zustand",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Prüfen und freigeben",
       "needsAttention": "Erfordert Aufmerksamkeit",
       "needsReApproval": "Erneute Freigabe erforderlich",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Geänderte Berechtigungen seit der Freigabe: {{drift}}",
       "heldPendingReApprovalOf": "Zurückgehalten bis zur erneuten Freigabe geänderter Berechtigungen.",
       "approveEnable": "Freigeben und aktivieren",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Alle installierten Plugins sind bereits auf der neuesten Marketplace-Version.",
       "updatingPlugin": "{{remaining}} verbleibend — {{pluginSlug}} wird auf v{{version}} aktualisiert...",
       "pluginUpdateFailed": "Update für {{pluginSlug}} fehlgeschlagen: {{error}} — die übrigen werden fortgesetzt.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} Update(s) installiert — die API wird für die darin laufenden Plugins neu gestartet...",
       "allUpdatesReplaced": "Alle {{count}} Update(s) installiert; der Prozess jedes Plugins wurde direkt ersetzt.",
       "pluginReloaded": "Plugin „{{pluginSlug}}“ wurde ersetzt und sein Prozess mit dem neuen Code neu gestartet. Kein API-Neustart erforderlich.",

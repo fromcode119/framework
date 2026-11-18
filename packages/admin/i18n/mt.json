@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installati",
       "health": "Saħħa",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Irrevedi u approva",
       "needsAttention": "Jeħtieġ attenzjoni",
       "needsReApproval": "Jeħtieġ approvazzjoni mill-ġdid",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Bidla fil-kapaċitajiet mill-approvazzjoni: {{drift}}",
       "heldPendingReApprovalOf": "Miżmum sakemm jiġu approvati mill-ġdid il-kapaċitajiet mibdula.",
       "approveEnable": "Approva u attiva",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Kull plugin installat diġà jinsab fl-aħħar verżjoni tiegħu fil-marketplace.",
       "updatingPlugin": "{{remaining}} fadal — qed jiġi aġġornat {{pluginSlug}} għal v{{version}}...",
       "pluginUpdateFailed": "L-aġġornament ta' {{pluginSlug}} falla: {{error}} — qed inkomplu bil-bqija.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "L-aġġornamenti kollha ({{count}}) ġew installati — qed terġa' tinbeda l-API għall-plugins li jaħdmu ġewwaha...",
       "allUpdatesReplaced": "L-aġġornamenti kollha ({{count}}) ġew installati; il-proċess ta' kull plugin ġie sostitwit f'postu.",
       "pluginReloaded": "Il-plugin \"{{pluginSlug}}\" ġie sostitwit u l-proċess tiegħu reġa' beda bil-kodiċi l-ġdid. M'hemmx bżonn li terġa' tinbeda l-API.",

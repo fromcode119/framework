@@ -29,6 +29,9 @@ export class RouteEndpointSegments {
   PLUGINS_UPLOAD: '/upload',
   PLUGINS_REAPPROVE_ALL: '/reapprove-all',
   PLUGINS_HEALTH: '/health',
+  /** Failed event deliveries (plugin listeners): list the open failures, and retry one by id. */
+  EVENT_DELIVERIES: '/event-deliveries',
+  EVENT_DELIVERIES_RETRY: '/event-deliveries/:id/retry',
   PLUGINS_SLUG_TOGGLE: '/:slug/toggle',
   PLUGINS_SLUG_CONSENT: '/:slug/consent',
   PLUGINS_SLUG_CONFIG: '/:slug/config',

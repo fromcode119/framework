@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "ติดตั้งแล้ว",
       "health": "สถานะสุขภาพ",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "ตรวจสอบและอนุมัติ",
       "needsAttention": "ต้องได้รับการดูแล",
       "needsReApproval": "ต้องอนุมัติซ้ำ",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "สิทธิ์ที่เปลี่ยนไปตั้งแต่การอนุมัติ: {{drift}}",
       "heldPendingReApprovalOf": "ถูกระงับไว้ระหว่างรอการอนุมัติสิทธิ์ที่เปลี่ยนแปลงซ้ำ",
       "approveEnable": "อนุมัติและเปิดใช้งาน",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "ปลั๊กอินที่ติดตั้งทั้งหมดเป็นเวอร์ชันล่าสุดในมาร์เก็ตเพลสแล้ว",
       "updatingPlugin": "เหลืออีก {{remaining}} รายการ — กำลังอัปเดต {{pluginSlug}} เป็น v{{version}}...",
       "pluginUpdateFailed": "อัปเดต {{pluginSlug}} ไม่สำเร็จ: {{error}} — ดำเนินการกับรายการที่เหลือต่อ",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "ติดตั้งการอัปเดตครบทั้ง {{count}} รายการแล้ว — กำลังรีสตาร์ต API สำหรับปลั๊กอินที่ทำงานภายใน API...",
       "allUpdatesReplaced": "ติดตั้งการอัปเดตครบทั้ง {{count}} รายการแล้ว โดยแทนที่โปรเซสของแต่ละปลั๊กอินในที่เดิม",
       "pluginReloaded": "แทนที่ปลั๊กอิน \"{{pluginSlug}}\" และรีสตาร์ตโปรเซสด้วยโค้ดใหม่แล้ว ไม่ต้องรีสตาร์ต API",

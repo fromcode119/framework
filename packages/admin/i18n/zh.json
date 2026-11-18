@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "已安装",
       "health": "健康状况",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "审核并批准",
       "needsAttention": "需要处理",
       "needsReApproval": "需要重新批准",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "批准后权限发生变更：{{drift}}",
       "heldPendingReApprovalOf": "已暂停，等待重新批准变更的权限。",
       "approveEnable": "批准并启用",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "所有已安装的插件均已是应用市场中的最新版本。",
       "updatingPlugin": "剩余 {{remaining}} 个 — 正在将 {{pluginSlug}} 更新至 v{{version}}...",
       "pluginUpdateFailed": "{{pluginSlug}} 更新失败：{{error}} — 继续更新其余插件。",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "已安装全部 {{count}} 项更新 — 正在为在 API 内运行的插件重启 API...",
       "allUpdatesReplaced": "已安装全部 {{count}} 项更新；各插件的进程已就地替换。",
       "pluginReloaded": "插件“{{pluginSlug}}”已替换，其进程已使用新代码重启。无需重启 API。",

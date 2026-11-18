@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Įdiegti",
       "health": "Būsena",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Peržiūrėti ir patvirtinti",
       "needsAttention": "Reikia dėmesio",
       "needsReApproval": "Reikia patvirtinti iš naujo",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Galimybių pokytis nuo patvirtinimo: {{drift}}",
       "heldPendingReApprovalOf": "Sulaikyta, kol bus iš naujo patvirtintos pakitusios galimybės.",
       "approveEnable": "Patvirtinti ir įjungti",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Visi įdiegti papildiniai jau yra naujausios prekyvietės versijos.",
       "updatingPlugin": "Liko: {{remaining}} — {{pluginSlug}} atnaujinamas į v{{version}}...",
       "pluginUpdateFailed": "Nepavyko atnaujinti {{pluginSlug}}: {{error}} — tęsiama su likusiais.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Įdiegti visi atnaujinimai ({{count}}) — API paleidžiama iš naujo dėl jos viduje veikiančių papildinių...",
       "allUpdatesReplaced": "Įdiegti visi atnaujinimai ({{count}}); kiekvieno papildinio procesas pakeistas vietoje.",
       "pluginReloaded": "Papildinys „{{pluginSlug}}“ pakeistas, o jo procesas paleistas iš naujo su nauju kodu. API paleisti iš naujo nereikia.",

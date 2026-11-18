@@ -19,8 +19,10 @@ import { AssetPrecompressor } from '@extension-builder/assets/asset-precompresso
 import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
+import { PluginEnginesStamper } from '@extension-builder/pack/plugin-engines-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 import { AppearanceCompiler } from '@extension-builder/compile/appearance-compiler';
+import type { IBuildPipelineInput } from '@extension-builder/interfaces/build-pipeline-input.interface';
 
 /**
  * The only class that knows the ORDER of a build. Every other class does one step and reports.
@@ -32,22 +34,7 @@ import { AppearanceCompiler } from '@extension-builder/compile/appearance-compil
  *    fail, `pack` still exited 0 and shipped a stale `ui/` for a week.
  */
 export class ExtensionBuildPipeline {
-  static async run(input: {
-    sourceDir: string;
-    kind: ExtensionKind;
-    slug: string;
-    pack: boolean;
-    packDir?: string;
-    /**
-     * Whether the staged package is also written out as an archive. Defaults to true.
-     *
-     * `pack` was doing two jobs: staging a cleaned, closured, correctly-stamped copy, and tarring
-     * it. Only the second is about archives, and the server wants the first on its own — it
-     * installs from the directory. Splitting them is what stops the server path from skipping the
-     * packaging in order to skip the tarball.
-     */
-    archive?: boolean;
-  }): Promise<BuildStepResult[]> {
+  static async run(input: IBuildPipelineInput): Promise<BuildStepResult[]> {
     // vite and tailwind load a generated module entry, because their configs are authored as
     // classes. It is build OUTPUT: `check:vite-glue` fails the build if one is left behind, so the
     // whole run is wrapped and `remove()` happens however it ends.
@@ -59,22 +46,7 @@ export class ExtensionBuildPipeline {
     }
   }
 
-  private static async runSteps(input: {
-    sourceDir: string;
-    kind: ExtensionKind;
-    slug: string;
-    pack: boolean;
-    packDir?: string;
-    /**
-     * Whether the staged package is also written out as an archive. Defaults to true.
-     *
-     * `pack` was doing two jobs: staging a cleaned, closured, correctly-stamped copy, and tarring
-     * it. Only the second is about archives, and the server wants the first on its own — it
-     * installs from the directory. Splitting them is what stops the server path from skipping the
-     * packaging in order to skip the tarball.
-     */
-    archive?: boolean;
-  }): Promise<BuildStepResult[]> {
+  private static async runSteps(input: IBuildPipelineInput): Promise<BuildStepResult[]> {
     const workspace = ExtensionWorkspace.resolve(input.sourceDir, input.kind);
     const results: BuildStepResult[] = [];
 
@@ -123,6 +95,14 @@ export class ExtensionBuildPipeline {
       // A publicDir misconfiguration once shipped the site's user uploads inside a theme tarball.
       fs.rmSync(path.join(packDir, 'public', 'uploads'), { recursive: true, force: true });
     }
+    // A plugin states the core it needs in the PACKED manifest (never the checkout), so an older core
+    // refuses it before its bundle can fail to load. Must run before the integrity stamp below, which
+    // checksums the manifest. Best-effort: a plugin that already declares its own floor keeps it.
+    if (input.kind === ExtensionKind.PLUGIN) {
+      PluginEnginesStamper.stamp(packDir);
+      results.push(BuildStepResult.ok(PluginEnginesStamper.STEP));
+    }
+
     await IntegrityStamper.stampPackedDir(packDir);
     results.push(BuildStepResult.ok('integrity-stamper:packed'));
 

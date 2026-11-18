@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Instalados",
       "health": "Estado",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Revisar y aprobar",
       "needsAttention": "Requiere atención",
       "needsReApproval": "Requiere reaprobación",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Cambio de capacidades desde la aprobación: {{drift}}",
       "heldPendingReApprovalOf": "Retenido hasta que se reaprueben las capacidades modificadas.",
       "approveEnable": "Aprobar y activar",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Todos los plugins instalados ya están en su última versión del marketplace.",
       "updatingPlugin": "Quedan {{remaining}}: actualizando {{pluginSlug}} a v{{version}}...",
       "pluginUpdateFailed": "Error al actualizar {{pluginSlug}}: {{error}}. Se continúa con el resto.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Se instalaron las {{count}} actualizaciones. Reiniciando la API para los plugins que se ejecutan dentro de ella...",
       "allUpdatesReplaced": "Se instalaron las {{count}} actualizaciones; el proceso de cada plugin se reemplazó en caliente.",
       "pluginReloaded": "El plugin \"{{pluginSlug}}\" se reemplazó y su proceso se reinició con el código nuevo. No es necesario reiniciar la API.",

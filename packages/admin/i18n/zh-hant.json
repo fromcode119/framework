@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "已安裝",
       "health": "健康狀態",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "審核並核准",
       "needsAttention": "需要注意",
       "needsReApproval": "需要重新核准",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "核准後的權限變更：{{drift}}",
       "heldPendingReApprovalOf": "已暫停，等待重新核准變更的權限。",
       "approveEnable": "核准並啟用",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "所有已安裝的外掛皆已是市集上的最新版本。",
       "updatingPlugin": "尚餘 {{remaining}} 個 — 正在將 {{pluginSlug}} 更新至 v{{version}}...",
       "pluginUpdateFailed": "{{pluginSlug}} 更新失敗：{{error}} — 繼續處理其餘項目。",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "已安裝全部 {{count}} 項更新 — 正在為於 API 內執行的外掛重新啟動 API...",
       "allUpdatesReplaced": "已安裝全部 {{count}} 項更新；各外掛的處理程序已就地替換。",
       "pluginReloaded": "外掛「{{pluginSlug}}」已替換，其處理程序已以新程式碼重新啟動，無須重新啟動 API。",

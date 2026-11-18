@@ -1094,6 +1094,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Инсталирани",
       "health": "Състояние",
@@ -1407,6 +1421,7 @@
       "reApproveAllHeld": "Прегледай и одобри",
       "needsAttention": "Изисква внимание",
       "needsReApproval": "Нужно е повторно одобрение",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Промяна в правата след одобрението: {{drift}}",
       "heldPendingReApprovalOf": "Задържан до повторно одобрение на променените права.",
       "approveEnable": "Одобри и включи",
@@ -1747,6 +1762,7 @@
       "allUpToDate": "Всички инсталирани плъгини вече са на последната си версия.",
       "updatingPlugin": "Остават {{remaining}} — обновяване на {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Обновяването на {{pluginSlug}} не успя: {{error}} — продължава с останалите.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Всички обновления ({{count}}) са инсталирани — API се рестартира заради плъгините, които работят в него...",
       "allUpdatesReplaced": "Всички обновления ({{count}}) са инсталирани; процесът на всеки плъгин е подменен на място.",
       "pluginReloaded": "Плъгинът „{{pluginSlug}}“ е подменен и процесът му е рестартиран с новия код. Не е нужен рестарт на API.",

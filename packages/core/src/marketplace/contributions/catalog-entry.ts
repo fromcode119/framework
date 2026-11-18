@@ -21,6 +21,8 @@ export class CatalogEntry {
     /** What changed in this version, in the words of whoever wrote the release. May be empty. */
     readonly notes: string,
     readonly name: string,
+    /** The core semver range this version needs (`manifest.engines.core`); empty when it states none. */
+    readonly requiredCore: string = '',
   ) {}
 
   static from(row: Record<string, unknown>): CatalogEntry | null {
@@ -32,6 +34,9 @@ export class CatalogEntry {
     const kind = stated ? ExtensionScope.find(stated) : ExtensionScope.PLUGIN;
     if (!slug || !version || !kind) return null;
 
+    const engines = row?.engines as { core?: unknown } | undefined;
+    const requiredCore = String(engines?.core ?? row?.requiredCore ?? '').trim();
+
     return new CatalogEntry(
       slug,
       version,
@@ -39,6 +44,7 @@ export class CatalogEntry {
       String(row?.downloadUrl || '').trim(),
       String(row?.notes || '').trim(),
       String(row?.name || slug).trim(),
+      requiredCore,
     );
   }
 
@@ -56,6 +62,7 @@ export class CatalogEntry {
       downloadUrl: this.downloadUrl,
       releaseNotes: this.notes,
       source: CatalogSource.LOCAL.value,
+      ...(this.requiredCore ? { engines: { core: this.requiredCore } } : {}),
     };
   }
 }

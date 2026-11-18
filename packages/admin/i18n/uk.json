@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Встановлені",
       "health": "Стан",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Переглянути й схвалити",
       "needsAttention": "Потребує уваги",
       "needsReApproval": "Потребує повторного схвалення",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Зміни дозволів після схвалення: {{drift}}",
       "heldPendingReApprovalOf": "Призупинено до повторного схвалення змінених дозволів.",
       "approveEnable": "Схвалити й увімкнути",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Усі встановлені плагіни вже мають останню версію з маркетплейсу.",
       "updatingPlugin": "Залишилося: {{remaining}} — оновлення {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Не вдалося оновити {{pluginSlug}}: {{error}} — продовжуємо з рештою.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Усі оновлення ({{count}}) встановлено — перезапуск API для плагінів, що працюють у ньому...",
       "allUpdatesReplaced": "Усі оновлення ({{count}}) встановлено; процес кожного плагіна замінено на місці.",
       "pluginReloaded": "Плагін «{{pluginSlug}}» замінено, його процес перезапущено з новим кодом. Перезапуск API не потрібен.",

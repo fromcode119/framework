@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "المثبتة",
       "health": "الحالة الصحية",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "المراجعة والموافقة",
       "needsAttention": "تحتاج إلى انتباه",
       "needsReApproval": "تحتاج إلى إعادة موافقة",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "تغيّر في الصلاحيات منذ الموافقة: {{drift}}",
       "heldPendingReApprovalOf": "معلّقة بانتظار إعادة الموافقة على الصلاحيات المتغيّرة.",
       "approveEnable": "الموافقة والتفعيل",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "جميع الإضافات المثبتة محدّثة بالفعل إلى أحدث إصدار في المتجر.",
       "updatingPlugin": "المتبقي {{remaining}} — جارٍ تحديث {{pluginSlug}} إلى v{{version}}...",
       "pluginUpdateFailed": "فشل تحديث {{pluginSlug}}: {{error}} — جارٍ متابعة البقية.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "تم تثبيت جميع التحديثات ({{count}}) — جارٍ إعادة تشغيل API للإضافات التي تعمل داخلها...",
       "allUpdatesReplaced": "تم تثبيت جميع التحديثات ({{count}})؛ واستُبدلت عملية كل إضافة في مكانها.",
       "pluginReloaded": "تم استبدال الإضافة \"{{pluginSlug}}\" وأُعيد تشغيل عمليتها بالشيفرة الجديدة. لا حاجة لإعادة تشغيل API.",

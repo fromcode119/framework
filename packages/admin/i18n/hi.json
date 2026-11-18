@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "इंस्टॉल किए गए",
       "health": "स्वास्थ्य",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "समीक्षा करें और स्वीकृत करें",
       "needsAttention": "ध्यान देने की आवश्यकता",
       "needsReApproval": "पुनः स्वीकृति आवश्यक",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "स्वीकृति के बाद क्षमता में बदलाव: {{drift}}",
       "heldPendingReApprovalOf": "बदली हुई क्षमताओं की पुनः स्वीकृति तक रोका गया।",
       "approveEnable": "स्वीकृत और सक्षम करें",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "इंस्टॉल किया गया हर प्लगइन पहले से ही मार्केटप्लेस के नवीनतम संस्करण पर है।",
       "updatingPlugin": "{{remaining}} शेष — {{pluginSlug}} को v{{version}} पर अपडेट किया जा रहा है...",
       "pluginUpdateFailed": "{{pluginSlug}} का अपडेट विफल रहा: {{error}} — बाकी के साथ जारी है।",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "सभी {{count}} अपडेट इंस्टॉल हो गए — API के भीतर चलने वाले प्लगइन के लिए API रीस्टार्ट किया जा रहा है...",
       "allUpdatesReplaced": "सभी {{count}} अपडेट इंस्टॉल हो गए; हर प्लगइन की प्रोसेस को उसी स्थान पर बदल दिया गया।",
       "pluginReloaded": "प्लगइन \"{{pluginSlug}}\" बदल दिया गया और उसकी प्रोसेस नए कोड पर रीस्टार्ट हो गई। API रीस्टार्ट की आवश्यकता नहीं है।",

@@ -79,6 +79,10 @@ export class SystemTables {
     /** What each person agreed to be sent outside the site — texts, notifications — and when. */
     CHANNEL_CONSENTS: '_system_channel_consents',
     WEBHOOK_DELIVERIES: '_system_webhook_deliveries',
+    /** Announced events a plugin listener failed to handle — visible and retryable, not swallowed. */
+    EVENT_DELIVERIES: '_system_event_deliveries',
+    /** Idempotency keys of effects that already ran, so a repeated event does its work once. */
+    EVENT_DEDUPE: '_system_event_dedupe',
     EMAIL_SUPPRESSIONS: '_system_email_suppressions',
     META: '_system_meta',
     MEDIA: 'media',

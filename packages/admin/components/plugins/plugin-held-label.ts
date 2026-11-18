@@ -7,6 +7,7 @@ export class PluginHeldLabel {
     const resolved = PluginHeldReason.resolve(reason);
     if (resolved === PluginHeldReason.AWAITING_APPROVAL) return AdminI18n.t('plugins.list.awaitingApproval');
     if (resolved === PluginHeldReason.CAPABILITY_DRIFT) return AdminI18n.t('plugins.list.needsReApproval');
+    if (resolved === PluginHeldReason.CORE_TOO_OLD) return AdminI18n.t('plugins.list.needsNewerCore');
     return AdminI18n.t('plugins.list.held');
   }
 }

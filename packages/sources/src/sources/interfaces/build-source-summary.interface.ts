@@ -20,6 +20,8 @@ export interface IBuildSourceSummary {
   version?: string;
   /** The vendor the last built manifest declared; empty before its first build. */
   namespace?: string;
+  /** The core the last build needs (manifest.engines.core); empty before its first build. */
+  requiredCore?: string;
   /** Build when the branch moves. Off unless the operator asked for it, per source. */
   autoBuild?: boolean;
   /**

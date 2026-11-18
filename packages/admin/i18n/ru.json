@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Установленные",
       "health": "Состояние",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Проверить и одобрить",
       "needsAttention": "Требует внимания",
       "needsReApproval": "Требуется повторное одобрение",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Изменения разрешений с момента одобрения: {{drift}}",
       "heldPendingReApprovalOf": "Приостановлен до повторного одобрения изменённых разрешений.",
       "approveEnable": "Одобрить и включить",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Все установленные плагины уже обновлены до последней версии из маркетплейса.",
       "updatingPlugin": "Осталось: {{remaining}} — обновление {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Не удалось обновить {{pluginSlug}}: {{error}} — продолжаем с остальными.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Все обновления установлены ({{count}}) — перезапуск API для плагинов, работающих внутри него...",
       "allUpdatesReplaced": "Все обновления установлены ({{count}}); процесс каждого плагина заменён на месте.",
       "pluginReloaded": "Плагин «{{pluginSlug}}» заменён, его процесс перезапущен с новым кодом. Перезапуск API не требуется.",

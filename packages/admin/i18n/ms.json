@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Dipasang",
       "health": "Kesihatan",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Semak dan luluskan",
       "needsAttention": "Perlu perhatian",
       "needsReApproval": "Perlu kelulusan semula",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Perubahan keupayaan sejak kelulusan: {{drift}}",
       "heldPendingReApprovalOf": "Ditahan sementara menunggu kelulusan semula keupayaan yang berubah.",
       "approveEnable": "Luluskan & dayakan",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Setiap pemalam yang dipasang sudah berada pada versi terkini di pasaran.",
       "updatingPlugin": "{{remaining}} lagi — mengemas kini {{pluginSlug}} ke v{{version}}...",
       "pluginUpdateFailed": "Kemas kini gagal untuk {{pluginSlug}}: {{error}} — meneruskan dengan yang selebihnya.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Kesemua {{count}} kemas kini telah dipasang — memulakan semula API untuk pemalam yang berjalan di dalamnya...",
       "allUpdatesReplaced": "Kesemua {{count}} kemas kini telah dipasang; proses setiap pemalam telah diganti di tempatnya.",
       "pluginReloaded": "Pemalam \"{{pluginSlug}}\" telah diganti dan prosesnya dimulakan semula dengan kod baharu. API tidak perlu dimulakan semula.",

@@ -121,6 +121,9 @@ export class SourceBuildRunner {
         version: pkg.version,
         // The vendor the built manifest declares, shown on the row beside the version.
         namespace: String((pkg.manifest as { namespace?: unknown } | null)?.namespace ?? '').trim(),
+        // The core this build needs (manifest.engines.core), so the catalogue can refuse an incompatible
+        // update before downloading it, not only hold it at boot.
+        required_core: String((pkg.manifest as { engines?: { core?: unknown } } | null)?.engines?.core ?? '').trim(),
         // A build stages a package directory and writes no archive, so any archive NAMED here
         // belongs to an earlier build of this source. Cleared rather than left: the filename carries
         // the version, a rebuild of the same version reuses it, and a stale row would hand a

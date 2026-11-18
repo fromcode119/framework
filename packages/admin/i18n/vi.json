@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Đã cài đặt",
       "health": "Tình trạng",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Xem xét và phê duyệt",
       "needsAttention": "Cần chú ý",
       "needsReApproval": "Cần phê duyệt lại",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Quyền hạn đã thay đổi kể từ khi phê duyệt: {{drift}}",
       "heldPendingReApprovalOf": "Bị tạm giữ chờ phê duyệt lại các quyền hạn đã thay đổi.",
       "approveEnable": "Phê duyệt và bật",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Tất cả plugin đã cài đều đang ở phiên bản mới nhất trên marketplace.",
       "updatingPlugin": "Còn {{remaining}} — đang cập nhật {{pluginSlug}} lên v{{version}}...",
       "pluginUpdateFailed": "Cập nhật {{pluginSlug}} thất bại: {{error}} — tiếp tục với các plugin còn lại.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Đã cài đặt toàn bộ {{count}} bản cập nhật — đang khởi động lại API cho các plugin chạy bên trong nó...",
       "allUpdatesReplaced": "Đã cài đặt toàn bộ {{count}} bản cập nhật; tiến trình của từng plugin đã được thay thế tại chỗ.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" đã được thay thế và tiến trình của nó đã khởi động lại với mã mới. Không cần khởi động lại API.",

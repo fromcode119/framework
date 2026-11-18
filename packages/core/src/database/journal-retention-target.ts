@@ -39,6 +39,12 @@ export class JournalRetentionTargets {
         settingKey: SystemConstants.META_KEY.JOB_RUN_RETENTION_DAYS,
         label: 'job-runs',
       },
+      {
+        table: SystemConstants.TABLE.EVENT_DELIVERIES,
+        timestampField: 'updated_at',
+        settingKey: SystemConstants.META_KEY.EVENT_DELIVERY_RETENTION_DAYS,
+        label: 'event-deliveries',
+      },
     ];
   }
 }

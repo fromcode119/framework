@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Geïnstalleerd",
       "health": "Status",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Beoordelen en goedkeuren",
       "needsAttention": "Vereist aandacht",
       "needsReApproval": "Opnieuw goedkeuren vereist",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Gewijzigde rechten sinds goedkeuring: {{drift}}",
       "heldPendingReApprovalOf": "Tegengehouden in afwachting van hergoedkeuring van gewijzigde rechten.",
       "approveEnable": "Goedkeuren en inschakelen",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Alle geïnstalleerde plugins hebben al de nieuwste marketplaceversie.",
       "updatingPlugin": "Nog {{remaining}} te gaan — {{pluginSlug}} bijwerken naar v{{version}}...",
       "pluginUpdateFailed": "Update van {{pluginSlug}} mislukt: {{error}} — verder met de rest.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} update(s) geïnstalleerd — de API wordt herstart voor de plugin(s) die erin draaien...",
       "allUpdatesReplaced": "Alle {{count}} update(s) geïnstalleerd; het proces van elke plugin is ter plekke vervangen.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" is vervangen en het proces is herstart met de nieuwe code. Geen herstart van de API nodig.",

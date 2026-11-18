@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installert",
       "health": "Helse",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Gå gjennom og godkjenn",
       "needsAttention": "Krever oppmerksomhet",
       "needsReApproval": "Må godkjennes på nytt",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Endrede tillatelser siden godkjenning: {{drift}}",
       "heldPendingReApprovalOf": "Holdes tilbake til de endrede tillatelsene er godkjent på nytt.",
       "approveEnable": "Godkjenn og aktiver",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Alle installerte utvidelser har allerede nyeste versjon fra markedsplassen.",
       "updatingPlugin": "{{remaining}} gjenstår – oppdaterer {{pluginSlug}} til v{{version}}...",
       "pluginUpdateFailed": "Oppdateringen av {{pluginSlug}} mislyktes: {{error}} – fortsetter med resten.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} oppdatering(er) er installert – starter API-et på nytt for utvidelsene som kjører i det...",
       "allUpdatesReplaced": "Alle {{count}} oppdatering(er) er installert; prosessen til hver utvidelse ble erstattet direkte.",
       "pluginReloaded": "Utvidelsen «{{pluginSlug}}» ble erstattet, og prosessen ble startet på nytt med den nye koden. API-et trenger ikke omstart.",

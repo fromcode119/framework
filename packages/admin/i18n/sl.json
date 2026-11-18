@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Nameščeno",
       "health": "Stanje",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Preglej in odobri",
       "needsAttention": "Potrebuje pozornost",
       "needsReApproval": "Potrebna ponovna odobritev",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Sprememba zmožnosti od odobritve: {{drift}}",
       "heldPendingReApprovalOf": "Zadržano do ponovne odobritve spremenjenih zmožnosti.",
       "approveEnable": "Odobri in omogoči",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Vsi nameščeni vtičniki so že na najnovejši različici iz tržnice.",
       "updatingPlugin": "Preostalo: {{remaining}} — posodabljanje {{pluginSlug}} na v{{version}} ...",
       "pluginUpdateFailed": "Posodobitev za {{pluginSlug}} ni uspela: {{error}} — nadaljevanje z ostalimi.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Nameščene so vse posodobitve ({{count}}) — ponovni zagon API-ja za vtičnike, ki se izvajajo v njem ...",
       "allUpdatesReplaced": "Nameščene so vse posodobitve ({{count}}); proces vsakega vtičnika je bil zamenjan na mestu.",
       "pluginReloaded": "Vtičnik »{{pluginSlug}}« je bil zamenjan, njegov proces pa ponovno zagnan z novo kodo. Ponovni zagon API-ja ni potreben.",

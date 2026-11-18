@@ -1057,6 +1057,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Instalētie",
       "health": "Stāvoklis",
@@ -1370,6 +1384,7 @@
       "reApproveAllHeld": "Pārskatīt un apstiprināt",
       "needsAttention": "Nepieciešama uzmanība",
       "needsReApproval": "Nepieciešama atkārtota apstiprināšana",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Iespēju izmaiņas kopš apstiprināšanas: {{drift}}",
       "heldPendingReApprovalOf": "Aizturēts, līdz tiks atkārtoti apstiprinātas mainītās iespējas.",
       "approveEnable": "Apstiprināt un iespējot",
@@ -1710,6 +1725,7 @@
       "allUpToDate": "Visiem instalētajiem spraudņiem jau ir jaunākā tirgus versija.",
       "updatingPlugin": "Atlikuši {{remaining}} — atjaunina {{pluginSlug}} uz v{{version}}...",
       "pluginUpdateFailed": "Spraudņa {{pluginSlug}} atjaunināšana neizdevās: {{error}} — turpina ar pārējiem.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Visi atjauninājumi ({{count}}) instalēti — restartē API spraudņiem, kas darbojas tajā...",
       "allUpdatesReplaced": "Visi atjauninājumi ({{count}}) instalēti; katra spraudņa process tika aizstāts uz vietas.",
       "pluginReloaded": "Spraudnis \"{{pluginSlug}}\" tika aizstāts, un tā process restartēts ar jauno kodu. API restartēšana nav nepieciešama.",
