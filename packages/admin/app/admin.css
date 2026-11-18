@@ -2346,6 +2346,118 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
  * question that looked heavier than what it asks.
  * The mark stays, where the reference has none: it is the one thing that says, before the words are
  * read, that this one deletes. */
+/* ── The dialog ──────────────────────────────────────────────────────────────────────────────────
+ * One scrim, one panel, three widths. Everything that asks a short question or shows a short thing
+ * over the page is drawn by `Dialog`, and only its size and tone change.
+ *
+ * Measured 18.11.2026: five dialogs each drew their own — four copies of the same scrim, panels at
+ * 20, 24 and 32px of padding, widths md/lg/2xl, close buttons in three greys, icon tiles hardcoded
+ * rose, amber and indigo, and one at z-index 1000 against the others' 500.
+ *
+ * The confirmation keeps its own narrow panel below; everything else uses these. */
+.fc-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.fc-dialog__backdrop { position: fixed; inset: 0; background: var(--fc-scrim, rgb(24 24 27 / .4)); }
+.fc-dialog__panel {
+  position: relative;
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--fc-surface);
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-card-radius);
+  box-shadow: 0 24px 64px rgb(15 23 42 / .24);
+  overflow: hidden;
+}
+/* Three widths and no fourth: a question, a short form, something to look at. */
+.fc-dialog__panel--sm { max-width: 400px; }
+.fc-dialog__panel--md { max-width: 520px; }
+.fc-dialog__panel--lg { max-width: 720px; }
+/* The head is the card's head: same height, same padding, same rule under it. */
+.fc-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px var(--fc-card-pad-x);
+  border-bottom: 1px solid var(--fc-border);
+}
+.fc-dialog__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.fc-dialog__title { margin: 0; font-size: var(--fc-card-title); line-height: 24px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-dialog__description { margin: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-dialog__mark {
+  display: inline-flex; flex: none; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); color: var(--fc-text-muted);
+}
+.fc-dialog__mark--danger { background: var(--fc-danger-soft); color: var(--fc-danger); }
+.fc-dialog__mark--warning { background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
+.fc-dialog__mark--brand { background: color-mix(in srgb, var(--fc-brand) 12%, transparent); color: var(--fc-brand); }
+.fc-dialog__close {
+  position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--fc-control-radius);
+  color: var(--fc-text-muted);
+}
+/* A 28px control still gets a thumb's worth of hit area (WCAG 2.5.8). */
+.fc-dialog__close::before { content: ''; position: absolute; inset: -4px; }
+.fc-dialog__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-dialog__close:disabled { opacity: .5; }
+.fc-dialog__body { padding: var(--fc-card-pad-x); overflow-y: auto; }
+/* What an upload is about to install: one block per kind, its entries under it. */
+.fc-upload-preview { display: flex; flex-direction: column; gap: 12px; max-height: 45vh; }
+.fc-upload-preview__section { padding: 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); }
+.fc-upload-preview__heading { margin: 0 0 6px; font-size: var(--fc-text-xs); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-upload-preview__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.fc-upload-preview__item { font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text); }
+.fc-upload-preview__none { font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+
+/* What a plugin needs before it runs: one row per dependency, its state as a chip, the reason under it. */
+.fc-dependency { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; max-height: 40vh; overflow-y: auto; }
+.fc-dependency > * + * { border-top: var(--fc-record-rule); }
+.fc-dependency__row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.fc-dependency__mark {
+  display: inline-flex; flex: none; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); color: var(--fc-text-muted);
+}
+.fc-dependency__text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fc-dependency__name { display: flex; align-items: center; gap: 8px; font-size: var(--fc-record-text); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-dependency__reason { font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-dependency__warning { margin: 12px 0 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+
+/* Choosing a folder to move into: where you are, then what is inside it. */
+.fc-move__path { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--fc-border); overflow-x: auto; }
+.fc-move__crumb { flex: none; font-size: var(--fc-text-xs); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-move__crumb:hover { color: var(--fc-text); }
+.fc-move__crumb--current { color: var(--fc-text); }
+.fc-move__sep { flex: none; font-size: var(--fc-text-xs); color: var(--fc-text-muted); }
+.fc-move__list { display: flex; flex-direction: column; gap: 1px; min-height: 120px; max-height: 240px; overflow-y: auto; }
+.fc-move__loading { display: flex; align-items: center; justify-content: center; height: 96px; color: var(--fc-text-muted); }
+.fc-move__folder {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: var(--fc-row-h);
+  padding: 0 10px; border-radius: var(--fc-control-radius); text-align: start;
+  font-size: var(--fc-record-text); color: var(--fc-text-muted);
+}
+.fc-move__folder:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-move__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--fc-weight-strong); }
+
+/* A version beside the current values: the switch between "only what changed" and every field. */
+.fc-revision__filter { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.fc-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px var(--fc-card-pad-x); border-top: 1px solid var(--fc-border); }
+@media (max-width: 640px) {
+  /* On a phone the answer is a full-width button, and the one that goes forward is on top. */
+  .fc-dialog__foot { flex-direction: column-reverse; }
+  .fc-dialog__foot > * { width: 100%; }
+}
+
 .fc-confirm {
   position: fixed;
   inset: 0;

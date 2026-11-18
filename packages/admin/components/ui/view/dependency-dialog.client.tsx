@@ -1,39 +1,29 @@
 import { DependencyIssueType } from '@/components/ui/enums/dependency-issue-type.enum';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import {prop, bound, Platform} from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
+import { Dialog } from '@/components/ui/view/dialog.client';
+import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
 import { FrameworkIcons } from '@fromcode119/react';
-import { RootFramework } from '@/components/ui/view/root-framework.client';
-import { AdminComponent } from '@/components/view/admin-component.client';
 import { IDependencyIssue } from '@/components/ui/interfaces/dependency-issue.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-export class DependencyDialog extends AdminComponent {
+
+/**
+ * What this plugin needs before it can run, and the two ways forward.
+ *
+ * The dialog is the console's ({@link Dialog}); this one lists the plugins it depends on, each with
+ * what is wrong with it. It used to draw its own scrim and panel, an icon tile in rose or amber, a
+ * tag at 8px — the smallest text in the console, against a 12px floor — and three buttons at `py-6`
+ * with coloured shadows.
+ */
+export class DependencyDialog extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
   @prop declare onConfirm: (recursive: boolean, force: boolean) => void;
   @prop declare issues: IDependencyIssue[];
   @prop declare pluginSlug: string;
   @prop declare isLoading?: boolean;
-
-  private applyBodyOverflow(): void {
-    if (!Platform.isBrowser) return;
-    document.body.style.overflow = this.isOpen ? 'hidden' : 'unset';
-  }
-
-  componentDidMount(): void {
-    this.applyBodyOverflow();
-  }
-
-  componentDidUpdate(prevProps: { isOpen: boolean }): void {
-    if (prevProps.isOpen !== this.isOpen) this.applyBodyOverflow();
-  }
-
-  componentWillUnmount(): void {
-    if (Platform.isBrowser) document.body.style.overflow = 'unset';
-  }
 
   @bound private confirmResolve(): void {
     this.onConfirm(true, false);
@@ -43,124 +33,80 @@ export class DependencyDialog extends AdminComponent {
     this.onConfirm(false, true);
   }
 
-  render(): ReactNode {
+  private is(issue: IDependencyIssue, type: DependencyIssueType): boolean {
+    return String(issue.type) === type.value;
+  }
+
+  private get hasMissing(): boolean {
+    return this.issues.some((issue) => this.is(issue, DependencyIssueType.MISSING));
+  }
+
+  private get primaryLabel(): string {
+    if (this.hasMissing) return AdminI18n.t('ui.dependencies.installAll');
+    const onlyInactive = this.issues.every((issue) => this.is(issue, DependencyIssueType.INACTIVE));
+    return onlyInactive ? AdminI18n.t('ui.dependencies.enableAll') : AdminI18n.t('ui.dependencies.resolve');
+  }
+
+  /** What is wrong with one dependency, in the words the operator reads. */
+  private reason(issue: IDependencyIssue): string {
+    if (this.is(issue, DependencyIssueType.MISSING)) return AdminI18n.t('ui.dependencies.requires', { version: issue.expected });
+    if (this.is(issue, DependencyIssueType.INACTIVE)) return AdminI18n.t('ui.dependencies.needsActivation', { version: issue.expected });
+    return AdminI18n.t('ui.dependencies.mismatch', { expected: issue.expected, actual: issue.actual });
+  }
+
+  private get foot(): ReactNode {
     const isLoading = this.isLoading ?? false;
-    const theme = this.theme;
-
-    if (!this.isOpen) return null;
-
-    const issues = this.issues;
-    const pluginSlug = this.pluginSlug;
-    const onClose = this.onClose;
-
-    const hasMissing = issues.some(i => String(i.type) === DependencyIssueType.MISSING.value);
-    const hasIncompatible = issues.some(i => String(i.type) === DependencyIssueType.INCOMPATIBLE.value);
-    const onlyInactive = issues.every(i => String(i.type) === DependencyIssueType.INACTIVE.value);
-
-    const primaryLabel = hasMissing
-      ? AdminI18n.t('ui.dependencies.installAll')
-      : onlyInactive
-        ? AdminI18n.t('ui.dependencies.enableAll')
-        : AdminI18n.t('ui.dependencies.resolve');
-
+    const hasIncompatible = this.issues.some((issue) => this.is(issue, DependencyIssueType.INCOMPATIBLE));
     return (
-    <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={onClose}
-        />
+      <>
+        <Button variant={ButtonVariant.GHOST} onClick={this.onClose} disabled={isLoading}>
+          {AdminI18n.t('common.cancel')}
+        </Button>
+        <Button variant={ButtonVariant.GHOST} onClick={this.confirmForce} disabled={isLoading}>
+          {AdminI18n.t('ui.dependencies.force')}
+        </Button>
+        {hasIncompatible ? null : (
+          <Button variant={ButtonVariant.PRIMARY} onClick={this.confirmResolve} isLoading={isLoading}>
+            {this.primaryLabel}
+          </Button>
+        )}
+      </>
+    );
+  }
 
-        <div className={`relative w-full max-w-lg my-auto ${AdminClass.SURFACE} p-5 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300`}>
-          <div className="flex items-start gap-3">
-            <div className={`p-2.5 rounded-lg flex-shrink-0 ${hasMissing ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-500' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500'}`}>
-              <FrameworkIcons.Warning size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
-                {AdminI18n.t(hasMissing ? 'ui.dependencies.missingTitle' : 'ui.dependencies.inactiveTitle')}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                {AdminI18n.t('ui.dependencies.intro', { plugin: pluginSlug })}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1 rounded-lg transition-colors hover:bg-slate-50 text-slate-400 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-white"
-            >
-              <FrameworkIcons.Close size={20} />
-            </button>
-          </div>
-
-          <div className="mt-4 space-y-2 max-h-[40vh] overflow-y-auto pe-2 custom-scrollbar">
-            {issues.map((issue, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 transition-all hover:bg-slate-100 dark:hover:bg-slate-800">
-                <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shadow-sm ${
-                  String(issue.type) === DependencyIssueType.MISSING.value ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-900/30' :
-                  'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
-                }`}>
-                  <FrameworkIcons.Box size={20} className={String(issue.type) === DependencyIssueType.MISSING.value ? 'text-rose-500' : 'text-indigo-500'} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-900 dark:text-white text-[12px]">{issue.slug}</span>
-                    <span className={`text-[8px] px-1.5 py-0.5 rounded-lg font-medium tracking-tight ${
-                      String(issue.type) === DependencyIssueType.MISSING.value ? 'bg-rose-500 text-white' :
-                      String(issue.type) === DependencyIssueType.INACTIVE.value ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500' :
-                      'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-500'
-                    }`}>
-                      {String(issue.type) === DependencyIssueType.MISSING.value ? AdminI18n.t('ui.dependencies.notInstalled') : issue.type.value.toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {String(issue.type) === DependencyIssueType.MISSING.value && AdminI18n.t('ui.dependencies.requires', { version: issue.expected })}
-                    {String(issue.type) === DependencyIssueType.INACTIVE.value && AdminI18n.t('ui.dependencies.needsActivation', { version: issue.expected })}
-                    {String(issue.type) === DependencyIssueType.INCOMPATIBLE.value && AdminI18n.t('ui.dependencies.mismatch', { expected: issue.expected, actual: issue.actual })}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3">
-            {!hasIncompatible && (
-              <Button
-                variant={ButtonVariant.PRIMARY}
-                className={`w-full py-6 rounded-xl font-medium text-[12px] shadow-lg ${
-                  hasMissing ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20' : 'shadow-indigo-500/20'
-                }`}
-                onClick={this.confirmResolve}
-                isLoading={isLoading}
-              >
-                {primaryLabel}
-              </Button>
-            )}
-
-            <div className={`p-4 rounded-xl text-[12px] font-medium leading-tight ${theme === ThemeMode.DARK ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-              {AdminI18n.t('ui.dependencies.forceWarning')}
-            </div>
-
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="w-full py-6 rounded-xl font-medium text-[12px] border-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
-              onClick={this.confirmForce}
-              disabled={isLoading}
-            >
-              {AdminI18n.t('ui.dependencies.force')}
-            </Button>
-
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="w-full"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              {AdminI18n.t('common.cancel')}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </RootFramework>
+  render(): ReactNode {
+    return (
+      <Dialog
+        isOpen={this.isOpen}
+        onClose={this.onClose}
+        title={AdminI18n.t(this.hasMissing ? 'ui.dependencies.missingTitle' : 'ui.dependencies.inactiveTitle')}
+        description={AdminI18n.t('ui.dependencies.intro', { plugin: this.pluginSlug })}
+        icon={<FrameworkIcons.Warning size={18} />}
+        tone={this.hasMissing ? DialogTone.DANGER : DialogTone.WARNING}
+        busy={this.isLoading ?? false}
+        foot={this.foot}
+      >
+        <ul className="fc-dependency">
+          {this.issues.map((issue, index) => (
+            <li key={`${issue.slug}-${index}`} className="fc-dependency__row">
+              <span className="fc-dependency__mark"><FrameworkIcons.Box size={16} /></span>
+              <span className="fc-dependency__text">
+                <span className="fc-dependency__name">
+                  {issue.slug}
+                  <span className="fc-chip">
+                    {this.is(issue, DependencyIssueType.MISSING)
+                      ? AdminI18n.t('ui.dependencies.notInstalled')
+                      : String(issue.type)}
+                  </span>
+                </span>
+                <span className="fc-dependency__reason">{this.reason(issue)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        {/* What forcing it means, where the button that does it is — not a block of its own above it. */}
+        <p className="fc-dependency__warning">{AdminI18n.t('ui.dependencies.forceWarning')}</p>
+      </Dialog>
     );
   }
 }
