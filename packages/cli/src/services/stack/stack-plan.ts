@@ -1,14 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-
-/** What `stack up` was asked for, once the defaults are filled in. */
-export interface StackRequest {
-  readonly name: string;
-  readonly framework: string;
-  readonly plugins: readonly string[];
-  readonly version: string;
-  readonly port: number;
-}
+import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 
 /**
  * The files a local stack runs from.
@@ -28,7 +20,7 @@ export class StackPlan {
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
 
-  constructor(private readonly request: StackRequest) {}
+  constructor(private readonly request: IStackRequest) {}
 
   /**
    * The stack's own directory. Outside the scratchpad on purpose: a scratchpad is wiped by a Mac
@@ -126,7 +118,7 @@ export class StackPlan {
   }
 
   /** A Next app serves its build, so `.next` and `public` are what a worktree has to supply. */
-  private appMounts(app: 'admin' | 'frontend'): string[] {
+  private appMounts(app: string): string[] {
     const mounts: string[] = [];
     const base = path.join(this.request.framework, 'packages', app);
 

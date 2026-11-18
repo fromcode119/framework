@@ -3,8 +3,10 @@ import path from 'path';
 import chalk from 'chalk';
 import { DeploymentTarget } from '@cli/services/deploy/deployment-target';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
-import { StackPlan, StackRequest } from '@cli/services/stack/stack-plan';
-import { StackRecord, StackStore } from '@cli/services/stack/stack-store';
+import { StackPlan } from '@cli/services/stack/stack-plan';
+import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
+import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interface';
+import { StackStore } from '@cli/services/stack/stack-store';
 
 /**
  * Brings a throwaway stack up and takes it away again.
@@ -18,7 +20,7 @@ export class StackService {
   constructor(private readonly store: StackStore = new StackStore()) {}
 
   /** Creates the stack's files and starts it. */
-  async up(request: StackRequest): Promise<StackRecord> {
+  async up(request: IStackRequest): Promise<IStackRecord> {
     this.assertFrameworkBuilt(request.framework);
     if (this.store.exists(request.name)) {
       throw new Error(`Stack "${request.name}" already exists. Use \`fromcode stack down ${request.name}\` first.`);
@@ -36,7 +38,40 @@ export class StackService {
 
     const record = this.store.read(request.name);
     if (!record) throw new Error(`Stack "${request.name}" started but left no record at ${root}`);
+
+    await this.waitUntilServing(plan, root);
     return record;
+  }
+
+  /** How long a stack is given to start serving before `up` stops waiting on it. */
+  private static readonly READY_TIMEOUT_SECONDS = 120;
+
+  /**
+   * Waits for the console to actually answer.
+   *
+   * `docker compose up -d` returns when the containers have STARTED, which is twenty-odd seconds
+   * before the platform serves anything: until the api has booted, the gateway's routing map is
+   * empty (`hosts=0`) and it sends the console to the storefront, which answers 500. Reporting
+   * "up" there sends someone to a broken page and makes them doubt the stack rather than wait.
+   *
+   * Polled with curl through the shell rather than an http client, so this adds no dependency and
+   * follows the same path a person would use to check.
+   */
+  private async waitUntilServing(plan: StackPlan, root: string): Promise<void> {
+    const url = plan.urls()[0];
+    const deadline = Date.now() + StackService.READY_TIMEOUT_SECONDS * 1000;
+    const shell = this.shell(root);
+
+    while (Date.now() < deadline) {
+      const probe = await shell.run(`curl -s -o /dev/null -w '%{http_code}' --max-time 5 ${url}/`);
+      const status = probe.stdout.trim();
+      // Anything but "nothing answered" and "the gateway has no route yet" means it is serving.
+      if (status !== '000' && status !== '500' && status !== '502' && status !== '') return;
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    console.log(chalk.yellow(`  ${url} is not answering yet — the stack is up, give the api a moment.`));
   }
 
   /**
@@ -53,7 +88,7 @@ export class StackService {
     this.store.forget(name);
   }
 
-  list(): StackRecord[] {
+  list(): IStackRecord[] {
     return this.store.list();
   }
 
@@ -63,7 +98,7 @@ export class StackService {
    * A stack whose owner cannot be identified is never in this list. Being unable to tell is not a
    * reason to delete somebody's database — `stack ls` shows it and a person decides.
    */
-  stale(): StackRecord[] {
+  stale(): IStackRecord[] {
     return this.store.list().filter((stack) => stack.session.isStale);
   }
 
@@ -110,7 +145,7 @@ export class StackService {
   }
 
   /** One line per stack, for `stack ls`. */
-  static describe(stack: StackRecord): string {
+  static describe(stack: IStackRecord): string {
     const age = Math.round((Date.now() - stack.createdAt.getTime()) / 3_600_000);
     const state = stack.session.isStale ? chalk.yellow('stale') : chalk.green('live');
     return `  ${stack.name.padEnd(16)} :${stack.port}  ${state}  ${stack.session.describe()}, up ${age}h`;

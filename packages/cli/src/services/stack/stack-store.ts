@@ -3,16 +3,7 @@ import os from 'os';
 import path from 'path';
 import { StackPlan } from '@cli/services/stack/stack-plan';
 import { StackSession } from '@cli/services/stack/stack-session';
-
-/** One stack as it exists on disk. */
-export interface StackRecord {
-  readonly name: string;
-  readonly root: string;
-  readonly port: number;
-  readonly framework: string;
-  readonly createdAt: Date;
-  readonly session: StackSession;
-}
+import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interface';
 
 /**
  * The stacks on this machine.
@@ -40,17 +31,17 @@ export class StackStore {
   }
 
   /** Every stack, oldest first. A directory without a readable `stack.json` is skipped, not fatal. */
-  list(): StackRecord[] {
+  list(): IStackRecord[] {
     if (!fs.existsSync(this.root)) return [];
 
     return fs
       .readdirSync(this.root)
       .map((name) => this.read(name))
-      .filter((record): record is StackRecord => record !== null)
+      .filter((record): record is IStackRecord => record !== null)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
-  read(name: string): StackRecord | null {
+  read(name: string): IStackRecord | null {
     const root = this.rootFor(name);
     const file = path.join(root, 'stack.json');
     if (!fs.existsSync(file)) return null;
