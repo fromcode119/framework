@@ -1173,19 +1173,22 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-head { background: var(--fc-surface-muted); border-bottom: 1px solid var(--fc-border); }
 /* A long column name wraps onto a second line instead of widening its column past what the values need,
    so a list fits its page instead of scrolling sideways. */
-.fc-dt-th { height: var(--fc-field-h); padding: 6px 10px; font-size: var(--fc-control-text); font-weight: 500; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: normal; }
-.fc-dt-th__inner { display: flex; align-items: flex-end; gap: 4px; }
+/* A table's own measurements, taken off the reference's on 2026-11-18: the head is as tall as a row
+   (48), and every cell is inset 24px — the figure that makes a list read as a table of facts rather
+   than a grid squeezed into a card. Ours were 32 and 10. */
+.fc-dt-th { height: var(--fc-row-h); padding: 0 24px; font-size: var(--fc-control-text); font-weight: 500; line-height: var(--fc-leading); letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: nowrap; }
+.fc-dt-th__inner { display: flex; align-items: center; gap: 4px; }
 .fc-dt-th--sortable { cursor: pointer; }
 .fc-dt-th--sortable:hover { color: var(--fc-text); }
-.fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline-end: 4px; }
+.fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline: 16px 4px; }
 .fc-dt-th--actions, .fc-dt-td--actions { width: 1%; text-align: end; }
 .fc-dt-row { border-bottom: 1px solid var(--fc-border); transition: background-color .12s; }
 .fc-dt-row:last-child { border-bottom: 0; }
 .fc-dt-row:hover { background: var(--fc-surface-muted); }
 .fc-dt-row--link { cursor: pointer; }
 .fc-dt-row--selected { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
-.fc-dt-td { height: var(--fc-row-h); padding: 0 10px; vertical-align: middle; white-space: nowrap; }
-.fc-dt-td--actions { padding-inline: 4px 8px; }
+.fc-dt-td { height: var(--fc-row-h); padding: 0 24px; vertical-align: middle; white-space: nowrap; }
+.fc-dt-td--actions { padding-inline: 4px 16px; }
 .fc-dt-cell { font-size: var(--fc-value-text); font-weight: 400; color: var(--fc-text); }
 /* The title opens its record; it reads as the row's name, and underlines only to show it is a link. */
 .fc-dt-title-link { color: inherit; font-weight: 500; text-decoration: none; }
