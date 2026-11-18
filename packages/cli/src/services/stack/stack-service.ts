@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { execFileSync } from 'child_process';
 import path from 'path';
 import chalk from 'chalk';
 import { DeploymentTarget } from '@cli/services/deploy/deployment-target';
@@ -9,6 +10,7 @@ import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interf
 import { StackStore } from '@cli/services/stack/stack-store';
 import { StackLayout } from '@cli/services/stack/stack-layout';
 import { StackTemplate } from '@cli/services/stack/stack-template';
+import { StackTemplateRestore } from '@cli/services/stack/stack-template-restore';
 
 /**
  * Brings a throwaway stack up and takes it away again.
@@ -33,7 +35,15 @@ export class StackService {
     this.materialise(root, request.framework, plan);
     this.store.write(request.name, request.port, request.framework, request.version, request.plugins);
 
-    if (template) await this.layTemplate(template, request.name, root, plan.urls()[0]);
+    if (template) {
+      await new StackTemplateRestore(this.store.root, this.shell(root)).lay(
+        template,
+        request.name,
+        root,
+        plan.urls()[0],
+        await this.volumesOf(root),
+      );
+    }
 
     const code = await this.shell(root).stream('docker compose up -d');
     if (code !== 0) {
@@ -46,64 +56,6 @@ export class StackService {
     await this.waitUntilServing(plan, root);
     return record;
   }
-
-  /**
-   * Puts a captured platform in place before anything runs.
-   *
-   * `create` rather than `up`: it makes the containers and their volumes without starting them, so
-   * the database initialises from what is restored here. Started first, Postgres writes an empty
-   * cluster and then refuses to take the template over it.
-   */
-  private async layTemplate(name: string, project: string, root: string, url: string): Promise<void> {
-    const shell = this.shell(root);
-    const template = new StackTemplate(StackTemplate.rootFor(this.store.root, name), shell);
-    if (!StackTemplate.exists(this.store.root, name)) {
-      throw new Error(`No template named "${name}". \`fromcode stack snapshot <stack> --as ${name}\` makes one.`);
-    }
-
-    await shell.runOrThrow('docker compose create');
-    await template.restoreInto(root, project, await this.volumesOf(root));
-    await this.adoptConsoleUrl(shell, url);
-  }
-
-  /**
-   * Points the restored platform at THIS stack's console.
-   *
-   * A template carries the address of the stack it was captured from, and the gateway routes on it:
-   * restored unchanged, the new stack answers 404 on its own hostname, because as far as the
-   * platform is concerned that host belongs to nobody. Measured — a stack from a template on
-   * another port was unreachable until this ran.
-   *
-   * Written with SQL because there is no other way in: the setting is only reachable through the
-   * console, and the console is what is unreachable. The database is started alone for it, before
-   * anything can read a stale value.
-   */
-  private async adoptConsoleUrl(shell: RemoteShell, url: string): Promise<void> {
-    await shell.runOrThrow('docker compose up -d db');
-
-    for (let attempt = 0; attempt < StackService.DATABASE_ATTEMPTS; attempt += 1) {
-      const ready = await shell.run('docker compose exec -T db sh -c \'pg_isready -U "$POSTGRES_USER"\'');
-      if (ready.code === 0) break;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-
-    await shell.runOrThrow(StackService.consoleUrlCommand(url));
-  }
-
-  /**
-   * The command that repoints the console, built where it can be read and tested.
-   *
-   * The statement is PIPED in, never passed as an argument: its own quotes around the URL close
-   * the quoting around `sh -c`, and psql is then handed a bare `http://...` and fails on the colon.
-   * The credentials come from the container's own environment, so no password appears here.
-   */
-  static consoleUrlCommand(url: string): string {
-    const update = `update _system_meta set value = '${url}', updated_at = now() where key = 'admin_url'`;
-    return `echo "${update}" | docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'`;
-  }
-
-  /** Seconds the restored database is given to accept connections. */
-  private static readonly DATABASE_ATTEMPTS = 60;
 
   /** Captures a running stack so later stacks can start from it instead of the setup wizard. */
   async snapshot(stack: string, as: string): Promise<string> {
@@ -155,6 +107,27 @@ export class StackService {
   }
 
   /**
+   * Clears away a stack that never finished starting.
+   *
+   * Every exit from `up` has to leave the machine as it found it. A refused or failed start had
+   * already claimed a port, and — when starting from a template — already created containers and
+   * volumes through `compose create`. Left behind, the claim holds that port against the next
+   * stack until its grace expires, which is a tool that litters while promising not to.
+   *
+   * Best effort by design: it runs during the handling of another failure, and the first error is
+   * the one worth reporting.
+   */
+  async abandon(name: string, port: number): Promise<void> {
+    const root = this.store.rootFor(name);
+
+    if (fs.existsSync(StackService.deployDirOf(root))) {
+      await this.shell(root).run('docker compose down --volumes --remove-orphans');
+    }
+    this.store.forget(name);
+    this.store.releasePort(port);
+  }
+
+  /**
    * Stops the stack and removes everything it owns, its database included.
    *
    * `--volumes` is the point of the command — a stack whose data survives is not thrown away, and
@@ -190,6 +163,8 @@ export class StackService {
    * not go quiet the day that package is renamed or split.
    */
   private assertFrameworkBuilt(framework: string): void {
+    StackService.assertNotSharedCheckout(framework);
+
     const workspaces = path.join(framework, StackLayout.of(framework).workspaces);
     if (!fs.existsSync(workspaces)) {
       throw new Error(`${framework} declares a workspace folder that is not there: ${workspaces}`);
@@ -202,6 +177,52 @@ export class StackService {
           '  Run `npm run build:packages` in the worktree first (and `npm run build:admin` for admin changes).',
       );
     }
+  }
+
+  /**
+   * Refuses to run the shared checkout.
+   *
+   * `--framework` defaults to the working directory, so running this from `framework/Source` would
+   * mount the mirror of main into a container WRITABLE — the one tree no session may touch, and
+   * the reason every resolved dependency is mounted read-only. A container writing there is
+   * somebody's lost work, found later as a checkout that will not fast-forward.
+   *
+   * A worktree and its checkout are told apart by git: in the main checkout `--git-dir` and
+   * `--git-common-dir` are the same directory, and in a worktree they are not.
+   */
+  private static assertNotSharedCheckout(framework: string): void {
+    if (!StackService.isSharedCheckout(framework)) return;
+
+    throw new Error(
+      `${framework} is the shared checkout, not a worktree, and a stack would mount it writable.\n` +
+        '  Cut one for this change first:\n' +
+        '    git -C <checkout> fetch -q origin main\n' +
+        '    git -C <checkout> worktree add -b <branch> <path> origin/main\n' +
+        '  then pass it with --framework <path>.',
+    );
+  }
+
+  /**
+   * Whether this directory is a repository's main checkout rather than one of its worktrees.
+   *
+   * A directory that is not a git checkout at all answers false: there is nothing shared to
+   * protect, and a stack built from a plain directory is the caller's own business.
+   */
+  static isSharedCheckout(framework: string): boolean {
+    try {
+      return StackService.gitPath(framework, '--git-dir') === StackService.gitPath(framework, '--git-common-dir');
+    } catch {
+      return false;
+    }
+  }
+
+  /** One git path question, answered absolutely so the two can be compared. */
+  private static gitPath(framework: string, question: string): string {
+    const answer = execFileSync('git', ['-C', framework, 'rev-parse', question], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return path.resolve(framework, answer);
   }
 
   /**
