@@ -25,6 +25,8 @@ export { LoadedPluginHydration } from '@core/plugin/services/runtime/loaded-plug
 export { EventDeliveryLedger } from '@core/plugin/events/event-delivery-ledger';
 export type { IEventDeliveryFailure } from '@core/plugin/events/event-delivery-ledger';
 export { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
+export { EventIdempotency } from '@core/plugin/events/event-idempotency';
+export type { IOnceOutcome } from '@core/plugin/events/event-idempotency';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';

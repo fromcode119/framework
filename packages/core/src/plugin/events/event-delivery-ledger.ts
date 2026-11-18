@@ -142,7 +142,7 @@ export class EventDeliveryLedger {
     const db: any = (manager as any)?.db;
     if (!db) return [];
     try {
-      const rows = await db.find(EventDeliveryLedger.table, { status: 'failed' }, { orderBy: { updated_at: 'desc' }, limit });
+      const rows = await db.find(EventDeliveryLedger.table, { where: { status: 'failed' }, orderBy: { updated_at: 'desc' }, limit });
       return (rows || []).map((row: any) => EventDeliveryLedger.toFailure(row));
     } catch {
       return [];
