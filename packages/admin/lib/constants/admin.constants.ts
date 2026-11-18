@@ -77,6 +77,8 @@ export class AdminConstants {
     REAPPROVE_ALL: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL),
     UPDATE_ALL: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL),
     HEALTH: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_HEALTH),
+    EVENT_DELIVERIES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.EVENT_DELIVERIES),
+    EVENT_DELIVERY_RETRY: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.EVENT_DELIVERIES_RETRY, { id: String(id) }),
     CONFIG: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.CONFIG, { slug })),
     LOGS: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_LOGS, { slug }),
     RUNTIME: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_RUNTIME, { slug }),

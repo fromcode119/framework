@@ -69,6 +69,7 @@ export class AppPathConstants {
       ROOT: '/plugins',
       INSTALLED: '/plugins/installed',
       HEALTH: '/plugins/health',
+      EVENTS: '/plugins/events',
       MARKETPLACE: '/plugins/marketplace',
       MARKETPLACE_DETAIL: (slug: string) => `/plugins/marketplace/${slug}`,
       // Under `installed/`, never straight under `/plugins/`: the admin's own pages there (`installed`,
