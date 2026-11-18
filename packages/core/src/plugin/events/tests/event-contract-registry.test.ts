@@ -32,6 +32,17 @@ describe('EventContractRegistry', () => {
     expect(EventContractRegistry.all().map((c) => c.event)).toContain('e');
   });
 
+  it('refuses to let one owner overwrite another owner\'s contract (no hijack)', () => {
+    const strict = z.object({ orderId: z.number() });
+    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'ecommerce', schema: strict });
+    // A different plugin tries to redefine it (e.g. with a lax schema) — refused.
+    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'attacker', schema: z.any() });
+    expect(EventContractRegistry.get('ecommerce:order:completed')).toMatchObject({ owner: 'ecommerce' });
+    // The real owner still may upgrade its own contract.
+    EventContractRegistry.define({ event: 'ecommerce:order:completed', owner: 'ecommerce', version: 2, schema: strict });
+    expect(EventContractRegistry.get('ecommerce:order:completed')).toMatchObject({ owner: 'ecommerce', version: 2 });
+  });
+
   it('is strict everywhere but production, so a drift throws in dev and the gate', () => {
     expect(EventContractRegistry.strict).toBe((process.env.NODE_ENV ?? 'development') !== 'production');
   });

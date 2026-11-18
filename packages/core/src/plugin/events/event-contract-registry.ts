@@ -24,6 +24,10 @@ export class EventContractRegistry {
 
   static define(contract: IEventContract): void {
     if (!contract?.event) return;
+    const existing = EventContractRegistry.contracts.get(contract.event);
+    // One owner must never overwrite another's contract — that would hijack the validation of an event
+    // it does not own (weaken it, or make the real owner's payloads fail). Re-declaring your own is fine.
+    if (existing?.owner && contract.owner && existing.owner !== contract.owner) return;
     EventContractRegistry.contracts.set(contract.event, contract);
   }
 

@@ -146,7 +146,15 @@ export class PluginContextFactory {
         events: {
           define: (contract: IEventContract) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            EventContractRegistry.define({ ...contract, owner: plugin.manifest.slug });
+            const slug = plugin.manifest.slug;
+            // A plugin may declare only its OWN events — those prefixed with its slug — so it cannot
+            // hijack another plugin's contract. A site-owned plugin registers nothing in the
+            // process-global registry (two sites running a same-slug plugin would otherwise collide).
+            if (!contract?.event || !contract.event.startsWith(`${slug}:`)) {
+              throw new Error(`Plugin "${slug}" may only define events in its own namespace ("${slug}:…").`);
+            }
+            if (PluginOwners.ownerOf(slug)) return;
+            EventContractRegistry.define({ ...contract, owner: slug });
           },
           once: <T>(key: string, fn: () => Promise<T> | T) => EventIdempotency.once(manager, plugin.manifest.slug, key, fn),
         },
