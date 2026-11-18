@@ -4703,6 +4703,7 @@
     "exportJson": "JSON olarak dışa aktar",
     "event": "Olay",
     "actor": "İşlemi Yapan",
+    "plugin": "Eklenti",
     "activity": "Etkinlik",
     "status": "Durum",
     "action": "İşlem",

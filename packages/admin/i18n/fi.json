@@ -4703,6 +4703,7 @@
     "exportJson": "Vie JSON",
     "event": "Tapahtuma",
     "actor": "Tekijä",
+    "plugin": "Lisäosa",
     "activity": "Toiminta",
     "status": "Tila",
     "action": "Toiminto",

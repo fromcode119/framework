@@ -4703,6 +4703,7 @@
     "exportJson": "Ekspordi JSON",
     "event": "Sündmus",
     "actor": "Toimija",
+    "plugin": "Lisandmoodul",
     "activity": "Tegevus",
     "status": "Olek",
     "action": "Toiming",

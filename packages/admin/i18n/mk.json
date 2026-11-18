@@ -4703,6 +4703,7 @@
     "exportJson": "Извези JSON",
     "event": "Настан",
     "actor": "Извршител",
+    "plugin": "Приклучок",
     "activity": "Активност",
     "status": "Статус",
     "action": "Дејство",

@@ -4703,6 +4703,7 @@
     "exportJson": "Exportera JSON",
     "event": "Händelse",
     "actor": "Aktör",
+    "plugin": "Tillägg",
     "activity": "Aktivitet",
     "status": "Status",
     "action": "Åtgärd",

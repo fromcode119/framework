@@ -106,8 +106,8 @@ export class ActivityPage extends AdminComponent {
 
   private get columns(): any[] {
     return this.mode === ActivityMode.SYSTEM
-      ? ActivityColumnsFactory.system(this.theme)
-      : ActivityColumnsFactory.security(this.theme);
+      ? ActivityColumnsFactory.system()
+      : ActivityColumnsFactory.security();
   }
 
   render(): ReactNode {

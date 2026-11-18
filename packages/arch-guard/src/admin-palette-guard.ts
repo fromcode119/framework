@@ -28,10 +28,10 @@ export class AdminPaletteGuard {
   /**
    * What was there on 2026-11-18, the day the ratchet went in: 4412 across 335 of the console's
    * screens — the measure of how much of the console cannot follow a brand, a scheme or the shadow
-   * switch. The worst single file carried 88.
+   * switch. The worst single file carried 88. 4352 once the badge moved onto the status tints, 4292 once the activity log did.
    * Lower it whenever a screen is converted; never raise it.
    */
-  private static readonly CEILING = 4412;
+  private static readonly CEILING = 4292;
 
   static run(): number {
     const files = AdminPaletteGuard.adminFiles();

@@ -4703,6 +4703,7 @@
     "exportJson": "导出 JSON",
     "event": "事件",
     "actor": "操作者",
+    "plugin": "插件",
     "activity": "活动",
     "status": "状态",
     "action": "操作",

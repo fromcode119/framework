@@ -80,7 +80,7 @@ describe('Activity screen renders API rows', () => {
   });
 
   it('the security columns name the plugin that acted, not "System"', () => {
-    const columns = ActivityColumnsFactory.security(ThemeMode.LIGHT);
+    const columns = ActivityColumnsFactory.security();
     const pluginColumn = columns.find((c: any) => c.id === 'plugin') as any;
 
     render(<>{pluginColumn.accessor(auditRow)}</>);
@@ -90,7 +90,7 @@ describe('Activity screen renders API rows', () => {
   });
 
   it('the system columns name the plugin that logged, not "System"', () => {
-    const columns = ActivityColumnsFactory.system(ThemeMode.LIGHT);
+    const columns = ActivityColumnsFactory.system();
     const resourceColumn = columns.find((c: any) => c.id === 'target') as any;
 
     render(<>{resourceColumn.accessor(logRow)}</>);

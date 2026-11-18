@@ -4121,6 +4121,7 @@
     "exportJson": "Експорт в JSON",
     "event": "Събитие",
     "actor": "Извършител",
+    "plugin": "Плъгин",
     "activity": "Активност",
     "status": "Статус",
     "action": "Действие",

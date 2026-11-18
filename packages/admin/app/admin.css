@@ -225,6 +225,11 @@
   --fc-warning-soft-border: #fde68a;
   --fc-warning-mark: #fef3c7;
   --fc-warning-strong: #92400e;
+  /* The info tint, declared like the other three so a badge or a panel that means "this is worth
+     knowing" has a surface of its own rather than borrowing the brand's. */
+  --fc-info-soft: #eff6ff;
+  --fc-info-soft-border: #bfdbfe;
+  --fc-info-strong: #1d4ed8;
   --fc-danger-soft: #fff1f2;
   --fc-danger-soft-border: #fecdd3;
   --fc-danger-mark: #fecdd3;
@@ -294,6 +299,9 @@ html.dark {
   --fc-warning-soft-border: #78350f;
   --fc-warning-mark: #451a03;
   --fc-warning-strong: #fcd34d;
+  --fc-info-soft: #0b1b33;
+  --fc-info-soft-border: #1e3a8a;
+  --fc-info-strong: #93c5fd;
   --fc-danger-soft: #2b0b12;
   --fc-danger-soft-border: #7f1d1d;
   --fc-danger-mark: #4c0519;
@@ -1716,6 +1724,27 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   line-height: 1;
   white-space: nowrap;
 }
+
+/* The five tones, from the status tints — so a badge follows the scheme, the brand and the shadow
+   switch like every other surface. */
+.fc-badge--success { background: var(--fc-success-soft); border-color: var(--fc-success-soft-border); color: var(--fc-success-strong); }
+.fc-badge--warning { background: var(--fc-warning-soft); border-color: var(--fc-warning-soft-border); color: var(--fc-warning-strong); }
+.fc-badge--danger { background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); color: var(--fc-danger-strong); }
+.fc-badge--info { background: var(--fc-info-soft); border-color: var(--fc-info-soft-border); color: var(--fc-info-strong); }
+.fc-badge--neutral { background: var(--fc-surface-muted); border-color: var(--fc-border); color: var(--fc-text-muted); }
+
+/* The activity log: a name and a time with a state beside it, at the console's own sizes. */
+.fc-activity__stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fc-activity__who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.fc-activity__initial {
+  display: inline-flex; flex: none; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 999px;
+  background: var(--fc-surface-muted); border: 1px solid var(--fc-border);
+  font-size: var(--fc-text-xs); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted);
+}
+.fc-activity__value { font-size: var(--fc-record-text); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-activity__quiet { font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-activity__message { display: block; max-width: 48ch; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 /* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
 .fc-record-head__actions .fc-state-badge,
 .fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }

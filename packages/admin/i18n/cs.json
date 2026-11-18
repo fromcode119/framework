@@ -4703,6 +4703,7 @@
     "exportJson": "Exportovat JSON",
     "event": "Událost",
     "actor": "Aktér",
+    "plugin": "Zásuvný modul",
     "activity": "Aktivita",
     "status": "Stav",
     "action": "Akce",

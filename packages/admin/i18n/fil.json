@@ -4703,6 +4703,7 @@
     "exportJson": "I-export ang JSON",
     "event": "Event",
     "actor": "Actor",
+    "plugin": "Plugin",
     "activity": "Aktibidad",
     "status": "Status",
     "action": "Aksyon",

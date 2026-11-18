@@ -4703,6 +4703,7 @@
     "exportJson": "Eksporter JSON",
     "event": "Hendelse",
     "actor": "Aktør",
+    "plugin": "Utvidelse",
     "activity": "Aktivitet",
     "status": "Status",
     "action": "Handling",

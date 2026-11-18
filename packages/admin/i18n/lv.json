@@ -4703,6 +4703,7 @@
     "exportJson": "Eksportēt JSON",
     "event": "Notikums",
     "actor": "Izpildītājs",
+    "plugin": "Spraudnis",
     "activity": "Darbība",
     "status": "Statuss",
     "action": "Darbība",

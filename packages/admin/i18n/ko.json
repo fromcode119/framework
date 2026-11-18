@@ -4703,6 +4703,7 @@
     "exportJson": "JSON 내보내기",
     "event": "이벤트",
     "actor": "행위자",
+    "plugin": "플러그인",
     "activity": "활동",
     "status": "상태",
     "action": "작업",

@@ -4703,6 +4703,7 @@
     "exportJson": "JSON をエクスポート",
     "event": "イベント",
     "actor": "実行者",
+    "plugin": "プラグイン",
     "activity": "アクティビティ",
     "status": "ステータス",
     "action": "操作",

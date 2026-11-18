@@ -4703,6 +4703,7 @@
     "exportJson": "Eksportuoti JSON",
     "event": "Įvykis",
     "actor": "Vykdytojas",
+    "plugin": "Papildinys",
     "activity": "Veikla",
     "status": "Būsena",
     "action": "Veiksmas",

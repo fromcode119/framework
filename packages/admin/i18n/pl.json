@@ -4703,6 +4703,7 @@
     "exportJson": "Eksportuj JSON",
     "event": "Zdarzenie",
     "actor": "Wykonawca",
+    "plugin": "Wtyczka",
     "activity": "Aktywność",
     "status": "Status",
     "action": "Działanie",

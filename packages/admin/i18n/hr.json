@@ -4703,6 +4703,7 @@
     "exportJson": "Izvezi JSON",
     "event": "Događaj",
     "actor": "Izvršitelj",
+    "plugin": "Dodatak",
     "activity": "Aktivnost",
     "status": "Status",
     "action": "Radnja",
