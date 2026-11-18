@@ -99,14 +99,34 @@ export class StructuredReadOnlyTableService {
    * does not quietly link to a search for the empty string.
    */
   static rowHref(template: string | undefined, row: Record<string, IStructuredNode>): string {
+    return StructuredReadOnlyTableService.fillRowTemplate(template, row, encodeURIComponent);
+  }
+
+  /**
+   * The same substitution as `rowHref`, but as the operator READS it: no percent-encoding.
+   *
+   * A row key is handed to the component that opens that one row (`tableRowKey` -> `admin.rowKey`), which
+   * matches it against the stored rows and shows it as the drawer's title. Running it through `rowHref`
+   * made a Cyrillic combination arrive as `%D0%91%D1%8F%D0%BB%D0%B0`, so it matched nothing and the
+   * drawer was titled with the escape sequence.
+   */
+  static rowKey(template: string | undefined, row: Record<string, IStructuredNode>): string {
+    return StructuredReadOnlyTableService.fillRowTemplate(template, row, (value) => value);
+  }
+
+  private static fillRowTemplate(
+    template: string | undefined,
+    row: Record<string, IStructuredNode>,
+    encode: (value: string) => string,
+  ): string {
     if (!template) return '';
     let missing = false;
-    const href = template.replace(/\{([^}]+)\}/g, (_match, key: string) => {
+    const filled = template.replace(/\{([^}]+)\}/g, (_match, key: string) => {
       const value = StructuredReadOnlyTableService.cellText(row[key]).trim();
       if (!value) missing = true;
-      return encodeURIComponent(value);
+      return encode(value);
     });
-    return missing ? '' : href;
+    return missing ? '' : filled;
   }
 
   static cellText(node?: IStructuredNode): string {

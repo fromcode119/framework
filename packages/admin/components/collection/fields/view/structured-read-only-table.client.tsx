@@ -156,7 +156,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     return (
       <Dropdown
         align={HorizontalAlign.RIGHT}
-        items={[...go, { label, onClick: () => open(StructuredReadOnlyTableService.rowHref(this.rowKeyTemplate, row) || undefined), icon: <FrameworkIcons.Edit size={14} /> }]}
+        items={[...go, { label, onClick: () => open(StructuredReadOnlyTableService.rowKey(this.rowKeyTemplate, row) || undefined), icon: <FrameworkIcons.Edit size={14} /> }]}
         trigger={
           <button type="button" aria-label={label} title={label} className="fc-sro-table__menu">
             <FrameworkIcons.More size={16} />
