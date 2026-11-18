@@ -2,7 +2,7 @@ import type { ReactNode, RefObject } from 'react';
 import { prop, state, ref, bound } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import { RecordSectionSearch } from '@/components/collection/edit/view/record-section-search.client';
 import { RecordSectionMenu } from '@/components/collection/edit/view/record-section-menu.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
@@ -259,41 +259,38 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     const editable = RecordSectionFields.canEdit(this.section.fields);
     const tableField = this.sectionTableField;
     return (
-      <Card id={`section-${this.section.key}`} noPadding className={this.open ? `${card} ${card}--editing` : card}>
-        {title || editable ? (
-          <div className={`${card}__head`}>
-            <h2 className={`${card}__title`}>
-              {title}
-              {RecordSectionCount.of(this.section.fields, this.formData) !== null
-                ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
-                : null}
-            </h2>
-            <div className={`${card}__aside`}>
-              {tableField
-                ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
-                : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
-              {/* Making one more of what the table lists stands beside the table's own tools, where
-                  the record pages this console follows put it. */}
-              {this.renderTableCreate()}
-              {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
-            </div>
-            <RecordSectionMenu
-              editable={editable}
-              hasOffers={this.hasMenu}
-              offers={this.offers}
-              probeRef={this.menuProbe}
-              onEdit={this.openSheet}
-            />
-          </div>
-        ) : null}
-        <div className={`${card}__body`}>
-          {this.renderSheet(title)}
-          {this.recordPart?.(RecordPartPlace.LEAD)}
-          {this.renderRows(tableField)}
-          {this.recordPart?.(RecordPartPlace.BODY)}
-          {this.slot('body', this.isBlank() ? <RecordSectionNamedRows fields={this.section.fields} /> : null)}
-        </div>
-      </Card>
+      <RecordCard
+        id={`section-${this.section.key}`}
+        className={this.open ? `${card}--editing` : undefined}
+        title={title || undefined}
+        count={RecordSectionCount.of(this.section.fields, this.formData)}
+        aside={title || editable ? (
+          <>
+            {tableField
+              ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
+              : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
+            {/* Making one more of what the table lists stands beside the table's own tools, where
+                the record pages this console follows put it. */}
+            {this.renderTableCreate()}
+            {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
+          </>
+        ) : undefined}
+        menu={title || editable ? (
+          <RecordSectionMenu
+            editable={editable}
+            hasOffers={this.hasMenu}
+            offers={this.offers}
+            probeRef={this.menuProbe}
+            onEdit={this.openSheet}
+          />
+        ) : undefined}
+      >
+        {this.renderSheet(title)}
+        {this.recordPart?.(RecordPartPlace.LEAD)}
+        {this.renderRows(tableField)}
+        {this.recordPart?.(RecordPartPlace.BODY)}
+        {this.slot('body', this.isBlank() ? <RecordSectionNamedRows fields={this.section.fields} /> : null)}
+      </RecordCard>
     );
   }
 

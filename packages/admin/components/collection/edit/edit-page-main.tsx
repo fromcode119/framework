@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { RecordSectionRepeatedLabel } from '@/components/collection/edit/record-section-repeated-label';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
@@ -102,12 +102,7 @@ export class EditPageMain extends PureReactor {
       );
     }
     return (
-      <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
-        {section.title ? (
-          /* A group's name reads the same on the form as on the record: 16/24. At 14 it sat between
-             a label and a title and read as neither. */
-          <h2 className="mb-4 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
-        ) : null}
+      <RecordCard key={`${prefix}${section.key}`} id={`section-${section.key}`} title={section.title || undefined}>
         {/* Every group is open. A section that folded in place made the form a stack of shut drawers:
             the operator had to guess which one held the field they wanted, opening each in turn, and a
             field nobody opened was a field nobody filled. A card is as long as what it holds. */}
@@ -118,7 +113,7 @@ export class EditPageMain extends PureReactor {
           </div>
         </div>
         {this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
-      </Card>
+      </RecordCard>
     );
   }
 

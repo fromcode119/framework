@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { VersionChangeSummary } from '@/components/collection/version-change-summary';
@@ -59,7 +59,7 @@ export class SidebarVersions extends PureReactor {
   formData
 } = this;
   return (
-    <Card title={AdminI18n.t('collection.edit.versions')}>
+    <RecordCard title={AdminI18n.t('collection.edit.versions')}>
       <div className="space-y-4 max-h-[400px] overflow-y-auto pe-2 custom-scrollbar">
           {revisions.length === 0 && !revisionsLoading && (
             <p className="text-[12px] text-slate-400 font-medium italic py-2">{AdminI18n.t('collection.edit.noVersions')}</p>
@@ -113,7 +113,7 @@ export class SidebarVersions extends PureReactor {
             </button>
           )}
       </div>
-    </Card>
+    </RecordCard>
   );
   }
 }

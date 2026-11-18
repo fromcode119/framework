@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Switch } from '@/components/ui/view/switch.client';
 import { PermalinkInput } from '@/components/ui/view/permalink-input.client';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordSectionCard } from '@/components/collection/edit/view/record-section-card.client';
@@ -76,9 +77,9 @@ export class EditPageSidebar extends PureReactor {
   private renderSection(section: { title: string; fields: any[] }): ReactNode {
     if (this.isNew) {
       return (
-        <Card key={`sidebar-section-${section.title}`} title={section.title}>
+        <RecordCard key={`sidebar-section-${section.title}`} title={section.title}>
           <div className="flex flex-col gap-6">{section.fields.map(this.renderField)}</div>
-        </Card>
+        </RecordCard>
       );
     }
     return (
@@ -152,7 +153,7 @@ export class EditPageSidebar extends PureReactor {
         <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
         {showPermalink && (
-          <Card title={AdminI18n.t('collection.edit.permalinkCard')}>
+          <RecordCard title={AdminI18n.t('collection.edit.permalinkCard')}>
             <PermalinkInput
               value={formData.customPermalink}
               onChange={(val) => handleInputChange('customPermalink', val)}
@@ -163,24 +164,19 @@ export class EditPageSidebar extends PureReactor {
               pluginSettings={pluginSettings}
             />
             {hasDisablePermalink && (
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={Boolean(formData.disablePermalink)}
-                onClick={() => !saving && handleInputChange('disablePermalink', !formData.disablePermalink)}
-                disabled={saving}
-                className={`flex items-center gap-2.5 mt-4 w-full text-start select-none text-[12px] font-medium transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
-              >
-                <div className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${Boolean(formData.disablePermalink) ? 'bg-rose-500' : theme === ThemeMode.DARK ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                  <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${Boolean(formData.disablePermalink) ? 'translate-x-[18px] rtl:-translate-x-[18px]' : 'translate-x-0.5 rtl:-translate-x-0.5'}`} />
-                </div>
-                {AdminI18n.t('ui.permalink.disable')}
-              </button>
+              <div className="mt-4">
+                <Switch
+                  checked={Boolean(formData.disablePermalink)}
+                  disabled={saving}
+                  label={AdminI18n.t('ui.permalink.disable')}
+                  onChange={(next: boolean) => handleInputChange('disablePermalink', next)}
+                />
+              </div>
             )}
             <p className="mt-3 text-[12px] text-slate-400 font-medium">
               {AdminI18n.t('collection.edit.permalinkHint')}
             </p>
-          </Card>
+          </RecordCard>
         )}
 
         {/* Only the storefront pages collection can show a plugin's design; asking for any other record
@@ -189,13 +185,9 @@ export class EditPageSidebar extends PureReactor {
           <PageDesignCard collectionSlug={collection?.slug} recordId={id} content={formData.content} />
         )}
 
-        {!hasBuiltInSidebarContent && (
-          <Card title={AdminI18n.t('collection.edit.settings')}>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              {AdminI18n.t('collection.edit.noSidebarFields')}
-            </p>
-          </Card>
-        )}
+        {/* A card whose whole content is "this record has no side fields" is the empty sentence the
+            record pages were cleared of: it takes a card's room to say that nothing is there. The
+            column simply ends. */}
       </div>
     );
   }
