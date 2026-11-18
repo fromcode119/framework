@@ -75,6 +75,9 @@ export class EditSheet extends PureReactor {
               <h2 className={`${sheet}__title`}>{this.title}</h2>
               {this.subtitle ? <div className={`${sheet}__subtitle`}>{this.subtitle}</div> : null}
             </div>
+            {/* The key that closes it, said out loud beside the ✕ — the reference puts `esc` there,
+                and a drawer that can be dismissed from the keyboard should say so. */}
+            <kbd className={`${sheet}__esc`} aria-hidden="true">esc</kbd>
             <button type="button" className={`${sheet}__close`} onClick={this.close} aria-label={AdminI18n.t('common.close')}>
               <FrameworkIcons.Close size={18} />
             </button>

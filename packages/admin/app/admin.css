@@ -1418,7 +1418,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   background: var(--fc-sheet-surface);
   border-bottom: 1px solid var(--fc-sheet-border);
 }
-.fc-sheet__heading { min-width: 0; }
+.fc-sheet__heading { min-width: 0; flex: 1; }
+.fc-sheet__head > .fc-sheet__esc + .fc-sheet__close { margin-inline-start: 4px; }
 .fc-sheet__title {
   font-size: var(--fc-sheet-title);
   font-weight: var(--fc-weight-strong);
@@ -1446,6 +1447,13 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   color: var(--fc-text-muted);
 }
 .fc-sheet__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+/* `esc`, the way a key is written on screen: the quiet surface, a hairline, small letters. */
+.fc-sheet__esc {
+  flex: none; display: inline-flex; align-items: center; height: 20px; padding: 0 6px;
+  border: 1px solid var(--fc-border); border-radius: 4px; background: var(--fc-surface-muted);
+  font-family: inherit; font-size: var(--fc-text-xs); line-height: var(--fc-leading);
+  color: var(--fc-text-muted);
+}
 .fc-sheet__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -2527,9 +2535,9 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-tip--danger::before { background: var(--fc-danger); }
 .fc-tip--success::before { background: var(--fc-success); }
 
-/* The restore dialog: one column, a rule between its blocks. */
+/* A drawer's body is a plain stack, 16px apart — no rules between the parts and no boxes around
+   them. Seen on the reference's own Edit drawer, 18.11.2026: label, control, label, control. */
 .fc-restore { display: flex; flex-direction: column; gap: 16px; }
-.fc-restore > * + * { padding-top: 16px; border-top: var(--fc-record-rule); }
 /* No rule above the answers: the reference's prompt has none, and the question is short enough that
    the foot is read as part of it rather than as a separate band. */
 .fc-dialog__foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 24px; }
