@@ -44,6 +44,7 @@ import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
+import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
@@ -104,8 +105,16 @@ export class PluginContextFactory {
         db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
         hooks: {
-          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h)),
-          off: (event: string, handler: any) => unsubscribe(event, handler),
+          on: (event: string, handler: any) => {
+            subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h));
+            // Record which handler this plugin registered for this event, so a failed delivery can be
+            // retried against exactly this listener (see EventDeliveryLedger.retry).
+            EventListenerRegistry.register(event, plugin.manifest.slug, (handler as any)._wrapped);
+          },
+          off: (event: string, handler: any) => {
+            EventListenerRegistry.unregister(event, plugin.manifest.slug, (handler as any)._wrapped || handler);
+            unsubscribe(event, handler);
+          },
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);

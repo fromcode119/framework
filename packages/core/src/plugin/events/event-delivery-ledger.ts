@@ -1,6 +1,7 @@
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
+import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 
 /** One failing (event, plugin, site), as the console lists it. */
 export interface IEventDeliveryFailure {
@@ -157,6 +158,47 @@ export class EventDeliveryLedger {
       return row ? EventDeliveryLedger.toFailure(row) : null;
     } catch {
       return null;
+    }
+  }
+
+  /** Mark one recorded delivery resolved by its id (used after a successful retry). */
+  static async markResolvedById(manager: IPluginManagerInterface, id: number | string): Promise<void> {
+    const db: any = (manager as any)?.db;
+    if (!db) return;
+    try {
+      await db.update(EventDeliveryLedger.table, { id }, { status: 'resolved', updated_at: new Date() });
+    } catch {
+      // Best effort.
+    }
+  }
+
+  /**
+   * Re-run a recorded failure against the plugin's CURRENT listener, inside the site the failure
+   * belongs to. A listener that is not registered now (its plugin is off, or never re-subscribed) is
+   * reported rather than silently skipped. Success marks the row resolved; a failed retry is recorded by
+   * the listener's own wrapper, which raises the attempt count.
+   */
+  static async retry(manager: IPluginManagerInterface, id: number | string): Promise<{ ok: boolean; error?: string; notFound?: boolean }> {
+    const row = await EventDeliveryLedger.get(manager, id);
+    if (!row) return { ok: false, notFound: true };
+
+    const handlers = EventListenerRegistry.find(row.event, row.pluginSlug);
+    if (!handlers.length) {
+      return { ok: false, error: `No active listener for "${row.event}" in "${row.pluginSlug}" — is the plugin enabled?` };
+    }
+
+    const run = async () => { for (const handler of handlers) await handler(row.payload, row.event); };
+    const db: any = (manager as any)?.db;
+    const scoped = row.tenantId != null && db?.withTenant
+      ? () => RequestContextUtils.storage.run({ tenantId: String(row.tenantId) }, () => db.withTenant(String(row.tenantId), run))
+      : run;
+
+    try {
+      await scoped();
+      await EventDeliveryLedger.markResolvedById(manager, id);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, error: String((error as any)?.message ?? error) };
     }
   }
 
