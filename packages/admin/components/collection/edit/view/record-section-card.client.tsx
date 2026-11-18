@@ -88,7 +88,9 @@ export class RecordSectionCard extends RecordSectionCardEditing {
       return <span className={AdminClass.of('record-card__missing')}>{AdminI18n.t('collection.edit.notFilledIn')}</span>;
     }
     const kind = String(field?.type || '');
-    if (['text', 'textarea', 'email', 'url', 'slug', 'code'].includes(kind) && !field?.admin?.cell) {
+    // A field that DECLARES its values reads by their labels, whatever its type: a computed `text`
+    // holding "shown" printed that word beside a select whose same three values read as sentences.
+    if (['text', 'textarea', 'email', 'url', 'slug', 'code'].includes(kind) && !field?.admin?.cell && !Array.isArray(field?.options)) {
       return FieldRendererUtils.resolveRenderableText(raw);
     }
     if (kind === 'richText') {
