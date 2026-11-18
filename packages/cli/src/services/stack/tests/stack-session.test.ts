@@ -65,7 +65,46 @@ describe('StackSession', () => {
 });
 
 describe('StackPlan', () => {
-  const request = { name: 'demo', framework: '/nowhere', plugins: [], version: 'v1.2.3', port: 8200 };
+  let framework: string;
+  let request: { name: string; framework: string; plugins: string[]; version: string; port: number };
+
+  /**
+   * A checkout that declares its own layout, because the plan reads it rather than assuming it:
+   * the workspace folder from `package.json`, the container paths from the topology's own mounts.
+   */
+  beforeEach(() => {
+    framework = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-framework-'));
+    fs.writeFileSync(path.join(framework, 'package.json'), JSON.stringify({ workspaces: ['modules/*'] }));
+    fs.mkdirSync(path.join(framework, 'deploy'), { recursive: true });
+    fs.writeFileSync(
+      path.join(framework, 'deploy', 'docker-compose.full-stack.yml'),
+      ['services:', '  api:', '    volumes:', '      - ../plugins:/srv/plugins', '      - ../themes:/srv/themes', '      - ../data:/srv/data', ''].join('\n'),
+    );
+    request = { name: 'demo', framework, plugins: [], version: 'v1.2.3', port: 8200 };
+  });
+
+  afterEach(() => {
+    fs.rmSync(framework, { recursive: true, force: true });
+  });
+
+  it('reads the workspace folder and container root from the checkout, never a built-in path', () => {
+    fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
+
+    const overlay = new StackPlan(request).overlay();
+
+    // `modules` and `/srv` come from this fixture; a hardcoded `packages` or `/app` would fail here.
+    expect(overlay).toContain(`${path.join(framework, 'modules', 'core', 'dist')}:/srv/modules/core/dist`);
+  });
+
+  it('mounts a plugin where the topology says plugins go', () => {
+    fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
+    const plugin = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-plugin-'));
+
+    const overlay = new StackPlan({ ...request, plugins: [plugin] }).overlay();
+
+    expect(overlay).toContain(`${plugin}:/srv/plugins/${path.basename(plugin)}`);
+    fs.rmSync(plugin, { recursive: true, force: true });
+  });
 
   it('gives the edge its own TLS port, so a second stack does not die on 8443', () => {
     expect(StackPlan.tlsPortFor(8200)).toBe(8600);
@@ -89,10 +128,10 @@ describe('StackPlan', () => {
    * Mounting a path the worktree has not built HIDES the image's own copy, which is how a
    * storefront ends up serving no runtime at all. A missing directory must simply not be mounted.
    */
-  it('mounts nothing for a framework worktree that does not exist', () => {
+  it('mounts nothing a worktree has not built', () => {
     const overlay = new StackPlan(request).overlay();
 
-    expect(overlay).not.toContain('/nowhere/packages/admin/.next');
+    expect(overlay).not.toContain('.next');
     expect(overlay).toContain('services:');
   });
 

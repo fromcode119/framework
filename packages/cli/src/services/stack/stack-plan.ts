@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
+import { StackLayout } from '@cli/services/stack/stack-layout';
 
 /**
  * The files a local stack runs from.
@@ -20,7 +21,12 @@ export class StackPlan {
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
 
-  constructor(private readonly request: IStackRequest) {}
+  /** Read from the worktree, never assumed: see StackLayout. */
+  private readonly layout: StackLayout;
+
+  constructor(private readonly request: IStackRequest) {
+    this.layout = StackLayout.of(request.framework);
+  }
 
   /**
    * The stack's own directory. Outside the scratchpad on purpose: a scratchpad is wiped by a Mac
@@ -109,37 +115,62 @@ export class StackPlan {
     const mounts: string[] = [];
 
     for (const pkg of this.builtPackages()) {
-      mounts.push(`${path.join(this.request.framework, 'packages', pkg, 'dist')}:/app/packages/${pkg}/dist`);
+      const host = path.join(this.workspacesDir(), pkg, StackPlan.PACKAGE_OUTPUT);
+      mounts.push(`${host}:${this.layout.containerPackage(pkg, StackPlan.PACKAGE_OUTPUT)}`);
     }
-    for (const plugin of this.request.plugins) {
-      mounts.push(`${plugin}:/app/plugins/${path.basename(plugin)}`);
-    }
+    mounts.push(...this.pluginMounts());
     return mounts;
   }
 
-  /** A Next app serves its build, so `.next` and `public` are what a worktree has to supply. */
+  /** A Next app serves its build, so these are what a worktree has to supply for one. */
+  private static readonly APP_OUTPUTS = ['.next', 'public'];
+
+  /** A compiled workspace package serves this. */
+  private static readonly PACKAGE_OUTPUT = 'dist';
+
+  /** The extension kind a `--plugin` belongs to, as the topology names its mount. */
+  private static readonly PLUGIN_KIND = 'plugins';
+
   private appMounts(app: string): string[] {
     const mounts: string[] = [];
-    const base = path.join(this.request.framework, 'packages', app);
+    const base = path.join(this.workspacesDir(), app);
 
-    for (const directory of ['.next', 'public']) {
-      const host = path.join(base, directory);
-      if (fs.existsSync(host)) mounts.push(`${host}:/app/packages/${app}/${directory}`);
+    for (const output of StackPlan.APP_OUTPUTS) {
+      const host = path.join(base, output);
+      if (fs.existsSync(host)) mounts.push(`${host}:${this.layout.containerPackage(app, output)}`);
     }
-    for (const plugin of this.request.plugins) {
-      mounts.push(`${plugin}:/app/plugins/${path.basename(plugin)}`);
-    }
+    mounts.push(...this.pluginMounts());
     return mounts;
+  }
+
+  /**
+   * A plugin worktree, at the container path the topology itself declares for plugins.
+   *
+   * Skipped rather than guessed when the topology names no such root: a mount invented here would
+   * land somewhere the platform never looks, and the plugin would simply not be there.
+   */
+  private pluginMounts(): string[] {
+    return this.request.plugins
+      .map((plugin) => {
+        const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, path.basename(plugin));
+        return container ? `${plugin}:${container}` : null;
+      })
+      .filter((mount): mount is string => mount !== null);
+  }
+
+  /** The workspace folder of this worktree, as its own package.json declares it. */
+  private workspacesDir(): string {
+    return path.join(this.request.framework, this.layout.workspaces);
   }
 
   /** Every workspace package this worktree has actually built. */
   private builtPackages(): string[] {
-    const packages = path.join(this.request.framework, 'packages');
+    const packages = this.workspacesDir();
     if (!fs.existsSync(packages)) return [];
 
     return fs
       .readdirSync(packages)
-      .filter((name) => fs.existsSync(path.join(packages, name, 'dist')))
+      .filter((name) => fs.existsSync(path.join(packages, name, StackPlan.PACKAGE_OUTPUT)))
       .sort();
   }
 

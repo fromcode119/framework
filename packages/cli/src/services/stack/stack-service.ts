@@ -7,6 +7,7 @@ import { StackPlan } from '@cli/services/stack/stack-plan';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interface';
 import { StackStore } from '@cli/services/stack/stack-store';
+import { StackLayout } from '@cli/services/stack/stack-layout';
 
 /**
  * Brings a throwaway stack up and takes it away again.
@@ -102,12 +103,20 @@ export class StackService {
     return this.store.list().filter((stack) => stack.session.isStale);
   }
 
-  /** Refuses rather than starting a stack that would serve the image's code instead of the worktree's. */
+  /**
+   * Refuses rather than starting a stack that would serve the image's code instead of the worktree's.
+   *
+   * It asks whether ANY workspace package has been built rather than naming one, so the check does
+   * not go quiet the day that package is renamed or split.
+   */
   private assertFrameworkBuilt(framework: string): void {
-    if (!fs.existsSync(path.join(framework, 'packages'))) {
-      throw new Error(`${framework} is not a framework checkout — it has no packages/ directory.`);
+    const workspaces = path.join(framework, StackLayout.of(framework).workspaces);
+    if (!fs.existsSync(workspaces)) {
+      throw new Error(`${framework} declares a workspace folder that is not there: ${workspaces}`);
     }
-    if (!fs.existsSync(path.join(framework, 'packages', 'core', 'dist'))) {
+
+    const built = fs.readdirSync(workspaces).some((name) => fs.existsSync(path.join(workspaces, name, 'dist')));
+    if (!built) {
       throw new Error(
         `${framework} has not been built, so the stack would run the image's code and show none of your changes.\n` +
           '  Run `npm run build:packages` in the worktree first (and `npm run build:admin` for admin changes).',
@@ -125,8 +134,8 @@ export class StackService {
    * command exists for would have been silently absent, and the directories outlive `down`.
    */
   private materialise(root: string, framework: string, plan: StackPlan): void {
-    const source = path.join(framework, 'deploy');
-    if (!fs.existsSync(source)) throw new Error(`${framework} has no deploy/ directory`);
+    const source = path.join(framework, StackLayout.DEPLOY_DIR);
+    if (!fs.existsSync(source)) throw new Error(`${framework} has no ${StackLayout.DEPLOY_DIR}/ directory`);
 
     const deploy = StackService.deployDirOf(root);
     fs.mkdirSync(deploy, { recursive: true });
@@ -137,7 +146,7 @@ export class StackService {
 
   /** Compose runs here, one level inside the stack, so its `../` mounts stay inside the stack. */
   static deployDirOf(root: string): string {
-    return path.join(root, 'deploy');
+    return path.join(root, StackLayout.DEPLOY_DIR);
   }
 
   private shell(root: string): RemoteShell {
