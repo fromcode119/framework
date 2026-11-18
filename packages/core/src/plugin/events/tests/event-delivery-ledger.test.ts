@@ -53,6 +53,23 @@ describe('EventDeliveryLedger', () => {
     await expect(EventDeliveryLedger.recordFailure(manager, { event: 'e', pluginSlug: 'p', payload: 1, error: 'e' })).resolves.toBeUndefined();
   });
 
+  it('redacts secret-named keys and stores no payload at all for an auth event', async () => {
+    const db = fakeDb();
+    await EventDeliveryLedger.recordFailure({ db } as any, {
+      event: 'user:registered', pluginSlug: 'p',
+      payload: { email: 'a@b.c', password: 'hunter2', profile: { token: 'xyz', name: 'Al' } }, error: 'e',
+    });
+    expect(JSON.parse(db.calls.insert[0][1].payload)).toEqual({
+      email: 'a@b.c', password: '[redacted]', profile: { token: '[redacted]', name: 'Al' },
+    });
+
+    const authDb = fakeDb();
+    await EventDeliveryLedger.recordFailure({ db: authDb } as any, {
+      event: 'auth:password:reset', pluginSlug: 'p', payload: { newPassword: 'secret' }, error: 'e',
+    });
+    expect(authDb.calls.insert[0][1].payload).toBeNull();
+  });
+
   it('listOpenFailures maps rows to the console shape', async () => {
     const db = fakeDb();
     (db.find as any).mockResolvedValue([{ id: 3, event: 'x', plugin_slug: 'p', tenant_id: 5, attempts: 2, error: 'oops', payload: '{"n":1}', updated_at: 'now' }]);

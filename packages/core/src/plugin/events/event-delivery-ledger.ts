@@ -47,13 +47,40 @@ export class EventDeliveryLedger {
     }
   }
 
-  private static serialize(payload: unknown): string | null {
+  /** Keys whose VALUE is a secret, redacted before a payload is stored. */
+  private static readonly SENSITIVE_KEY = /pass|secret|token|api[-_]?key|authorization|\bauth\b|otp|\bcode\b|\bpin\b|cvv|\bcard\b|ssn|private[-_]?key|credential|cookie|session/i;
+  /** Events whose payload is secret by nature: no payload of theirs is stored at all. */
+  private static readonly SENSITIVE_EVENT = /(^|[:.])(auth|password|token|secret|credential|session|login|signin|otp)([:.]|$)/i;
+  private static readonly MAX_PAYLOAD_CHARS = 8000;
+
+  /**
+   * The payload as it is safe to keep: nothing for an auth-type event, secret-named keys replaced with
+   * `[redacted]`, and the whole thing capped in size. The ledger is operational metadata, not a place
+   * for credentials or bulk PII — a retry re-runs the listener, it does not need the raw secret.
+   */
+  private static serialize(event: string, payload: unknown): string | null {
     if (payload === undefined) return null;
+    if (EventDeliveryLedger.SENSITIVE_EVENT.test(event)) return null;
     try {
-      return JSON.stringify(payload);
+      const json = JSON.stringify(EventDeliveryLedger.redact(payload, 0));
+      if (json === undefined) return null;
+      return json.length > EventDeliveryLedger.MAX_PAYLOAD_CHARS ? `${json.slice(0, EventDeliveryLedger.MAX_PAYLOAD_CHARS)}…` : json;
     } catch {
       return null;
     }
+  }
+
+  private static redact(value: unknown, depth: number): unknown {
+    if (value === null || value === undefined || depth > 6) return depth > 6 ? undefined : value;
+    if (Array.isArray(value)) return value.slice(0, 50).map((item) => EventDeliveryLedger.redact(item, depth + 1));
+    if (typeof value === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = EventDeliveryLedger.SENSITIVE_KEY.test(k) ? '[redacted]' : EventDeliveryLedger.redact(v, depth + 1);
+      }
+      return out;
+    }
+    return value;
   }
 
   /** Record (or raise the attempt count of) a listener failure. Never throws. */
@@ -73,14 +100,14 @@ export class EventDeliveryLedger {
         await db.update(EventDeliveryLedger.table, { id: existing.id }, {
           attempts: Number(existing.attempts ?? 1) + 1,
           error: message,
-          payload: EventDeliveryLedger.serialize(input.payload),
+          payload: EventDeliveryLedger.serialize(input.event, input.payload),
           updated_at: new Date(),
         });
       } else {
         await db.insert(EventDeliveryLedger.table, {
           event: input.event, plugin_slug: input.pluginSlug, tenant_id: tenantId,
           status: 'failed', attempts: 1,
-          payload: EventDeliveryLedger.serialize(input.payload),
+          payload: EventDeliveryLedger.serialize(input.event, input.payload),
           error: message, created_at: new Date(), updated_at: new Date(),
         });
       }
