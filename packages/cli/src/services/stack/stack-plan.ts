@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 import { StackLayout } from '@cli/services/stack/stack-layout';
+import { StackExtensions } from '@cli/services/stack/stack-extensions';
 
 /**
  * The files a local stack runs from.
@@ -18,14 +19,31 @@ import { StackLayout } from '@cli/services/stack/stack-layout';
  * `/etc/hosts` or resolved by dnsmasq.
  */
 export class StackPlan {
+  /**
+   * What the deploy topology sets for a server and a stack must not.
+   *
+   * The integrity checksum certifies a PACKED extension. A worktree is a working directory — its
+   * files differ from the artifact by construction — so with the check on, every mounted plugin
+   * fails to register with "Security Violation: Integrity check failed" and the stack shows none
+   * of the work it was started for. Measured: a mounted `logistics` was refused exactly this way.
+   *
+   * The deploy file states `true` as a literal rather than a default, so it cannot be answered in
+   * `.env`; this overlay is the only place that can.
+   */
+  private static readonly DEV_ENVIRONMENT = ['ENFORCE_PLUGIN_INTEGRITY=false'];
+
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
 
   /** Read from the worktree, never assumed: see StackLayout. */
   private readonly layout: StackLayout;
 
+  /** Resolves a plugin's dependencies from the checkouts beside the framework. */
+  private readonly extensions: StackExtensions;
+
   constructor(private readonly request: IStackRequest) {
     this.layout = StackLayout.of(request.framework);
+    this.extensions = StackExtensions.of(request.framework, StackPlan.PLUGIN_KIND);
   }
 
   /**
@@ -84,7 +102,9 @@ export class StackPlan {
 
     const runtime = this.runtimeMounts();
     for (const service of StackPlan.RUNTIME_SERVICES) {
-      lines.push(`  ${service}:`, '    volumes:');
+      lines.push(`  ${service}:`, '    environment:');
+      for (const line of StackPlan.DEV_ENVIRONMENT) lines.push(`      - ${line}`);
+      lines.push('    volumes:');
       for (const mount of runtime) lines.push(`      - ${mount}`);
     }
 
@@ -150,12 +170,27 @@ export class StackPlan {
    * land somewhere the platform never looks, and the plugin would simply not be there.
    */
   private pluginMounts(): string[] {
-    return this.request.plugins
-      .map((plugin) => {
-        const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, path.basename(plugin));
-        return container ? `${plugin}:${container}` : null;
-      })
-      .filter((mount): mount is string => mount !== null);
+    const mounts: string[] = [];
+
+    for (const [slug, directory] of this.extensions.resolve(this.request.plugins)) {
+      const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, slug);
+      if (!container) continue;
+
+      // Only what the caller named is writable; the rest came from the shared checkouts.
+      const mode = StackExtensions.chosenAmong(this.request.plugins, directory) ? '' : ':ro';
+      mounts.push(`${directory}:${container}${mode}`);
+    }
+    return mounts;
+  }
+
+  /** What no checkout could supply, for the command to say before it starts anything. */
+  missingDependencies(): ReadonlyMap<string, string[]> {
+    return this.extensions.missing(this.request.plugins);
+  }
+
+  /** Where the mirror of main was found, or null when the worktree could not point at one. */
+  get extensionMirror(): string | null {
+    return this.extensions.mirror;
   }
 
   /** The workspace folder of this worktree, as its own package.json declares it. */

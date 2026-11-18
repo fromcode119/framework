@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { StackSession } from '@cli/services/stack/stack-session';
 import { StackPlan } from '@cli/services/stack/stack-plan';
 import { StackService } from '@cli/services/stack/stack-service';
+import { StackStore } from '@cli/services/stack/stack-store';
 
 /**
  * These cover the one answer that must never be wrong: whether the session that made a stack is
@@ -151,6 +152,51 @@ describe('StackPlan', () => {
     expect(command.indexOf('http://console.demo.localhost:8200')).toBeLessThan(command.indexOf("sh -c '"));
   });
 
+  /**
+   * A worktree is named for the change, not the extension — `plugin-boxnow` holds
+   * `logistics-boxnow`. Mounted under the directory name it lands where nothing reads, and the
+   * plugin is absent with no error to explain it.
+   */
+  it('mounts a plugin under its manifest slug, not its directory name', () => {
+    fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
+    const plugin = fs.mkdtempSync(path.join(os.tmpdir(), 'wt-named-for-the-change-'));
+    fs.writeFileSync(path.join(plugin, 'manifest.json'), JSON.stringify({ slug: 'logistics-boxnow' }));
+
+    const overlay = new StackPlan({ ...request, plugins: [plugin] }).overlay();
+
+    expect(overlay).toContain(`${plugin}:/srv/plugins/logistics-boxnow`);
+    expect(overlay).not.toContain(`/srv/plugins/${path.basename(plugin)}`);
+    fs.rmSync(plugin, { recursive: true, force: true });
+  });
+
+  /**
+   * The checksum certifies a packed extension, so a worktree fails it by construction and every
+   * mounted plugin is refused with "Security Violation". The deploy file states `true` as a
+   * literal, so the overlay is the only place that can answer it.
+   */
+  it('turns off the integrity check that a worktree can never pass', () => {
+    fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
+
+    expect(new StackPlan(request).overlay()).toContain('ENFORCE_PLUGIN_INTEGRITY=false');
+  });
+
+  /** A plugin whose dependency is absent is installed and never registered, silently. */
+  it('names a declared dependency that is not mounted, and stays quiet about one that is', () => {
+    const make = (slug: string, dependencies?: Record<string, string>): string => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), `fc-${slug}-`));
+      fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ slug, dependencies }));
+      return dir;
+    };
+    const boxnow = make('logistics-boxnow', { logistics: '^0.1.5' });
+    const logistics = make('logistics', { finance: '^0.1.3' });
+
+    const missing = new StackPlan({ ...request, plugins: [boxnow, logistics] }).missingDependencies();
+
+    expect(missing.get('logistics')).toEqual(['finance']);
+    expect(missing.has('logistics-boxnow')).toBe(false);
+    for (const dir of [boxnow, logistics]) fs.rmSync(dir, { recursive: true, force: true });
+  });
+
   it('names every host the stack answers on', () => {
     const urls = new StackPlan(request).urls('shop');
 
@@ -159,5 +205,54 @@ describe('StackPlan', () => {
       'http://portal.shop.demo.localhost:8200',
       'http://shop.demo.localhost:8200',
     ]);
+  });
+});
+
+/**
+ * Several sessions work on the framework and its plugins at the same time, so two `stack up` calls
+ * landing in the same second is the normal case. Reading the recorded stacks cannot settle it —
+ * the record is written after the port is chosen — so the claim has to be the filesystem's.
+ */
+describe('StackStore port claiming', () => {
+  let home: string;
+
+  beforeEach(() => {
+    home = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-home-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(home, { recursive: true, force: true });
+  });
+
+  it('never hands the same port to two stacks', () => {
+    const store = new StackStore(home);
+
+    const first = store.claimPort('one');
+    const second = store.claimPort('two');
+
+    expect(second).not.toBe(first);
+  });
+
+  it('gives a port back when the stack is taken down', () => {
+    const store = new StackStore(home);
+    const port = store.claimPort('one');
+
+    store.releasePort(port);
+
+    expect(store.claimPort('two')).toBe(port);
+  });
+
+  /** A crash must not burn a port: a claim whose stack no longer exists is reclaimed. */
+  it('reclaims a port left behind by a stack that is gone', () => {
+    const store = new StackStore(home);
+    const port = store.claimPort('vanished');
+
+    // What a crash leaves: a claim on disk, no stack recorded, and old enough not to be starting.
+    const lock = path.join(home, '.fromcode-stacks', '.ports', String(port));
+    const longAgo = new Date(Date.now() - 60 * 60 * 1000);
+    fs.utimesSync(lock, longAgo, longAgo);
+
+    expect(store.exists('vanished')).toBe(false);
+    expect(new StackStore(home).claimPort('next')).toBe(port);
   });
 });
