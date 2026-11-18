@@ -1863,6 +1863,21 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    28px button across the head and pushed the tools off it. */
 .fc-record-card__aside > .fc-field-row { width: auto; grid-column: auto; }
 .fc-record-card__aside > .fc-field-row > * { margin: 0; }
+/* The tools of a list stand in a band of their own under the head, with the card's own padding and a
+   hairline above them: head (name and ⋯), then what narrows the list on the left and what works on it
+   on the right, then the list. The reference's own card is built this way. */
+.fc-record-card__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--fc-card-pad-x);
+  border-bottom: 1px solid var(--fc-border);
+}
+.fc-record-card__toolbar:empty { display: none; }
+/* What is on the right of the band keeps together. */
+.fc-record-card__toolbar > * { min-width: 0; }
+.fc-record-card__table-tools { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__head { gap: 8px; }
 .fc-record-card:has(.fc-record-card__table-tools) .fc-record-card__menu,
 .fc-sro-table__tool {

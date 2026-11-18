@@ -22,8 +22,18 @@ export class RecordCard extends PureReactor {
   @prop declare title?: string;
   /** How many the card holds, beside the title: `0` is a figure and is shown, `null` is not. */
   @prop declare count?: number | null;
-  /** What stands between the title and the ⋯ — a search box, a table's tools, a plugin's slot. */
+  /** What stands between the title and the ⋯ — a state, a count a plugin adds, a small action. */
   @prop declare aside?: ReactNode;
+  /**
+   * A band of its OWN under the head: what is on the left narrows the list (filters), what is on the
+   * right works on it (search, the column chooser, Create).
+   *
+   * Its own band, not the head, because that is where the reference puts them — head `px-6 py-4`
+   * with the title and the ⋯, then a hairline, then the tools in a band of the same padding. Ours
+   * crammed search, filters, sort and Create into the head beside the title, which is why a section
+   * holding a table had a head twice as busy as one holding values.
+   */
+  @prop declare toolbar?: ReactNode;
   /** The card's ⋯ and anything that opens from it. */
   @prop declare menu?: ReactNode;
   @prop declare id?: string;
