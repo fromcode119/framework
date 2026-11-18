@@ -2236,10 +2236,40 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* The words keep a measure: a hint that runs the width of a wide card is read as a paragraph. */
 .fc-empty__text { display: flex; flex-direction: column; gap: 4px; max-width: 44ch; }
 .fc-empty__title { font-size: var(--fc-record-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
-.fc-empty__hint { font-size: var(--fc-record-text); line-height: 20.8px; color: var(--fc-text-muted); }
+/* The console's one leading, like every other line of record text. It read 20.8 — a ratio over 13px
+   rather than the rhythm — so a hint sat three quarters of a pixel off the rows above it. */
+.fc-empty__hint { font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 .fc-empty__action { margin-top: 4px; }
 /* The way out of an empty state, when it is a link rather than a button. */
 .fc-empty__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── An empty SECTION of a record ────────────────────────────────────────────────────────────────
+ * Inside a record's card the page has already named the card and the head already carries its count,
+ * so having nothing is ONE ROW: the words on the left, the way out on the right, at the height of the
+ * rows it stands among. The page-sized block belongs to a page.
+ *
+ * Measured on the product record, 18.11.2026: "Images" with nothing in it took 252px — a card and a
+ * half of height, a 48px tile and a centred heading, to say that there are no images yet. */
+.fc-record-card__body .fc-empty {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 12px var(--fc-card-pad-x);
+  text-align: start;
+}
+.fc-record-card__body .fc-empty__icon { width: 28px; height: 28px; flex: none; }
+.fc-record-card__body .fc-empty__icon svg { width: 16px; height: 16px; }
+/* The words take the room they need: the measure is for a block that is centred on a page. */
+.fc-record-card__body .fc-empty__text { max-width: none; }
+/* The way out keeps its words on one line: wrapped, a two-word button is taller than the row it
+   stands in and the card grows back the height this rule just took off it. */
+.fc-record-card__body .fc-empty__action { margin-top: 0; margin-inline-start: auto; flex: none; }
+.fc-record-card__body .fc-empty__action > * { white-space: nowrap; }
+@media (max-width: 640px) {
+  /* On a phone the way out goes under the words rather than squeezing them into a sliver. */
+  .fc-record-card__body .fc-empty { flex-wrap: wrap; }
+  .fc-record-card__body .fc-empty__action { margin-inline-start: 40px; }
+}
 
 /* ── A fact row in a card too narrow to hold both halves ─────────────────────────────────────────
  * The row is two equal halves, which is right while they are wide enough to hold a name and a value.
