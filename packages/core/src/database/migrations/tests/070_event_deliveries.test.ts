@@ -25,7 +25,7 @@ describe('070_event_deliveries', () => {
     sqlite.prepare(
       `INSERT INTO _system_event_deliveries (event, plugin_slug, tenant_id, status, attempts, payload, error)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    ).run('ecommerce:order:completed', 'licensing', 5, 'failed', 1, '{"orderId":9}', 'boom');
+    ).run('ecommerce:order:completed', 'licensing', '5', 'failed', 1, '{"orderId":9}', 'boom');
     const row: any = sqlite.prepare('SELECT * FROM _system_event_deliveries').get();
     expect(row).toMatchObject({ event: 'ecommerce:order:completed', plugin_slug: 'licensing', status: 'failed', attempts: 1 });
   });

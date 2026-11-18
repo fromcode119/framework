@@ -25,7 +25,7 @@ export class EventDeliveriesMigration extends BaseMigration {
         id ${type.autoId},
         event ${type.shortText} NOT NULL,
         plugin_slug ${type.shortText} NOT NULL,
-        tenant_id INTEGER,
+        tenant_id ${type.key} NOT NULL DEFAULT '',
         status ${type.key} NOT NULL,
         attempts INTEGER NOT NULL DEFAULT 1,
         payload ${type.json},

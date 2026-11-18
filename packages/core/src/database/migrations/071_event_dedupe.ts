@@ -9,8 +9,9 @@ import { PortableColumnTypes } from '@core/database/helpers/portable-column-type
  * the effect and keeps the key; a second call with the same key is skipped. The UNIQUE index is the real
  * guard — two arrivals at once resolve to one insert, the other is told it is a duplicate — so this is
  * what makes a retry, or a provider that sends its callback twice, not issue two keys or record two
- * payments. `tenant_id` is 0 for a platform-scoped key so the uniqueness holds across every dialect
- * (NULLs are distinct in a unique index).
+ * payments. `tenant_id` is the site's own id as a string (the empty string for a platform-scoped key),
+ * so two sites never share a bucket and uniqueness holds across every dialect — a NUMBER column would
+ * fold every non-numeric tenant into one bucket and leak dedupe across sites.
  */
 export class EventDedupeMigration extends BaseMigration {
   readonly version = 71;
@@ -25,7 +26,7 @@ export class EventDedupeMigration extends BaseMigration {
         id ${type.autoId},
         scope ${type.shortText} NOT NULL,
         dedupe_key ${type.shortText} NOT NULL,
-        tenant_id INTEGER NOT NULL DEFAULT 0,
+        tenant_id ${type.key} NOT NULL DEFAULT '',
         created_at ${type.timestamp} DEFAULT ${type.now}
       )`,
     ));

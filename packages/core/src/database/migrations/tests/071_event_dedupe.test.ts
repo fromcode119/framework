@@ -21,11 +21,11 @@ describe('071_event_dedupe', () => {
     expect(names).toContain('_system_event_dedupe');
 
     const claim = 'INSERT INTO _system_event_dedupe (scope, dedupe_key, tenant_id) VALUES (?, ?, ?)';
-    sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 5);
+    sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 'site-a');
     // Same (scope, key, tenant) → the UNIQUE index refuses the duplicate.
-    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 5)).toThrow(/UNIQUE/i);
+    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 'site-a')).toThrow(/UNIQUE/i);
     // A different key, or the same key on another site, is allowed.
-    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-2', 5)).not.toThrow();
-    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 6)).not.toThrow();
+    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-2', 'site-a')).not.toThrow();
+    expect(() => sqlite.prepare(claim).run('order:completed:licensing', 'ORD-1', 'site-b')).not.toThrow();
   });
 });

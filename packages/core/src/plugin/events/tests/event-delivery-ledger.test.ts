@@ -72,9 +72,9 @@ describe('EventDeliveryLedger', () => {
 
   it('listOpenFailures maps rows to the console shape', async () => {
     const db = fakeDb();
-    (db.find as any).mockResolvedValue([{ id: 3, event: 'x', plugin_slug: 'p', tenant_id: 5, attempts: 2, error: 'oops', payload: '{"n":1}', updated_at: 'now' }]);
+    (db.find as any).mockResolvedValue([{ id: 3, event: 'x', plugin_slug: 'p', tenant_id: '5', attempts: 2, error: 'oops', payload: '{"n":1}', updated_at: 'now' }]);
     const manager: any = { db };
     const rows = await EventDeliveryLedger.listOpenFailures(manager);
-    expect(rows[0]).toMatchObject({ id: 3, event: 'x', pluginSlug: 'p', tenantId: 5, attempts: 2, error: 'oops', payload: { n: 1 } });
+    expect(rows[0]).toMatchObject({ id: 3, event: 'x', pluginSlug: 'p', tenantId: '5', attempts: 2, error: 'oops', payload: { n: 1 } });
   });
 });

@@ -27,13 +27,14 @@ export class EventIdempotency {
     return SystemConstants.TABLE.EVENT_DEDUPE;
   }
 
-  private static currentTenant(): number {
+  /** The site's own id as a string ('' for platform scope). Never coerced to a number — a non-numeric
+   * tenant must keep its own bucket, or two sites would dedupe against each other. */
+  private static currentTenant(): string {
     try {
       const raw = RequestContextUtils.getTenantId();
-      const id = raw ? Number(raw) : 0;
-      return Number.isFinite(id) ? id : 0;
+      return raw ? String(raw).trim() : '';
     } catch {
-      return 0;
+      return '';
     }
   }
 

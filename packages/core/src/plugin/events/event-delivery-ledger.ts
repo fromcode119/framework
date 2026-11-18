@@ -8,7 +8,7 @@ export interface IEventDeliveryFailure {
   id: number | string;
   event: string;
   pluginSlug: string;
-  tenantId: number | null;
+  tenantId: string;
   attempts: number;
   error: string;
   payload: unknown;
@@ -34,17 +34,18 @@ export class EventDeliveryLedger {
   /** (event, plugin, tenant) currently known to be failing, so success clears the DB only when needed. */
   private static readonly failing = new Set<string>();
 
-  private static keyOf(event: string, pluginSlug: string, tenantId: number | null): string {
-    return `${event}\u0000${pluginSlug}\u0000${tenantId ?? ''}`;
+  private static keyOf(event: string, pluginSlug: string, tenantId: string): string {
+    return `${event}\u0000${pluginSlug}\u0000${tenantId}`;
   }
 
-  private static currentTenant(): number | null {
+  /** The site's own id as a string ('' for platform scope). Never coerced to a number, so two sites
+   * never share a bucket — a non-numeric tenant kept its own failures and resolves. */
+  private static currentTenant(): string {
     try {
       const raw = RequestContextUtils.getTenantId();
-      const id = raw ? Number(raw) : NaN;
-      return Number.isFinite(id) ? id : null;
+      return raw ? String(raw).trim() : '';
     } catch {
-      return null;
+      return '';
     }
   }
 
@@ -189,8 +190,9 @@ export class EventDeliveryLedger {
 
     const run = async () => { for (const handler of handlers) await handler(row.payload, row.event); };
     const db: any = (manager as any)?.db;
-    const scoped = row.tenantId != null && db?.withTenant
-      ? () => RequestContextUtils.storage.run({ tenantId: String(row.tenantId) }, () => db.withTenant(String(row.tenantId), run))
+    const tenantId = String(row.tenantId ?? '').trim();
+    const scoped = tenantId && db?.withTenant
+      ? () => RequestContextUtils.storage.run({ tenantId }, () => db.withTenant(tenantId, run))
       : run;
 
     try {
@@ -213,7 +215,7 @@ export class EventDeliveryLedger {
       id: row.id,
       event: String(row.event ?? ''),
       pluginSlug: String(row.pluginSlug ?? row.plugin_slug ?? ''),
-      tenantId: row.tenantId ?? row.tenant_id ?? null,
+      tenantId: String(row.tenantId ?? row.tenant_id ?? ''),
       attempts: Number(row.attempts ?? 1),
       error: String(row.error ?? ''),
       payload,
