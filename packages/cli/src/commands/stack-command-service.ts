@@ -39,9 +39,10 @@ export class StackCommandService {
       .action(async (name: string, options: Record<string, unknown>) => {
         const service = new StackService();
         const framework = path.resolve(String(options.framework));
+        let request: { name: string; framework: string; plugins: string[]; version: string; port: number } | null = null;
 
         try {
-          const request = {
+          request = {
             name,
             framework,
             plugins: (options.plugin as string[]).map((plugin) => path.resolve(plugin)),
@@ -57,6 +58,8 @@ export class StackCommandService {
           }
           console.log(chalk.gray(`\n  down: fromcode stack down ${name}`));
         } catch (error) {
+          // The port was claimed before any of this; a failed start must not keep it.
+          if (request) await service.abandon(name, request.port);
           StackCommandService.fail(error);
         }
       });
