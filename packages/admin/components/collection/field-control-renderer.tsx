@@ -106,7 +106,8 @@ export class FieldControlRenderer extends PureReactor {
           readOnlyOverrideGranted={readOnlyOverrideGranted}
           wrapWithReadOnlyOverride={wrapWithReadOnlyOverride}
         />
-      ) : field.type === 'relationship' && field.relationTo === 'media' ? (
+      ) : (field.type === 'relationship' || field.type === 'upload') && field.relationTo === 'media' ? (
+        // An `upload` field names a file in the media library just as a media relationship does, so it gets the same picker.
         wrapWithReadOnlyOverride(
           <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} hasMany={Boolean(field.hasMany)} accept={field.admin?.accept} />
         )
