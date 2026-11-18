@@ -37,6 +37,18 @@ describe('CapabilityProviderRegistry', () => {
     expect(CapabilityProviderRegistry.providersOf('shipping.quote')).toEqual([]);
   });
 
+  it('clamps a self-declared priority so no plugin can force itself to the top with an absurd value', () => {
+    CapabilityProviderRegistry.provide({ capability: 'payment.method', slug: 'greedy', priority: Number.MAX_SAFE_INTEGER });
+    expect(CapabilityProviderRegistry.oneOf('payment.method')?.priority).toBeLessThanOrEqual(100);
+  });
+
+  it('returns copies, so a consumer cannot mutate the shared registry', () => {
+    CapabilityProviderRegistry.provide({ capability: 'tax.calculator', slug: 'finance' });
+    const got = CapabilityProviderRegistry.providersOf('tax.calculator')[0];
+    (got as { slug: string }).slug = 'attacker';
+    expect(CapabilityProviderRegistry.providersOf('tax.calculator')[0].slug).toBe('finance');
+  });
+
   it('ignores a provider with no capability or no slug', () => {
     CapabilityProviderRegistry.provide({ capability: '', slug: 'x' } as never);
     CapabilityProviderRegistry.provide({ capability: 'y', slug: '' } as never);
