@@ -165,6 +165,11 @@ export class PluginContextFactory {
         capabilities: {
           provide: (capability: string, meta: { id?: string; label?: string; priority?: number } = {}) => {
             if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+            // A site-owned plugin must not register in the process-global registry: its provider would
+            // be visible to, and callable by, every other site. Only platform plugins provide globally.
+            // (Per-site providers would need a tenant-scoped registry — a larger change for when a site
+            // plugin actually needs to offer a capability.)
+            if (PluginOwners.ownerOf(plugin.manifest.slug)) return;
             CapabilityProviderRegistry.provide({
               capability, slug: plugin.manifest.slug, namespace: plugin.manifest.namespace,
               id: meta.id, label: meta.label, priority: meta.priority,
