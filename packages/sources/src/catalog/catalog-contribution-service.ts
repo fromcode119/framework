@@ -26,6 +26,11 @@ export class CatalogContributionService {
         // What changed, in the words of whoever wrote the commits. Empty when there is no previous
         // revision to compare against — never a stand-in sentence.
         notes: String(source.changelog || ''),
+        // The core this build needs, so the install gate can refuse an incompatible update up front.
+        // CatalogEntry maps this to `engines: { core }`; omitted when the source has not declared one.
+        ...(String((source as { requiredCore?: unknown }).requiredCore ?? '').trim()
+          ? { engines: { core: String((source as { requiredCore?: unknown }).requiredCore).trim() } }
+          : {}),
       }));
   }
 }

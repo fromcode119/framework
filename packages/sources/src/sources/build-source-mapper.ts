@@ -116,6 +116,9 @@ export class BuildSourceMapper {
     // The vendor of what was last built: '' when that manifest declared none, absent (NULL) when no
     // build has run since the column existed — two different answers, so the null is kept.
     const namespace = typeof source.namespace === 'string' ? source.namespace.trim() : undefined;
+    // The core the last build needs (manifest.engines.core), carried to the catalogue so the install
+    // gate can refuse an incompatible update before downloading it.
+    const requiredCore = String(source.required_core ?? source.requiredCore ?? '').trim();
 
     // READ path: values are passed through as stored, never re-validated. A row written before the
     // transport allow-list existed must still be listable in the admin — the refusal belongs at the
@@ -151,6 +154,7 @@ export class BuildSourceMapper {
       lastCommitSha,
       lastError,
       namespace,
+      requiredCore,
       slug: (source.slug || '').trim(),
       type: this.normalizeType(source.type),
       version,
