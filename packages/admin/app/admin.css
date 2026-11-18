@@ -2106,6 +2106,37 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 }
 .fc-dashboard__calm svg { flex: none; color: var(--fc-success); }
 
+/* ── A plugin's section card ─────────────────────────────────────────────────────────────────────
+ * The card every plugin dashboard and overview is made of. Its surface is the console's
+ * (`AdminClass.SURFACE`); only its head and body are declared here, in the console's own tokens, so
+ * a plugin's screen follows the brand, the corner and the shadow setting like every other card.
+ *
+ * It used to carry `bg-white border-slate-200/70 shadow-sm` and an indigo icon tile in its markup —
+ * a second definition of the surface that no setting could reach. */
+.fc-section-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--fc-border);
+}
+.fc-section-card__name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fc-section-card__icon {
+  display: flex; flex: none; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: var(--fc-control-radius);
+  background: color-mix(in srgb, var(--fc-brand) 12%, transparent);
+  color: var(--fc-brand);
+}
+.fc-section-card__title {
+  margin: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading);
+  font-weight: var(--fc-weight-strong); letter-spacing: -0.01em; color: var(--fc-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fc-section-card__subtitle { margin: 2px 0 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-section-card__actions { display: flex; flex: none; align-items: center; gap: 8px; }
+.fc-section-card__body { padding: 16px; }
+
 .fc-dashboard .fc-section-card__head { padding: var(--fc-dashboard-head-pad); gap: 12px; }
 .fc-dashboard .fc-section-card__icon { height: var(--fc-dashboard-head-icon); width: var(--fc-dashboard-head-icon); border-radius: 6px; }
 .fc-dashboard .fc-section-card__icon svg { height: 14px; width: 14px; }
