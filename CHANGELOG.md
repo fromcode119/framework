@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.607] - 2026-11-18
+
+### Added
+
+- **cli**: start a stack from a captured template instead of the wizard ([#1523](https://github.com/fromcode119/framework/pull/1523))
+- **cli**: fromcode stack — a throwaway platform for one worktree ([#1521](https://github.com/fromcode119/framework/pull/1521))
+
+### Fixed
+
+- **compose**: share one image tag across local projects ([#1520](https://github.com/fromcode119/framework/pull/1520))
+
+### Changed
+
+- Framework foundation: event contracts, visible failures + retry, capability registry, idempotency, core-version gate ([#1522](https://github.com/fromcode119/framework/pull/1522))
+
 ## [0.2.606] - 2026-11-18
 
 ### Added
