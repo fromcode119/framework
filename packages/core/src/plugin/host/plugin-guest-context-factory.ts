@@ -53,6 +53,7 @@ export class PluginGuestContextFactory {
       api: new PluginGuestApiFactory(this.registrar, this.handlers, this.http, this.boot).create(),
       hooks: this.hooks(register),
       events: this.events(),
+      capabilities: this.capabilities(),
       auth: this.auth(),
       logger: this.logger(),
       plugin: { ...this.boot.plugin },
@@ -146,6 +147,23 @@ export class PluginGuestContextFactory {
     return {
       define: (_contract: unknown) => { /* schema is not portable across the process boundary */ },
       once: async <T>(_key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; result?: T }> => ({ ran: true, result: await fn() }),
+    };
+  }
+
+  /**
+   * `capabilities` for an isolated plugin. `provide` routes to the host so the plugin registers as a
+   * provider (the common case — a sandboxed payment or shipping provider). Reading providers (`all`/
+   * `one`) is synchronous in-process and cannot be answered from another process, so an isolated plugin
+   * that needs to CONSUME a capability is told to do it in the api; this is loud, never a silent empty.
+   */
+  private capabilities(): unknown {
+    const remote = this.remote;
+    return {
+      provide: (capability: string, meta?: unknown) => {
+        void remote.call('context', [{ name: 'capabilities' }, { name: 'provide', args: PluginGuestRemote.portable([capability, meta]) }]);
+      },
+      all: (_capability: string) => { throw new Error('context.capabilities.all is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
+      one: (_capability: string) => { throw new Error('context.capabilities.one is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
     };
   }
 

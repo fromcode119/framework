@@ -29,6 +29,8 @@ export { EventIdempotency } from '@core/plugin/events/event-idempotency';
 export type { IOnceOutcome } from '@core/plugin/events/event-idempotency';
 export { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
 export type { IEventContract } from '@core/plugin/events/event-contract-registry';
+export { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
+export type { ICapabilityProvider } from '@core/plugin/capabilities/capability-provider-registry';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';

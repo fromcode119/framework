@@ -48,6 +48,7 @@ import { EventListenerRegistry } from '@core/plugin/events/event-listener-regist
 import { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
 import type { IEventContract } from '@core/plugin/events/event-contract-registry';
 import { EventIdempotency } from '@core/plugin/events/event-idempotency';
+import { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
@@ -157,6 +158,20 @@ export class PluginContextFactory {
             EventContractRegistry.define({ ...contract, owner: slug });
           },
           once: <T>(key: string, fn: () => Promise<T> | T) => EventIdempotency.once(manager, plugin.manifest.slug, key, fn),
+        },
+        // Ask for WHAT you need, not WHO provides it. `provide` registers this plugin (its slug is
+        // stamped here, so it cannot register as another); `all`/`one` return the providers, which the
+        // consumer calls through `context.plugins` — the end of `plugins.optional('org.fromcode:finance')`.
+        capabilities: {
+          provide: (capability: string, meta: { id?: string; label?: string; priority?: number } = {}) => {
+            if (!security.hasCapability('plugins:interact')) security.handleViolation('plugins:interact');
+            CapabilityProviderRegistry.provide({
+              capability, slug: plugin.manifest.slug, namespace: plugin.manifest.namespace,
+              id: meta.id, label: meta.label, priority: meta.priority,
+            });
+          },
+          all: (capability: string) => CapabilityProviderRegistry.providersOf(capability),
+          one: (capability: string) => CapabilityProviderRegistry.oneOf(capability),
         },
         // Fail-closed both ways: with auth wired this adapts the manager to the plugin contract
         // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every

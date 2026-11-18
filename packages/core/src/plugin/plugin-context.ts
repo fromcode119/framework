@@ -15,6 +15,7 @@ import type { IPluginHealthProbeResult } from '@core/plugin/interfaces/plugin-he
 import type { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
 import type { IPluginContextHooks } from '@core/plugin/interfaces/plugin-context-hooks.interface';
 import type { IPluginContextEvents } from '@core/plugin/interfaces/plugin-context-events.interface';
+import type { IPluginContextCapabilities } from '@core/plugin/interfaces/plugin-context-capabilities.interface';
 import type { IPluginContextAuth } from '@core/plugin/interfaces/plugin-context-auth.interface';
 import type { IPluginPathReadOptions } from '@core/plugin/interfaces/plugin-path-read-options.interface';
 import type { IPluginContextApi } from '@core/plugin/interfaces/plugin-context-api.interface';
@@ -60,6 +61,7 @@ export class PluginContext {
   declare readonly api: IPluginContextApi;
   declare readonly hooks: IPluginContextHooks;
   declare readonly events: IPluginContextEvents;
+  declare readonly capabilities: IPluginContextCapabilities;
   declare readonly auth: IPluginContextAuth;
   declare readonly logger: IPluginContextLogger;
 
