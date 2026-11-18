@@ -2480,6 +2480,59 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 
 /* A version beside the current values: the switch between "only what changed" and every field. */
 .fc-revision__filter { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+
+/* ── A panel inside a dialog ─────────────────────────────────────────────────────────────────────
+ * A block of one subject inside a dialog's body: a heading, its values, and whatever control belongs
+ * to it. Used by the restore dialog and open to anything else that needs to group a few facts.
+ *
+ * It replaces eight boxes whose border and background were written per theme in the markup. */
+.fc-panel {
+  /* The panel measures ITSELF, so what is inside it (a segmented control, say) can restack by the
+     room it actually has rather than by the width of the window. */
+  container-type: inline-size;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+}
+.fc-panel__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.fc-panel__title { margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-panel__value { margin: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-panel__quiet { margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-panel__code {
+  margin: 0; padding: 8px 10px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
+  background: var(--fc-surface); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text); overflow-wrap: anywhere;
+}
+.fc-panel__list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.fc-panel__warning { display: flex; gap: 8px; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
+.fc-panel__warning svg { flex: none; margin-top: 2px; color: var(--fc-warning); }
+
+/* One line that says how something went, in the tone of the thing it says. */
+.fc-note { margin: 0; padding: 8px 10px; border: 1px solid; border-radius: var(--fc-control-radius); font-size: var(--fc-text-xs); line-height: var(--fc-leading); }
+.fc-note--success { background: var(--fc-success-soft); border-color: var(--fc-success-soft-border); color: var(--fc-success-strong); }
+.fc-note--danger { background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); color: var(--fc-danger-strong); }
+.fc-note--warning { background: var(--fc-warning-soft); border-color: var(--fc-warning-soft-border); color: var(--fc-warning-strong); }
+
+/* One of a few, chosen: the console has no radio, and three boxes side by side is how a scope is
+   picked. The chosen one carries the button's own ink rather than a colour of its own. */
+.fc-segment { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 3px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface); }
+.fc-segment__choice { display: inline-flex; align-items: center; justify-content: center; height: var(--fc-control-h); padding: 0 10px; white-space: nowrap; border-radius: calc(var(--fc-control-radius) - 2px); font-size: var(--fc-control-text); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-segment__choice:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-segment__choice--on { background: var(--fc-btn-primary); border-color: var(--fc-btn-primary-edge); color: var(--fc-brand-contrast); }
+.fc-segment__choice--on:hover { background: var(--fc-btn-primary); color: var(--fc-brand-contrast); }
+/* Three choices side by side need about 110px each; in a narrower panel they stand one under the
+   other rather than wrapping their words inside a 28px control. */
+@container (max-width: 360px) {
+  .fc-segment { grid-auto-flow: row; grid-auto-columns: auto; }
+}
+@media (max-width: 640px) {
+  .fc-segment { grid-auto-flow: row; grid-auto-columns: auto; }
+}
+
+/* The restore dialog's two columns; one on a narrow screen. */
+.fc-restore { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+.fc-restore__column { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (min-width: 768px) { .fc-restore { grid-template-columns: 1.1fr 0.9fr; } }
 .fc-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px var(--fc-card-pad-x); border-top: 1px solid var(--fc-border); }
 @media (max-width: 640px) {
   /* On a phone the answer is a full-width button, and the one that goes forward is on top.
