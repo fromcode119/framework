@@ -19,6 +19,7 @@ import { AssetPrecompressor } from '@extension-builder/assets/asset-precompresso
 import { PackCleaner } from '@extension-builder/pack/pack-cleaner';
 import { ThemeSsrDependencyCollector } from '@extension-builder/pack/theme-ssr-dependency-collector';
 import { IntegrityStamper } from '@extension-builder/pack/integrity-stamper';
+import { PluginEnginesStamper } from '@extension-builder/pack/plugin-engines-stamper';
 import { ArchiveWriter } from '@extension-builder/pack/archive-writer';
 import { AppearanceCompiler } from '@extension-builder/compile/appearance-compiler';
 
@@ -123,6 +124,14 @@ export class ExtensionBuildPipeline {
       // A publicDir misconfiguration once shipped the site's user uploads inside a theme tarball.
       fs.rmSync(path.join(packDir, 'public', 'uploads'), { recursive: true, force: true });
     }
+    // A plugin states the core it needs in the PACKED manifest (never the checkout), so an older core
+    // refuses it before its bundle can fail to load. Must run before the integrity stamp below, which
+    // checksums the manifest. Best-effort: a plugin that already declares its own floor keeps it.
+    if (input.kind === ExtensionKind.PLUGIN) {
+      PluginEnginesStamper.stamp(packDir);
+      results.push(BuildStepResult.ok(PluginEnginesStamper.STEP));
+    }
+
     await IntegrityStamper.stampPackedDir(packDir);
     results.push(BuildStepResult.ok('integrity-stamper:packed'));
 
