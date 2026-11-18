@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EventDeliveryLedger } from '@core/plugin/events/event-delivery-ledger';
 import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 function rawRow(r: any) {
   return {
@@ -36,6 +37,23 @@ describe('EventDeliveryLedger.retry', () => {
   it('returns notFound when the delivery id is unknown', async () => {
     const { manager } = managerWithRow({ id: 1, event: 'e', pluginSlug: 'p' });
     expect(await EventDeliveryLedger.retry(manager, 999)).toMatchObject({ ok: false, notFound: true });
+  });
+
+  it('refuses to retry a disabled plugin (its listener would no-op and falsely resolve the row)', async () => {
+    const row = { id: 7, event: 'ord:done', pluginSlug: 'offplugin', tenantId: null, payload: {} };
+    const { manager, update } = managerWithRow(row);
+    manager.plugins = new Map([['offplugin', { state: PluginState.INACTIVE }]]);
+    const handler = vi.fn(async () => {});
+    EventListenerRegistry.register('ord:done', 'offplugin', handler);
+    try {
+      const res = await EventDeliveryLedger.retry(manager, 7);
+      expect(res.ok).toBe(false);
+      expect(res.error).toMatch(/not enabled/i);
+      expect(handler).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+    } finally {
+      EventListenerRegistry.unregister('ord:done', 'offplugin', handler);
+    }
   });
 
   it('reports when no listener is registered now (plugin off / never re-subscribed)', async () => {

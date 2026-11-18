@@ -2,6 +2,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 import type { IEventDeliveryFailure } from '@core/plugin/events/interfaces/event-delivery-failure.interface';
 
@@ -172,6 +173,13 @@ export class EventDeliveryLedger {
   static async retry(manager: IPluginManagerInterface, id: number | string): Promise<{ ok: boolean; error?: string; notFound?: boolean }> {
     const row = await EventDeliveryLedger.get(manager, id);
     if (!row) return { ok: false, notFound: true };
+
+    // A disabled plugin's wrapped handler returns early (inactive) without doing the work, which would
+    // make a retry look like a success and wrongly resolve the row. Refuse unless the plugin is active.
+    const plugin = (manager as any)?.plugins?.get?.(row.pluginSlug);
+    if (plugin && plugin.state !== PluginState.ACTIVE) {
+      return { ok: false, error: `Plugin "${row.pluginSlug}" is not enabled — enable it, then retry.` };
+    }
 
     const handlers = EventListenerRegistry.find(row.event, row.pluginSlug);
     if (!handlers.length) {
