@@ -45,6 +45,9 @@ import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
 import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
+import { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
+import type { IEventContract } from '@core/plugin/events/event-contract-registry';
+import { EventIdempotency } from '@core/plugin/events/event-idempotency';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
@@ -69,6 +72,16 @@ export class PluginContextFactory {
         manager.hooks.on(event, (handler as any)._wrapped);
       };
       const unsubscribe = (event: string, handler: any) => manager.hooks.off(event, (handler as any)._wrapped || handler);
+      // A payload that drifted from its event's declared contract throws in dev and the gate, and is
+      // logged in production — caught where it is emitted, not where a listener trips over it. An event
+      // with no declared contract is not checked.
+      const checkEventContract = (event: string, payload: unknown): void => {
+        const violation = EventContractRegistry.validate(event, payload);
+        if (!violation) return;
+        const message = `Event "${event}" payload does not match its contract: ${violation}`;
+        if (EventContractRegistry.strict) throw new Error(message);
+        pluginLogger.warn(message);
+      };
       // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
@@ -117,12 +130,25 @@ export class PluginContextFactory {
           },
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
+            checkEventContract(event, payload);
             manager.hooks.emit(event, payload);
           },
           call: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
+            checkEventContract(event, payload);
             return manager.hooks.call(event, payload);
           }
+        },
+        // Declared events and idempotent effects. `define` records an event's payload contract (opt-in,
+        // validated on every emit/call — strict in dev and the gate, logged in production). `once` runs a
+        // side effect at most once per key for this plugin, so a retry or a duplicate callback does its
+        // work once (EventIdempotency).
+        events: {
+          define: (contract: IEventContract) => {
+            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
+            EventContractRegistry.define({ ...contract, owner: plugin.manifest.slug });
+          },
+          once: <T>(key: string, fn: () => Promise<T> | T) => EventIdempotency.once(manager, plugin.manifest.slug, key, fn),
         },
         // Fail-closed both ways: with auth wired this adapts the manager to the plugin contract
         // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every

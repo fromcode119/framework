@@ -52,6 +52,7 @@ export class PluginGuestContextFactory {
       db: this.database([{ name: 'db' }]),
       api: new PluginGuestApiFactory(this.registrar, this.handlers, this.http, this.boot).create(),
       hooks: this.hooks(register),
+      events: this.events(),
       auth: this.auth(),
       logger: this.logger(),
       plugin: { ...this.boot.plugin },
@@ -131,6 +132,20 @@ export class PluginGuestContextFactory {
       },
       emit: (event: string, payload: unknown) => { void remote.call('context', [{ name: 'hooks' }, { name: 'emit', args: PluginGuestRemote.portable([event, payload]) }]); },
       call: (event: string, payload: unknown) => remote.call('context', [{ name: 'hooks' }, { name: 'call', args: PluginGuestRemote.portable([event, payload]) }]),
+    };
+  }
+
+  /**
+   * `events` for an isolated plugin. An event's CONTRACT carries a zod schema, which does not cross the
+   * process boundary, so `define` is a local no-op here and an isolated plugin's events are validated
+   * only where they are emitted. `once` runs the effect; cross-process idempotency for isolated plugins
+   * is a known follow-up (tracked with the isolated delivery-ledger coverage), so it does not yet
+   * deduplicate — an isolated plugin that needs an at-most-once effect should keep running it in the api.
+   */
+  private events(): unknown {
+    return {
+      define: (_contract: unknown) => { /* schema is not portable across the process boundary */ },
+      once: async <T>(_key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; result?: T }> => ({ ran: true, result: await fn() }),
     };
   }
 

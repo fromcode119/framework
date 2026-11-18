@@ -27,6 +27,8 @@ export type { IEventDeliveryFailure } from '@core/plugin/events/event-delivery-l
 export { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 export { EventIdempotency } from '@core/plugin/events/event-idempotency';
 export type { IOnceOutcome } from '@core/plugin/events/event-idempotency';
+export { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
+export type { IEventContract } from '@core/plugin/events/event-contract-registry';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
