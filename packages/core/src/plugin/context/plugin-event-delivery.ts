@@ -2,6 +2,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { EventDeliveryLedger } from '@core/plugin/events/event-delivery-ledger';
 
 /**
  * The handler a plugin's event subscription actually registers, so neither subscription can skip the
@@ -19,7 +20,17 @@ export class PluginEventDelivery {
       const currentPlugin = manager.plugins.get(slug);
       if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) return;
       if (!PluginTenantAccess.isEnabledForCurrentTenant(slug)) return;
-      return handler(payload, ev);
+      // The failure a fire-and-forget emit used to swallow is recorded here, where the plugin, the event
+      // and the payload are all in hand, and cleared the moment the listener handles the event again.
+      // The throw is preserved: `emit` still logs it and a `call` chain still sees it.
+      try {
+        const result = await handler(payload, ev);
+        await EventDeliveryLedger.markResolved(manager, { event: ev, pluginSlug: slug });
+        return result;
+      } catch (error) {
+        await EventDeliveryLedger.recordFailure(manager, { event: ev, pluginSlug: slug, payload, error });
+        throw error;
+      }
     };
   }
 
