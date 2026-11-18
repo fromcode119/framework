@@ -61,7 +61,7 @@ export class ResolvedContentMetadata {
         description: ogDescription,
         url: canonical,
         siteName: head.siteName || undefined,
-        type: 'website',
+        type: (head.ogType || 'website') as 'website',
         images,
       },
       twitter: {
