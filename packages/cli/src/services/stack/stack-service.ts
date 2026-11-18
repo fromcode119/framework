@@ -8,6 +8,7 @@ import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.inte
 import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interface';
 import { StackStore } from '@cli/services/stack/stack-store';
 import { StackLayout } from '@cli/services/stack/stack-layout';
+import { StackTemplate } from '@cli/services/stack/stack-template';
 
 /**
  * Brings a throwaway stack up and takes it away again.
@@ -20,8 +21,8 @@ import { StackLayout } from '@cli/services/stack/stack-layout';
 export class StackService {
   constructor(private readonly store: StackStore = new StackStore()) {}
 
-  /** Creates the stack's files and starts it. */
-  async up(request: IStackRequest): Promise<IStackRecord> {
+  /** Creates the stack's files and starts it, optionally from a captured template. */
+  async up(request: IStackRequest, template?: string): Promise<IStackRecord> {
     this.assertFrameworkBuilt(request.framework);
     if (this.store.exists(request.name)) {
       throw new Error(`Stack "${request.name}" already exists. Use \`fromcode stack down ${request.name}\` first.`);
@@ -30,7 +31,9 @@ export class StackService {
     const plan = new StackPlan(request);
     const root = this.store.rootFor(request.name);
     this.materialise(root, request.framework, plan);
-    this.store.write(request.name, request.port, request.framework, request.plugins);
+    this.store.write(request.name, request.port, request.framework, request.version, request.plugins);
+
+    if (template) await this.layTemplate(template, request.name, root, plan.urls()[0]);
 
     const code = await this.shell(root).stream('docker compose up -d');
     if (code !== 0) {
@@ -42,6 +45,82 @@ export class StackService {
 
     await this.waitUntilServing(plan, root);
     return record;
+  }
+
+  /**
+   * Puts a captured platform in place before anything runs.
+   *
+   * `create` rather than `up`: it makes the containers and their volumes without starting them, so
+   * the database initialises from what is restored here. Started first, Postgres writes an empty
+   * cluster and then refuses to take the template over it.
+   */
+  private async layTemplate(name: string, project: string, root: string, url: string): Promise<void> {
+    const shell = this.shell(root);
+    const template = new StackTemplate(StackTemplate.rootFor(this.store.root, name), shell);
+    if (!StackTemplate.exists(this.store.root, name)) {
+      throw new Error(`No template named "${name}". \`fromcode stack snapshot <stack> --as ${name}\` makes one.`);
+    }
+
+    await shell.runOrThrow('docker compose create');
+    await template.restoreInto(root, project, await this.volumesOf(root));
+    await this.adoptConsoleUrl(shell, url);
+  }
+
+  /**
+   * Points the restored platform at THIS stack's console.
+   *
+   * A template carries the address of the stack it was captured from, and the gateway routes on it:
+   * restored unchanged, the new stack answers 404 on its own hostname, because as far as the
+   * platform is concerned that host belongs to nobody. Measured — a stack from a template on
+   * another port was unreachable until this ran.
+   *
+   * Written with SQL because there is no other way in: the setting is only reachable through the
+   * console, and the console is what is unreachable. The database is started alone for it, before
+   * anything can read a stale value.
+   */
+  private async adoptConsoleUrl(shell: RemoteShell, url: string): Promise<void> {
+    await shell.runOrThrow('docker compose up -d db');
+
+    for (let attempt = 0; attempt < StackService.DATABASE_ATTEMPTS; attempt += 1) {
+      const ready = await shell.run('docker compose exec -T db sh -c \'pg_isready -U "$POSTGRES_USER"\'');
+      if (ready.code === 0) break;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    await shell.runOrThrow(StackService.consoleUrlCommand(url));
+  }
+
+  /**
+   * The command that repoints the console, built where it can be read and tested.
+   *
+   * The statement is PIPED in, never passed as an argument: its own quotes around the URL close
+   * the quoting around `sh -c`, and psql is then handed a bare `http://...` and fails on the colon.
+   * The credentials come from the container's own environment, so no password appears here.
+   */
+  static consoleUrlCommand(url: string): string {
+    const update = `update _system_meta set value = '${url}', updated_at = now() where key = 'admin_url'`;
+    return `echo "${update}" | docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'`;
+  }
+
+  /** Seconds the restored database is given to accept connections. */
+  private static readonly DATABASE_ATTEMPTS = 60;
+
+  /** Captures a running stack so later stacks can start from it instead of the setup wizard. */
+  async snapshot(stack: string, as: string): Promise<string> {
+    const record = this.store.read(stack);
+    if (!record) throw new Error(`No stack named "${stack}". \`fromcode stack ls\` lists them.`);
+
+    const shell = this.shell(record.root);
+    const template = new StackTemplate(StackTemplate.rootFor(this.store.root, as), shell);
+    await template.capture(stack, record.version, stack, await this.volumesOf(record.root), record.root);
+
+    return StackTemplate.rootFor(this.store.root, as);
+  }
+
+  /** The volumes this stack declares, by the logical name compose knows them under. */
+  private async volumesOf(root: string): Promise<string[]> {
+    const listed = await this.shell(root).runOrThrow('docker compose config --volumes');
+    return listed.split('\n').map((line) => line.trim()).filter(Boolean);
   }
 
   /** How long a stack is given to start serving before `up` stops waiting on it. */
