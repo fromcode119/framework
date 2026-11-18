@@ -1698,24 +1698,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-sro__section > .fc-sro-table { padding: 6px 0 10px; }
 .fc-sro__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .fc-sro > .fc-sro__chips { padding: 10px 0; }
-.fc-sro__chip {
-  display: inline-flex;
-  max-width: 100%;
-  align-items: center;
-  /* A tag, as the record pages this console follows draw one: the height of its own line of text
-     plus its ring, filled with the quiet tone so a row of them reads as a list of values rather than
-     a row of empty buttons. */
-  height: var(--fc-badge-h);
-  padding: 0 4px;
-  border: 1px solid var(--fc-border);
-  border-radius: var(--fc-control-radius);
-  background: var(--fc-surface-muted);
-  font-size: var(--fc-badge-text);
-  font-weight: var(--fc-weight-strong);
-  line-height: 20px;
-  color: var(--fc-text-muted);
-  overflow-wrap: anywhere;
-}
+/* The chip is defined ONCE, beside `.fc-chip` — see there. */
 .fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
 .fc-sro__media { display: inline-flex; align-items: center; gap: 8px; }
 .fc-sro__thumb { width: 48px; height: 48px; flex: none; border: 1px solid var(--fc-border); border-radius: 6px; object-fit: cover; }
@@ -2071,16 +2054,33 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
    text beside it. It used to be muted grey on near-white with no edge: in a table the size of a variant
    came out fainter than the article number next to it, which is the wrong way round, and without an edge
    it hardly read as a chip at all. */
-.fc-chip {
-  padding: 1px 7px;
+/* ── The chip ────────────────────────────────────────────────────────────────────────────────────
+ * ONE tag, wherever a short value stands on its own: a record's list of values ("Size: S M L XL"), a
+ * removable entry of a chip field, the permalink's own tag.
+ *
+ * It was two. Measured on the product record, 18.11.2026: the record's chips stood 20px with 4px of
+ * padding and muted text, the permalink's 22px with 7px and full ink — the same object, two heights
+ * and two colours, 95px apart on the same screen. The record's geometry wins (it is the one measured
+ * against the pages this console follows); the ink is the text's, because muted letters inside a
+ * ring are read twice.
+ *
+ * A chip is read, not pressed: it keeps the badge's height, never a control's. */
+.fc-chip,
+.fc-sro__chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  height: var(--fc-badge-h);
+  padding: 0 6px;
   border: 1px solid var(--fc-border);
-  border-radius: 6px;
+  border-radius: var(--fc-control-radius);
   background: var(--fc-surface-muted);
   color: var(--fc-text);
-  font-size: 12px;
+  font-size: var(--fc-badge-text);
   font-weight: var(--fc-weight-strong);
-  line-height: 18px;
-  white-space: nowrap;
+  line-height: var(--fc-leading);
+  /* A value that is longer than the card breaks inside the chip rather than pushing the card wide. */
+  overflow-wrap: anywhere;
 }
 
 /* ── Dashboard ───────────────────────────────────────────────────────────────
