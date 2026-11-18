@@ -1282,6 +1282,31 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   .fc-nav-sub--paneled { display: none; }
   .fc-nav-item--preview { background: var(--fc-nav-hover); }
 }
+
+/* ── One menu ─────────────────────────────────────────────────────────────────────────────────────
+ * The console's shape: a section's pages open UNDER their line, inside the one menu, exactly as they
+ * do on a phone. The second column is drawn only where `NavLayoutService` stamps data-fc-nav-column
+ * on <html> from the `admin_nav_column` setting.
+ *
+ * It is a width decision. Measured on a 1280px window, product record, 18.11.2026: the menu takes
+ * 240px and the second column another 220, which leaves the record 767 — and a record page only puts
+ * its side column beside the form from 896px up. So with both columns the side column never fitted at
+ * 1280 and all 21 of the product's cards fell into one stack 5 034px tall. With one menu the record
+ * gets 987px, the two columns open (531 + 440) and the same page is 2 745px.
+ *
+ * Nothing is unmounted: the panel still renders into its own column and this hides that column, so
+ * the switch takes effect without a reload and costs no re-render. */
+@media (min-width: 1024px) {
+  :root:not([data-fc-nav-column='on']) .fc-nav-second { display: none; }
+  :root:not([data-fc-nav-column='on']) .fc-nav-sub__group-pages,
+  :root:not([data-fc-nav-column='on']) .fc-nav-sub--paneled { display: flex; }
+  /* The chevron turns down, because the pages it opens are the ones directly beneath it. */
+  :root:not([data-fc-nav-column='on']) .fc-nav-sub__group--open .fc-nav-sub__chevron { transform: rotate(90deg); }
+  /* A group's line is the heading of the pages under it, not a destination that is itself open. */
+  :root:not([data-fc-nav-column='on']) .fc-nav-sub__item--current { background: transparent; }
+  /* Hovering a section no longer floats a column over the page, so nothing previews. */
+  :root:not([data-fc-nav-column='on']) .fc-nav-item--preview { background: transparent; }
+}
 .fc-nav-panel {
   display: flex; flex-direction: column; gap: 4px; width: 220px; height: 100%; padding: 14px 10px;
   background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); overflow-y: auto;

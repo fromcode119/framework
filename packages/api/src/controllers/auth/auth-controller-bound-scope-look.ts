@@ -4,10 +4,14 @@ import type { IAppearanceBrand } from '@fromcode119/core';
 
 /** What the bound scope's console looks like — readable by every member who may enter it. */
 export class AuthControllerBoundScopeLook extends AuthControllerLoginThrottle {
-  /** The bound scope's appearance and shadows; both '' when no scope is bound (the platform's console). */
-  protected async boundLook(tenant?: { id: string; kind: string; appearance: string }): Promise<{ appearance: string; shadows: string }> {
-    if (!tenant) return { appearance: '', shadows: '' };
-    return { appearance: await this.boundAppearance(tenant), shadows: await this.boundShadows(tenant) };
+  /** The bound scope's appearance, shadows and menu shape; all '' when no scope is bound (the platform's console). */
+  protected async boundLook(tenant?: { id: string; kind: string; appearance: string }): Promise<{ appearance: string; shadows: string; navColumn: string }> {
+    if (!tenant) return { appearance: '', shadows: '', navColumn: '' };
+    return {
+      appearance: await this.boundAppearance(tenant),
+      shadows: await this.boundShadows(tenant),
+      navColumn: await this.boundNavColumn(tenant),
+    };
   }
 
   /**
@@ -37,6 +41,22 @@ export class AuthControllerBoundScopeLook extends AuthControllerLoginThrottle {
     if (TenantKind.parse(tenant.kind)?.isWorkspace) return '';
     const row = await this.db.withTenant(tenant.id, () => this.db
       .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_SHADOWS })
+      .catch(() => null));
+    return String((row as any)?.value ?? '').trim();
+  }
+
+  /**
+   * The bound site's own `admin_nav_column` setting — whether a section's pages stand in a second
+   * column beside the menu or under their line in the one menu.
+   *
+   * Read here for the same reason as the two above: it decides how much width every screen of that
+   * site has, every member sees it, and the settings route that also carries it needs `system:manage`.
+   * '' when the site has none (one menu) and for a workspace, which has no such setting of its own.
+   */
+  protected async boundNavColumn(tenant: { id: string; kind: string }): Promise<string> {
+    if (TenantKind.parse(tenant.kind)?.isWorkspace) return '';
+    const row = await this.db.withTenant(tenant.id, () => this.db
+      .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_NAV_COLUMN })
       .catch(() => null));
     return String((row as any)?.value ?? '').trim();
   }

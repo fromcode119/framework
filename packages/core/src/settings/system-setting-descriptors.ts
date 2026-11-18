@@ -100,6 +100,7 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.ADMIN_APPEARANCE]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     [SystemConstants.META_KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
+    [SystemConstants.META_KEY.ADMIN_NAV_COLUMN]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     [SystemConstants.META_KEY.PLATFORM_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'Fromcode Framework', description: "The identity of your platform instance.", group: "General" },
