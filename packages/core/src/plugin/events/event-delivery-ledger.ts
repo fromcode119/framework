@@ -47,18 +47,24 @@ export class EventDeliveryLedger {
    * Over-matching only drops more payloads, which is the safe direction. */
   private static readonly SENSITIVE_EVENT = /auth|password|token|secret|credential|session|login|signin|otp|verif|mfa|2fa/i;
   /** Secret-shaped substrings redacted out of any stored STRING (value or error), whatever its key:
-   * a JWT, a `Bearer …`/`Basic …` header, or a secret-looking URL query parameter. */
-  private static readonly JWT = /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{4,}/g;
-  private static readonly AUTH_SCHEME = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]{6,}/gi;
-  private static readonly URL_SECRET = /([?&][^=&\s]*(?:token|secret|password|api[_-]?key|access|sig|signature|otp|code|key)[^=&\s]*=)[^&\s#]+/gi;
+   * a JWT, a `Bearer …`/`Basic …` header, or a secret-looking URL query parameter. Each pattern is a
+   * single bounded run (no nested unbounded runs around an alternation), so none can backtrack. */
+  private static readonly JWT = /\beyJ[A-Za-z0-9_-]{6,256}\.[A-Za-z0-9_-]{6,1024}\.[A-Za-z0-9_-]{4,512}/g;
+  private static readonly AUTH_SCHEME = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]{6,1024}/gi;
+  /** One query parameter, name and value each bounded; the name is tested for a secret word in code. */
+  private static readonly URL_PARAM = /([?&])([^=&\s#?]{1,128})=([^&\s#]{1,512})/g;
+  private static readonly SECRET_PARAM = /token|secret|password|api[_-]?key|access|sig|signature|otp|code|key/i;
   private static readonly MAX_PAYLOAD_CHARS = 8000;
+  private static readonly MAX_SCRUB_CHARS = 8000;
 
-  /** Scrub secret-shaped substrings (JWT, auth scheme, URL query secret) out of a stored string. */
+  /** Scrub secret-shaped substrings (JWT, auth scheme, URL query secret) out of a stored string. The
+   * input is capped FIRST, so the (linear) patterns run over a bounded length whatever was passed in. */
   private static redactString(value: string): string {
-    return value
+    return (value.length > EventDeliveryLedger.MAX_SCRUB_CHARS ? value.slice(0, EventDeliveryLedger.MAX_SCRUB_CHARS) : value)
       .replace(EventDeliveryLedger.JWT, '[redacted-jwt]')
       .replace(EventDeliveryLedger.AUTH_SCHEME, '$1 [redacted]')
-      .replace(EventDeliveryLedger.URL_SECRET, '$1[redacted]');
+      .replace(EventDeliveryLedger.URL_PARAM, (match, sep, name, _val) =>
+        EventDeliveryLedger.SECRET_PARAM.test(name) ? `${sep}${name}=[redacted]` : match);
   }
 
   /**
@@ -101,9 +107,9 @@ export class EventDeliveryLedger {
     const db: any = (manager as any)?.db;
     if (!db) return;
     const tenantId = EventDeliveryLedger.currentTenant();
-    // The error text is operator-facing and often carries the failing URL or response body, so scrub
-    // secret-shaped substrings out of it before storing, then cap the length.
-    const message = EventDeliveryLedger.redactString(String((input.error as any)?.message ?? input.error ?? '')).slice(0, 2000);
+    // The error text is operator-facing and often carries the failing URL or response body. Cap it
+    // FIRST (bounds the scrub's work), scrub secret-shaped substrings, then cap to the stored length.
+    const message = EventDeliveryLedger.redactString(String((input.error as any)?.message ?? input.error ?? '').slice(0, 8000)).slice(0, 2000);
     try {
       const existing = await db.findOne(EventDeliveryLedger.table, {
         event: input.event, plugin_slug: input.pluginSlug, tenant_id: tenantId, status: 'failed',
