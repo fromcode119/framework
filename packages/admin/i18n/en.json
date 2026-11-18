@@ -384,6 +384,8 @@
       "inactiveTitle": "Inactive Dependencies Detected",
       "intro": "To enable {{plugin}}, we need to handle the following:",
       "notInstalled": "NOT INSTALLED",
+      "inactive": "off",
+      "incompatible": "wrong version",
       "requires": "Requires version {{version}}. We can download this from the marketplace.",
       "needsActivation": "Already installed but needs to be activated (Version {{version}}).",
       "mismatch": "Version mismatch: requires {{expected}}, found {{actual}}.",

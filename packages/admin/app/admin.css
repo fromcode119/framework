@@ -2482,9 +2482,12 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-revision__filter { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .fc-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px var(--fc-card-pad-x); border-top: 1px solid var(--fc-border); }
 @media (max-width: 640px) {
-  /* On a phone the answer is a full-width button, and the one that goes forward is on top. */
-  .fc-dialog__foot { flex-direction: column-reverse; }
-  .fc-dialog__foot > * { width: 100%; }
+  /* On a phone the answer is a full-width button, and the one that goes forward is on top.
+     Written with the dialog in front of it on purpose: `.fc-btn` declares `width: fit-content`
+     later in this file, and at equal specificity that wins — measured at 375px, where every answer
+     stayed as wide as its own words while sitting in a column. */
+  .fc-dialog .fc-dialog__foot { flex-direction: column-reverse; }
+  .fc-dialog .fc-dialog__foot > * { width: 100%; }
 }
 
 .fc-confirm {

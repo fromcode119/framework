@@ -384,6 +384,8 @@
       "inactiveTitle": "Inaktive avhengigheter oppdaget",
       "intro": "For å aktivere {{plugin}} må følgende ordnes:",
       "notInstalled": "IKKE INSTALLERT",
+      "inactive": "av",
+      "incompatible": "annen versjon",
       "requires": "Krever versjon {{version}}. Denne kan lastes ned fra markedsplassen.",
       "needsActivation": "Allerede installert, men må aktiveres (versjon {{version}}).",
       "mismatch": "Versjonskonflikt: krever {{expected}}, fant {{actual}}.",

@@ -384,6 +384,8 @@
       "inactiveTitle": "Inaktiva beroenden hittades",
       "intro": "För att aktivera {{plugin}} behöver följande hanteras:",
       "notInstalled": "INTE INSTALLERAD",
+      "inactive": "av",
+      "incompatible": "annan version",
       "requires": "Kräver version {{version}}. Den kan hämtas från marknadsplatsen.",
       "needsActivation": "Redan installerad men behöver aktiveras (version {{version}}).",
       "mismatch": "Versionen stämmer inte: kräver {{expected}}, hittade {{actual}}.",

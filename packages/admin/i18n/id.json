@@ -384,6 +384,8 @@
       "inactiveTitle": "Terdeteksi Dependensi Tidak Aktif",
       "intro": "Untuk mengaktifkan {{plugin}}, hal berikut perlu ditangani:",
       "notInstalled": "BELUM DIINSTAL",
+      "inactive": "nonaktif",
+      "incompatible": "versi berbeda",
       "requires": "Memerlukan versi {{version}}. Kami dapat mengunduhnya dari marketplace.",
       "needsActivation": "Sudah diinstal tetapi perlu diaktifkan (Versi {{version}}).",
       "mismatch": "Versi tidak cocok: memerlukan {{expected}}, ditemukan {{actual}}.",

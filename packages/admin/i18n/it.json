@@ -384,6 +384,8 @@
       "inactiveTitle": "Dipendenze inattive rilevate",
       "intro": "Per abilitare {{plugin}} è necessario gestire quanto segue:",
       "notInstalled": "NON INSTALLATO",
+      "inactive": "disattivato",
+      "incompatible": "versione diversa",
       "requires": "Richiede la versione {{version}}. Può essere scaricata dal marketplace.",
       "needsActivation": "Già installato ma deve essere attivato (versione {{version}}).",
       "mismatch": "Versione non corrispondente: richiesta {{expected}}, trovata {{actual}}.",

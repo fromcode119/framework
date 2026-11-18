@@ -384,6 +384,8 @@
       "inactiveTitle": "Havaittiin käytöstä poistettuja riippuvuuksia",
       "intro": "Lisäosan {{plugin}} käyttöönotto edellyttää seuraavia toimia:",
       "notInstalled": "EI ASENNETTU",
+      "inactive": "pois",
+      "incompatible": "eri versio",
       "requires": "Vaatii version {{version}}. Voimme ladata sen kauppapaikasta.",
       "needsActivation": "Asennettu, mutta on aktivoitava (versio {{version}}).",
       "mismatch": "Versioristiriita: vaaditaan {{expected}}, löytyi {{actual}}.",

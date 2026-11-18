@@ -384,6 +384,8 @@
       "inactiveTitle": "检测到未激活的依赖项",
       "intro": "要启用 {{plugin}}，需要处理以下事项：",
       "notInstalled": "未安装",
+      "inactive": "已关闭",
+      "incompatible": "版本不符",
       "requires": "需要版本 {{version}}。可从市场下载。",
       "needsActivation": "已安装但需要激活（版本 {{version}}）。",
       "mismatch": "版本不匹配：需要 {{expected}}，实际为 {{actual}}。",

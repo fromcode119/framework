@@ -384,6 +384,8 @@
       "inactiveTitle": "זוהו תלויות לא פעילות",
       "intro": "כדי להפעיל את {{plugin}}, יש לטפל בפריטים הבאים:",
       "notInstalled": "לא מותקן",
+      "inactive": "כבוי",
+      "incompatible": "גרסה אחרת",
       "requires": "נדרשת גרסה {{version}}. ניתן להוריד אותה מהמרקטפלייס.",
       "needsActivation": "כבר מותקן אך יש להפעיל אותו (גרסה {{version}}).",
       "mismatch": "אי-התאמה בגרסה: נדרשת {{expected}}, נמצאה {{actual}}.",

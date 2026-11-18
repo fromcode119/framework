@@ -47,6 +47,15 @@ export class DependencyDialog extends PureReactor {
     return onlyInactive ? AdminI18n.t('ui.dependencies.enableAll') : AdminI18n.t('ui.dependencies.resolve');
   }
 
+  /** What state the dependency is in, as a word: not installed, off, wrong version. */
+  /** NOT `state`: that is React's own member on a component, and a method of that name makes the
+   *  class itself an invalid JSX type. */
+  private stateLabel(issue: IDependencyIssue): string {
+    if (this.is(issue, DependencyIssueType.MISSING)) return AdminI18n.t('ui.dependencies.notInstalled');
+    if (this.is(issue, DependencyIssueType.INACTIVE)) return AdminI18n.t('ui.dependencies.inactive');
+    return AdminI18n.t('ui.dependencies.incompatible');
+  }
+
   /** What is wrong with one dependency, in the words the operator reads. */
   private reason(issue: IDependencyIssue): string {
     if (this.is(issue, DependencyIssueType.MISSING)) return AdminI18n.t('ui.dependencies.requires', { version: issue.expected });
@@ -93,11 +102,9 @@ export class DependencyDialog extends PureReactor {
               <span className="fc-dependency__text">
                 <span className="fc-dependency__name">
                   {issue.slug}
-                  <span className="fc-chip">
-                    {this.is(issue, DependencyIssueType.MISSING)
-                      ? AdminI18n.t('ui.dependencies.notInstalled')
-                      : String(issue.type)}
-                  </span>
+                  {/* The chip is read by the shop owner, so it is a word — never the enum's own value,
+                      which put a lowercase English "inactive" on a Bulgarian screen. */}
+                  <span className="fc-chip">{this.stateLabel(issue)}</span>
                 </span>
                 <span className="fc-dependency__reason">{this.reason(issue)}</span>
               </span>

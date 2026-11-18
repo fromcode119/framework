@@ -384,6 +384,8 @@
       "inactiveTitle": "Inaktive Abhängigkeiten erkannt",
       "intro": "Um {{plugin}} zu aktivieren, ist Folgendes erforderlich:",
       "notInstalled": "NICHT INSTALLIERT",
+      "inactive": "aus",
+      "incompatible": "falsche Version",
       "requires": "Erfordert Version {{version}}. Diese kann aus dem Marketplace heruntergeladen werden.",
       "needsActivation": "Bereits installiert, muss aber aktiviert werden (Version {{version}}).",
       "mismatch": "Versionskonflikt: {{expected}} erforderlich, {{actual}} gefunden.",

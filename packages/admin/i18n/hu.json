@@ -384,6 +384,8 @@
       "inactiveTitle": "Inaktív függőségek észlelve",
       "intro": "A(z) {{plugin}} engedélyezéséhez a következőket kell rendezni:",
       "notInstalled": "NINCS TELEPÍTVE",
+      "inactive": "kikapcsolva",
+      "incompatible": "eltérő verzió",
       "requires": "{{version}} verzió szükséges. Letölthetjük a piactérről.",
       "needsActivation": "Már telepítve van, de aktiválni kell ({{version}} verzió).",
       "mismatch": "Verzióeltérés: {{expected}} szükséges, {{actual}} található.",

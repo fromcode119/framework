@@ -384,6 +384,8 @@
       "inactiveTitle": "U zbuluan varësi joaktive",
       "intro": "Për të aktivizuar {{plugin}}, duhet të trajtojmë sa vijon:",
       "notInstalled": "NUK ËSHTË INSTALUAR",
+      "inactive": "i fikur",
+      "incompatible": "version tjetër",
       "requires": "Kërkon versionin {{version}}. Mund ta shkarkojmë nga tregu.",
       "needsActivation": "Është instaluar, por duhet aktivizuar (Versioni {{version}}).",
       "mismatch": "Mospërputhje versioni: kërkohet {{expected}}, u gjet {{actual}}.",

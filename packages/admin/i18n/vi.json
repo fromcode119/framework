@@ -384,6 +384,8 @@
       "inactiveTitle": "Phát hiện phụ thuộc chưa kích hoạt",
       "intro": "Để bật {{plugin}}, cần xử lý các mục sau:",
       "notInstalled": "CHƯA CÀI ĐẶT",
+      "inactive": "đang tắt",
+      "incompatible": "phiên bản khác",
       "requires": "Yêu cầu phiên bản {{version}}. Có thể tải về từ chợ ứng dụng.",
       "needsActivation": "Đã cài đặt nhưng cần được kích hoạt (Phiên bản {{version}}).",
       "mismatch": "Phiên bản không khớp: yêu cầu {{expected}}, hiện có {{actual}}.",

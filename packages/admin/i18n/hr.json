@@ -384,6 +384,8 @@
       "inactiveTitle": "Otkrivene su neaktivne ovisnosti",
       "intro": "Da bi se omogućio {{plugin}}, potrebno je riješiti sljedeće:",
       "notInstalled": "NIJE INSTALIRANO",
+      "inactive": "isključen",
+      "incompatible": "druga verzija",
       "requires": "Potrebna je verzija {{version}}. Možemo je preuzeti s tržnice.",
       "needsActivation": "Već je instalirano, ali ga treba aktivirati (verzija {{version}}).",
       "mismatch": "Neusklađena verzija: potrebna je {{expected}}, pronađena {{actual}}.",

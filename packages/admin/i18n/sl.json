@@ -384,6 +384,8 @@
       "inactiveTitle": "Zaznane so neaktivne odvisnosti",
       "intro": "Za omogočanje vtičnika {{plugin}} moramo urediti naslednje:",
       "notInstalled": "NI NAMEŠČENO",
+      "inactive": "izklopljen",
+      "incompatible": "druga različica",
       "requires": "Zahteva različico {{version}}. Prenesemo jo lahko s tržnice.",
       "needsActivation": "Že nameščeno, vendar ga je treba aktivirati (različica {{version}}).",
       "mismatch": "Neujemanje različic: zahtevana {{expected}}, najdena {{actual}}.",

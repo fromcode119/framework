@@ -384,6 +384,8 @@
       "inactiveTitle": "Inaktive afhængigheder fundet",
       "intro": "For at aktivere {{plugin}} skal følgende håndteres:",
       "notInstalled": "IKKE INSTALLERET",
+      "inactive": "fra",
+      "incompatible": "anden version",
       "requires": "Kræver version {{version}}. Den kan hentes fra markedspladsen.",
       "needsActivation": "Allerede installeret, men skal aktiveres (version {{version}}).",
       "mismatch": "Versionskonflikt: kræver {{expected}}, fandt {{actual}}.",

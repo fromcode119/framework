@@ -384,6 +384,8 @@
       "inactiveTitle": "Spleáchais Neamhghníomhacha Aimsithe",
       "intro": "Chun {{plugin}} a chumasú, ní mór na nithe seo a leanas a láimhseáil:",
       "notInstalled": "GAN SUITEÁIL",
+      "inactive": "múchta",
+      "incompatible": "leagan mícheart",
       "requires": "Teastaíonn leagan {{version}}. Is féidir é seo a íoslódáil ón margadh.",
       "needsActivation": "Suiteáilte cheana ach ní mór é a ghníomhachtú (Leagan {{version}}).",
       "mismatch": "Leaganacha nach dtagann le chéile: teastaíonn {{expected}}, aimsíodh {{actual}}.",

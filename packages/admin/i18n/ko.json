@@ -384,6 +384,8 @@
       "inactiveTitle": "비활성 종속성이 감지되었습니다",
       "intro": "{{plugin}}을(를) 활성화하려면 다음 항목을 처리해야 합니다:",
       "notInstalled": "설치되지 않음",
+      "inactive": "꺼짐",
+      "incompatible": "다른 버전",
       "requires": "버전 {{version}}이(가) 필요합니다. 마켓플레이스에서 다운로드할 수 있습니다.",
       "needsActivation": "이미 설치되어 있지만 활성화가 필요합니다(버전 {{version}}).",
       "mismatch": "버전 불일치: {{expected}} 필요, {{actual}} 발견.",

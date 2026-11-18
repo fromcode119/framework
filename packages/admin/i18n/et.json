@@ -384,6 +384,8 @@
       "inactiveTitle": "Tuvastati mitteaktiivsed sõltuvused",
       "intro": "Plugina {{plugin}} lubamiseks tuleb teha järgmist:",
       "notInstalled": "PAIGALDAMATA",
+      "inactive": "väljas",
+      "incompatible": "teine versioon",
       "requires": "Nõutav versioon {{version}}. Saame selle turult alla laadida.",
       "needsActivation": "Juba paigaldatud, kuid vajab aktiveerimist (versioon {{version}}).",
       "mismatch": "Versioonid ei ühti: nõutav {{expected}}, leitud {{actual}}.",

@@ -384,6 +384,8 @@
       "inactiveTitle": "May mga Hindi Aktibong Dependency",
       "intro": "Para ma-enable ang {{plugin}}, kailangang asikasuhin ang mga sumusunod:",
       "notInstalled": "HINDI NAKA-INSTALL",
+      "inactive": "naka-off",
+      "incompatible": "ibang bersyon",
       "requires": "Kailangan ang bersyon {{version}}. Maaari itong i-download mula sa marketplace.",
       "needsActivation": "Naka-install na pero kailangang i-activate (Bersyon {{version}}).",
       "mismatch": "Hindi tugma ang bersyon: kailangan ang {{expected}}, nakita ang {{actual}}.",

@@ -384,6 +384,8 @@
       "inactiveTitle": "Wykryto nieaktywne zależności",
       "intro": "Aby włączyć {{plugin}}, należy wykonać następujące czynności:",
       "notInstalled": "NIEZAINSTALOWANA",
+      "inactive": "wyłączony",
+      "incompatible": "inna wersja",
       "requires": "Wymaga wersji {{version}}. Możemy ją pobrać z marketplace.",
       "needsActivation": "Już zainstalowana, ale wymaga aktywacji (wersja {{version}}).",
       "mismatch": "Niezgodność wersji: wymagana {{expected}}, znaleziona {{actual}}.",

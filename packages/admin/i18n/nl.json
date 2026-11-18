@@ -384,6 +384,8 @@
       "inactiveTitle": "Inactieve afhankelijkheden gedetecteerd",
       "intro": "Om {{plugin}} in te schakelen, moet het volgende worden geregeld:",
       "notInstalled": "NIET GEÏNSTALLEERD",
+      "inactive": "uit",
+      "incompatible": "andere versie",
       "requires": "Vereist versie {{version}}. Deze kan worden gedownload uit de marketplace.",
       "needsActivation": "Al geïnstalleerd, maar moet nog worden geactiveerd (versie {{version}}).",
       "mismatch": "Versie komt niet overeen: {{expected}} vereist, {{actual}} gevonden.",

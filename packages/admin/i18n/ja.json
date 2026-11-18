@@ -384,6 +384,8 @@
       "inactiveTitle": "無効な依存関係が検出されました",
       "intro": "{{plugin}} を有効にするには、次の対応が必要です:",
       "notInstalled": "未インストール",
+      "inactive": "無効",
+      "incompatible": "別のバージョン",
       "requires": "バージョン {{version}} が必要です。マーケットプレイスからダウンロードできます。",
       "needsActivation": "インストール済みですが、有効化が必要です(バージョン {{version}})。",
       "mismatch": "バージョンが一致しません: {{expected}} が必要ですが、{{actual}} が見つかりました。",

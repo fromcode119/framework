@@ -384,6 +384,8 @@
       "inactiveTitle": "Dépendances inactives détectées",
       "intro": "Pour activer {{plugin}}, les éléments suivants doivent être traités :",
       "notInstalled": "NON INSTALLÉ",
+      "inactive": "désactivé",
+      "incompatible": "version incompatible",
       "requires": "Nécessite la version {{version}}. Elle peut être téléchargée depuis la marketplace.",
       "needsActivation": "Déjà installé, mais doit être activé (version {{version}}).",
       "mismatch": "Version incompatible : {{expected}} requise, {{actual}} trouvée.",

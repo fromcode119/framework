@@ -384,6 +384,8 @@
       "inactiveTitle": "تم اكتشاف اعتماديات غير مفعّلة",
       "intro": "لتفعيل {{plugin}}، يلزم معالجة ما يلي:",
       "notInstalled": "غير مثبّت",
+      "inactive": "معطّل",
+      "incompatible": "إصدار مختلف",
       "requires": "يتطلب الإصدار {{version}}. يمكن تنزيله من المتجر.",
       "needsActivation": "مثبّت بالفعل لكنه يحتاج إلى التفعيل (الإصدار {{version}}).",
       "mismatch": "عدم تطابق الإصدار: المطلوب {{expected}}، والموجود {{actual}}.",

@@ -384,6 +384,8 @@
       "inactiveTitle": "Kebergantungan Tidak Aktif Dikesan",
       "intro": "Untuk mendayakan {{plugin}}, perkara berikut perlu diselesaikan:",
       "notInstalled": "TIDAK DIPASANG",
+      "inactive": "dimatikan",
+      "incompatible": "versi berbeza",
       "requires": "Memerlukan versi {{version}}. Kami boleh memuat turunnya dari pasaran.",
       "needsActivation": "Sudah dipasang tetapi perlu diaktifkan (Versi {{version}}).",
       "mismatch": "Versi tidak sepadan: memerlukan {{expected}}, ditemui {{actual}}.",

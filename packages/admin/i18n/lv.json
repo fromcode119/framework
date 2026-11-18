@@ -384,6 +384,8 @@
       "inactiveTitle": "Konstatētas neaktīvas atkarības",
       "intro": "Lai iespējotu {{plugin}}, jāveic šādas darbības:",
       "notInstalled": "NAV INSTALĒTS",
+      "inactive": "izslēgts",
+      "incompatible": "cita versija",
       "requires": "Nepieciešama versija {{version}}. To var lejupielādēt no tirgus.",
       "needsActivation": "Jau instalēts, bet jāaktivizē (versija {{version}}).",
       "mismatch": "Versiju neatbilstība: nepieciešama {{expected}}, atrasta {{actual}}.",

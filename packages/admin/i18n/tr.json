@@ -384,6 +384,8 @@
       "inactiveTitle": "Etkin Olmayan Bağımlılıklar Algılandı",
       "intro": "{{plugin}} eklentisini etkinleştirmek için şunların halledilmesi gerekiyor:",
       "notInstalled": "YÜKLÜ DEĞİL",
+      "inactive": "kapalı",
+      "incompatible": "farklı sürüm",
       "requires": "{{version}} sürümü gerekiyor. Bunu marketten indirebiliriz.",
       "needsActivation": "Zaten yüklü ancak etkinleştirilmesi gerekiyor (Sürüm {{version}}).",
       "mismatch": "Sürüm uyuşmazlığı: {{expected}} gerekiyor, {{actual}} bulundu.",

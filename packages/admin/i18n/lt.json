@@ -384,6 +384,8 @@
       "inactiveTitle": "Aptiktos neaktyvios priklausomybės",
       "intro": "Norint įjungti {{plugin}}, reikia atlikti šiuos veiksmus:",
       "notInstalled": "NEĮDIEGTA",
+      "inactive": "išjungtas",
+      "incompatible": "kita versija",
       "requires": "Reikalinga versija {{version}}. Ją galima atsisiųsti iš katalogo.",
       "needsActivation": "Jau įdiegta, bet reikia aktyvuoti (versija {{version}}).",
       "mismatch": "Versijų neatitikimas: reikia {{expected}}, rasta {{actual}}.",

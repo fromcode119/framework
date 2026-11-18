@@ -384,6 +384,8 @@
       "inactiveTitle": "Instabu Dipendenzi Inattivi",
       "intro": "Biex tixgħel {{plugin}}, irridu nieħdu ħsieb dan li ġej:",
       "notInstalled": "MHUX INSTALLAT",
+      "inactive": "mitfi",
+      "incompatible": "verżjoni oħra",
       "requires": "Jeħtieġ il-verżjoni {{version}}. Nistgħu nniżżluh mill-marketplace.",
       "needsActivation": "Diġà installat iżda jeħtieġ li jiġi attivat (Verżjoni {{version}}).",
       "mismatch": "Il-verżjoni ma taqbilx: jeħtieġ {{expected}}, instab {{actual}}.",

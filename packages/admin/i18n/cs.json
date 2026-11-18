@@ -384,6 +384,8 @@
       "inactiveTitle": "Zjištěny neaktivní závislosti",
       "intro": "Pro povolení pluginu {{plugin}} je třeba vyřešit následující:",
       "notInstalled": "NENAINSTALOVÁNO",
+      "inactive": "vypnutý",
+      "incompatible": "jiná verze",
       "requires": "Vyžaduje verzi {{version}}. Lze ji stáhnout z marketplace.",
       "needsActivation": "Již nainstalováno, ale je nutné aktivovat (verze {{version}}).",
       "mismatch": "Nesoulad verzí: vyžadováno {{expected}}, nalezeno {{actual}}.",

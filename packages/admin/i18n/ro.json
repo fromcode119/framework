@@ -384,6 +384,8 @@
       "inactiveTitle": "Dependențe inactive detectate",
       "intro": "Pentru a activa {{plugin}}, trebuie rezolvate următoarele:",
       "notInstalled": "NEINSTALAT",
+      "inactive": "dezactivat",
+      "incompatible": "altă versiune",
       "requires": "Necesită versiunea {{version}}. O putem descărca din marketplace.",
       "needsActivation": "Deja instalat, dar trebuie activat (versiunea {{version}}).",
       "mismatch": "Versiune incompatibilă: necesită {{expected}}, găsită {{actual}}.",
