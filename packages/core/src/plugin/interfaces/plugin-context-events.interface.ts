@@ -1,5 +1,5 @@
-import type { IEventContract } from '@core/plugin/events/event-contract-registry';
-import type { IOnceOutcome } from '@core/plugin/events/event-idempotency';
+import type { IEventContract } from '@core/plugin/events/interfaces/event-contract.interface';
+import type { IOnceOutcome } from '@core/plugin/events/interfaces/once-outcome.interface';
 
 /**
  * Declared events and idempotent effects on the plugin context.

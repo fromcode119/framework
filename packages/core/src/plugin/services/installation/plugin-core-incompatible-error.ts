@@ -1,4 +1,4 @@
-import type { IPluginCoreCompatibility } from '@core/plugin/services/runtime/plugin-core-compatibility';
+import type { IPluginCoreCompatibility } from '@core/plugin/services/runtime/interfaces/plugin-core-compatibility.interface';
 
 /**
  * Thrown when an install or update is refused because the running core does not satisfy the plugin's

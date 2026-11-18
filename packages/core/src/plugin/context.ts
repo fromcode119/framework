@@ -46,7 +46,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
 import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 import { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
-import type { IEventContract } from '@core/plugin/events/event-contract-registry';
+import type { IEventContract } from '@core/plugin/events/interfaces/event-contract.interface';
 import { EventIdempotency } from '@core/plugin/events/event-idempotency';
 import { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';

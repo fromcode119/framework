@@ -23,14 +23,14 @@ export { ApiPermissionRequirement } from '@core/plugin/context/api-permission-re
 export { PluginSignInLink } from '@core/plugin/context/plugin-sign-in-link';
 export { LoadedPluginHydration } from '@core/plugin/services/runtime/loaded-plugin-hydration';
 export { EventDeliveryLedger } from '@core/plugin/events/event-delivery-ledger';
-export type { IEventDeliveryFailure } from '@core/plugin/events/event-delivery-ledger';
+export type { IEventDeliveryFailure } from '@core/plugin/events/interfaces/event-delivery-failure.interface';
 export { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 export { EventIdempotency } from '@core/plugin/events/event-idempotency';
-export type { IOnceOutcome } from '@core/plugin/events/event-idempotency';
+export type { IOnceOutcome } from '@core/plugin/events/interfaces/once-outcome.interface';
 export { EventContractRegistry } from '@core/plugin/events/event-contract-registry';
-export type { IEventContract } from '@core/plugin/events/event-contract-registry';
+export type { IEventContract } from '@core/plugin/events/interfaces/event-contract.interface';
 export { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
-export type { ICapabilityProvider } from '@core/plugin/capabilities/capability-provider-registry';
+export type { ICapabilityProvider } from '@core/plugin/capabilities/interfaces/capability-provider.interface';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';

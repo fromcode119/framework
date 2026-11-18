@@ -1,4 +1,4 @@
-import type { ICapabilityProvider } from '@core/plugin/capabilities/capability-provider-registry';
+import type { ICapabilityProvider } from '@core/plugin/capabilities/interfaces/capability-provider.interface';
 
 /**
  * Ask for WHAT you need, not WHO provides it.

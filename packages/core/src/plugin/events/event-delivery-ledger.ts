@@ -3,17 +3,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { EventListenerRegistry } from '@core/plugin/events/event-listener-registry';
 
-/** One failing (event, plugin, site), as the console lists it. */
-export interface IEventDeliveryFailure {
-  id: number | string;
-  event: string;
-  pluginSlug: string;
-  tenantId: string;
-  attempts: number;
-  error: string;
-  payload: unknown;
-  updatedAt: string;
-}
+import type { IEventDeliveryFailure } from '@core/plugin/events/interfaces/event-delivery-failure.interface';
 
 /**
  * The record of announced events a plugin listener failed to handle — the thing that turns a swallowed
