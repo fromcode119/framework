@@ -89,6 +89,14 @@ describe('EventDeliveryLedger', () => {
     const stored = JSON.parse(db.calls.insert[0][1].payload);
     expect(stored.callbackUrl).toBe('https://x.test/cb?order=9&access_token=[redacted]');
     expect(stored.note).not.toContain(jwt);
+
+    // A secret param that sits after a second `?` (inside what a naive matcher treats as one value)
+    // is still caught, because every `?`/`&` starts a fresh parameter.
+    const nested = fakeDb();
+    await EventDeliveryLedger.recordFailure({ db: nested } as any, {
+      event: 'order:completed', pluginSlug: 'p', payload: { link: 'https://x.test/a?next=/b?token=SEKRET2' }, error: 'e',
+    });
+    expect(JSON.parse(nested.calls.insert[0][1].payload).link).not.toContain('SEKRET2');
     const error = db.calls.insert[0][1].error;
     expect(error).toContain('[redacted]');
     expect(error).not.toContain('LIVEKEY');

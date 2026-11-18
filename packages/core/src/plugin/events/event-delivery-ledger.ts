@@ -47,12 +47,15 @@ export class EventDeliveryLedger {
    * Over-matching only drops more payloads, which is the safe direction. */
   private static readonly SENSITIVE_EVENT = /auth|password|token|secret|credential|session|login|signin|otp|verif|mfa|2fa/i;
   /** Secret-shaped substrings redacted out of any stored STRING (value or error), whatever its key:
-   * a JWT, a `Bearer …`/`Basic …` header, or a secret-looking URL query parameter. Each pattern is a
-   * single bounded run (no nested unbounded runs around an alternation), so none can backtrack. */
-  private static readonly JWT = /\beyJ[A-Za-z0-9_-]{6,256}\.[A-Za-z0-9_-]{6,1024}\.[A-Za-z0-9_-]{4,512}/g;
-  private static readonly AUTH_SCHEME = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]{6,1024}/gi;
-  /** One query parameter, name and value each bounded; the name is tested for a secret word in code. */
-  private static readonly URL_PARAM = /([?&])([^=&\s#?]{1,128})=([^&\s#]{1,512})/g;
+   * a JWT, a `Bearer …`/`Basic …` header, or a secret-looking URL query parameter. Each segment is a
+   * single character-class run separated by a required literal, so none backtracks and the match runs
+   * to the end of the token (no upper bound that would redact only a prefix and leak the tail); the
+   * input is already capped at 8000 chars before these run. */
+  private static readonly JWT = /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{4,}/g;
+  private static readonly AUTH_SCHEME = /\b(Bearer|Basic|Digest)\s+[A-Za-z0-9._~+/=-]{6,}/gi;
+  /** One query parameter. `?` is excluded from BOTH name and value, so every `?`/`&` starts a fresh
+   * parameter that is checked on its own — a secret param cannot hide inside another param's value. */
+  private static readonly URL_PARAM = /([?&])([^=&\s#?]+)=([^&\s#?]+)/g;
   private static readonly SECRET_PARAM = /token|secret|password|api[_-]?key|access|sig|signature|otp|code|key/i;
   private static readonly MAX_PAYLOAD_CHARS = 8000;
   private static readonly MAX_SCRUB_CHARS = 8000;
