@@ -1,15 +1,14 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Dialog } from '@/components/ui/view/dialog.client';
 import { DialogSize } from '@/components/ui/enums/dialog-size.enum';
 import { DialogTone } from '@/components/ui/enums/dialog-tone.enum';
 import { Input } from '@/components/ui/view/input.client';
+import { Select } from '@/components/ui/view/select.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
@@ -69,10 +68,10 @@ export class BackupRestoreDialog extends PureReactor {
   private get chosen(): ReactNode {
     const backup = this.restoreState.backup!;
     return (
-      <section className="fc-panel">
-        <h4 className="fc-panel__title">{AdminI18n.t('settings.components.selectedBackup')}</h4>
-        <p className="fc-panel__value">{backup.displayName}</p>
-        <p className="fc-panel__quiet">{backup.filename}</p>
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.selectedBackup')}</h4>
+        <p className="fc-block__value">{backup.displayName}</p>
+        <p className="fc-block__quiet">{backup.filename}</p>
       </section>
     );
   }
@@ -81,21 +80,13 @@ export class BackupRestoreDialog extends PureReactor {
   private get target(): ReactNode {
     const state = this.restoreState;
     return (
-      <section className="fc-panel">
-        <h4 className="fc-panel__title">{AdminI18n.t('settings.components.restoreTarget')}</h4>
-        <div className="fc-segment">
-          {(RestoreTargetScope.values() as RestoreTargetScope[]).map((scope) => (
-            <button
-              key={scope.value}
-              type="button"
-              aria-pressed={state.targetScope === scope}
-              onClick={() => this.onTargetScopeChange(scope)}
-              className={`fc-segment__choice${state.targetScope === scope ? ' fc-segment__choice--on' : ''}`}
-            >
-              {this.scopeLabel(scope)}
-            </button>
-          ))}
-        </div>
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.restoreTarget')}</h4>
+        <Select
+          value={state.targetScope.value}
+          options={(RestoreTargetScope.values() as RestoreTargetScope[]).map((scope) => ({ value: scope.value, label: this.scopeLabel(scope) }))}
+          onChange={(value: string) => this.onTargetScopeChange(RestoreTargetScope.fromValue(value) as RestoreTargetScope)}
+        />
         {state.targetScope === RestoreTargetScope.SYSTEM ? null : (
           <Input
             label={state.targetScope === RestoreTargetScope.PLUGIN
@@ -106,7 +97,7 @@ export class BackupRestoreDialog extends PureReactor {
             placeholder={state.targetScope === RestoreTargetScope.PLUGIN ? 'example-plugin' : 'example-theme'}
           />
         )}
-        <p className="fc-panel__quiet">{AdminI18n.t('settings.components.theBrowserSendsOnlyApproved')}</p>
+        <p className="fc-block__quiet">{AdminI18n.t('settings.components.theBrowserSendsOnlyApproved')}</p>
       </section>
     );
   }
@@ -115,11 +106,11 @@ export class BackupRestoreDialog extends PureReactor {
   private get preview(): ReactNode {
     const state = this.restoreState;
     return (
-      <section className="fc-panel">
-        <div className="fc-panel__head">
+      <section className="fc-block">
+        <div className="fc-block__head">
           <div>
-            <h4 className="fc-panel__title">{AdminI18n.t('settings.components.serverPreview')}</h4>
-            <p className="fc-panel__quiet">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
+            <h4 className="fc-block__title">{AdminI18n.t('settings.components.serverPreview')}</h4>
+            <p className="fc-block__quiet">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
           </div>
           <Button size={FieldSize.SM} isLoading={this.isPreviewing} onClick={() => void this.onPreview()}>
             {AdminI18n.t('settings.components.runPreview')}
@@ -131,8 +122,8 @@ export class BackupRestoreDialog extends PureReactor {
               <AdminRichText k="settings.components.targetValidated" vars={{ target: state.preview.targetLabel, snapshot: state.preview.snapshotType.value }} />
             </p>
             <div>
-              <h5 className="fc-panel__title">{AdminI18n.t('settings.components.confirmationChallenge')}</h5>
-              <p className="fc-panel__code">{state.preview.requiredConfirmationText}</p>
+              <h5 className="fc-block__title">{AdminI18n.t('settings.components.confirmationChallenge')}</h5>
+              <p className="fc-block__code">{state.preview.requiredConfirmationText}</p>
             </div>
             <TextArea
               label={AdminI18n.t('settings.components.typeTheConfirmationTextExactly')}
@@ -142,7 +133,7 @@ export class BackupRestoreDialog extends PureReactor {
             />
           </>
         ) : (
-          <p className="fc-panel__quiet">{AdminI18n.t('settings.components.previewTheRestoreFirstTo')}</p>
+          <p className="fc-block__quiet">{AdminI18n.t('settings.components.previewTheRestoreFirstTo')}</p>
         )}
       </section>
     );
@@ -152,19 +143,19 @@ export class BackupRestoreDialog extends PureReactor {
   private get warnings(): ReactNode {
     const state = this.restoreState;
     return (
-      <section className="fc-panel">
-        <h4 className="fc-panel__title">{AdminI18n.t('settings.components.warnings')}</h4>
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.warnings')}</h4>
         {state.preview?.warnings?.length ? (
-          <ul className="fc-panel__list">
+          <ul className="fc-block__list">
             {state.preview.warnings.map((warning) => (
-              <li key={warning} className="fc-panel__warning">
+              <li key={warning} className="fc-block__warning">
                 <FrameworkIcons.Warning size={14} />
                 <span>{warning}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="fc-panel__quiet">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
+          <p className="fc-block__quiet">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
         )}
         {state.formError ? <p className="fc-note fc-note--danger">{state.formError}</p> : null}
       </section>
@@ -185,16 +176,15 @@ export class BackupRestoreDialog extends PureReactor {
         busy={this.isPreviewing || this.isRestoring}
         foot={this.foot}
       >
-        <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</Badge>
+        {/* One column, in the order the work happens: what, where, the server's check, what it warns
+            about. Two columns inside a 720px dialog made four boxes of 300px and broke the reading
+            down the page (NN/g, web form design #3). */}
         <div className="fc-restore">
-          <div className="fc-restore__column">
-            {this.chosen}
-            {this.target}
-          </div>
-          <div className="fc-restore__column">
-            {this.preview}
-            {this.warnings}
-          </div>
+          <p className="fc-note fc-note--warning">{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</p>
+          {this.chosen}
+          {this.target}
+          {this.preview}
+          {this.warnings}
         </div>
       </Dialog>
     );
