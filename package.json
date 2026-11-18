@@ -92,7 +92,8 @@
     "check:plugin-backend-types:warn": "PLUGIN_BACKEND_TYPES_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-backend-types",
     "build:sdk-types": "cd packages/sdk && node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs dts-bundle -p tsconfig.declarations.json --dist dist",
     "check:script-paths": "node packages/arch-guard/dist/arch-guard-cli.cjs script-paths",
-    "check:ignored-sources": "node packages/arch-guard/dist/arch-guard-cli.cjs ignored-sources"
+    "check:ignored-sources": "node packages/arch-guard/dist/arch-guard-cli.cjs ignored-sources",
+    "check:admin-palette": "node packages/arch-guard/dist/arch-guard-cli.cjs admin-palette"
   },
   "dependencies": {
     "htm": "3.1.1",
