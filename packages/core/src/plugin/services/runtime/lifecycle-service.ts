@@ -29,6 +29,7 @@ import { PluginRegistrationState } from '@core/plugin/services/runtime/plugin-re
 import { PluginTeardownService } from '@core/plugin/services/runtime/plugin-teardown-service';
 import { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
 import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
+import { PluginCoreCompatibility } from '@core/plugin/services/runtime/plugin-core-compatibility';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -41,13 +42,17 @@ export class LifecycleService {
   private readonly registrationState: PluginRegistrationState;
   private readonly teardown: PluginTeardownService;
   readonly approval: PluginApprovalGate;
+  /** The core version this installation runs. A thunk, resolved lazily to keep the engine out of the module graph (no cycle). */
+  private readonly coreVersion: () => string | Promise<string>;
 
   constructor(
     private manager: IPluginManagerInterface,
     private registry: PluginStateService,
     private discovery: DiscoveryService,
-    private schemaManager: SchemaManager
+    private schemaManager: SchemaManager,
+    coreVersion?: () => string | Promise<string>,
   ) {
+    this.coreVersion = coreVersion ?? (async () => (await import('@core/management/system-update-service')).SystemUpdateService.installedVersion());
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
@@ -213,6 +218,21 @@ export class LifecycleService {
         this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
         await this.activation.syncPluginCollections(slug);
       }
+      return;
+    }
+
+    // A build that needs a newer core than this installation runs must never go ACTIVE: its UI bundle
+    // would fail to import and take EVERY component of the plugin down with it (plugin auto-update
+    // outran the core). Hold it with a clear reason until the operator updates the core. Deliberately
+    // NOT bypassed by `force` — running on too-old core is the defect, not a dependency to override.
+    const coreCompatibility = PluginCoreCompatibility.check(plugin.manifest, String(await this.coreVersion()));
+    if (!coreCompatibility.ok) {
+      const message = PluginCoreCompatibility.message(slug, coreCompatibility);
+      await this.approval.hold(slug, PluginHeldReason.CORE_TOO_OLD, {
+        subject: `[Fromcode Framework] "${slug}" needs a newer platform`,
+        text: message,
+        logLine: `Plugin "${slug}" HELD: ${message}`,
+      });
       return;
     }
 
