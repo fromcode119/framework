@@ -2481,10 +2481,34 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 .fc-block__warning svg { flex: none; margin-top: 2px; color: var(--fc-warning); }
 
 /* One line that says how something went, in the tone of the thing it says. */
-.fc-note { margin: 0; padding: 8px 10px; border: 1px solid; border-radius: var(--fc-control-radius); font-size: var(--fc-text-xs); line-height: var(--fc-leading); }
-.fc-note--success { background: var(--fc-success-soft); border-color: var(--fc-success-soft-border); color: var(--fc-success-strong); }
-.fc-note--danger { background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); color: var(--fc-danger-strong); }
-.fc-note--warning { background: var(--fc-warning-soft); border-color: var(--fc-warning-soft-border); color: var(--fc-warning-strong); }
+/* ── A tip ───────────────────────────────────────────────────────────────────────────────────────
+ * Something worth knowing beside the thing it is about. Taken from the reference's own component:
+ * a QUIET block — the console's muted surface, small muted text, a border and 12px of padding —
+ * whose tone is a 4px BAR down its left side, never a wash over the whole block.
+ * (@medusajs/ui inline-tip.js: `bg-ui-bg-component txt-small text-ui-fg-subtle grid
+ *  grid-cols-[4px_1fr] items-start gap-3 rounded-lg border p-3`, bar `w-1 rounded-full` in
+ *  neutral / orange / red / green.)
+ *
+ * Ours tinted the whole panel amber, green or rose. That is their ALERT, which they use only for
+ * something that has gone wrong and which can be dismissed — not for a standing explanation. */
+.fc-tip {
+  display: grid;
+  grid-template-columns: 4px 1fr;
+  align-items: start;
+  gap: 12px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  font-size: var(--fc-text-xs);
+  line-height: var(--fc-leading);
+  color: var(--fc-text-muted);
+}
+.fc-tip::before { content: ''; align-self: stretch; width: 4px; border-radius: 999px; background: var(--fc-text-muted); }
+.fc-tip--warning::before { background: var(--fc-warning); }
+.fc-tip--danger::before { background: var(--fc-danger); }
+.fc-tip--success::before { background: var(--fc-success); }
 
 /* The restore dialog: one column, a rule between its blocks. */
 .fc-restore { display: flex; flex-direction: column; gap: 16px; }

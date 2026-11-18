@@ -116,7 +116,7 @@ export class BackupRestoreDialog extends PureReactor {
         </div>
         {state.preview ? (
           <>
-            <p className="fc-note fc-note--success">
+            <p className="fc-block__value">
               <AdminRichText k="settings.components.targetValidated" vars={{ target: state.preview.targetLabel, snapshot: state.preview.snapshotType.value }} />
             </p>
             <div>
@@ -155,7 +155,7 @@ export class BackupRestoreDialog extends PureReactor {
         ) : (
           <p className="fc-block__quiet">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
         )}
-        {state.formError ? <p className="fc-note fc-note--danger">{state.formError}</p> : null}
+        
       </section>
     );
   }
@@ -169,13 +169,14 @@ export class BackupRestoreDialog extends PureReactor {
         title={AdminI18n.t('settings.components.previewRestore')}
         subtitle={AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}
         saving={this.isPreviewing || this.isRestoring}
+        error={this.restoreState.formError || undefined}
         foot={this.foot}
       >
         {/* One column, in the order the work happens: what, where, the server's check, what it warns
             about. Two columns inside a 720px dialog made four boxes of 300px and broke the reading
             down the page (NN/g, web form design #3). */}
         <div className="fc-restore">
-          <p className="fc-note fc-note--warning">{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</p>
+          <p className="fc-tip fc-tip--warning"><span>{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</span></p>
           {this.chosen}
           {this.target}
           {this.preview}
