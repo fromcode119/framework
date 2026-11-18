@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 import { StackLayout } from '@cli/services/stack/stack-layout';
+import { StackExtensions } from '@cli/services/stack/stack-extensions';
 
 /**
  * The files a local stack runs from.
@@ -37,8 +38,12 @@ export class StackPlan {
   /** Read from the worktree, never assumed: see StackLayout. */
   private readonly layout: StackLayout;
 
+  /** Resolves a plugin's dependencies from the checkouts beside the framework. */
+  private readonly extensions: StackExtensions;
+
   constructor(private readonly request: IStackRequest) {
     this.layout = StackLayout.of(request.framework);
+    this.extensions = StackExtensions.of(request.framework, StackPlan.PLUGIN_KIND);
   }
 
   /**
@@ -165,60 +170,27 @@ export class StackPlan {
    * land somewhere the platform never looks, and the plugin would simply not be there.
    */
   private pluginMounts(): string[] {
-    return this.request.plugins
-      .map((plugin) => {
-        const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, StackPlan.slugOf(plugin));
-        return container ? `${plugin}:${container}` : null;
-      })
-      .filter((mount): mount is string => mount !== null);
-  }
+    const mounts: string[] = [];
 
-  /**
-   * Dependencies a mounted plugin declares that are not mounted alongside it.
-   *
-   * A plugin whose dependency is absent is staged, installed and then NOT registered — the stack
-   * comes up looking fine and the plugin is simply not there, with the reason only in the api's
-   * log, 35 seconds after the command said the stack was ready. Measured: `logistics-boxnow`
-   * needs `logistics`, which needs `finance`.
-   *
-   * Reported rather than refused: the dependency may already be installed in the template, which
-   * this cannot see from outside.
-   */
-  missingDependencies(): Map<string, string[]> {
-    const mounted = new Set(this.request.plugins.map((plugin) => StackPlan.slugOf(plugin)));
-    const missing = new Map<string, string[]>();
+    for (const [slug, directory] of this.extensions.resolve(this.request.plugins)) {
+      const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, slug);
+      if (!container) continue;
 
-    for (const plugin of this.request.plugins) {
-      const absent = Object.keys(StackPlan.dependenciesOf(plugin)).filter((slug) => !mounted.has(slug));
-      if (absent.length) missing.set(StackPlan.slugOf(plugin), absent);
+      // Only what the caller named is writable; the rest came from the shared checkouts.
+      const mode = StackExtensions.chosenAmong(this.request.plugins, directory) ? '' : ':ro';
+      mounts.push(`${directory}:${container}${mode}`);
     }
-    return missing;
+    return mounts;
   }
 
-  /** What an extension's manifest says it needs, by slug. */
-  private static dependenciesOf(extension: string): Record<string, string> {
-    const manifest = path.join(extension, 'manifest.json');
-    if (!fs.existsSync(manifest)) return {};
-
-    const declared = (JSON.parse(fs.readFileSync(manifest, 'utf8')) as { dependencies?: Record<string, string> }).dependencies;
-    return declared ?? {};
+  /** What no checkout could supply, for the command to say before it starts anything. */
+  missingDependencies(): ReadonlyMap<string, string[]> {
+    return this.extensions.missing(this.request.plugins);
   }
 
-  /**
-   * The slug the platform knows an extension by, from its own manifest.
-   *
-   * NOT the directory name. A worktree is named for the change being made — `plugin-boxnow`,
-   * `ec-page` — while the manifest says `logistics-boxnow`, and the platform looks the extension up
-   * by slug. Mounted under the directory name it lands where nothing reads, and the plugin is
-   * simply absent with no error to explain it.
-   */
-  static slugOf(extension: string): string {
-    const manifest = path.join(extension, 'manifest.json');
-    if (fs.existsSync(manifest)) {
-      const slug = String((JSON.parse(fs.readFileSync(manifest, 'utf8')) as { slug?: string }).slug || '').trim();
-      if (slug) return slug;
-    }
-    return path.basename(extension);
+  /** Where the mirror of main was found, or null when the worktree could not point at one. */
+  get extensionMirror(): string | null {
+    return this.extensions.mirror;
   }
 
   /** The workspace folder of this worktree, as its own package.json declares it. */
