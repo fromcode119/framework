@@ -22,6 +22,7 @@ export class StackCommandService {
     StackCommandService.registerDown(stack);
     StackCommandService.registerList(stack);
     StackCommandService.registerPrune(stack);
+    StackCommandService.registerSnapshot(stack);
   }
 
   private static registerUp(stack: Command): void {
@@ -34,6 +35,7 @@ export class StackCommandService {
       // own version and never started a stack.
       .option('-t, --tag <tag>', 'Released image tag to run on')
       .option('--port <port>', 'Port on 127.0.0.1', (value) => parseInt(value, 10))
+      .option('--from <template>', 'Start from a captured template instead of the setup wizard')
       .action(async (name: string, options: Record<string, unknown>) => {
         const service = new StackService();
         const framework = path.resolve(String(options.framework));
@@ -46,7 +48,7 @@ export class StackCommandService {
             version: String(options.tag || StackCommandService.versionOf(framework)),
             port: (options.port as number) || new StackStore().nextPort(),
           };
-          await service.up(request);
+          await service.up(request, options.from ? String(options.from) : undefined);
 
           console.log(chalk.green(`\nStack "${name}" is up.`));
           for (const url of new StackPlan(request).urls()) {
@@ -115,6 +117,32 @@ export class StackCommandService {
         for (const record of stale) {
           await service.down(record.name);
           console.log(chalk.green(`  removed ${record.name}`));
+        }
+      });
+  }
+
+  /**
+   * Captures a stack that has been through setup once, so later stacks skip it.
+   *
+   * There is no headless way to create a site or an admin account — the CLI has no command for
+   * either — so a fresh stack always meant a trip through the first-run wizard. This is the escape:
+   * do it once, capture it, and start from it afterwards.
+   */
+  private static registerSnapshot(stack: Command): void {
+    stack
+      .command('snapshot <name>')
+      .description('Capture a stack as a template for later stacks')
+      .option('--as <template>', 'Name for the template', 'default')
+      .action(async (name: string, options: Record<string, unknown>) => {
+        try {
+          console.log(chalk.gray(`Stopping "${name}" so the database is copied cleanly…`));
+          const root = await new StackService().snapshot(name, String(options.as));
+
+          console.log(chalk.green(`\nTemplate "${String(options.as)}" captured from "${name}".`));
+          console.log(chalk.gray(`  ${root}`));
+          console.log(chalk.gray(`  use it: fromcode stack up <new> --from ${String(options.as)}`));
+        } catch (error) {
+          StackCommandService.fail(error);
         }
       });
   }

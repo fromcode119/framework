@@ -4,6 +4,7 @@ import path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { StackSession } from '@cli/services/stack/stack-session';
 import { StackPlan } from '@cli/services/stack/stack-plan';
+import { StackService } from '@cli/services/stack/stack-service';
 
 /**
  * These cover the one answer that must never be wrong: whether the session that made a stack is
@@ -133,6 +134,21 @@ describe('StackPlan', () => {
 
     expect(overlay).not.toContain('.next');
     expect(overlay).toContain('services:');
+  });
+
+  /**
+   * A stack built from a template answered 404 on its own hostname until the console address was
+   * repointed, and the first attempt at repointing it failed on quoting: the statement's own
+   * quotes closed the quoting around `sh -c`, so psql got a bare `http://...` and stopped at the
+   * colon. Both are cheap to keep from coming back.
+   */
+  it('keeps the console URL quoted inside the statement, and pipes it rather than passing it', () => {
+    const command = StackService.consoleUrlCommand('http://console.demo.localhost:8200');
+
+    expect(command).toContain("value = 'http://console.demo.localhost:8200'");
+    expect(command).toMatch(/^echo ".*" \| docker compose exec -T db /);
+    // The URL must not sit where `sh -c`'s own quoting would end before it.
+    expect(command.indexOf('http://console.demo.localhost:8200')).toBeLessThan(command.indexOf("sh -c '"));
   });
 
   it('names every host the stack answers on', () => {

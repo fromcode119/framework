@@ -54,6 +54,7 @@ export class StackStore {
         root,
         port: Number(raw.port || 0),
         framework,
+        version: String(raw.version || ''),
         createdAt: new Date(String(raw.createdAt || Date.now())),
         // The session is read from the WORKTREE path, which is where the scratchpad id lives; the
         // stack's own directory is outside the scratchpad precisely so it survives a restart.
@@ -64,12 +65,12 @@ export class StackStore {
     }
   }
 
-  write(name: string, port: number, framework: string, plugins: readonly string[]): void {
+  write(name: string, port: number, framework: string, version: string, plugins: readonly string[]): void {
     const root = this.rootFor(name);
     fs.mkdirSync(root, { recursive: true });
     fs.writeFileSync(
       path.join(root, 'stack.json'),
-      `${JSON.stringify({ name, port, framework, plugins, createdAt: new Date().toISOString() }, null, 2)}\n`,
+      `${JSON.stringify({ name, port, framework, version, plugins, createdAt: new Date().toISOString() }, null, 2)}\n`,
     );
   }
 
