@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "审核并批准",
       "needsAttention": "需要处理",
       "needsReApproval": "需要重新批准",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "批准后权限发生变更：{{drift}}",
       "heldPendingReApprovalOf": "已暂停，等待重新批准变更的权限。",
       "approveEnable": "批准并启用",

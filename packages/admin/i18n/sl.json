@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Preglej in odobri",
       "needsAttention": "Potrebuje pozornost",
       "needsReApproval": "Potrebna ponovna odobritev",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Sprememba zmožnosti od odobritve: {{drift}}",
       "heldPendingReApprovalOf": "Zadržano do ponovne odobritve spremenjenih zmožnosti.",
       "approveEnable": "Odobri in omogoči",

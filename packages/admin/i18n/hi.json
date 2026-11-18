@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "समीक्षा करें और स्वीकृत करें",
       "needsAttention": "ध्यान देने की आवश्यकता",
       "needsReApproval": "पुनः स्वीकृति आवश्यक",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "स्वीकृति के बाद क्षमता में बदलाव: {{drift}}",
       "heldPendingReApprovalOf": "बदली हुई क्षमताओं की पुनः स्वीकृति तक रोका गया।",
       "approveEnable": "स्वीकृत और सक्षम करें",

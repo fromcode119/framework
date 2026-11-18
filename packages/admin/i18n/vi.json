@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Xem xét và phê duyệt",
       "needsAttention": "Cần chú ý",
       "needsReApproval": "Cần phê duyệt lại",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Quyền hạn đã thay đổi kể từ khi phê duyệt: {{drift}}",
       "heldPendingReApprovalOf": "Bị tạm giữ chờ phê duyệt lại các quyền hạn đã thay đổi.",
       "approveEnable": "Phê duyệt và bật",

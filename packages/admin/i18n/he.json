@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "בדיקה ואישור",
       "needsAttention": "דורש תשומת לב",
       "needsReApproval": "דורש אישור מחדש",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "שינוי ביכולות מאז האישור: {{drift}}",
       "heldPendingReApprovalOf": "מושהה עד לאישור מחדש של היכולות שהשתנו.",
       "approveEnable": "אישור והפעלה",

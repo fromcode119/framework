@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Granska och godkänn",
       "needsAttention": "Kräver åtgärd",
       "needsReApproval": "Kräver nytt godkännande",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ändrade behörigheter sedan godkännandet: {{drift}}",
       "heldPendingReApprovalOf": "Pausat i väntan på nytt godkännande av ändrade behörigheter.",
       "approveEnable": "Godkänn och aktivera",

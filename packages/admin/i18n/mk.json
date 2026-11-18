@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Прегледај и одобри",
       "needsAttention": "Бара внимание",
       "needsReApproval": "Бара повторно одобрување",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Промена на можностите од одобрувањето: {{drift}}",
       "heldPendingReApprovalOf": "Задржан до повторно одобрување на променетите можности.",
       "approveEnable": "Одобри и вклучи",

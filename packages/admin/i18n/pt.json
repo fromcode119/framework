@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Revisar e aprovar",
       "needsAttention": "Requer atenção",
       "needsReApproval": "Requer reaprovação",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Alteração de capacidades desde a aprovação: {{drift}}",
       "heldPendingReApprovalOf": "Retido aguardando reaprovação das capacidades alteradas.",
       "approveEnable": "Aprovar e ativar",

@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Irrevedi u approva",
       "needsAttention": "Jeħtieġ attenzjoni",
       "needsReApproval": "Jeħtieġ approvazzjoni mill-ġdid",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Bidla fil-kapaċitajiet mill-approvazzjoni: {{drift}}",
       "heldPendingReApprovalOf": "Miżmum sakemm jiġu approvati mill-ġdid il-kapaċitajiet mibdula.",
       "approveEnable": "Approva u attiva",

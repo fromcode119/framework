@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Athbhreithnigh agus ceadaigh",
       "needsAttention": "Aird ag teastáil",
       "needsReApproval": "Athcheadú ag teastáil",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Athrú cumais ón gceadú: {{drift}}",
       "heldPendingReApprovalOf": "Coinnithe go dtí go n-athcheadófar na cumais athraithe.",
       "approveEnable": "Ceadaigh agus cumasaigh",

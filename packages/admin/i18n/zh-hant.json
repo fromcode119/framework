@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "審核並核准",
       "needsAttention": "需要注意",
       "needsReApproval": "需要重新核准",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "核准後的權限變更：{{drift}}",
       "heldPendingReApprovalOf": "已暫停，等待重新核准變更的權限。",
       "approveEnable": "核准並啟用",

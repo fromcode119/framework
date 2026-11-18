@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "ตรวจสอบและอนุมัติ",
       "needsAttention": "ต้องได้รับการดูแล",
       "needsReApproval": "ต้องอนุมัติซ้ำ",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "สิทธิ์ที่เปลี่ยนไปตั้งแต่การอนุมัติ: {{drift}}",
       "heldPendingReApprovalOf": "ถูกระงับไว้ระหว่างรอการอนุมัติสิทธิ์ที่เปลี่ยนแปลงซ้ำ",
       "approveEnable": "อนุมัติและเปิดใช้งาน",

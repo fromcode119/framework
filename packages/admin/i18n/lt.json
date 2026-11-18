@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Peržiūrėti ir patvirtinti",
       "needsAttention": "Reikia dėmesio",
       "needsReApproval": "Reikia patvirtinti iš naujo",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Galimybių pokytis nuo patvirtinimo: {{drift}}",
       "heldPendingReApprovalOf": "Sulaikyta, kol bus iš naujo patvirtintos pakitusios galimybės.",
       "approveEnable": "Patvirtinti ir įjungti",

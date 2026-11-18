@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Suriin at aprubahan",
       "needsAttention": "Kailangan ng atensyon",
       "needsReApproval": "Kailangang muling aprubahan",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Pagbabago sa kakayahan mula nang aprubahan: {{drift}}",
       "heldPendingReApprovalOf": "Naka-hold habang hinihintay ang muling pag-apruba ng mga binagong kakayahan.",
       "approveEnable": "Aprubahan at i-enable",

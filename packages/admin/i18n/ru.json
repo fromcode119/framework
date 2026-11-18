@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Проверить и одобрить",
       "needsAttention": "Требует внимания",
       "needsReApproval": "Требуется повторное одобрение",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Изменения разрешений с момента одобрения: {{drift}}",
       "heldPendingReApprovalOf": "Приостановлен до повторного одобрения изменённых разрешений.",
       "approveEnable": "Одобрить и включить",

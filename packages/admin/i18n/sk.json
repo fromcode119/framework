@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Skontrolovať a schváliť",
       "needsAttention": "Vyžaduje pozornosť",
       "needsReApproval": "Vyžaduje opätovné schválenie",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Zmena oprávnení od schválenia: {{drift}}",
       "heldPendingReApprovalOf": "Pozastavené do opätovného schválenia zmenených oprávnení.",
       "approveEnable": "Schváliť a zapnúť",

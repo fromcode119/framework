@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Semak dan luluskan",
       "needsAttention": "Perlu perhatian",
       "needsReApproval": "Perlu kelulusan semula",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Perubahan keupayaan sejak kelulusan: {{drift}}",
       "heldPendingReApprovalOf": "Ditahan sementara menunggu kelulusan semula keupayaan yang berubah.",
       "approveEnable": "Luluskan & dayakan",

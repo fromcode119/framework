@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Gennemgå og godkend",
       "needsAttention": "Kræver opmærksomhed",
       "needsReApproval": "Skal godkendes igen",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ændrede rettigheder siden godkendelse: {{drift}}",
       "heldPendingReApprovalOf": "Tilbageholdt, indtil de ændrede rettigheder er godkendt igen.",
       "approveEnable": "Godkend og aktivér",

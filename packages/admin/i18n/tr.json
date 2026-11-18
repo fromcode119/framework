@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "İncele ve onayla",
       "needsAttention": "İlgilenilmesi gerekiyor",
       "needsReApproval": "Yeniden onay gerekiyor",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Onaydan sonraki yetenek değişikliği: {{drift}}",
       "heldPendingReApprovalOf": "Değişen yeteneklerin yeniden onaylanması bekleniyor.",
       "approveEnable": "Onayla ve etkinleştir",

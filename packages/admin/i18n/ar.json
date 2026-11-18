@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "المراجعة والموافقة",
       "needsAttention": "تحتاج إلى انتباه",
       "needsReApproval": "تحتاج إلى إعادة موافقة",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "تغيّر في الصلاحيات منذ الموافقة: {{drift}}",
       "heldPendingReApprovalOf": "معلّقة بانتظار إعادة الموافقة على الصلاحيات المتغيّرة.",
       "approveEnable": "الموافقة والتفعيل",

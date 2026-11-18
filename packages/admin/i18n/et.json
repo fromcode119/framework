@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Vaata üle ja kinnita",
       "needsAttention": "Vajab tähelepanu",
       "needsReApproval": "Vajab uuesti kinnitamist",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Õiguste muutus pärast kinnitamist: {{drift}}",
       "heldPendingReApprovalOf": "Peatatud, kuni muutunud õigused uuesti kinnitatakse.",
       "approveEnable": "Kinnita ja lülita sisse",

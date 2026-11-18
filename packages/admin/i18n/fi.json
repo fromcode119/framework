@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Tarkista ja hyväksy",
       "needsAttention": "Vaatii huomiota",
       "needsReApproval": "Vaatii uudelleenhyväksynnän",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Oikeuksien muutos hyväksynnän jälkeen: {{drift}}",
       "heldPendingReApprovalOf": "Pysäytetty, kunnes muuttuneet oikeudet hyväksytään uudelleen.",
       "approveEnable": "Hyväksy ja ota käyttöön",

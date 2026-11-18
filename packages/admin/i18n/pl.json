@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Przejrzyj i zatwierdź",
       "needsAttention": "Wymaga uwagi",
       "needsReApproval": "Wymaga ponownego zatwierdzenia",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Zmiana uprawnień od zatwierdzenia: {{drift}}",
       "heldPendingReApprovalOf": "Wstrzymano do czasu ponownego zatwierdzenia zmienionych uprawnień.",
       "approveEnable": "Zatwierdź i włącz",

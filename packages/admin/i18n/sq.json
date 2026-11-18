@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Shqyrto dhe mirato",
       "needsAttention": "Kërkon vëmendje",
       "needsReApproval": "Kërkon rimiratim",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ndryshim aftësish që nga miratimi: {{drift}}",
       "heldPendingReApprovalOf": "E pezulluar në pritje të rimiratimit të aftësive të ndryshuara.",
       "approveEnable": "Mirato dhe aktivizo",

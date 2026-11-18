@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Prüfen und freigeben",
       "needsAttention": "Erfordert Aufmerksamkeit",
       "needsReApproval": "Erneute Freigabe erforderlich",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Geänderte Berechtigungen seit der Freigabe: {{drift}}",
       "heldPendingReApprovalOf": "Zurückgehalten bis zur erneuten Freigabe geänderter Berechtigungen.",
       "approveEnable": "Freigeben und aktivieren",

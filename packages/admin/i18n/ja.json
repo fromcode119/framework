@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "確認して承認",
       "needsAttention": "対応が必要",
       "needsReApproval": "再承認が必要",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "承認後の権限の変更: {{drift}}",
       "heldPendingReApprovalOf": "変更された権限の再承認待ちで保留中です。",
       "approveEnable": "承認して有効化",

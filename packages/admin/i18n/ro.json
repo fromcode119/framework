@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Verifică și aprobă",
       "needsAttention": "Necesită atenție",
       "needsReApproval": "Necesită reaprobare",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Modificare de capabilități de la aprobare: {{drift}}",
       "heldPendingReApprovalOf": "Reținut până la reaprobarea capabilităților modificate.",
       "approveEnable": "Aprobă și activează",

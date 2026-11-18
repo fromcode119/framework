@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Beoordelen en goedkeuren",
       "needsAttention": "Vereist aandacht",
       "needsReApproval": "Opnieuw goedkeuren vereist",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Gewijzigde rechten sinds goedkeuring: {{drift}}",
       "heldPendingReApprovalOf": "Tegengehouden in afwachting van hergoedkeuring van gewijzigde rechten.",
       "approveEnable": "Goedkeuren en inschakelen",

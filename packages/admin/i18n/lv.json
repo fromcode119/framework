@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Pārskatīt un apstiprināt",
       "needsAttention": "Nepieciešama uzmanība",
       "needsReApproval": "Nepieciešama atkārtota apstiprināšana",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Iespēju izmaiņas kopš apstiprināšanas: {{drift}}",
       "heldPendingReApprovalOf": "Aizturēts, līdz tiks atkārtoti apstiprinātas mainītās iespējas.",
       "approveEnable": "Apstiprināt un iespējot",

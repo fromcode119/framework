@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Переглянути й схвалити",
       "needsAttention": "Потребує уваги",
       "needsReApproval": "Потребує повторного схвалення",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Зміни дозволів після схвалення: {{drift}}",
       "heldPendingReApprovalOf": "Призупинено до повторного схвалення змінених дозволів.",
       "approveEnable": "Схвалити й увімкнути",

@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Gå gjennom og godkjenn",
       "needsAttention": "Krever oppmerksomhet",
       "needsReApproval": "Må godkjennes på nytt",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Endrede tillatelser siden godkjenning: {{drift}}",
       "heldPendingReApprovalOf": "Holdes tilbake til de endrede tillatelsene er godkjent på nytt.",
       "approveEnable": "Godkjenn og aktiver",

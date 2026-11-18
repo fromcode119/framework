@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Έλεγχος και έγκριση",
       "needsAttention": "Χρειάζεται προσοχή",
       "needsReApproval": "Χρειάζεται επανέγκριση",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Αλλαγή δυνατοτήτων από την έγκριση: {{drift}}",
       "heldPendingReApprovalOf": "Σε αναμονή επανέγκρισης των αλλαγμένων δυνατοτήτων.",
       "approveEnable": "Έγκριση και ενεργοποίηση",

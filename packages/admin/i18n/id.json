@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Tinjau dan setujui",
       "needsAttention": "Perlu perhatian",
       "needsReApproval": "Perlu persetujuan ulang",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Perubahan kapabilitas sejak disetujui: {{drift}}",
       "heldPendingReApprovalOf": "Ditahan menunggu persetujuan ulang atas kapabilitas yang berubah.",
       "approveEnable": "Setujui & aktifkan",

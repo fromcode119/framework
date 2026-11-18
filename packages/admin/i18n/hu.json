@@ -1370,6 +1370,7 @@
       "reApproveAllHeld": "Ellenőrzés és jóváhagyás",
       "needsAttention": "Figyelmet igényel",
       "needsReApproval": "Újbóli jóváhagyás szükséges",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Jogosultságváltozás a jóváhagyás óta: {{drift}}",
       "heldPendingReApprovalOf": "Visszatartva a megváltozott jogosultságok újbóli jóváhagyásáig.",
       "approveEnable": "Jóváhagyás és engedélyezés",
