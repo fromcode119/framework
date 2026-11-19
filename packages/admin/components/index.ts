@@ -35,6 +35,7 @@ export * from '@/components/ui/view/search-field.client';
 export * from '@/components/ui/view/alert.client';
 export * from '@/components/ui/view/state-page.client';
 export * from '@/components/ui/view/page-bar.client';
+export * from '@/components/ui/view/code-block.client';
 export * from '@/components/ui/view/list-shell.client';
 export * from '@/components/ui/view/list-shell-head.client';
 export * from '@/components/ui/view/list-card.client';

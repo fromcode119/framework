@@ -2888,11 +2888,13 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-btn--ghost:disabled { background: transparent; }
 .fc-btn--primary {
   background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);
-  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(0 0 0 / .4), 0 0 0 1px var(--fc-btn-primary-edge);
+  /* ONE edge: the fill itself. A darker ring round the fill with a light line inside it read as a
+     button drawn twice. */
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / .24);
 }
 .fc-btn--danger {
   background: var(--fc-btn-danger); color: #fff;
-  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(190 18 60 / .4), 0 0 0 1px var(--fc-btn-danger-edge);
+  box-shadow: 0 1px 2px 0 rgb(190 18 60 / .24);
 }
 /* A button that rides INSIDE a field — the language chip over a text box. At the console's 28px it
    left 2px of air above and below in a 32px field and read as a second control stacked on the first.
@@ -3392,3 +3394,51 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
    above and below; held to the one-line height the name sat against the top edge and the line under
    it against the hairline. */
 .fc-record-card__head:has(> .fc-record-card__subtitle) { flex-wrap: wrap; row-gap: 2px; padding-block: 14px; }
+
+/* ── CodeBlock ── code to read and copy: one dark block, an optional head, a copy control at its corner. */
+.fc-code-block { position: relative; border-radius: 8px; background: #18181b; color: #e4e4e7; overflow: hidden; }
+.fc-code-block__head { padding: 8px 16px; border-bottom: 1px solid rgb(255 255 255 / .08); font-size: var(--fc-text-xs); color: #a1a1aa; }
+.fc-code-block__body { margin: 0; padding: 12px 44px 12px 16px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 18px; white-space: pre; }
+.fc-code-block__copy { position: absolute; inset-block-start: 6px; inset-inline-end: 6px; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; color: #a1a1aa; cursor: pointer; }
+.fc-code-block__head ~ .fc-code-block__copy { inset-block-start: 3px; }
+.fc-code-block__copy:hover { background: rgb(255 255 255 / .08); color: #fafafa; }
+
+/* ── The kit ── a list of components at the side, one component's page beside it: what it is, each
+   way of using it with its code, and the options it takes. */
+.fc-kitdoc { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 24px; width: 100%; max-width: 1180px; margin-inline: auto; padding-block: 24px 64px; align-items: start; }
+.fc-kitdoc__nav { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.fc-kitdoc__group { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; }
+.fc-kitdoc__group-name { margin: 0 0 4px; padding-inline: 8px; font-size: var(--fc-text-xs); font-weight: 500; color: var(--fc-text-muted); }
+.fc-kitdoc__link { display: block; padding: 4px 8px; border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); text-decoration: none; }
+.fc-kitdoc__link:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-kitdoc__link--on { background: var(--fc-surface); box-shadow: var(--fc-control-shadow); color: var(--fc-text); font-weight: 500; }
+.fc-kitdoc__main { display: flex; flex-direction: column; gap: 40px; min-width: 0; }
+.fc-kitdoc__head { display: flex; flex-direction: column; gap: 8px; }
+.fc-kitdoc__eyebrow { margin: 0; font-size: var(--fc-text-xs); font-weight: 500; color: var(--fc-text-muted); }
+.fc-kitdoc__h1 { margin: 0; font-size: 24px; line-height: 32px; font-weight: 500; color: var(--fc-text); }
+.fc-kitdoc__lead { margin: 0 0 8px; max-width: 68ch; font-size: 14px; line-height: 22px; color: var(--fc-text-muted); }
+.fc-kitdoc__example { display: flex; flex-direction: column; gap: 12px; min-width: 0; scroll-margin-top: 16px; }
+.fc-kitdoc__h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--fc-text); }
+.fc-kitdoc__text { margin: -4px 0 0; max-width: 72ch; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }
+.fc-kitdoc__text code, .fc-kitdoc__code { padding: 1px 4px; border-radius: 4px; background: var(--fc-surface-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--fc-text); }
+.fc-kitdoc__demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 24px; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); }
+.fc-kitdoc__demo--flush { display: block; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.fc-kitdoc__cell { width: 240px; max-width: 100%; }
+.fc-kitdoc__cell--wide { width: 100%; }
+.fc-kitdoc__stack { display: flex; flex-direction: column; gap: 8px; }
+.fc-kitdoc__inline { display: inline-flex; align-items: center; gap: 8px; }
+.fc-kitdoc__tall { height: 32px; }
+.fc-kitdoc__pad { padding: 16px var(--fc-card-pad-x); }
+.fc-kitdoc__dotted { border-bottom: 1px dotted var(--fc-text-muted); cursor: help; }
+.fc-kitdoc__index { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.fc-kitdoc__tile { display: flex; flex-direction: column; gap: 4px; padding: 16px; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); text-decoration: none; }
+.fc-kitdoc__tile:hover { border-color: var(--fc-text-muted); }
+.fc-kitdoc__tile-name { font-size: 14px; font-weight: 500; color: var(--fc-text); }
+.fc-kitdoc__tile-text { font-size: var(--fc-text-xs); line-height: 18px; color: var(--fc-text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 900px) {
+  .fc-kitdoc { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .fc-kitdoc__nav { position: static; max-height: none; flex-direction: row; flex-wrap: wrap; gap: 4px; }
+  .fc-kitdoc__group { display: contents; }
+  .fc-kitdoc__group-name { display: none; }
+  .fc-kitdoc__demo { padding: 16px; }
+}
