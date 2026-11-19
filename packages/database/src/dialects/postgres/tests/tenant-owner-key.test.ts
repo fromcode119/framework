@@ -6,7 +6,7 @@ import { PostgresTenantOwnerKey } from '@database/dialects/postgres/tenant/tenan
  * its empty tables had taken the (tenant_id, id) key, and with no tenant there is no site to put in it.
  */
 describe('PostgresTenantOwnerKey.release — a deployment with no tenants', () => {
-  const database = (answers: { key?: Array<Record<string, unknown>>; required?: boolean; references?: Array<Record<string, unknown>>; failOn?: string }) => {
+  const database = (answers: { key?: Array<Record<string, unknown>>; required?: boolean; references?: Array<Record<string, unknown>>; failOn?: string; sites?: number }) => {
     const issued: string[] = [];
     const run = async (text: string) => {
       const statement = text.replace(/\s+/g, ' ').trim();
@@ -15,6 +15,7 @@ describe('PostgresTenantOwnerKey.release — a deployment with no tenants', () =
       if (statement.includes("c.contype = 'p'")) return answers.key ?? [];
       if (statement.includes('a.attnotnull')) return [{ required: answers.required ?? false }];
       if (statement.includes("c.contype = 'f'")) return answers.references ?? [];
+      if (statement.includes('AS sites')) return [{ owners: answers.sites ?? 0 }];
       return [];
     };
     return { issued, run, changes: () => issued.filter((statement) => statement.startsWith('ALTER')) };
@@ -60,6 +61,19 @@ describe('PostgresTenantOwnerKey.release — a deployment with no tenants', () =
 
     expect(await new PostgresTenantOwnerKey(db.run as never).release('pages')).toBe(false);
     expect(db.changes()).toEqual([]);
+  });
+
+  it('leaves a table holding rows of more than one site with the key that tells them apart', async () => {
+    const db = database({ key: wideKey, references: [addresses], sites: 2 });
+
+    expect(await new PostgresTenantOwnerKey(db.run as never).release('people')).toBe(false);
+    expect(db.changes()).toEqual([]);
+  });
+
+  it('still releases a table whose rows all belong to the one site that was removed', async () => {
+    const db = database({ key: wideKey, sites: 1 });
+
+    expect(await new PostgresTenantOwnerKey(db.run as never).release('people')).toBe(true);
   });
 
   it('refuses a name that is not a plain identifier', async () => {

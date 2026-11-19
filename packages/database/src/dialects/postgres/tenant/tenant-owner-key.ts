@@ -17,6 +17,12 @@ import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
  * references that pointed at the wide key are rebuilt on the narrow one, with the delete and update
  * behaviour they had — read from the catalog, because dropping it turns "deleting a person removes
  * their addresses" into a refusal.
+ *
+ * ONE WAY, deliberately. Nothing widens the key again when a tenant appears: a table keyed on its own
+ * id is a state every release already supports (an installation whose tables held rows when the key
+ * was introduced has it today) — a site imported into it gets new ids instead of keeping its own. What
+ * keeps one site from reading another is row-level security, which the sweep re-applies the moment a
+ * tenant exists; the key is not part of that.
  */
 export class PostgresTenantOwnerKey {
   private static readonly BY = 'PostgresTenantOwnerKey';
@@ -30,6 +36,9 @@ export class PostgresTenantOwnerKey {
     const key = await this.primaryKey(name);
     const owned = key?.columns.includes(TenantColumn.NAME) ?? false;
     if (!owned && !(await this.ownerRequired(name))) return false;
+    // Rows of more than one site (sites removed, their rows left behind) are several customers' data:
+    // that table keeps the key that tells them apart, exactly as its isolation is kept.
+    if (await this.holdsSeveralSites(name)) return false;
 
     const references = owned ? await this.referencesTo(name) : [];
     for (const reference of references) {
@@ -80,6 +89,14 @@ export class PostgresTenantOwnerKey {
     // A key that is ONLY the ownership column has no id to fall back to; it is left as it is.
     if (PostgresTenantOwnerKey.withoutOwner(columns).length === 0) return null;
     return { name: SqlIdentifier.assert(String(rows[0].name), PostgresTenantOwnerKey.BY), columns };
+  }
+
+  private async holdsSeveralSites(table: string): Promise<boolean> {
+    const rows = await this.run(
+      `SELECT COUNT(*) AS owners FROM (SELECT DISTINCT "${TenantColumn.NAME}" FROM "${table}" `
+      + `WHERE "${TenantColumn.NAME}" IS NOT NULL LIMIT 2) AS sites`,
+    );
+    return Number(rows?.[0]?.owners ?? 0) > 1;
   }
 
   private async ownerRequired(table: string): Promise<boolean> {
