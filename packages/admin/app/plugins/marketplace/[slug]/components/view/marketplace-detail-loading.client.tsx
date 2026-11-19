@@ -11,7 +11,7 @@ export class MarketplaceDetailLoading extends PureReactor {
     const theme = this.theme;
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
         <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
           {AdminI18n.t('plugins.list.loadingPluginDetails')}
         </p>

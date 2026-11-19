@@ -198,13 +198,11 @@
 .fc-page-tabs__tab[aria-current='page'], .fc-page-tabs__tab[aria-pressed='true'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-elevation-control); }
 
 /* ── Extension lists: tabs with counts, one line per plugin or theme ─────────────────────────── */
-.fc-ext-tabs { display: flex; gap: 2px; margin-bottom: 12px; overflow-x: auto; border-bottom: 1px solid var(--fc-border); scrollbar-width: none; }
-.fc-ext-tabs__tab {
-  padding: 8px 10px; border: 0; border-bottom: 2px solid transparent; background: none; white-space: nowrap;
-  font-size: var(--fc-settings-text); font-weight: var(--fc-weight-strong); color: var(--fc-text-muted);
-}
+/* The second row of a settings screen: the console's one tab (`fc-tab`), not an underlined one. */
+.fc-ext-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 1px; }
+.fc-ext-tabs__tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-ext-tabs__tab:hover { color: var(--fc-text); }
-.fc-ext-tabs__tab[aria-current='page'] { color: var(--fc-text); border-bottom-color: var(--fc-brand); }
+.fc-ext-tabs__tab[aria-current='page'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
 .fc-ext-tabs__count { margin-inline-start: 6px; opacity: 0.7; font-variant-numeric: tabular-nums; }
 .fc-ext-list { overflow: hidden; border: 1px solid var(--fc-border); border-radius: var(--fc-settings-card-radius); background: var(--fc-surface); }
 .fc-ext-row {
@@ -250,12 +248,12 @@
 .fc-ext-alert--ok { border-color: var(--fc-success-soft-border); background: var(--fc-success-soft); color: var(--fc-success-strong); }
 .fc-ext-alert--warn { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
 .fc-ext-alert__text { flex: 1 1 16rem; min-width: 0; }
-.fc-ext-tabbar { display: flex; align-items: flex-end; gap: 8px 16px; margin-bottom: 12px; border-bottom: 1px solid var(--fc-border); }
-.fc-ext-tabbar > .fc-ext-tabs { flex: 1 1 auto; min-width: 0; margin-bottom: -1px; border-bottom: 0; }
-.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 20rem; margin-bottom: 6px; flex-wrap: nowrap; }
+.fc-ext-tabbar { display: flex; align-items: center; gap: 8px 16px; margin-bottom: 16px; }
+.fc-ext-tabbar > .fc-ext-tabs { flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
+.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 20rem; margin-bottom: 0; flex-wrap: nowrap; }
 @media (max-width: 767.98px) {
-  .fc-ext-tabbar { flex-wrap: wrap; border-bottom: 0; }
-  .fc-ext-tabbar > .fc-ext-tabs { flex-basis: 100%; border-bottom: 1px solid var(--fc-border); margin-bottom: 0; }
+  .fc-ext-tabbar { flex-wrap: wrap; }
+  .fc-ext-tabbar > .fc-ext-tabs { flex-basis: 100%; }
   .fc-ext-tabbar > .fc-ext-toolbar { flex: 1 1 100%; }
 }
 .fc-ext-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }

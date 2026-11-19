@@ -46,7 +46,7 @@ export class MediaGrid extends PureReactor {
     if (this.loading) {
       return (
         <div className="flex flex-col items-center justify-center py-24 gap-4">
-           <FrameworkIcons.Loader className="animate-spin text-indigo-500" size={48} />
+           <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
            <p className="text-slate-500">{AdminI18n.t('media.loadingYourAssets')}</p>
         </div>
       );

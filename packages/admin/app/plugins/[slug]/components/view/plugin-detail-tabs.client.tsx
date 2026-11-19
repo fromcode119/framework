@@ -27,13 +27,11 @@ export class PluginDetailTabs extends PureReactor {
   }
 
   private tab(key: string, label: string, active: boolean, onClick: () => void, className = ''): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const tone = active
-      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
-      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
+    // The console's one tab, the same as `Tabs` draws. These were underlined in the brand's indigo —
+    // a second kind of tab, on the screen every plugin's settings open on.
     return (
       <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center whitespace-nowrap border-b-2 py-3 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone} ${className}`}>
+        className={`fc-tab${active ? ' fc-tab--on' : ''} ${className}`}>
         {label}
       </button>
     );
@@ -46,7 +44,7 @@ export class PluginDetailTabs extends PureReactor {
     const current = this.currentGroup;
     const platform = !this.siteScope;
     return (
-      <nav className={`mx-6 flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-2 ${this.theme === ThemeMode.DARK ? 'border-slate-800' : 'border-slate-200'}`}>
+      <nav className="fc-tabs fc-tabbar">
         {this.tab('overview', AdminI18n.t('plugins.detail.overview'), activeTab === PluginDetailTab.OVERVIEW, () => onTabChange(PluginDetailTab.OVERVIEW))}
         {groups.length
           ? groups.map((group) => this.tab(`group-${group.id}`, group.label, settingsActive && current === group.id, () => onTabChange(PluginDetailTab.SETTINGS, group.id)))

@@ -78,7 +78,7 @@ export class Marketplace extends AdminComponent {
     if (this.loading) {
       return (
         <div className="flex flex-col items-center justify-center h-96 gap-4">
-          <FrameworkIcons.Loader className="h-10 w-10 animate-spin text-indigo-600" />
+          <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
           <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
             {AdminI18n.t('plugins.list.connectingToGlobalMarketplace')}
           </p>

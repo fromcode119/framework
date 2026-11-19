@@ -100,7 +100,7 @@ export class SidebarVersions extends PureReactor {
 
           {revisionsLoading && (
             <div className="flex items-center justify-center py-4">
-              <FrameworkIcons.Loader size={16} className="animate-spin text-indigo-500" />
+              <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
             </div>
           )}
 

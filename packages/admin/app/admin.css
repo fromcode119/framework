@@ -2984,6 +2984,9 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    by the same edge a button carries. A solid brand-coloured pill made the quietest control on the
    screen the loudest thing on it. */
 .fc-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* A row of tabs that heads a page: a line under it, the page's own inset at its sides. */
+.fc-tabbar { flex-wrap: nowrap; margin-inline: var(--fc-page-pad-x); padding: 8px 1px; border-bottom: 1px solid var(--fc-border); overflow-x: auto; scrollbar-width: none; }
+.fc-tabbar > .fc-tab { flex: none; white-space: nowrap; }
 .fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-tab:hover { color: var(--fc-text); }
 .fc-tab:disabled { color: var(--fc-text-faint); cursor: default; }
@@ -3097,6 +3100,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-loader { display: inline-flex; align-items: center; gap: 8px; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; }
 .fc-loader__ring { flex: none; width: 16px; height: 16px; border: 2px solid var(--fc-border-strong); border-top-color: var(--fc-text-muted); border-radius: 999px; animation: fc-loader-spin .7s linear infinite; }
 .fc-loader__label { color: inherit; }
+/* Where a whole page or pane is waiting: the same ring, a size up. */
+.fc-loader__ring--page { display: inline-block; width: 20px; height: 20px; }
 .fc-loader-block { display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
 .fc-loader-page { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--fc-surface) 70%, transparent); }
 @keyframes fc-loader-spin { to { transform: rotate(360deg); } }
@@ -3175,3 +3180,10 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-stat__trend { font-size: 12px; line-height: 20px; font-weight: var(--fc-weight-strong); }
 .fc-stat__trend[data-up="true"] { color: var(--fc-success, #059669); }
 .fc-stat__trend[data-up="false"] { color: var(--fc-danger); }
+/* What a plugin puts in the bar's slot is drawn as a command too, whatever classes it came with: the
+   bar is one object, and an action in it that kept its own grey 11px text read as disabled. A plugin
+   should render `CommandBarCommand`; this holds for the ones that render a plain button. */
+.fc-command-bar__bar button:not(.fc-command-bar__command) { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 10px 12px; border: 0; border-radius: 0; background: transparent; color: var(--fc-command-ink); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); letter-spacing: 0; white-space: nowrap; }
+.fc-command-bar__bar button:not(.fc-command-bar__command):hover { background: #27272a; color: var(--fc-command-ink); }
+.fc-command-bar__bar > span:not([class^="fc-command-bar"]) { gap: 0; }
+.fc-command-bar__bar > span:not([class^="fc-command-bar"]) > span:empty { width: 1px; height: 40px; margin: 0; background: var(--fc-command-line); }

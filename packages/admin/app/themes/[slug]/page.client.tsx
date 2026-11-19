@@ -152,7 +152,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     if (this.loading) {
       return (
         <div className="flex h-[60vh] items-center justify-center">
-          <FrameworkIcons.Loader className="h-8 w-8 animate-spin text-indigo-600" />
+          <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
         </div>
       );
     }

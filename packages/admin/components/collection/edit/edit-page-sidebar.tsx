@@ -78,7 +78,9 @@ export class EditPageSidebar extends PureReactor {
     if (this.isNew) {
       return (
         <RecordCard key={`sidebar-section-${section.title}`} title={section.title}>
-          <div className="flex flex-col gap-6">{section.fields.map(this.renderField)}</div>
+          {/* The same field grid as the main column, so a side card opens and closes with the same room
+              as a main one. It was a bare stack, and its first label stood 4px under the head's line. */}
+          <div className="fc-edit-fields"><div className="fc-edit-fields__grid">{section.fields.map(this.renderField)}</div></div>
         </RecordCard>
       );
     }
