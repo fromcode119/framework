@@ -1,3 +1,6 @@
+import { Label } from '@/components/ui/view/label.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { Alert } from '@/components/ui/view/alert.client';
 import type { ReactNode } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -67,22 +70,22 @@ export class MediaShareEditForm extends AdminComponent {
     const canApply = this.hasTermsChange || MediaShareController.normalizeRecipients(this.recipients).length > 0;
 
     return (
-      <div className="px-4 py-3 space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-[12px] font-medium opacity-70">{AdminI18n.t('media.extendByDays')}</label>
+      <div className="fc-form-stack">
+        <div className="fc-form-grid">
+          <div className="fc-field-stack">
+            <Label>{AdminI18n.t('media.extendByDays')}</Label>
             <NumberStepper value={this.expiryDays} min={0} onChange={(value) => this.patch({ expiryDays: value })} />
-            <p className="mt-1 text-[12px] opacity-50">{AdminI18n.t('media.countedFromToday0Stops')}</p>
+            <Hint>{AdminI18n.t('media.countedFromToday0Stops')}</Hint>
           </div>
-          <div>
-            <label className="mb-1 block text-[12px] font-medium opacity-70">{AdminI18n.t('media.maxDownloads')}</label>
+          <div className="fc-field-stack">
+            <Label>{AdminI18n.t('media.maxDownloads')}</Label>
             <NumberStepper value={this.maxDownloads} min={0} onChange={(value) => this.patch({ maxDownloads: value })} />
-            <p className="mt-1 text-[12px] opacity-50">{AdminI18n.t('media.0UnlimitedBlankLeavesIt')}</p>
+            <Hint>{AdminI18n.t('media.0UnlimitedBlankLeavesIt')}</Hint>
           </div>
         </div>
 
-        <div>
-          <label className="mb-1 block text-[12px] font-medium opacity-70">{AdminI18n.t('media.addPeople')}</label>
+        <div className="fc-field-stack">
+          <Label>{AdminI18n.t('media.addPeople')}</Label>
           {/* Same picker as the create dialog: suggests from `people` and still accepts a typed
               address, because sharing with someone who has no account is half the feature. */}
           <TagField
@@ -94,14 +97,12 @@ export class MediaShareEditForm extends AdminComponent {
             allowCreate
             apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}
           />
-          <p className="mt-1 text-[12px] opacity-50">{AdminI18n.t('media.eachNewPersonGetsTheir')}</p>
+          <Hint>{AdminI18n.t('media.eachNewPersonGetsTheir')}</Hint>
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-[12px] opacity-60">{this.notice}</span>
-          <Button variant={ButtonVariant.SECONDARY} disabled={!canApply || this.busy} onClick={this.handleApply}>
-            {this.busy ? AdminI18n.t('media.applying') : AdminI18n.t('media.applyChanges')}
-          </Button>
+        {this.notice ? <Alert tone="info">{this.notice}</Alert> : null}
+        <div>
+          <Button variant={ButtonVariant.SECONDARY} disabled={!canApply} isLoading={this.busy} onClick={this.handleApply}>{AdminI18n.t('media.applyChanges')}</Button>
         </div>
       </div>
     );

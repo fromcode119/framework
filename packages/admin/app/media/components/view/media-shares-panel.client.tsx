@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
 import { state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
-import { Card } from '@/components/ui/view/card.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Label } from '@/components/ui/view/label.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Button } from '@/components/ui/view/button.client';
@@ -17,7 +19,6 @@ import { MediaShareEditForm } from '@/app/media/components/view/media-share-edit
 import { MediaShareActivity } from '@/app/media/components/view/media-share-activity.client';
 import { MediaShareFiles } from '@/app/media/components/view/media-share-files.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { AdminLink } from '@/components/view/admin-link.client';
 
 /**
  * Everything that has been sent out, as a whole.
@@ -146,40 +147,37 @@ export class MediaSharesPanel extends AdminComponent {
 
   private renderGrants(shareId: number): ReactNode {
     const grants = this.grantsByShare[shareId];
-    if (!grants) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.loading')}</p>;
-    if (!grants.length) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.noRecipients')}</p>;
+    if (!grants) return <Loader label={AdminI18n.t('media.loading')} />;
+    if (!grants.length) return <EmptyState inline title={AdminI18n.t('media.noRecipients')} />;
 
-    return grants.map((grant: any) => (
-      <div key={grant.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium truncate">{grant.email}</p>
-          <p className="text-[12px] opacity-55">
-            {this.grantStatus(grant)}
-            {this.formatDate(grant.expiresAt) ? ` · ${AdminI18n.t('media.expiresAt', { when: this.formatDate(grant.expiresAt) })}` : ''}
-          </p>
-        </div>
-        {grant.revokedAt ? (
-          <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.revoked')}</Badge>
-        ) : (
-          <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>{AdminI18n.t('media.revoke')}</Button>
-        )}
-      </div>
-    ));
+    return (
+      <ListCard>
+        {grants.map((grant: any) => (
+          <ListRow key={grant.id} title={<span className="fc-ext-row__plain">{grant.email}</span>}
+            description={`${this.grantStatus(grant)}${this.formatDate(grant.expiresAt) ? ` · ${AdminI18n.t('media.expiresAt', { when: this.formatDate(grant.expiresAt) })}` : ''}`}
+            actions={grant.revokedAt
+              ? <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.revoked')}</Badge>
+              : <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>{AdminI18n.t('media.revoke')}</Button>} />
+        ))}
+      </ListCard>
+    );
   }
 
   /**
-   * Everything about ONE share, once it is opened: what it has done, who holds it, and the controls to
-   * change its terms. Three questions an operator asks together, so they are not three screens.
+   * Everything about ONE share, once it is opened: which files, what it has done, who holds it, and
+   * the controls to change its terms. Questions an operator asks together, so they are not three screens.
    */
-  private renderExpanded(shareId: number, dark: boolean): ReactNode {
-    const divider = dark ? 'border-slate-800' : 'border-slate-100';
+  private renderOpened(share: any): ReactNode {
+    const shareId = Number(share.id);
     return (
-      <div className={`border-t ${divider}`}>
+      <div className="fc-form-stack">
+        <MediaShareFiles files={share.files} />
         <MediaShareActivity shareId={shareId} />
-        <div className={`border-t ${divider}`}>{this.renderGrants(shareId)}</div>
-        <div className={`border-t ${divider}`}>
-          <MediaShareEditForm shareId={shareId} onChanged={() => void this.refresh(shareId)} />
+        <div className="fc-field-stack">
+          <Label>{AdminI18n.t('media.whoHasAccess')}</Label>
+          {this.renderGrants(shareId)}
         </div>
+        <MediaShareEditForm shareId={shareId} onChanged={() => void this.refresh(shareId)} />
       </div>
     );
   }
@@ -193,88 +191,50 @@ export class MediaSharesPanel extends AdminComponent {
     if (this.mounted) this.patch({ shares: page.shares, hasMore: page.hasMore, grantsByShare: { ...this.grantsByShare, [shareId]: grants } });
   }
 
+  private fileNames(share: any): string {
+    return (Array.isArray(share.files) ? share.files : []).map((file: any) => String(file.name || '')).filter(Boolean).join(', ');
+  }
+
   render(): ReactNode {
     if (this.loading) return <Loader />;
 
-    const dark = this.theme === ThemeMode.DARK;
-
     if (!this.shares.length) {
-      return (
-        <Card className={`px-6 py-12 text-center ${AdminClass.SURFACE}`}>
-          <FrameworkIcons.Share size={28} className="mx-auto mb-3 opacity-25" />
-          <p className="text-sm font-medium">{AdminI18n.t('media.nothingSharedYet')}</p>
-          <p className="mt-1 text-[12px] opacity-60">
-            {AdminI18n.t('media.selectFilesInTheLibrary')}
-          </p>
-        </Card>
-      );
+      return <ListCard empty={<EmptyState icon={<FrameworkIcons.Share size={18} />} title={AdminI18n.t('media.nothingSharedYet')} hint={AdminI18n.t('media.selectFilesInTheLibrary')} />} />;
     }
 
+    const opened = this.openedShare;
     return (
-      <div className="space-y-3">
-        {this.shares.map((share: any) => (
-          <Card key={share.id} className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
-            <div className="flex items-start justify-between gap-3 px-4 py-3">
-              <button type="button" className="text-start min-w-0 flex-1" onClick={() => this.handleToggle(share.id)}>
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium truncate">{share.title}</span>
-                  {share.activeCount === 0 ? (
-                    <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.allRevoked')}</Badge>
-                  ) : (
-                    <Badge variant={BadgeVariant.SUCCESS}>
-                      {AdminI18n.t('media.activeCount', { count: share.activeCount })}
-                    </Badge>
-                  )}
-                </div>
-                <p className="mt-0.5 text-[12px] opacity-55">
-                  {AdminI18n.t('media.recipientCount', { count: share.recipientCount })}
-                  {this.formatDate(share.createdAt) ? ` · ${this.formatDate(share.createdAt)}` : ''}
-                </p>
-                <MediaShareFiles files={share.files} />
-              </button>
-
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {/* This send's own analytics: the Activity screen scoped to it — graph, refusals, timeline. */}
-                <Button
-                  as={AdminLink}
-                  href={AdminPathUtils.toAdminPath(`/media/activity?share=${share.id}`)}
-                  variant={ButtonVariant.GHOST}
-                  icon={<FrameworkIcons.Activity size={13} />}
-                >
-                  {AdminI18n.t('media.activity')}
-                </Button>
-                <Button
-                  variant={ButtonVariant.GHOST}
-                  disabled={this.busyId === share.id || share.activeCount === 0}
-                  onClick={() => this.handleRevokeShare(share.id)}
-                >
-                  {this.busyId === share.id ? AdminI18n.t('media.revoking') : AdminI18n.t('media.revokeAll')}
-                </Button>
-              </div>
-            </div>
-
-          </Card>
-        ))}
-        {/* One share, opened over the list. It used to unfold INSIDE the card, so reading a share's
-            activity pushed every share under it down the page, and two shares could never be compared
-            because opening the second closed nothing. A row opens its own panel. */}
-        {this.openedShare ? (
-          <EditSheet
-            isOpen
-            title={String(this.openedShare.title ?? AdminI18n.t('media.share'))}
-            saveLabel={AdminI18n.t('common.close')}
-            onClose={this.closeShare}
-            onSave={this.closeShare}
-          >
-            {this.renderExpanded(Number(this.openedShare.id), dark)}
-          </EditSheet>
-        ) : null}
+      <div className="fc-columns__stack">
+        <ListCard>
+          {this.shares.map((share: any) => (
+            <ListRow
+              key={share.id}
+              icon={<FrameworkIcons.Share size={16} />}
+              title={<button type="button" className="fc-ext-row__link" onClick={() => void this.handleToggle(share.id)}>{share.title}</button>}
+              badges={share.activeCount === 0
+                ? <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.allRevoked')}</Badge>
+                : <Badge variant={BadgeVariant.SUCCESS}>{AdminI18n.t('media.activeCount', { count: share.activeCount })}</Badge>}
+              description={[AdminI18n.t('media.recipientCount', { count: share.recipientCount }), this.formatDate(share.createdAt), this.fileNames(share)].filter(Boolean).join(' · ')}
+              descriptionTitle={this.fileNames(share)}
+              menu={[
+                // This send's own analytics: the Activity screen scoped to it — graph, refusals, timeline.
+                { label: AdminI18n.t('media.activity'), icon: <FrameworkIcons.Activity size={15} />, onClick: () => this.router.push(AdminPathUtils.toAdminPath(`/media/activity?share=${share.id}`)) },
+                ...(share.activeCount === 0 || this.busyId === share.id ? [] : [{ label: AdminI18n.t('media.revokeAll'), icon: <FrameworkIcons.Close size={15} />, variant: DropdownItemVariant.DANGER, onClick: () => void this.handleRevokeShare(share.id) }]),
+              ]}
+            />
+          ))}
+        </ListCard>
+        {/* One share, opened over the list: a row opens its own panel. */}
+        <EditSheet
+          isOpen={Boolean(opened)}
+          title={String(opened?.title ?? AdminI18n.t('media.share'))}
+          onClose={this.closeShare}
+          foot={<Button variant={ButtonVariant.SECONDARY} onClick={this.closeShare}>{AdminI18n.t('common.close')}</Button>}
+        >
+          {opened ? this.renderOpened(opened) : null}
+        </EditSheet>
         {this.hasMore ? (
-          <div className="flex justify-center pt-1">
-            <Button variant={ButtonVariant.SECONDARY} disabled={this.loadingMore} onClick={this.handleLoadMore}>
-              {this.loadingMore ? AdminI18n.t('media.loading') : AdminI18n.t('media.loadMore')}
-            </Button>
-          </div>
+          <div><Button variant={ButtonVariant.SECONDARY} isLoading={this.loadingMore} onClick={this.handleLoadMore}>{AdminI18n.t('media.loadMore')}</Button></div>
         ) : null}
       </div>
     );

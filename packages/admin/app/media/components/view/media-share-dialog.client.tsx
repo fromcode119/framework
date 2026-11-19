@@ -1,11 +1,15 @@
-import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
-import { Platform, state, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { state, prop, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Input } from '@/components/ui/view/input.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Label } from '@/components/ui/view/label.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
@@ -46,20 +50,10 @@ export class MediaShareDialog extends AdminComponent {
    * reading it after a send left the warning claiming files were public when they no longer were.
    */
   @state private publicCount = 0;
-  /**
-   * Collapses the compose form once something has been sent.
-   *
-   * After a successful send the job is done: leaving the full form expanded — with a greyed-out Send
-   * button, because the recipients were just cleared — reads as a broken screen rather than a finished
-   * one. The access list becomes the subject, and composing again is one click away.
-   */
-  @state private composing = true;
-
   private mounted = false;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
-    if (Platform.isBrowser) document.body.style.overflow = 'hidden';
     this.patch({
       title: this.defaultTitle,
       publicCount: (this.items || []).filter((item) => String(item.visibility || 'public') !== 'private').length,
@@ -69,7 +63,6 @@ export class MediaShareDialog extends AdminComponent {
 
   componentWillUnmount(): void {
     this.mounted = false;
-    if (Platform.isBrowser) document.body.style.overflow = 'unset';
   }
 
   /** One file names itself; several need a name the operator can edit before sending. */
@@ -95,8 +88,7 @@ export class MediaShareDialog extends AdminComponent {
     return [...groups.values()];
   }
 
-  @bound private async handleSubmit(e?: FormEvent): Promise<void> {
-    e?.preventDefault();
+  @bound private async handleSubmit(): Promise<void> {
     this.patch({ busy: true, notice: '' });
     try {
       const result = await MediaShareController.shareFiles({
@@ -116,7 +108,6 @@ export class MediaShareDialog extends AdminComponent {
         busy: false,
         recipients: [],
         publicCount: 0,
-        composing: false,
         notice: result.failedRecipients.length
           ? AdminI18n.t('media.sentExceptTo', { join: result.failedRecipients.join(', ') })
           : AdminI18n.t('media.linksSent'),
@@ -137,8 +128,6 @@ export class MediaShareDialog extends AdminComponent {
     await this.loadGrants();
   }
 
-  @bound private handleCompose(): void { this.composing = true; }
-
   @bound private handleTitle(e: ChangeEvent<HTMLInputElement>): void { this.title = e.target.value; }
   @bound private handleRecipients(value: string[] | string): void {
     this.recipients = Array.isArray(value) ? value : String(value || '').split(',').map((v) => v.trim()).filter(Boolean);
@@ -155,31 +144,21 @@ export class MediaShareDialog extends AdminComponent {
     return grant.lastAccessAt ? AdminI18n.t('media.openedDownloadS', { downloadCount: grant.downloadCount }) : AdminI18n.t('media.notOpenedYet');
   }
 
-  private renderAccess(dark: boolean, labelClass: string): ReactNode {
+  /** Who can open these files, share by share: the unit that was sent and the unit that is taken back. */
+  private renderAccess(): ReactNode {
     const groups = this.grantsByShare;
     if (!groups.length) return null;
-
     return (
-      <div className={`mt-6 pt-6 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-        <p className={labelClass}>{AdminI18n.t('media.whoHasAccess')}</p>
+      <div className="fc-form-stack">
+        <Label>{AdminI18n.t('media.whoHasAccess')}</Label>
         {groups.map((group) => (
-          <div key={group.shareId} className="mb-4 last:mb-0">
-            <div className="flex items-center justify-between gap-3">
-              <p className={`text-[12px] font-medium truncate ${dark ? 'text-white' : 'text-slate-900'}`}>{group.shareTitle}</p>
-              <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeShare(group.shareId)}>{AdminI18n.t('media.revokeAll')}</Button>
-            </div>
+          <ListCard key={group.shareId}>
+            <ListRow title={<span>{group.shareTitle}</span>} actions={<Button variant={ButtonVariant.SECONDARY} onClick={() => this.handleRevokeShare(group.shareId)}>{AdminI18n.t('media.revokeAll')}</Button>} />
             {group.grants.map((grant: any) => (
-              <div key={grant.id} className="flex items-center justify-between gap-3 py-1.5 ps-3">
-                <div className="min-w-0">
-                  <p className={`text-[12px] truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{grant.email}</p>
-                  <p className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{this.grantStatus(grant)}</p>
-                </div>
-                {grant.revokedAt ? null : (
-                  <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id)}>{AdminI18n.t('media.revoke')}</Button>
-                )}
-              </div>
+              <ListRow key={grant.id} title={<span className="fc-ext-row__plain">{grant.email}</span>} description={this.grantStatus(grant)}
+                actions={grant.revokedAt ? undefined : <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id)}>{AdminI18n.t('media.revoke')}</Button>} />
             ))}
-          </div>
+          </ListCard>
         ))}
       </div>
     );
@@ -188,103 +167,65 @@ export class MediaShareDialog extends AdminComponent {
   render(): ReactNode {
     const items = this.items || [];
     if (!items.length) return null;
-
-    const dark = this.theme === ThemeMode.DARK;
-    const labelClass = `block text-[12px] font-medium mb-1.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`;
-    const hintClass = `mt-1 text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`;
     const subtitle = items.length === 1 ? String(items[0].originalName || items[0].filename || '') : AdminI18n.t('media.filesSelected', { length: items.length });
 
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" onClick={this.onClose} />
-
-          <div className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-6 max-h-[calc(100vh-3rem)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
-            dark ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
-          }`}>
-            <div className="flex items-start gap-3 mb-5">
-              <div className={`p-3 rounded-xl flex-shrink-0 ${dark ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'}`}>
-                <FrameworkIcons.Share size={24} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.shareFiles')}</h3>
-                <p className={`mt-1 text-sm leading-relaxed truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`} title={subtitle}>{subtitle}</p>
-              </div>
-              <button onClick={this.onClose} className={`p-1 rounded-lg transition-colors ${dark ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}>
-                <FrameworkIcons.Close size={20} />
-              </button>
-            </div>
-
-            {this.publicCount ? (
-              <div className={`mb-6 rounded-xl border p-3 text-[12px] leading-relaxed ${dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
-                {this.publicCount === items.length ? AdminI18n.t('media.theseFilesArePublic') : AdminI18n.t('media.ofTheseFilesArePublic', { publicCount: this.publicCount })}
-                {' '}{AdminI18n.t('media.sendingMovesToPrivate')}
-              </div>
-            ) : null}
-
-            <form onSubmit={this.handleSubmit} className="space-y-4">
-              <div>
-                <label className={labelClass}>{AdminI18n.t('media.shareName')}</label>
-                <Input type="text" value={this.title} onChange={this.handleTitle} disabled={this.busy} className="w-full" />
-              </div>
-              <div>
-                <label className={labelClass}>{AdminI18n.t('media.sendTo')}</label>
-                {/* Suggests from `people` — which already holds unregistered contacts, backfilled guest
-                    customers and relatives — while still accepting a typed address. Both, deliberately:
-                    a picker limited to known people would make sharing with a stranger impossible, and
-                    that is half the feature. */}
-                <TagField
-                  value={this.recipients}
-                  onChange={this.handleRecipients}
-                  placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
-                  suggestionsLabel={AdminI18n.t('media.people')}
-                  theme={this.theme}
-                  allowCreate
-                  apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>{AdminI18n.t('media.message')}</label>
-                <Input type="text" placeholder={AdminI18n.t('media.optionalNoteShownInThe')} value={this.message} onChange={this.handleMessage} disabled={this.busy} className="w-full" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelClass}>{AdminI18n.t('media.expires')}</label>
-                  <NumberStepper value={this.expiryDays} onChange={this.handleExpiry} disabled={this.busy} min={0} />
-                  {/* 0 = never / unlimited is the one convention across this feature; as a hint under
-                      the field it cannot push the two columns out of alignment. */}
-                  <p className={hintClass}>{AdminI18n.t('media.daysZeroNever')}</p>
-                </div>
-                <div>
-                  <label className={labelClass}>{AdminI18n.t('media.maxDownloads')}</label>
-                  <NumberStepper value={this.maxDownloads} onChange={this.handleMaxDownloads} disabled={this.busy} min={0} />
-                  <p className={hintClass}>{AdminI18n.t('media.zeroUnlimited')}</p>
-                </div>
-              </div>
-
-              <Switch
-                label={AdminI18n.t('media.requireASignedInAccount')}
-                description={AdminI18n.t('media.theRecipientMustBeSigned')}
-                checked={this.requireAccount}
-                onChange={this.handleRequireAccount}
-                disabled={this.busy}
-              />
-
-              {this.notice ? <p className={`text-[12px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{this.notice}</p> : null}
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button" disabled={this.busy}>{AdminI18n.t('media.close')}</Button>
-                <Button variant={ButtonVariant.PRIMARY} className="flex-1" type="submit" isLoading={this.busy} disabled={!MediaShareController.normalizeRecipients(this.recipients).length}>
-                  {items.length > 1 ? AdminI18n.t('media.sendLinks') : AdminI18n.t('media.sendLink')}
-                </Button>
-              </div>
-            </form>
-
-            {this.renderAccess(dark, labelClass)}
+      <EditSheet isOpen title={AdminI18n.t('media.shareFiles')} subtitle={subtitle} onClose={this.onClose} saving={this.busy}
+        foot={<>
+          <Button variant={ButtonVariant.SECONDARY} onClick={this.onClose} disabled={this.busy}>{AdminI18n.t('media.close')}</Button>
+          <Button variant={ButtonVariant.PRIMARY} onClick={() => void this.handleSubmit()} isLoading={this.busy} disabled={!MediaShareController.normalizeRecipients(this.recipients).length}>
+            {items.length > 1 ? AdminI18n.t('media.sendLinks') : AdminI18n.t('media.sendLink')}
+          </Button>
+        </>}>
+        <div className="fc-form-stack">
+          {this.publicCount ? (
+            <Alert tone="warning">
+              {this.publicCount === items.length ? AdminI18n.t('media.theseFilesArePublic') : AdminI18n.t('media.ofTheseFilesArePublic', { publicCount: this.publicCount })}
+              {' '}{AdminI18n.t('media.sendingMovesToPrivate')}
+            </Alert>
+          ) : null}
+          <Input label={AdminI18n.t('media.shareName')} value={this.title} onChange={this.handleTitle} disabled={this.busy} />
+          <div className="fc-field-stack">
+            <Label>{AdminI18n.t('media.sendTo')}</Label>
+            {/* Suggests from `people` — which already holds unregistered contacts, backfilled guest
+                customers and relatives — while still accepting a typed address. Both, deliberately:
+                a picker limited to known people would make sharing with a stranger impossible, and
+                that is half the feature. */}
+            <TagField
+              value={this.recipients}
+              onChange={this.handleRecipients}
+              placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
+              suggestionsLabel={AdminI18n.t('media.people')}
+              theme={this.theme}
+              allowCreate
+              apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}
+            />
           </div>
+          <Input label={AdminI18n.t('media.message')} placeholder={AdminI18n.t('media.optionalNoteShownInThe')} value={this.message} onChange={this.handleMessage} disabled={this.busy} />
+          <div className="fc-form-grid">
+            <div className="fc-field-stack">
+              <Label>{AdminI18n.t('media.expires')}</Label>
+              <NumberStepper value={this.expiryDays} onChange={this.handleExpiry} disabled={this.busy} min={0} />
+              {/* 0 = never / unlimited is the one convention across this feature. */}
+              <Hint>{AdminI18n.t('media.daysZeroNever')}</Hint>
+            </div>
+            <div className="fc-field-stack">
+              <Label>{AdminI18n.t('media.maxDownloads')}</Label>
+              <NumberStepper value={this.maxDownloads} onChange={this.handleMaxDownloads} disabled={this.busy} min={0} />
+              <Hint>{AdminI18n.t('media.zeroUnlimited')}</Hint>
+            </div>
+          </div>
+          <Switch
+            label={AdminI18n.t('media.requireASignedInAccount')}
+            description={AdminI18n.t('media.theRecipientMustBeSigned')}
+            checked={this.requireAccount}
+            onChange={this.handleRequireAccount}
+            disabled={this.busy}
+          />
+          {this.notice ? <Alert tone="info">{this.notice}</Alert> : null}
+          {this.renderAccess()}
         </div>
-      </RootFramework>
+      </EditSheet>
     );
   }
 }

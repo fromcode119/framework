@@ -94,22 +94,25 @@ export class MediaControls extends PureReactor {
           <Tabs value={this.activeView} onChange={(key: string) => this.setActiveView(key)}
             tabs={[{ id: 'files', label: AdminI18n.t('media.files') }, { id: 'shares', label: AdminI18n.t('media.shared') }, { id: 'activity', label: AdminI18n.t('media.activity') }]} />
         }>
-          <SearchField placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
+          {/* Search, the source and the two shapes all act on the list of files; the other views have none of them. */}
           {this.activeView === 'files' ? (
-            <div className="fc-page-bar__pick">
-              <Select
-                value={this.source}
-                onChange={this.setSource}
-                options={[
-                  { value: '', label: AdminI18n.t('media.allFiles') },
-                  { value: 'uploads', label: AdminI18n.t('media.uploads') },
-                  { value: 'theme', label: AdminI18n.t('media.themeAssets') },
-                ]}
-              />
-            </div>
+            <>
+              <SearchField placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
+              <div className="fc-page-bar__pick">
+                <Select
+                  value={this.source}
+                  onChange={this.setSource}
+                  options={[
+                    { value: '', label: AdminI18n.t('media.allFiles') },
+                    { value: 'uploads', label: AdminI18n.t('media.uploads') },
+                    { value: 'theme', label: AdminI18n.t('media.themeAssets') },
+                  ]}
+                />
+              </div>
+              <Tabs value={viewMode === ViewMode.GRID ? 'grid' : 'list'} onChange={(mode: string) => (mode === 'grid' ? this.selectGridView() : this.selectListView())}
+                tabs={[{ id: 'grid', label: <FrameworkIcons.Grid size={15} /> }, { id: 'list', label: <FrameworkIcons.List size={15} /> }]} />
+            </>
           ) : null}
-          <Tabs value={viewMode === ViewMode.GRID ? 'grid' : 'list'} onChange={(mode: string) => (mode === 'grid' ? this.selectGridView() : this.selectListView())}
-            tabs={[{ id: 'grid', label: <FrameworkIcons.Grid size={15} /> }, { id: 'list', label: <FrameworkIcons.List size={15} /> }]} />
         </PageBar>
       </>
     );

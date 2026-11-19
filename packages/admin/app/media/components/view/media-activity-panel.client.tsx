@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { MediaActivityPanelSections } from '@/app/media/components/view/media-activity-panel-sections.client';
@@ -25,26 +27,16 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-
     return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          {this.shareId ? (
-            <span className="inline-flex items-center gap-2 text-[12px]">
-              <FrameworkIcons.Activity size={13} className="opacity-60" />
-              <span className="font-medium">{String(this.data?.shareTitle || AdminI18n.t('media.share', { shareId: this.shareId }))}</span>
-              <button type="button" onClick={this.handleClearScope} className="text-indigo-500 hover:underline">
-                {AdminI18n.t('media.showAllShares')}
-              </button>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-2 text-[12px] opacity-60">
-              <FrameworkIcons.Activity size={13} /> {AdminI18n.t('media.everythingSentAcrossAllShares')}
-            </span>
-          )}
-          {this.renderRange(dark)}
-        </div>
+      <div className="fc-columns__stack">
+        <PageBar lead={this.shareId ? (
+          <span className="fc-chip-row">
+            <Text weight="plus">{String(this.data?.shareTitle || AdminI18n.t('media.share', { shareId: this.shareId }))}</Text>
+            <Button variant={ButtonVariant.GHOST} onClick={this.handleClearScope}>{AdminI18n.t('media.showAllShares')}</Button>
+          </span>
+        ) : <Text muted>{AdminI18n.t('media.everythingSentAcrossAllShares')}</Text>}>
+          {this.renderRange()}
+        </PageBar>
 
         {this.loadError ? (
           <LoadErrorPanel
@@ -56,11 +48,11 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
         ) : this.loading ? <Loader /> : (
           <>
             {this.renderTotals()}
-            {this.renderTrend(dark)}
-            {this.renderNotOpened(dark)}
-            {this.renderTopFiles(dark)}
-            {this.renderRefusals(dark)}
-            {this.renderEvents(dark)}
+            {this.renderTrend()}
+            {this.renderNotOpened()}
+            {this.renderTopFiles()}
+            {this.renderRefusals()}
+            {this.renderEvents()}
           </>
         )}
       </div>
