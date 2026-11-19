@@ -1,9 +1,9 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -16,41 +16,14 @@ export class NewUserAccessControls extends PureReactor {
   render(): ReactNode {
     const { formData, onPatch } = this;
     return (
-      <Card title={AdminI18n.t('users.accessControls')}>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
-            <div className="space-y-2">
-               <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.accountStatus')}</label>
-               <div className="flex items-center gap-3">
-                  <Button
-                    type="button"
-                    variant={AccountStatus.resolve(formData.accountStatus) === AccountStatus.ACTIVE ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
-                    size={FieldSize.SM}
-                    className="rounded-lg"
-                    onClick={() => onPatch({ accountStatus: AccountStatus.ACTIVE.value })}
-                  >
-                    {AdminI18n.t('users.active')}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={AccountStatus.resolve(formData.accountStatus) === AccountStatus.SUSPENDED ? ButtonVariant.PRIMARY : ButtonVariant.OUTLINE}
-                    size={FieldSize.SM}
-                    className="rounded-lg"
-                    onClick={() => onPatch({ accountStatus: AccountStatus.SUSPENDED.value })}
-                  >
-                    {AdminI18n.t('users.suspended')}
-                  </Button>
-               </div>
-            </div>
-            <div className="space-y-2">
-               <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.forcePasswordReset')}</label>
-               <div className="pt-2">
-                 <Switch
-                   checked={formData.forcePasswordReset ?? false}
-                   onChange={(checked) => onPatch({ forcePasswordReset: checked })}
-                 />
-               </div>
-            </div>
-         </div>
+      <Card title={AdminI18n.t('users.accessControls')} noPadding>
+        <SettingRow title={AdminI18n.t('users.accountStatus')} width={SettingRowWidth.AUTO}>
+          <Tabs label={AdminI18n.t('users.accountStatus')} value={AccountStatus.resolve(formData.accountStatus).value} onChange={(value: string) => onPatch({ accountStatus: value })}
+            tabs={[{ id: AccountStatus.ACTIVE.value, label: AdminI18n.t('users.active') }, { id: AccountStatus.SUSPENDED.value, label: AdminI18n.t('users.suspended') }]} />
+        </SettingRow>
+        <SettingRow title={AdminI18n.t('users.forcePasswordReset')} width={SettingRowWidth.AUTO}>
+          <Switch checked={formData.forcePasswordReset ?? false} onChange={(checked) => onPatch({ forcePasswordReset: checked })} />
+        </SettingRow>
       </Card>
     );
   }

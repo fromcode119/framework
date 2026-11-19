@@ -3637,3 +3637,6 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* A control inside a table cell fills the cell, and the row grows to hold it. */
 .fc-dt-td > .fc-dt-cell > .fc-field-stack, .fc-dt-td > .fc-dt-cell > .fc-select { min-width: 180px; }
 .fc-dt-row:has(.fc-field, .fc-field-stack) > .fc-dt-td { padding-block: 8px; }
+
+/* A choice with nothing chosen, and the arrow at its end, in the quiet ink. */
+.fc-field__empty, .fc-field__chevron { color: var(--fc-text-muted); }

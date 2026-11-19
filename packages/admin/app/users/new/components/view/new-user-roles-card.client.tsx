@@ -1,8 +1,11 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { RoleChoices } from '@/app/users/components/view/role-choices.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewUserRolesCard extends PureReactor {
@@ -14,72 +17,18 @@ export class NewUserRolesCard extends PureReactor {
   @prop declare onToggleRole: (slug: string) => void;
 
   render(): ReactNode {
-    const { theme, roles, loadingRoles, selectedRoles, rolesError, onToggleRole } = this;
+    const { roles, loadingRoles, selectedRoles, rolesError, onToggleRole } = this;
     return (
-      <Card title={AdminI18n.t('users.rolesPermissions')}>
-         <div className="space-y-4 py-2">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-slate-500 font-medium">
-                {AdminI18n.t('users.permissionsAreInheritedFromRoles')}
-              </p>
-              <span className="text-[12px] font-medium tracking-tight text-indigo-500">
-                {AdminI18n.t('users.selectedCount', { count: selectedRoles.length })}
-              </span>
-            </div>
-
-            {loadingRoles ? (
-              <div className="text-sm text-slate-500 font-medium py-6">{AdminI18n.t('users.loadingRoles2')}</div>
-            ) : roles.length === 0 ? (
-              <div className="text-sm text-slate-500 font-medium py-6">
-                {AdminI18n.t('users.noRolesAvailableCreateRoles')}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {roles.map((role) => {
-                  const selected = selectedRoles.includes(role.slug);
-                  return (
-                    <button
-                      key={role.slug}
-                      type="button"
-                      onClick={() => onToggleRole(role.slug)}
-                      className={`text-start rounded-xl border p-4 transition-all ${
-                        selected
-                          ? theme === ThemeMode.DARK
-                            ? 'border-indigo-500 bg-indigo-500/10'
-                            : 'border-indigo-500 bg-indigo-50'
-                          : theme === ThemeMode.DARK
-                            ? 'border-slate-800 bg-slate-900/40 hover:border-slate-700'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                            {role.name || role.slug}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            {role.description || AdminI18n.t('users.noDescription')}
-                          </p>
-                        </div>
-                        <div className={`mt-0.5 ${selected ? 'text-indigo-500' : 'text-slate-300'}`}>
-                          <FrameworkIcons.Check size={16} />
-                        </div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between text-[12px] font-medium text-slate-500">
-                        <span>{role.slug}</span>
-                        <span>{AdminI18n.t('users.permissionsCount', { count: Array.isArray(role.permissions) ? role.permissions.length : 0 })}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {rolesError && (
-              <div className="text-sm text-rose-500 font-medium">{rolesError}</div>
-            )}
-         </div>
-      </Card>
+      <ListShell title={AdminI18n.t('users.rolesPermissions')} count={selectedRoles.length} subtitle={AdminI18n.t('users.permissionsAreInheritedFromRoles')}>
+        {loadingRoles ? (
+          <div className="fc-list-band"><Loader label={AdminI18n.t('users.loadingRoles2')} /></div>
+        ) : roles.length === 0 ? (
+          <EmptyState title={AdminI18n.t('users.noRolesAvailableCreateRoles')} />
+        ) : (
+          <RoleChoices roles={roles} selected={selectedRoles} onToggle={onToggleRole} />
+        )}
+        {rolesError ? <div className="fc-list-band"><Alert tone="danger">{rolesError}</Alert></div> : null}
+      </ListShell>
     );
   }
 }

@@ -1,63 +1,25 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
-import { Badge } from '@/components/ui/view/badge.client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { EditRoleSummarySidebar } from '@/app/users/roles/[slug]/edit/components/view/edit-role-summary-sidebar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** The summary beside a role being created: the same card the editor shows, with this page's words. */
 export class NewRoleSummarySidebar extends PureReactor {
   @prop declare permissionCount: number;
   @prop declare loading: boolean;
   @prop declare onCancel: () => void;
 
   render(): ReactNode {
-    const { permissionCount, loading, onCancel } = this;
     return (
-      <div className="lg:col-span-4 space-y-4">
-        <Card title={AdminI18n.t('users.summary')}>
-          <div className="space-y-3">
-            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3.5 border border-slate-100 dark:border-slate-800 space-y-3">
-               <div className="flex items-center justify-between gap-2">
-                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
-                  <Badge variant={BadgeVariant.AMBER} className="tracking-tight font-medium">{AdminI18n.t('users.custom')}</Badge>
-               </div>
-               <div className="flex items-center justify-between gap-2">
-                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.scope')}</span>
-                  <span className="text-xs font-medium tracking-tight text-slate-600 dark:text-slate-300">
-                    {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.selectedCount', { count: permissionCount })}
-                  </span>
-               </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Button
-                type="submit"
-                className="w-full h-9 text-xs font-medium rounded-lg text-white"
-                isLoading={loading}
-                icon={<FrameworkIcons.Check size={15} />}
-              >
-                {AdminI18n.t('users.saveRole')}
-              </Button>
-              <Button
-                variant={ButtonVariant.GHOST}
-                className="w-full h-9 text-xs font-medium text-slate-500"
-                onClick={onCancel}
-              >
-                {AdminI18n.t('users.cancel')}
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        <Card title={AdminI18n.t('users.help')}>
-           <p className="text-xs text-slate-500 leading-relaxed font-medium tracking-tight">
-             {AdminI18n.t('users.creatingThisRoleLetsYou')}
-           </p>
-        </Card>
-      </div>
+      <EditRoleSummarySidebar
+        type={AdminI18n.t('users.custom')}
+        permissionCount={this.permissionCount}
+        loading={this.loading}
+        onCancel={this.onCancel}
+        saveLabel={AdminI18n.t('users.saveRole')}
+        tipLabel={AdminI18n.t('users.help')}
+        tip={AdminI18n.t('users.creatingThisRoleLetsYou')}
+      />
     );
   }
 }
