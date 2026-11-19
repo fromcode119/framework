@@ -841,13 +841,13 @@ html.dark {
 .fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; max-width: var(--fc-record-single); margin-inline: auto; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
-/* The side column appears only where BOTH columns are full width — measured on the reference: one
-   column of 780 at 1280 and at 1440, main 900 + side 440 at 1600. Ours opened it from 896px of room
-   and then gave the form 531 — narrower than the single column it replaced, which is why a table in
-   it had to be squeezed. */
-@container (min-width: 84rem) {
+/* Two columns from ~1280px of window, like the reference (its `xl:grid-cols-[minmax(0,1fr)_440px]`):
+   the side is a FIXED 440, the main takes the rest with NO 900 floor — that floor is why ours stayed
+   one column until 1344 and the side never showed at 1280. The container is ~1016px at a 1280 window
+   (240 nav + padding), so the query opens at 60rem. Main then measures ~560, as the reference's does. */
+@container (min-width: 60rem) {
   .fc-edit-columns__grid--sidebar {
-    grid-template-columns: minmax(0, var(--fc-record-main)) var(--fc-record-side);
+    grid-template-columns: minmax(0, 1fr) var(--fc-record-side);
     max-width: none;
     justify-content: center;
   }
@@ -855,7 +855,7 @@ html.dark {
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
    column's first card — who the record is for — follows the record's first card instead of waiting under
    everything else. The rest keep their own column's order: the main column's, then the side column's. */
-@container (max-width: 83.99rem) {
+@container (max-width: 59.99rem) {
   .fc-edit-columns__grid--sidebar > .fc-edit-column,
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky,
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column { display: contents; }
