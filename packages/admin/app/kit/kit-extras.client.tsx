@@ -17,6 +17,7 @@ import { NotificationPanel } from '@/app/components/view/notification-panel.clie
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarBrandHeader } from '@/app/sidebar-brand-header';
 import { NavItemView } from '@/app/components/view/sidebar-nav-item-view.client';
+import { SidebarNavBack } from '@/app/components/view/sidebar-nav-back.client';
 import { SidebarSearch } from '@/app/sidebar-search.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
@@ -116,6 +117,18 @@ export class KitExtras extends Reactor {
               <NavItemView label="Settings" href="/settings/general" icon={<FrameworkIcons.Settings size={16} />} shortcut="s" rawPathname="/kit" />
             </div>
             <SidebarAccountCard />
+          </div>
+        ))}
+        {this.block('Menu of the settings: the way back, then its pages', (
+          <div className="fc-nav fc-kit__nav fc-kit__nav--menu">
+            <div className="fc-kit__nav-rows">
+              <SidebarNavBack href="/kit" label="Settings" />
+              <div className="fc-nav-list">
+                <NavItemView label="Users" href="/users" icon={<FrameworkIcons.Settings size={16} />} rawPathname="/kit" />
+                <NavItemView label="Plugins" href="/kit" icon={<FrameworkIcons.Plugins size={16} />} active rawPathname="/kit" />
+                <NavItemView label="General" href="/settings/general" icon={<FrameworkIcons.Settings size={16} />} rawPathname="/kit" />
+              </div>
+            </div>
           </div>
         ))}
         <CommandPalette

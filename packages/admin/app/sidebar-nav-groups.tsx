@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { SidebarNavPart } from '@/app/enums/sidebar-nav-part.enum';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Icon } from '@/components/view/icon.client';
+import { SidebarNavBack } from '@/app/components/view/sidebar-nav-back.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
 import { NavItem } from '@/app/components/view/sidebar-nav-item.client';
@@ -11,7 +12,8 @@ import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 
 /**
- * The console's menu: one column of sections with no group headings, and Settings at its foot.
+ * The console's menu: one column of sections with no group headings, and Settings at its foot —
+ * a row that leads to the settings, which have a menu of their own (a way back, then their pages).
  *
  * A section's pages — its own menu entries and the panel entries of the page you are on — are drawn
  * indented under it only while you are inside it. The console's upkeep (people, extensions, activity,
@@ -47,24 +49,37 @@ export class SidebarNavGroups extends PureReactor {
     return [...items, { label: AdminI18n.t('nav.items.activity'), path: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity', pluginSlug: 'system' }];
   }
 
+  /** Whether the page on screen is Settings or one of the pages kept under it. */
+  private inSettings(settingsItem: any, pages: any[]): boolean {
+    if (!settingsItem) return false;
+    const here = NavUtils.normalizePath(this.pathname);
+    return [settingsItem, ...pages].some((item) => {
+      const path = NavUtils.normalizePath(item?.path);
+      return Boolean(path) && path !== '/' && (here === path || here.startsWith(`${path}/`));
+    });
+  }
+
   private isActive(item: any, siblings: any[]): boolean {
     const override = this.normalizedActivePrimaryPathOverride;
     if (override) return NavUtils.normalizePath(item.path) === override;
     return NavUtils.isPathActive(this.pathname, item.path, siblings.map((entry) => entry.path));
   }
 
-  private renderItem(item: any, siblings: any[], children?: any[], paneled = false): ReactNode {
-    const active = this.isActive(item, siblings);
+  private renderItem(item: any, siblings: any[], children?: any[], paneled = false, href?: string, byPath = false): ReactNode {
+    // Inside the settings the row that is open is the one whose address this is; the override names
+    // the Settings section as a whole, which is no row of this menu.
+    const active = byPath ? NavUtils.isPathActive(this.pathname, item.path, siblings.map((entry) => entry.path)) : this.isActive(item, siblings);
     return (
       <NavItem
         key={`${item.pluginSlug || 'system'}-${item.path}`}
         icon={<Icon name={item.icon || 'Package'} size={18} />}
         label={AdminNavText.menuLabel(item)}
-        href={item.path}
+        href={href || item.path}
         active={active}
         onClick={this.onClose}
         children={children ?? item.children}
-        subItems={paneled && this.settingsPages?.length ? this.settingsPages : active ? this.sectionPages : undefined}
+        // In the settings' own menu every page is already a row; the section's pages would repeat them under it.
+        subItems={byPath ? undefined : paneled && this.settingsPages?.length ? this.settingsPages : active ? this.sectionPages : undefined}
         isMini={this.isMini}
         paneled={paneled}
         pluginSlug={item.pluginSlug}
@@ -98,17 +113,35 @@ export class SidebarNavGroups extends PureReactor {
     // under that name, once per spelling ("Platform" and its translation).
     const settingsChildren = [...(settingsItem?.children || []), ...upkeep].map((item) => ({ ...item, group: undefined }));
 
+    // Settings is a place of its own: its row at the foot only LEADS there, and once inside, the menu
+    // is the settings' own — a way back at its head and the settings pages under it — until you leave.
+    // It used to unfold its twenty pages under the row, inside a menu that still held everything else.
+    // Everything kept under Settings: its own entries, the upkeep pages, and the settings pages proper.
+    const seenPaths = new Set<string>();
+    const settingsMenu = [...settingsChildren, ...(this.settingsPages || [])].filter((item) => {
+      const path = NavUtils.normalizePath(item?.path);
+      if (!path || seenPaths.has(path)) return false;
+      seenPaths.add(path);
+      return true;
+    });
+    const inSettings = !this.isMini && this.inSettings(settingsItem, settingsMenu);
+
     if (this.part === SidebarNavPart.FOOT) {
-      // Settings stays while the menu is being searched. It is the one row that is always in the same
-      // place, and searching for anything else made it disappear — the menu lost its floor mid-type.
-      // Settings is pinned at the foot: its twenty pages opened there pushed the whole menu out of the
-      // sidebar, so on a desktop they stand in the second column beside it instead.
+      if (inSettings) return null;
       return (
         <div className="fc-nav-foot">
           {settingsItem
-            ? this.renderItem(settingsItem, [settingsItem], settingsChildren, true)
+            ? this.renderItem(settingsItem, [settingsItem], [], false, settingsMenu[0]?.path)
             : upkeep.map((item) => this.renderItem(item, upkeep))}
         </div>
+      );
+    }
+    if (inSettings && !this.query?.trim()) {
+      return (
+        <>
+          <SidebarNavBack href="/" label={AdminNavText.menuLabel(settingsItem)} onClick={this.onClose} />
+          <div className="fc-nav-list">{settingsMenu.map((item) => this.renderItem(item, settingsMenu, undefined, false, undefined, true))}</div>
+        </>
       );
     }
     if (this.query?.trim()) {

@@ -3330,3 +3330,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 @media (min-width: 1024px) { .fc-nav-brand__tool--wide { display: inline-flex; } }
 .fc-kit__nav.fc-nav.fc-kit__nav--menu { padding: 0; }
 .fc-kit__nav-rows { padding: 4px 12px 8px; }
+
+/* The way back out of the settings, at the head of their menu. */
+.fc-nav-back { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 6px 8px; border-radius: var(--fc-nav-radius, 6px); color: var(--fc-nav-text, var(--fc-text)); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); text-decoration: none; }
+.fc-nav-back:hover { background: var(--fc-nav-hover, var(--fc-surface-muted)); }
+.fc-nav-back > svg { flex: none; color: var(--fc-nav-muted, var(--fc-text-muted)); }
+.fc-nav__pinned:empty { display: none; }

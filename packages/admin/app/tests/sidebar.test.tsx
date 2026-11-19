@@ -100,8 +100,9 @@ describe('Sidebar', () => {
     expect(screen.getAllByText('Settings')).toHaveLength(1);
   });
 
-  it('lists the upkeep pages under Settings while you are in it, and keeps them out of the main column', () => {
+  it('keeps the upkeep pages out of the main menu: the Settings row only leads to them', () => {
     mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePathname.mockReturnValue('/');
 
     const { container } = renderSidebar();
 
@@ -109,12 +110,28 @@ describe('Sidebar', () => {
     const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
     expect(main).toContain('Dashboard');
     expect(main).not.toContain('Users');
-    expect(foot).toContain('Users');
-    expect(foot).toContain('Activity');
+    expect(foot).toContain('Settings');
+    expect(foot).not.toContain('Users');
+    expect(container.querySelector('.fc-nav-back')).toBeNull();
+  });
+
+  it('gives the settings a menu of their own while you are in them: the way back, then every upkeep page', () => {
+    mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePathname.mockReturnValue('/users');
+
+    const { container } = renderSidebar();
+
+    const menu = container.querySelector('.fc-nav-list')?.textContent || '';
+    expect(container.querySelector('.fc-nav-back')?.textContent).toContain('Settings');
+    expect(menu).toContain('Users');
+    expect(menu).toContain('Activity');
+    expect(menu).not.toContain('Dashboard');
+    expect(container.querySelector('.fc-nav-foot')).toBeNull();
   });
 
   it('lists every upkeep page on its own line, not folded under the column group it came from', () => {
     mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePathname.mockReturnValue('/users');
     const { menuItems } = mockUsePlugins();
     mockUsePlugins.mockReturnValue({
       plugins: [],
@@ -128,8 +145,8 @@ describe('Sidebar', () => {
 
     const { container } = renderSidebar();
 
-    expect(container.querySelector('.fc-nav-foot .fc-nav-sub__item--group')).toBeNull();
-    const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
+    expect(container.querySelector('.fc-nav-list .fc-nav-sub__item--group')).toBeNull();
+    const foot = container.querySelector('.fc-nav-list')?.textContent || '';
     expect(foot).toContain('Users');
     expect(foot).toContain('Jobs');
     expect(foot).not.toContain('Platform');
@@ -137,6 +154,7 @@ describe('Sidebar', () => {
 
   it('does not fold the pages Settings itself brings under their column groups either', () => {
     mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePathname.mockReturnValue('/users');
     mockUsePlugins.mockReturnValue({
       plugins: [],
       menuItems: [
@@ -156,8 +174,8 @@ describe('Sidebar', () => {
 
     const { container } = renderSidebar();
 
-    expect(container.querySelector('.fc-nav-foot .fc-nav-sub__item--group')).toBeNull();
-    const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
+    expect(container.querySelector('.fc-nav-list .fc-nav-sub__item--group')).toBeNull();
+    const foot = container.querySelector('.fc-nav-list')?.textContent || '';
     expect(foot).toContain('Users');
     expect(foot).toContain('Privacy');
   });
