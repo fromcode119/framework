@@ -52,6 +52,25 @@ export class ClientLayoutNavigationStateHooks {
       }).items;
     }, [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
 
+    // Every section's other pages, whatever page is open. The menu lists only the rows a section
+    // declares, so these are what the big search reaches — each with its section's name beside it.
+    const searchPages = React.useMemo(() => {
+      return (sidebarState.menuItems || []).flatMap((section: any) => {
+        const path = NavUtils.normalizePath(section?.path);
+        if (!path || path === NavUtils.normalizePath(AdminConstants.ROUTES.SETTINGS.ROOT)) return [];
+        const pages = ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
+          pathname: path,
+          primaryContextId: '',
+          menuItems: sidebarState.menuItems,
+          secondaryPanel: sidebarState.effectiveSecondaryPanel,
+          plugins: sidebarState.plugins,
+          userRoles: args.user?.roles || [],
+          userCapabilities: args.user?.permissions || [],
+        }).items;
+        return (pages || []).map((page: any) => ({ page, section }));
+      });
+    }, [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
+
     const routePrimaryItem = React.useMemo(() => NavUtils.resolveBestMatchEntry(args.normalizedPathname, sidebarState.menuItems), [sidebarState.menuItems, args.normalizedPathname]);
     const activePrimaryItem = React.useMemo(() => {
       const normalizedPath = NavUtils.normalizePath(args.normalizedPathname);
@@ -266,6 +285,7 @@ export class ClientLayoutNavigationStateHooks {
       setActivePrimaryContextId,
       secondaryResolved,
       settingsPages,
+      searchPages,
       secondaryMode,
       secondarySourceLabel,
       activePrimaryItem,

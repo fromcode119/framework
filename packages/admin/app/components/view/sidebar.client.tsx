@@ -28,6 +28,8 @@ export class Sidebar extends AdminComponent {
   @prop declare sectionPages: any[];
   /** Settings' own pages, whatever page is open: they open in the column beside the menu. */
   @prop declare settingsPages: any[];
+  /** Every section's pages that are not rows of the menu, for the big search. */
+  @prop declare searchPages?: Array<{ page: any; section: any }>;
   @prop declare activePrimaryPathOverride: string;
   @prop declare activeChildPathOverride: string;
 
@@ -56,6 +58,8 @@ export class Sidebar extends AdminComponent {
       add(item);
       for (const child of item.children || []) add(child, item);
     }
+    for (const entry of this.searchPages || []) add(entry.page, entry.section);
+    for (const page of this.settingsPages || []) add(page, this.footerSettingsItem);
     return rows;
   }
 

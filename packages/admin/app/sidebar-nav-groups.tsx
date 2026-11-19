@@ -79,7 +79,9 @@ export class SidebarNavGroups extends PureReactor {
         onClick={this.onClose}
         children={children ?? item.children}
         // In the settings' own menu every page is already a row; the section's pages would repeat them under it.
-        subItems={byPath ? undefined : paneled && this.settingsPages?.length ? this.settingsPages : active ? this.sectionPages : undefined}
+        // A section shows the rows it declares and nothing else: its other pages used to pour in under
+        // them while it was open, with groups among them opening a third level. They are in the big search.
+        subItems={byPath ? undefined : paneled && this.settingsPages?.length ? this.settingsPages : undefined}
         isMini={this.isMini}
         paneled={paneled}
         pluginSlug={item.pluginSlug}

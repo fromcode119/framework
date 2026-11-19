@@ -156,6 +156,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           onActiveContextChange={navigationState.setActivePrimaryContextId}
           sectionPages={navigationState.secondaryResolved.items}
           settingsPages={navigationState.settingsPages}
+          searchPages={navigationState.searchPages}
           activePrimaryPathOverride={String(navigationState.activePrimaryItem?.path || '')}
           activeChildPathOverride={String(navigationState.secondaryResolved?.activeSourcePath || '')}
         />
