@@ -1588,11 +1588,16 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  /* At the END of the head, always. Measured on the reference at 1280: its head is `space-between`
+     with the name at the card's left inset and everything else — the state, the buttons, the ⋯ —
+     ending at the card's right inset. Ours left this at the start, so a card's buttons sat glued to
+     its title with the rest of the band empty. */
+  justify-content: flex-end;
   gap: 6px 8px;
   font-size: 13px;
   color: var(--fc-text-muted);
 }
-.fc-record-card__aside:has(.fc-state-badge) { justify-content: flex-end; }
+
 .fc-record-card__aside:empty { display: none; }
 .fc-record-card__head:has(.fc-record-card__aside:empty) { justify-content: space-between; }
 .fc-record-card__menu {
