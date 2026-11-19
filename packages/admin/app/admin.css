@@ -3661,3 +3661,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-swatch { min-width: 0; }
 .fc-swatch__chip { height: 56px; margin-bottom: 6px; border: 1px solid var(--fc-border); border-radius: 8px; }
 .fc-swatch__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* A column whose value may be long but which does not take the spare width: cut at a third of the table. */
+.fc-dt-td.fc-dt-clip > .fc-dt-cell { max-width: min(36ch, 30vw); overflow: hidden; text-overflow: ellipsis; }
+
+/* The fields of a sheet or a dialog, one under another with room between a field and the next label. */
+.fc-form-stack { display: flex; flex-direction: column; gap: 16px; }

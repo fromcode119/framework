@@ -1,3 +1,5 @@
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
@@ -39,6 +41,8 @@ export class RedirectRulesCard extends PureReactor {
   /** The rule whose target is being changed, in the sheet at the side. */
   @state editing: Record<string, any> | null = null;
   @state draft = '';
+  /** The rule about to be removed, while its removal is being confirmed. */
+  @state removing: Record<string, any> | null = null;
 
   @bound startEdit(redirect: Record<string, any>): void {
     this.editing = redirect;
@@ -66,7 +70,8 @@ export class RedirectRulesCard extends PureReactor {
       { header: AdminI18n.t('common.enabled'), id: 'on', accessor: (redirect: any) => (
         <Switch checked={Boolean(redirect.enabled)} disabled={this.busyId === redirect.id} onChange={() => this.onToggle(redirect)} />
       ) },
-      { header: AdminI18n.t('settings.redirects.fromPath'), id: 'from', className: 'fc-dt-fill', accessor: (redirect: any) => <code className="fc-dt-code" title={redirect.fromPath}>{redirect.fromPath}</code> },
+      // One column takes the spare width: two that both ask for all of it leave the second with none.
+      { header: AdminI18n.t('settings.redirects.fromPath'), id: 'from', className: 'fc-dt-clip', accessor: (redirect: any) => <code className="fc-dt-code" title={redirect.fromPath}>{redirect.fromPath}</code> },
       { header: AdminI18n.t('settings.redirects.toPathOrUrl'), id: 'to', className: 'fc-dt-fill', accessor: (redirect: any) => (
         redirect.type === '410'
           ? <span className="fc-dt-quiet">{AdminI18n.t('settings.redirects.goneNoTarget')}</span>
@@ -82,7 +87,7 @@ export class RedirectRulesCard extends PureReactor {
   private actions(redirect: Record<string, any>): ReactNode {
     const items: any[] = [];
     if (redirect.type !== '410') items.push({ label: AdminI18n.t('settings.redirects.editTarget', { fromPath: redirect.fromPath }), icon: <FrameworkIcons.Edit size={15} />, onClick: () => this.startEdit(redirect) });
-    items.push({ label: AdminI18n.t('settings.redirects.deleteRedirectFrom', { fromPath: redirect.fromPath }), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: () => this.onDelete(redirect) });
+    items.push({ label: AdminI18n.t('settings.redirects.deleteRedirectFrom', { fromPath: redirect.fromPath }), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: () => { this.removing = redirect; } });
     return <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={<span className="fc-record-card__menu" aria-label={AdminI18n.t('common.more')}><FrameworkIcons.More size={15} /></span>} />;
   }
 
@@ -104,13 +109,23 @@ export class RedirectRulesCard extends PureReactor {
         )}
         <EditSheet isOpen={Boolean(this.editing)} onClose={this.cancelEdit} onSave={() => void this.saveEdit()} saving={Boolean(this.editing) && this.busyId === this.editing?.id}
           title={AdminI18n.t('settings.redirects.editTarget', { fromPath: this.editing?.fromPath ?? '' })}>
-          <div className="fc-field-stack">
+          <div className="fc-form-stack">
             <Input label={AdminI18n.t('settings.redirects.fromPath')} value={this.editing?.fromPath ?? ''} readOnly />
             <Input label={AdminI18n.t('settings.redirects.toPathOrUrl')} value={this.draft} autoFocus placeholder={AdminI18n.t('settings.redirects.toPathExample')}
               onChange={(event: any) => { this.draft = String(event?.target?.value ?? ''); }}
               onKeyDown={(event: any) => { if (event.key === 'Enter') void this.saveEdit(); }} />
           </div>
         </EditSheet>
+        {/* A rule is removed for good, so it is asked first, like every other removal in the console. */}
+        <ConfirmDialog
+          isOpen={Boolean(this.removing)}
+          onClose={() => { this.removing = null; }}
+          onConfirm={() => { const rule = this.removing; this.removing = null; if (rule) this.onDelete(rule); }}
+          title={AdminI18n.t('settings.redirects.deleteRedirectFrom', { fromPath: this.removing?.fromPath ?? '' })}
+          description={this.removing ? `${this.removing.fromPath} → ${this.removing.type === '410' ? AdminI18n.t('settings.redirects.goneNoTarget') : this.removing.toPath}` : ''}
+          confirmLabel={AdminI18n.t('common.delete')}
+          variant={ButtonVariant.DANGER}
+        />
       </ListShell>
     );
   }
