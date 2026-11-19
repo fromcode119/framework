@@ -3102,3 +3102,47 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-cal__time-cell { display: flex; flex-direction: column; gap: 2px; width: 120px; }
 .fc-cal__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--fc-border); }
 .fc-cal__apply { margin-inline-start: auto; }
+
+/* ---------- Skeleton, radio group, progress tabs ---------- */
+.fc-skeleton { display: block; max-width: 100%; height: 20px; border-radius: 6px; background: var(--fc-surface-disabled); animation: fc-skeleton-pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
+.fc-skeleton[data-round="true"] { border-radius: 999px; }
+@keyframes fc-skeleton-pulse { 50% { opacity: .5; } }
+@media (prefers-reduced-motion: reduce) { .fc-skeleton { animation: none; } }
+
+.fc-radio-group { display: grid; gap: 8px; }
+.fc-radio { display: flex; align-items: flex-start; gap: 8px; padding: 0; border: 0; background: transparent; color: var(--fc-text); text-align: start; cursor: pointer; }
+.fc-radio:disabled { cursor: not-allowed; opacity: .5; }
+.fc-radio__hit { display: flex; flex: none; align-items: center; justify-content: center; width: 20px; height: 20px; }
+.fc-radio__dot { display: flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 999px; background: var(--fc-surface); box-shadow: var(--fc-control-shadow); transition: background-color .15s ease, box-shadow .15s ease; }
+.fc-radio__dot[data-checked="true"] { background: var(--fc-interactive); box-shadow: 0 0 0 1px var(--fc-interactive), 0 1px 2px 0 rgb(0 0 0 / .12); }
+.fc-radio__dot[data-checked="true"]::after { content: ""; width: 6px; height: 6px; border-radius: 999px; background: #fff; }
+.fc-radio:focus-visible { outline: 0; }
+.fc-radio:focus-visible .fc-radio__dot { box-shadow: 0 0 0 1px var(--fc-interactive), 0 0 0 3px color-mix(in srgb, var(--fc-interactive) 25%, transparent); }
+.fc-radio__text { display: flex; flex-direction: column; min-width: 0; }
+.fc-radio__label { font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-radio__description { font-size: 13px; line-height: 20px; color: var(--fc-text-muted); }
+/* Boxed: each option is its own box, and the chosen one carries the interactive edge. */
+.fc-radio-group[data-boxed="true"] .fc-radio { padding: 12px; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-control-shadow); }
+.fc-radio-group[data-boxed="true"] .fc-radio:hover:enabled { background: var(--fc-surface-muted); }
+.fc-radio-group[data-boxed="true"] .fc-radio[aria-checked="true"] { box-shadow: 0 0 0 1px var(--fc-interactive), 0 1px 2px 0 rgb(0 0 0 / .12); }
+
+.fc-progress-tabs { display: flex; width: 100%; border-bottom: 1px solid var(--fc-border); overflow-x: auto; scrollbar-width: none; }
+.fc-progress-tabs__step { display: inline-flex; flex: 1 1 0; align-items: center; gap: 8px; min-width: 0; max-width: 200px; height: 52px; padding: 0 16px; border: 0; border-inline-end: 1px solid var(--fc-border); background: var(--fc-surface-muted); color: var(--fc-text-faint); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); text-align: start; white-space: nowrap; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.fc-progress-tabs__step[aria-selected="true"] { background: var(--fc-surface); color: var(--fc-text); }
+.fc-progress-tabs__step:disabled { background: var(--fc-surface-disabled); cursor: default; }
+.fc-progress-tabs__label { overflow: hidden; text-overflow: ellipsis; }
+.fc-progress-tabs__mark { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; color: var(--fc-text-faint); }
+.fc-progress-tabs__step[aria-selected="true"] .fc-progress-tabs__mark { color: var(--fc-interactive); }
+.fc-progress-tabs__step[data-status="completed"] .fc-progress-tabs__mark { border-radius: 999px; background: currentColor; }
+.fc-progress-tabs__step[data-status="completed"] .fc-progress-tabs__mark svg { color: var(--fc-surface); }
+.fc-progress-tabs__ring { width: 12px; height: 12px; border: 1.5px dashed currentColor; border-radius: 999px; }
+.fc-progress-tabs__ring[data-status="in-progress"] { border-style: solid; background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+.fc-kit__skeleton { display: flex; align-items: center; gap: 12px; width: 100%; }
+.fc-kit__skeleton-lines { display: flex; flex: 1; flex-direction: column; gap: 8px; }
+/* On a phone four names do not fit a line: the step that is open keeps its name, the others are their
+   mark alone. Squeezed, every one of them read "D…", "O…". */
+@media (max-width: 639.98px) {
+  .fc-progress-tabs__step { flex: 0 0 auto; }
+  .fc-progress-tabs__step[aria-selected="true"] { flex: 1 1 0; max-width: none; }
+  .fc-progress-tabs__step:not([aria-selected="true"]) .fc-progress-tabs__label { display: none; }
+}
