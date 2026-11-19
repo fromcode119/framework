@@ -152,6 +152,8 @@ services:
       # Both halves of the config, for the reason the admin block above records: mounting
       # next.config.js without `config/` runs the shared half from the image's baked copy, which is
       # how the dev-origin fix stayed invisible for a round.
+      # The dev script itself, for the reason the admin block records: unmounted, the image's baked one runs.
+      - ./packages/frontend/package.json:/app/packages/frontend/package.json
       - ./packages/frontend/next.config.ts:/app/packages/frontend/next.config.ts
       - ./config:/app/config
       - ./packages/frontend/app:/app/packages/frontend/app
