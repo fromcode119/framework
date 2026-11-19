@@ -150,9 +150,10 @@ export class BackupService {
 
   /**
    * Creates a database dump
+   * @param warnings collects what the operator has to know: a table left out, or why none was written
    * @returns Path to the dump file
    */
-  static async backupDatabase(): Promise<string | null> {
+  static async backupDatabase(warnings: string[] = []): Promise<string | null> {
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl) return null;
 
@@ -165,7 +166,7 @@ export class BackupService {
       return null;
     }
 
-    return await backupHandler.createBackup(dbUrl, { backupsPath, timestamp, projectRoot });
+    return await backupHandler.createBackup(dbUrl, { backupsPath, timestamp, projectRoot, warnings });
   }
 
   /**
@@ -199,16 +200,9 @@ export class BackupService {
       throw new Error('Select at least one backup section that is available in this workspace.');
     }
 
+    let unreadable: string[] = [];
     try {
-      await tar.create(
-        {
-          filter: (entryPath) => !BackupArchivePathService.isArchivePathExcluded(String(entryPath || ''), options.excludePaths),
-          gzip: true,
-          file: backupPath,
-          cwd: rootDir,
-        },
-        toBackup,
-      );
+      unreadable = await SystemBackupHelper.writeArchive(rootDir, backupPath, toBackup, options.excludePaths);
     } finally {
       SystemBackupHelper.cleanupTemporaryDatabaseEntry(rootDir, databaseEntry.tempDbFile);
     }
@@ -219,14 +213,15 @@ export class BackupService {
       backupPath,
       requestedSections,
       includedSections,
-      warnings: databaseEntry.warnings,
+      warnings: [...databaseEntry.warnings, ...SystemBackupHelper.unreadableWarnings(unreadable)],
     };
   }
 
   private static async createDatabaseOnlyBackup(requestedSections: BackupSectionKey[]): Promise<ICreateSystemBackupResult> {
-    const backupPath = await this.backupDatabase();
+    const warnings: string[] = [];
+    const backupPath = await this.backupDatabase(warnings);
     if (!backupPath || !fs.existsSync(backupPath)) {
-      throw new Error('Database backup was requested, but no database snapshot is available in this environment.');
+      throw new Error(warnings[0] || 'Database backup was requested, but no database snapshot is available in this environment.');
     }
 
     SystemBackupHelper.cleanupDatabaseOld(this.getBackupsDirectory('database'), 5);
@@ -235,7 +230,7 @@ export class BackupService {
       backupPath,
       requestedSections,
       includedSections: [BackupSectionKey.DATABASE],
-      warnings: [],
+      warnings,
     };
   }
 
@@ -249,17 +244,18 @@ export class BackupService {
     }
 
     try {
-      const dbDumpPath = await this.backupDatabase();
+      const warnings: string[] = [];
+      const dbDumpPath = await this.backupDatabase(warnings);
       if (!dbDumpPath || !fs.existsSync(dbDumpPath)) {
         return {
           tempDbFile: null,
-          warnings: ['Database backup was requested, but no database snapshot was available in this environment.'],
+          warnings: warnings.length ? warnings : ['Database backup was requested, but no database snapshot was available in this environment.'],
         };
       }
 
       const tempDbFile = `database-backup-${timestamp}${path.extname(dbDumpPath)}`;
       fs.copyFileSync(dbDumpPath, path.join(rootDir, tempDbFile));
-      return { tempDbFile, warnings: [] };
+      return { tempDbFile, warnings };
     } catch {
       console.warn('[BackupService] Database backup failed, proceeding without a database snapshot.');
       return {
