@@ -3265,3 +3265,8 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* ---------- A whole page that has nothing to show: not found, did not load ---------- */
 .fc-state-page { display: flex; align-items: center; justify-content: center; min-height: 60vh; padding: 24px 16px; }
 .fc-state-page__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+/* In a card's head the title gives way before the actions drop under it: at 18rem the title block and
+   three actions did not fit a 531px card, so the state and Preview stood on a second line. The band
+   keeps its 16px above and below whether it is one line or two. */
+.fc-record-card__head.fc-record-card__head--record { padding-block: 16px; gap: 8px 12px; }
+.fc-record-card__head--record > .fc-record-head__main { min-width: min(10rem, 100%); flex-basis: 10rem; }
