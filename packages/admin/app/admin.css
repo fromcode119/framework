@@ -206,6 +206,8 @@
    * the markup and the implementation was never written. */
   --fc-dur-ui: 150ms;
   --fc-dur-overlay: 200ms;
+  /* Leaving is quicker than arriving: what was dismissed should be out of the way. */
+  --fc-dur-exit: 150ms;
   --fc-ease: cubic-bezier(0.4, 0, 0.2, 1);
   /* How far an overlay travels on its way in. Further than this reads as a slide; nearer, as nothing. */
   --fc-rise: 8px;
@@ -2327,7 +2329,7 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
  * Nothing here runs for a reader who asked for less motion: the rule below turns every one of them off
  * and leaves the finished state, which is what the element looks like anyway once it has arrived. */
 @keyframes fc-enter {
-  from { opacity: 0; transform: translateY(var(--fc-enter-from, var(--fc-rise))) scale(var(--fc-enter-scale, 0.97)); }
+  from { opacity: 0; transform: translate(var(--fc-enter-x, 0px), var(--fc-enter-from, var(--fc-rise))) scale(var(--fc-enter-scale, 0.97)); }
   to { opacity: 1; transform: none; }
 }
 
@@ -2352,8 +2354,46 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
   .fc-sheet__panel { --fc-enter-from: 24px; --fc-enter-scale: 1; transform-origin: bottom center; }
 }
 
+/* On a desktop the sheet is hinged to the side of the screen, so it comes in from that side. */
+@media (min-width: 640px) {
+  .fc-sheet__panel { --fc-enter-x: 32px; --fc-enter-from: 0px; --fc-enter-scale: 1; }
+}
+
+/* ── Everything else that opens over the page arrives the same way ──
+   The ground only fades. A dialog and the big search rise and grow a little into place; the full-screen
+   modal only rises (a panel the size of the screen that grows reads as a mistake); the bar of commands
+   comes up from the foot of the screen; a tooltip and a popover travel 4px at the pointer's speed. */
+.fc-dialog__backdrop, .fc-focus__backdrop, .fc-palette__backdrop { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; --fc-enter-from: 0px; --fc-enter-scale: 1; }
+.fc-dialog__panel, .fc-palette__panel { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; }
+.fc-focus__panel { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; --fc-enter-from: 16px; --fc-enter-scale: 1; }
+.fc-command-bar__bar { animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; --fc-enter-from: 16px; --fc-enter-scale: 1; }
+.fc-tooltip { animation: fc-enter var(--fc-dur-ui) var(--fc-ease) both; --fc-enter-from: 4px; --fc-enter-scale: 1; }
+.fc-tooltip[data-side="bottom"] { --fc-enter-from: -4px; }
+.fc-toast { --fc-enter-from: 16px; --fc-enter-scale: 1; }
+
+/* ── …and leaves the way it came, a little quicker ──
+   `data-state="closed"` is set for the length of the exit (OverlayPresence); the element is removed
+   when it ends. While it leaves it takes no presses, so a second click lands on the page under it. */
+@keyframes fc-exit {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate(var(--fc-enter-x, 0px), var(--fc-enter-from, var(--fc-rise))) scale(var(--fc-enter-scale, 0.97)); }
+}
+[data-state="closed"].fc-dialog, [data-state="closed"].fc-sheet, [data-state="closed"].fc-focus, [data-state="closed"].fc-palette, [data-state="closed"].fc-command-bar { pointer-events: none; }
+[data-state="closed"] > .fc-dialog__backdrop, [data-state="closed"] > .fc-sheet__backdrop, [data-state="closed"] > .fc-focus__backdrop, [data-state="closed"] > .fc-palette__backdrop,
+[data-state="closed"] > .fc-dialog__panel, [data-state="closed"] > .fc-sheet__panel, [data-state="closed"] > .fc-focus__panel, [data-state="closed"] > .fc-palette__panel,
+[data-state="closed"] > .fc-command-bar__bar, .fc-toast[data-state="closed"] {
+  animation: fc-exit var(--fc-dur-exit) var(--fc-ease) both;
+}
+
+/* ── What answers a press ── a control darkens a touch while it is held, so a press is felt before
+   its result arrives. */
+.fc-btn, .fc-toolbar-btn, .fc-tab { transition: background-color var(--fc-dur-ui) var(--fc-ease), color var(--fc-dur-ui) var(--fc-ease), box-shadow var(--fc-dur-ui) var(--fc-ease), filter var(--fc-dur-ui) var(--fc-ease); }
+.fc-btn:active:not(:disabled), .fc-toolbar-btn:active { filter: brightness(.94); }
+
 @media (prefers-reduced-motion: reduce) {
-  .fc-enter, .fc-sheet__panel, .fc-sheet__backdrop { animation: none; }
+  .fc-enter, .fc-sheet__panel, .fc-sheet__backdrop,
+  .fc-dialog__backdrop, .fc-focus__backdrop, .fc-palette__backdrop, .fc-dialog__panel, .fc-palette__panel, .fc-focus__panel,
+  .fc-command-bar__bar, .fc-tooltip, .fc-toast, .fc-popover__panel { animation: none !important; }
 }
 
 /* ── The shape a record page holds while its record is on the way ────────────────────────────────
@@ -2887,6 +2927,11 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
   cursor: pointer; transition: background-color .15s ease, color .15s ease;
 }
 .fc-btn:disabled { pointer-events: none; background: var(--fc-surface-disabled); color: var(--fc-text-faint); }
+/* A button carrying something out is disabled to a press but keeps its own look, so the spinner sits on the
+   button that was pressed and not on a grey one. */
+.fc-btn--primary[aria-busy="true"]:disabled { background: var(--fc-btn-primary); color: rgb(255 255 255 / .88); }
+.fc-btn--danger[aria-busy="true"]:disabled { background: var(--fc-btn-danger); color: #fff; }
+.fc-btn[aria-busy="true"]:disabled:not(.fc-btn--primary):not(.fc-btn--danger) { background: var(--fc-surface); color: var(--fc-text); }
 .fc-btn--ghost:disabled { background: transparent; }
 .fc-btn--primary {
   background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);

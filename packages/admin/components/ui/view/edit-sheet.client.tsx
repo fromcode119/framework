@@ -1,3 +1,4 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
 import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
@@ -44,6 +45,7 @@ export class EditSheet extends PureReactor {
   }
 
   componentWillUnmount(): void {
+    this.presence.dispose();
     if (Platform.isBrowser) document.removeEventListener('keydown', this.onKeyDown);
   }
 
@@ -55,8 +57,12 @@ export class EditSheet extends PureReactor {
     if (!this.saving) this.onClose();
   }
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
   render(): ReactNode {
-    if (!this.isOpen || !Platform.isBrowser) return null;
+    const shown = Platform.isBrowser ? this.presence.state(this.isOpen) : null;
+    if (!shown) return null;
     const sheet = AdminClass.of('sheet');
     /*
      * Through a portal, onto `body`.
@@ -68,7 +74,7 @@ export class EditSheet extends PureReactor {
      * lose to.
      */
     return this.portal(
-      <div className={sheet} role="dialog" aria-label={this.title}>
+      <div className={sheet} data-state={shown} aria-hidden={shown === 'closed' || undefined} role={shown === 'open' ? 'dialog' : undefined} aria-label={this.title}>
         <div className={`${sheet}__backdrop`} onClick={this.close} />
         <div className={`${sheet}__panel`}>
           <div className={`${sheet}__head`}>

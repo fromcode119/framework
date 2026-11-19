@@ -79,6 +79,9 @@ export class Button extends PureReactor {
     <Component
       className={`fc-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
       {...props}
+      // A button that is carrying something out takes no second press: a save pressed twice saved twice.
+      disabled={Boolean((props as any).disabled) || Boolean(isLoading)}
+      aria-busy={isLoading || undefined}
     >
       {isLoading ? (
         <div className={`h-4 w-4 border-2 rounded-full animate-spin ${spinnerColor}`} />

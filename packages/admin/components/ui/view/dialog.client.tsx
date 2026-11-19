@@ -1,3 +1,4 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
 import { RootFramework } from '@fromcode119/react';
@@ -43,6 +44,7 @@ export class Dialog extends PureReactor {
   }
 
   componentWillUnmount(): void {
+    this.presence.dispose();
     if (!Platform.isBrowser) return;
     document.removeEventListener('keydown', this.onKeyDown);
     document.body.style.overflow = 'unset';
@@ -62,11 +64,15 @@ export class Dialog extends PureReactor {
     if (!this.busy) this.onClose();
   }
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
   render(): ReactNode {
-    if (!this.isOpen || !Platform.isBrowser) return null;
+    const shown = Platform.isBrowser ? this.presence.state(this.isOpen) : null;
+    if (!shown) return null;
     return (
       <RootFramework>
-        <div className="fc-dialog" role="dialog" aria-modal="true" aria-label={this.title}>
+        <div className="fc-dialog" data-state={shown} aria-hidden={shown === 'closed' || undefined} role={shown === 'open' ? 'dialog' : undefined} aria-modal="true" aria-label={this.title}>
           <div className="fc-dialog__backdrop" onClick={this.close} />
           <div className={`fc-dialog__panel${this.wide ? ' fc-dialog__panel--wide' : ''}`}>
             <div className="fc-dialog__head">

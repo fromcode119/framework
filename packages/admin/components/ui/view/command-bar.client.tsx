@@ -1,3 +1,4 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -15,11 +16,19 @@ export class CommandBar extends PureReactor {
   @prop declare children: ReactNode;
   @prop declare className?: string;
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
+  componentWillUnmount(): void {
+    this.presence.dispose();
+  }
+
   render(): ReactNode {
-    if (!this.open || typeof document === 'undefined') return null;
+    const shown = typeof document === 'undefined' ? null : this.presence.state(this.open);
+    if (!shown) return null;
     const name = AdminClass.of('command-bar');
     return createPortal(
-      <div className={`${name} ${this.className ?? ''}`} role="toolbar">
+      <div className={`${name} ${this.className ?? ''}`} data-state={shown} role="toolbar">
         <div className={`${name}__bar`}>
           <div className={`${name}__value`}>{this.value}</div>
           {this.children}

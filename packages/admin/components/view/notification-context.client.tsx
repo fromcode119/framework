@@ -16,7 +16,12 @@ export class NotificationProvider extends Reactor {
 
   @prop declare children: ReactNode;
 
+  /** As long as --fc-dur-exit: a toast is marked as leaving, and removed when its exit has run. */
+  private static readonly EXIT_MS = 150;
+
   @state private notifications: INotification[] = [];
+  /** The toasts on their way out. */
+  @state private leaving: string[] = [];
 
   @bound
   notify(type: INotificationPayload['type'], title: string, message: string): void {
@@ -32,7 +37,12 @@ export class NotificationProvider extends Reactor {
 
   @bound
   remove(id: string): void {
-    this.notifications = this.notifications.filter((notification) => notification.id !== id);
+    if (this.leaving.includes(id) || !this.notifications.some((notification) => notification.id === id)) return;
+    this.leaving = [...this.leaving, id];
+    setTimeout(() => {
+      this.notifications = this.notifications.filter((notification) => notification.id !== id);
+      this.leaving = this.leaving.filter((gone) => gone !== id);
+    }, NotificationProvider.EXIT_MS);
   }
 
   private get value(): { notify: NotificationProvider['notify']; addNotification: NotificationProvider['addNotification']; remove: NotificationProvider['remove'] } {
@@ -56,7 +66,7 @@ export class NotificationProvider extends Reactor {
             emerald or rose brick with white text, which no other surface in the console looks like. */}
         <div className="fc-toasts">
           {this.notifications.map((notification) => (
-            <div key={notification.id} className="fc-toast fc-enter" data-type={String((notification.type as any)?.value ?? notification.type)} role="status">
+            <div key={notification.id} className="fc-toast fc-enter" data-state={this.leaving.includes(notification.id) ? 'closed' : 'open'} data-type={String((notification.type as any)?.value ?? notification.type)} role="status">
               <span className="fc-toast__mark">{this.icon(notification.type)}</span>
               <div className="fc-toast__text">
                 <span className="fc-toast__title">{notification.title}</span>

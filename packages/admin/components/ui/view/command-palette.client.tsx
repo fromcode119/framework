@@ -1,3 +1,4 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
 import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -51,13 +52,21 @@ export class CommandPalette extends PureReactor {
     }
   }
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
+  componentWillUnmount(): void {
+    this.presence.dispose();
+  }
+
   render(): ReactNode {
-    if (!this.open || typeof document === 'undefined') return null;
+    const shown = typeof document === 'undefined' ? null : this.presence.state(this.open);
+    if (!shown) return null;
     const name = AdminClass.of('palette');
     return createPortal(
-      <div className={name} onKeyDown={this.key}>
+      <div className={name} data-state={shown} onKeyDown={this.key}>
         <div className={`${name}__backdrop`} onClick={this.onClose} />
-        <div className={`${name}__panel`} role="dialog" aria-modal="true" aria-label={this.placeholder}>
+        <div className={`${name}__panel`} role={shown === 'open' ? 'dialog' : undefined} aria-hidden={shown === 'closed' || undefined} aria-modal="true" aria-label={this.placeholder}>
           <div className={`${name}__head`}>
             <FrameworkIcons.Search size={15} className={`${name}__icon`} />
             <input autoFocus type="text" className={`${name}__input`} value={this.query} onChange={this.change} placeholder={this.placeholder} aria-label={this.placeholder} />
