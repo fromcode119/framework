@@ -1094,8 +1094,7 @@ html.dark {
    the height, so the band is not the 60px of a value head; 16px above and below, like the reference's
    `px-6 py-4`. The hairline under it divides the head from the first section's values. */
 .fc-record-card__head--record { min-height: 0; padding-block: 16px; align-items: center; flex-wrap: wrap; }
-/* The console's button, as in a list's head: no border under the control shadow. */
-.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: var(--fc-control-h); padding: 4px 8px; border: 0; border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); background: var(--fc-surface); box-shadow: var(--fc-control-shadow); cursor: pointer; transition: background-color .15s ease; }
+.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface); }
 .fc-record-head__button:hover { background: var(--fc-surface-muted); }
 @media (max-width: 639px) { .fc-record-head__button-label { display: none; } }
 
@@ -1813,11 +1812,8 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-activity__quiet { font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 .fc-activity__message { display: block; max-width: 48ch; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); }
 /* A state standing among the record's actions is read beside them, so it stands as tall as they do. */
-/* …and with the same edge: a ring outside its box, like a button's, not a border inside it — with a
-   border the badge came out a pixel smaller all round than the button beside it. */
 .fc-record-head__actions .fc-state-badge,
-.fc-record-head__actions .fc-badge,
-.fc-record-head__actions .fc-record-head__badge { height: var(--fc-control-h); min-height: 0; padding: 0 8px; border: 0; box-shadow: 0 0 0 1px var(--fc-border); font-size: var(--fc-control-text); line-height: 20px; }
+.fc-record-head__actions .fc-badge { min-height: var(--fc-control-h); }
 /* Only the rows scroll sideways. The toolbar and pagination stay within the card. */
 .fc-sro-table { --fc-sro-row-h: 48px; --fc-sro-inset: 16px; min-width: 0; }
 .fc-sro-table__scroll { overflow-x: auto; }
