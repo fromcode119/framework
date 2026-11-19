@@ -39,13 +39,22 @@ export class RecordCard extends PureReactor {
   @prop declare id?: string;
   /** Added to the card's own class, for a variant the record itself declares (`--editing`). */
   @prop declare className?: string;
+  /**
+   * The whole head, supplied instead of being built from title/aside/menu. The first card of a record
+   * uses it to carry the record's own header — its name, its state and its actions — so that header
+   * and the first section's values read as ONE card, the way the reference draws a record. The head is
+   * then as tall as its content, not the band's 60px.
+   */
+  @prop declare headOverride?: ReactNode;
 
   render(): ReactNode {
     const card = AdminClass.of('record-card');
     const hasHead = Boolean(this.title || this.aside || this.menu);
     return (
       <Card id={this.id} noPadding className={this.className ? `${card} ${this.className}` : card}>
-        {hasHead ? (
+        {this.headOverride ? (
+          <div className={`${card}__head ${card}__head--record`}>{this.headOverride}</div>
+        ) : hasHead ? (
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>
               {this.title}

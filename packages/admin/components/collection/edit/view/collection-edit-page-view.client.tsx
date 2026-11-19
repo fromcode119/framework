@@ -183,8 +183,9 @@ export class CollectionEditPageView extends Reactor {
               listLabel={CollectionListUtils.resolveCollectionLabel(collection, slug)} title={edit.resolvedTitleValue || String(id)}
             />
           )}
-          head={(
+          head={(opts?: { bare?: boolean; onEditDetails?: () => void }) => (
             <EditHeader
+              bare={opts?.bare} onEditDetails={opts?.onEditDetails}
               collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
               resolvedTitleValue={edit.resolvedTitleValue}
               formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
@@ -197,6 +198,7 @@ export class CollectionEditPageView extends Reactor {
               openedSections={edit.openedSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.replace(href, { scroll: false })}
             />
           )}
+          titleFieldName={edit.titleFieldName}
         />
 
         <RevisionModal

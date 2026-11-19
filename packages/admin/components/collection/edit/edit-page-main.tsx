@@ -37,6 +37,11 @@ export class EditPageMain extends PureReactor {
   @prop declare saveError?: string;
   @prop declare clearSaveError?: () => void;
   @prop declare recordTitle?: string;
+  /** The record's header (a render fn), made the head of the FIRST section's card so the header and
+      the first section's values are one card, like the reference. */
+  @prop declare recordHeader?: (opts?: { bare?: boolean; onEditDetails?: () => void }) => ReactNode;
+  /** The title field — the first card's head shows it, so the first section does not repeat it as a row. */
+  @prop declare titleFieldName?: string;
   /** Names each section's slots (`<base>.<section>.head|body|menu`); see RecordSectionCard. */
   @prop declare sectionSlotBase?: string;
   @prop declare slotProps?: Record<string, any>;
@@ -79,13 +84,15 @@ export class EditPageMain extends PureReactor {
    * ("Pricing", "Shipping"). The title is a size above the field labels, so the two never compete; it
    * replaced a 9px capitalised caption with a rule, which read as a divider rather than a heading.
    */
-  private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = ''): ReactNode {
+  private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = '', isFirst = false): ReactNode {
     // A saved record is read, and changed a section at a time; a new one is still filled in as one form.
     if (!this.isNew && this.handleSubmit) {
       return (
         <RecordSectionCard
           key={`${prefix}${section.key}`}
           section={section}
+          recordHeader={isFirst ? this.recordHeader : undefined}
+          titleFieldName={this.titleFieldName}
           formData={this.formData}
           renderField={this.renderField}
           handlePatch={this.handlePatch}
@@ -120,7 +127,7 @@ export class EditPageMain extends PureReactor {
   render(): ReactNode {
     return (
       <>
-        {this.standardMainFieldSections.map((section) => this.renderSection(section))}
+        {this.standardMainFieldSections.map((section, index) => this.renderSection(section, '', index === 0))}
         {this.fullWidthMainFieldSections.map((section) => this.renderSection(section, 'full-width-'))}
       </>
     );

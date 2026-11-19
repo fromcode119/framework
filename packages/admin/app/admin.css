@@ -1081,6 +1081,10 @@ html.dark {
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
 .fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: var(--fc-leading); color: var(--fc-text-muted); overflow-wrap: anywhere; }
 .fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* The record header AS the first card's head: its content (the name, the facts line, the actions) sets
+   the height, so the band is not the 60px of a value head; 16px above and below, like the reference's
+   `px-6 py-4`. The hairline under it divides the head from the first section's values. */
+.fc-record-card__head--record { min-height: 0; padding-block: 16px; align-items: center; flex-wrap: wrap; }
 .fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: 500; color: var(--fc-text); background: var(--fc-surface); }
 .fc-record-head__button:hover { background: var(--fc-surface-muted); }
 @media (max-width: 639px) { .fc-record-head__button-label { display: none; } }

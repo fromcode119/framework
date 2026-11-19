@@ -32,7 +32,11 @@ export class EditPageBody extends PureReactor {
   /** Where the record sits — the way back to its list; above both columns. Null on a new record. */
   @prop declare crumbs: ReactNode;
   /** The card naming the record; it heads the main column, so the side column starts level with it. */
-  @prop declare head: ReactNode;
+  /** The record's header. A render function so the first section can pass its own "Edit" into the
+      header's ⋯ when the header becomes that card's head. */
+  @prop declare head: (opts?: { bare?: boolean; onEditDetails?: () => void }) => ReactNode;
+  /** The record's title field — the first card's head shows it, so it is not also a row. */
+  @prop declare titleFieldName?: string;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
@@ -150,7 +154,7 @@ export class EditPageBody extends PureReactor {
         <div className="min-w-0">
         {this.advancedView ? (
           <div className="pb-32 space-y-6">
-            {this.head}
+            {this.head()}
             <RecordJsonView formData={formData} setFormData={setFormData} collectionSlug={resolvedSlug || slug} renderedFieldNames={renderedFieldNames} />
           </div>
         ) : (
@@ -162,8 +166,13 @@ export class EditPageBody extends PureReactor {
           <div className="fc-edit-columns">
           <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}`}>
           <div className="fc-edit-column">
-            {this.head}
+            {/* A saved record's header is the head of its FIRST card (recordHeader), so there is no
+                separate header card above it. A new record has no sections yet, so it keeps the header
+                as its own card. */}
+            {isNew ? this.head() : null}
             <EditPageMain
+              recordHeader={isNew ? undefined : this.head}
+              titleFieldName={this.titleFieldName}
               standardMainFieldSections={standardMainFieldSections}
               fullWidthMainFieldSections={fullWidthMainFieldSections}
               theme={theme}
