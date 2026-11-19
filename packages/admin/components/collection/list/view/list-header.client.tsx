@@ -1,7 +1,8 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ReactNode } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
@@ -28,6 +29,10 @@ export class CollectionListHeader extends PureReactor {
   @prop declare canCreate: boolean;
   /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
   @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
+  /** Export the list, and (for a user who may create) import into it — the reference's header keeps
+      these two quiet buttons beside Create, not in a footer band of their own. */
+  @prop declare handleExport?: (format: ExportFormat) => void;
+  @prop declare handleImport?: (event: ChangeEvent<HTMLInputElement>) => void;
 
   private get displayName(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -51,6 +56,18 @@ export class CollectionListHeader extends PureReactor {
     const singular = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
     return (
       <>
+        {this.handleExport ? (
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={() => this.handleExport?.(ExportFormat.JSON)} icon={<FrameworkIcons.Download size={15} />}>
+            {AdminI18n.t('collection.list.exportJson')}
+          </Button>
+        ) : null}
+        {this.canCreate && this.handleImport ? (
+          <label className="fc-btn cursor-pointer">
+            <FrameworkIcons.Upload size={15} />
+            {AdminI18n.t('collection.list.bulkImport')}
+            <input type="file" className="hidden" accept=".json" onChange={this.handleImport} />
+          </label>
+        ) : null}
         <Slot name={`admin.collection.${slug}.header.actions`} include={this.includeAction} props={{ collection }} />
         <Slot name="admin.collection.list.header.actions" include={this.includeAction} props={{ collection }} />
         {this.canCreate && !collection.admin?.disableCreate && (

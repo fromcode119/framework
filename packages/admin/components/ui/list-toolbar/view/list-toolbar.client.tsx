@@ -25,14 +25,22 @@ export class ListToolbar extends PureReactor {
   @prop declare children?: ReactNode;
 
   render(): ReactNode {
+    // The reference lays a list's toolbar out as two groups with the space between them: what NARROWS
+    // the list (the filters) at the start, what WORKS on it (search, the column chooser, the order) at
+    // the end. Ours put a full-width search first and shoved the buttons against its right edge, so
+    // three controls of three different shapes sat glued in the corner.
     return (
-      <div className="flex flex-col gap-3 flex-1 w-full min-w-0">
-        <div className="flex items-center gap-2 w-full min-w-0">
-          <ListSearchInput value={this.search} onSearch={this.onSearch} placeholder={this.placeholder} theme={this.theme} />
+      <div className="fc-list-toolbar">
+        <div className="fc-list-toolbar__lead">
           {this.filters.length ? <FiltersButton filters={this.filters} total={this.total} /> : null}
+        </div>
+        <div className="fc-list-toolbar__tools">
+          <ListSearchInput value={this.search} onSearch={this.onSearch} placeholder={this.placeholder} theme={this.theme} />
           {this.children}
         </div>
-        <FilterChips filters={this.filters} />
+        {this.filters.some((filter) => filter.isActive) ? (
+          <div className="fc-list-toolbar__chips"><FilterChips filters={this.filters} /></div>
+        ) : null}
       </div>
     );
   }

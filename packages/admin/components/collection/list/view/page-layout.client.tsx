@@ -30,7 +30,7 @@ export class CollectionListPageLayout extends PureReactor {
       {/* ONE card: name and actions, then the tools, then the table, then the count — the shape the
           reference gives a list. Each band is separated by the card's own hairline. */}
       <div className="fc-collection-list fc-surface fc-list-shell">
-        <CollectionListHeader collection={this.collection} pluginSlug={this.pluginSlug} slug={this.slug} theme={this.theme} canCreate={this.tableProps.access.canCreate} includeAction={this.tableProps.access.allowsPluginAction} />
+        <CollectionListHeader collection={this.collection} pluginSlug={this.pluginSlug} slug={this.slug} theme={this.theme} canCreate={this.tableProps.access.canCreate} includeAction={this.tableProps.access.allowsPluginAction} handleExport={this.footerProps.handleExport} handleImport={this.footerProps.handleImport} />
         <Slot
           name={`admin.collection.${this.slotSlug}.list.header`}
           props={{ collection: this.collection, pluginSlug: this.pluginSlug, resolvedSlug: this.resolvedSlug, total: this.total, page: this.page, search: this.search }}

@@ -3,8 +3,6 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.client';
 import { SortMenu } from '@/components/collection/list/view/sort-menu.client';
@@ -79,15 +77,17 @@ export class FilterBar extends PureReactor {
   private renderColumnsButton(): ReactNode {
     return (
       <div className="fc-list-table-only relative shrink-0" ref={this.columnsMenuRef}>
-        <Button
+        {/* The column chooser is an icon on the reference — a quiet square beside the search, not a
+            labelled button. It shares the one toolbar-control look with Filters and the order. */}
+        <button
           type="button"
-          variant={ButtonVariant.SECONDARY}
           onClick={this.toggleColumnsMenu}
           title={AdminI18n.t('collection.list.columns')}
-          icon={<FrameworkIcons.Layout size={15} />}
+          aria-label={AdminI18n.t('collection.list.columns')}
+          className="fc-toolbar-btn fc-toolbar-btn--icon"
         >
-          <span className="hidden lg:inline">{AdminI18n.t('collection.list.columns')}</span>
-        </Button>
+          <FrameworkIcons.Layout size={15} />
+        </button>
         {this.showColumnsMenu && (
           <CollectionColumnsMenu
             theme={this.theme}

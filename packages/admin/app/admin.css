@@ -2802,6 +2802,47 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-search:focus-within .fc-search__icon { color: var(--primary); }
 .fc-field.fc-search-field { padding-inline-start: 36px; padding-inline-end: 12px; }
 
+/* ── A list's toolbar ── two groups with the space between them, the way the reference draws it: what
+   narrows the list (the filters) at the start, what works on it (search, the column chooser, the
+   order) at the end. The search is a fixed width there, not a bar stretched across the row that shoves
+   the buttons into the corner. On a phone the tools take the width and the filters sit under them. */
+.fc-list-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; width: 100%; }
+.fc-list-toolbar__lead { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-list-toolbar__tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-list-toolbar__tools .fc-search { flex: 0 0 240px; width: 240px; max-width: 100%; }
+.fc-list-toolbar__chips { flex-basis: 100%; min-width: 0; }
+@media (max-width: 640px) {
+  .fc-list-toolbar__lead { order: 2; }
+  .fc-list-toolbar__tools { order: 1; width: 100%; }
+  .fc-list-toolbar__tools .fc-search { flex: 1 1 auto; width: auto; }
+  .fc-list-toolbar__chips { order: 3; }
+}
+
+/* ONE quiet toolbar control — the Filters button, the column chooser, the order. They were three
+   different buttons (a `bg-white border-slate-200` one, a `--secondary` one, a bordered span), which
+   is why they read as three mismatched greys glued together. This is the single look they now share:
+   the surface, a hairline, the row's height, a fill on hover; a count badge for the filters, and an
+   icon-only square for the two on the right. */
+.fc-toolbar-btn {
+  height: var(--fc-control-h); padding: 0 12px;
+  display: inline-flex; align-items: center; gap: 7px; line-height: 1;
+  border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
+  background: var(--fc-surface); color: var(--fc-text);
+  font-size: var(--fc-control-text); font-weight: 500; white-space: nowrap;
+  box-shadow: var(--fc-control-shadow); cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.fc-toolbar-btn:hover { background: var(--fc-surface-muted); }
+.fc-toolbar-btn--icon { width: var(--fc-control-h); padding: 0; justify-content: center; }
+.fc-toolbar-btn--active { border-color: var(--primary); }
+.fc-toolbar-btn svg { opacity: .8; }
+.fc-toolbar-btn__count {
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: var(--primary); color: var(--primary-foreground, #fff);
+  font-size: var(--fc-label-text); font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
 /* A field's name, and the room between the two. 8px holds a label to its field; 32px between fields is
    what keeps a long form readable as fields rather than as one grid of boxes. */
 .fc-field-label { display: flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }

@@ -51,12 +51,11 @@ export class SortMenu extends PureReactor {
         align={HorizontalAlign.RIGHT}
         items={this.items}
         trigger={
-          <span
-            title={AdminI18n.t('collection.list.sortBy')}
-            className="h-[var(--fc-field-h)] px-4 rounded-[var(--fc-control-radius)] border border-[var(--border)] bg-[var(--secondary)] text-[var(--secondary-foreground)] text-[12px] font-medium inline-flex items-center gap-2 leading-none fc-elevated-control transition-colors hover:brightness-98"
-          >
+          // The order, like the column chooser beside it: a quiet icon square in the one toolbar look.
+          // The chosen column shows in the menu, not on the button, so the three controls stay the
+          // same width instead of one of them growing a 9rem label.
+          <span title={`${AdminI18n.t('collection.list.sortBy')}${current?.header ? ` — ${current.header}` : ''}`} className="fc-toolbar-btn fc-toolbar-btn--icon">
             <Icon size={15} />
-            <span className="hidden lg:inline max-w-[9rem] truncate">{current?.header || AdminI18n.t('collection.list.sortBy')}</span>
           </span>
         }
       />

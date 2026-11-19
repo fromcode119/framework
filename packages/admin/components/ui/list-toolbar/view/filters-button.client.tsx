@@ -31,14 +31,9 @@ export class FiltersButton extends PureReactor {
     return this.filters.filter((filter) => filter.isActive).length;
   }
 
-  private get buttonClass(): string {
-    return this.open || this.activeCount
-      ? 'bg-white border-indigo-400 text-slate-800 dark:bg-slate-900 dark:border-indigo-500/60 dark:text-slate-100'
-      : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-200 dark:hover:border-indigo-500/60';
-  }
-
   render(): ReactNode {
     const activeCount = this.activeCount;
+    const active = this.open || activeCount > 0;
     return (
       <div className="relative shrink-0">
         <button
@@ -46,14 +41,16 @@ export class FiltersButton extends PureReactor {
           onClick={this.toggle}
           aria-expanded={this.open}
           title={AdminI18n.t('ui.listToolbar.filters')}
-          // Below 640px the word is dropped and only the funnel is left, so the button has to say what
-          // it is some other way — otherwise a phone shows an unlabelled square beside the search box.
           aria-label={AdminI18n.t('ui.listToolbar.filters')}
-          className={this.compact ? 'fc-sro-table__tool' : `h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-medium inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
+          // The console's one quiet toolbar control, like the column chooser and the order beside it —
+          // not the hand-mixed `bg-white border-slate-200` that made the three sit together in three
+          // different greys. Below 640px the word is dropped and the funnel carries it (the aria-label
+          // still names it), so a phone shows a labelled control, not a bare square.
+          className={this.compact ? 'fc-sro-table__tool' : `fc-toolbar-btn${active ? ' fc-toolbar-btn--active' : ''}`}
         >
           <FrameworkIcons.Filter size={15} />
           {this.compact ? null : <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>}
-          {activeCount ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[length:var(--fc-label-text)] inline-flex items-center justify-center">{activeCount}</span> : null}
+          {activeCount ? <span className="fc-toolbar-btn__count">{activeCount}</span> : null}
         </button>
         {this.open ? <FilterPanel filters={this.filters} total={this.total} onClose={this.close} /> : null}
       </div>
