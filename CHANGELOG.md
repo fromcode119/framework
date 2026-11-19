@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.610] - 2026-11-19
+
+### Fixed
+
+- events.once for isolated plugins, single-site writes, site adoption, sign-up email notice ([#1538](https://github.com/fromcode119/framework/pull/1538))
+- **dev**: give the dev console and storefront the site domain ([#1537](https://github.com/fromcode119/framework/pull/1537))
+- **frontend**: run the storefront dev server on Turbopack ([#1536](https://github.com/fromcode119/framework/pull/1536))
+- **admin**: run the dev server on Turbopack so it fits its memory limit ([#1535](https://github.com/fromcode119/framework/pull/1535))
+
 ## [0.2.609] - 2026-11-19
 
 ### Fixed
