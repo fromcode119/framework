@@ -65,7 +65,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
         AppPathConstants.FRONTEND.ACCOUNT,
       );
       return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#020617]">
+        <div className="flex min-h-screen items-center justify-center fc-canvas">
           <div className="max-w-md space-y-6 p-12 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 shadow-xl shadow-indigo-500/10">
               <FrameworkIcons.User size={40} />
@@ -97,7 +97,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
+      return <div className="flex min-h-screen items-center justify-center fc-canvas transition-colors duration-500 "><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
     }
 
     // Signed in, but this workspace domain refuses the account — say so. Ahead of the login forward
@@ -108,11 +108,11 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     if (!authState.user && !authState.isAuthPage) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
+      return <div className="flex min-h-screen items-center justify-center fc-canvas transition-colors duration-500 "><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
     }
 
     if (authState.isAuthPage) {
-      return <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-300 dark:bg-[#020617]">{this.children}</div>;
+      return <div className="min-h-screen fc-canvas font-sans transition-colors duration-300 ">{this.children}</div>;
     }
 
     // An admin role can live on a MEMBERSHIP, and a membership only applies while its site is in
@@ -125,7 +125,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
 
     if (authState.isMinimalPath) {
       return (
-        <div className="min-h-screen bg-slate-50 font-sans transition-all duration-300 ease-in-out dark:bg-[#020617]">
+        <div className="min-h-screen fc-canvas font-sans transition-all duration-300 ease-in-out ">
           <AdminExtensionLoader />
           {navigationState.showSecondaryTrigger ? (
             <SecondarySidebar
@@ -144,7 +144,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     return (
-      <div className="flex min-h-screen flex-col bg-slate-50 font-sans transition-all duration-300 ease-in-out dark:bg-[#020617] lg:flex-row" style={{ '--secondary-sidebar-width': `${AdminConstants.SECONDARY_SIDEBAR.WIDTH_PX}px` } as React.CSSProperties}>
+      <div className="flex min-h-screen flex-col fc-canvas font-sans transition-all duration-300 ease-in-out  lg:flex-row" style={{ '--secondary-sidebar-width': `${AdminConstants.SECONDARY_SIDEBAR.WIDTH_PX}px` } as React.CSSProperties}>
         <PluginLoader />
         <AdminExtensionLoader />
         {navigationState.isSidebarOpen ? <div className="fixed inset-0 z-[150] animate-in bg-slate-900/50 backdrop-blur-sm duration-300 lg:hidden" onClick={() => navigationState.setSidebarOpen(false)} /> : null}

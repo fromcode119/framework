@@ -37,6 +37,7 @@ export * from '@/components/ui/view/state-page.client';
 export * from '@/components/ui/view/page-bar.client';
 export * from '@/components/ui/view/code-block.client';
 export * from '@/components/ui/view/columns.client';
+export * from '@/components/ui/view/progress-bar.client';
 export * from '@/components/ui/view/heading.client';
 export * from '@/components/ui/view/text.client';
 export * from '@/components/ui/view/label.client';

@@ -79,7 +79,7 @@ export class SiteChooser extends AdminComponent {
 
   render(): ReactElement {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+      <div className="flex min-h-screen items-center justify-center fc-canvas p-6 ">
         <div className="w-full max-w-md space-y-5">
           <div className="space-y-1.5">
             <h1 className="text-xl font-medium tracking-tight text-slate-900 dark:text-white">

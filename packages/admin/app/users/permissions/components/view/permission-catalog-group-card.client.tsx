@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
-import { Card } from '@/components/ui/view/card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { DataTable } from '@/components/ui/view/data-table.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -19,14 +21,8 @@ export class PermissionCatalogGroupCard extends PureReactor {
 
   private grantedBy(name: string): ReactNode {
     const holders = this.roles.filter((role) => PermissionGrants.covers(role.permissions, name));
-    if (holders.length === 0) return <span className="text-[12px] text-slate-400">{AdminI18n.t('users.noRole')}</span>;
-    return (
-      <span className="flex flex-wrap gap-1">
-        {holders.map((role) => (
-          <span key={role.slug} className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{role.name}</span>
-        ))}
-      </span>
-    );
+    if (holders.length === 0) return <span className="fc-dt-quiet">{AdminI18n.t('users.noRole')}</span>;
+    return <span className="fc-chip-row fc-chip-row--cell">{holders.map((role) => <Badge key={role.slug}>{role.name}</Badge>)}</span>;
   }
 
   render(): ReactNode {
@@ -35,59 +31,38 @@ export class PermissionCatalogGroupCard extends PureReactor {
       ...(group.all ? [{ name: group.all, label: AdminI18n.t('users.everythingIn', { label: group.label }), description: AdminI18n.t('users.everyScreenActionAndCollection') }] : []),
       ...group.permissions,
     ];
+    // The area's permissions, then — in the same card, under them — what each of its collections lets a
+    // role do. Two tables of one thing, so one card.
     return (
-      <Card title={group.label}>
-        <div className="flex flex-col gap-4">
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-[12px] font-medium tracking-tight text-slate-400">
-                  <th className="py-2 pe-4 text-start">{AdminI18n.t('users.permission')}</th>
-                  <th className="py-2 text-start">{AdminI18n.t('users.grantedBy')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {named.map((permission) => (
-                  <tr key={permission.name}>
-                    <td className="py-2.5 pe-4 align-top">
-                      <span className="flex flex-col gap-0.5">
-                        <span className="font-medium text-slate-800 dark:text-slate-100">{permission.label}</span>
-                        <span className="text-[12px] text-slate-500">{permission.description}</span>
-                        <code className="text-[12px] text-slate-400">{permission.name}</code>
-                      </span>
-                    </td>
-                    <td className="py-2.5 align-top">{this.grantedBy(permission.name)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {group.collections.length > 0 ? (
-            <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-slate-50 text-[12px] font-medium tracking-tight text-slate-400 dark:bg-slate-900/60">
-                    <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
-                    {RolePermissionSelection.ACTIONS.map((action) => <th key={action} className="px-3 py-2 text-start">{action}</th>)}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {group.collections.map((collection) => (
-                    <tr key={collection.key}>
-                      <td className="px-3 py-2 align-top font-medium text-slate-700 dark:text-slate-200">{collection.label}</td>
-                      {RolePermissionSelection.ACTIONS.map((action) => (
-                        <td key={action} className="px-3 py-2 align-top">
-                          {collection.actions[action] ? this.grantedBy(collection.actions[action]) : <span className="text-slate-300">—</span>}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-        </div>
-      </Card>
+      <ListShell title={group.label} count={named.length}>
+        <DataTable
+          cards={false}
+          columns={[
+            { header: AdminI18n.t('users.permission'), id: 'permission', className: 'fc-dt-fill fc-dt-wrap', accessor: (permission: any) => (
+              <span className="fc-dt-lines">
+                <span className="fc-dt-strong">{permission.label}</span>
+                <span className="fc-dt-quiet">{permission.description}</span>
+                <code className="fc-dt-code">{permission.name}</code>
+              </span>
+            ) },
+            { header: AdminI18n.t('users.grantedBy'), id: 'grantedBy', className: 'fc-dt-wrap', accessor: (permission: any) => this.grantedBy(permission.name) },
+          ] as any}
+          data={named.map((permission) => ({ ...permission, id: permission.name }))}
+        />
+        {group.collections.length > 0 ? (
+          <DataTable
+            cards={false}
+            columns={[
+              { header: AdminI18n.t('users.collection'), id: 'collection', accessor: (collection: any) => <span className="fc-dt-strong">{collection.label}</span> },
+              ...RolePermissionSelection.ACTIONS.map((action) => ({
+                header: action, id: action, className: 'fc-dt-wrap',
+                accessor: (collection: any) => (collection.actions[action] ? this.grantedBy(collection.actions[action]) : '—'),
+              })),
+            ] as any}
+            data={group.collections.map((collection) => ({ ...collection, id: collection.key }))}
+          />
+        ) : null}
+      </ListShell>
     );
   }
 }

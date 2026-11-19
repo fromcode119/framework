@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
-import { AdminClass } from '@/lib/admin-class';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -26,29 +28,19 @@ export class PluginRestartPendingList extends PureReactor {
   @prop declare theme: ThemeMode;
 
   render(): ReactNode {
-    if (!this.entries.length) return null;
-    const isDark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
+      <>
         {this.entries.map((entry) => (
-          <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-            <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-sky-500/10 text-sky-400 ring-1 ring-sky-500/20' : 'bg-sky-50 text-sky-600 ring-1 ring-sky-100'}`}><FrameworkIcons.Refresh size={18} strokeWidth={1.5} /></div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
-                <Badge variant={BadgeVariant.INFO} className="shrink-0">{AdminI18n.t('plugins.list.notTheInstalledVersion')}</Badge>
-              </div>
-              <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                {AdminI18n.t('plugins.list.runningVsInstalled', { running: entry.runningVersion || AdminI18n.t('common.unknown'), installed: entry.installedVersion || AdminI18n.t('common.unknown') })}
-              </p>
-            </div>
-            <button onClick={() => this.onLoadInstalled(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
-              {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Refresh size={12} />}
-              <span>{AdminI18n.t('plugins.list.loadVersion', { version: entry.installedVersion || AdminI18n.t('plugins.list.installedVersion') })}</span>
-            </button>
-          </div>
+          <ListRow key={entry.slug} icon={<FrameworkIcons.Refresh size={16} />} title={entry.slug}
+            badges={<Badge variant={BadgeVariant.INFO}>{AdminI18n.t('plugins.list.notTheInstalledVersion')}</Badge>}
+            description={AdminI18n.t('plugins.list.runningVsInstalled', { running: entry.runningVersion || AdminI18n.t('common.unknown'), installed: entry.installedVersion || AdminI18n.t('common.unknown') })}
+            actions={(
+              <Button variant={ButtonVariant.SECONDARY} disabled={this.isBusy} isLoading={this.isBusy && this.busySlug === entry.slug} icon={<FrameworkIcons.Refresh size={15} />} onClick={() => this.onLoadInstalled(entry.slug)}>
+                {AdminI18n.t('plugins.list.loadVersion', { version: entry.installedVersion || AdminI18n.t('plugins.list.installedVersion') })}
+              </Button>
+            )} />
         ))}
-      </div>
+      </>
     );
   }
 }

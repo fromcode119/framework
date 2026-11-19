@@ -166,10 +166,10 @@ export class AppearanceRuntimeLoader extends Reactor {
   }
 
   render(): ReactElement {
-    if (!this.resolved) return <div className="min-h-screen bg-slate-50 dark:bg-[#020617]" />;
+    if (!this.resolved) return <div className="min-h-screen fc-canvas" />;
     if (this.loadFailed) {
       return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+      <div className="flex min-h-screen items-center justify-center fc-canvas p-6 ">
         <div className={`w-full max-w-md ${AdminClass.SURFACE} p-8 text-center`}>
           <h1 className="text-lg font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.unavailable')}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">

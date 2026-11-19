@@ -3465,7 +3465,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-kitdoc__example { display: flex; flex-direction: column; gap: 12px; min-width: 0; scroll-margin-top: 16px; }
 .fc-kitdoc__h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--fc-text); }
 .fc-kitdoc__text { margin: -4px 0 0; max-width: 72ch; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }
-.fc-kitdoc__text code, .fc-kitdoc__code { padding: 1px 4px; border-radius: 4px; background: var(--fc-surface-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--fc-text); }
+.fc-kitdoc__text code, .fc-kitdoc__code, .fc-dt-code { padding: 1px 4px; border-radius: 4px; background: var(--fc-surface-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--fc-text); }
 .fc-kitdoc__demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 24px; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); }
 .fc-kitdoc__demo--flush { display: block; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .fc-kitdoc__cell { width: 240px; max-width: 100%; }
@@ -3584,3 +3584,27 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* A card whose body is a line and a few labels: the labels follow the line, 6px apart. */
 .fc-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .fc-card-block + .fc-card-block { margin-top: 16px; }
+
+/* The same labels inside a table cell stand on the cell's own line, with no space over them. */
+.fc-chip-row--cell { margin-top: 0; }
+
+/* ── ProgressBar ── how far something long has got. */
+.fc-progress { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.fc-progress__line { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: var(--fc-text-xs); line-height: 20px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-progress__track { height: 6px; border-radius: 999px; background: var(--fc-surface-disabled); overflow: hidden; }
+.fc-progress__fill { height: 100%; border-radius: 999px; background: var(--fc-btn-primary); transition: width var(--fc-dur-overlay) var(--fc-ease); }
+.fc-progress__fill--unknown { width: 35%; animation: fc-progress-run 1.2s var(--fc-ease) infinite; }
+@keyframes fc-progress-run { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+@media (prefers-reduced-motion: reduce) { .fc-progress__fill--unknown { animation: none; width: 100%; opacity: .5; } }
+/* A band of a list card that holds something other than the table: a note, a progress bar. */
+.fc-list-band { padding: 16px var(--fc-card-pad-x); }
+
+/* A code-like name inside a cell keeps to its own width, under the words it belongs to. */
+.fc-dt-code { align-self: flex-start; margin-top: 2px; }
+
+/* A row for something that is switched off reads quieter, but its controls stay full strength. */
+.fc-dt-row--off > .fc-dt-td > .fc-dt-cell > code, .fc-dt-row--off > .fc-dt-td > .fc-dt-cell > .fc-badge { opacity: .5; }
+
+/* The page's own ground, light or dark — for the frame and the full-screen states, which each used to
+   write `bg-slate-50 dark:bg-[#020617]`: a navy page beside a neutral-grey menu. */
+.fc-canvas { background: var(--fc-canvas); }

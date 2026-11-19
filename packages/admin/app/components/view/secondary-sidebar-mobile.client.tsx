@@ -52,11 +52,11 @@ export class SecondarySidebarMobile extends PureReactor {
             role="dialog"
             aria-modal="true"
             aria-label={AdminI18n.t('shell.nav.secondary')}
-            className={`absolute top-0 bottom-0 w-[var(--secondary-sidebar-width)] overflow-hidden bg-white shadow-2xl dark:bg-[#020617] flex ${this.mode === SecondarySidebarMode.MOBILE ? 'end-0' : 'start-[72px] shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)]'}`}
+            className={`absolute top-0 bottom-0 w-[var(--secondary-sidebar-width)] overflow-hidden fc-canvas shadow-2xl  flex ${this.mode === SecondarySidebarMode.MOBILE ? 'end-0' : 'start-[72px] shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)]'}`}
             onKeyDown={this.onOverlayKeyDown}
           >
             <div className="flex min-w-0 flex-1 flex-col">
-            <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]">
+            <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 fc-canvas dark:border-slate-800 ">
               <h2 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.nav.secondaryTitle')}</h2>
               <button
                 type="button"

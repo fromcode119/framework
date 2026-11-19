@@ -71,7 +71,7 @@ export class ClientLayoutHeader extends AdminComponent {
   render(): ReactElement {
     return (
       <>
-        <header className="flex h-14 items-center border-b bg-white px-4 dark:border-slate-800 dark:bg-[#020617] lg:hidden">
+        <header className="flex h-14 items-center border-b fc-canvas px-4 dark:border-slate-800  lg:hidden">
           <button
             type="button"
             onClick={this.onMenuClick}

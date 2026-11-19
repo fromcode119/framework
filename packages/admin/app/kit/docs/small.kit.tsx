@@ -2,6 +2,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Kbd } from '@/components/ui/view/kbd.client';
 import { Divider } from '@/components/ui/view/divider.client';
 import { Skeleton } from '@/components/ui/view/skeleton.client';
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CopyValue } from '@/components/ui/view/copy-value.client';
 import { CodeBlock } from '@/components/ui/view/code-block.client';
@@ -47,6 +48,20 @@ export class SmallKit {
         options: [
           { name: 'width, height', type: 'number | string', does: 'Its size; a number is pixels.' },
           { name: 'round', type: 'boolean', initial: 'false', does: 'A circle, for a picture.' },
+        ],
+      },
+      {
+        slug: 'progress-bar', name: 'ProgressBar', group: 'Feedback',
+        intro: 'How far something that takes a while has got: a download, an upload, an import.',
+        from: "import { ProgressBar } from '@fromcode119/sdk/admin';",
+        examples: [
+          { title: 'With a known length', demo: <div className="fc-kitdoc__stack fc-kitdoc__cell--wide"><ProgressBar value={12} /><ProgressBar value={64} label="Downloading the archive" detail="9 of 14 MB" /><ProgressBar value={100} label="Done" detail="14 MB" /></div>, code: '<ProgressBar value={64} label="Downloading the archive" detail="9 of 14 MB" />' },
+          { title: 'Length not known', text: 'Without a value the bar runs on its own: it says only that the thing is going.', demo: <div className="fc-kitdoc__cell--wide"><ProgressBar label="Preparing the archive" /></div>, code: '<ProgressBar label="Preparing the archive" />' },
+        ],
+        options: [
+          { name: 'value', type: 'number | null', does: '0–100; left out when the length is not known.' },
+          { name: 'label', type: 'ReactNode', does: 'What is going on.' },
+          { name: 'detail', type: 'ReactNode', does: 'How far, in the caller’s words.' },
         ],
       },
       {

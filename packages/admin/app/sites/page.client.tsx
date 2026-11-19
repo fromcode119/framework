@@ -1,3 +1,4 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -17,7 +18,6 @@ import { RestoreSiteCard } from '@/app/sites/components/view/restore-site-card.c
 import { AdoptSiteCard } from '@/app/sites/components/view/adopt-site-card.client';
 import { Card } from '@/components/ui/view/card.client';
 import { SitesTable } from '@/app/sites/components/view/sites-table.client';
-import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
@@ -181,7 +181,7 @@ export class SitesPageClient extends AdminComponent {
         {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant && this.sitesSupported ? <AdoptSiteCard /> : null}
 
         {this.canManagePlatform && !this.loading && !this.error && this.multiTenant ? (
-          <div className={`${AdminClass.SURFACE} overflow-hidden`}>
+          <ListShell>
             <SitesTable
               theme={theme}
               sites={this.sites}
@@ -191,7 +191,7 @@ export class SitesPageClient extends AdminComponent {
               onToggleState={this.toggleState}
               onDelete={this.askDelete}
             />
-          </div>
+          </ListShell>
         ) : null}
         </div>
 

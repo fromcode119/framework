@@ -1,3 +1,4 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -7,7 +8,6 @@ import { DataTable } from '@/components/ui/view/data-table.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Column } from '@/components/ui/column';
-import { AdminClass } from '@/lib/admin-class';
 import { BuildStatusBadge } from '@/app/sources/components/view/build-status-badge.client';
 import { SourceRowActions } from '@/app/sources/components/view/source-row-actions.client';
 import { SourceDetails } from '@/app/sources/components/view/source-details.client';
@@ -99,10 +99,9 @@ export class SourcesTable extends PureReactor {
   }
 
   render(): ReactNode {
-    // The admin's surface, as Jobs and every collection list sit on: without it the rows and phone
-    // cards floated on the page background and read as transparent.
+    // The list card every list in the console stands in.
     return (
-      <div className={`${AdminClass.SURFACE} overflow-hidden`}>
+      <ListShell>
       <DataTable
         columns={this.columns}
         data={this.rows}
@@ -123,7 +122,7 @@ export class SourcesTable extends PureReactor {
           <SourceDetails row={this.opened} />
         </EditSheet>
       ) : null}
-      </div>
+      </ListShell>
     );
   }
 }

@@ -36,7 +36,7 @@ export class BackupsPageClientView extends PureReactor {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader icon={<FrameworkIcons.Database size={18} strokeWidth={2} />} title={AdminI18n.t('settings.components.backups')} subtitle={AdminI18n.t('settings.components.systemSnapshotsRestorePreviewsAnd')} />
 
-        <div className="space-y-6 p-6 pb-24">
+        <div className="fc-columns__stack pb-24">
           {controller.backupState.errorMessage ? (
             <Card className="border border-rose-200 bg-rose-50/80 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
               <div className="flex items-start justify-between gap-4">

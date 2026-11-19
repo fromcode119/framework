@@ -12,7 +12,7 @@ export class SidebarMiniToggle extends PureReactor {
     const isMini = this.isMini;
     const onMiniToggle = this.onMiniToggle;
     return (
-      <div className={`border-t border-slate-100 dark:border-slate-800 hidden lg:block bg-white dark:bg-[#020617] ${isMini ? 'p-2' : 'px-3 py-3'}`}>
+      <div className={`border-t border-slate-100 dark:border-slate-800 hidden lg:block fc-canvas  ${isMini ? 'p-2' : 'px-3 py-3'}`}>
         <button
           type="button"
           onClick={onMiniToggle}

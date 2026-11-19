@@ -47,7 +47,7 @@ export class AppearanceRouteBlockedShell extends AdminComponent {
   render(): ReactNode {
     const label = this.label;
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+      <div className="flex min-h-screen items-center justify-center fc-canvas p-6 ">
         <div className={`w-full max-w-md ${AdminClass.SURFACE} p-8 text-center`}>
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" aria-hidden>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>

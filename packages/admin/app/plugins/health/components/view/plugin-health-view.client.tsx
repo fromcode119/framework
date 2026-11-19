@@ -1,14 +1,22 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
+import { Button } from '@/components/ui/view/button.client';
 import { Loader } from '@/components/ui/view/loader.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { PluginRestartPendingList } from '@/app/plugins/health/components/view/plugin-restart-pending-list.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -33,128 +41,61 @@ export class PluginHealthView extends PureReactor {
   }
 
   render(): ReactNode {
-    const isDark = this.theme === ThemeMode.DARK;
-
-    if (this.loading) {
-      return <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('plugins.list.loadingPlatformHealth')} /></div>;
-    }
+    if (this.loading) return <Loader label={AdminI18n.t('plugins.list.loadingPlatformHealth')} />;
     if (!this.report) {
-      return (
-        <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Activity size={32} className="text-slate-300 dark:text-slate-700" /></div>
-          <h3 className={`text-lg font-medium mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.healthReportUnavailable')}</h3>
-          <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.couldNotLoadThePlatform')}</p>
-        </div>
-      );
+      return <StatePage icon={<FrameworkIcons.Activity size={18} />} title={AdminI18n.t('plugins.list.healthReportUnavailable')} hint={AdminI18n.t('plugins.list.couldNotLoadThePlatform')} />;
     }
 
     const counts = this.report.counts;
-    const summaryStats: Array<{ label: string; value: number; tone: string }> = [
-      { label: AdminI18n.t('plugins.list.total'), value: counts.total, tone: isDark ? 'text-white' : 'text-slate-900' },
-      { label: AdminI18n.t('plugins.list.active'), value: counts.active, tone: 'text-emerald-500' },
-      { label: AdminI18n.t('plugins.list.held'), value: counts.held, tone: counts.held > 0 ? 'text-amber-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
-      { label: AdminI18n.t('plugins.list.errors'), value: counts.error, tone: counts.error > 0 ? 'text-rose-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
-      { label: AdminI18n.t('plugins.list.inactive'), value: counts.inactive, tone: isDark ? 'text-slate-400' : 'text-slate-500' },
-    ];
+    const figures = [
+      [AdminI18n.t('plugins.list.total'), counts.total],
+      [AdminI18n.t('plugins.list.active'), counts.active],
+      [AdminI18n.t('plugins.list.held'), counts.held],
+      [AdminI18n.t('plugins.list.errors'), counts.error],
+      [AdminI18n.t('plugins.list.inactive'), counts.inactive],
+    ].map(([label, value]) => `${label} ${value}`).join(' · ');
     // A plugin serving an older build than the one installed counts: the report says "attention needed"
     // for it, and this screen used to answer "everything looks healthy" beside that badge.
     const needsAttention = counts.held > 0 || counts.error > 0 || counts.restartPending > 0;
 
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
-        <div className="flex flex-wrap items-center gap-2">
-          {summaryStats.map((s) => (
-            <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-              <span className={`text-sm font-medium tabular-nums ${s.tone}`}>{s.value}</span>
-              <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
-            </div>
-          ))}
-          <div className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 ${this.report.ok ? (isDark ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50') : (isDark ? 'border-rose-500/20 bg-rose-500/10' : 'border-rose-200 bg-rose-50')}`}>
-            {this.report.ok ? <FrameworkIcons.CheckCircle size={13} className="text-emerald-500" /> : <FrameworkIcons.Alert size={13} className="text-rose-500" />}
-            <span className={`text-[12px] font-medium ${this.report.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{this.report.ok ? AdminI18n.t('plugins.list.allHealthy') : AdminI18n.t('plugins.list.attentionNeeded')}</span>
-          </div>
-        </div>
+      <div className="fc-columns__stack">
+        <Alert tone={this.report.ok ? 'success' : 'warning'} title={this.report.ok ? AdminI18n.t('plugins.list.allHealthy') : AdminI18n.t('plugins.list.attentionNeeded')}>{figures}</Alert>
 
         {counts.held > 0 ? (
-          <div className={`rounded-xl border px-4 py-3 ${isDark ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className={`self-start rounded-lg p-2 ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}><FrameworkIcons.Alert size={18} /></div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-[12px] font-medium text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
-                <p className={`mt-1 text-sm font-medium leading-relaxed ${isDark ? 'text-amber-100/90' : 'text-amber-700'}`}>
-                  {AdminI18n.t(counts.held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: counts.held })}
-                </p>
-              </div>
-              <button onClick={this.onReapproveAll} disabled={this.isBusy} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
-                {this.isBusy ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
-                <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
-              </button>
-            </div>
-          </div>
+          <Alert tone="warning" title={AdminI18n.t('plugins.list.capabilityChangeDetected')}
+            action={<Button variant={ButtonVariant.SECONDARY} isLoading={this.isBusy && !this.busySlug} disabled={this.isBusy} icon={<FrameworkIcons.Shield size={15} />} onClick={this.onReapproveAll}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}>
+            {AdminI18n.t(counts.held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: counts.held })}
+          </Alert>
         ) : null}
 
         {needsAttention ? (
-          <div className="space-y-3">
-            <h2 className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.needsAttention')}</h2>
-
-            {this.report.held.length > 0 ? (
-              <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
-                {this.report.held.map((entry) => {
-                  const drift = this.drift(entry);
-                  // `entry` is API JSON, so `heldReason` is a raw string here — resolve before comparing.
-                  const heldLabel = PluginHeldLabel.of(entry.heldReason);
-                  return (
-                    <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                      <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'}`}><FrameworkIcons.Shield size={18} strokeWidth={1.5} /></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
-                          <Badge variant={BadgeVariant.AMBER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
-                          {drift ? <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval', { drift: drift })} className="shrink-0 text-[12px] font-medium tabular-nums text-amber-600 dark:text-amber-400">{drift}</span> : null}
-                        </div>
-                        <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.heldPendingReApprovalOf')}</p>
-                      </div>
-                      <button onClick={() => this.onApproveEnable(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
-                        {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Shield size={12} />}
-                        <span>{AdminI18n.t('plugins.list.approveEnable')}</span>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            <PluginRestartPendingList
-              entries={this.report.restartPending || []}
-              isBusy={this.isBusy}
-              busySlug={this.busySlug}
-              onLoadInstalled={this.onLoadInstalled}
-              theme={this.theme}
-            />
-
-            {this.report.error.length > 0 ? (
-              <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
-                {this.report.error.map((entry) => (
-                  <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                    <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-rose-500/10 text-rose-400 ring-1 ring-rose-500/20' : 'bg-rose-50 text-rose-600 ring-1 ring-rose-100'}`}><FrameworkIcons.Alert size={18} strokeWidth={1.5} /></div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
-                        <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.list.error')}</Badge>
-                      </div>
-                      <p className="text-xs leading-snug truncate text-rose-500 font-medium">{entry.error || AdminI18n.t('plugins.list.pluginFailedToInitialize')}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <ListShell title={AdminI18n.t('plugins.list.needsAttention')} count={counts.held + counts.error + counts.restartPending}>
+            <div>
+              {this.report.held.map((entry) => {
+                const drift = this.drift(entry);
+                // `entry` is API JSON, so `heldReason` is a raw string here — resolve before comparing.
+                const label = <Badge variant={BadgeVariant.WARNING}>{PluginHeldLabel.of(entry.heldReason)}</Badge>;
+                return (
+                  <ListRow key={entry.slug} icon={<FrameworkIcons.Zap size={16} />} title={entry.slug}
+                    badges={drift ? <Tooltip content={AdminI18n.t('plugins.list.capabilityChangeSinceApproval', { drift })}>{label}</Tooltip> : label}
+                    description={AdminI18n.t('plugins.list.heldPendingReApprovalOf')}
+                    actions={<Button variant={ButtonVariant.SECONDARY} disabled={this.isBusy} isLoading={this.isBusy && this.busySlug === entry.slug} icon={<FrameworkIcons.Shield size={15} />} onClick={() => this.onApproveEnable(entry.slug)}>{AdminI18n.t('plugins.list.approveEnable')}</Button>} />
+                );
+              })}
+              <PluginRestartPendingList entries={this.report.restartPending || []} isBusy={this.isBusy} busySlug={this.busySlug} onLoadInstalled={this.onLoadInstalled} theme={this.theme} />
+              {this.report.error.map((entry) => (
+                <ListRow key={entry.slug} icon={<FrameworkIcons.Alert size={16} />} title={entry.slug} failed
+                  badges={<Badge variant={BadgeVariant.DANGER}>{AdminI18n.t('plugins.list.error')}</Badge>}
+                  description={entry.error || AdminI18n.t('plugins.list.pluginFailedToInitialize')}
+                  descriptionTitle={entry.error || undefined} />
+              ))}
+            </div>
+          </ListShell>
         ) : (
-          <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-            <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.CheckCircle size={32} className="text-emerald-500" /></div>
-            <h3 className={`text-lg font-medium mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.everythingLooksHealthy')}</h3>
-            <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.noHeldCapabilityChangesNo')}</p>
-          </div>
+          <RecordCard>
+            <EmptyState icon={<FrameworkIcons.CheckCircle size={18} />} title={AdminI18n.t('plugins.list.everythingLooksHealthy')} hint={AdminI18n.t('plugins.list.noHeldCapabilityChangesNo')} />
+          </RecordCard>
         )}
       </div>
     );
