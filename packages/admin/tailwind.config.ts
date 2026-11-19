@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import colors from 'tailwindcss/colors';
 
 const config: Config = {
   darkMode: 'class',
@@ -22,6 +23,23 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      /*
+       * The two palettes screens reached for by hand, pointed at the console's own colours.
+       *
+       * 289 files still colour themselves with `slate-*` and `indigo-*` utilities (1,294 and 286 uses)
+       * instead of the console's tokens, which is why a screen nobody has redrawn yet looks like a
+       * different product: a blue-grey ink beside the neutral one, an indigo tile beside the dark
+       * button. Until each is moved onto a component, the names mean the console's colours:
+       * `slate` is its neutral scale, and `indigo` is quiet at its light end and the interactive blue at
+       * its strong end. One place to change, and nothing here is a colour the tokens do not have.
+       */
+      colors: {
+        slate: colors.zinc,
+        indigo: {
+          50: '#f4f4f5', 100: '#e4e4e7', 200: '#d4d4d8', 300: '#93c5fd', 400: '#60a5fa',
+          500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554',
+        },
+      },
       keyframes: {
         shake: {
           '0%, 100%': { transform: 'translateX(0)' },

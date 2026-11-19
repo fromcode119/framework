@@ -1,3 +1,6 @@
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -62,37 +65,26 @@ export class InstalledThemeCard extends PureReactor {
 
   render(): ReactNode {
     const { theme, isActive } = this;
-    const pill = AdminClass.of('ext-pill');
     const meta = [`v${theme.version}`, theme.author].filter(Boolean).join(' · ');
 
     return (
-      <div className={AdminClass.of('ext-row')}>
-        <div className={AdminClass.of('ext-row__icon')}>
-          {theme.iconUrl ? <img src={theme.iconUrl} alt="" /> : <FrameworkIcons.Palette size={16} />}
-        </div>
-
-        <div className={AdminClass.of('ext-row__text')}>
-          <div className={AdminClass.of('ext-row__name')}>
-            <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)}>{theme.name}</AdminLink>
-            {this.updateVersion ? <span className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('themes.update')}</span> : null}
-            {this.ownedBySite ? <span className={pill}>{AdminI18n.t('themes.thisSiteS')}</span> : null}
-          </div>
-          {theme.description ? <p className={AdminClass.of('ext-row__desc')} title={theme.description}>{theme.description}</p> : null}
-        </div>
-
-        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
-
-        <div className={AdminClass.of('ext-row__actions')}>
-          {isActive
-            ? <Button variant={ButtonVariant.OUTLINE} onClick={() => this.onNavigate(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug))}>{AdminI18n.t('themes.settings')}</Button>
-            : <Button variant={ButtonVariant.OUTLINE} onClick={() => void this.onActivate(theme.slug)}>{AdminI18n.t('themes.activate')}</Button>}
-          <Dropdown align={HorizontalAlign.RIGHT} items={this.menuItems} trigger={
-            <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}>
-              <FrameworkIcons.More size={16} />
-            </span>
-          } />
-        </div>
-      </div>
+      <ListRow
+        icon={theme.iconUrl ? <img src={theme.iconUrl} alt="" /> : <FrameworkIcons.Palette size={16} />}
+        title={<AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)}>{theme.name}</AdminLink>}
+        badges={(
+          <>
+            {this.updateVersion ? <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('themes.update')}</Badge> : null}
+            {this.ownedBySite ? <Badge variant={BadgeVariant.DEFAULT}>{AdminI18n.t('themes.thisSiteS')}</Badge> : null}
+          </>
+        )}
+        description={theme.description || undefined}
+        descriptionTitle={theme.description || undefined}
+        meta={meta}
+        menu={this.menuItems}
+        actions={isActive
+          ? <Button variant={ButtonVariant.SECONDARY} onClick={() => this.onNavigate(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug))}>{AdminI18n.t('themes.settings')}</Button>
+          : <Button variant={ButtonVariant.SECONDARY} onClick={() => void this.onActivate(theme.slug)}>{AdminI18n.t('themes.activate')}</Button>}
+      />
     );
   }
 }

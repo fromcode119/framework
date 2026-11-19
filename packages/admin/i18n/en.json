@@ -117,7 +117,7 @@
       "newRecord": "New {{name}}",
       "duplicate": "Duplicate record",
       "quickEditClose": "Close quick edit",
-      "quickEditOpen": "Quick edit inline",
+      "quickEditOpen": "Quick edit",
       "visibleColumns": "Visible Columns",
       "pinnedHint": "Pinned columns stay put while the table scrolls, and move to the left edge.",
       "unpin": "Unpin column",

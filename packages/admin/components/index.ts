@@ -36,6 +36,7 @@ export * from '@/components/ui/view/alert.client';
 export * from '@/components/ui/view/state-page.client';
 export * from '@/components/ui/view/page-bar.client';
 export * from '@/components/ui/view/list-card.client';
+export * from '@/components/ui/view/list-row.client';
 export * from '@/components/ui/view/progress-tabs.client';
 export * from '@/components/ui/view/radio-group.client';
 export * from '@/components/ui/view/skeleton.client';

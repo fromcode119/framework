@@ -1,3 +1,6 @@
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -30,40 +33,28 @@ export class PeopleRow extends PureReactor {
 
   render(): ReactNode {
     const { person } = this;
-    const pill = AdminClass.of('ext-pill');
     const hasLogin = PeopleListFilter.hasLogin(person);
     const contact = [person.email, person.phone].filter(Boolean).join(' · ');
     const added = person.createdAt ? new Date(person.createdAt).toLocaleDateString() : '';
     const meta = [this.source, added].filter(Boolean).join(' · ');
     return (
-      <div className={AdminClass.of('ext-row')}>
-        <div className={`${AdminClass.of('ext-row__icon')} ${AdminClass.of('ext-row__icon--person')}`} aria-hidden="true">
-          {(this.name[0] || '?').toUpperCase()}
-        </div>
-        <div className={AdminClass.of('ext-row__text')}>
-          <div className={AdminClass.of('ext-row__name')}>
-            <button type="button" className={AdminClass.of('ext-row__link')} onClick={this.onEdit}>{this.name}</button>
-            {hasLogin
-              ? (
-                /* What this person may do, not merely that a row exists in another table: this list is
-                   the only one a site has, so the account's roles have to read here. */
-                <span className={`${pill} ${AdminClass.of('ext-pill--ok')}`}>
-                  {this.accountRoles || AdminI18n.t('users.hasAccount')}
-                </span>
-              )
-              : <span className={pill}>{AdminI18n.t('users.noAccount')}</span>}
-          </div>
-          <p className={AdminClass.of('ext-row__desc')} title={contact}>{contact || '—'}</p>
-        </div>
-        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
-        <div className={AdminClass.of('ext-row__actions')}>
-          {hasLogin ? null : (
-            <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={14} />} onClick={this.onGrantLogin} disabled={!person.email}>
-              {AdminI18n.t('users.createLoginAccount')}
-            </Button>
-          )}
-        </div>
-      </div>
+      <ListRow
+        initials={(this.name[0] || '?').toUpperCase()}
+        title={<button type="button" className={AdminClass.of('ext-row__link')} onClick={this.onEdit}>{this.name}</button>}
+        // What this person may do, not merely that a row exists in another table: this list is the only
+        // one a site has, so the account's roles have to read here.
+        badges={hasLogin
+          ? <Badge variant={BadgeVariant.SUCCESS}>{this.accountRoles || AdminI18n.t('users.hasAccount')}</Badge>
+          : <Badge variant={BadgeVariant.DEFAULT}>{AdminI18n.t('users.noAccount')}</Badge>}
+        description={contact || '—'}
+        descriptionTitle={contact}
+        meta={meta}
+        actions={hasLogin ? undefined : (
+          <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={14} />} onClick={this.onGrantLogin} disabled={!person.email}>
+            {AdminI18n.t('users.createLoginAccount')}
+          </Button>
+        )}
+      />
     );
   }
 }

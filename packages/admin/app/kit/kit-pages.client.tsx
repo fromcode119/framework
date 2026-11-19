@@ -8,6 +8,7 @@ import { Alert } from '@/components/ui/view/alert.client';
 import { PageBar } from '@/components/ui/view/page-bar.client';
 import { SearchField } from '@/components/ui/view/search-field.client';
 import { StatePage } from '@/components/ui/view/state-page.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { ListCard } from '@/components/ui/view/list-card.client';
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -36,6 +37,8 @@ export class KitPages extends Reactor {
   @bound private openWide(): void { this.agreed = false; this.wide = true; }
   @bound private closeWide(): void { this.wide = false; }
 
+  private static nothing(): void { /* a sample has nothing to do */ }
+
   private card(name: string, children: ReactNode): ReactNode {
     return (
       <RecordCard title={name} id={`kit-${name.toLowerCase().replace(/[^a-z]+/g, '-')}`}>
@@ -63,33 +66,24 @@ export class KitPages extends Reactor {
         ))}
         {this.card('Row of a list of installed things', (
           <ListCard>
-            <div className="fc-ext-row">
-              <div className="fc-ext-row__icon"><FrameworkIcons.Plugins size={16} /></div>
-              <div className="fc-ext-row__text">
-                <div className="fc-ext-row__name">
-                  <span>Finance Core</span>
-                  <Tooltip content="What changed since it was approved: +database +api"><span className="fc-ext-pill fc-ext-pill--warn">Waiting for approval</span></Tooltip>
-                </div>
-                <p className="fc-ext-row__desc">Wallets, gift cards and the transaction ledger.</p>
-              </div>
-              <div className="fc-ext-row__meta">v0.1.172 · Fromcode Core</div>
-              <div className="fc-ext-row__actions">
-                <Switch checked={this.on} onChange={this.setOn} />
-                <span className="fc-ext-row__more" aria-label="More"><FrameworkIcons.More size={16} /></span>
-              </div>
-            </div>
-            <div className="fc-ext-row">
-              <div className="fc-ext-row__icon"><FrameworkIcons.Plugins size={16} /></div>
-              <div className="fc-ext-row__text">
-                <div className="fc-ext-row__name"><span>E-commerce Suite</span><span className="fc-ext-pill fc-ext-pill--ok">Active</span><span className="fc-ext-pill fc-ext-pill--danger">Error</span><span className="fc-ext-pill">Off here</span></div>
-                <p className="fc-ext-row__desc">Catalog, carts, checkout and orders.</p>
-              </div>
-              <div className="fc-ext-row__meta">v0.1.480 · Fromcode Core</div>
-              <div className="fc-ext-row__actions">
-                <Switch checked onChange={this.setOn} />
-                <span className="fc-ext-row__more" aria-label="More"><FrameworkIcons.More size={16} /></span>
-              </div>
-            </div>
+            <ListRow
+              icon={<FrameworkIcons.Plugins size={16} />}
+              title={<span>Finance Core</span>}
+              badges={<Tooltip content="What changed since it was approved: +database +api"><Badge variant={BadgeVariant.WARNING}>Waiting for approval</Badge></Tooltip>}
+              description="Wallets, gift cards and the transaction ledger."
+              meta="v0.1.172 · Fromcode Core"
+              actions={<Switch checked={this.on} onChange={this.setOn} />}
+              menu={[{ label: 'Open', onClick: KitPages.nothing }, { label: 'Remove', onClick: KitPages.nothing }]}
+            />
+            <ListRow
+              initials="K"
+              title={<span>Kristian</span>}
+              badges={<><Badge variant={BadgeVariant.SUCCESS}>Administrator</Badge><Badge variant={BadgeVariant.DANGER}>Suspended</Badge><Badge variant={BadgeVariant.DEFAULT}>No account</Badge></>}
+              description="kristian@example.com"
+              meta="Joined 19.11.2026"
+              actions={<Button variant={ButtonVariant.SECONDARY}>Create login</Button>}
+            />
+            <ListRow icon={<FrameworkIcons.Plugins size={16} />} title={<span>E-commerce Suite</span>} badges={<Badge variant={BadgeVariant.DANGER}>Error</Badge>} description="The plugin failed to start." failed meta="v0.1.480" />
           </ListCard>
         ))}
         {this.card('Empty list', <ListCard empty="Nothing is installed yet." />)}

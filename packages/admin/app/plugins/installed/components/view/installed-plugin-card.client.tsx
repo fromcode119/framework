@@ -1,3 +1,6 @@
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -63,28 +66,27 @@ export class InstalledPluginCard extends PureReactor {
 
   private pills(): ReactNode[] {
     const { plugin } = this;
-    const pill = AdminClass.of('ext-pill');
     const out: ReactNode[] = [];
     const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
     if (this.hasUpdate) {
-      out.push(<AdminLink key="u" href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(this.slug)} className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('plugins.list.update')}</AdminLink>);
+      out.push(<AdminLink key="u" href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(this.slug)}><Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('plugins.list.update')}</Badge></AdminLink>);
     }
     if (PluginListFilter.failed(plugin)) {
-      out.push(<span key="e" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('plugins.list.error')}</span>);
+      out.push(<Badge key="e" variant={BadgeVariant.DANGER}>{AdminI18n.t('plugins.list.error')}</Badge>);
     } else if (plugin.healthStatus === PluginRegistryHealth.ERROR) {
-      out.push(<span key="s" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('plugins.detail.security')}</span>);
+      out.push(<Badge key="s" variant={BadgeVariant.DANGER}>{AdminI18n.t('plugins.detail.security')}</Badge>);
     } else if (isHeld) {
       const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
       const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
       const drift = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
       // The state in a word; WHAT changed is behind it, on hover and on a tap. Printed in the pill, a
       // plugin's eighteen permissions ran across the row and under the version and the switch.
-      const held = <span className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{PluginHeldLabel.of(plugin.heldReason)}</span>;
+      const held = <Badge variant={BadgeVariant.WARNING}>{PluginHeldLabel.of(plugin.heldReason)}</Badge>;
       out.push(drift
         ? <Tooltip key="h" content={AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: drift })}>{held}</Tooltip>
         : <span key="h">{held}</span>);
     } else if (new PluginSwitchState(plugin as any).notOnThisSite) {
-      out.push(<span key="o" className={pill}>{AdminI18n.t('plugins.list.offHere')}</span>);
+      out.push(<Badge key="o" variant={BadgeVariant.DEFAULT}>{AdminI18n.t('plugins.list.offHere')}</Badge>);
     }
     return out;
   }
@@ -98,49 +100,30 @@ export class InstalledPluginCard extends PureReactor {
     const meta = [`v${plugin.manifest.version}`, this.author].filter(Boolean).join(' · ');
 
     return (
-      <div className={AdminClass.of('ext-row')}>
-        <div className={AdminClass.of('ext-row__icon')}>
-          {/* A custom image only when one is genuinely declared; otherwise the manifest's own icon
-              NAME rendered from the locally-bundled set — never fetched from a remote host. */}
-          {iconUrl && !hasImageError
-            ? <img src={iconUrl} alt="" onError={() => onImageError(this.slug)} />
-            : <Icon name={String((plugin.manifest as any)?.admin?.icon || 'Box')} size={16} strokeWidth={1.5} />}
-        </div>
-
-        <div className={AdminClass.of('ext-row__text')}>
-          <div className={AdminClass.of('ext-row__name')}>
-            <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(this.slug)}>{plugin.manifest.name}</AdminLink>
-            {this.pills()}
-          </div>
-          <p className={`${AdminClass.of('ext-row__desc')}${plugin.error ? ` ${AdminClass.of('ext-row__desc--error')}` : ''}`} title={plugin.error || plugin.manifest.description || undefined}>
-            {plugin.error ? plugin.error : (plugin.manifest.description || AdminI18n.t('plugins.list.defaultDescription', { name: plugin.manifest.name }))}
-          </p>
-        </div>
-
-        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
-
-        <div className={AdminClass.of('ext-row__actions')}>
-          {/* Not rendered for a tenant admin: enablement is an operator action, and a control that
-              would only ever 403 is a bug, not a hint. Disabled when the platform axis blocks a
-              per-site switch; the title says which axis is blocking. */}
-          {canManage ? (
-            <span title={locked
-              ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
-              : perSite ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
-              <Switch
-                checked={switchedOn}
-                disabled={locked}
-                onChange={(_: boolean) => onToggle(this.slug, switchedOn)}
-              />
-            </span>
-          ) : null}
-          <Dropdown align={HorizontalAlign.RIGHT} items={this.menuItems} trigger={
-            <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}>
-              <FrameworkIcons.More size={16} />
-            </span>
-          } />
-        </div>
-      </div>
+      <ListRow
+        // A custom image only when one is genuinely declared; otherwise the manifest's own icon NAME
+        // rendered from the locally-bundled set — never fetched from a remote host.
+        icon={iconUrl && !hasImageError
+          ? <img src={iconUrl} alt="" onError={() => onImageError(this.slug)} />
+          : <Icon name={String((plugin.manifest as any)?.admin?.icon || 'Box')} size={16} strokeWidth={1.5} />}
+        title={<AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(this.slug)}>{plugin.manifest.name}</AdminLink>}
+        badges={this.pills()}
+        description={plugin.error ? plugin.error : (plugin.manifest.description || AdminI18n.t('plugins.list.defaultDescription', { name: plugin.manifest.name }))}
+        descriptionTitle={plugin.error || plugin.manifest.description || undefined}
+        failed={Boolean(plugin.error)}
+        meta={meta}
+        menu={this.menuItems}
+        // Not rendered for a tenant admin: enablement is an operator action, and a control that would
+        // only ever 403 is a bug, not a hint. Disabled when the platform axis blocks a per-site switch;
+        // the title says which axis is blocking.
+        actions={canManage ? (
+          <span title={locked
+            ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
+            : perSite ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
+            <Switch checked={switchedOn} disabled={locked} onChange={(_: boolean) => onToggle(this.slug, switchedOn)} />
+          </span>
+        ) : undefined}
+      />
     );
   }
 }
