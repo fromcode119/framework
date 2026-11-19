@@ -1,3 +1,4 @@
+import { Hint } from '@/components/ui/view/hint.client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
@@ -36,20 +37,13 @@ export class CertificateAttemptStatus extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     const entry = this.entry;
     const last = entry.lastAttemptDate;
     const next = this.nextLine;
     return (
       <>
-        {entry.lastError ? (
-          <p className={`mt-0.5 text-[12px] font-mono truncate ${dark ? 'text-red-400' : 'text-red-600'}`}>
-            {last ? `${CertificateAttemptStatus.time(last)} — ` : ''}{entry.lastError}
-          </p>
-        ) : null}
-        {next ? (
-          <p className={`mt-0.5 text-[12px] ${dark ? 'text-sky-300' : 'text-sky-700'}`}>{next}</p>
-        ) : null}
+        {entry.lastError ? <Hint variant="error">{last ? `${CertificateAttemptStatus.time(last)} — ` : ''}{entry.lastError}</Hint> : null}
+        {next ? <Hint>{next}</Hint> : null}
       </>
     );
   }

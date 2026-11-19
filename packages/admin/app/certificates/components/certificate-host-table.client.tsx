@@ -1,3 +1,8 @@
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import type { ReactNode } from 'react';
 import { bound, prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
@@ -67,16 +72,10 @@ export class CertificateHostTable extends AdminComponent {
   private renderDnsInstructions(entry: CertificateHost): ReactNode {
     const addresses = this.platformAddresses ?? [];
     if (entry.state !== 'waiting_for_dns' || !addresses.length) return null;
-    const dark = this.isDark;
-    return (
-      <p className={`mt-0.5 text-[12px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
-        {AdminI18n.t('certificates.pointHostAt', { host: entry.host, addresses: addresses.join(', ') })}
-      </p>
-    );
+    return <Hint>{AdminI18n.t('certificates.pointHostAt', { host: entry.host, addresses: addresses.join(', ') })}</Hint>;
   }
 
   private renderMeta(entry: CertificateHost): ReactNode {
-    const dark = this.isDark;
     if (!entry.hasCertificate) {
       // WHAT "NOTHING STORED" MEANS DEPENDS ON WHO TERMINATES TLS, and the platform must not claim
       // more than it knows. When its own gateway is not terminating, something in front of it is —
@@ -88,14 +87,14 @@ export class CertificateHostTable extends AdminComponent {
       // that already has one. Name where it lives, so the operator can go to it.
       if (entry.coveredByHost) {
         return (
-          <span className={`text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <span className="fc-dt-quiet">
             {entry.coveredByExpiryDate ? AdminI18n.t('certificates.servedByWildcardUntil', { host: entry.coveredByHost, date: entry.coveredByExpiryDate }) : AdminI18n.t('certificates.servedByWildcard', { host: entry.coveredByHost })}
           </span>
         );
       }
 
       return (
-        <span className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <span className="fc-dt-quiet">
           {this.terminatesTls
             ? AdminI18n.t('certificates.nothingStoredThisHostCannot')
             : AdminI18n.t('certificates.nothingStoredHereTlsFor')}
@@ -103,7 +102,7 @@ export class CertificateHostTable extends AdminComponent {
       );
     }
     return (
-      <span className={`text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <span className="fc-dt-quiet">
         {entry.issuer ? `${entry.issuer} · ` : ''}{AdminI18n.t('certificates.until', { date: entry.expiryDate })}
         {entry.isUploaded ? AdminI18n.t('certificates.uploadedNotRenewedAutomatically') : ''}
         {/*
@@ -119,100 +118,48 @@ export class CertificateHostTable extends AdminComponent {
     );
   }
 
+  /**
+   * What can be done with one host. A host already Automatic is on exactly ONE variant (http-01 or
+   * dns-01); whichever it is NOT on stays offered, so there is always a path between the two.
+   */
+  private menu(entry: CertificateHost): any[] {
+    const items: any[] = [];
+    if (this.canAutomate && !entry.isAutomaticHttp01) {
+      items.push({ label: entry.isPlatformManaged ? AdminI18n.t('certificates.switchToPlainHttp01') : AdminI18n.t('certificates.automatic'), icon: <FrameworkIcons.Refresh size={15} />, onClick: this.automate(entry.host) });
+    }
+    if (this.canAutomateWildcard && !entry.isAutomaticDns01) {
+      items.push({ label: entry.isPlatformManaged ? AdminI18n.t('certificates.switchToWildcardDns01') : AdminI18n.t('certificates.automaticWildcard'), icon: <FrameworkIcons.Refresh size={15} />, onClick: this.automateWildcard(entry.host) });
+    }
+    if (this.canUpload) {
+      items.push({ label: entry.hasCertificate ? AdminI18n.t('certificates.replace') : AdminI18n.t('certificates.upload'), icon: <FrameworkIcons.Upload size={15} />, onClick: this.upload(entry.host) });
+    }
+    if (entry.hasCertificate) {
+      items.push({ label: AdminI18n.t('certificates.removeCertificate'), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: this.remove(entry.host) });
+    }
+    return items;
+  }
+
   private renderRow(entry: CertificateHost): ReactNode {
-    const dark = this.isDark;
-    const busy = this.busyHost === entry.host;
+    const under = <><CertificateAttemptStatus entry={entry} checkIntervalMinutes={this.checkIntervalMinutes ?? 0} />{this.renderDnsInstructions(entry)}</>;
+    const waiting = Boolean(entry.lastError) || entry.state === 'waiting_for_dns';
     return (
-      <div key={entry.host} className={`flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 ${dark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-        <div className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center ${
-          entry.needsAttention
-            ? (dark ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600')
-            : (dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500')}`}
-        >
-          {entry.isPlatformHost ? <FrameworkIcons.Shield size={15} strokeWidth={1.5} /> : <FrameworkIcons.Globe size={15} strokeWidth={1.5} />}
-        </div>
-
-        <div className="flex-1 min-w-0 basis-56">
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-medium tracking-tight truncate font-mono ${dark ? 'text-white' : 'text-slate-900'}`}>{entry.host}</span>
-            <CertificateStateBadge entry={entry} />
-          </div>
-          <div className="truncate">
-            <span className={`text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              {entry.roleLabel}{this.showSite && entry.tenantSlug ? ` · ${entry.tenantSlug}` : ''} ·{' '}
-            </span>
-            {this.renderMeta(entry)}
-          </div>
-          <CertificateAttemptStatus entry={entry} checkIntervalMinutes={this.checkIntervalMinutes ?? 0} />
-          {this.renderDnsInstructions(entry)}
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0 ms-auto">
-          <span className={`text-[12px] tabular-nums ${
-            entry.needsAttention ? (dark ? 'text-amber-400' : 'text-amber-600') : (dark ? 'text-slate-500' : 'text-slate-400')}`}
-          >
-            {entry.remainingLabel}
-          </span>
-
-          <div className="flex items-center gap-1">
-            {/*
-              A host already Automatic is on exactly ONE variant (http-01 or dns-01). Whichever one
-              it is NOT currently on stays offered, so there is always a path between the two — a
-              host on plain Automatic can switch to wildcard, and a host on wildcard can switch back.
-              Never hide both for an already-automatic host.
-            */}
-            {this.canAutomate && !entry.isAutomaticHttp01 ? (
-              <Button
-                variant={ButtonVariant.GHOST}
-                size={FieldSize.SM}
-                onClick={this.automate(entry.host)}
-                icon={<FrameworkIcons.Refresh size={13} />}
-              >
-                {entry.isPlatformManaged ? AdminI18n.t('certificates.switchToPlainHttp01') : AdminI18n.t('certificates.automatic')}
-              </Button>
-            ) : null}
-            {this.canAutomateWildcard && !entry.isAutomaticDns01 ? (
-              <Button
-                variant={ButtonVariant.GHOST}
-                size={FieldSize.SM}
-                onClick={this.automateWildcard(entry.host)}
-                icon={<FrameworkIcons.Refresh size={13} />}
-              >
-                {entry.isPlatformManaged ? AdminI18n.t('certificates.switchToWildcardDns01') : AdminI18n.t('certificates.automaticWildcard')}
-              </Button>
-            ) : null}
-            <Button
-              variant={ButtonVariant.GHOST}
-              size={FieldSize.SM}
-              onClick={this.upload(entry.host)}
-              isLoading={busy}
-              disabled={!this.canUpload}
-              icon={<FrameworkIcons.Upload size={13} />}
-            >
-              {entry.hasCertificate ? AdminI18n.t('certificates.replace') : AdminI18n.t('certificates.upload')}
-            </Button>
-            {entry.hasCertificate ? (
-              <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} onClick={this.remove(entry.host)} icon={<FrameworkIcons.Trash size={13} />}>
-                {/* Icon-only by design — the row is already dense — but the action still needs a name
-                    for anyone not reading it by sight. */}
-                <span className="sr-only">{AdminI18n.t('certificates.removeCertificate')}</span>
-              </Button>
-            ) : null}
-          </div>
-        </div>
+      <div key={entry.host}>
+        <ListRow
+          icon={entry.isPlatformHost ? <FrameworkIcons.Shield size={16} /> : <FrameworkIcons.Globe size={16} />}
+          title={<code className="fc-dt-code">{entry.host}</code>}
+          badges={<CertificateStateBadge entry={entry} />}
+          description={<>{entry.roleLabel}{this.showSite && entry.tenantSlug ? ` · ${entry.tenantSlug}` : ''} · {this.renderMeta(entry)}</>}
+          meta={entry.remainingLabel || undefined}
+          actions={this.busyHost === entry.host ? <Loader /> : undefined}
+          menu={this.menu(entry)}
+        />
+        {waiting ? <div className="fc-list-band fc-list-band--under fc-stack">{under}</div> : null}
       </div>
     );
   }
 
   render(): ReactNode {
-    const dark = this.isDark;
-    if (!this.entries.length) {
-      return <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('certificates.noHostsAreConfiguredOn')}</p>;
-    }
-    return (
-      <div className={`rounded-lg border overflow-hidden divide-y ${dark ? 'border-white/10 divide-white/5' : 'border-slate-200 divide-slate-100'}`}>
-        {this.entries.map((entry) => this.renderRow(entry))}
-      </div>
-    );
+    if (!this.entries.length) return <EmptyState title={AdminI18n.t('certificates.noHostsAreConfiguredOn')} />;
+    return <div>{this.entries.map((entry) => this.renderRow(entry))}</div>;
   }
 }
