@@ -64,7 +64,7 @@ export class PluginTrendChart extends PureReactor {
               })}
             </defs>
             {[0.25, 0.5, 0.75].map((g) => (
-              <line key={g} x1={pad} x2={W - pad} y1={pad + (H - pad * 2) * g} y2={pad + (H - pad * 2) * g} className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="1" />
+              <line key={g} x1={pad} x2={W - pad} y1={pad + (H - pad * 2) * g} y2={pad + (H - pad * 2) * g} className="fc-chart__grid" strokeWidth="1" />
             ))}
             {series.map((s: IPluginTrendSeries, i) => {
               const color = s.color || PluginTrendChart.DEFAULT_COLORS[i % PluginTrendChart.DEFAULT_COLORS.length];
@@ -78,7 +78,7 @@ export class PluginTrendChart extends PureReactor {
             })}
           </svg>
           {empty && (
-            <div className="absolute inset-0 flex items-center justify-center text-[12px] font-medium text-slate-300 dark:text-slate-600">
+            <div className="fc-chart__empty">
               {AdminI18n.t('ui.noDataForThisRange')}
             </div>
           )}
@@ -90,15 +90,15 @@ export class PluginTrendChart extends PureReactor {
               const color = s.color || PluginTrendChart.DEFAULT_COLORS[i % PluginTrendChart.DEFAULT_COLORS.length];
               const peak = s.data.length ? Math.max(...s.data) : 0;
               return (
-                <span key={i} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                <span key={i} className="fc-chart__key">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
                   {s.label}
-                  <span className="text-slate-400 normal-case font-medium">{AdminI18n.t('ui.peak', { value: formatValue(peak) })}</span>
+                  <span className="fc-chart__quiet">{AdminI18n.t('ui.peak', { value: formatValue(peak) })}</span>
                 </span>
               );
             })}
           </div>
-          <div className="flex items-center gap-4 text-[12px] font-medium text-slate-400 shrink-0">
+          <div className="fc-chart__axis">
             <span>{firstLabel}</span>
             <span>{lastLabel}</span>
           </div>

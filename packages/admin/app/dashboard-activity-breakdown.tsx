@@ -1,3 +1,5 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
@@ -23,23 +25,13 @@ export class DashboardActivityBreakdown extends PureReactor {
     const max = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1;
 
     return (
-      <Card title={AdminI18n.t('dashboard.activityBySource')}>
-        {rows.length === 0 ? (
-          <EmptyState inline title={AdminI18n.t('dashboard.noActivityWindow')} />
-        ) : (
-          <div className="space-y-2">
-            {rows.map((r) => (
-              <div key={r.label} className="flex items-center gap-3">
-                <span className="w-24 shrink-0 truncate text-xs font-medium text-slate-600 dark:text-slate-300">{r.label}</span>
-                <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.max(6, (r.value / max) * 100)}%` }} />
-                </div>
-                <span className="w-8 shrink-0 text-end text-xs tabular-nums text-slate-500">{r.value}</span>
-              </div>
-            ))}
+      <RecordCard title={AdminI18n.t('dashboard.activityBySource')}>
+        {rows.length === 0 ? <EmptyState inline title={AdminI18n.t('dashboard.noActivityWindow')} /> : (
+          <div className="fc-stack">
+            {rows.map((r) => <ProgressBar key={r.label} label={r.label} detail={String(r.value)} value={Math.max(6, (r.value / max) * 100)} />)}
           </div>
         )}
-      </Card>
+      </RecordCard>
     );
   }
 }

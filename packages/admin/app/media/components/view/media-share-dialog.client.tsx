@@ -44,6 +44,8 @@ export class MediaShareDialog extends AdminComponent {
   @state private requireAccount = false;
   @state private busy = false;
   @state private notice = '';
+  /** The notice reports a failure — drawn in the danger tone, not as plain news. */
+  @state private noticeFailed = false;
   @state private grants: any[] = [];
   /**
    * Which files are still public, as of NOW. `items` is a snapshot from when the dialog opened, and
@@ -89,7 +91,7 @@ export class MediaShareDialog extends AdminComponent {
   }
 
   @bound private async handleSubmit(): Promise<void> {
-    this.patch({ busy: true, notice: '' });
+    this.patch({ busy: true, notice: '', noticeFailed: false });
     try {
       const result = await MediaShareController.shareFiles({
         items: this.items || [],
@@ -108,13 +110,14 @@ export class MediaShareDialog extends AdminComponent {
         busy: false,
         recipients: [],
         publicCount: 0,
+        noticeFailed: result.failedRecipients.length > 0,
         notice: result.failedRecipients.length
           ? AdminI18n.t('media.sentExceptTo', { join: result.failedRecipients.join(', ') })
           : AdminI18n.t('media.linksSent'),
       });
       await this.loadGrants();
     } catch (error: any) {
-      if (this.mounted) this.patch({ busy: false, notice: String(error?.message || error) });
+      if (this.mounted) this.patch({ busy: false, notice: String(error?.message || error), noticeFailed: true });
     }
   }
 
@@ -222,7 +225,7 @@ export class MediaShareDialog extends AdminComponent {
             onChange={this.handleRequireAccount}
             disabled={this.busy}
           />
-          {this.notice ? <Alert tone="info">{this.notice}</Alert> : null}
+          {this.notice ? <Alert tone={this.noticeFailed ? 'danger' : 'success'}>{this.notice}</Alert> : null}
           {this.renderAccess()}
         </div>
       </EditSheet>

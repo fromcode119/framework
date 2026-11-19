@@ -70,12 +70,14 @@ export class SmallKit {
         from: "import { ProgressBar } from '@fromcode119/sdk/admin';",
         examples: [
           { title: 'With a known length', demo: <div className="fc-kitdoc__stack fc-kitdoc__cell--wide"><ProgressBar value={12} /><ProgressBar value={64} label="Downloading the archive" detail="9 of 14 MB" /><ProgressBar value={100} label="Done" detail="14 MB" /></div>, code: '<ProgressBar value={64} label="Downloading the archive" detail="9 of 14 MB" />' },
+          { title: 'A figure that is high', text: 'For a measure rather than a wait: the tone says it needs looking at.', demo: <div className="fc-kitdoc__stack fc-kitdoc__cell--wide"><ProgressBar value={78} tone="warning" label="Disk" detail="78%" /><ProgressBar value={94} tone="danger" label="Memory" detail="94%" /></div>, code: '<ProgressBar value={94} tone="danger" label="Memory" detail="94%" />' },
           { title: 'Length not known', text: 'Without a value the bar runs on its own: it says only that the thing is going.', demo: <div className="fc-kitdoc__cell--wide"><ProgressBar label="Preparing the archive" /></div>, code: '<ProgressBar label="Preparing the archive" />' },
         ],
         options: [
           { name: 'value', type: 'number | null', does: '0–100; left out when the length is not known.' },
           { name: 'label', type: 'ReactNode', does: 'What is going on.' },
           { name: 'detail', type: 'ReactNode', does: 'How far, in the caller’s words.' },
+          { name: 'tone', type: "'warning' | 'danger'", does: 'Says the figure is high: a disk nearly full, a limit nearly reached.' },
         ],
       },
       {

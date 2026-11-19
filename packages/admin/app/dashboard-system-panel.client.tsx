@@ -1,3 +1,7 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Skeleton } from '@/components/ui/view/skeleton.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -75,28 +79,18 @@ export class DashboardSystemPanel extends AdminComponent {
   }
 
   render(): ReactNode {
+    const hostname = String(this.host?.host?.hostname || '');
     if (this.failed) {
-      return (
-        <div className={`p-3 ${AdminClass.SURFACE}`}>
-          <p className="text-[12px] text-slate-500">{AdminI18n.t('dashboard.systemPanel.failed')}</p>
-        </div>
-      );
+      return <RecordCard title={AdminI18n.t('dashboard.widgets.system.system.label')}><div className="fc-stack"><Alert tone="warning">{AdminI18n.t('dashboard.systemPanel.failed')}</Alert></div></RecordCard>;
     }
-
     if (!this.host) {
-      return <div className={`h-[132px] ${AdminClass.SURFACE} animate-pulse`} />;
+      return <RecordCard title={AdminI18n.t('dashboard.widgets.system.system.label')}><div className="fc-stack"><Skeleton height={16} /><Skeleton height={16} /><Skeleton height={16} /></div></RecordCard>;
     }
 
     return (
-      <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
-        <div className="flex items-center justify-between gap-3 px-3 py-2">
-          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
-            {String(this.host?.host?.hostname || AdminI18n.t('dashboard.systemPanel.thisMachine'))}
-          </span>
-          <span className="text-[12px] text-slate-400">{this.processLine}</span>
-        </div>
-
-        <div className="px-3 py-2 space-y-2">
+      <RecordCard title={AdminI18n.t('dashboard.widgets.system.system.label')}>
+        <div className="fc-stack">
+          <Text size="small" muted as="p">{[hostname, this.processLine].filter(Boolean).join(' · ')}</Text>
           <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.memory')} used={this.memory?.used ?? null} total={this.memory?.total ?? null} />
           <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.disk')} used={this.disk?.used ?? null} total={this.disk?.total ?? null} />
           <DashboardSystemMeter
@@ -104,10 +98,9 @@ export class DashboardSystemPanel extends AdminComponent {
             ratio={this.cpuPressure}
             caption={this.cpuPressure === null ? AdminI18n.t('dashboard.systemPanel.notReported') : AdminI18n.t('dashboard.systemPanel.load', { load: this.host?.cpu?.load1 })}
           />
+          <DashboardScheduleList schedule={this.schedule} />
         </div>
-
-        <DashboardScheduleList schedule={this.schedule} />
-      </div>
+      </RecordCard>
     );
   }
 }

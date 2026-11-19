@@ -3787,3 +3787,28 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-widget-edit__name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-text); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-widget-edit__bar > .fc-btn, .fc-widget-edit__bar > .fc-tabs { flex: none; }
 @media (max-width: 640px) { .fc-widget-edit__bar > .fc-badge { display: none; } }
+
+.fc-progress[data-tone='warning'] .fc-progress__fill { background: var(--fc-warning); }
+.fc-progress[data-tone='danger'] .fc-progress__fill { background: var(--fc-danger); }
+
+/* A tile that leads somewhere says so under a pointer and to the keyboard. */
+.fc-stat--way { display: block; width: 100%; text-align: start; color: inherit; text-decoration: none; cursor: pointer; transition: box-shadow var(--fc-dur-ui) var(--fc-ease); }
+.fc-stat--way:hover { box-shadow: 0 0 0 1px var(--fc-border-strong, var(--fc-text-faint)); }
+.fc-stat--way:focus-visible { outline: 2px solid var(--fc-text); outline-offset: 2px; }
+/* A handful of counts side by side, as bars. */
+.fc-bars { display: flex; align-items: flex-end; gap: 6px; height: 40px; }
+.fc-bars__bar { flex: 1 1 0; min-height: 2px; border-radius: 2px; background: var(--fc-btn-primary); }
+/* The line chart's own furniture, in the console's ink. */
+.fc-chart__grid { stroke: var(--fc-border); }
+.fc-chart__empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--fc-text-faint); }
+.fc-chart__key { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fc-text-muted); }
+.fc-chart__quiet { color: var(--fc-text-faint); }
+.fc-chart__axis { display: flex; flex: none; align-items: center; gap: 16px; font-size: 12px; color: var(--fc-text-faint); }
+
+/* Fields and the button that acts on them, on one line: the fields share the room, a short choice
+   keeps its width, and the button is as tall as a field and stands on the fields' own baseline. */
+.fc-field-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.fc-field-row__grow { flex: 1 1 12rem; min-width: 0; }
+.fc-field-row__pick { flex: 0 0 11rem; }
+.fc-field-row > .fc-btn { flex: none; height: var(--fc-field-h); }
+@media (max-width: 640px) { .fc-field-row__pick, .fc-field-row > .fc-btn { flex: 1 1 100%; } }

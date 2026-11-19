@@ -13,12 +13,12 @@ export class DashboardActivityBars extends PureReactor {
   render(): ReactNode {
     const peak = this.peak;
     return (
-      <div className="flex items-end gap-1.5 h-10">
+      <div className="fc-bars">
         {this.buckets.map((bucket) => (
           <div
             key={bucket.key}
             title={`${bucket.label}: ${bucket.total} ${bucket.total === 1 ? AdminI18n.t('dashboard.eventWord') : AdminI18n.t('dashboard.eventsWord')}`}
-            className="flex-1 rounded-sm bg-indigo-500/90 dark:bg-indigo-500 min-h-[2px]"
+            className="fc-bars__bar"
             style={{ height: `${Math.round((bucket.total / peak) * 100)}%` }}
           />
         ))}

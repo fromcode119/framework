@@ -13,6 +13,8 @@ export class ProgressBar extends PureReactor {
   @prop declare label?: ReactNode;
   /** How far, in the caller's words, at the end of that line: "4.2 of 14 MB". */
   @prop declare detail?: ReactNode;
+  /** Says the figure is high: `warning` when it is getting there, `danger` when it is there. */
+  @prop declare tone?: 'warning' | 'danger';
   @prop declare className?: string;
 
   render(): ReactNode {
@@ -20,7 +22,7 @@ export class ProgressBar extends PureReactor {
     const known = typeof this.value === 'number' && Number.isFinite(this.value);
     const percent = known ? Math.max(0, Math.min(100, this.value as number)) : 0;
     return (
-      <div className={`${name} ${this.className ?? ''}`}>
+      <div className={`${name} ${this.className ?? ''}`} data-tone={this.tone}>
         {this.label || this.detail ? (
           <div className={`${name}__line`}><span>{this.label}</span><span>{this.detail}</span></div>
         ) : null}
