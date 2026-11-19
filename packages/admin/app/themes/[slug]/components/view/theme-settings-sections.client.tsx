@@ -43,7 +43,7 @@ export class ThemeSettingsSections extends PureReactor {
             </button>
           ))}
         </div>
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40 fc-page-stack">
             <h2 className={`text-base font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{currentSection.label}</h2>
             {this.content(currentSection)}

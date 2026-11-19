@@ -92,7 +92,7 @@ export class NewRolePage extends AdminComponent {
           subtitle={AdminI18n.t('users.defineASetOfPermissions')}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
               <Card title={AdminI18n.t('users.roleDetails')}>

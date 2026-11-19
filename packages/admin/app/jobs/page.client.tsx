@@ -66,7 +66,7 @@ export class JobsPage extends AdminComponent {
           title={AdminI18n.t('jobs.title')}
           subtitle={this.platformScope ? AdminI18n.t('jobs.subtitlePlatform') : AdminI18n.t('jobs.subtitleSite')}
         />
-        <div className="w-full p-6 fc-page-stack">
+        <div className="w-full py-6 fc-page-stack">
           <section className="space-y-3">
             <div>
               <h2 className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.scheduledHeading')}</h2>

@@ -156,7 +156,7 @@ export class UsersPage extends AdminComponent {
       <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <UsersPageHeader theme={theme} />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <div className={AdminClass.of('ext-tabbar')}>
             <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('users.users')}>
               {UserListFilter.all().map((filter) => (

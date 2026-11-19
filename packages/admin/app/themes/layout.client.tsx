@@ -61,7 +61,7 @@ export class ThemesLayout extends AdminComponent {
       // The marketplace is a gallery and keeps the full width; the list reads as the settings column.
       <div className={`w-full animate-in fade-in duration-700 ${isMarketplace ? '' : AdminClass.of('settings-page')}`}>
         <CompactPageHeader title={AdminI18n.t('nav.items.themes')} subtitle={subtitle} actions={nav} />
-        <div className="w-full p-6">{this.children}</div>
+        <div className="w-full py-6">{this.children}</div>
       </div>
     );
   }

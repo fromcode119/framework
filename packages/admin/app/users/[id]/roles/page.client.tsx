@@ -106,7 +106,7 @@ export class UserRolesPage extends AdminComponent {
           }
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <div className="max-w-2xl space-y-2">
             {roles.map(role => {
               const isSelected = selectedRoles.includes(role.slug);

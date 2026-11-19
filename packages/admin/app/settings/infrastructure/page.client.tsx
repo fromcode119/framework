@@ -62,7 +62,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <CompactPageHeader icon={<FrameworkIcons.Activity size={18} strokeWidth={2} />} title={AdminI18n.t('settings.infrastructure.infrastructureHealth')} subtitle={AdminI18n.t('settings.infrastructure.administrativeMaintenanceForThisInstance')} />
-        <div className="w-full p-6">
+        <div className="w-full py-6">
 
         {this.loadError && (
           <LoadErrorPanel

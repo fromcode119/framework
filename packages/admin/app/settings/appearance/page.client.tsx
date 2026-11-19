@@ -232,7 +232,7 @@ export class AppearanceSettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.appearance.adminLookFeelSeparateFrom')}
         />
 
-        <div className="p-6 w-full fc-page-stack">
+        <div className="py-6 w-full fc-page-stack">
           {this.outOfScope && (
             <p className="fc-scope-notice">
               <span className="fc-scope-notice__text">

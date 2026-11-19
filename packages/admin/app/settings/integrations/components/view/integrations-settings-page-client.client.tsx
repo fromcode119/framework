@@ -1,3 +1,4 @@
+import { AdminClass } from '@/lib/admin-class';
 import type { ReactElement, ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -66,7 +67,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     const dark = this.theme === ThemeMode.DARK;
     const activeOwner = this.activeOwner;
     return (
-      <nav className="fc-tabs fc-tabbar fc-tabbar--plain">
+      <nav className="fc-tabs fc-tabbar">
         {this.ownerTabs.map((owner) => this.tab(
           `owner-${owner.slug}`,
           owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
@@ -87,7 +88,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (types.length < 2) return null;
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className="fc-tabs fc-tabbar fc-tabbar--plain">
+      <div className="fc-tabs fc-tabbar fc-tabbar--second">
         {types.map((type) => (
           <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
             className={`fc-tab${type.key === this.activeType ? ' fc-tab--on' : ''}`}>
@@ -167,7 +168,6 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
       return <IntegrationEmptyState />;
     }
 
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <IntegrationHeader
@@ -175,13 +175,15 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
-        {/* The tabs belong to the header: one band under it, the full page width, so the page reads as one. */}
-        <div className={`border-b ${dark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+        {/* The tabs stand on the page, at the page's own inset, the way a plugin's settings do: the first
+            row with the line under it, the second under that. They were in a white band of their own
+            that stopped short of both edges of the page. */}
+        <div className="fc-tabstack">
           {this.renderOwnerTabs()}
           {this.renderTypeTabs()}
         </div>
-        <div className="w-full p-6">
-          <section className={`space-y-6 rounded-2xl border p-6 ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+        <div className="fc-tabstack__body">
+          <section className={`${AdminClass.SURFACE} fc-tabstack__card`}>
             {this.renderBody()}
             {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
                 registry so this page never names a type. Hidden while one provider is open in place of

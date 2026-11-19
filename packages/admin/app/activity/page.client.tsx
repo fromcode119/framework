@@ -123,7 +123,7 @@ export class ActivityPage extends AdminComponent {
           onSearch={this.handleSearch}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <div className={`${AdminClass.SURFACE} overflow-hidden`}>
             <DataTable
               columns={this.columns}

@@ -83,7 +83,7 @@ export class PersonEditPage extends PersonEditPageActions {
           subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || AdminI18n.t('users.sourceContact')} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
             <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
               <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>

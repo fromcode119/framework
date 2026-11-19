@@ -79,7 +79,7 @@ export class PermissionsPage extends AdminComponent {
           subtitle={AdminI18n.t('users.whatARoleCanBe')}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <div className="space-y-6 pb-8">
             {this.loadError ? (
               <div className="fc-scope-notice"><span className="fc-scope-notice__text">{this.loadError}</span></div>

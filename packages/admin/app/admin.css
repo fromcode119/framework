@@ -2993,8 +2993,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    by the same edge a button carries. A solid brand-coloured pill made the quietest control on the
    screen the loudest thing on it. */
 .fc-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-/* A row of tabs that heads a page: a line under it, the page's own inset at its sides. */
-.fc-tabbar { flex-wrap: nowrap; margin-inline: var(--fc-page-pad-x); padding: 8px 1px; border-bottom: 1px solid var(--fc-border); overflow-x: auto; scrollbar-width: none; }
+/* A row of tabs that heads a page: a line under it. The page's root carries the inset. */
+.fc-tabbar { flex-wrap: nowrap; margin-inline: 0; padding: 8px 1px; border-bottom: 1px solid var(--fc-border); overflow-x: auto; scrollbar-width: none; }
 .fc-tabbar > .fc-tab { flex: none; white-space: nowrap; }
 .fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-tab:hover { color: var(--fc-text); }
@@ -3317,5 +3317,15 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-media-empty.fc-media-empty--row { width: 32px; height: 32px; border-radius: 6px; }
 
 /* A tab row inside a head that already has its own line and inset. */
-.fc-tabbar.fc-tabbar--plain { margin-inline: 0; padding-inline: var(--fc-page-pad-x); border-bottom: 0; }
+.fc-tabbar.fc-tabbar--plain { border-bottom: 0; }
 .fc-tab > svg { width: 15px; height: 15px; margin-inline-end: 6px; color: var(--fc-text-muted); }
+
+/* Two rows of tabs heading a page, and the card under them, all at the page's inset. */
+.fc-tabstack { display: flex; flex-direction: column; }
+.fc-tabbar.fc-tabbar--second { border-bottom: 0; padding-block: 12px 0; }
+.fc-tabstack__body { width: 100%; padding: 16px var(--fc-page-pad-x) 24px; }
+.fc-tabstack__card { display: flex; flex-direction: column; gap: 24px; padding: 16px var(--fc-card-pad-x) 24px; }
+
+/* On a page whose root already carries the page's inset, the tabs and their card start at it. */
+.fc-tabstack .fc-tabbar { margin-inline: 0; }
+.fc-tabstack__body { padding-inline: 0; }

@@ -128,7 +128,7 @@ export class PeoplePage extends AdminComponent {
           subtitle={AdminI18n.t('users.everyoneInTheUnifiedIdentity')}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           {error ? <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')}`} role="alert"><span className={AdminClass.of('ext-alert__text')}>{error}</span></div> : null}
 
           <div className={AdminClass.of('ext-tabbar')}>

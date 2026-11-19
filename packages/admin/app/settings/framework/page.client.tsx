@@ -50,7 +50,7 @@ export class FrameworkSettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.framework.adminLevelDocsApiAnd')}
         />
 
-        <div className="p-6 w-full fc-page-stack">
+        <div className="py-6 w-full fc-page-stack">
           <Card title={AdminI18n.t('settings.framework.coreResources')}>
             <div className="space-y-4">
               {FrameworkSettingsPage.resources.map((item) => {

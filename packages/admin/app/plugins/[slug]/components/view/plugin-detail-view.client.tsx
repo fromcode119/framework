@@ -132,7 +132,7 @@ export class PluginDetailView extends AdminComponent {
                 waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange} />
             </PlatformScopeGate>
           ) : (
-            <div className="w-full p-6"><section className={`overflow-hidden ${AdminClass.SURFACE}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
+            <div className="w-full py-6"><section className={`overflow-hidden ${AdminClass.SURFACE}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
               {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview isUpdating={this.isUpdating} loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onOpenSecurity={() => this.onTabChange(PluginDetailTab.PERMISSIONS)} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} siteScope={this.siteScope} theme={theme} />}
               {activeTab === PluginDetailTab.PERMISSIONS && (
                 <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSSecurityThe')}>

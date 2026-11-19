@@ -136,7 +136,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <CompactPageHeader icon={<FrameworkIcons.ShieldCheck size={18} strokeWidth={2} />} title={AdminI18n.t('settings.personalData.personalData')} subtitle={AdminI18n.t('settings.personalData.whatHappensToEachDataset')} />
-        <div className="w-full p-6">
+        <div className="w-full py-6">
 
         {this.loadError && (
           <LoadErrorPanel

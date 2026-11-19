@@ -196,7 +196,7 @@ export class UpdatesPage extends AdminComponent {
           }
         />
 
-        <div className="p-6 w-full pb-10 fc-page-stack">
+        <div className="py-6 w-full pb-10 fc-page-stack">
           <Card className={`p-6 border-0 ${AdminClass.SURFACE} overflow-hidden relative ${theme === ThemeMode.DARK ? 'bg-slate-900/40 ring-1 ring-white/5' : 'bg-white shadow-sm'}`}>
             {/* Background Accent */}
             <div className="absolute top-0 end-0 w-80 h-80 bg-indigo-500/10 blur-[80px] -translate-y-1/2 translate-x-1/2 rtl:-translate-x-1/2 rounded-full" />

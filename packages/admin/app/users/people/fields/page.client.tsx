@@ -100,7 +100,7 @@ export class PersonFieldsPage extends AdminComponent {
               <Button variant={ButtonVariant.PRIMARY} type="button" icon={<FrameworkIcons.Plus size={14} />} onClick={() => this.open(null)}
                 className="h-9 px-4 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.fields.add')}</Button>
             )} />
-          <div className="w-full p-6 fc-page-stack">
+          <div className="w-full py-6 fc-page-stack">
             {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{this.error}</div> : null}
             {this.editing ? (
               <PersonFieldEditor key={this.current?.key ?? 'new'} field={this.current} locales={this.locales} theme={theme}
