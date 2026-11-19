@@ -2795,12 +2795,16 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    same way, above). The icon is muted and takes the field's focus colour when the box is focused. */
 .fc-search { display: block; }
 .fc-search__icon {
-  position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%);
+  position: absolute; inset-inline-start: 8px; top: 50%; transform: translateY(-50%);
   display: inline-flex; color: var(--fc-text-muted); pointer-events: none;
   transition: color .15s ease;
 }
 .fc-search:focus-within .fc-search__icon { color: var(--primary); }
-.fc-field.fc-search-field { padding-inline-start: 36px; padding-inline-end: 12px; }
+/* Measured off the reference's own search, 19.11: 28px tall, the icon 8px in, the text cleared to 28,
+   8px on the right — not the 32/36/12 a form field would give it. A list's search is a toolbar
+   control, the height of the buttons beside it, not a form field. */
+.fc-field.fc-search-field { height: var(--fc-control-h); padding-inline-start: 28px; padding-inline-end: 8px; }
+.fc-search__icon svg { width: 15px; height: 15px; }
 
 /* ── A list's toolbar ── two groups with the space between them, the way the reference draws it: what
    narrows the list (the filters) at the start, what works on it (search, the column chooser, the
@@ -2809,7 +2813,7 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-list-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; width: 100%; }
 .fc-list-toolbar__lead { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .fc-list-toolbar__tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.fc-list-toolbar__tools .fc-search { flex: 0 0 240px; width: 240px; max-width: 100%; }
+.fc-list-toolbar__tools .fc-search { flex: 0 0 200px; width: 200px; max-width: 100%; }
 .fc-list-toolbar__chips { flex-basis: 100%; min-width: 0; }
 @media (max-width: 640px) {
   .fc-list-toolbar__lead { order: 2; }
@@ -2824,8 +2828,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    the surface, a hairline, the row's height, a fill on hover; a count badge for the filters, and an
    icon-only square for the two on the right. */
 .fc-toolbar-btn {
-  height: var(--fc-control-h); padding: 0 12px;
-  display: inline-flex; align-items: center; gap: 7px; line-height: 1;
+  height: var(--fc-control-h); padding: 0 8px;
+  display: inline-flex; align-items: center; gap: 6px; line-height: 1;
   border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
   background: var(--fc-surface); color: var(--fc-text);
   font-size: var(--fc-control-text); font-weight: 500; white-space: nowrap;
