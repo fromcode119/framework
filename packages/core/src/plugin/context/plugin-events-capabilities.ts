@@ -76,6 +76,10 @@ export class PluginEventsCapabilities {
         EventContractRegistry.define({ ...contract, owner: slug });
       },
       once: <T>(key: string, fn: () => Promise<T> | T) => EventIdempotency.once(manager, slug, key, fn),
+      forget: (key: string) => EventIdempotency.release(manager, slug, key),
+      // The two halves of `once`, for an isolated plugin: its effect runs in another process, so its
+      // guest context claims here, runs the effect there, and releases here if the effect threw.
+      claim: (key: string) => EventIdempotency.claim(manager, slug, key),
     };
 
     // Ask for WHAT you need, not WHO provides it. `provide` registers this plugin (its slug is

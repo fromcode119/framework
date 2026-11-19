@@ -31,35 +31,50 @@ export class EventIdempotency {
     }
   }
 
+  /**
+   * Claim `key` for `scope`: true when this caller now holds it, false when it is already held. The
+   * claim is one row under a UNIQUE index, so of two concurrent callers exactly one is told true —
+   * including two processes, which is what an isolated plugin needs and cannot do in its own memory.
+   * With no store or no key nothing can be claimed, and the caller is told true so the effect still runs.
+   */
+  static async claim(manager: IPluginManagerInterface, scope: string, key: string): Promise<boolean> {
+    const db: any = (manager as any)?.db;
+    if (!db || !scope || !key) return true;
+
+    const where = { scope, dedupe_key: key, tenant_id: EventIdempotency.currentTenant() };
+    const existing = await db.findOne(EventIdempotency.table, where).catch(() => null);
+    if (existing) return false;
+    try {
+      await db.insert(EventIdempotency.table, { ...where, created_at: new Date() });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Give a claim back, so the effect may run again: the effect threw, or what it produced was undone
+   * (an invoice withdrawn before it reached the customer is issued again when the payment arrives).
+   */
+  static async release(manager: IPluginManagerInterface, scope: string, key: string): Promise<void> {
+    const db: any = (manager as any)?.db;
+    if (!db || !scope || !key) return;
+    await db.delete(EventIdempotency.table, { scope, dedupe_key: key, tenant_id: EventIdempotency.currentTenant() }).catch(() => {});
+  }
+
   static async once<T>(
     manager: IPluginManagerInterface,
     scope: string,
     key: string,
     fn: () => Promise<T> | T,
   ): Promise<IOnceOutcome<T>> {
-    const db: any = (manager as any)?.db;
-    // No store or no key means we cannot dedupe — run the effect rather than silently dropping it.
-    if (!db || !scope || !key) {
-      return { ran: true, result: await fn() };
-    }
-
-    const where = { scope, dedupe_key: key, tenant_id: EventIdempotency.currentTenant() };
-
-    const existing = await db.findOne(EventIdempotency.table, where).catch(() => null);
-    if (existing) return { ran: false, skipped: true };
-
-    // Claim the key. A concurrent duplicate loses the UNIQUE-index race and its insert throws → skip.
-    try {
-      await db.insert(EventIdempotency.table, { ...where, created_at: new Date() });
-    } catch {
-      return { ran: false, skipped: true };
-    }
+    if (!(await EventIdempotency.claim(manager, scope, key))) return { ran: false, skipped: true };
 
     try {
       return { ran: true, result: await fn() };
     } catch (error) {
       // The effect did not complete, so it must be allowed to run again: release the claim.
-      await db.delete(EventIdempotency.table, where).catch(() => {});
+      await EventIdempotency.release(manager, scope, key);
       throw error;
     }
   }

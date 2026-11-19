@@ -139,14 +139,28 @@ export class PluginGuestContextFactory {
   /**
    * `events` for an isolated plugin. An event's CONTRACT carries a zod schema, which does not cross the
    * process boundary, so `define` is a local no-op here and an isolated plugin's events are validated
-   * only where they are emitted. `once` runs the effect; cross-process idempotency for isolated plugins
-   * is a known follow-up (tracked with the isolated delivery-ledger coverage), so it does not yet
-   * deduplicate — an isolated plugin that needs an at-most-once effect should keep running it in the api.
+   * only where they are emitted.
+   *
+   * `once` DOES deduplicate: the key is claimed on the host (one row under a unique index, so two
+   * concurrent requests — or two processes — get one winner), the effect runs here, and the claim is
+   * given back if the effect throws. It used to run the effect every time, so an isolated plugin's
+   * "at most once" was not: two requests in the same millisecond issued two invoices for one order.
    */
   private events(): unknown {
+    const remote = this.remote;
+    const onHost = (name: string, key: string) => remote.call('context', [{ name: 'events' }, { name, args: [key] }]);
     return {
       define: (_contract: unknown) => { /* schema is not portable across the process boundary */ },
-      once: async <T>(_key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; result?: T }> => ({ ran: true, result: await fn() }),
+      once: async <T>(key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; skipped?: boolean; result?: T }> => {
+        if (!(await onHost('claim', key))) return { ran: false, skipped: true };
+        try {
+          return { ran: true, result: await fn() };
+        } catch (error) {
+          await Promise.resolve(onHost('forget', key)).catch(() => {});
+          throw error;
+        }
+      },
+      forget: async (key: string): Promise<void> => { await onHost('forget', key); },
     };
   }
 
