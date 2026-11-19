@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { SecurityTab } from '@/app/settings/security/enums/security-tab.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode, SetStateAction } from 'react';
@@ -176,22 +177,8 @@ export class SecuritySettingsPage extends AdminComponent {
           title={AdminI18n.t('settings.security.securityDefense')}
           subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
-            <>
-              <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                {this.canManagePlatform && <button
-                  onClick={this.showDashboardTab}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {AdminI18n.t('settings.security.dashboard')}
-                </button>}
-                <button
-                  onClick={this.showSettingsTab}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {AdminI18n.t('settings.security.settings')}
-                </button>
-              </div>
-            </>
+            <Tabs value={activeTab === SecurityTab.DASHBOARD ? 'dashboard' : 'settings'} onChange={(id: string) => (id === 'dashboard' ? this.showDashboardTab() : this.showSettingsTab())}
+              tabs={[...(this.canManagePlatform ? [{ id: 'dashboard', label: AdminI18n.t('settings.security.dashboard') }] : []), { id: 'settings', label: AdminI18n.t('settings.security.settings') }]} />
           }
         />
 

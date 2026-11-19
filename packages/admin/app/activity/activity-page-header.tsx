@@ -1,3 +1,5 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { SearchField } from '@/components/ui/view/search-field.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
@@ -44,44 +46,11 @@ export class ActivityPageHeader extends PureReactor {
         subtitle={AdminI18n.t('activity.globalLedgerOfAdministrativeActions')}
         actions={
           <>
-            <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-              <button
-                onClick={this.selectSystemMode}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${
-                  mode === ActivityMode.SYSTEM
-                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {AdminI18n.t('activity.systemEvents')}
-              </button>
-              <button
-                onClick={this.selectSecurityMode}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${
-                  mode === ActivityMode.SECURITY
-                    ? 'bg-white dark:bg-slate-700 text-rose-600 dark:text-rose-400 shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {AdminI18n.t('activity.securityAudit')}
-              </button>
-            </div>
-            <form onSubmit={this.onSearch} className="flex items-center gap-2">
-              <Input
-                type="text"
-                placeholder={AdminI18n.t('activity.searchLogs', { mode: mode })}
-                value={this.searchQuery}
-                onChange={this.changeSearchQuery}
-                className="w-48"
-              />
-              <Button
-                type="submit"
-                variant={ButtonVariant.SECONDARY}
-                className="px-4 h-9 rounded-lg font-medium text-xs"
-                icon={<FrameworkIcons.Search size={15} />}
-              >
-                {AdminI18n.t('activity.filterHistory')}
-              </Button>
+            <Tabs value={mode === ActivityMode.SYSTEM ? 'system' : 'security'} onChange={(id: string) => (id === 'system' ? this.selectSystemMode() : this.selectSecurityMode())}
+              tabs={[{ id: 'system', label: AdminI18n.t('activity.systemEvents') }, { id: 'security', label: AdminI18n.t('activity.securityAudit') }]} />
+            <form onSubmit={this.onSearch} className="fc-page-header__search">
+              <SearchField placeholder={AdminI18n.t('activity.searchLogs', { mode: mode })} value={this.searchQuery} onChange={this.onSearchQueryChange} />
+              <Button type="submit" variant={ButtonVariant.SECONDARY}>{AdminI18n.t('activity.filterHistory')}</Button>
             </form>
           </>
         }

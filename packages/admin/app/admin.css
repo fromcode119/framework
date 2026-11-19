@@ -3300,7 +3300,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-alert__action { display: flex; flex: none; align-items: center; gap: 8px; }
 .fc-page-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
 .fc-page-bar__lead { display: flex; flex: 1 1 auto; min-width: 0; }
-.fc-page-bar__tools { display: flex; flex: 0 1 28rem; align-items: center; gap: 8px; min-width: 0; }
+.fc-page-bar__tools { display: flex; flex: 0 1 28rem; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
 .fc-page-bar__tools > .fc-search { flex: 1 1 0; width: auto; min-width: 8rem; }
 .fc-page-bar__tools > .fc-btn { flex: none; }
 @media (max-width: 767.98px) { .fc-page-bar__tools { flex-basis: 100%; } }
@@ -3360,3 +3360,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* The drop surface on a page: not a label, so no pointer; the action stands at its end. */
 .fc-dropzone.fc-dropzone--area { cursor: default; }
 .fc-dropzone__action { display: inline-flex; flex: none; margin-inline-start: auto; }
+
+.fc-page-header__search { display: flex; align-items: center; gap: 8px; }
+.fc-page-header__search > .fc-search { width: 220px; }
+.fc-page-header__actions .fc-btn { height: var(--fc-field-h); }
