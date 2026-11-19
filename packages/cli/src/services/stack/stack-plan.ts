@@ -176,8 +176,9 @@ export class StackPlan {
       const container = this.layout.containerExtension(StackPlan.PLUGIN_KIND, slug);
       if (!container) continue;
 
-      // Only what the caller named is writable; the rest came from the shared checkouts.
-      const mode = StackExtensions.chosenAmong(this.request.plugins, directory) ? '' : ':ro';
+      // Only a worktree the caller named is writable; the mirror's copies never are.
+      const writable = StackExtensions.chosenAmong(this.request.plugins, directory) && !this.extensions.isMirrored(directory);
+      const mode = writable ? '' : ':ro';
       mounts.push(`${directory}:${container}${mode}`);
     }
     return mounts;
@@ -186,6 +187,11 @@ export class StackPlan {
   /** What no checkout could supply, for the command to say before it starts anything. */
   missingDependencies(): ReadonlyMap<string, string[]> {
     return this.extensions.missing(this.request.plugins);
+  }
+
+  /** The named plugins that are the mirror's own copy, mounted read-only and not a change. */
+  mirroredPlugins(): string[] {
+    return this.request.plugins.filter((plugin) => this.extensions.isMirrored(plugin));
   }
 
   /** Where the mirror of main was found, or null when the worktree could not point at one. */

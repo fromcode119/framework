@@ -83,6 +83,21 @@ export class StackExtensions {
     return chosen.some((entry) => path.resolve(entry) === path.resolve(directory));
   }
 
+  /**
+   * Whether this directory is the mirror's own copy rather than a worktree.
+   *
+   * Naming the mirror on the command line does not make it a change: it is still the shared
+   * checkout of main, and a container must not write there. It mounts read-only like any
+   * dependency, and the caller is told, because a change made in a worktree is not in it.
+   */
+  isMirrored(directory: string): boolean {
+    const root = this.root;
+    if (!root) return false;
+
+    const relative = path.relative(root, path.resolve(directory));
+    return !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+  }
+
   /** One walk of the dependency graph, breadth first, the named extensions winning any tie. */
   private walk(chosen: readonly string[]): StackExtensionWalk {
     const found = new Map<string, string>();

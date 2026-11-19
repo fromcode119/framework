@@ -5,6 +5,8 @@ import { Command } from 'commander';
 import { StackService } from '@cli/services/stack/stack-service';
 import { StackStore } from '@cli/services/stack/stack-store';
 import { StackPlan } from '@cli/services/stack/stack-plan';
+import { StackImageTag } from '@cli/services/stack/stack-image-tag';
+import { StackTemplate } from '@cli/services/stack/stack-template';
 
 /**
  * `fromcode stack` — a throwaway platform for one worktree.
@@ -33,7 +35,7 @@ export class StackCommandService {
       .option('-p, --plugin <path...>', 'Plugin worktree to mount', [])
       // NOT `--version`: commander already owns that on the program, so the flag printed the CLI's
       // own version and never started a stack.
-      .option('-t, --tag <tag>', 'Released image tag to run on')
+      .option('-t, --tag <tag>', 'Released image tag to run on (default: the worktree version if it is here, else the template\'s, else the newest here)')
       .option('--port <port>', 'Port on 127.0.0.1', (value) => parseInt(value, 10))
       .option('--from <template>', 'Start from a captured template instead of the setup wizard')
       .action(async (name: string, options: Record<string, unknown>) => {
@@ -46,7 +48,7 @@ export class StackCommandService {
             name,
             framework,
             plugins: (options.plugin as string[]).map((plugin) => path.resolve(plugin)),
-            version: String(options.tag || StackCommandService.versionOf(framework)),
+            version: StackCommandService.tagFor(framework, options),
             port: new StackStore().claimPort(name, options.port as number | undefined),
           };
           StackCommandService.reportDependencies(new StackPlan(request));
@@ -132,7 +134,24 @@ export class StackCommandService {
    * command has already reported success — the plugin is installed but never registered, so the
    * console simply does not show it and nothing on screen says why.
    */
+  /** The image tag, never one that would make compose pull gigabytes the caller did not ask for. */
+  private static tagFor(framework: string, options: Record<string, unknown>): string {
+    const template = options.from ? StackTemplate.versionAt(new StackStore().root, String(options.from)) : null;
+    const choice = StackImageTag.of(framework).choose(
+      options.tag ? String(options.tag) : undefined,
+      StackCommandService.versionOf(framework),
+      template,
+    );
+    if (choice.note) console.log(chalk.yellow(`\n${choice.note}`));
+    return choice.tag;
+  }
+
   private static reportDependencies(plan: StackPlan): void {
+    for (const plugin of plan.mirroredPlugins()) {
+      console.log(chalk.yellow(`\n${plugin} is the shared mirror of main, so it is mounted READ-ONLY.`));
+      console.log(chalk.gray('  It is not a change. To test one, cut a worktree of it and pass that with --plugin.'));
+    }
+
     const missing = plan.missingDependencies();
     if (!missing.size) return;
 
