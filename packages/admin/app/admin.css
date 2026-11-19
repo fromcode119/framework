@@ -3822,3 +3822,6 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-switch-row { padding: 12px; border-radius: 6px; box-shadow: 0 0 0 1px var(--fc-border); }
 /* The foot of a form inside a card: a hairline, then what removes or ends the thing. */
 .fc-form-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 16px; border-top: var(--fc-record-rule); }
+
+/* The bar at the top of a phone: the way to the menu, on the page's own ground. */
+.fc-phone-bar { display: flex; align-items: center; height: 56px; padding-inline: 12px; border-bottom: 1px solid var(--fc-border); }

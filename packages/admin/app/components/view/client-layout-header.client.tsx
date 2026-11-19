@@ -71,12 +71,12 @@ export class ClientLayoutHeader extends AdminComponent {
   render(): ReactElement {
     return (
       <>
-        <header className="flex h-14 items-center border-b fc-canvas px-4 dark:border-slate-800  lg:hidden">
+        <header className="fc-phone-bar fc-canvas lg:hidden">
           <button
             type="button"
             onClick={this.onMenuClick}
             aria-label={AdminI18n.t('shell.openMenu')}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="fc-btn fc-btn--icon"
           >
             <FrameworkIcons.Menu size={20} />
           </button>
