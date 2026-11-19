@@ -47,7 +47,7 @@ export class BackupRestoreDialog extends PureReactor {
     const state = this.restoreState;
     return (
       <>
-        <Button variant={ButtonVariant.GHOST} onClick={this.onClose} disabled={this.isPreviewing || this.isRestoring}>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.onClose} disabled={this.isPreviewing || this.isRestoring}>
           {AdminI18n.t('settings.components.close')}
         </Button>
         <Button
@@ -110,7 +110,7 @@ export class BackupRestoreDialog extends PureReactor {
             <h4 className="fc-block__title">{AdminI18n.t('settings.components.serverPreview')}</h4>
             <p className="fc-block__quiet">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
           </div>
-          <Button size={FieldSize.SM} isLoading={this.isPreviewing} onClick={() => void this.onPreview()}>
+          <Button variant={ButtonVariant.SECONDARY} isLoading={this.isPreviewing} onClick={() => void this.onPreview()}>
             {AdminI18n.t('settings.components.runPreview')}
           </Button>
         </div>
