@@ -1,3 +1,7 @@
+import { Loader } from '@/components/ui/view/loader.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
@@ -43,28 +47,18 @@ export class MediaGrid extends PureReactor {
     const theme = this.theme;
     const viewMode = this.viewMode;
 
-    if (this.loading) {
-      return (
-        <div className="flex flex-col items-center justify-center py-24 gap-4">
-           <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
-           <p className="text-slate-500">{AdminI18n.t('media.loadingYourAssets')}</p>
-        </div>
-      );
-    }
+    if (this.loading) return <Loader label={AdminI18n.t('media.loadingYourAssets')} />;
 
     if (this.items.length === 0 && this.folders.length === 0) {
       return (
-        <div className={`flex flex-col items-center justify-center py-24 rounded-xl border-2 border-dashed ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-slate-50'}`}>
-           <div className="p-4 bg-indigo-500/10 rounded-full text-indigo-500 mb-4 text-3xl">
-              <FrameworkIcons.Media />
-           </div>
-           <h3 className={`text-xl font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.noAssetsYet')}</h3>
-           <p className="text-slate-500 mt-2">{AdminI18n.t('media.uploadYourFirstImageVideo')}</p>
-           <Button size={FieldSize.SM} className="mt-6" onClick={this.openFilePicker}>
-              <FrameworkIcons.Upload size={18} />
-              <span>{AdminI18n.t('media.uploadNow')}</span>
-           </Button>
-        </div>
+        <ListCard empty={(
+          <EmptyState
+            icon={<FrameworkIcons.Media size={18} />}
+            title={AdminI18n.t('media.noAssetsYet')}
+            hint={AdminI18n.t('media.uploadYourFirstImageVideo')}
+            action={<Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Upload size={15} />} onClick={this.openFilePicker}>{AdminI18n.t('media.uploadNow')}</Button>}
+          />
+        )} />
       );
     }
 

@@ -22,6 +22,7 @@ import { SidebarSearch } from '@/app/sidebar-search.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
 import { Divider } from '@/components/ui/view/divider.client';
+import { DropArea } from '@/components/ui/view/drop-area.client';
 import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 import { ColorField } from '@/components/ui/view/color-field.client';
 import { ChipInputField } from '@/components/ui/view/chip-input-field.client';
@@ -210,6 +211,11 @@ export class KitExtras extends Reactor {
         ))}
         {this.block('FileDropzone', (
           <div className="fc-kit__cell fc-kit__cell--wide"><FileDropzone file={this.file} onSelect={this.setFile} hint="One file, up to 20 MB" /></div>
+        ))}
+        {this.block('DropArea', (
+          <div className="fc-kit__cell fc-kit__cell--wide">
+            <DropArea title="Drag files here" hint="Images, videos or documents." action={<Button variant={ButtonVariant.SECONDARY}>Browse files</Button>} />
+          </div>
         ))}
         {this.block('MediaRelationField', (
           <>

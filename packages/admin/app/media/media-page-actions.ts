@@ -35,8 +35,10 @@ export class MediaPageActions {
       const folderPath = await MediaPageController.fetchFolderPath(currentFolderId);
       if (!this.host.mounted) return;
       this.host.patch({ folderPath });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch media:', err);
+      // Said on the page: a library that failed to load used to look exactly like an empty one.
+      if (this.host.mounted) this.host.patch({ error: err?.message || AdminI18n.t('collection.list.loadFailed') });
     } finally {
       if (this.host.mounted) this.host.patch({ loading: false });
     }

@@ -15,6 +15,8 @@ export class RadioGroup extends PureReactor {
   @prop declare value: string;
   @prop declare onChange: (value: string) => void;
   @prop declare boxed?: boolean;
+  /** Boxed options side by side, two to a line, where the card is wide enough for two. */
+  @prop declare twoColumns?: boolean;
   @prop declare disabled?: boolean;
   /** What is being chosen, for a screen reader. */
   @prop declare label?: string;
@@ -39,7 +41,7 @@ export class RadioGroup extends PureReactor {
     const name = AdminClass.of('radio');
     const chosen = this.options.some((option) => option.value === this.value && !option.disabled);
     return (
-      <div role="radiogroup" aria-label={this.label} className={`${name}-group ${this.className ?? ''}`} data-boxed={this.boxed ? 'true' : undefined} onKeyDown={this.onKeyDown}>
+      <div role="radiogroup" aria-label={this.label} className={`${name}-group ${this.className ?? ''}`} data-boxed={this.boxed ? 'true' : undefined} data-columns={this.twoColumns ? '2' : undefined} onKeyDown={this.onKeyDown}>
         {this.options.map((option, index) => {
           const on = option.value === this.value;
           const off = Boolean(this.disabled || option.disabled);
