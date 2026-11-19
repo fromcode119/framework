@@ -236,7 +236,7 @@
   border-radius: 8px; color: var(--fc-text-muted); cursor: pointer;
 }
 .fc-ext-row__more:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-ext-pill {font-size: 11px; font-weight: var(--fc-weight-strong); padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: var(--fc-surface-muted); color: var(--fc-text-muted); text-decoration: none; }
+.fc-ext-pill {font-size: 11px; font-weight: var(--fc-weight-strong); padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: var(--fc-surface-muted); color: var(--fc-text-muted); text-decoration: none; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .fc-ext-pill--warn { background: color-mix(in srgb, var(--fc-warning) 16%, transparent); color: var(--fc-warning); }
 .fc-ext-pill--danger { background: color-mix(in srgb, var(--fc-danger) 14%, transparent); color: var(--fc-danger); }
 .fc-ext-pill--ok { background: color-mix(in srgb, var(--fc-success) 14%, transparent); color: var(--fc-success); }

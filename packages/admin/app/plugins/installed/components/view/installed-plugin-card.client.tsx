@@ -73,9 +73,15 @@ export class InstalledPluginCard extends PureReactor {
     } else if (plugin.healthStatus === PluginRegistryHealth.ERROR) {
       out.push(<span key="s" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('plugins.detail.security')}</span>);
     } else if (isHeld) {
+      // Inline the capability DRIFT only when there is a prior approval to drift FROM — then it is the
+      // handful of changed capabilities, small and useful at a glance. On a fresh install awaiting its
+      // first approval `approvedCapabilities` is empty, so every capability counts as "added" and the
+      // inline list is the whole manifest — which overran the row and collided with the version and the
+      // switch. The full list belongs to the Review dialog, not this pill.
+      const hasPriorApproval = (plugin.approvedCapabilities || []).length > 0;
       const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
       const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
-      const drift = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
+      const drift = hasPriorApproval ? [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ') : '';
       out.push(
         <span key="h" className={`${pill} ${AdminClass.of('ext-pill--warn')}`}
           title={drift ? AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: drift }) : undefined}>
