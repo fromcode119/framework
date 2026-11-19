@@ -3648,3 +3648,5 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
    when there is no room for two. */
 .fc-record-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); align-items: start; }
 @media (min-width: 1024px) { .fc-record-split { grid-template-columns: minmax(0, 1fr) 360px; } }
+.fc-record-split--narrow { }
+@media (min-width: 1024px) { .fc-record-split--narrow { grid-template-columns: minmax(0, 1fr) 300px; } }
