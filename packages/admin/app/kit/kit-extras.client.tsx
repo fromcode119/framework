@@ -15,6 +15,8 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { CommandPalette } from '@/components/ui/view/command-palette.client';
 import { NotificationPanel } from '@/app/components/view/notification-panel.client';
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
+import { SidebarBrandHeader } from '@/app/sidebar-brand-header';
+import { NavItemView } from '@/app/components/view/sidebar-nav-item-view.client';
 import { SidebarSearch } from '@/app/sidebar-search.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
@@ -105,8 +107,16 @@ export class KitExtras extends Reactor {
             <Button variant={ButtonVariant.SECONDARY} onClick={this.openPalette}>Open the big search</Button>
           </>
         ))}
-        {this.block('Account row and its menu', (
-          <div className="fc-nav fc-kit__nav fc-kit__nav--account"><SidebarAccountCard /></div>
+        {this.block('Menu: head, rows, account', (
+          <div className="fc-nav fc-kit__nav fc-kit__nav--menu">
+            <SidebarBrandHeader isMini={false} platformName="Console" onClose={KitExtras.nothing} onCollapse={KitExtras.nothing} />
+            <div className="fc-nav-list fc-kit__nav-rows">
+              <NavItemView label="Dashboard" href="/kit" icon={<FrameworkIcons.Dashboard size={16} />} active shortcut="d" rawPathname="/kit" />
+              <NavItemView label="Media" href="/media" icon={<FrameworkIcons.Image size={16} />} shortcut="m" rawPathname="/kit" />
+              <NavItemView label="Settings" href="/settings/general" icon={<FrameworkIcons.Settings size={16} />} shortcut="s" rawPathname="/kit" />
+            </div>
+            <SidebarAccountCard />
+          </div>
         ))}
         <CommandPalette
           open={this.palette}

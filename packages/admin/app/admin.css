@@ -1263,10 +1263,6 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-brand__dot { position: absolute; top: 5px; inset-inline-end: 5px; width: 7px; height: 7px; border-radius: 9999px; background: var(--fc-info, #4f46e5); }
 @media (min-width: 1024px) { .fc-nav-brand__tool--narrow { display: none; } }
 .fc-nav__pinned { position: relative; }
-.fc-nav__collapse { display: none; position: absolute; top: 8px; inset-inline-end: 14px; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); }
-.fc-nav__collapse::before { content: ''; position: absolute; inset: -4px; }
-.fc-nav__collapse:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
-@media (min-width: 1024px) { .fc-nav__collapse { display: inline-flex; } }
 .fc-nav-search { position: relative; flex: none; margin: 0 12px 4px; }
 .fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
 .fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
@@ -3320,3 +3316,17 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* In one row, one height: a button or a tab row standing beside a field is as tall as the field. */
 .fc-page-bar__tools > .fc-btn, .fc-list-toolbar .fc-toolbar-btn, .fc-list-toolbar .fc-btn { height: var(--fc-field-h); }
 .fc-list-toolbar .fc-toolbar-btn--icon { width: var(--fc-field-h); }
+
+/* ---------- The account: its row in the menu and the head of its own menu ---------- */
+.fc-account-slot { padding: 8px; border-top: 1px solid var(--fc-nav-border, var(--fc-border)); }
+.fc-account { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 8px; border-radius: var(--fc-control-radius); text-align: start; transition: background-color .15s ease; }
+.fc-account:hover { background: var(--fc-nav-hover, var(--fc-surface-muted)); }
+.fc-account--head, .fc-account--head:hover { padding: 0; background: transparent; }
+.fc-account__text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.fc-account__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fc-text); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-account__role { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fc-text-muted); font-size: 12px; line-height: 16px; }
+.fc-account__caret { flex: none; color: var(--fc-text-faint); }
+.fc-nav-brand__tool--wide { display: none; }
+@media (min-width: 1024px) { .fc-nav-brand__tool--wide { display: inline-flex; } }
+.fc-kit__nav.fc-nav.fc-kit__nav--menu { padding: 0; }
+.fc-kit__nav-rows { padding: 4px 12px 8px; }

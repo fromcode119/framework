@@ -216,7 +216,7 @@ export class Sidebar extends AdminComponent {
 
     return (
       <aside className={`fc-nav fixed inset-y-0 start-0 z-[200] ${isMini ? 'w-14' : 'w-60'} transform ${this.isOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 flex flex-col overflow-hidden`}>
-        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose}
+        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose} onCollapse={this.onMiniToggle}
           notifications={<SidebarNotifications isMini compact />} />
         {!isMini && <SidebarSearch query={this.query} onQuery={this.setQuery} onPalette={this.openPalette} />}
         <CommandPalette open={this.paletteOpen} onClose={this.closePalette} query={this.paletteQuery} onQuery={this.setPaletteQuery} items={this.palettePages}
@@ -230,11 +230,6 @@ export class Sidebar extends AdminComponent {
         {/* The pinned foot of the sidebar: Settings, the account, and (collapsed) the way back out. */}
         <div className={`fc-nav__pinned mt-auto shrink-0 ${isMini ? 'px-2' : 'px-3'}`}>
           <SidebarNavGroups {...navProps} part={SidebarNavPart.FOOT} />
-          {isMini ? null : (
-            <button type="button" onClick={this.onMiniToggle} aria-label={AdminI18n.t('shell.nav.collapse')} title={AdminI18n.t('shell.nav.collapse')} className="fc-nav__collapse">
-              <FrameworkIcons.Left size={16} />
-            </button>
-          )}
         </div>
         <div className="shrink-0">
           {isMini ? <SidebarNotifications isMini /> : null}

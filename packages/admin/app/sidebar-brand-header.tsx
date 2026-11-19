@@ -15,6 +15,8 @@ export class SidebarBrandHeader extends PureReactor {
   @prop declare onClose: (() => void) | undefined;
   /** The bell, beside the name. */
   @prop declare notifications?: ReactNode;
+  /** Narrows the menu to its icons — here, beside the bell, the way the reference keeps it in the bar at the top and never on a menu row. */
+  @prop declare onCollapse?: () => void;
 
   render(): ReactNode {
     const isMini = this.isMini;
@@ -26,6 +28,11 @@ export class SidebarBrandHeader extends PureReactor {
         {!isMini && <span className="fc-nav-brand__name">{platformName}</span>}
         {!isMini && (
           <span className="fc-nav-brand__tools">
+            {this.onCollapse ? (
+              <button type="button" onClick={this.onCollapse} aria-label={AdminI18n.t('shell.nav.collapse')} title={AdminI18n.t('shell.nav.collapse')} className="fc-nav-brand__tool fc-nav-brand__tool--wide">
+                <FrameworkIcons.Menu size={16} />
+              </button>
+            ) : null}
             {this.notifications}
             <button type="button" onClick={onClose} aria-label={AdminI18n.t('common.close')} className="fc-nav-brand__tool fc-nav-brand__tool--narrow">
               <FrameworkIcons.Close size={18} />
