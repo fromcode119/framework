@@ -3608,3 +3608,22 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* The page's own ground, light or dark — for the frame and the full-screen states, which each used to
    write `bg-slate-50 dark:bg-[#020617]`: a navy page beside a neutral-grey menu. */
 .fc-canvas { background: var(--fc-canvas); }
+
+/* On a phone the drop area's action goes under its words: beside them it squeezed the words to a
+   column three letters wide. */
+@media (max-width: 640px) {
+  .fc-dropzone.fc-dropzone--area { flex-wrap: wrap; }
+  .fc-dropzone.fc-dropzone--area > .fc-dropzone__file { flex: 1 1 calc(100% - 48px); }
+  .fc-dropzone.fc-dropzone--area > .fc-dropzone__action { flex: 1 1 100%; }
+}
+/* On a phone a card's head with buttons in it stacks the way a list's does: the name on its line,
+   the buttons under it — never the name cut to its first word. */
+@media (max-width: 640px) {
+  .fc-record-card__head:has(> .fc-record-card__aside .fc-btn) { flex-wrap: wrap; align-items: flex-start; min-height: 0; padding-block: 12px; row-gap: 10px; }
+  .fc-record-card__head:has(> .fc-record-card__aside .fc-btn) > .fc-record-card__aside { flex: 1 1 100%; justify-content: flex-start; }
+  .fc-record-card__head:has(> .fc-record-card__aside .fc-btn) .fc-record-card__table-tools { justify-content: flex-start; flex-wrap: wrap; }
+}
+/* A card's body keeps the head's inset on a phone, so its content starts under the card's name. */
+@media (max-width: 640px) { .fc-record-card__body:not(:empty) { padding-inline: 16px; } }
+/* Things one under another inside a card, 12px apart: a line of text, a list, a tip, a bar. */
+.fc-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }

@@ -1,10 +1,10 @@
+import { Alert } from '@/components/ui/view/alert.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Loader } from '@/components/ui/view/loader.client';
-import { Card } from '@/components/ui/view/card.client';
 import { BackupCreateCard } from '@/components/settings/backups/view/backup-create-card.client';
 import { BackupListCard } from '@/components/settings/backups/view/backup-list-card.client';
 import { BackupOperatorNotesCard } from '@/components/settings/backups/view/backup-operator-notes-card.client';
@@ -29,7 +29,7 @@ export class BackupsPageClientView extends PureReactor {
     const { theme, controller } = this;
 
     if (controller.backupState.isLoading) {
-      return <div className="p-12"><Loader label={AdminI18n.t('settings.components.indexingBackupInventory')} /></div>;
+      return <Loader fullPage label={AdminI18n.t('settings.components.indexingBackupInventory')} />;
     }
 
     return (
@@ -38,14 +38,7 @@ export class BackupsPageClientView extends PureReactor {
 
         <div className="fc-columns__stack pb-24">
           {controller.backupState.errorMessage ? (
-            <Card className="border border-rose-200 bg-rose-50/80 text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-medium tracking-tight">{AdminI18n.t('settings.components.backupInventoryFailedToLoad')}</h2>
-                  <p className="mt-2 text-sm">{controller.backupState.errorMessage}</p>
-                </div>
-              </div>
-            </Card>
+            <Alert tone="danger" title={AdminI18n.t('settings.components.backupInventoryFailedToLoad')}>{controller.backupState.errorMessage}</Alert>
           ) : null}
 
           <BackupSummaryCard groups={controller.backupState.groups} capabilities={controller.backupState.capabilities} />
