@@ -1,3 +1,4 @@
+import { Avatar } from '@/components/ui/view/avatar.client';
 import type { ReactElement } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -204,15 +205,9 @@ export class SidebarAccountCard extends AdminComponent {
     ];
   }
 
+  /** The console's `Avatar`, at the row's size or the menu head's. It was a brand-filled circle of its own. */
   private avatar(size: AvatarSize): ReactElement {
-    const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[12px]' : 'h-9 w-9 text-[13px]';
-    return (
-      <span
-        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] font-medium text-white ring-1 ring-inset ring-white/15`}
-      >
-        {this.initial}
-      </span>
-    );
+    return <Avatar fallback={this.initial} size={size === AvatarSize.SMALL ? 'base' : 'large'} />;
   }
 
   /** The same identity the trigger shows, repeated at the top of the menu so the menu stands alone. */

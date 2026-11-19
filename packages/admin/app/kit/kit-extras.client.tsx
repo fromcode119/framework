@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { Reactor, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -13,6 +14,7 @@ import { MediaRelationField } from '@/components/collection/view/media-relation-
 import { ThemeMode } from '@fromcode119/core/client';
 import { CommandPalette } from '@/components/ui/view/command-palette.client';
 import { NotificationPanel } from '@/app/components/view/notification-panel.client';
+import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarSearch } from '@/app/sidebar-search.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
@@ -97,11 +99,14 @@ export class KitExtras extends Reactor {
             {/* The menu's own search, the same component the menu renders, inside the menu's own surface —
                 told not to listen for ⌘K, which the real one beside it already does. */}
             <div className="fc-nav fc-kit__nav"><SidebarSearch query={this.menuQuery} onQuery={this.setMenuQuery} onPalette={this.openPalette} listens={false} /></div>
-            <kbd className="fc-kbd">G</kbd>
-            <kbd className="fc-kbd">D</kbd>
-            <kbd className="fc-kbd">⌘K</kbd>
+            <Kbd>G</Kbd>
+            <Kbd>D</Kbd>
+            <Kbd>⌘K</Kbd>
             <Button variant={ButtonVariant.SECONDARY} onClick={this.openPalette}>Open the big search</Button>
           </>
+        ))}
+        {this.block('Account row and its menu', (
+          <div className="fc-nav fc-kit__nav fc-kit__nav--account"><SidebarAccountCard /></div>
         ))}
         <CommandPalette
           open={this.palette}

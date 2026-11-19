@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop, ref, state, Platform } from '@fromcode119/react-class-components';
@@ -172,7 +173,7 @@ export class NavItemView extends PureReactor {
         >
           <span className={`${nav}__icon`}>{icon}</span>
           {!isMini ? <span className={`${nav}__label`}>{label}</span> : null}
-          {!isMini && this.shortcut ? <kbd className={`${nav}__kbd`} aria-hidden="true">G {this.shortcut.toUpperCase()}</kbd> : null}
+          {!isMini && this.shortcut ? <Kbd className={`${nav}__kbd`}>G {this.shortcut.toUpperCase()}</Kbd> : null}
           {this.renderTrailing(href, open, !!isMini)}
         </AdminLink>
 

@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { PureReactor, prop, state, bound, watch } from '@fromcode119/react-class-components';
@@ -60,7 +61,7 @@ export class CommandPalette extends PureReactor {
           <div className={`${name}__head`}>
             <FrameworkIcons.Search size={15} className={`${name}__icon`} />
             <input autoFocus type="text" className={`${name}__input`} value={this.query} onChange={this.change} placeholder={this.placeholder} aria-label={this.placeholder} />
-            <kbd className={AdminClass.of('kbd')}>esc</kbd>
+            <Kbd>esc</Kbd>
           </div>
           <div className={`${name}__list`} role="listbox">
             {this.items.length
@@ -82,10 +83,10 @@ export class CommandPalette extends PureReactor {
               : <div className={`${name}__empty`}><FrameworkIcons.Search size={15} />{this.empty}</div>}
           </div>
           <div className={`${name}__foot`}>
-            <kbd className={AdminClass.of('kbd')}>↓</kbd>
-            <kbd className={AdminClass.of('kbd')}>↑</kbd>
+            <Kbd>↓</Kbd>
+            <Kbd>↑</Kbd>
             <span className={`${name}__rule`} />
-            <kbd className={AdminClass.of('kbd')}>↵</kbd>
+            <Kbd>↵</Kbd>
           </div>
         </div>
       </div>,

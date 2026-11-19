@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -62,7 +63,7 @@ export class FocusModal extends PureReactor {
           <div className={`${focus}__head`}>
             <div className={`${focus}__head-start`}>
               <button type="button" className={`${focus}__esc`} onClick={this.close}>
-                {AdminI18n.t('common.escKey')}
+                <Kbd>{AdminI18n.t('common.escKey')}</Kbd>
               </button>
               {tabs.length ? (
                 <div className={`${focus}__tabs`} role="tablist">

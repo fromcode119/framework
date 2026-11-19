@@ -981,10 +981,8 @@ html.dark {
   flex: none; padding: 8px 16px; border-bottom: 1px solid var(--fc-border); }
 .fc-focus__head-start { display: flex; align-items: center; gap: 8px; }
 /* The key that closes it, drawn as the key it is — and it IS the button, so a pointer can use it. */
-.fc-focus__esc { display: inline-flex; align-items: center; justify-content: center; height: 20px;
-  min-width: 20px; padding: 0 4px; border-radius: var(--fc-control-radius);
-  background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow);
-  font-size: 11px; line-height: 16px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+/* The way out, as a key: the button only makes it pressable, the look is `Kbd`'s. */
+.fc-focus__esc { display: inline-flex; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .fc-focus__esc:hover { color: var(--fc-text); }
 .fc-focus__tabs { display: inline-flex; gap: 4px; }
 .fc-focus__body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
@@ -1273,7 +1271,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
 .fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
 .fc-nav-search__field::-webkit-search-cancel-button { display: none; }
-.fc-nav-search__kbd { cursor: pointer; background: transparent; position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; height: 20px; min-width: 20px; padding: 0 4px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font-family: inherit; font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-nav-muted); }
+/* Where the key stands in the field, and that it can be pressed. Its look is `Kbd`'s. */
+.fc-nav-search__key { position: absolute; top: 50%; inset-inline-end: 6px; transform: translateY(-50%); display: inline-flex; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .fc-nav-empty { padding: 8px 10px; font-size: 12px; color: var(--fc-nav-muted); }
 .fc-nav__pinned { padding-block: 6px; border-top: 1px solid var(--fc-nav-border); }
 .fc-nav__pinned .fc-nav-foot { margin-top: 0; padding-top: 0; }
@@ -1296,19 +1295,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-item--active .fc-nav-item__icon { color: var(--fc-nav-text); }
 .fc-nav-item__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* The key the row answers to: quiet until the pointer is on the row, so nine of them are not nine labels. */
-.fc-nav-item__kbd {
-  margin-inline-start: auto;
-  padding: 1px 5px;
-  border: 1px solid var(--fc-nav-border);
-  border-radius: 4px;
-  font: 500 10px/1.4 inherit;
-  letter-spacing: 0.06em;
-  color: var(--fc-nav-muted);
-  opacity: 0;
-  transition: opacity 120ms ease;
-  pointer-events: none;
-  white-space: nowrap;
-}
+/* Where the key stands in the row, and when it shows. Its look is `Kbd`'s. */
+.fc-nav-item__kbd { margin-inline-start: auto; opacity: 0; transition: opacity 120ms ease; pointer-events: none; white-space: nowrap; }
 /* Only while the pointer is on the row. On the open section it stood there all day, which read as a
    stray box beside the menu rather than as a hint. */
 .fc-nav-item:hover .fc-nav-item__kbd { opacity: 1; }
@@ -1483,12 +1471,7 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 .fc-sheet__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 /* `esc`, the way a key is written on screen: the quiet surface, a hairline, small letters. */
-.fc-sheet__esc {
-  flex: none; display: inline-flex; align-items: center; height: 20px; padding: 0 6px;
-  border: 1px solid var(--fc-border); border-radius: 4px; background: var(--fc-surface-muted);
-  font-family: inherit; font-size: var(--fc-text-xs); line-height: var(--fc-leading);
-  color: var(--fc-text-muted);
-}
+.fc-sheet__esc { flex: none; }
 .fc-sheet__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -2817,7 +2800,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 /* Measured off the reference's own search, 19.11: 28px tall, the icon 8px in, the text cleared to 28,
    8px on the right — not the 32/36/12 a form field would give it. A list's search is a toolbar
    control, the height of the buttons beside it, not a form field. */
-.fc-field.fc-search-field { height: var(--fc-control-h); padding-inline-start: 28px; padding-inline-end: 8px; }
+/* A field's height, like every other field: at 28 it stood four pixels short of the input beside it. */
+.fc-field.fc-search-field { height: var(--fc-field-h); padding-inline-start: 28px; padding-inline-end: 8px; }
 .fc-search__icon svg { width: 15px; height: 15px; }
 
 /* ── A list's toolbar ── two groups with the space between them, the way the reference draws it: what
@@ -2978,7 +2962,7 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    only by dragging the row, is a tab nobody finds. */
 .fc-tabbar { flex-wrap: wrap; row-gap: 4px; margin-inline: 0; padding: 8px 1px; border-bottom: 1px solid var(--fc-border); }
 .fc-tabbar > .fc-tab { flex: none; white-space: nowrap; }
-.fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: var(--fc-control-radius); background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-tab:hover { color: var(--fc-text); }
 .fc-tab:disabled { color: var(--fc-text-faint); cursor: default; }
 .fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
@@ -3330,3 +3314,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 .fc-kit__nav.fc-nav { width: 240px; max-width: 100%; padding-block: 8px 4px; border: 0; border-radius: 8px; }
 .fc-kit .fc-state-page { min-height: 0; }
+
+.fc-kit__nav.fc-nav.fc-kit__nav--account { padding: 0; }
+
+/* In one row, one height: a button or a tab row standing beside a field is as tall as the field. */
+.fc-page-bar__tools > .fc-btn, .fc-list-toolbar .fc-toolbar-btn, .fc-list-toolbar .fc-btn { height: var(--fc-field-h); }
+.fc-list-toolbar .fc-toolbar-btn--icon { width: var(--fc-field-h); }

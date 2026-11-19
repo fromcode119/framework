@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor } from '@fromcode119/react-class-components';
 import { RecordCard } from '@/components/ui/view/record-card.client';
@@ -14,7 +15,7 @@ export class KitType extends PureReactor {
           <span className="fc-record-card__label">Row label</span>
           <span className="fc-record-card__value">Row value</span>
           <p className="fc-field-note">A note under a field, or a hint.</p>
-          <kbd className="fc-kbd">⌘K</kbd>
+          <Kbd>⌘K</Kbd>
         </div>
       </RecordCard>
     );

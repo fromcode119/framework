@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -77,7 +78,7 @@ export class EditSheet extends PureReactor {
             </div>
             {/* The key that closes it, said out loud beside the ✕ — the reference puts `esc` there,
                 and a drawer that can be dismissed from the keyboard should say so. */}
-            <kbd className={`${sheet}__esc`} aria-hidden="true">esc</kbd>
+            <Kbd className={`${sheet}__esc`}>esc</Kbd>
             <button type="button" className={`${sheet}__close`} onClick={this.close} aria-label={AdminI18n.t('common.close')}>
               <FrameworkIcons.Close size={18} />
             </button>

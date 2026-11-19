@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Reactor, bound, prop, ref } from '@fromcode119/react-class-components';
@@ -49,7 +50,7 @@ export class SidebarSearch extends Reactor {
         <FrameworkIcons.Search size={15} className="fc-nav-search__icon" />
         <Input ref={this.input} type="search" value={this.query} onChange={this.change} onKeyDown={this.key}
           placeholder={label} aria-label={label} inputClassName="fc-nav-search__field" />
-        {this.query ? null : <button type="button" className="fc-nav-search__kbd" onClick={this.onPalette} aria-label={label}>{AdminI18n.t('shell.nav.searchShortcut')}</button>}
+        {this.query ? null : <button type="button" className="fc-nav-search__key" onClick={this.onPalette} aria-label={label}><Kbd>{AdminI18n.t('shell.nav.searchShortcut')}</Kbd></button>}
       </div>
     );
   }
