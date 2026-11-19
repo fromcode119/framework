@@ -1273,7 +1273,7 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
 .fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
 .fc-nav-search__field::-webkit-search-cancel-button { display: none; }
-.fc-nav-search__kbd { cursor: pointer; background: transparent; position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); pointer-events: none; }
+.fc-nav-search__kbd { cursor: pointer; background: transparent; position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); }
 .fc-nav-empty { padding: 8px 10px; font-size: 12px; color: var(--fc-nav-muted); }
 .fc-nav__pinned { padding-block: 6px; border-top: 1px solid var(--fc-nav-border); }
 .fc-nav__pinned .fc-nav-foot { margin-top: 0; padding-top: 0; }
@@ -2320,26 +2320,6 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 
 /* The platform update, on one line: an accent tile and edge so it is not mistaken for a plain note.
    Its colours are the warning tints, which html.dark redefines, so it needs no dark rule of its own. */
-.fc-update-alert {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
-  padding: 8px 8px 8px 10px; border-radius: var(--radius);
-  border: 1px solid var(--fc-dashboard-alert-border); border-inline-start: 4px solid var(--fc-dashboard-alert-accent);
-  background: linear-gradient(90deg, var(--fc-dashboard-alert-soft), var(--fc-surface) 70%);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--fc-dashboard-alert-accent) 15%, transparent);
-}
-.fc-update-alert__icon {
-  display: grid; place-items: center; flex: none;
-  width: var(--fc-dashboard-alert-tile); height: var(--fc-dashboard-alert-tile); border-radius: 8px;
-  background: var(--fc-dashboard-alert-accent); color: #fff;
-  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--fc-dashboard-alert-accent) 70%, transparent);
-}
-.fc-update-alert__text { flex: 1 1 14rem; min-width: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12px; line-height: 1.4; }
-.fc-update-alert__title { font-size: 13px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
-.fc-update-alert__detail { color: var(--fc-text-muted); }
-.fc-update-alert__version { font-weight: var(--fc-weight-strong); color: var(--fc-dashboard-alert-strong); }
-.fc-update-alert__actions { display: flex; align-items: center; gap: 4px; margin-inline-start: auto; }
-.fc-update-alert__primary.fc-update-alert__primary { background: var(--fc-dashboard-alert-accent); color: #fff; }
-.fc-update-alert__primary.fc-update-alert__primary:hover { background: color-mix(in srgb, var(--fc-dashboard-alert-accent) 85%, #000); }
 
 /* ── Motion ──────────────────────────────────────────────────────────────────────────────────────
  * Everything the console opens arrives the same way: it fades in while rising and settling the last
@@ -2994,7 +2974,9 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    screen the loudest thing on it. */
 .fc-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 /* A row of tabs that heads a page: a line under it. The page's root carries the inset. */
-.fc-tabbar { flex-wrap: nowrap; margin-inline: 0; padding: 8px 1px; border-bottom: 1px solid var(--fc-border); overflow-x: auto; scrollbar-width: none; }
+/* More tabs than the row is wide go to a second line: a tab that is cut off at the edge, or reached
+   only by dragging the row, is a tab nobody finds. */
+.fc-tabbar { flex-wrap: wrap; row-gap: 4px; margin-inline: 0; padding: 8px 1px; border-bottom: 1px solid var(--fc-border); }
 .fc-tabbar > .fc-tab { flex: none; white-space: nowrap; }
 .fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .fc-tab:hover { color: var(--fc-text); }
@@ -3304,16 +3286,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* The glass of a search field drawn as a bare icon beside an `Input`: the same place and ink as
    `fc-search__icon`. Each screen had placed and coloured its own. */
-.fc-search__glyph { position: absolute; z-index: 2; inset-inline-start: 8px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
 
 /* The update note is the page's quiet note, like every other: the icon carries the tone. It was an
    amber box with an amber tile and an orange button of its own. */
-.fc-update-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow); color: var(--fc-text); font-size: 13px; line-height: 20px; }
-.fc-update-alert .fc-update-alert__icon { display: inline-flex; flex: none; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--fc-warning); }
-.fc-update-alert .fc-update-alert__text { flex: 1 1 16rem; min-width: 0; margin: 0; color: var(--fc-text-muted); }
-.fc-update-alert .fc-update-alert__title { margin-inline-end: 8px; color: var(--fc-text); font-weight: var(--fc-weight-strong); }
-.fc-update-alert .fc-update-alert__version { color: var(--fc-text); font-weight: var(--fc-weight-strong); }
-.fc-update-alert .fc-update-alert__actions { display: flex; flex: none; align-items: center; gap: 8px; }
 .fc-media-empty.fc-media-empty--row { width: 32px; height: 32px; border-radius: 6px; }
 
 /* A tab row inside a head that already has its own line and inset. */
@@ -3322,6 +3297,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* Two rows of tabs heading a page, and the card under them, all at the page's inset. */
 .fc-tabstack { display: flex; flex-direction: column; }
+/* The second level under the first: the same tabs, no line of its own. */
 .fc-tabbar.fc-tabbar--second { border-bottom: 0; padding-block: 12px 0; }
 .fc-tabstack__body { width: 100%; padding: 16px var(--fc-page-pad-x) 24px; }
 .fc-tabstack__card { display: flex; flex-direction: column; gap: 24px; padding: 16px var(--fc-card-pad-x) 24px; }
@@ -3329,3 +3305,28 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* On a page whose root already carries the page's inset, the tabs and their card start at it. */
 .fc-tabstack .fc-tabbar { margin-inline: 0; }
 .fc-tabstack__body { padding-inline: 0; }
+.fc-kit__pad { padding: 8px var(--fc-card-pad-x) 16px; }
+.fc-kit__state { display: flex; justify-content: center; padding: 16px; }
+
+/* ---------- Page pieces as components: Alert, PageBar, tab extras ---------- */
+.fc-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow); color: var(--fc-text); font-size: 13px; line-height: 20px; }
+.fc-alert__icon { display: inline-flex; flex: none; color: var(--fc-text-muted); }
+.fc-alert[data-tone="warning"] .fc-alert__icon { color: var(--fc-warning); }
+.fc-alert[data-tone="danger"] .fc-alert__icon { color: var(--fc-danger); }
+.fc-alert[data-tone="success"] .fc-alert__icon { color: var(--fc-success); }
+.fc-alert__text { flex: 1 1 16rem; min-width: 0; margin: 0; color: var(--fc-text-muted); }
+.fc-alert__title { margin-inline-end: 8px; color: var(--fc-text); font-weight: var(--fc-weight-strong); }
+.fc-alert__text strong { color: var(--fc-text); font-weight: var(--fc-weight-strong); }
+.fc-alert__action { display: flex; flex: none; align-items: center; gap: 8px; }
+.fc-page-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 16px; }
+.fc-page-bar__lead { display: flex; flex: 1 1 auto; min-width: 0; }
+.fc-page-bar__tools { display: flex; flex: 0 1 28rem; align-items: center; gap: 8px; min-width: 0; }
+.fc-page-bar__tools > .fc-search { flex: 1 1 0; width: auto; min-width: 8rem; }
+.fc-page-bar__tools > .fc-btn { flex: none; }
+@media (max-width: 767.98px) { .fc-page-bar__tools { flex-basis: 100%; } }
+.fc-tab__count { margin-inline-start: 6px; color: var(--fc-text-faint); font-variant-numeric: tabular-nums; }
+.fc-tab--end { margin-inline-start: auto; }
+.fc-tab--end ~ .fc-tab--end { margin-inline-start: 0; }
+
+.fc-kit__nav.fc-nav { width: 240px; max-width: 100%; padding-block: 8px 4px; border: 0; border-radius: 8px; }
+.fc-kit .fc-state-page { min-height: 0; }

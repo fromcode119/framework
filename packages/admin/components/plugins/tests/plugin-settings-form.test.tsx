@@ -102,8 +102,8 @@ describe('./plugin-settings-form', () => {
     await waitFor(() => expect(screen.queryByText('Site Name')).toBeDefined());
 
     // Check tabs — the open one's label is also the section heading, so ask for the tab buttons.
-    expect(screen.getByRole('button', { name: 'General' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Advanced' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'General' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Advanced' })).toBeDefined();
   });
 
   it('switches tabs and shows correct fields', async () => {

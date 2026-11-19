@@ -1,3 +1,8 @@
+import { Alert } from '@/components/ui/view/alert.client';
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { SearchField } from '@/components/ui/view/search-field.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
 import type { ReactElement } from 'react';
 import { Slot } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
@@ -9,7 +14,7 @@ import { UsersRow } from '@/app/users/components/view/users-row.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/react-class-components';
+import { state, bound } from '@fromcode119/react-class-components';
 import { UsersRowActions } from '@/app/users/components/view/users-row-actions.client';
 import { UsersPageHeader } from '@/app/users/components/view/users-page-header.client';
 import type { IUser } from '@/app/users/interfaces/user.interface';
@@ -39,6 +44,16 @@ export class UsersPage extends AdminComponent {
 
   /** Which of the counted tabs is open. */
   @state filter: UserListFilter = UserListFilter.ALL;
+
+  @bound private onFilter(id: string): void {
+    this.filter = UserListFilter.all().find((filter) => filter.value === id) ?? UserListFilter.ALL;
+    this.page = 1;
+  }
+
+  @bound private onSearch(value: string): void {
+    this.searchQuery = value;
+    this.page = 1;
+  }
 
   componentDidMount(): void {
     this.mounted = true;
@@ -157,32 +172,15 @@ export class UsersPage extends AdminComponent {
         <UsersPageHeader theme={theme} />
 
         <div className="w-full py-6">
-          <div className={AdminClass.of('ext-tabbar')}>
-            <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('users.users')}>
-              {UserListFilter.all().map((filter) => (
-                <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
-                  aria-current={this.filter === filter ? 'page' : undefined}
-                  onClick={() => { this.filter = filter; this.page = 1; }}>
-                  {AdminI18n.t(`users.filter.${filter.value}`)}<span className={AdminClass.of('ext-tabs__count')}>{this.countOf(filter)}</span>
-                </button>
-              ))}
-            </nav>
-            <div className={AdminClass.of('ext-toolbar')}>
-              <div className={AdminClass.of('ext-toolbar__search')}>
-                <FrameworkIcons.Search size={16} />
-                <Input
-                  type="text"
-                  placeholder={AdminI18n.t('users.searchUserBaseByName')}
-                  value={searchQuery}
-                  onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-                  inputClassName="fc-search-field"
-                />
-              </div>
-            </div>
-          </div>
+          <PageBar lead={(
+            <Tabs label={AdminI18n.t('users.users')} value={this.filter.value} onChange={this.onFilter}
+              tabs={UserListFilter.all().map((filter) => ({ id: filter.value, label: AdminI18n.t(`users.filter.${filter.value}`), count: this.countOf(filter) }))} />
+          )}>
+            <SearchField placeholder={AdminI18n.t('users.searchUserBaseByName')} value={searchQuery} onChange={this.onSearch} />
+          </PageBar>
 
           {pageItems.length === 0 ? (
-            <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{this.loadError || AdminI18n.t('users.noUserRecordsMatchYour')}</div>
+            <ListCard empty={this.loadError || AdminI18n.t('users.noUserRecordsMatchYour')} />
           ) : (
             <div className={AdminClass.of('ext-list')}>
               {pageItems.map((user) => (

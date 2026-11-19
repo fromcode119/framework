@@ -1,3 +1,4 @@
+import { SearchField } from '@/components/ui/view/search-field.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ChangeEvent, ReactNode } from 'react';
 import { Reactor, prop, bound, ref } from '@fromcode119/react-class-components';
@@ -41,16 +42,7 @@ export class MediaPickerToolbar extends Reactor {
 
     return (
       <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
-        <div className="relative flex-1 min-w-[12rem] group">
-          <Search className="fc-search__glyph" size={15} />
-          <Input
-            type="text"
-            placeholder={AdminI18n.t('mediaPicker.searchMedia')}
-            value={search}
-            onChange={this.handleSearchChange}
-            inputClassName="fc-search-field"
-          />
-        </div>
+        <SearchField className="flex-1 min-w-[12rem]" placeholder={AdminI18n.t('mediaPicker.searchMedia')} value={search} onChange={this.onSearchChange} />
         <input
           type="file"
           ref={this.fileInputRef}

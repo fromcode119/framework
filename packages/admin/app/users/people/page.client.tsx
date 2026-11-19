@@ -1,3 +1,8 @@
+import { Alert } from '@/components/ui/view/alert.client';
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { SearchField } from '@/components/ui/view/search-field.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
 import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -9,7 +14,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/react-class-components';
+import { state, bound } from '@fromcode119/react-class-components';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -27,6 +32,16 @@ export class PeoplePage extends AdminComponent {
   @state loading = true;
   /** Which of the counted tabs is open. */
   @state filter: PeopleListFilter = PeopleListFilter.ALL;
+
+  @bound private onFilter(id: string): void {
+    this.filter = PeopleListFilter.all().find((filter) => filter.value === id) ?? PeopleListFilter.ALL;
+    this.page = 1;
+  }
+
+  @bound private onSearch(value: string): void {
+    this.searchQuery = value;
+    this.page = 1;
+  }
   @state grantConfirm: IPerson | null = null;
   @state isGranting = false;
   @state error = '';
@@ -129,32 +144,17 @@ export class PeoplePage extends AdminComponent {
         />
 
         <div className="w-full py-6">
-          {error ? <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')}`} role="alert"><span className={AdminClass.of('ext-alert__text')}>{error}</span></div> : null}
+          {error ? <Alert tone="danger" className="mb-3">{error}</Alert> : null}
 
-          <div className={AdminClass.of('ext-tabbar')}>
-            <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('users.people')}>
-              {PeopleListFilter.all().map((filter) => (
-                <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
-                  aria-current={this.filter === filter ? 'page' : undefined}
-                  onClick={() => { this.filter = filter; this.page = 1; }}>
-                  {AdminI18n.t(filter.labelKey)}<span className={AdminClass.of('ext-tabs__count')}>{this.people.filter((p) => filter.matches(p)).length}</span>
-                </button>
-              ))}
-            </nav>
-            <div className={AdminClass.of('ext-toolbar')}>
-              <div className={AdminClass.of('ext-toolbar__search')}>
-                <FrameworkIcons.Search size={16} />
-                <Input
-                  type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
-                  onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-                  inputClassName="fc-search-field"
-                />
-              </div>
-            </div>
-          </div>
+          <PageBar lead={(
+            <Tabs label={AdminI18n.t('users.people')} value={this.filter.value} onChange={this.onFilter}
+              tabs={PeopleListFilter.all().map((filter) => ({ id: filter.value, label: AdminI18n.t(filter.labelKey), count: this.people.filter((p) => filter.matches(p)).length }))} />
+          )}>
+            <SearchField placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery} onChange={this.onSearch} />
+          </PageBar>
 
           {pageItems.length === 0 ? (
-            <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{AdminI18n.t('users.noPeopleMatchYourQuery')}</div>
+            <ListCard empty={AdminI18n.t('users.noPeopleMatchYourQuery')} />
           ) : (
             <div className={AdminClass.of('ext-list')}>
               {pageItems.map((person) => (

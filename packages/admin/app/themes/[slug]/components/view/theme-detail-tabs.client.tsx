@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
@@ -15,25 +16,17 @@ export class ThemeDetailTabs extends PureReactor {
   @bound private openSettings(): void { this.onTabChange(ThemeSettingsTab.SETTINGS); }
   @bound private openMaintenance(): void { this.onTabChange(ThemeSettingsTab.MAINTENANCE); }
 
-  private tab(tab: ThemeSettingsTab, label: string, Icon: ComponentType<{ size?: number }>, onClick: () => void, className = ''): ReactNode {
-    const active = this.activeTab === tab;
-    // The console's one tab (`fc-tab`); these were underlined in the brand's indigo.
-    return (
-      <button type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`fc-tab${active ? ' fc-tab--on' : ''} ${className}`}>
-        <Icon size={15} />
-        {label}
-      </button>
-    );
-  }
-
   render(): ReactNode {
+    const rows = [
+      { tab: ThemeSettingsTab.OVERVIEW, label: AdminI18n.t('themes.overview'), icon: <FrameworkIcons.Info size={15} />, go: this.openOverview },
+      { tab: ThemeSettingsTab.SETTINGS, label: AdminI18n.t('themes.settings'), icon: <FrameworkIcons.Settings size={15} />, go: this.openSettings },
+      { tab: ThemeSettingsTab.MAINTENANCE, label: AdminI18n.t('themes.maintenance'), icon: <FrameworkIcons.Wrench size={15} />, go: this.openMaintenance, end: true },
+    ];
     return (
-      <nav className="fc-tabs fc-tabbar">
-        {this.tab(ThemeSettingsTab.OVERVIEW, AdminI18n.t('themes.overview'), FrameworkIcons.Info, this.openOverview)}
-        {this.tab(ThemeSettingsTab.SETTINGS, AdminI18n.t('themes.settings'), FrameworkIcons.Settings, this.openSettings)}
-        {this.tab(ThemeSettingsTab.MAINTENANCE, AdminI18n.t('themes.maintenance'), FrameworkIcons.Wrench, this.openMaintenance, 'ml-auto')}
-      </nav>
+      <Tabs variant="bar" label={AdminI18n.t('themes.settings')}
+        value={String(rows.findIndex((row) => row.tab === this.activeTab))}
+        onChange={(index: string) => rows[Number(index)]?.go()}
+        tabs={rows.map((row, index) => ({ id: String(index), label: row.label, icon: row.icon, end: row.end }))} />
     );
   }
 }

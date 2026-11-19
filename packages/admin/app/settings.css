@@ -199,11 +199,6 @@
 
 /* ── Extension lists: tabs with counts, one line per plugin or theme ─────────────────────────── */
 /* The second row of a settings screen: the console's one tab (`fc-tab`), not an underlined one. */
-.fc-ext-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 1px; }
-.fc-ext-tabs__tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
-.fc-ext-tabs__tab:hover { color: var(--fc-text); }
-.fc-ext-tabs__tab[aria-current='page'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
-.fc-ext-tabs__count { margin-inline-start: 6px; opacity: 0.7; font-variant-numeric: tabular-nums; }
 /* A card, with the card's own edge: it had a border where every other card has the shadow. */
 .fc-ext-list { overflow: hidden; border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow); }
 .fc-ext-row {
@@ -244,23 +239,7 @@
 .fc-ext-empty { padding: 32px 16px; text-align: center; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
 /* A note at the head of a page: a quiet box whose ICON carries the tone. It was a tinted box with a
    tinted border and tinted words — amber on amber for the whole width of the page. */
-.fc-ext-alert {
-  display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 12px 16px;
-  border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow);
-  color: var(--fc-text); font-size: 13px; line-height: 20px;
-}
-.fc-ext-alert > svg { flex: none; color: var(--fc-text-muted); }
-.fc-ext-alert--danger > svg { color: var(--fc-danger); }
-.fc-ext-alert--ok > svg { color: var(--fc-success); }
-.fc-ext-alert--warn > svg { color: var(--fc-warning); }
-.fc-ext-alert__text { flex: 1 1 16rem; min-width: 0; }
-.fc-ext-tabbar { display: flex; align-items: center; gap: 8px 16px; margin-bottom: 16px; }
-.fc-ext-tabbar > .fc-ext-tabs { flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
-.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 28rem; margin-bottom: 0; flex-wrap: nowrap; }
 @media (max-width: 767.98px) {
-  .fc-ext-tabbar { flex-wrap: wrap; }
-  .fc-ext-tabbar > .fc-ext-tabs { flex-basis: 100%; }
-  .fc-ext-tabbar > .fc-ext-toolbar { flex: 1 1 100%; }
 }
 .fc-ext-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
 .fc-ext-toolbar__search { position: relative; flex: 1 1 16rem; min-width: 0; }

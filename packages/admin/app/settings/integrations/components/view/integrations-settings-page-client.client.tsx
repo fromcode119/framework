@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminClass } from '@/lib/admin-class';
 import type { ReactElement, ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
@@ -51,34 +52,21 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     this.mounted = false;
   }
 
-  private tab(key: string, label: string, icon: ReactNode, active: boolean, onClick: () => void): ReactNode {
-    // The console's one tab (`fc-tab`); these were underlined in the brand's indigo.
-    return (
-      <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`fc-tab${active ? ' fc-tab--on' : ''}`}>
-        {icon}
-        {label}
-      </button>
-    );
-  }
-
   /** Top row: who registered the types — the platform first, then each plugin. */
   private renderOwnerTabs(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const activeOwner = this.activeOwner;
+    // One owner is not a choice: a row holding a single tab said nothing and cost a line.
+    if (this.ownerTabs.length < 2) return null;
     return (
-      <nav className="fc-tabs fc-tabbar">
-        {this.ownerTabs.map((owner) => this.tab(
-          `owner-${owner.slug}`,
-          owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
-          owner.slug ? <FrameworkIcons.Plugins size={15} /> : <FrameworkIcons.Settings size={15} />,
-          owner.slug === activeOwner,
-          () => {
-            const first = IntegrationSelectors.typesOfOwner(this.integrations, owner.slug)[0];
-            if (first) this.activateType(first.key);
-          },
-        ))}
-      </nav>
+      <Tabs variant="bar" value={this.activeOwner} label={AdminI18n.t('settings.integrations.ownerPlatform')}
+        onChange={(slug: string) => {
+          const first = IntegrationSelectors.typesOfOwner(this.integrations, slug)[0];
+          if (first) this.activateType(first.key);
+        }}
+        tabs={this.ownerTabs.map((owner) => ({
+          id: owner.slug,
+          label: owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
+          icon: owner.slug ? <FrameworkIcons.Plugins size={15} /> : <FrameworkIcons.Settings size={15} />,
+        }))} />
     );
   }
 
@@ -86,16 +74,9 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
   private renderTypeTabs(): ReactNode {
     const types = this.ownerTypes;
     if (types.length < 2) return null;
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className="fc-tabs fc-tabbar fc-tabbar--second">
-        {types.map((type) => (
-          <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
-            className={`fc-tab${type.key === this.activeType ? ' fc-tab--on' : ''}`}>
-            {type.label}
-          </button>
-        ))}
-      </div>
+      <Tabs variant={this.ownerTabs.length < 2 ? 'bar' : 'second'} value={this.activeType} onChange={(key: string) => this.activateType(key)}
+        tabs={types.map((type) => ({ id: type.key, label: type.label }))} />
     );
   }
 

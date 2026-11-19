@@ -1,3 +1,4 @@
+import { SearchField } from '@/components/ui/view/search-field.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -16,16 +17,7 @@ export class MarketplaceSearchBar extends PureReactor {
   render(): ReactNode {
     const { theme, searchQuery, onChange } = this;
     return (
-      <div className="relative flex-1 group">
-        <FrameworkIcons.Search className="fc-search__glyph" size={15} />
-        <Input
-          type="text"
-          placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')}
-          value={searchQuery}
-          onChange={(e) => onChange(e.target.value)}
-          inputClassName="fc-search-field"
-        />
-      </div>
+      <SearchField className="flex-1" placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')} value={searchQuery} onChange={onChange} />
     );
   }
 }

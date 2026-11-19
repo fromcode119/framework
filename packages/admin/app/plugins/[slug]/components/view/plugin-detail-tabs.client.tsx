@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ISettingsTabGroup } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
@@ -26,33 +27,29 @@ export class PluginDetailTabs extends PureReactor {
     return groups.some((group) => group.id === this.activeGroup) ? this.activeGroup : (groups[0]?.id ?? '');
   }
 
-  private tab(key: string, label: string, active: boolean, onClick: () => void, className = ''): ReactNode {
-    // The console's one tab, the same as `Tabs` draws. These were underlined in the brand's indigo —
-    // a second kind of tab, on the screen every plugin's settings open on.
-    return (
-      <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`fc-tab${active ? ' fc-tab--on' : ''} ${className}`}>
-        {label}
-      </button>
-    );
-  }
-
   render(): ReactNode {
     const { activeTab, onTabChange } = this;
     const groups = this.groups || [];
     const settingsActive = activeTab === PluginDetailTab.SETTINGS;
     const current = this.currentGroup;
     const platform = !this.siteScope;
+    // One list of tabs, each with what choosing it does, drawn by the console's `Tabs`.
+    const rows: Array<{ id: string; label: string; on: boolean; go: () => void; end?: boolean }> = [
+      { id: 'overview', label: AdminI18n.t('plugins.detail.overview'), on: activeTab === PluginDetailTab.OVERVIEW, go: () => onTabChange(PluginDetailTab.OVERVIEW) },
+      ...(groups.length
+        ? groups.map((group) => ({ id: `group-${group.id}`, label: group.label, on: settingsActive && current === group.id, go: () => onTabChange(PluginDetailTab.SETTINGS, group.id) }))
+        : [{ id: 'settings', label: AdminI18n.t('plugins.detail.configuration'), on: settingsActive, go: () => onTabChange(PluginDetailTab.SETTINGS) }]),
+      ...(platform && this.platformPart ? [{ id: 'platform-settings', label: AdminI18n.t('plugins.detail.platformSettings'), on: activeTab === PluginDetailTab.PLATFORM_SETTINGS, go: () => onTabChange(PluginDetailTab.PLATFORM_SETTINGS), end: true }] : []),
+      ...(platform ? [
+        { id: 'permissions', label: AdminI18n.t('plugins.detail.security'), on: activeTab === PluginDetailTab.PERMISSIONS, go: () => onTabChange(PluginDetailTab.PERMISSIONS), end: true },
+        { id: 'resources', label: AdminI18n.t('plugins.detail.resourceLimits'), on: activeTab === PluginDetailTab.RESOURCES, go: () => onTabChange(PluginDetailTab.RESOURCES), end: true },
+      ] : []),
+    ];
     return (
-      <nav className="fc-tabs fc-tabbar">
-        {this.tab('overview', AdminI18n.t('plugins.detail.overview'), activeTab === PluginDetailTab.OVERVIEW, () => onTabChange(PluginDetailTab.OVERVIEW))}
-        {groups.length
-          ? groups.map((group) => this.tab(`group-${group.id}`, group.label, settingsActive && current === group.id, () => onTabChange(PluginDetailTab.SETTINGS, group.id)))
-          : this.tab('settings', AdminI18n.t('plugins.detail.configuration'), settingsActive, () => onTabChange(PluginDetailTab.SETTINGS))}
-        {platform && this.platformPart ? this.tab('platform-settings', AdminI18n.t('plugins.detail.platformSettings'), activeTab === PluginDetailTab.PLATFORM_SETTINGS, () => onTabChange(PluginDetailTab.PLATFORM_SETTINGS), 'ml-auto') : null}
-        {platform ? this.tab('permissions', AdminI18n.t('plugins.detail.security'), activeTab === PluginDetailTab.PERMISSIONS, () => onTabChange(PluginDetailTab.PERMISSIONS), this.platformPart ? '' : 'ml-auto') : null}
-        {platform ? this.tab('resources', AdminI18n.t('plugins.detail.resourceLimits'), activeTab === PluginDetailTab.RESOURCES, () => onTabChange(PluginDetailTab.RESOURCES)) : null}
-      </nav>
+      <Tabs variant="bar" label={AdminI18n.t('plugins.detail.overview')}
+        value={rows.find((row) => row.on)?.id ?? ''}
+        onChange={(id: string) => rows.find((row) => row.id === id)?.go()}
+        tabs={rows.map((row) => ({ id: row.id, label: row.label, end: row.end }))} />
     );
   }
 }

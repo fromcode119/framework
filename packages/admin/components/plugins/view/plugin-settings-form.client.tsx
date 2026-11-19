@@ -1,3 +1,5 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { Alert } from '@/components/ui/view/alert.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
@@ -106,23 +108,11 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 
         {tabs.length > 1 ? (
-          <nav className={AdminClass.of('ext-tabs')}>
-            {tabs.map((tab: any) => (
-              <button type="button" key={tab.id} onClick={() => this.selectTab(tab.id)} aria-current={tab.id === current ? 'page' : undefined}
-                className={AdminClass.of('ext-tabs__tab')}>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+          <Tabs variant="second" value={current} onChange={(id: string) => this.selectTab(id)} tabs={tabs.map((tab: any) => ({ id: tab.id, label: tab.label }))} />
         ) : null}
 
-        {status && (
-          <div role="status" className={`${AdminClass.of('ext-alert')} mb-3 ${status.type === NotificationType.SUCCESS ? AdminClass.of('ext-alert--ok') : AdminClass.of('ext-alert--danger')}`}>
-            {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
-            <span>{status.message}</span>
-          </div>
-        )}
-        {this.saveRefusal ? <p role="alert" className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')} mb-3`}>{this.saveRefusal}</p> : null}
+        {status ? <Alert className="mb-3" role="status" tone={status.type === NotificationType.SUCCESS ? 'success' : 'danger'}>{status.message}</Alert> : null}
+        {this.saveRefusal ? <Alert className="mb-3" tone="danger">{this.saveRefusal}</Alert> : null}
 
         <div className="space-y-3">
           {PluginSettingsSections.cardsOf(visibleFields, schema.sections).map((card, index) => (

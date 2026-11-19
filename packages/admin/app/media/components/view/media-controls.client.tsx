@@ -1,3 +1,4 @@
+import { SearchField } from '@/components/ui/view/search-field.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
@@ -121,16 +122,7 @@ export class MediaControls extends PureReactor {
             ))}
           </div>
 
-          <div className="relative flex-1 min-w-0 group">
-            <FrameworkIcons.Search className="fc-search__glyph" size={15} />
-            <Input
-              type="text"
-              placeholder={AdminI18n.t('media.searchMedia')}
-              value={searchQuery}
-              onChange={this.onSearchChange}
-              inputClassName="fc-search-field"
-            />
-          </div>
+          <SearchField className="flex-1 min-w-0" placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
           {this.activeView === 'files' ? (
             <div className="w-36 flex-shrink-0">
               <Select

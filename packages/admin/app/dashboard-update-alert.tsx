@@ -1,3 +1,4 @@
+import { Alert } from '@/components/ui/view/alert.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
@@ -21,25 +22,14 @@ export class DashboardUpdateAlert extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="fc-update-alert" role="status">
-        <span className="fc-update-alert__icon" aria-hidden>
-          <FrameworkIcons.Download size={16} />
-        </span>
-        <p className="fc-update-alert__text">
-          <strong className="fc-update-alert__title">{AdminI18n.t('dashboard.update.title')}</strong>
-          <span className="fc-update-alert__detail">
-            <AdminRichText k="dashboard.update.newVersion" vars={{ product: AppEnv.PRODUCT_NAME, version: this.updateAvailable.latest }} classes={{ strong: 'fc-update-alert__version' }} />
-          </span>
-        </p>
-        <div className="fc-update-alert__actions">
-          <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} onClick={this.onDismiss}>
-            {AdminI18n.t('dashboard.update.dismiss')}
-          </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.onViewDetails}>
-            {AdminI18n.t('dashboard.update.details')}
-          </Button>
-        </div>
-      </div>
+      <Alert tone="warning" title={AdminI18n.t('dashboard.update.title')} action={(
+        <>
+          <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} onClick={this.onDismiss}>{AdminI18n.t('dashboard.update.dismiss')}</Button>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.onViewDetails}>{AdminI18n.t('dashboard.update.details')}</Button>
+        </>
+      )}>
+        <AdminRichText k="dashboard.update.newVersion" vars={{ product: AppEnv.PRODUCT_NAME, version: this.updateAvailable.latest }} />
+      </Alert>
     );
   }
 }

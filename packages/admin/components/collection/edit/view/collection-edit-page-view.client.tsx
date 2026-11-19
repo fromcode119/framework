@@ -12,7 +12,7 @@ import { RevisionModal } from '@/components/collection/edit/view/revision-modal.
 import { EditFooter } from '@/components/collection/edit/view/edit-footer.client';
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
 import { EditPageDialogs } from '@/components/collection/edit/edit-page-dialogs';
-import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -174,13 +174,8 @@ export class CollectionEditPageView extends Reactor {
     if (this.loading && !edit.isNew) return <>{<RecordSkeleton />}{dialogs}</>;
     if (this.loadFailed && !edit.isNew) {
       return (
-        <div className="fc-state-page">
-          <EmptyState
-            icon={<FrameworkIcons.Alert size={18} />}
-            title={AdminI18n.t('collection.edit.loadFailed')}
-            action={<Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('common.goBack')}</Button>}
-          />
-        </div>
+        <StatePage icon={<FrameworkIcons.Alert size={18} />} title={AdminI18n.t('collection.edit.loadFailed')}
+          actions={<Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('common.goBack')}</Button>} />
       );
     }
 

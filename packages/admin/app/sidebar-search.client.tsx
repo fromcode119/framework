@@ -15,10 +15,12 @@ export class SidebarSearch extends Reactor {
   @prop declare onQuery: (query: string) => void;
   /** Opens the big search; ⌘K (Ctrl+K) from anywhere in the console. */
   @prop declare onPalette: () => void;
+  /** False where this is shown but must not listen to the whole window (the kit, beside the real one). */
+  @prop declare listens?: boolean;
   @ref declare private input: Ref<Input>;
 
   componentDidMount(): void {
-    window.addEventListener('keydown', this.shortcut);
+    if (this.listens !== false) window.addEventListener('keydown', this.shortcut);
   }
 
   componentWillUnmount(): void {

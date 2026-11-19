@@ -22,6 +22,7 @@ import { CopyValue } from '@/components/ui/view/copy-value.client';
 import { ListSearchInput } from '@/components/ui/list-toolbar/view/list-search-input.client';
 import { KitSurfaces } from '@/app/kit/kit-surfaces.client';
 import { KitExtras } from '@/app/kit/kit-extras.client';
+import { KitPages } from '@/app/kit/kit-pages.client';
 import { KitType } from '@/app/kit/kit-type.client';
 
 /**
@@ -136,6 +137,7 @@ export class KitPage extends AdminComponent {
         <KitType />
         <KitExtras />
         <KitSurfaces />
+        <KitPages />
       </div>
     );
   }

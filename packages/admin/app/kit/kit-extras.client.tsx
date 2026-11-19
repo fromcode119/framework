@@ -13,7 +13,7 @@ import { MediaRelationField } from '@/components/collection/view/media-relation-
 import { ThemeMode } from '@fromcode119/core/client';
 import { CommandPalette } from '@/components/ui/view/command-palette.client';
 import { NotificationPanel } from '@/app/components/view/notification-panel.client';
-import { Input } from '@/components/ui/view/input.client';
+import { SidebarSearch } from '@/app/sidebar-search.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
 import { Divider } from '@/components/ui/view/divider.client';
@@ -26,6 +26,8 @@ import { CodeEditor } from '@/components/ui/view/code-editor.client';
 /** The kit's remaining pieces: what chooses a view, what names a control, and the fields that are not a line of text. */
 export class KitExtras extends Reactor {
   @state private tab = 'general';
+  @state private level = 'platform';
+  @state private kind = 'ai';
   @state private step = 'organize';
   @state private palette = false;
   @state private paletteQuery = '';
@@ -43,9 +45,11 @@ export class KitExtras extends Reactor {
   @bound private openPalette(): void { this.paletteQuery = ''; this.palette = true; }
   @bound private closePalette(): void { this.palette = false; }
   @bound private setPaletteQuery(value: string): void { this.paletteQuery = value; }
-  @bound private setMenuQuery(event: any): void { this.menuQuery = event.target.value; }
+  @bound private setMenuQuery(value: string): void { this.menuQuery = value; }
   @bound private setFilled(value: any): void { this.filled = value; }
   private static nothing(): void { /* a sample has nothing to do */ }
+  @bound private setLevel(id: string): void { this.level = id; }
+  @bound private setKind(id: string): void { this.kind = id; }
   @bound private setStep(id: string): void { this.step = id; }
   @bound private setRadio(value: string): void { this.radio = value; }
   @bound private setMedia(value: any): void { this.media = value; }
@@ -74,23 +78,25 @@ export class KitExtras extends Reactor {
       <>
         {this.block('Tabs', <Tabs tabs={tabs} value={this.tab} onChange={this.setTab} label="Section" />)}
         <RecordCard title="Tabs heading a page" id="kit-tabbar">
-          <nav className="fc-tabs fc-tabbar">
-            {tabs.slice(0, 3).map((tab) => (
-              <button key={tab.id} type="button" className={`fc-tab${tab.id === this.tab ? ' fc-tab--on' : ''}`} aria-current={tab.id === this.tab ? 'page' : undefined} onClick={() => this.setTab(tab.id)}>{tab.label}</button>
-            ))}
-          </nav>
+          <div className="fc-kit__pad">
+            <Tabs variant="bar" tabs={[...tabs.slice(0, 3), { id: 'security', label: 'Security', end: true }, { id: 'limits', label: 'Limits', end: true }]} value={this.tab} onChange={this.setTab} label="Section" />
+          </div>
+        </RecordCard>
+        <RecordCard title="Tabs in two levels, more than fit a line" id="kit-tabstack">
+          <div className="fc-kit__pad">
+            <div className="fc-tabstack">
+              <Tabs variant="bar" label="Owner" value={this.level} onChange={this.setLevel}
+                tabs={[{ id: 'platform', label: 'Platform', icon: <FrameworkIcons.Settings size={15} /> }, { id: 'commerce', label: 'E-commerce Suite' }, { id: 'finance', label: 'Finance Core' }]} />
+              <Tabs variant="second" label="Kind" value={this.kind} onChange={this.setKind}
+                tabs={[['ai', 'AI Assistant'], ['jobs', 'Background Jobs'], ['email', 'Email Delivery'], ['sso', 'Federated Login (SSO)'], ['storage', 'File Storage'], ['mcp', 'MCP (Model Context Protocol)'], ['monitoring', 'Monitoring'], ['cache', 'System Cache'], ['search', 'Search'], ['sms', 'SMS'], ['payments', 'Payment Gateway']].map(([id, label]) => ({ id, label }))} />
+            </div>
+          </div>
         </RecordCard>
         {this.block('Menu search and shortcuts', (
           <>
-            {/* The menu's search as it is drawn; the real one listens for ⌘K on the whole window, and a second
-                one here would open a second search. */}
-            <div className="fc-kit__nav">
-              <div className="fc-nav-search">
-                <FrameworkIcons.Search size={15} className="fc-nav-search__icon" />
-                <Input type="search" value={this.menuQuery} onChange={this.setMenuQuery} placeholder="Search" aria-label="Search" inputClassName="fc-nav-search__field" />
-                <button type="button" className="fc-nav-search__kbd" onClick={this.openPalette} aria-label="Search">⌘K</button>
-              </div>
-            </div>
+            {/* The menu's own search, the same component the menu renders, inside the menu's own surface —
+                told not to listen for ⌘K, which the real one beside it already does. */}
+            <div className="fc-nav fc-kit__nav"><SidebarSearch query={this.menuQuery} onQuery={this.setMenuQuery} onPalette={this.openPalette} listens={false} /></div>
             <kbd className="fc-kbd">G</kbd>
             <kbd className="fc-kbd">D</kbd>
             <kbd className="fc-kbd">⌘K</kbd>

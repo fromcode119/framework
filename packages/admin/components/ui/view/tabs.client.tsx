@@ -10,7 +10,10 @@ import { AdminClass } from '@/lib/admin-class';
  * tabs is expected to; a disabled one is skipped. The look is `admin.css` (`fc-tabs`, `fc-tab`).
  */
 export class Tabs extends PureReactor {
-  @prop declare tabs: Array<{ id: string; label: ReactNode; disabled?: boolean }>;
+  /** `count` prints a number after the name; `icon` a glyph before it; `end` starts the tabs that stand at the far end of the row. */
+  @prop declare tabs: Array<{ id: string; label: ReactNode; disabled?: boolean; count?: number; icon?: ReactNode; end?: boolean }>;
+  /** `bar` heads a page, with a line under it; `second` is the level under a bar. More tabs than fit go to a second line. */
+  @prop declare variant?: 'bar' | 'second';
   @prop declare value: string;
   @prop declare onChange: (id: string) => void;
   @prop declare className?: string;
@@ -33,7 +36,7 @@ export class Tabs extends PureReactor {
   render(): ReactNode {
     const tab = AdminClass.of('tab');
     return (
-      <div className={`${AdminClass.of('tabs')} ${this.className ?? ''}`} role="tablist" aria-label={this.label} onKeyDown={this.onKeyDown}>
+      <div className={`${AdminClass.of('tabs')}${this.variant ? ` ${AdminClass.of('tabbar')}` : ''}${this.variant === 'second' ? ` ${AdminClass.of('tabbar--second')}` : ''} ${this.className ?? ''}`} role="tablist" aria-label={this.label} onKeyDown={this.onKeyDown}>
         {this.tabs.map((item) => {
           const on = item.id === this.value;
           return (
@@ -44,10 +47,12 @@ export class Tabs extends PureReactor {
               aria-selected={on}
               tabIndex={on ? 0 : -1}
               disabled={item.disabled}
-              className={`${tab}${on ? ` ${tab}--on` : ''}`}
+              className={`${tab}${on ? ` ${tab}--on` : ''}${item.end ? ` ${tab}--end` : ''}`}
               onClick={() => this.onChange(item.id)}
             >
+              {item.icon}
               {item.label}
+              {item.count === undefined ? null : <span className={`${tab}__count`}>{item.count}</span>}
             </button>
           );
         })}
