@@ -1,3 +1,6 @@
+import { DetailSplit } from '@/components/view/detail-split.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { LoadedPluginHydration } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -162,18 +165,12 @@ export class MarketplaceDetailPage extends AdminComponent {
     const hasUpdate = Boolean(installedVersion && VersionComparisonService.isGreater(plugin.version, installedVersion));
 
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
+      <div className="fc-columns__stack">
         <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => { this.consentSlugs = []; void this.fetchData(); }} />
-        <button
-          onClick={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}
-          className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-medium transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
-        >
-          <FrameworkIcons.Left size={16} />
-          {AdminI18n.t('plugins.list.backToMarketplace')}
-        </button>
+        <div><Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Left size={15} />} onClick={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}>{AdminI18n.t('plugins.list.backToMarketplace')}</Button></div>
 
-        <div className="flex flex-col lg:flex-row gap-5 items-start">
-          <div className="flex-1 space-y-5 w-full">
+        <DetailSplit
+          main={<>
             <MarketplaceDetailHeader
               plugin={plugin}
               theme={theme}
@@ -182,7 +179,6 @@ export class MarketplaceDetailPage extends AdminComponent {
               installedPlugin={installedPlugin}
               onSelectVersion={(version) => { this.selectedVersion = version; }}
             />
-
             <MarketplaceScreenshots
               plugin={plugin}
               theme={theme}
@@ -190,11 +186,9 @@ export class MarketplaceDetailPage extends AdminComponent {
               onOpenLightbox={() => { this.showLightbox = true; }}
               onSelectImage={(idx) => { this.activeImageIndex = idx; }}
             />
-
             <MarketplaceChangelog plugin={plugin} theme={theme} />
-          </div>
-
-          <MarketplaceDetailSidebar
+          </>}
+          aside={<MarketplaceDetailSidebar
             plugin={plugin}
             theme={theme}
             installedPlugin={installedPlugin}
@@ -203,8 +197,7 @@ export class MarketplaceDetailPage extends AdminComponent {
             installing={installing}
             installOperation={installOperation}
             onInstall={() => this.handleInstall(plugin.slug)}
-          />
-        </div>
+          />} />
 
         <Lightbox
           images={Screenshot.fromAll(plugin.screenshots).map((s) => s.url)}

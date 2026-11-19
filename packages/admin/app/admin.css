@@ -3652,3 +3652,4 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 @media (min-width: 1024px) { .fc-record-split--narrow { grid-template-columns: minmax(0, 1fr) 300px; } }
 /* What hangs under a row and belongs to it — an error, an instruction — set in to the row's text. */
 .fc-list-band--under { padding-block: 0 12px; padding-inline-start: calc(var(--fc-card-pad-x) + 44px); }
+.fc-ext-row__plain { font-weight: 400; }

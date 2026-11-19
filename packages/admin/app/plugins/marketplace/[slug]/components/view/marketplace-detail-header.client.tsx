@@ -1,15 +1,19 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { Badge } from '@/components/ui/view/badge.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { Icon } from '@/components/view/icon.client';
-import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
-import { AdminClass } from '@/lib/admin-class';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { Select } from '@/components/ui/view/select.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
+/**
+ * What a plugin of the catalogue is: its name and kind in the card's head, what it does, who made it
+ * and which version is on show — with the other versions to choose from when the catalogue has them.
+ */
 export class MarketplaceDetailHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<MarketplaceDetailHeader, 'plugin' | 'theme' | 'allVersions' | 'selectedVersion' | 'installedPlugin' | 'onSelectVersion'>;
@@ -22,105 +26,26 @@ export class MarketplaceDetailHeader extends PureReactor {
   @prop declare onSelectVersion: (version: string) => void;
 
   render(): ReactNode {
-    const {
-      plugin,
-      theme,
-      allVersions,
-      selectedVersion,
-      installedPlugin,
-      onSelectVersion,
-    } = this;
+    const { plugin, allVersions, selectedVersion, installedPlugin, onSelectVersion } = this;
+    const latest = allVersions[0]?.version;
+    const facts = [
+      ...(plugin.author ? [{ key: 'author', label: AdminI18n.t('plugins.list.developer'), value: String(plugin.author) }] : []),
+      { key: 'version', label: AdminI18n.t('plugins.detail.version'), value: `v${selectedVersion || plugin.version}${selectedVersion === latest ? ` ${AdminI18n.t('plugins.list.latest')}` : ''}` },
+      ...(plugin.homepage ? [{ key: 'homepage', label: 'Web', value: String(plugin.homepage) }] : []),
+    ];
     return (
-      <div className={`p-4 ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-100 shadow-sm'}`}>
-        <div className="flex items-start gap-4">
-           <div className={`h-16 w-16 rounded-xl flex items-center justify-center p-3 overflow-hidden relative shrink-0 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-             {plugin.iconUrl ? (
-               <>
-                 <img
-                    src={plugin.iconUrl}
-                    alt={MarketplacePluginCopy.label(plugin, installedPlugin)}
-                    className="w-full h-full object-contain filter drop-shadow-md z-10"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                      const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                 />
-                 <div className="hidden items-center justify-center">
-                   <Icon name={String((plugin as any).icon || 'Box')} size={32} />
-                 </div>
-               </>
-             ) : (
-               <Icon name={String((plugin as any).icon || 'Box')} size={32} />
-             )}
-           </div>
-           <div className="flex-1">
-              <div className="flex justify-between items-start">
-                 <div className="flex items-center gap-3">
-                    <h2 className={`text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{MarketplacePluginCopy.label(plugin, installedPlugin)}</h2>
-                    {allVersions.length > 1 && (
-                      <div className="ms-4">
-                        <Dropdown
-                          align="left"
-                          trigger={
-                            <div className={`flex items-center gap-3 ps-4 pe-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all cursor-pointer group ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
-                              <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('plugins.list.latest') : ''}</span>
-                              <div className={`transition-colors ${theme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
-                                <FrameworkIcons.Down size={14} strokeWidth={3} />
-                              </div>
-                            </div>
-                          }
-                          items={allVersions.map(v => ({
-                            label: `v${v.version} ${v.version === allVersions[0].version ? '(Latest)' : ''}`,
-                            onClick: () => onSelectVersion(v.version),
-                            icon: <FrameworkIcons.Clock size={14} />
-                          }))}
-                        />
-                      </div>
-                    )}
-                 </div>
-                 <Badge variant={installedPlugin ? "success" : "blue"}>{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>
-              </div>
-              <p className={`mt-2 text-sm leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                {MarketplacePluginCopy.description(plugin, installedPlugin)}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-6 mt-4">
-                 {plugin.author && (
-                 <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-                       <FrameworkIcons.User size={16} />
-                    </div>
-                    <div>
-                       <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.developer')}</div>
-                       <div className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author}</div>
-                    </div>
-                 </div>
-                 )}
-                 {plugin.homepage && (
-                   <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-                         <FrameworkIcons.Globe size={16} />
-                      </div>
-                      <div>
-                         <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.officialSite')}</div>
-                         <a href={plugin.homepage} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-500 hover:underline">{AdminI18n.t('plugins.list.visitHomepage')}</a>
-                      </div>
-                   </div>
-                 )}
-                 <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-                       <FrameworkIcons.Code size={16} />
-                    </div>
-                    <div>
-                       <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('plugins.list.version')}</div>
-                       <div className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>v{plugin.version}</div>
-                    </div>
-                 </div>
-              </div>
-           </div>
+      <RecordCard title={plugin.name} aside={<Badge variant={installedPlugin ? BadgeVariant.SUCCESS : BadgeVariant.DEFAULT}>{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>}>
+        <div className="fc-stack">
+          <Text size="base">{plugin.description}</Text>
+          <AdminFactGrid facts={facts as any} />
+          {allVersions.length > 1 ? (
+            <div className="fc-form-grid">
+              <Select label={AdminI18n.t('plugins.detail.version')} value={selectedVersion} onChange={onSelectVersion}
+                options={allVersions.map((v) => ({ value: v.version, label: `v${v.version}${v.version === latest ? ` ${AdminI18n.t('plugins.list.latest')}` : ''}` }))} />
+            </div>
+          ) : null}
         </div>
-      </div>
+      </RecordCard>
     );
   }
 }
