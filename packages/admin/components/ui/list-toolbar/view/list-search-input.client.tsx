@@ -20,8 +20,8 @@ export class ListSearchInput extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="relative group flex-1 min-w-0">
-        <div className="absolute start-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+      <div className="fc-search relative flex-1 min-w-0">
+        <div className="fc-search__icon">
           <FrameworkIcons.Search size={15} />
         </div>
         <input
@@ -29,8 +29,10 @@ export class ListSearchInput extends PureReactor {
           placeholder={this.placeholder}
           value={this.value}
           onChange={this.handleChange}
-          // The same box as every other field; only the room for the icon is its own.
-          className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'ps-10 pe-4 text-ellipsis')}
+          // The same box as every other field; `fc-search-field` opens the room on the left for the
+          // icon. The inset must live in a compound `.fc-field.fc-search-field` rule: `.fc-field`'s own
+          // `padding` shorthand overrides any `ps-*`/`px-*` utility, so a utility here is dead.
+          className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'fc-search-field text-ellipsis')}
         />
       </div>
     );

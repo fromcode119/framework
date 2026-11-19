@@ -1911,6 +1911,36 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
 /* The table inside the shell has no frame of its own: the shell IS the frame. Its own border and
    corners stay for the tables that still stand alone (a plugin's panel, a record's section). */
 .fc-list-shell .fc-list-frame { border: 0; border-radius: 0; background: transparent; }
+/* The foot of the list: the ways out of it (export, import, the raw endpoint), right-aligned, each a
+   quiet control of the row's height — icon, word, a hover fill — not grey text strung on 1px dots. */
+.fc-list-foot { display: flex; align-items: center; justify-content: flex-end; padding: 8px var(--fc-card-pad-x); }
+.fc-list-foot__actions { display: flex; align-items: center; gap: 2px; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+.fc-list-foot__action {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: var(--fc-control-h); padding: 0 10px;
+  border-radius: var(--fc-control-radius);
+  font-size: var(--fc-text-xs); font-weight: 500; line-height: 1;
+  color: var(--fc-text-muted); cursor: pointer; white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+.fc-list-foot__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-list-foot__action svg { opacity: .7; }
+/* On a phone the list head stacks: the name on its line, the actions on the next, each with room to
+   breathe. Right-crammed under the title (the wrap's default) put a ghost action against the primary
+   one with 12px over them and nothing under. Here the band grows to its content and the actions sit
+   at the start of their own row. */
+@media (max-width: 640px) {
+  .fc-list-shell > .fc-record-card__head {
+    align-items: flex-start;
+    min-height: 0;
+    padding-block: 12px;
+    row-gap: 10px;
+  }
+  .fc-list-shell > .fc-record-card__head > .fc-record-card__aside {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
 .fc-record-card__subtitle { flex-basis: 100%; margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); order: 3; }
 /* What is on the right of the band keeps together. */
 .fc-record-card__toolbar > * { min-width: 0; }
@@ -2758,6 +2788,19 @@ textarea.fc-record-json__layer { caret-color: var(--fc-text); }
 .fc-field:disabled { color: var(--fc-text-muted); }
 /* A box of several lines is not a line: it keeps the height its own content needs. */
 textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
+
+/* The search box at the head of a list: a field with its magnifier inside, on the left. The left
+   inset lives on the COMPOUND selector because `.fc-field { padding: … }` is a shorthand that resets
+   padding-left and would otherwise bury any `ps-*` utility under the icon (the stepper insets the
+   same way, above). The icon is muted and takes the field's focus colour when the box is focused. */
+.fc-search { display: block; }
+.fc-search__icon {
+  position: absolute; inset-inline-start: 12px; top: 50%; transform: translateY(-50%);
+  display: inline-flex; color: var(--fc-text-muted); pointer-events: none;
+  transition: color .15s ease;
+}
+.fc-search:focus-within .fc-search__icon { color: var(--primary); }
+.fc-field.fc-search-field { padding-inline-start: 36px; padding-inline-end: 12px; }
 
 /* A field's name, and the room between the two. 8px holds a label to its field; 32px between fields is
    what keeps a long form readable as fields rather than as one grid of boxes. */
