@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.608] - 2026-11-19
+
+### Added
+
+- **sdk**: export zod from the server SDK so plugins can declare event contracts ([#1529](https://github.com/fromcode119/framework/pull/1529))
+
+### Fixed
+
+- **cli**: stack runs worktree source for admin/storefront, mounts the mirror read-only, never pulls an implicit tag ([#1528](https://github.com/fromcode119/framework/pull/1528))
+- **admin**: a plugin awaiting approval no longer overflows its row ([#1527](https://github.com/fromcode119/framework/pull/1527))
+- **cli**: refuse the shared checkout, and leave nothing behind on a failed start ([#1526](https://github.com/fromcode119/framework/pull/1526))
+- **cli**: make a stack usable by several sessions at once ([#1524](https://github.com/fromcode119/framework/pull/1524))
+
 ## [0.2.607] - 2026-11-18
 
 ### Added
