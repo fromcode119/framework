@@ -15,22 +15,22 @@ export class PluginConsentFacts extends PureReactor {
     const facts = this.facts();
     const { summary } = this;
     return (
-      <div className="space-y-3">
-        <h4 className="border-b border-slate-200 pb-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300">
+      <div className="fc-consent__facts">
+        <h4 className="fc-consent__heading">
           {AdminI18n.t('plugins.consent.facts.heading')}
         </h4>
-        <ul className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+        <ul className="fc-consent__fact-list">
           {facts.map((fact) => (
-            <li key={fact} className="text-[13px] leading-snug text-slate-700 dark:text-slate-300 break-words">{fact}</li>
+            <li key={fact} className="fc-consent__text">{fact}</li>
           ))}
         </ul>
         {summary.dropped.length ? (
-          <p className="text-[13px] text-slate-600 dark:text-slate-400">
+          <p className="fc-consent__text">
             {AdminI18n.t('plugins.consent.dropped', { entries: summary.dropped.map((entry) => PluginConsentCopy.titleOfEntry(entry)).join('; ') })}
           </p>
         ) : null}
         {summary.invalidHosts.length ? (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <p className="fc-consent__warning">
             {AdminI18n.t('plugins.consent.invalidHosts', { hosts: summary.invalidHosts.join(', ') })}
           </p>
         ) : null}

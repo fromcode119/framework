@@ -130,7 +130,7 @@ export class InstalledPluginsView extends Reactor {
                 Platform scope; inside a site the dialog could only end in a refusal. */}
             {this.siteScope
               ? <PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate>
-              : <Button variant={ButtonVariant.OUTLINE} onClick={this.onReapproveAll} isLoading={this.isActivating}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}
+              : <Button variant={ButtonVariant.SECONDARY} onClick={this.onReapproveAll} isLoading={this.isActivating}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}
           </div>
         ) : null}
       </>
@@ -141,15 +141,17 @@ export class InstalledPluginsView extends Reactor {
     const busy = this.isUploading || this.isInspectingUpload;
     return (
       <div className={AdminClass.of('ext-toolbar')}>
-        <div className={AdminClass.of('ext-toolbar__search')}>
-          <FrameworkIcons.Search size={16} />
-          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-10" />
+        {/* The console's search field: the icon's room is the field's own (`fc-search-field`). A padding
+            utility on the input is dead under the field's own padding, so the glass sat on the words. */}
+        <div className={`${AdminClass.of('search')} ${AdminClass.of('ext-toolbar__search')}`}>
+          <div className={AdminClass.of('search__icon')}><FrameworkIcons.Search size={15} /></div>
+          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName={AdminClass.of('search-field')} />
         </div>
         {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
             and an upload that can only ever 403 is a bug, not a hint. */}
         {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
         {this.canManage ? (
-          <Button onClick={this.handleUploadClick} isLoading={busy}>
+          <Button onClick={this.handleUploadClick} isLoading={busy} icon={<FrameworkIcons.Upload size={15} />}>
             {this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}
           </Button>
         ) : null}

@@ -3270,3 +3270,31 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
    keeps its 16px above and below whether it is one line or two. */
 .fc-record-card__head.fc-record-card__head--record { padding-block: 16px; gap: 8px 12px; }
 .fc-record-card__head--record > .fc-record-head__main { min-width: min(10rem, 100%); flex-basis: 10rem; }
+
+/* ---------- A wide dialog, and what a plugin asks for inside it ---------- */
+.fc-dialog__panel.fc-dialog__panel--wide { max-width: 560px; }
+.fc-consent { display: flex; flex-direction: column; gap: 16px; }
+.fc-consent__overview, .fc-consent__text { margin: 0; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; overflow-wrap: anywhere; }
+.fc-consent__list { display: flex; flex-direction: column; gap: 16px; max-height: 48vh; margin-inline: -24px; padding: 16px 24px; overflow-y: auto; border-block: 1px solid var(--fc-border); background: var(--fc-surface-muted); }
+.fc-consent__groups { display: flex; flex-direction: column; gap: 16px; }
+.fc-consent__heading { margin: 0 0 8px; color: var(--fc-text-muted); font-size: 12px; line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-consent__heading[data-risk="high"] { color: var(--fc-danger); }
+.fc-consent__heading[data-risk="medium"] { color: var(--fc-warning, #b45309); }
+.fc-consent__entries { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.fc-consent__entry { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.fc-consent__title { margin: 0; color: var(--fc-text); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); overflow-wrap: anywhere; }
+.fc-consent__facts { display: flex; flex-direction: column; gap: 8px; }
+.fc-consent__fact-list { display: grid; gap: 4px 24px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 640px) { .fc-consent__fact-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fc-consent__warning, .fc-consent__error { margin: 0; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 20px; }
+.fc-consent__warning { background: color-mix(in srgb, var(--fc-warning, #d97706) 10%, var(--fc-surface)); color: var(--fc-warning, #b45309); }
+.fc-consent__error { background: color-mix(in srgb, var(--fc-danger) 10%, var(--fc-surface)); color: var(--fc-danger); }
+
+/* A button's label is one line, whatever room it is given. */
+.fc-btn { white-space: nowrap; }
+/* The menu is one list: Settings follows the sections above it, under its line, instead of standing at
+   the foot of the window with a gap over it — opened, it looked like a second menu rising from below.
+   The account stays at the foot. */
+.fc-nav .fc-nav__scroll { flex: 0 1 auto; }
+.fc-nav .fc-nav__pinned { margin-top: 0; }
+.fc-nav > .fc-nav__pinned + div { margin-top: auto; }

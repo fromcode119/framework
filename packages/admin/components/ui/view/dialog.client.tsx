@@ -28,6 +28,8 @@ export class Dialog extends PureReactor {
   @prop declare foot?: ReactNode;
   /** Keeps the dialog open while something is in flight: Escape and the scrim stop closing it. */
   @prop declare busy?: boolean;
+  /** For a dialog that has a list to read before answering: 560 wide instead of a question's 400. */
+  @prop declare wide?: boolean;
   @prop declare children?: ReactNode;
 
   componentDidMount(): void {
@@ -66,7 +68,7 @@ export class Dialog extends PureReactor {
       <RootFramework>
         <div className="fc-dialog" role="dialog" aria-modal="true" aria-label={this.title}>
           <div className="fc-dialog__backdrop" onClick={this.close} />
-          <div className="fc-dialog__panel">
+          <div className={`fc-dialog__panel${this.wide ? ' fc-dialog__panel--wide' : ''}`}>
             <div className="fc-dialog__head">
               <h3 className="fc-dialog__title">{this.title}</h3>
               {this.description ? <p className="fc-dialog__description">{this.description}</p> : null}

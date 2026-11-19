@@ -12,23 +12,23 @@ export class PluginConsentEntries extends PureReactor {
   @prop declare anyHostReason: string;
 
   private static readonly GROUPS = [
-    { risk: 'high', heading: 'plugins.consent.risk.high', tone: 'text-rose-700 dark:text-rose-300', rule: 'border-rose-200 dark:border-rose-500/30' },
-    { risk: 'medium', heading: 'plugins.consent.risk.medium', tone: 'text-amber-700 dark:text-amber-300', rule: 'border-amber-200 dark:border-amber-500/30' },
-    { risk: 'low', heading: 'plugins.consent.risk.low', tone: 'text-slate-600 dark:text-slate-300', rule: 'border-slate-200 dark:border-slate-700' },
+    { risk: 'high', heading: 'plugins.consent.risk.high' },
+    { risk: 'medium', heading: 'plugins.consent.risk.medium' },
+    { risk: 'low', heading: 'plugins.consent.risk.low' },
   ] as const;
 
   render(): ReactNode {
     return (
-      <div className="space-y-5">
+      <div className="fc-consent__groups">
         {PluginConsentEntries.GROUPS.map((group) => {
           const entries = this.entries.filter((entry) => entry.risk === group.risk);
           if (!entries.length) return null;
           return (
             <section key={group.risk} aria-label={AdminI18n.t(group.heading)}>
-              <h4 className={`border-b pb-1.5 text-xs font-medium ${group.tone} ${group.rule}`}>
+              <h4 className="fc-consent__heading" data-risk={group.risk}>
                 {AdminI18n.t(group.heading)} ({entries.length})
               </h4>
-              <ul className="mt-2 space-y-2.5">
+              <ul className="fc-consent__entries">
                 {entries.map((entry) => this.renderEntry(entry))}
               </ul>
             </section>
@@ -41,12 +41,12 @@ export class PluginConsentEntries extends PureReactor {
   private renderEntry(entry: IPluginConsentEntry): ReactNode {
     const copy = PluginConsentCopy.of(entry, this.anyHostReason, this.entries.some((candidate) => candidate.kind === 'anyHost'));
     return (
-      <li key={entry.entry} className="flex items-start justify-between gap-3">
+      <li key={entry.entry} className="fc-consent__entry">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-slate-900 dark:text-slate-100 break-words">{copy.title}</p>
-          <p className="mt-0.5 text-[13px] leading-snug text-slate-600 dark:text-slate-400 break-words">{copy.detail}</p>
+          <p className="fc-consent__title">{copy.title}</p>
+          <p className="fc-consent__text">{copy.detail}</p>
         </div>
-        {entry.isNew ? <Badge variant={BadgeVariant.BLUE} className="shrink-0">{AdminI18n.t('plugins.consent.new')}</Badge> : null}
+        {entry.isNew ? <Badge variant={BadgeVariant.INFO} className="shrink-0">{AdminI18n.t('plugins.consent.new')}</Badge> : null}
       </li>
     );
   }

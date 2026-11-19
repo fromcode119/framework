@@ -1,3 +1,4 @@
+import { Tooltip } from '@/components/ui/view/tooltip.client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -76,12 +77,12 @@ export class InstalledPluginCard extends PureReactor {
       const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
       const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
       const drift = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
-      out.push(
-        <span key="h" className={`${pill} ${AdminClass.of('ext-pill--warn')}`}
-          title={drift ? AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: drift }) : undefined}>
-          {PluginHeldLabel.of(plugin.heldReason)}{drift ? ` ${drift}` : ''}
-        </span>,
-      );
+      // The state in a word; WHAT changed is behind it, on hover and on a tap. Printed in the pill, a
+      // plugin's eighteen permissions ran across the row and under the version and the switch.
+      const held = <span className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{PluginHeldLabel.of(plugin.heldReason)}</span>;
+      out.push(drift
+        ? <Tooltip key="h" content={AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: drift })}>{held}</Tooltip>
+        : <span key="h">{held}</span>);
     } else if (new PluginSwitchState(plugin as any).notOnThisSite) {
       out.push(<span key="o" className={pill}>{AdminI18n.t('plugins.list.offHere')}</span>);
     }

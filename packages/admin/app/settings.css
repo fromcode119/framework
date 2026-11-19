@@ -235,22 +235,27 @@
   border-radius: 8px; color: var(--fc-text-muted); cursor: pointer;
 }
 .fc-ext-row__more:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-ext-pill {font-size: 11px; font-weight: var(--fc-weight-strong); padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: var(--fc-surface-muted); color: var(--fc-text-muted); text-decoration: none; }
+/* The console's badge: 20 high, 12/500, the corner of a control. */
+.fc-ext-pill { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: var(--fc-control-radius); font-size: 12px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; background: var(--fc-surface-muted); color: var(--fc-text-muted); box-shadow: 0 0 0 1px var(--fc-border); text-decoration: none; }
 .fc-ext-pill--warn { background: color-mix(in srgb, var(--fc-warning) 16%, transparent); color: var(--fc-warning); }
 .fc-ext-pill--danger { background: color-mix(in srgb, var(--fc-danger) 14%, transparent); color: var(--fc-danger); }
 .fc-ext-pill--ok { background: color-mix(in srgb, var(--fc-success) 14%, transparent); color: var(--fc-success); }
 .fc-ext-empty { padding: 32px 16px; text-align: center; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+/* A note at the head of a page: a quiet box whose ICON carries the tone. It was a tinted box with a
+   tinted border and tinted words — amber on amber for the whole width of the page. */
 .fc-ext-alert {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 16px;
-  border: 1px solid var(--fc-border); border-radius: var(--fc-settings-card-radius); font-size: var(--fc-settings-text);
+  display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 12px 16px;
+  border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow);
+  color: var(--fc-text); font-size: 13px; line-height: 20px;
 }
-.fc-ext-alert--danger { border-color: var(--fc-danger-soft-border); background: var(--fc-danger-soft); color: var(--fc-danger-strong); }
-.fc-ext-alert--ok { border-color: var(--fc-success-soft-border); background: var(--fc-success-soft); color: var(--fc-success-strong); }
-.fc-ext-alert--warn { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
+.fc-ext-alert > svg { flex: none; color: var(--fc-text-muted); }
+.fc-ext-alert--danger > svg { color: var(--fc-danger); }
+.fc-ext-alert--ok > svg { color: var(--fc-success); }
+.fc-ext-alert--warn > svg { color: var(--fc-warning); }
 .fc-ext-alert__text { flex: 1 1 16rem; min-width: 0; }
 .fc-ext-tabbar { display: flex; align-items: center; gap: 8px 16px; margin-bottom: 16px; }
 .fc-ext-tabbar > .fc-ext-tabs { flex: 1 1 auto; min-width: 0; margin-bottom: 0; }
-.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 20rem; margin-bottom: 0; flex-wrap: nowrap; }
+.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 28rem; margin-bottom: 0; flex-wrap: nowrap; }
 @media (max-width: 767.98px) {
   .fc-ext-tabbar { flex-wrap: wrap; }
   .fc-ext-tabbar > .fc-ext-tabs { flex-basis: 100%; }
