@@ -122,13 +122,13 @@ export class MediaControls extends PureReactor {
           </div>
 
           <div className="relative flex-1 min-w-0 group">
-            <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+            <FrameworkIcons.Search className="fc-search__glyph" size={15} />
             <Input
               type="text"
               placeholder={AdminI18n.t('media.searchMedia')}
               value={searchQuery}
               onChange={this.onSearchChange}
-              inputClassName="ps-12"
+              inputClassName="fc-search-field"
             />
           </div>
           {this.activeView === 'files' ? (

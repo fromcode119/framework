@@ -17,13 +17,13 @@ export class MarketplaceSearchBar extends PureReactor {
     const { theme, searchQuery, onChange } = this;
     return (
       <div className="relative flex-1 group">
-        <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
+        <FrameworkIcons.Search className="fc-search__glyph" size={15} />
         <Input
           type="text"
           placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')}
           value={searchQuery}
           onChange={(e) => onChange(e.target.value)}
-          inputClassName="ps-11"
+          inputClassName="fc-search-field"
         />
       </div>
     );

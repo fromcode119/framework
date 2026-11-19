@@ -105,15 +105,22 @@ export class MediaRelationFieldView extends PureReactor {
     return (
       <div className={AdminClass.of('media-inline')}>
         {image ? <img className={AdminClass.of('media-inline__thumb')} src={image.url} alt="" /> : null}
-        <span className={`${AdminClass.of('media-inline__name')}${chosen ? '' : ` ${AdminClass.of('media-inline__name--none')}`}`} title={name || undefined}>
-          {chosen ? name : AdminI18n.t('ui.media.none')}
-        </span>
+        {chosen ? <span className={AdminClass.of('media-inline__name')} title={name || undefined}>{name}</span> : null}
         {chosen ? (
           <button type="button" className={AdminClass.of('media-inline__remove')} onClick={this.handleRemoveSingle} aria-label={removeLabel} title={removeLabel}>
             <FrameworkIcons.X size={14} />
           </button>
         ) : null}
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>{AdminI18n.t('ui.media.select')}</Button>
+        {/* Nothing chosen: the empty square alone, at a row's height. It read "No media selected" beside
+            a button that said "Select Media". */}
+        {chosen
+          ? <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>{AdminI18n.t('ui.media.select')}</Button>
+          : (
+            <button type="button" className={`${AdminClass.of('media-empty')} ${AdminClass.of('media-empty--row')}`} onClick={this.handleOpen}
+              aria-label={AdminI18n.t('ui.media.select')} title={AdminI18n.t('ui.media.select')}>
+              <FrameworkIcons.Image size={15} />
+            </button>
+          )}
         {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );

@@ -42,13 +42,13 @@ export class MediaPickerToolbar extends Reactor {
     return (
       <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
         <div className="relative flex-1 min-w-[12rem] group">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
+          <Search className="fc-search__glyph" size={15} />
           <Input
             type="text"
             placeholder={AdminI18n.t('mediaPicker.searchMedia')}
             value={search}
             onChange={this.handleSearchChange}
-            inputClassName="ps-10"
+            inputClassName="fc-search-field"
           />
         </div>
         <input

@@ -35,7 +35,7 @@ export class DashboardUpdateAlert extends PureReactor {
           <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} onClick={this.onDismiss}>
             {AdminI18n.t('dashboard.update.dismiss')}
           </Button>
-          <Button variant={ButtonVariant.PRIMARY} size={FieldSize.SM} className="fc-update-alert__primary" onClick={this.onViewDetails}>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.onViewDetails}>
             {AdminI18n.t('dashboard.update.details')}
           </Button>
         </div>

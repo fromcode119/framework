@@ -51,13 +51,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
   }
 
   private tab(key: string, label: string, icon: ReactNode, active: boolean, onClick: () => void): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const tone = active
-      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
-      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
+    // The console's one tab (`fc-tab`); these were underlined in the brand's indigo.
     return (
       <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone}`}>
+        className={`fc-tab${active ? ' fc-tab--on' : ''}`}>
         {icon}
         {label}
       </button>
@@ -69,7 +66,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     const dark = this.theme === ThemeMode.DARK;
     const activeOwner = this.activeOwner;
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 ${this.ownerTypes.length > 1 ? `border-b ${dark ? 'border-slate-800' : 'border-slate-200'}` : ''}`}>
+      <nav className="fc-tabs fc-tabbar fc-tabbar--plain">
         {this.ownerTabs.map((owner) => this.tab(
           `owner-${owner.slug}`,
           owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
@@ -90,12 +87,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (types.length < 2) return null;
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 text-[13px] ${dark ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+      <div className="fc-tabs fc-tabbar fc-tabbar--plain">
         {types.map((type) => (
           <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${type.key === this.activeType
-              ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
-              : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
+            className={`fc-tab${type.key === this.activeType ? ' fc-tab--on' : ''}`}>
             {type.label}
           </button>
         ))}

@@ -204,7 +204,8 @@
 .fc-ext-tabs__tab:hover { color: var(--fc-text); }
 .fc-ext-tabs__tab[aria-current='page'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
 .fc-ext-tabs__count { margin-inline-start: 6px; opacity: 0.7; font-variant-numeric: tabular-nums; }
-.fc-ext-list { overflow: hidden; border: 1px solid var(--fc-border); border-radius: var(--fc-settings-card-radius); background: var(--fc-surface); }
+/* A card, with the card's own edge: it had a border where every other card has the shadow. */
+.fc-ext-list { overflow: hidden; border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow); }
 .fc-ext-row {
   display: flex; align-items: center; gap: var(--fc-settings-row-gap);
   min-height: var(--fc-settings-row-min); padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x);
@@ -263,7 +264,7 @@
 }
 .fc-ext-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
 .fc-ext-toolbar__search { position: relative; flex: 1 1 16rem; min-width: 0; }
-.fc-ext-toolbar__search > svg { position: absolute; z-index: 1; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
+.fc-ext-toolbar__search > svg { position: absolute; z-index: 2; inset-inline-start: 8px; width: 15px; height: 15px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
 /* The upload target exists while a file is dragged over the page, and only then. */
 .fc-ext-drop {
   position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;

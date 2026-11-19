@@ -3301,3 +3301,21 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* Above the field whatever the field is wrapped in: under an `Input`, whose wrapper is positioned, the
    glass was painted first and the field over it. */
 .fc-search__icon { z-index: 1; }
+
+/* The glass of a search field drawn as a bare icon beside an `Input`: the same place and ink as
+   `fc-search__icon`. Each screen had placed and coloured its own. */
+.fc-search__glyph { position: absolute; z-index: 2; inset-inline-start: 8px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
+
+/* The update note is the page's quiet note, like every other: the icon carries the tone. It was an
+   amber box with an amber tile and an orange button of its own. */
+.fc-update-alert { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px 16px; border: 0; border-radius: 8px; background: var(--fc-surface); box-shadow: var(--fc-card-shadow); color: var(--fc-text); font-size: 13px; line-height: 20px; }
+.fc-update-alert .fc-update-alert__icon { display: inline-flex; flex: none; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--fc-warning); }
+.fc-update-alert .fc-update-alert__text { flex: 1 1 16rem; min-width: 0; margin: 0; color: var(--fc-text-muted); }
+.fc-update-alert .fc-update-alert__title { margin-inline-end: 8px; color: var(--fc-text); font-weight: var(--fc-weight-strong); }
+.fc-update-alert .fc-update-alert__version { color: var(--fc-text); font-weight: var(--fc-weight-strong); }
+.fc-update-alert .fc-update-alert__actions { display: flex; flex: none; align-items: center; gap: 8px; }
+.fc-media-empty.fc-media-empty--row { width: 32px; height: 32px; border-radius: 6px; }
+
+/* A tab row inside a head that already has its own line and inset. */
+.fc-tabbar.fc-tabbar--plain { margin-inline: 0; padding-inline: var(--fc-page-pad-x); border-bottom: 0; }
+.fc-tab > svg { width: 15px; height: 15px; margin-inline-end: 6px; color: var(--fc-text-muted); }

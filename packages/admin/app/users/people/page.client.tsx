@@ -147,7 +147,7 @@ export class PeoplePage extends AdminComponent {
                 <Input
                   type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
                   onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-                  inputClassName="ps-10"
+                  inputClassName="fc-search-field"
                 />
               </div>
             </div>
