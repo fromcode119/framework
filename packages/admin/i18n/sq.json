@@ -4713,12 +4713,12 @@
     "logSignature": "Nënshkrimi i regjistrit: {{id}}",
     "internal": "I BRENDSHËM",
     "level": {
-      "INFO": "INFO",
-      "WARN": "PARALAJMËRIM",
-      "ERROR": "GABIM",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDITIM"
+      "INFO": "Info",
+      "WARN": "Paralajmërim",
+      "ERROR": "Gabim",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Auditim"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Detyra",
       "schedule": "Ekzekutohet",
       "lastRun": "Ekzekutimi i fundit",
-      "nextRun": "Ekzekutimi i radhës"
+      "nextRun": "Ekzekutimi i radhës",
+      "duration": "Kohëzgjatja"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

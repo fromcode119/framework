@@ -3,7 +3,6 @@ import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { Card } from '@/components/ui/view/card.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { JobRunsPanel } from '@/app/jobs/job-runs-panel.client';
@@ -40,7 +39,7 @@ export class JobTaskPage extends AdminComponent {
           subtitle={AdminI18n.t('jobs.title')}
         />
         <div className="w-full py-6">
-          {this.task ? <Card noPadding><JobRunsPanel taskName={this.task} /></Card> : null}
+          {this.task ? <JobRunsPanel taskName={this.task} /> : null}
         </div>
       </div>
     );

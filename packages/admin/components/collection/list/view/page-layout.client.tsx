@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import { CollectionListDeleteDialog } from '@/components/collection/list/view/delete-dialog.client';
 import { CollectionListHeader } from '@/components/collection/list/view/list-header.client';
 import { ListFooter } from '@/components/collection/list/view/list-footer.client';
@@ -29,7 +30,7 @@ export class CollectionListPageLayout extends PureReactor {
     <div className="w-full flex flex-col animate-in fade-in duration-500">
       {/* ONE card: name and actions, then the tools, then the table, then the count — the shape the
           reference gives a list. Each band is separated by the card's own hairline. */}
-      <div className="fc-collection-list fc-surface fc-list-shell">
+      <ListShell className="fc-collection-list">
         <CollectionListHeader collection={this.collection} pluginSlug={this.pluginSlug} slug={this.slug} theme={this.theme} canCreate={this.tableProps.access.canCreate} includeAction={this.tableProps.access.allowsPluginAction} handleExport={this.footerProps.handleExport} handleImport={this.footerProps.handleImport} />
         <Slot
           name={`admin.collection.${this.slotSlug}.list.header`}
@@ -38,7 +39,7 @@ export class CollectionListPageLayout extends PureReactor {
         <CollectionListToolbar theme={this.theme} {...this.toolbarProps} />
         <CollectionListTable {...this.tableProps} />
         <ListFooter {...this.footerProps} />
-      </div>
+      </ListShell>
       <CollectionListDeleteDialog {...this.deleteDialogProps} />
     </div>
   );

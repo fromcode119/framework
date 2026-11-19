@@ -4713,12 +4713,12 @@
     "logSignature": "Logi allkiri: {{id}}",
     "internal": "SISEMINE",
     "level": {
-      "INFO": "INFO",
-      "WARN": "HOIATUS",
-      "ERROR": "VIGA",
-      "DEBUG": "SILUMINE",
-      "SYSTEM": "SÜSTEEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Hoiatus",
+      "ERROR": "Viga",
+      "DEBUG": "Silumine",
+      "SYSTEM": "Süsteem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Ülesanne",
       "schedule": "Käivitub",
       "lastRun": "Viimane käivitus",
-      "nextRun": "Järgmine käivitus"
+      "nextRun": "Järgmine käivitus",
+      "duration": "Kestus"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platvorm",

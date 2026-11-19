@@ -1222,6 +1222,18 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 /* The title opens its record; it reads as the row's name, and underlines only to show it is a link. */
 .fc-dt-title-link { color: inherit; font-weight: 500; text-decoration: none; }
 .fc-dt-title-link:hover, .fc-dt-title-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+/* What a cell may hold beyond a plain value, so no screen colours or sizes its own: the row's name,
+   a quiet second fact, a few things on the one line, a person with their initial, and lines of error. */
+.fc-dt-strong { font-weight: 500; }
+.fc-dt-quiet { color: var(--fc-text-muted); }
+.fc-dt-inline, .fc-dt-who { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-dt-lines { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.fc-dt-lines[data-tone="danger"] { color: var(--fc-danger); }
+/* The column that takes the width the others leave. Its text is cut with an ellipsis rather than
+   pushing the table wider than its card; with `fc-dt-wrap` it runs onto more lines instead. */
+.fc-dt-fill { width: 100%; max-width: 0; }
+.fc-dt-td.fc-dt-fill > .fc-dt-cell { overflow: hidden; text-overflow: ellipsis; }
+.fc-dt-td.fc-dt-wrap { white-space: normal; padding-block: 12px; }
 /* A pinned cell is opaque, so the columns scrolling under it never show through; it follows its row. */
 .fc-dt-pinned { background: var(--fc-surface); }
 .fc-dt-head .fc-dt-pinned { background: var(--fc-surface-muted); }
@@ -3278,8 +3290,10 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* Two rows of tabs heading a page, and the card under them, all at the page's inset. */
 .fc-tabstack { display: flex; flex-direction: column; }
 /* The second level under the first: the same tabs, no line of its own. */
-.fc-tabbar.fc-tabbar--second { border-bottom: 0; padding-block: 12px 0; }
-.fc-tabstack__body { width: 100%; padding: 16px var(--fc-page-pad-x) 24px; }
+/* 12px under the first level, 16px over what the tabs open — the same wherever a second level stands,
+   so a page cannot leave it glued to its card or set in from the level above. */
+.fc-tabbar.fc-tabbar--second { border-bottom: 0; padding-block: 12px 16px; }
+.fc-tabstack__body { width: 100%; padding: 0 var(--fc-page-pad-x) 24px; }
 .fc-tabstack__card { display: flex; flex-direction: column; gap: 24px; padding: 16px var(--fc-card-pad-x) 24px; }
 
 /* On a page whose root already carries the page's inset, the tabs and their card start at it. */
@@ -3364,3 +3378,17 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-page-header__search { display: flex; align-items: center; gap: 8px; }
 .fc-page-header__search > .fc-search { width: 220px; }
 .fc-page-header__actions .fc-btn { height: var(--fc-field-h); }
+
+/* A page whose tabs are a single bar (no second level) keeps 16px between the bar and what it opens. */
+.fc-tabbar:not(.fc-tabbar--second) + .fc-tabstack__body, .fc-tabstack > .fc-tabbar:only-child { margin-bottom: 16px; }
+
+/* A list narrowed by TABS: on a phone its search takes a line of its own under them — beside two tabs
+   it was squeezed to a magnifier and two letters. (A list narrowed by the Filters button keeps one row.) */
+@media (max-width: 640px) {
+  .fc-list-toolbar:has(> .fc-list-toolbar__lead .fc-tabs) { flex-wrap: wrap; }
+  .fc-list-toolbar:has(> .fc-list-toolbar__lead .fc-tabs) > .fc-list-toolbar__tools { flex: 1 1 100%; }
+}
+/* A head that carries a line under its name is as tall as the two of them, with the band's own air
+   above and below; held to the one-line height the name sat against the top edge and the line under
+   it against the hairline. */
+.fc-record-card__head:has(> .fc-record-card__subtitle) { flex-wrap: wrap; row-gap: 2px; padding-block: 14px; }

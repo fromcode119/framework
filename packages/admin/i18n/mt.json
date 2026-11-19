@@ -4713,12 +4713,12 @@
     "logSignature": "Firma tal-Log: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "TWISSIJA",
-      "ERROR": "ŻBALL",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "VERIFIKA"
+      "INFO": "Info",
+      "WARN": "Twissija",
+      "ERROR": "Żball",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Verifika"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Kompitu",
       "schedule": "Jaħdem",
       "lastRun": "L-aħħar tħaddim",
-      "nextRun": "It-tħaddim li jmiss"
+      "nextRun": "It-tħaddim li jmiss",
+      "duration": "Tul"
     },
     "ownedBy": "{{owner}}",
     "platform": "Pjattaforma",

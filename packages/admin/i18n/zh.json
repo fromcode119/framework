@@ -4765,7 +4765,8 @@
       "task": "任务",
       "schedule": "运行频率",
       "lastRun": "上次运行",
-      "nextRun": "下次运行"
+      "nextRun": "下次运行",
+      "duration": "时长"
     },
     "ownedBy": "{{owner}}",
     "platform": "平台",

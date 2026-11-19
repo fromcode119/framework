@@ -4713,12 +4713,12 @@
     "logSignature": "Semnătură jurnal: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVERTISMENT",
-      "ERROR": "EROARE",
-      "DEBUG": "DEPANARE",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Avertisment",
+      "ERROR": "Eroare",
+      "DEBUG": "Depanare",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Sarcină",
       "schedule": "Rulează",
       "lastRun": "Ultima rulare",
-      "nextRun": "Următoarea rulare"
+      "nextRun": "Următoarea rulare",
+      "duration": "Durată"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platformă",

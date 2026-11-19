@@ -4713,12 +4713,12 @@
     "logSignature": "Podpis záznamu: {{id}}",
     "internal": "INTERNÍ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "VAROVÁNÍ",
-      "ERROR": "CHYBA",
-      "DEBUG": "LADĚNÍ",
-      "SYSTEM": "SYSTÉM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Varování",
+      "ERROR": "Chyba",
+      "DEBUG": "Ladění",
+      "SYSTEM": "Systém",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Úloha",
       "schedule": "Spouštění",
       "lastRun": "Poslední spuštění",
-      "nextRun": "Další spuštění"
+      "nextRun": "Další spuštění",
+      "duration": "Trvání"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

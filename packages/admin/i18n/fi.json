@@ -4713,12 +4713,12 @@
     "logSignature": "Lokin allekirjoitus: {{id}}",
     "internal": "SISÄINEN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "VAROITUS",
-      "ERROR": "VIRHE",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "JÄRJESTELMÄ",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Varoitus",
+      "ERROR": "Virhe",
+      "DEBUG": "Debug",
+      "SYSTEM": "Järjestelmä",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tehtävä",
       "schedule": "Suoritetaan",
       "lastRun": "Edellinen suoritus",
-      "nextRun": "Seuraava suoritus"
+      "nextRun": "Seuraava suoritus",
+      "duration": "Kesto"
     },
     "ownedBy": "{{owner}}",
     "platform": "Alusta",

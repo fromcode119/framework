@@ -4713,12 +4713,12 @@
     "logSignature": "Chữ ký nhật ký: {{id}}",
     "internal": "NỘI BỘ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tác vụ",
       "schedule": "Lịch chạy",
       "lastRun": "Lần chạy gần nhất",
-      "nextRun": "Lần chạy tiếp theo"
+      "nextRun": "Lần chạy tiếp theo",
+      "duration": "Thời lượng"
     },
     "ownedBy": "{{owner}}",
     "platform": "Nền tảng",

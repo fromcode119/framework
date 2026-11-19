@@ -4713,12 +4713,12 @@
     "logSignature": "Assinatura do registo: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVISO",
-      "ERROR": "ERRO",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "AUDITORIA"
+      "INFO": "Info",
+      "WARN": "Aviso",
+      "ERROR": "Erro",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Auditoria"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tarefa",
       "schedule": "Execução",
       "lastRun": "Última execução",
-      "nextRun": "Próxima execução"
+      "nextRun": "Próxima execução",
+      "duration": "Duração"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plataforma",

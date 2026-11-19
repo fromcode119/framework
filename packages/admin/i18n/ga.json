@@ -4713,12 +4713,12 @@
     "logSignature": "Síniú Logála: {{id}}",
     "internal": "INMHEÁNACH",
     "level": {
-      "INFO": "FAISNÉIS",
-      "WARN": "RABHADH",
-      "ERROR": "EARRÁID",
-      "DEBUG": "DÍFHABHTÚ",
-      "SYSTEM": "CÓRAS",
-      "AUDIT": "INIÚCHADH"
+      "INFO": "Faisnéis",
+      "WARN": "Rabhadh",
+      "ERROR": "Earráid",
+      "DEBUG": "Dífhabhtú",
+      "SYSTEM": "Córas",
+      "AUDIT": "Iniúchadh"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tasc",
       "schedule": "Ritheann",
       "lastRun": "Rith deireanach",
-      "nextRun": "An chéad rith eile"
+      "nextRun": "An chéad rith eile",
+      "duration": "Fad"
     },
     "ownedBy": "{{owner}}",
     "platform": "Ardán",

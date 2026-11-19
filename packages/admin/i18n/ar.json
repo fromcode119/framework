@@ -4765,7 +4765,8 @@
       "task": "المهمة",
       "schedule": "التكرار",
       "lastRun": "آخر تشغيل",
-      "nextRun": "التشغيل التالي"
+      "nextRun": "التشغيل التالي",
+      "duration": "المدة"
     },
     "ownedBy": "{{owner}}",
     "platform": "المنصة",

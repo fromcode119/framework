@@ -4765,7 +4765,8 @@
       "task": "משימה",
       "schedule": "תזמון",
       "lastRun": "הרצה אחרונה",
-      "nextRun": "הרצה הבאה"
+      "nextRun": "הרצה הבאה",
+      "duration": "משך"
     },
     "ownedBy": "{{owner}}",
     "platform": "פלטפורמה",

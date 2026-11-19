@@ -4713,12 +4713,12 @@
     "logSignature": "Υπογραφή καταγραφής: {{id}}",
     "internal": "ΕΣΩΤΕΡΙΚΟ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Εργασία",
       "schedule": "Εκτελείται",
       "lastRun": "Τελευταία εκτέλεση",
-      "nextRun": "Επόμενη εκτέλεση"
+      "nextRun": "Επόμενη εκτέλεση",
+      "duration": "Διάρκεια"
     },
     "ownedBy": "{{owner}}",
     "platform": "Πλατφόρμα",

@@ -4765,7 +4765,8 @@
       "task": "टास्क",
       "schedule": "कब चलता है",
       "lastRun": "पिछला रन",
-      "nextRun": "अगला रन"
+      "nextRun": "अगला रन",
+      "duration": "अवधि"
     },
     "ownedBy": "{{owner}}",
     "platform": "प्लेटफ़ॉर्म",

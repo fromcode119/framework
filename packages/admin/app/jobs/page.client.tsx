@@ -3,6 +3,7 @@ import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import { DataTable } from '@/components/ui/view/data-table.client';
 import { AdminApi } from '@/lib/api';
 import { AdminClass } from '@/lib/admin-class';
@@ -62,20 +63,9 @@ export class JobsPage extends AdminComponent {
           subtitle={this.platformScope ? AdminI18n.t('jobs.subtitlePlatform') : AdminI18n.t('jobs.subtitleSite')}
         />
         <div className="w-full py-6 fc-page-stack">
-          <section className="space-y-3">
-            <div>
-              <h2 className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.scheduledHeading')}</h2>
-              <p className="text-[12px] text-slate-500">{AdminI18n.t('jobs.scheduledHint')}</p>
-            </div>
-            <div className={`${AdminClass.SURFACE} overflow-hidden`}>
-              <DataTable
-                columns={JobsTaskColumns.all()}
-                data={this.tasks}
-                onRowClick={this.open}
-                emptyMessage={this.emptyMessage}
-              />
-            </div>
-          </section>
+          <ListShell title={AdminI18n.t('jobs.scheduledHeading')} subtitle={AdminI18n.t('jobs.scheduledHint')}>
+            <DataTable columns={JobsTaskColumns.all()} data={this.tasks} onRowClick={this.open} emptyMessage={this.emptyMessage} />
+          </ListShell>
           {this.platformScope ? <JobsQueueTable /> : null}
         </div>
       </div>

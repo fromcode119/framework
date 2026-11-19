@@ -4713,12 +4713,12 @@
     "logSignature": "Loggsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "ADVARSEL",
-      "ERROR": "FEIL",
-      "DEBUG": "FEILSØKING",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "REVISJON"
+      "INFO": "Info",
+      "WARN": "Advarsel",
+      "ERROR": "Feil",
+      "DEBUG": "Feilsøking",
+      "SYSTEM": "System",
+      "AUDIT": "Revisjon"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Oppgave",
       "schedule": "Kjører",
       "lastRun": "Siste kjøring",
-      "nextRun": "Neste kjøring"
+      "nextRun": "Neste kjøring",
+      "duration": "Varighet"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plattform",

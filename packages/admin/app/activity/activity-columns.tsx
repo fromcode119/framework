@@ -1,37 +1,32 @@
 import type { ReactElement } from 'react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { ActivityMessage } from '@/app/activity/activity-message';
-import { Badge } from '@/components/ui/view/badge.client';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Avatar } from '@/components/ui/view/avatar.client';
 
 /**
  * The columns of the activity log, system and security alike.
  *
- * Each row is a name and a time with a state beside it, drawn like every other list in the console:
- * the state is a {@link Badge} in one of the five tones, the rest is the record's own text sizes. It
- * used to pick its colours by hand — `theme === ThemeMode.DARK ? 'bg-rose-500/10 …' : 'bg-rose-50 …'`
- * in six places — print the date at 8px in italics, and mark a plugin with a glowing indigo dot.
+ * One line a row, like every list in the console: the state as a {@link StateBadge}, what happened in
+ * the column that takes the width left over (cut with an ellipsis, never pushing the table sideways),
+ * who, where and when. The entry's own number and the actor's id are in the entry's detail, which the
+ * row opens — printed under every cell they made each row two lines of mostly the same words.
  */
 export class ActivityColumnsFactory {
   /** ERROR is danger, WARN is warning, everything else is a thing that worked. */
-  private static levelTone(level: string): BadgeVariant {
+  private static levelTone(level: string): string {
     const value = String(level || '').toUpperCase();
-    if (value === 'ERROR') return BadgeVariant.DANGER;
-    if (value === 'WARN') return BadgeVariant.WARNING;
-    return BadgeVariant.SUCCESS;
+    if (value === 'ERROR') return 'danger';
+    if (value === 'WARN') return 'warning';
+    return 'success';
   }
 
   /** A violation is danger, a refusal is warning, everything else is a thing that was allowed. */
-  private static statusTone(status: string): BadgeVariant {
+  private static statusTone(status: string): string {
     const value = String(status || '').toLowerCase();
-    if (value === 'violation') return BadgeVariant.DANGER;
-    if (value === 'denied') return BadgeVariant.WARNING;
-    return BadgeVariant.SUCCESS;
-  }
-
-  /** The initial in a circle, the console's quiet surface — one shape for an actor and for a plugin. */
-  private static initial(text: string): ReactElement {
-    return <span className="fc-activity__initial">{(text || '?')[0]?.toUpperCase()}</span>;
+    if (value === 'violation') return 'danger';
+    if (value === 'denied') return 'warning';
+    return 'success';
   }
 
   private static named(row: any): string {
@@ -40,15 +35,17 @@ export class ActivityColumnsFactory {
     return slug.charAt(0).toUpperCase() + slug.slice(1);
   }
 
-  /** The time above, the day under it — both read, so both at the console's own sizes. */
-  private static when(value: string | number | Date): ReactElement {
-    const at = new Date(value);
+  private static who(name: string): ReactElement {
     return (
-      <div className="fc-activity__stack">
-        <span className="fc-activity__value">{at.toLocaleTimeString(AdminI18n.locale)}</span>
-        <span className="fc-activity__quiet">{at.toLocaleDateString()}</span>
-      </div>
+      <span className="fc-dt-who">
+        <Avatar fallback={(name || '?')[0]?.toUpperCase() || '?'} size="xsmall" />
+        <span>{name}</span>
+      </span>
     );
+  }
+
+  private static when(value: string | number | Date): string {
+    return new Date(value).toLocaleString(AdminI18n.locale, { dateStyle: 'medium', timeStyle: 'short' });
   }
 
   static system() {
@@ -57,52 +54,33 @@ export class ActivityColumnsFactory {
         header: AdminI18n.t('activity.event'),
         id: 'event',
         accessor: (row: any) => (
-          <div className="fc-activity__stack">
-            <Badge variant={ActivityColumnsFactory.levelTone(row.level)}>
-              {AdminI18n.optional(`activity.level.${String(row.level || '').toUpperCase()}`) || row.level}
-            </Badge>
-            <span className="fc-activity__quiet">
-              {String(row.id).includes('-') ? String(row.id).split('-')[0] : `LOG-${row.id}`}
-            </span>
-          </div>
+          <StateBadge tone={ActivityColumnsFactory.levelTone(row.level)}>
+            {AdminI18n.optional(`activity.level.${String(row.level || '').toUpperCase()}`) || row.level}
+          </StateBadge>
         ),
-      },
-      {
-        header: AdminI18n.t('activity.actor'),
-        id: 'actor',
-        accessor: (row: any) => {
-          // The entry says who it was. It used to be cut out of the message — `message.split('for ')[1]`
-          // — which only ever worked while that message was an English sentence.
-          const actor = row.actor_id || row.context?.email || AdminI18n.t('activity.system');
-          return (
-            <div className="fc-activity__who">
-              {ActivityColumnsFactory.initial(actor)}
-              <div className="fc-activity__stack">
-                <span className="fc-activity__value">{actor}</span>
-                <span className="fc-activity__quiet">
-                  {row.actor_id
-                    ? `ID: ${row.actor_id}`
-                    : (row.context?.userId ? `UID: ${row.context.userId}` : AdminI18n.t('activity.internal'))}
-                </span>
-              </div>
-            </div>
-          );
-        },
-      },
-      {
-        header: AdminI18n.t('activity.resource'),
-        id: 'target',
-        accessor: (row: any) => <span className="fc-activity__value">{ActivityColumnsFactory.named(row)}</span>,
-      },
-      {
-        header: AdminI18n.t('activity.timestamp'),
-        id: 'timestamp',
-        accessor: (row: any) => ActivityColumnsFactory.when(row.timestamp || row.createdAt),
       },
       {
         header: AdminI18n.t('activity.activity'),
         id: 'details',
-        accessor: (row: any) => <span className="fc-activity__message">{ActivityMessage.of(row)}</span>,
+        className: 'fc-dt-fill',
+        accessor: (row: any) => ActivityMessage.of(row),
+      },
+      {
+        header: AdminI18n.t('activity.actor'),
+        id: 'actor',
+        // The entry says who it was. It used to be cut out of the message — `message.split('for ')[1]`
+        // — which only ever worked while that message was an English sentence.
+        accessor: (row: any) => ActivityColumnsFactory.who(String(row.actor_id || row.context?.email || AdminI18n.t('activity.system'))),
+      },
+      {
+        header: AdminI18n.t('activity.resource'),
+        id: 'target',
+        accessor: (row: any) => ActivityColumnsFactory.named(row),
+      },
+      {
+        header: AdminI18n.t('activity.time'),
+        id: 'timestamp',
+        accessor: (row: any) => ActivityColumnsFactory.when(row.timestamp || row.createdAt),
       },
     ];
   }
@@ -113,30 +91,26 @@ export class ActivityColumnsFactory {
         header: AdminI18n.t('activity.status'),
         id: 'status',
         accessor: (row: any) => (
-          <Badge variant={ActivityColumnsFactory.statusTone(row.status)}>
+          <StateBadge tone={ActivityColumnsFactory.statusTone(row.status)}>
             {AdminI18n.optional(`activity.status.${String(row.status || '').toLowerCase()}`) || row.status}
-          </Badge>
-        ),
-      },
-      {
-        header: AdminI18n.t('activity.plugin'),
-        id: 'plugin',
-        accessor: (row: any) => (
-          <div className="fc-activity__who">
-            {ActivityColumnsFactory.initial(String(row.pluginSlug || 'S'))}
-            <span className="fc-activity__value">{ActivityColumnsFactory.named(row)}</span>
-          </div>
+          </StateBadge>
         ),
       },
       {
         header: AdminI18n.t('activity.action'),
         id: 'action',
-        accessor: (row: any) => (
-          <div className="fc-activity__stack">
-            <span className="fc-activity__value">{row.action}</span>
-            <span className="fc-activity__quiet">{row.resource}</span>
-          </div>
-        ),
+        accessor: (row: any) => row.action,
+      },
+      {
+        header: AdminI18n.t('activity.resource'),
+        id: 'resource',
+        className: 'fc-dt-fill',
+        accessor: (row: any) => row.resource,
+      },
+      {
+        header: AdminI18n.t('activity.plugin'),
+        id: 'plugin',
+        accessor: (row: any) => ActivityColumnsFactory.who(ActivityColumnsFactory.named(row)),
       },
       {
         header: AdminI18n.t('activity.time'),

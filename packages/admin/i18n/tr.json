@@ -4713,12 +4713,12 @@
     "logSignature": "Günlük İmzası: {{id}}",
     "internal": "DAHİLİ",
     "level": {
-      "INFO": "BİLGİ",
-      "WARN": "UYARI",
-      "ERROR": "HATA",
-      "DEBUG": "HATA AYIKLAMA",
-      "SYSTEM": "SİSTEM",
-      "AUDIT": "DENETİM"
+      "INFO": "Bi̇lgi̇",
+      "WARN": "Uyari",
+      "ERROR": "Hata",
+      "DEBUG": "Hata ayiklama",
+      "SYSTEM": "Si̇stem",
+      "AUDIT": "Deneti̇m"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Görev",
       "schedule": "Çalışma sıklığı",
       "lastRun": "Son çalışma",
-      "nextRun": "Sonraki çalışma"
+      "nextRun": "Sonraki çalışma",
+      "duration": "Süre"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

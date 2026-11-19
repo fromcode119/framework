@@ -4713,12 +4713,12 @@
     "logSignature": "Tanda Tangan Log: {{id}}",
     "internal": "INTERNAL",
     "level": {
-      "INFO": "INFO",
-      "WARN": "PERINGATAN",
-      "ERROR": "GALAT",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Peringatan",
+      "ERROR": "Galat",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tugas",
       "schedule": "Jadwal",
       "lastRun": "Eksekusi terakhir",
-      "nextRun": "Eksekusi berikutnya"
+      "nextRun": "Eksekusi berikutnya",
+      "duration": "Durasi"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

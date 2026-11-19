@@ -4713,12 +4713,12 @@
     "logSignature": "Firma del registro: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "ADVERTENCIA",
-      "ERROR": "ERROR",
-      "DEBUG": "DEPURACIÓN",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "AUDITORÍA"
+      "INFO": "Info",
+      "WARN": "Advertencia",
+      "ERROR": "Error",
+      "DEBUG": "Depuración",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Auditoría"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tarea",
       "schedule": "Frecuencia",
       "lastRun": "Última ejecución",
-      "nextRun": "Próxima ejecución"
+      "nextRun": "Próxima ejecución",
+      "duration": "Duración"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plataforma",

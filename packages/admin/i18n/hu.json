@@ -4713,12 +4713,12 @@
     "logSignature": "Naplóaláírás: {{id}}",
     "internal": "BELSŐ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "FIGYELMEZTETÉS",
-      "ERROR": "HIBA",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "RENDSZER",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Figyelmeztetés",
+      "ERROR": "Hiba",
+      "DEBUG": "Debug",
+      "SYSTEM": "Rendszer",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Feladat",
       "schedule": "Futás",
       "lastRun": "Utolsó futás",
-      "nextRun": "Következő futás"
+      "nextRun": "Következő futás",
+      "duration": "Időtartam"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

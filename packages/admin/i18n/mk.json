@@ -4713,12 +4713,12 @@
     "logSignature": "Потпис на записот: {{id}}",
     "internal": "ВНАТРЕШНО",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Задача",
       "schedule": "Се извршува",
       "lastRun": "Последно извршување",
-      "nextRun": "Следно извршување"
+      "nextRun": "Следно извршување",
+      "duration": "Времетраење"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

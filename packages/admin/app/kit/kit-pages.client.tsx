@@ -5,6 +5,10 @@ import { RecordCard } from '@/components/ui/view/record-card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Alert } from '@/components/ui/view/alert.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { DataTable } from '@/components/ui/view/data-table.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Avatar } from '@/components/ui/view/avatar.client';
 import { PageBar } from '@/components/ui/view/page-bar.client';
 import { SearchField } from '@/components/ui/view/search-field.client';
 import { StatePage } from '@/components/ui/view/state-page.client';
@@ -64,6 +68,29 @@ export class KitPages extends Reactor {
             <Button icon={<FrameworkIcons.Upload size={15} />}>Upload</Button>
           </PageBar>
         ))}
+        <div id="kit-list-as-one-card">
+          <ListShell
+            title="List as one card"
+            count={3}
+            actions={<Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Plus size={15} />}>New</Button>}
+            lead={<Tabs label="Kind" value={this.filter} onChange={this.setFilter} tabs={[{ id: 'all', label: 'All' }, { id: 'active', label: 'Active' }, { id: 'off', label: 'Off' }]} />}
+            tools={<SearchField value={this.query} onChange={this.setQuery} placeholder="Search" />}
+          >
+            <DataTable
+              columns={[
+                { header: 'State', id: 'state', accessor: (row: any) => <StateBadge tone={row.tone}>{row.state}</StateBadge> },
+                { header: 'What happened', id: 'what', className: 'fc-dt-fill', accessor: (row: any) => row.what },
+                { header: 'Who', id: 'who', accessor: (row: any) => <span className="fc-dt-who"><Avatar fallback={row.who[0]} size="xsmall" /><span>{row.who}</span></span> },
+                { header: 'Time', id: 'time', accessor: (row: any) => row.time },
+              ] as any}
+              data={[
+                { id: 1, tone: 'success', state: 'Info', what: 'Delivered sales for the period report registered with finance, a sentence long enough to be cut where the column ends', who: 'System', time: 'Nov 19, 2026, 2:59 PM' },
+                { id: 2, tone: 'warning', state: 'Warn', what: 'Stored product pages not emptied after a start', who: 'Maria', time: 'Nov 19, 2026, 2:00 PM' },
+                { id: 3, tone: 'danger', state: 'Error', what: 'The mail server refused the connection', who: 'System', time: 'Nov 19, 2026, 1:12 PM' },
+              ]}
+            />
+          </ListShell>
+        </div>
         {this.card('Row of a list of installed things', (
           <ListCard>
             <ListRow

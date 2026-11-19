@@ -18,7 +18,7 @@ const VIEW = join(__dirname, '..', 'view');
 
 const RENDERED: { file: string; must: string[] }[] = [
   // The page is the head, the tools, the table and the count — in that order, in one card.
-  { file: 'page-layout.client.tsx', must: ['fc-list-shell', '<CollectionListHeader', '<CollectionListToolbar', '<CollectionListTable', '<ListFooter'] },
+  { file: 'page-layout.client.tsx', must: ['<ListShell', '<CollectionListHeader', '<CollectionListToolbar', '<CollectionListTable', '<ListFooter'] },
   // What narrows the list and what works on what is selected.
   { file: 'toolbar.client.tsx', must: ['<FilterBar', '<BulkActions'] },
   // Search, the saved filters, the column chooser and the sort live in the filter bar.

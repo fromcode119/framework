@@ -4713,12 +4713,12 @@
     "logSignature": "Signature du journal : {{id}}",
     "internal": "INTERNE",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVERTISSEMENT",
-      "ERROR": "ERREUR",
-      "DEBUG": "DÉBOGAGE",
-      "SYSTEM": "SYSTÈME",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Avertissement",
+      "ERROR": "Erreur",
+      "DEBUG": "Débogage",
+      "SYSTEM": "Système",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Tâche",
       "schedule": "Fréquence",
       "lastRun": "Dernière exécution",
-      "nextRun": "Prochaine exécution"
+      "nextRun": "Prochaine exécution",
+      "duration": "Durée"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plateforme",

@@ -4713,12 +4713,12 @@
     "logSignature": "記錄簽章：{{id}}",
     "internal": "內部",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "任務",
       "schedule": "執行頻率",
       "lastRun": "上次執行",
-      "nextRun": "下次執行"
+      "nextRun": "下次執行",
+      "duration": "持續時間"
     },
     "ownedBy": "{{owner}}",
     "platform": "平台",

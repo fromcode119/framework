@@ -4713,12 +4713,12 @@
     "logSignature": "Loghandtekening: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WAARSCHUWING",
-      "ERROR": "FOUT",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Waarschuwing",
+      "ERROR": "Fout",
+      "DEBUG": "Debug",
+      "SYSTEM": "Systeem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Taak",
       "schedule": "Uitvoering",
       "lastRun": "Laatst uitgevoerd",
-      "nextRun": "Volgende uitvoering"
+      "nextRun": "Volgende uitvoering",
+      "duration": "Duur"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

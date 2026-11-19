@@ -4713,12 +4713,12 @@
     "logSignature": "Žurnalo parašas: {{id}}",
     "internal": "VIDINIS",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Užduotis",
       "schedule": "Vykdoma",
       "lastRun": "Paskutinis vykdymas",
-      "nextRun": "Kitas vykdymas"
+      "nextRun": "Kitas vykdymas",
+      "duration": "Trukmė"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

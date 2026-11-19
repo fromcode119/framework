@@ -9,34 +9,30 @@ import { JobDuration } from '@/app/jobs/job-duration';
 export class JobsTaskColumns {
   static all(): Array<{ header: string; id: string; accessor: (row: any) => ReactNode }> {
     return [
-      { header: AdminI18n.t('jobs.columns.task'), id: 'task', accessor: (row) => JobsTaskColumns.task(row) },
-      { header: AdminI18n.t('jobs.columns.schedule'), id: 'schedule', accessor: (row) => <span className="text-[12px] text-slate-600 dark:text-slate-300">{row.isActive ? JobScheduleText.describe(row.schedule) : AdminI18n.t('jobs.paused')}</span> },
+      { header: AdminI18n.t('jobs.columns.task'), id: 'task', accessor: (row) => <span className="fc-dt-strong">{JobsTaskColumns.short(row)}</span> },
+      { header: AdminI18n.t('activity.plugin'), id: 'owner', accessor: (row) => row.pluginSlug || AdminI18n.t('jobs.platform') },
+      { header: AdminI18n.t('jobs.columns.schedule'), id: 'schedule', accessor: (row) => (row.isActive ? JobScheduleText.describe(row.schedule) : AdminI18n.t('jobs.paused')) },
       { header: AdminI18n.t('jobs.columns.lastRun'), id: 'lastRun', accessor: (row) => JobsTaskColumns.lastRun(row) },
-      { header: AdminI18n.t('jobs.columns.nextRun'), id: 'nextRun', accessor: (row) => <span className="text-[12px] text-slate-500 tabular-nums">{row.isActive ? RelativeTimeFormatter.fromNow(row.nextRun) : '—'}</span> },
+      { header: AdminI18n.t('jobs.columns.nextRun'), id: 'nextRun', accessor: (row) => (row.isActive ? RelativeTimeFormatter.fromNow(row.nextRun) : '—') },
     ];
   }
 
-  private static task(row: any): ReactNode {
+  /** The task's name without its owner in front: the owner stands in the column beside it. */
+  private static short(row: any): string {
     const name = String(row.name || '');
-    const short = row.pluginSlug && name.startsWith(`${row.pluginSlug}:`) ? name.slice(row.pluginSlug.length + 1) : name;
-    return (
-      <div className="flex flex-col">
-        <span className="text-[13px] font-medium text-slate-700 dark:text-white">{short}</span>
-        <span className="text-[12px] text-slate-400">{row.pluginSlug ? AdminI18n.t('jobs.ownedBy', { owner: row.pluginSlug }) : AdminI18n.t('jobs.platform')}</span>
-      </div>
-    );
+    return row.pluginSlug && name.startsWith(`${row.pluginSlug}:`) ? name.slice(row.pluginSlug.length + 1) : name;
   }
 
   private static lastRun(row: any): ReactNode {
     const last = row.lastRun;
-    if (!last) return <span className="text-[12px] text-slate-400">{AdminI18n.t('jobs.notRunYet')}</span>;
+    if (!last) return <span className="fc-dt-quiet">{AdminI18n.t('jobs.notRunYet')}</span>;
     return (
-      <div className="flex flex-wrap items-center gap-2">
+      <span className="fc-dt-inline">
         <JobRunStatusBadge status={String(last.status)} />
-        <span className="text-[12px] text-slate-500 tabular-nums">{RelativeTimeFormatter.fromNow(last.startedAt)}</span>
-        {last.durationMs !== null ? <span className="text-[12px] text-slate-400 tabular-nums">{JobDuration.text(last.durationMs)}</span> : null}
-        {row.failedLastDay > 0 ? <span className="text-[12px] font-medium text-rose-600">{AdminI18n.t('jobs.failedLastDay', { count: row.failedLastDay })}</span> : null}
-      </div>
+        <span>{RelativeTimeFormatter.fromNow(last.startedAt)}</span>
+        {last.durationMs !== null ? <span className="fc-dt-quiet">{JobDuration.text(last.durationMs)}</span> : null}
+        {row.failedLastDay > 0 ? <span className="fc-dt-lines" data-tone="danger">{AdminI18n.t('jobs.failedLastDay', { count: row.failedLastDay })}</span> : null}
+      </span>
     );
   }
 }

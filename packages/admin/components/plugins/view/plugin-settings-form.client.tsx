@@ -93,7 +93,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     }
 
     if (!schema || !schema.fields || schema.fields.length === 0) {
-      return <div className="w-full p-6"><Card noPadding><PluginSettingsEmpty waiting={Boolean(this.waiting)} /></Card></div>;
+      return <div className="w-full py-4"><Card noPadding><PluginSettingsEmpty waiting={Boolean(this.waiting)} /></Card></div>;
     }
 
     const visibleFields = this.visibleFields;
@@ -103,7 +103,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     const heading = tabs.length === 1 ? tabs[0].label : undefined;
 
     return (
-      <form id={this.formId} onSubmit={this.handleSubmit} className="w-full p-6">
+      <form id={this.formId} onSubmit={this.handleSubmit} className="w-full pb-6">
         {/* hidden file input for import */}
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 

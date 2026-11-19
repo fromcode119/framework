@@ -4713,12 +4713,12 @@
     "logSignature": "Potpis zapisa: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "UPOZORENJE",
-      "ERROR": "POGREŠKA",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SUSTAV",
-      "AUDIT": "REVIZIJA"
+      "INFO": "Info",
+      "WARN": "Upozorenje",
+      "ERROR": "Pogreška",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sustav",
+      "AUDIT": "Revizija"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Zadatak",
       "schedule": "Izvodi se",
       "lastRun": "Posljednje izvođenje",
-      "nextRun": "Sljedeće izvođenje"
+      "nextRun": "Sljedeće izvođenje",
+      "duration": "Trajanje"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

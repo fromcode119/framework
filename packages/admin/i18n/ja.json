@@ -4713,12 +4713,12 @@
     "logSignature": "ログ署名: {{id}}",
     "internal": "内部",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "タスク",
       "schedule": "実行間隔",
       "lastRun": "前回の実行",
-      "nextRun": "次回の実行"
+      "nextRun": "次回の実行",
+      "duration": "所要時間"
     },
     "ownedBy": "{{owner}}",
     "platform": "プラットフォーム",

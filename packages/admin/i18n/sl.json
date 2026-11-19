@@ -4713,12 +4713,12 @@
     "logSignature": "Podpis dnevnika: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "OPOZORILO",
-      "ERROR": "NAPAKA",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "REVIZIJA"
+      "INFO": "Info",
+      "WARN": "Opozorilo",
+      "ERROR": "Napaka",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Revizija"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Opravilo",
       "schedule": "Izvajanje",
       "lastRun": "Zadnje izvajanje",
-      "nextRun": "Naslednje izvajanje"
+      "nextRun": "Naslednje izvajanje",
+      "duration": "Trajanje"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

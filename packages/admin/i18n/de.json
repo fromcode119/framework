@@ -4713,12 +4713,12 @@
     "logSignature": "Protokollsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARNUNG",
-      "ERROR": "FEHLER",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warnung",
+      "ERROR": "Fehler",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4765,7 +4765,8 @@
       "task": "Aufgabe",
       "schedule": "Ausführung",
       "lastRun": "Letzter Lauf",
-      "nextRun": "Nächster Lauf"
+      "nextRun": "Nächster Lauf",
+      "duration": "Dauer"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plattform",

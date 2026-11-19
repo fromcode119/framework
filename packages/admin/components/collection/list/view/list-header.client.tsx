@@ -4,12 +4,12 @@ import { ExportFormat } from '@/components/collection/list/enums/export-format.e
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
+import { ListShellHead } from '@/components/ui/view/list-shell-head.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -94,11 +94,7 @@ export class CollectionListHeader extends PureReactor {
          one card holding the name and the buttons, then the tools, then the table, then the count.
          It used to be the console's page header above the card, which put the name of the screen and
          the name of the card one under the other with nothing between them. */
-      <div className={`${AdminClass.of('record-card')}__head`}>
-        <h2 className={`${AdminClass.of('record-card')}__title`}>{this.title()}</h2>
-        {subtitle ? <p className={`${AdminClass.of('record-card')}__subtitle`}>{subtitle}</p> : null}
-        <div className={`${AdminClass.of('record-card')}__aside`}>{this.actions()}</div>
-      </div>
+      <ListShellHead title={this.title()} subtitle={subtitle} actions={this.actions()} />
     );
   }
 }
