@@ -13,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * scrolls sideways or wraps every cell into a column of single words — so each record becomes a card.
  */
 export class CollectionListCards extends PureReactor {
-  declare props: Pick<CollectionListCards, 'data' | 'layout' | 'cells' | 'loading' | 'emptyMessage' | 'total' | 'page' | 'pageSize' | 'onPageChange' | 'onOpen' | 'renderActions' | 'renderExpanded' | 'selectedIds' | 'onSelectionChange' | 'sections' | 'sectionClassName' | 'renderHandle' | 'rowClassName'>;
+  declare props: Pick<CollectionListCards, 'data' | 'layout' | 'cells' | 'loading' | 'emptyMessage' | 'total' | 'page' | 'pageSize' | 'onPageChange' | 'onOpen' | 'renderActions' | 'selectedIds' | 'onSelectionChange' | 'sections' | 'sectionClassName' | 'renderHandle' | 'rowClassName'>;
 
   @prop declare data: any[];
   @prop declare layout: CollectionListLayout;
@@ -27,7 +27,6 @@ export class CollectionListCards extends PureReactor {
   @prop declare onOpen: (row: any) => void;
   @prop declare renderActions: (row: any) => ReactNode;
   /** The quick edit form for a record, or null when it is closed. */
-  @prop declare renderExpanded: (row: any) => ReactNode;
   @prop declare selectedIds: string[];
   @prop declare onSelectionChange: Dispatch<SetStateAction<string[]>>;
   /** In a grouped list, the records split into headed sections (shown in place of `data`). */
@@ -62,7 +61,6 @@ export class CollectionListCards extends PureReactor {
         layout={this.layout}
         cells={this.cells}
         actions={this.renderActions(row)}
-        expanded={this.renderExpanded(row)}
         onOpen={this.onOpen}
         selected={(this.selectedIds || []).includes(String(row.id))}
         onToggle={this.toggle}

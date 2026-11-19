@@ -1,3 +1,5 @@
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { CollectionAccess } from '@/lib/collection-access';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -189,25 +191,40 @@ export class CollectionListTable extends PureReactor {
     return this.actionsFor(row, true);
   }
 
-  @bound private renderQuickEdit(row: any): ReactNode {
-    const rowId = String(row.id);
-    if (this.quickEditExpandedId !== rowId) return null;
+  /**
+   * The quick edit, in the sheet at the side — the same one a record's section is edited in. It used
+   * to open UNDER the row, inside the list, pushing every row below it down.
+   */
+  private get quickEditSheet(): ReactNode {
+    const rowId = this.quickEditExpandedId;
+    const row = rowId ? (this.data || []).find((entry: any) => String(entry.id) === rowId) : null;
+    if (!row || !rowId) return null;
     return (
-      <CollectionQuickEditCard
-        row={row}
-        collection={this.collection}
-        resolvedSlug={this.resolvedSlug}
-        quickEditFields={this.quickEditFields}
-        quickEditData={this.quickEditData}
-        setQuickEditData={this.setQuickEditData}
-        quickEditStatus={this.quickEditStatus}
-        isLoadingRow={this.quickEditLoadingId === rowId}
-        isSavingRow={this.quickEditSavingId === rowId}
-        onSave={this.onQuickEditSave}
+      <EditSheet
+        isOpen
+        title={AdminI18n.t('collection.list.edit')}
+        subtitle={AdminI18n.t('collection.quickEdit.hint')}
         onClose={this.onQuickEditClose}
-        theme={this.theme}
-        pluginSettings={this.pluginSettings}
-      />
+        onSave={this.onQuickEditSave}
+        saving={this.quickEditSavingId === rowId}
+        saveLabel={AdminI18n.t('collection.quickEdit.saveChanges')}
+      >
+        <CollectionQuickEditCard
+          row={row}
+          collection={this.collection}
+          resolvedSlug={this.resolvedSlug}
+          quickEditFields={this.quickEditFields}
+          quickEditData={this.quickEditData}
+          setQuickEditData={this.setQuickEditData}
+          quickEditStatus={this.quickEditStatus}
+          isLoadingRow={this.quickEditLoadingId === rowId}
+          isSavingRow={this.quickEditSavingId === rowId}
+          onSave={this.onQuickEditSave}
+          onClose={this.onQuickEditClose}
+          theme={this.theme}
+          pluginSettings={this.pluginSettings}
+        />
+      </EditSheet>
     );
   }
 
@@ -217,6 +234,7 @@ export class CollectionListTable extends PureReactor {
     return (
       <>
         <Slot name={`admin.collection.${this.slotSlug}.list.top`} props={slotProps} />
+        {this.quickEditSheet}
         <div className="fc-list-frame">
           <div className="fc-list-table">
             <DataTable
@@ -236,9 +254,7 @@ export class CollectionListTable extends PureReactor {
               selectable
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}
-              expandedRowId={this.quickEditExpandedId}
               actions={this.rowActions}
-              renderExpandedRow={this.renderQuickEdit}
               sections={sections}
               sectionClassName={this.sectionClass}
               rowClassName={this.rowClass}
@@ -257,7 +273,6 @@ export class CollectionListTable extends PureReactor {
               onPageChange={this.onPageChange}
               onOpen={this.onRowClick}
               renderActions={this.cardActions}
-              renderExpanded={this.renderQuickEdit}
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}
               sections={sections}

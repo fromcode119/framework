@@ -3336,3 +3336,18 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-nav-back:hover { background: var(--fc-nav-hover, var(--fc-surface-muted)); }
 .fc-nav-back > svg { flex: none; color: var(--fc-nav-muted, var(--fc-text-muted)); }
 .fc-nav__pinned:empty { display: none; }
+
+/* The quick edit's fields, inside the sheet. */
+.fc-quick-edit { display: flex; flex-direction: column; gap: 16px; }
+
+/* A role's group of permissions: a card with a heading, always open. */
+.fc-role-group__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px var(--fc-card-pad-x); border-bottom: 1px solid var(--fc-border); }
+.fc-role-group__title { margin: 0; color: var(--fc-text); font-size: var(--fc-card-title); line-height: 24px; font-weight: var(--fc-weight-strong); }
+.fc-role-group__count { color: var(--fc-text-faint); font-size: 12px; line-height: 20px; font-weight: var(--fc-weight-strong); font-variant-numeric: tabular-nums; }
+.fc-role-group__count[data-some="true"] { color: var(--fc-text-muted); }
+.fc-role-group__body { display: flex; flex-direction: column; gap: 12px; padding: 16px var(--fc-card-pad-x); }
+/* Two fields to a line in the sheet; one that asked for more room takes the line. */
+.fc-quick-edit__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fc-quick-edit__cell { min-width: 0; }
+.fc-quick-edit__cell[data-wide="true"] { grid-column: 1 / -1; }
+@media (max-width: 479.98px) { .fc-quick-edit__grid { grid-template-columns: minmax(0, 1fr); } }

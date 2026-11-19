@@ -14,7 +14,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * collection made editable in place is editable here too.
  */
 export class CollectionListCard extends PureReactor {
-  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'expanded' | 'onOpen' | 'selected' | 'onToggle' | 'handle' | 'className'>;
+  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'onOpen' | 'selected' | 'onToggle' | 'handle' | 'className'>;
 
   @prop declare row: any;
   @prop declare layout: CollectionListLayout;
@@ -22,7 +22,6 @@ export class CollectionListCard extends PureReactor {
   @prop declare cells: ReadonlyMap<string, (row: any) => ReactNode>;
   @prop declare actions: ReactNode;
   /** The quick edit form, when it is open on this record. */
-  @prop declare expanded: ReactNode;
   @prop declare onOpen: (row: any) => void;
   @prop declare selected: boolean;
   /** Adds the record to, or takes it out of, the selection the bulk actions work on. */
@@ -74,7 +73,7 @@ export class CollectionListCard extends PureReactor {
     const { layout, row } = this;
     const hasMedia = Boolean(layout.mediaField) && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length > 0;
     return (
-      <div data-row-id={String(row.id)} className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.expanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${this.className || ''}`}>
+      <div data-row-id={String(row.id)} className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.className || ''}`}>
         <div className={`flex gap-3 ps-3 pe-4 py-3 cursor-pointer ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`} onClick={this.open}>
           <button type="button" onClick={this.toggle} aria-pressed={this.selected} aria-label={AdminI18n.t('collection.list.selectRecord')} className="shrink-0 self-start p-1 -m-0.5">
             <Checkbox checked={this.selected} presentational />
@@ -112,7 +111,6 @@ export class CollectionListCard extends PureReactor {
             </div>
           </div>
         </div>
-        {this.expanded ? <div className="px-4 pb-4">{this.expanded}</div> : null}
       </div>
     );
   }

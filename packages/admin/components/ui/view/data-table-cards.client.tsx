@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/ui/view/empty-state.client';
  * cards. This gives those screens the same cards, with no change at the call site.
  */
 export class DataTableCards<T extends { id: any }> extends PureReactor {
-  declare props: Pick<DataTableCards<T>, 'columns' | 'data' | 'loading' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onToggleOne' | 'onRowClick' | 'actions' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy'>;
+  declare props: Pick<DataTableCards<T>, 'columns' | 'data' | 'loading' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onToggleOne' | 'onRowClick' | 'actions' | 'groupBy'>;
 
   @prop declare columns: Column<T>[];
   @prop declare data: T[];
@@ -24,8 +24,6 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
   @prop declare onToggleOne?: (id: string, event: MouseEvent) => void;
   @prop declare onRowClick?: (row: T) => void;
   @prop declare actions?: (row: T) => ReactNode;
-  @prop declare expandedRowId?: string | null;
-  @prop declare renderExpandedRow?: (row: T) => ReactNode;
   @prop declare groupBy?: (row: T) => string;
 
   private renderEmpty(): ReactNode {
@@ -43,7 +41,6 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
         {data.map((row, index) => {
           const groupKey = groupBy ? (groupBy(row) || '—') : null;
           const showGroupHeader = groupKey !== null && (index === 0 || groupKey !== (groupBy!(data[index - 1]) || '—'));
-          const isExpanded = this.expandedRowId != null && String(this.expandedRowId) === String(row.id);
           return (
             <Fragment key={String(row.id ?? index)}>
               {showGroupHeader ? (
@@ -58,7 +55,6 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
                 onRowClick={this.onRowClick}
                 actions={this.actions}
               />
-              {isExpanded && this.renderExpandedRow ? <div className="px-4 pb-4 bg-indigo-50/20 dark:bg-indigo-500/5">{this.renderExpandedRow(row)}</div> : null}
             </Fragment>
           );
         })}

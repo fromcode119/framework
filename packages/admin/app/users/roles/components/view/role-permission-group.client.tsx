@@ -1,3 +1,4 @@
+import { AdminClass } from '@/lib/admin-class';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -19,16 +20,6 @@ export class RolePermissionGroup extends PureReactor {
   @prop declare onChange: (next: string[]) => void;
   /** Show what the role holds without offering to change it. */
   @prop declare readOnly?: boolean;
-
-  @state private open: boolean | null = null;
-
-  private get expanded(): boolean {
-    return this.open ?? RolePermissionSelection.countIn(this.selected, this.group) > 0;
-  }
-
-  @bound private toggleOpen(): void {
-    this.open = !this.expanded;
-  }
 
   private change(next: string[]): void {
     if (!this.readOnly) this.onChange(next);
@@ -131,23 +122,18 @@ export class RolePermissionGroup extends PureReactor {
     const count = RolePermissionSelection.countIn(this.selected, group);
     const total = RolePermissionSelection.namesOf(group).length;
     return (
-      <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
-        <button type="button" onClick={this.toggleOpen} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start">
-          <span className="flex items-center gap-2">
-            {this.expanded ? <FrameworkIcons.ChevronDown size={14} className="text-slate-400" /> : <FrameworkIcons.ChevronRight size={14} className="text-slate-400" />}
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{group.label}</span>
-          </span>
-          <span className={`text-[12px] font-medium tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
-            {AdminI18n.t('users.countOfTotal', { count, total })}
-          </span>
-        </button>
-        {this.expanded ? (
-          <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 dark:border-slate-800">
-            {this.renderAll()}
-            {this.renderPermissions()}
-            {this.renderCollections()}
-          </div>
-        ) : null}
+      // Always open: a group that folds hides the permissions a role holds behind a click, and a role is
+      // read by reading all of them. The head is a heading, not a control.
+      <section className={`${AdminClass.SURFACE} fc-role-group`}>
+        <div className="fc-role-group__head">
+          <h3 className="fc-role-group__title">{group.label}</h3>
+          <span className="fc-role-group__count" data-some={count > 0 ? 'true' : 'false'}>{AdminI18n.t('users.countOfTotal', { count, total })}</span>
+        </div>
+        <div className="fc-role-group__body">
+          {this.renderAll()}
+          {this.renderPermissions()}
+          {this.renderCollections()}
+        </div>
       </section>
     );
   }

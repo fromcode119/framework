@@ -1,3 +1,6 @@
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { DataTable } from '@/components/ui/view/data-table.client';
@@ -85,8 +88,14 @@ export class SourcesTable extends PureReactor {
     return <SourceRowActions row={row} building={this.buildingId === row.id} onBuild={this.onBuild} onEdit={this.onEdit} onRemove={this.onRemove} />;
   }
 
-  @bound private renderDetails(row: SourceRow): ReactNode {
-    return <SourceDetails row={row} />;
+  /** The row that is open, if any. */
+  private get opened(): SourceRow | null {
+    return this.openId ? this.rows.find((row) => String(row.id) === String(this.openId)) ?? null : null;
+  }
+
+  @bound private closeDetails(): void {
+    const row = this.opened;
+    if (row) this.onToggle(row);
   }
 
   render(): ReactNode {
@@ -102,13 +111,18 @@ export class SourcesTable extends PureReactor {
         onRowClick={this.onToggle}
         actions={this.renderActions}
         stickyActions={false}
-        expandedRowId={this.openId}
-        renderExpandedRow={this.renderDetails}
         page={this.page}
         limit={this.limit}
         totalDocs={this.totalDocs}
         onPageChange={this.onPageChange}
       />
+      {/* A source's details, in the sheet at the side. They used to unfold under its row. */}
+      {this.opened ? (
+        <EditSheet isOpen title={this.opened.slug} subtitle={SourcesTable.kind(this.opened.type)} onClose={this.closeDetails}
+          foot={<Button variant={ButtonVariant.SECONDARY} onClick={this.closeDetails}>{AdminI18n.t('common.close')}</Button>}>
+          <SourceDetails row={this.opened} />
+        </EditSheet>
+      ) : null}
       </div>
     );
   }

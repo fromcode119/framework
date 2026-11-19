@@ -60,9 +60,9 @@ export class CollectionQuickEditCard extends PureReactor {
       return <div className="py-6 text-center text-sm font-medium text-slate-500">{AdminI18n.t('collection.quickEdit.noFields')}</div>;
     }
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+      <div className="fc-quick-edit__grid">
         {this.quickEditFields.map((entry) => (
-          <div key={entry.name} className={`min-w-0 ${entry.spanClass}`}>
+          <div key={entry.name} className="fc-quick-edit__cell" data-wide={entry.span >= 2 ? 'true' : undefined}>
             <FieldRenderer
               field={entry.field}
               value={this.quickEditData[entry.name]}
@@ -82,30 +82,9 @@ export class CollectionQuickEditCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div onKeyDown={this.handleKey} onClick={(event) => event.stopPropagation()} className="px-1 py-1 sm:px-2">
+      <div onKeyDown={this.handleKey} onClick={(event) => event.stopPropagation()} className="fc-quick-edit">
         {this.renderStatus()}
         {this.renderFields()}
-        <div className="mt-4 flex flex-col-reverse sm:flex-row sm:items-center gap-2">
-          <p className="hidden sm:block flex-1 text-[12px] font-medium text-slate-400">{AdminI18n.t('collection.quickEdit.hint')}</p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={this.onClose}
-              className="flex-1 sm:flex-none h-9 px-4 rounded-lg border text-[13px] font-medium bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              {AdminI18n.t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              onClick={this.onSave}
-              disabled={this.isLoadingRow || this.isSavingRow}
-              className="flex-1 sm:flex-none h-9 px-4 rounded-lg text-[13px] font-medium inline-flex items-center justify-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              <FrameworkIcons.Save size={14} />
-              {AdminI18n.t(this.isSavingRow ? 'collection.quickEdit.saving' : 'collection.quickEdit.saveChanges')}
-            </button>
-          </div>
-        </div>
       </div>
     );
   }
