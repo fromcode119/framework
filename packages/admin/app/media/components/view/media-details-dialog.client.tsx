@@ -1,16 +1,15 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
-import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { Platform, bound, prop, state } from '@fromcode119/react-class-components';
+import type { ChangeEvent, ReactNode } from 'react';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Button } from '@/components/ui/view/button.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { Hint } from '@/components/ui/view/hint.client';
 import { AdminServices } from '@/lib/admin-services';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** A file's own words and where its bytes are kept, edited in the console's sheet. */
 export class MediaDetailsDialog extends AdminComponent {
   @prop declare item: IMediaItem | null;
   @prop declare isLoading: boolean;
@@ -21,36 +20,26 @@ export class MediaDetailsDialog extends AdminComponent {
   @state caption = '';
   /** Which storage space holds the bytes. Changing it makes the server MOVE the file. */
   @state visibility = 'public';
+  /** The file last shown, kept while the sheet closes so it does not empty on its way out. */
+  private shown: IMediaItem | null = null;
 
-  private syncOpenState(): void {
-    if (!Platform.isBrowser) return;
+  private take(): void {
     const item = this.item;
-    if (item) {
-      document.body.style.overflow = 'hidden';
-      this.alt = item.alt || '';
-      this.caption = item.caption || '';
-      this.visibility = String(item.visibility || 'public');
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    if (!item) return;
+    this.alt = item.alt || '';
+    this.caption = item.caption || '';
+    this.visibility = String(item.visibility || 'public');
   }
 
   componentDidMount(): void {
-    this.syncOpenState();
+    this.take();
   }
 
   componentDidUpdate(prevProps: { item: IMediaItem | null }): void {
-    if (prevProps.item?.id !== this.item?.id) {
-      this.syncOpenState();
-    }
+    if (prevProps.item?.id !== this.item?.id) this.take();
   }
 
-  componentWillUnmount(): void {
-    if (Platform.isBrowser) document.body.style.overflow = 'unset';
-  }
-
-  @bound private handleSubmit(e?: FormEvent): void {
-    e?.preventDefault();
+  @bound private save(): void {
     this.onConfirm(this.alt.trim(), this.caption.trim(), this.visibility);
   }
 
@@ -67,83 +56,22 @@ export class MediaDetailsDialog extends AdminComponent {
   }
 
   render(): ReactNode {
-    const item = this.item;
+    if (this.item) this.shown = this.item;
+    const item = this.shown;
     const isLoading = this.isLoading;
-    const onClose = this.onClose;
-    const theme = this.theme;
-    const alt = this.alt;
-    const caption = this.caption;
-
-    if (!item) return null;
-
-    const mediaUrl = AdminServices.getInstance().media.resolveMediaUrl(item.url);
-    const labelClass = `block text-[12px] font-medium mb-1.5 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`;
 
     return (
-    <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={onClose}
-        />
-
-        <div className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-8 max-h-[calc(100vh-3rem)] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
-          theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
-        }`}>
-          <div className="flex items-start gap-4 mb-6">
-            <div className={`p-3 rounded-xl flex-shrink-0 ${theme === ThemeMode.DARK ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'}`}>
-              <FrameworkIcons.Edit size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {AdminI18n.t('media.editDetails')}
-              </h3>
-              <p className={`mt-1 text-sm leading-relaxed truncate ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`} title={item.originalName}>
-                {item.originalName}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className={`p-1 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}
-            >
-              <FrameworkIcons.Close size={20} />
-            </button>
-          </div>
-
-          {item.mimeType.startsWith('image/') && (
-            <div className={`mb-6 rounded-xl overflow-hidden border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-800/50' : 'border-slate-100 bg-slate-50'}`}>
-              <img src={mediaUrl} alt={alt || item.originalName} className="w-full max-h-40 object-contain" />
-            </div>
-          )}
-
-          <form onSubmit={this.handleSubmit} className="space-y-5">
+      <EditSheet isOpen={Boolean(this.item)} title={AdminI18n.t('media.editDetails')} subtitle={item?.originalName} onClose={this.onClose} onSave={this.save} saving={isLoading} saveLabel={AdminI18n.t('media.saveDetails')} cancelLabel={AdminI18n.t('media.cancel')}>
+        {item ? (
+          <div className="fc-form-stack">
+            {item.mimeType.startsWith('image/') ? (
+              <div className="fc-preview"><img src={AdminServices.getInstance().media.resolvePreviewUrl(item)} alt={this.alt || item.originalName} /></div>
+            ) : null}
+            <Input label={AdminI18n.t('media.altText')} placeholder={AdminI18n.t('media.describeTheImageForScreen')} value={this.alt} onChange={this.handleAltChange} disabled={isLoading} autoFocus />
+            <Input label={AdminI18n.t('media.caption')} placeholder={AdminI18n.t('media.optionalCaptionShownWithThe')} value={this.caption} onChange={this.handleCaptionChange} disabled={isLoading} />
             <div>
-              <label className={labelClass}>{AdminI18n.t('media.altText')}</label>
-              <Input
-                type="text"
-                placeholder={AdminI18n.t('media.describeTheImageForScreen')}
-                value={alt}
-                onChange={this.handleAltChange}
-                disabled={isLoading}
-                className="w-full"
-                autoFocus
-              />
-            </div>
-            <div>
-              <label className={labelClass}>{AdminI18n.t('media.caption')}</label>
-              <Input
-                type="text"
-                placeholder={AdminI18n.t('media.optionalCaptionShownWithThe')}
-                value={caption}
-                onChange={this.handleCaptionChange}
-                disabled={isLoading}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>{AdminI18n.t('media.visibility')}</label>
               <Select
+                label={AdminI18n.t('media.visibility')}
                 value={this.visibility}
                 onChange={this.handleVisibilityChange}
                 disabled={isLoading}
@@ -152,23 +80,11 @@ export class MediaDetailsDialog extends AdminComponent {
                   { value: 'private', label: AdminI18n.t('media.privateOnlyReachableThroughA') },
                 ]}
               />
-              <p className="mt-1 text-[12px] text-slate-500">
-                {AdminI18n.t('media.changingThisMovesTheFile')}
-              </p>
+              <Hint>{AdminI18n.t('media.changingThisMovesTheFile')}</Hint>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={onClose} type="button" disabled={isLoading}>
-                {AdminI18n.t('media.cancel')}
-              </Button>
-              <Button variant={ButtonVariant.PRIMARY} className="flex-1" type="submit" isLoading={isLoading}>
-                {AdminI18n.t('media.saveDetails')}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </RootFramework>
+          </div>
+        ) : null}
+      </EditSheet>
     );
   }
 }

@@ -3750,3 +3750,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-path__step[aria-current='page'] { color: var(--fc-text); font-weight: var(--fc-weight-strong); cursor: default; }
 .fc-path__step:focus-visible { outline: 2px solid var(--fc-text); outline-offset: 2px; }
 .fc-path__sep { color: var(--fc-text-faint); }
+
+/* A picture shown whole inside a form: as wide as the form, never taller than a third of a sheet. */
+.fc-preview { display: flex; justify-content: center; overflow: hidden; border-radius: 6px; background: var(--fc-surface-muted); box-shadow: 0 0 0 1px var(--fc-border); }
+.fc-preview img { display: block; max-width: 100%; max-height: 200px; object-fit: contain; }
