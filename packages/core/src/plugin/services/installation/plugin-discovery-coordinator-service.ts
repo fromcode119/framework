@@ -39,6 +39,7 @@ export class PluginDiscoveryCoordinatorService {
           path: error.path,
           state: PluginState.ERROR,
           error: error.error,
+          loadFailed: true,
           instanceId: `err-${error.manifest.slug}-${Date.now()}`
         } as any);
       }
@@ -77,6 +78,7 @@ export class PluginDiscoveryCoordinatorService {
             path: stage.path,
             state: PluginState.ERROR,
             error: err.message,
+            loadFailed: true,
             instanceId: `err-reg-${slug}-${Date.now()}`
           } as any);
         }

@@ -207,6 +207,7 @@ export class LifecycleService {
   async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
+    if (plugin.loadFailed) throw new Error(`Plugin "${slug}" could not be loaded: ${plugin.error ?? 'unknown error'}`); // only a manifest, no code (see ILoadedPlugin.loadFailed)
     if (plugin.state === PluginState.ACTIVE) {
       if (options.force) {
         this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
@@ -214,7 +215,6 @@ export class LifecycleService {
       }
       return;
     }
-
     // A build that needs a newer core than this installation runs must never go ACTIVE: its UI bundle
     // would fail to import and take EVERY component of the plugin down with it (plugin auto-update
     // outran the core). Hold it with a clear reason until the operator updates the core. Deliberately
