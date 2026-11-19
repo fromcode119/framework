@@ -3251,3 +3251,13 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-notice__open { display: inline-flex; flex: none; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--fc-interactive); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; }
 .fc-notice-device { padding: 12px 16px; border-top: 1px solid var(--fc-border); }
 .fc-kit__nav { width: 240px; max-width: 100%; }
+/* Beside the menu, not over it: where the menu stands at the side, the bar is centred in what is left
+   of the window. At eight actions it reached under the menu and covered the account row. */
+@media (min-width: 1024px) {
+  body:has(aside.fc-nav.w-60) .fc-command-bar { inset-inline-start: calc(15rem + 16px); }
+  body:has(aside.fc-nav.w-14) .fc-command-bar { inset-inline-start: calc(3.5rem + 16px); }
+}
+
+/* ---------- A whole page that has nothing to show: not found, did not load ---------- */
+.fc-state-page { display: flex; align-items: center; justify-content: center; min-height: 60vh; padding: 24px 16px; }
+.fc-state-page__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }

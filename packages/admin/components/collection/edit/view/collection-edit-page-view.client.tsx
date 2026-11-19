@@ -12,6 +12,10 @@ import { RevisionModal } from '@/components/collection/edit/view/revision-modal.
 import { EditFooter } from '@/components/collection/edit/view/edit-footer.client';
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
 import { EditPageDialogs } from '@/components/collection/edit/edit-page-dialogs';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FrameworkIcons } from '@fromcode119/react';
 import { EditCollectionNotFound } from '@/components/collection/edit/edit-collection-not-found';
 import { CollectionCreateDisabled } from '@/components/collection/edit/collection-create-disabled';
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
@@ -42,6 +46,8 @@ export class CollectionEditPageView extends Reactor {
   @state pluginSettingsSchema: Record<string, any> = {};
   @state status: { type: NotificationType; message: string } | null = null;
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
+  /** The record was asked for and did not come: missing, or not this operator's to open. */
+  @state loadFailed = false;
   @state deleting = false;
   @state showDeleteConfirm = false;
   /** Form vs JSON view. Owned here; switched from the header's record menu. */
@@ -166,6 +172,17 @@ export class CollectionEditPageView extends Reactor {
     // The record is still on the way. Drawing the form now would print "Not filled in" over every
     // field it has, so the page holds the record's shape until the values are here to put in it.
     if (this.loading && !edit.isNew) return <>{<RecordSkeleton />}{dialogs}</>;
+    if (this.loadFailed && !edit.isNew) {
+      return (
+        <div className="fc-state-page">
+          <EmptyState
+            icon={<FrameworkIcons.Alert size={18} />}
+            title={AdminI18n.t('collection.edit.loadFailed')}
+            action={<Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('common.goBack')}</Button>}
+          />
+        </div>
+      );
+    }
 
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-500">

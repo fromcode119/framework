@@ -3,6 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -17,41 +18,23 @@ export class CollectionNotFound extends PureReactor {
   }
 
   render(): React.ReactNode {
-    const { theme, slug, pluginSlug } = this;
+    const { slug, pluginSlug } = this;
+    // The console's empty state, the same one a list with no rows shows. This was a page of its own:
+    // a 64px indigo glass in a glowing card under a 36px title.
     return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in-95 duration-700">
-      <div className={`p-8 rounded-xl mb-8 relative group ${theme === ThemeMode.DARK ? 'bg-slate-900 shadow-2xl shadow-black/50' : 'bg-white shadow-2xl shadow-slate-200'}`}>
-        <div className="absolute inset-0 bg-indigo-500/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
-        <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
+      <div className="fc-state-page">
+        <EmptyState
+          icon={<FrameworkIcons.Search size={18} />}
+          title={AdminI18n.t('collection.notFound.title')}
+          hint={AdminI18n.t('collection.notFound.text', { collection: slug, plugin: pluginSlug })}
+          action={(
+            <div className="fc-state-page__actions">
+              <Button variant={ButtonVariant.SECONDARY} onClick={this.goBack}>{AdminI18n.t('common.goBack')}</Button>
+              <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href="/">{AdminI18n.t('common.toDashboard')}</Button>
+            </div>
+          )}
+        />
       </div>
-      
-      <h2 className={`text-4xl font-medium tracking-tight mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-        {AdminI18n.t('collection.notFound.title')}
-      </h2>
-      
-      <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-10 px-6">
-        {AdminI18n.t('collection.notFound.text', { collection: slug, plugin: pluginSlug })}
-      </p>
-
-      <div className="flex items-center gap-4">
-        <Button 
-          variant={ButtonVariant.GHOST}
-          onClick={this.goBack}
-          className="rounded-xl px-8 font-medium tracking-wide text-xs text-slate-400"
-        >
-          {AdminI18n.t('common.goBack')}
-        </Button>
-        <Button 
-          variant={ButtonVariant.PRIMARY} 
-          as={AdminLink}
-          href="/"
-          className="rounded-xl px-10 py-5 font-medium tracking-wide text-xs shadow-2xl shadow-indigo-500/30"
-          icon={<FrameworkIcons.Layout size={18} />}
-        >
-          {AdminI18n.t('common.toDashboard')}
-        </Button>
-      </div>
-    </div>
     );
   }
 }
