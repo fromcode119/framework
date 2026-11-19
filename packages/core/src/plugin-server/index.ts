@@ -37,3 +37,9 @@ export type { IPluginHealthRouteHandlerOptions } from '@core/plugin/interfaces/p
 export type { PluginHealthStatus } from '@core/enums/plugin-health-status.enum';
 export type { IRequestStore } from '@core/context/interfaces/request-store.interface';
 export type { IGrantEvaluable } from '@core/security/interfaces/grant-evaluable.interface';
+
+// zod, so a plugin can declare an event-contract schema (`context.events.define({ schema })`) against
+// the SAME zod the framework validates with — a second copy would make every schema a type mismatch.
+// Server-only on purpose: zod is ~59 KB and must never reach a browser bundle, so it is NOT in
+// `@fromcode119/core/client`; event contracts are declared in a plugin's server registration.
+export { z } from 'zod';
