@@ -160,8 +160,18 @@ export class StackStore {
     fs.rmSync(path.join(this.portsRoot, String(port)), { force: true });
   }
 
-  /** Removes the stack's files. The containers are the caller's job — they go first. */
+  /**
+   * Removes the stack's files. The containers are the caller's job — they go first.
+   *
+   * Retried, because Docker is still letting go of the bind-mount directories for a moment after the
+   * containers are gone: one pass failed with ENOTEMPTY and left a half-removed stack that `stack up`
+   * then refused as "already exists" while `stack down` said there was no such stack.
+   */
   forget(name: string): void {
-    fs.rmSync(this.rootFor(name), { recursive: true, force: true });
+    fs.rmSync(this.rootFor(name), { recursive: true, force: true, maxRetries: StackStore.REMOVE_RETRIES, retryDelay: StackStore.REMOVE_RETRY_MS });
   }
+
+  /** How often, and how far apart, removing a stack's directory is tried again. */
+  private static readonly REMOVE_RETRIES = 10;
+  private static readonly REMOVE_RETRY_MS = 300;
 }
