@@ -40,3 +40,8 @@ export { SystemRedirectService } from '@fromcode119/core/plugin-server';
 export { PluginRegistry } from '@fromcode119/plugins';
 export { MediaImageOptimizer } from '@fromcode119/media';
 export type { IMediaImageOptimizationOptions, IMediaImageOptimizationResult } from '@fromcode119/media';
+
+// zod, for declaring event-contract schemas in a plugin's server registration
+// (`context.events.define({ schema: z.object({...}) })`). Server-only — zod must not reach a browser
+// bundle — so it lives here, not in the main (browser-safe) SDK entry.
+export { z } from '@fromcode119/core/plugin-server';
