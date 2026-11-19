@@ -37,6 +37,11 @@
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
+  /* What a ticked box and a switched-on switch are filled with — one colour for both, the reference's
+     interactive blue. They were two: the checkbox took the brand indigo, the switch a literal blue. */
+  --fc-interactive: #3b82f6;
+  /* A control that cannot be used: its fill and its ink, instead of the live control at half opacity. */
+  --fc-surface-disabled: #f4f4f5;
   --fc-info: #2563eb;
 
   /* Fields and the edit sheet: how every field reads and how a piece of a record is edited, decided
@@ -310,6 +315,7 @@
  * --primary/…) get dark values even when no frontend theme has injected its mapping.
  */
 html.dark {
+  --fc-surface-disabled: #27272a;
   /* The tints, inverted: a dark wash of the same hue with light text on it. Same names, so no
      component needs a dark-mode rule of its own. */
   --fc-success-soft: #052e22;
@@ -894,8 +900,8 @@ html.dark {
 .fc-state-dot[data-tone="info"] { --fc-tone: var(--fc-info); }
 
 /* The admin's tick box: a plain square in the console's ink, no glow; its label reads at body size. */
-.fc-checkbox__box { display: flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid color-mix(in srgb, var(--fc-text-muted) 55%, transparent); border-radius: 4px; background: var(--fc-surface); color: var(--fc-brand-contrast); transition: background-color .15s, border-color .15s; }
-.fc-checkbox__box[data-checked="true"] { border-color: var(--fc-brand); background: var(--fc-brand); }
+.fc-checkbox__box { display: flex; flex: none; align-items: center; justify-content: center; width: 15px; height: 15px; border: 1px solid var(--fc-border-strong); border-radius: 3px; background: var(--fc-surface); color: var(--fc-brand-contrast); transition: background-color .15s, border-color .15s; }
+.fc-checkbox__box[data-checked="true"] { border-color: var(--fc-interactive); background: var(--fc-interactive); }
 .fc-checkbox__box[data-disabled="true"] { opacity: .5; }
 .fc-checkbox__dash { width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
 .fc-checkbox__label { font-size: 13px; color: var(--fc-text); user-select: none; }
@@ -945,7 +951,7 @@ html.dark {
   background: #d4d4d8; transition: background-color .15s ease-out; }
 .fc-switch::before { content: ''; position: absolute; inset: -11px -6px; }
 /* Blue, not the site's brand accent: a switch is a state, not a brand surface. */
-.fc-switch--on { background: #3b82f6; }
+.fc-switch--on { background: var(--fc-interactive); }
 .fc-switch:disabled { cursor: not-allowed; opacity: .5; }
 .fc-switch:focus { outline: none; }
 .fc-switch:focus-visible { box-shadow: 0 0 0 2px var(--fc-surface), 0 0 0 4px var(--primary); }
@@ -1024,14 +1030,14 @@ html.dark {
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
-.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge { display: inline-flex; align-items: center; gap: 6px; min-height: var(--fc-badge-h); padding: 0 4px 0 6px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; line-height: 1; color: var(--fc-text-muted); background: var(--fc-surface-muted); white-space: nowrap; }
 .fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
 .fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
 .fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
 .fc-state-badge[data-tone="danger"] { --fc-tone: var(--fc-danger); }
 .fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
 /* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
-.fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; font-size: var(--fc-control-text); line-height: 20px; }
 .fc-copy-value__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--fc-control-h); height: var(--fc-control-h); border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
 .fc-copy-value__button::before { content: ''; position: absolute; inset: -6px; }
@@ -1773,7 +1779,7 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   padding: 0 4px;
   border: 1px solid transparent;
   border-radius: var(--fc-control-radius);
-  font-size: var(--fc-control-text);
+  font-size: var(--fc-badge-text);
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
@@ -2789,7 +2795,12 @@ textarea.fc-record-json__layer { caret-color: var(--fc-text); }
 /* A select while its list is open wears the edge a focused field wears. It used to take an indigo
    1px border and a 4px indigo ring — a shape no other control in this console has. */
 .fc-field--open { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
-.fc-field:disabled { color: var(--fc-text-muted); }
+.fc-field:disabled { color: var(--fc-text-faint); background: var(--fc-surface-disabled); cursor: not-allowed; }
+.fc-field:disabled::placeholder { color: var(--fc-text-faint); }
+/* A field whose value was refused: a red ring where the hairline was, and the same ring wider on focus —
+   the reference's error edge. It was a rose border on a field that has no border, so nothing showed. */
+.fc-field--error, .fc-field--error:focus, .fc-field--error:focus-visible { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
+.fc-field-error { margin: 0; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-danger); }
 /* A box of several lines is not a line: it keeps the height its own content needs. */
 textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 
@@ -2877,7 +2888,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
   background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow);
   cursor: pointer; transition: background-color .15s ease, color .15s ease;
 }
-.fc-btn:disabled { pointer-events: none; opacity: .5; }
+.fc-btn:disabled { pointer-events: none; background: var(--fc-surface-disabled); color: var(--fc-text-faint); }
+.fc-btn--ghost:disabled { background: transparent; }
 .fc-btn--primary {
   background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);
   box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(0 0 0 / .4), 0 0 0 1px var(--fc-btn-primary-edge);
@@ -3001,3 +3013,9 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-sro-table__foot .fc-sro-table__page:disabled {
   color: var(--fc-text-faint); opacity: 1; cursor: default; box-shadow: none;
 }
+
+/* The kit sheet: every component in a card of its own, its states side by side. */
+.fc-kit { display: flex; flex-direction: column; gap: var(--fc-record-gap); width: 100%; max-width: 1040px; margin-inline: auto; padding: 24px 16px 64px; }
+.fc-kit__row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 16px var(--fc-card-pad-x); }
+.fc-kit__cell { width: 220px; max-width: 100%; }
+.fc-kit__cell--wide { width: 100%; }

@@ -41,15 +41,10 @@ export class TextArea extends PureReactor {
           {...props}
           value={value}
           className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
-            ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
+            ${error ? 'fc-field--error' : ''}`}
         />
         {error && (
-          <div className="flex items-center gap-2 px-1 animate-fade-in-up">
-            <span className={UiFieldUtils.TEXT.ERROR}>
-              {error}
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-r from-rose-500/20 to-transparent" />
-          </div>
+          <p className="fc-field-error">{error}</p>
         )}
       </div>
     );
