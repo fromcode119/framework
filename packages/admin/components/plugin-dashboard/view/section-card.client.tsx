@@ -1,6 +1,8 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
 
 export class SectionCard extends PureReactor {
   @prop declare title: string;
@@ -14,32 +16,24 @@ export class SectionCard extends PureReactor {
   @prop declare subtitleAsHint?: boolean;
 
   /**
-   * The surface IS `AdminClass.SURFACE` — background, border and shadow come from it, so this card
-   * follows the console (and its shadow setting) instead of painting its own white. It used to add
-   * `bg-white border-slate-200/70 shadow-sm` and an indigo icon tile in the markup, which is why a
-   * plugin's dashboard stayed light-grey and square-shadowed whatever the console was set to. The
-   * look lives in `admin.css` (`.fc-section-card__*`).
+   * The console's own cards, not a card of its own: a list that draws its rows edge to edge is the
+   * list card, anything else is the record card — so a plugin's dashboard has the same head, the same
+   * insets and the same corner as every other screen. `icon` is accepted and not drawn: the console's
+   * card heads carry a name and what stands beside it, never a tile.
    */
   render(): ReactNode {
-    const { title, subtitle, icon, actions, children } = this;
-    const noPadding = this.noPadding ?? false;
-    const className = this.className ?? '';
+    const { title, subtitle, actions, children } = this;
+    const line = subtitle && !this.subtitleAsHint ? subtitle : undefined;
+    if (this.noPadding) {
+      return <ListShell title={title} subtitle={line} actions={actions} className={this.className}>{children}</ListShell>;
+    }
     return (
-      <section className={`fc-section-card ${AdminClass.SURFACE} overflow-hidden ${className}`}>
-        <header className="fc-section-card__head">
-          <div className="fc-section-card__name">
-            {icon && <div className="fc-section-card__icon">{icon}</div>}
-            <div className="min-w-0">
-              <h2 title={this.subtitleAsHint ? subtitle : undefined} className="fc-section-card__title">{title}</h2>
-              {subtitle && !this.subtitleAsHint && (
-                <p className="fc-section-card__subtitle">{subtitle}</p>
-              )}
-            </div>
-          </div>
-          {actions && <div className="fc-section-card__actions">{actions}</div>}
-        </header>
-        {noPadding ? children : <div className="fc-section-card__body">{children}</div>}
-      </section>
+      <RecordCard title={title} aside={actions} className={this.className}>
+        <div className="fc-stack">
+          {line ? <Text size="small" muted as="p">{line}</Text> : null}
+          {children}
+        </div>
+      </RecordCard>
     );
   }
 }

@@ -1,3 +1,5 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -57,28 +59,18 @@ export class DashboardRecentEdits extends AdminComponent {
     if (this.edits.length === 0) return null;
 
     return (
-      <SectionCard title={AdminI18n.t('dashboard.leftOff')} noPadding>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+      <ListShell title={AdminI18n.t('dashboard.leftOff')}>
+        <div>
           {this.edits.map((edit) => (
-            <button
+            <ListRow
               key={`${edit.collectionSlug}:${edit.recordId}`}
-              type="button"
-              onClick={() => this.open(edit)}
-              className="flex w-full items-center gap-2.5 px-4 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
-            >
-              <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
-                {/* A localized title is a MAP keyed by locale, not a string; `String()` printed
-                    it as raw JSON ({"en":"Home"}) in this panel. */}
-                {AdminServices.getInstance().localization.resolveAnyString(edit.title)}
-              </span>
-              <span className="shrink-0 text-[12px] text-slate-500">{this.collectionName(edit)}</span>
-              <span className="shrink-0 text-[12px] text-slate-400 tabular-nums">
-                {RelativeTimeFormatter.fromNow(edit.editedAt, '')}
-              </span>
-            </button>
+              // A localized title is a MAP keyed by locale, not a string; `String()` printed it as raw JSON.
+              title={<button type="button" className="fc-ext-row__link" onClick={() => this.open(edit)}>{AdminServices.getInstance().localization.resolveAnyString(edit.title)}</button>}
+              description={[this.collectionName(edit), RelativeTimeFormatter.fromNow(edit.editedAt, '')].filter(Boolean).join(' · ')}
+            />
           ))}
         </div>
-      </SectionCard>
+      </ListShell>
     );
   }
 }

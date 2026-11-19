@@ -1,3 +1,4 @@
+import { Hint } from '@/components/ui/view/hint.client';
 import type { PointerEvent, ReactElement, ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { DashboardWidgetSize } from '@fromcode119/core/client';
@@ -135,14 +136,14 @@ export class DashboardWidgetBoard extends AdminComponent {
     return (
       <div className="fc-dashboard__toolbar">
         {quiet.length ? <p className="fc-dashboard__quiet">{AdminI18n.t('dashboard.widgets.quiet', { list: quiet.join(' · ') })}</p> : null}
-        {this.saveFailed ? <span className="me-auto text-[12px] text-rose-600">{AdminI18n.t('dashboard.widgets.saveFailed')}</span> : null}
+        {this.saveFailed ? <Hint variant="error" className="me-auto">{AdminI18n.t('dashboard.widgets.saveFailed')}</Hint> : null}
         {this.editing ? (
           <>
-            <span className="me-auto text-[12px] text-slate-500">{AdminI18n.t('dashboard.widgets.editHint')}</span>
+            <Hint className="me-auto">{AdminI18n.t('dashboard.widgets.editHint')}</Hint>
             <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={() => this.reset()}>
               <FrameworkIcons.Refresh size={14} /> {AdminI18n.t('dashboard.widgets.reset')}
             </Button>
-            <Button size={FieldSize.SM} onClick={() => { this.editing = false; }}>
+            <Button size={FieldSize.SM} variant={ButtonVariant.PRIMARY} onClick={() => { this.editing = false; }}>
               <FrameworkIcons.Check size={14} /> {AdminI18n.t('dashboard.widgets.done')}
             </Button>
           </>

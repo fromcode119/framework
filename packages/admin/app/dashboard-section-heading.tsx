@@ -1,3 +1,5 @@
+import { Heading } from '@/components/ui/view/heading.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
@@ -18,15 +20,9 @@ export class DashboardSectionHeading extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="flex items-baseline gap-2 px-0.5">
-        <h2 className="text-[12px] font-medium text-slate-400 dark:text-slate-500">
-          {this.label}
-        </h2>
-        {this.count !== undefined && this.count !== null && this.count !== '' ? (
-          <span className="rounded-full bg-slate-100 px-1.5 text-[12px] font-medium leading-[16px] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-            {this.count}
-          </span>
-        ) : null}
+      <div className="fc-chip-row">
+        <Heading level="h3">{this.label}</Heading>
+        {this.count !== undefined && this.count !== null && this.count !== '' ? <Badge>{this.count}</Badge> : null}
       </div>
     );
   }

@@ -1,3 +1,5 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminScope } from '@fromcode119/core/client';
@@ -68,18 +70,21 @@ export class DashboardActivityChart extends PureReactor {
 
     if (window.isEmpty) {
       return (
-        <Card title={AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
+        <RecordCard title={AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
+          <div className="fc-stack">
           <EmptyState inline title={this.emptyCopy} />
-        </Card>
+        </div>
+        </RecordCard>
       );
     }
 
     if (!window.hasShape) {
       return (
-        <Card title={window.firstActiveLabel ? AdminI18n.t('dashboard.activitySince', { subject: this.subject, since: window.firstActiveLabel }) : AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
-          <div className="flex items-baseline gap-2.5 mb-3">
-            <span className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{window.totalEvents}</span>
-            <span className="text-[12px] text-slate-500">
+        <RecordCard title={window.firstActiveLabel ? AdminI18n.t('dashboard.activitySince', { subject: this.subject, since: window.firstActiveLabel }) : AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
+          <div className="fc-stack">
+          <div className="fc-figure">
+            <span className="fc-figure__value">{window.totalEvents}</span>
+            <span className="fc-figure__unit">
               {window.totalEvents === 1 ? AdminI18n.t('dashboard.eventWord') : AdminI18n.t('dashboard.eventsWord')}
               {this.errorSuffix(window.totalErrors)}
             </span>
@@ -87,12 +92,14 @@ export class DashboardActivityChart extends PureReactor {
           {/* Bars, not a line: a handful of daily counts is a comparison, and a line through them
               would assert a trend that three days cannot support. */}
           <DashboardActivityBars buckets={window.recentBuckets(DashboardActivityChart.BAR_DAYS)} />
-        </Card>
+        </div>
+        </RecordCard>
       );
     }
 
     return (
-      <Card title={AdminI18n.t('dashboard.activityDays', { subject: this.subject, days: this.days_ })}>
+      <RecordCard title={AdminI18n.t('dashboard.activityDays', { subject: this.subject, days: this.days_ })}>
+          <div className="fc-stack">
         <PluginTrendChart
           height={140}
           xLabels={window.buckets.map((bucket) => bucket.label)}
@@ -102,10 +109,9 @@ export class DashboardActivityChart extends PureReactor {
           ]}
           formatValue={(value) => String(Math.round(value))}
         />
-        <p className="mt-3 text-[12px] font-medium text-slate-400">
-          {AdminI18n.t('dashboard.loggedEventsInWindow', { count: window.totalEvents })}
-        </p>
-      </Card>
+        <Hint>{AdminI18n.t('dashboard.loggedEventsInWindow', { count: window.totalEvents })}</Hint>
+      </div>
+        </RecordCard>
     );
   }
 }

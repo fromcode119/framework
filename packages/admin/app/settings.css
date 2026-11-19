@@ -221,7 +221,7 @@
 .fc-ext-row__link:hover { color: var(--fc-brand); }
 .fc-ext-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-ext-row__desc--error { color: var(--fc-danger); font-weight: 500; }
-.fc-ext-row__meta { flex: none; width: var(--fc-settings-meta-width); text-align: end; font-size: 11px; color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-ext-row__meta { flex: 0 1 auto; min-width: var(--fc-settings-meta-width); max-width: 45%; text-align: end; font-size: 11px; color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-ext-row__actions { flex: none; display: flex; align-items: center; gap: 8px; }
 .fc-ext-row__more {
   display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
@@ -254,8 +254,11 @@
 .fc-ext-section--first { margin-top: 4px; }
 .fc-ext-toolbar__note { flex: 1 1 16rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
 @media (max-width: 639.98px) {
-  .fc-ext-row__meta { display: none; }
-  .fc-ext-row { gap: 10px; }
+  /* The side note goes under the row rather than away: what it says is as true on a phone. */
+  .fc-ext-row { gap: 10px; flex-wrap: wrap; row-gap: 2px; }
+  .fc-ext-row__text { flex: 1 1 0; }
+  .fc-ext-row__meta { order: 9; flex: 1 1 100%; min-width: 0; max-width: none; text-align: start; }
+  .fc-ext-row:has(> .fc-ext-row__icon) > .fc-ext-row__meta, .fc-ext-row:has(> .fc-avatar) > .fc-ext-row__meta { padding-inline-start: 42px; }
 }
 
 /* ── Collection list: what the list itself offers, under the records ─────────────────────────── */

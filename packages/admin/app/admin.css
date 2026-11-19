@@ -1950,7 +1950,6 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 @media (max-width: 640px) {
   .fc-list-shell > .fc-record-card__head {
     align-items: flex-start;
-    min-height: 0;
     padding-block: 12px;
     row-gap: 10px;
   }
@@ -1958,6 +1957,10 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
     width: 100%;
     justify-content: flex-start;
   }
+  /* One short thing — a state, a single quiet link — stays beside the name: a line of its own for
+     "Open" made every such head half as tall again. */
+  .fc-list-shell > .fc-record-card__head:has(> .fc-record-card__aside > :only-child:is(.fc-badge, .fc-state-badge, .fc-btn--ghost)) { align-items: center; }
+  .fc-list-shell > .fc-record-card__head > .fc-record-card__aside:has(> :only-child:is(.fc-badge, .fc-state-badge, .fc-btn--ghost)) { width: auto; margin-inline-start: auto; }
 }
 .fc-record-card__subtitle { flex-basis: 100%; margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); order: 3; }
 /* What is on the right of the band keeps together. */
@@ -3648,9 +3651,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 @media (max-width: 640px) {
   /* Buttons, tabs or a link beside the name: they go under it, from the card's own edge. Only a lone
      state badge stays beside the name — it is short and belongs to it. */
-  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-btn, .fc-tabs)) { flex-wrap: wrap; align-items: flex-start; min-height: 0; padding-block: 12px; row-gap: 8px; }
-  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-btn, .fc-tabs)) > .fc-record-card__aside { flex: 1 1 100%; justify-content: flex-start; }
-  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-btn, .fc-tabs)) .fc-record-card__table-tools { justify-content: flex-start; flex-wrap: wrap; }
+  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-tabs, .fc-record-card__table-tools)) { flex-wrap: wrap; align-items: flex-start; min-height: 0; padding-block: 12px; row-gap: 8px; }
+  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-tabs, .fc-record-card__table-tools)) > .fc-record-card__aside { flex: 1 1 100%; justify-content: flex-start; }
+  .fc-record-card__head:has(> .fc-record-card__aside :is(.fc-tabs, .fc-record-card__table-tools)) .fc-record-card__table-tools { justify-content: flex-start; flex-wrap: wrap; }
   /* A ghost button starting a line stands on the card's edge, not its own padding in from it. */
   .fc-record-card__head .fc-record-card__table-tools > .fc-btn--ghost:first-child { margin-inline-start: -8px; }
 }
@@ -3768,3 +3771,19 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-file-chip__picture { display: flex; flex: none; align-items: center; justify-content: center; width: 24px; height: 24px; overflow: hidden; border-radius: 4px; background: var(--fc-surface); color: var(--fc-text-faint); }
 .fc-file-chip__picture img { width: 100%; height: 100%; object-fit: cover; }
 .fc-file-chip__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* One figure said large, with the word for what it counts. */
+.fc-figure { display: flex; align-items: baseline; gap: 8px; }
+.fc-figure__value { font-size: 24px; line-height: 32px; font-weight: var(--fc-weight-strong); color: var(--fc-text); font-variant-numeric: tabular-nums; }
+.fc-figure__unit { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+
+/* ── A dashboard widget while the dashboard is being arranged ─────────────────────────────────── */
+.fc-widget-edit { min-width: 0; cursor: grab; touch-action: none; user-select: none; border-radius: var(--fc-card-radius); outline: 1px dashed var(--fc-border-strong, var(--fc-border)); outline-offset: 4px; transition: opacity var(--fc-dur-ui) var(--fc-ease), background-color var(--fc-dur-ui) var(--fc-ease); }
+.fc-widget-edit:active { cursor: grabbing; }
+.fc-widget-edit--dragging { opacity: .4; }
+.fc-widget-edit--target { outline: 2px solid var(--fc-text); background: var(--fc-surface-muted); }
+.fc-widget-edit__content { pointer-events: none; }
+.fc-widget-edit__bar { display: flex; align-items: center; gap: 8px; min-height: 40px; margin-bottom: 8px; padding: 4px 4px 4px 12px; border-radius: var(--fc-card-radius); background: var(--fc-surface); box-shadow: 0 0 0 1px var(--fc-border); color: var(--fc-text-muted); }
+.fc-widget-edit__name { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-text); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-widget-edit__bar > .fc-btn, .fc-widget-edit__bar > .fc-tabs { flex: none; }
+@media (max-width: 640px) { .fc-widget-edit__bar > .fc-badge { display: none; } }

@@ -1,3 +1,7 @@
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Loader } from '@/components/ui/view/loader.client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
@@ -52,9 +56,9 @@ export class DashboardWidgetCard extends Reactor {
 
   render(): ReactNode {
     const link = this.href ? (
-      <AdminLink href={this.href} className="inline-flex items-center gap-1 text-[12px] font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+      <Button as={AdminLink} href={this.href} variant={ButtonVariant.GHOST}>
         {this.linkLabel || AdminI18n.t('dashboard.widgets.open')} <FrameworkIcons.ArrowRight size={13} />
-      </AdminLink>
+      </Button>
     ) : undefined;
     return (
       <SectionCard className="fc-widget-card" title={this.title} subtitle={this.subtitle} subtitleAsHint icon={this.icon} actions={link} noPadding={this.noPadding}>
@@ -64,10 +68,8 @@ export class DashboardWidgetCard extends Reactor {
   }
 
   private renderBody(): ReactNode {
-    if (this.failed) return <p className="px-4 py-6 text-center text-[12px] text-rose-600">{AdminI18n.t('dashboard.widgets.loadFailed')}</p>;
-    if (!this.loaded) {
-      return <div className="flex h-24 items-center justify-center"><div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" /></div>;
-    }
+    if (this.failed) return <Alert tone="danger">{AdminI18n.t('dashboard.widgets.loadFailed')}</Alert>;
+    if (!this.loaded) return <Loader />;
     return this.renderData(this.data);
   }
 }
