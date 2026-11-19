@@ -12,7 +12,6 @@ import { CollectionRecordLinksPanel } from '@/components/collection/edit/collect
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
-import { RecordJsonCard } from '@/components/collection/edit/view/record-json-card.client';
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
@@ -232,15 +231,9 @@ export class EditPageBody extends PureReactor {
                 slotProps={slotProps}
               />
             )}
-            {/* The record as it is stored, under everything the page draws from it. */}
-            {!isNew && (
-              <RecordJsonCard
-                formData={formData}
-                setFormData={setFormData}
-                collectionSlug={resolvedSlug || slug}
-                renderedFieldNames={renderedFieldNames}
-              />
-            )}
+            {/* The record as it is stored is reached from the ⋯ menu's "Show as JSON", which swaps the
+                whole page to the JSON view — a raw-JSON CARD under every record as well was the same
+                thing twice, and a wall of keys the reference never shows on the record. */}
             {/* What else this record holds: one row per section the page does not draw, at its foot. */}
             {!isNew && (
               <EditMoreSectionsCard
