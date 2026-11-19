@@ -42,6 +42,13 @@ export class StackTemplate {
     return path.join(stacksRoot, StackTemplate.DIRECTORY, name);
   }
 
+  /** The tag a named template was captured on, or null when there is no such template. */
+  static versionAt(stacksRoot: string, name: string): string | null {
+    const file = path.join(StackTemplate.rootFor(stacksRoot, name), 'template.json');
+    if (!fs.existsSync(file)) return null;
+    return String((JSON.parse(fs.readFileSync(file, 'utf8')) as { version?: string }).version || '') || null;
+  }
+
   static exists(stacksRoot: string, name: string): boolean {
     return fs.existsSync(path.join(StackTemplate.rootFor(stacksRoot, name), 'template.json'));
   }
