@@ -37,6 +37,7 @@ describe('StackPlan and the shared mirror', () => {
 
     expect(plan.overlay()).toContain(`${mirrored}:/srv/plugins/shop:ro`);
     expect(plan.mirroredPlugins()).toEqual([mirrored]);
+    expect(plan.changedPlugins()).toEqual([]);
   });
 
   it('keeps a plugin worktree outside the mirror writable', () => {
@@ -46,6 +47,7 @@ describe('StackPlan and the shared mirror', () => {
 
     expect(plan.overlay()).toContain(`${worktree}:/srv/plugins/shop\n`);
     expect(plan.mirroredPlugins()).toEqual([]);
+    expect(plan.changedPlugins()).toEqual([worktree]);
     fs.rmSync(worktree, { recursive: true, force: true });
   });
 });

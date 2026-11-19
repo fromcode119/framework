@@ -203,6 +203,11 @@ export class StackPlan {
     return this.extensions.missing(this.request.plugins);
   }
 
+  /** The named plugins that are worktrees: the ones being changed, built before the stack starts. */
+  changedPlugins(): string[] {
+    return this.request.plugins.filter((plugin) => !this.extensions.isMirrored(plugin));
+  }
+
   /** The named plugins that are the mirror's own copy, mounted read-only and not a change. */
   mirroredPlugins(): string[] {
     return this.request.plugins.filter((plugin) => this.extensions.isMirrored(plugin));

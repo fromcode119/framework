@@ -7,6 +7,7 @@ import { StackStore } from '@cli/services/stack/stack-store';
 import { StackPlan } from '@cli/services/stack/stack-plan';
 import { StackImageTag } from '@cli/services/stack/stack-image-tag';
 import { StackTemplate } from '@cli/services/stack/stack-template';
+import { StackPluginBuild } from '@cli/services/stack/stack-plugin-build';
 
 /**
  * `fromcode stack` — a throwaway platform for one worktree.
@@ -32,7 +33,7 @@ export class StackCommandService {
       .command('up <name>')
       .description('Start an isolated stack running a worktree (builds no images)')
       .option('-f, --framework <path>', 'Framework worktree to run', process.cwd())
-      .option('-p, --plugin <path...>', 'Plugin worktree to mount', [])
+      .option('-p, --plugin <path...>', 'Plugin worktree to mount (built in place before the stack starts)', [])
       // NOT `--version`: commander already owns that on the program, so the flag printed the CLI's
       // own version and never started a stack.
       .option('-t, --tag <tag>', 'Released image tag to run on (default: the worktree version if it is here, else the template\'s, else the newest here)')
@@ -51,7 +52,9 @@ export class StackCommandService {
             version: StackCommandService.tagFor(framework, options),
             port: new StackStore().claimPort(name, options.port as number | undefined),
           };
-          StackCommandService.reportDependencies(new StackPlan(request));
+          const plan = new StackPlan(request);
+          StackCommandService.reportDependencies(plan);
+          await StackPluginBuild.all(plan.changedPlugins());
           await service.up(request, options.from ? String(options.from) : undefined);
 
           console.log(chalk.green(`\nStack "${name}" is up.`));
