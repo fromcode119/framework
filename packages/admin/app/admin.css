@@ -1918,7 +1918,9 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 /* A band is divided from the one above it — but a slot that brought nothing is not a band, and a
    hairline over nothing is the stray line a plugin's empty slot used to draw. */
 .fc-list-shell > * + *:not(:empty) { border-top: 1px solid var(--fc-border); }
-.fc-list-shell > .fc-record-card__head { flex-wrap: wrap; }
+/* The head draws no line of its own here: the band under it brings the hairline. With both, every
+   list had a 2px line under its name. */
+.fc-list-shell > .fc-record-card__head { flex-wrap: wrap; border-bottom: 0; }
 /* The table inside the shell has no frame of its own: the shell IS the frame. Its own border and
    corners stay for the tables that still stand alone (a plugin's panel, a record's section). */
 .fc-list-shell .fc-list-frame { border: 0; border-radius: 0; background: transparent; }
@@ -2888,13 +2890,11 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-btn--ghost:disabled { background: transparent; }
 .fc-btn--primary {
   background: var(--fc-btn-primary); color: rgb(255 255 255 / .88);
-  /* ONE edge: the fill itself. A darker ring round the fill with a light line inside it read as a
-     button drawn twice. */
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / .24);
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(0 0 0 / .4), 0 0 0 1px var(--fc-btn-primary-edge);
 }
 .fc-btn--danger {
   background: var(--fc-btn-danger); color: #fff;
-  box-shadow: 0 1px 2px 0 rgb(190 18 60 / .24);
+  box-shadow: inset 0 .75px 0 0 rgb(255 255 255 / .2), 0 1px 2px 0 rgb(190 18 60 / .4), 0 0 0 1px var(--fc-btn-danger-edge);
 }
 /* A button that rides INSIDE a field — the language chip over a text box. At the console's 28px it
    left 2px of air above and below in a 32px field and read as a second control stacked on the first.
@@ -3442,3 +3442,6 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
   .fc-kitdoc__group-name { display: none; }
   .fc-kitdoc__demo { padding: 16px; }
 }
+
+/* On the kit's sheet the page header stands clear of the card under it, so its line and the card's edge do not read as one thick line. */
+.fc-kit__page-header { margin-bottom: 8px; }
