@@ -88,7 +88,7 @@ export class FileDropzone extends AdminComponent<IFileDropzoneProps> {
         />
 
         <span className="fc-dropzone__icon" aria-hidden="true">
-          <FrameworkIcons.Upload size={20} strokeWidth={2} />
+          <FrameworkIcons.Upload size={15} />
         </span>
 
         {file ? (

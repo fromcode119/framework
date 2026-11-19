@@ -1,3 +1,4 @@
+import { AdminClass } from '@/lib/admin-class';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
@@ -11,10 +12,10 @@ export class CardHeader extends PureReactor {
     const desc = this.description || this.subtitle;
 
     return (
-      <div className="mb-4 flex items-center justify-between">
+      <div className={`${AdminClass.of('card__head')} ${AdminClass.of('card__head--split')}`}>
         <div>
-          <h3 className="text-base font-medium text-slate-900 dark:text-white">{this.title}</h3>
-          {desc ? <p className="mt-1 text-xs text-slate-500">{desc}</p> : null}
+          <h3 className={AdminClass.of('card__title')}>{this.title}</h3>
+          {desc ? <p className={AdminClass.of('card__desc')}>{desc}</p> : null}
         </div>
         {this.badge}
       </div>

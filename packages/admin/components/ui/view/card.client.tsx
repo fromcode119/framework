@@ -28,7 +28,7 @@ export class Card extends PureReactor {
         // Merged, not concatenated: a caller's `p-0`/`p-6` sat beside the default `p-4` at equal
         // specificity, so whichever the stylesheet emitted later won — every media tile rendered its
         // thumbnail inset in a padded box. The caller's padding now replaces the default.
-        className={twMerge(`${AdminClass.SURFACE} text-[var(--card-foreground)]`, noPadding ? '' : 'p-4', className)}
+        className={twMerge(`${AdminClass.SURFACE} text-[var(--card-foreground)]`, noPadding ? '' : 'px-6 py-4', className)}
       >
         {/* The head's look is `settings.css` (`fc-card__*`), so a card holding setting rows and any other
             card share one title style. */}

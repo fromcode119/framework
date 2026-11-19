@@ -16,7 +16,8 @@
      follows put a 16px/600 heading over 12px/500 rows; this keeps our scale and restores the step. */
   --fc-settings-title: var(--fc-card-title);
   --fc-settings-label: 13px;
-  --fc-settings-text: 12px;
+  /* 13px, the console's small text; at 12 a card's description and a page's subtitle were a size under the fields and rows they describe. */
+  --fc-settings-text: 13px;
   --fc-settings-page-title: 18px;
   --fc-settings-control-field: 300px;
   --fc-settings-control-narrow: 160px;
@@ -48,14 +49,14 @@
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
   /* The header's left edge is the page's left edge: both read the one page inset, so the title sits
      exactly above the first card instead of 8px off it on a wide screen and 12px off on a narrow one. */
-  gap: 12px 16px; padding: 12px var(--fc-page-pad-x);
+  gap: 12px 16px; padding: 16px var(--fc-page-pad-x);
 }
 /* The title's 16rem basis decides when the actions drop to a second line: beside the title while
    both fit, under it on a phone — never squeezing the title to nothing. */
 .fc-page-header__main { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 16rem; }
 .fc-page-header__text { min-width: 0; }
-.fc-page-header__title { margin: 0; font-size: var(--fc-settings-page-title); font-weight: var(--fc-weight-strong); line-height: 1.3; color: var(--fc-text); }
-.fc-page-header__subtitle { margin: 2px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-page-header__title { margin: 0; font-size: var(--fc-settings-page-title); font-weight: var(--fc-weight-strong); line-height: 28px; color: var(--fc-text); }
+.fc-page-header__subtitle { margin: 0; font-size: var(--fc-settings-text); line-height: 20px; color: var(--fc-text-muted); }
 .fc-page-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
 .fc-page-header__back {
   display: grid; place-items: center; flex: none; width: 32px; height: 32px;
@@ -71,7 +72,7 @@
 /* ── Section card: title, one line under it, then its rows edge to edge ───────────────────────── */
 .fc-card__head { margin-bottom: 12px; }
 .fc-card__title { margin: 0; font-size: var(--fc-settings-title); font-weight: var(--fc-weight-strong); letter-spacing: -0.01em; color: var(--card-foreground); }
-.fc-card__desc { margin: 2px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-card__desc { margin: 0; font-size: var(--fc-settings-text); line-height: 20px; color: var(--fc-text-muted); }
 .fc-surface:has(> .fc-settings-row) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
 .fc-surface:has(> .fc-settings-row) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); }
 

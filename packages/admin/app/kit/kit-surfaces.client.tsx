@@ -15,6 +15,10 @@ import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { FocusModal } from '@/components/ui/view/focus-modal.client';
 import { Input } from '@/components/ui/view/input.client';
+import { Card } from '@/components/ui/view/card.client';
+import { CardHeader } from '@/components/ui/view/card-header.client';
+import { AdminPanel } from '@/components/ui/view/admin-panel.client';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { StatCard } from '@/components/ui/view/stat-card.client';
 import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
 import { StateBadge } from '@/components/ui/view/state-badge.client';
@@ -98,6 +102,19 @@ export class KitSurfaces extends Reactor {
             <Button variant={ButtonVariant.SECONDARY} onClick={this.toast(NotificationType.INFO, 'Heads up', 'A new version is available.')}>Info</Button>
           </>
         ))}
+        <Card title="Card" description="A plain surface with a title and a line under it.">
+          <p className="fc-field-note">Whatever the card holds.</p>
+        </Card>
+        <Card>
+          <CardHeader title="Card with CardHeader" description="The same head, with something at its end." badge={<StateBadge tone="success">Active</StateBadge>} />
+          <p className="fc-field-note">Whatever the card holds.</p>
+        </Card>
+        <AdminPanel title="AdminPanel" description="A titled panel with actions at the end of its head." actions={<Button variant={ButtonVariant.SECONDARY}>Action</Button>}>
+          <p className="fc-field-note">The panel's body.</p>
+        </AdminPanel>
+        <div className="fc-kit__page-header">
+          <CompactPageHeader title="CompactPageHeader" subtitle="The line under a page's title" actions={<Button variant={ButtonVariant.PRIMARY}>Create</Button>} />
+        </div>
         {this.block('StatCard', (
           <>
             <div className="fc-kit__cell"><StatCard title="Orders" value="128" icon={<FrameworkIcons.Clock size={18} />} trend={{ value: 12, isPositive: true }} /></div>

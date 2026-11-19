@@ -13,21 +13,20 @@ export class StatCard extends PureReactor {
 
   render(): ReactNode {
     const { title, value, icon, trend } = this;
-  return (
-    <div className={`p-4 ${AdminClass.SURFACE} transition-colors`}>
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 [&_svg]:h-[18px] [&_svg]:w-[18px]">
-          {icon}
+    // The label, the number and the icon in the console's own ink. The tile was indigo and the trend a
+    // literal green or red, on a card that follows the scheme in every other respect.
+    const stat = AdminClass.of('stat');
+    return (
+      <div className={`${AdminClass.SURFACE} ${stat}`}>
+        <div className={`${stat}__top`}>
+          <span className={`${stat}__label`}>{title}</span>
+          <span className={`${stat}__icon`} aria-hidden="true">{icon}</span>
         </div>
-        {trend && (
-          <div className={`flex items-center gap-1 text-[12px] font-medium ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-            {trend.isPositive ? '↑' : '↓'} {trend.value}%
-          </div>
-        )}
+        <div className={`${stat}__bottom`}>
+          <span className={`${stat}__value`}>{value}</span>
+          {trend ? <span className={`${stat}__trend`} data-up={trend.isPositive ? 'true' : 'false'}>{trend.isPositive ? '↑' : '↓'} {trend.value}%</span> : null}
+        </div>
       </div>
-      <p className="text-[12px] font-medium text-slate-500 tracking-wide">{title}</p>
-      <h3 className="text-xl font-medium mt-0.5 text-slate-900 dark:text-white tracking-tight">{value}</h3>
-    </div>
   );
   }
 }
