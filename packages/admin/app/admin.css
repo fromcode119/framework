@@ -3298,3 +3298,6 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-nav .fc-nav__scroll { flex: 0 1 auto; }
 .fc-nav .fc-nav__pinned { margin-top: 0; }
 .fc-nav > .fc-nav__pinned + div { margin-top: auto; }
+/* Above the field whatever the field is wrapped in: under an `Input`, whose wrapper is positioned, the
+   glass was painted first and the field over it. */
+.fc-search__icon { z-index: 1; }
