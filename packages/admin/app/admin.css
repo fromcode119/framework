@@ -1903,9 +1903,14 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
  * them, the table, and the count at the foot, each band divided by the card's hairline. Ours had the
  * name in the page header above the card, so the screen's name and the card's name stood one under
  * the other with a gap between them and nothing in it. */
-.fc-list-card { display: flex; flex-direction: column; overflow: hidden; }
-.fc-list-card > * + * { border-top: 1px solid var(--fc-border); }
-.fc-list-card > .fc-record-card__head { flex-wrap: wrap; }
+.fc-list-shell { display: flex; flex-direction: column; overflow: hidden; }
+/* A band is divided from the one above it — but a slot that brought nothing is not a band, and a
+   hairline over nothing is the stray line a plugin's empty slot used to draw. */
+.fc-list-shell > * + *:not(:empty) { border-top: 1px solid var(--fc-border); }
+.fc-list-shell > .fc-record-card__head { flex-wrap: wrap; }
+/* The table inside the shell has no frame of its own: the shell IS the frame. Its own border and
+   corners stay for the tables that still stand alone (a plugin's panel, a record's section). */
+.fc-list-shell .fc-list-frame { border: 0; border-radius: 0; background: transparent; }
 .fc-record-card__subtitle { flex-basis: 100%; margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); order: 3; }
 /* What is on the right of the band keeps together. */
 .fc-record-card__toolbar > * { min-width: 0; }

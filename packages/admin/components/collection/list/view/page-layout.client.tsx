@@ -29,7 +29,7 @@ export class CollectionListPageLayout extends PureReactor {
     <div className="w-full flex flex-col animate-in fade-in duration-500">
       {/* ONE card: name and actions, then the tools, then the table, then the count — the shape the
           reference gives a list. Each band is separated by the card's own hairline. */}
-      <div className="fc-collection-list fc-surface fc-list-card">
+      <div className="fc-collection-list fc-surface fc-list-shell">
         <CollectionListHeader collection={this.collection} pluginSlug={this.pluginSlug} slug={this.slug} theme={this.theme} canCreate={this.tableProps.access.canCreate} includeAction={this.tableProps.access.allowsPluginAction} />
         <Slot
           name={`admin.collection.${this.slotSlug}.list.header`}
