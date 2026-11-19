@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import * as tar from 'tar';
 import { ProjectPaths } from '@core/config/paths';
 import { BackupService } from '@core/management/backup-service';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
@@ -77,5 +78,31 @@ describe('BackupService', () => {
     expect(backupPath?.endsWith('.db')).toBe(true);
     expect(backupPath && fs.existsSync(backupPath)).toBe(true);
     expect(backupPath ? fs.readFileSync(backupPath, 'utf8') : '').toBe('sqlite-data');
+  });
+
+  // Root reads every directory whatever its mode, so there is nothing to leave out.
+  it.skipIf(process.getuid?.() === 0)('leaves out a folder the server cannot read, names it, and still writes the archive', async () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-service-unreadable-'));
+    temporaryDirectories.push(sandbox);
+    process.env.FROMCODE_PROJECT_ROOT = sandbox;
+    fs.writeFileSync(path.join(sandbox, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
+    fs.mkdirSync(path.join(sandbox, 'plugins', 'shop'), { recursive: true });
+    fs.writeFileSync(path.join(sandbox, 'plugins', 'shop', 'index.js'), 'shop', 'utf8');
+    const locked = path.join(sandbox, 'plugins', 'analytics');
+    fs.mkdirSync(locked, { recursive: true });
+    fs.writeFileSync(path.join(locked, 'index.js'), 'analytics', 'utf8');
+    fs.chmodSync(locked, 0o000);
+
+    try {
+      const result = await BackupService.createSystemBackupBundle({ sections: [BackupSectionKey.PLUGINS] });
+
+      expect(result.warnings).toEqual(['Left out of the backup because the server cannot read them: plugins/analytics.']);
+      const archived: string[] = [];
+      await tar.list({ file: result.backupPath, onentry: (entry) => { archived.push(entry.path); } });
+      expect(archived).toContain('plugins/shop/index.js');
+      expect(archived.some((entry) => entry.startsWith('plugins/analytics'))).toBe(false);
+    } finally {
+      fs.chmodSync(locked, 0o755);
+    }
   });
 });
