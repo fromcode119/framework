@@ -121,7 +121,6 @@ export class ActivityDetailModal extends PureReactor {
                   </p>
                   <Button
                     variant={ButtonVariant.GHOST}
-                    className="text-indigo-500 font-medium text-[12px] tracking-wide"
                     icon={<FrameworkIcons.More size={14} />}
                     onClick={this.handleExport}
                   >

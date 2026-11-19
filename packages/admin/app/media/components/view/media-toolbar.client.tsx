@@ -6,7 +6,6 @@ import type { DragEvent } from 'react';
 import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
-import { Select } from '@/components/ui/view/select.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -97,7 +96,7 @@ export class MediaToolbar extends PureReactor {
                 <Slot name="admin.media.header.actions" />
                 <Button
                   variant={ButtonVariant.SECONDARY}
-                  className="px-3 h-9 rounded-lg font-medium text-xs whitespace-nowrap"
+                  className="whitespace-nowrap"
                   onClick={this.openFolderPrompt}
                   icon={<FrameworkIcons.FolderPlus size={15} strokeWidth={2.5} />}
                 >
@@ -110,14 +109,14 @@ export class MediaToolbar extends PureReactor {
                 {this.selectedCount > 0 ? (
                   <>
                     <Button
-                      className="px-4 h-9 rounded-lg font-medium text-xs whitespace-nowrap"
+                      className="whitespace-nowrap"
                       variant={ButtonVariant.GHOST}
                       onClick={this.onClearSelection}
                     >
                       {AdminI18n.t('media.clearCount', { count: this.selectedCount })}
                     </Button>
                     <Button
-                      className="px-4 h-9 rounded-lg font-medium text-xs text-white whitespace-nowrap"
+                      className="whitespace-nowrap"
                       onClick={this.onShareSelected}
                       icon={<FrameworkIcons.Share size={15} strokeWidth={3} />}
                     >
@@ -126,7 +125,7 @@ export class MediaToolbar extends PureReactor {
                   </>
                 ) : null}
                 <Button
-                  className="px-4 h-9 rounded-lg font-medium text-xs text-white whitespace-nowrap"
+                  className="whitespace-nowrap"
                   onClick={this.openFilePicker}
                   disabled={uploading}
                   icon={uploading ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Upload size={15} strokeWidth={3} />}

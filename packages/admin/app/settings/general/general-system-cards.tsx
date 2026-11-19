@@ -195,7 +195,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email}
                   onChange={this.changeNotificationEmail}
-                  className="w-full md:w-80 font-medium"
+                  className="w-full md:w-80"
                   placeholder="hello@example.com"
                 />
               </SettingRow>
@@ -210,7 +210,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email_cc}
                   onChange={this.changeNotificationEmailCc}
-                  className="w-full md:w-80 font-medium"
+                  className="w-full md:w-80"
                   placeholder="ops@example.com, sales@example.com"
                 />
               </SettingRow>
@@ -231,7 +231,6 @@ export class GeneralSystemCards extends PureReactor {
                     onClick={this.onSendTelemetryTest}
                     isLoading={this.isSendingTelemetryTest}
                     icon={<FrameworkIcons.Mail size={13} />}
-                    className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
                   >
                     {AdminI18n.t('settings.general.sendTest')}
                   </Button>

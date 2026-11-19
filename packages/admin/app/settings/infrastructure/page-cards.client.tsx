@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
-import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
@@ -110,7 +109,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveSsrCap}
                 isLoading={this.isSavingSsrCap}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>
@@ -152,7 +150,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveRetention}
                 isLoading={this.isSavingRetention}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>
@@ -190,7 +187,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveAuditRetention}
                 isLoading={this.isSavingAuditRetention}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>

@@ -73,7 +73,7 @@ export class MediaShareActivity extends AdminComponent {
         {row.lastAt ? (
           <span className="text-[12px] opacity-45 flex-shrink-0">{AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) })}</span>
         ) : (
-          <Badge variant={BadgeVariant.GRAY} className="text-[12px] flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
+          <Badge variant={BadgeVariant.GRAY} className="flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
         )}
       </div>
     );

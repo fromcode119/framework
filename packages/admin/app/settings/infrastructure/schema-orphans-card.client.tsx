@@ -83,7 +83,7 @@ export class SchemaOrphansCard extends AdminComponent {
           {plugins.length ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.schemaOrphanInactivePlugins', { plugins: plugins.join(', ') })}</p> : null}
           <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.schemaOrphanSince', { time: new Date(entry.firstSeenAt).toLocaleString() })}</p>
         </div>
-        <Button onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />} className="h-9 px-3 rounded-xl text-[12px] font-medium shrink-0">
+        <Button onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />} className="shrink-0">
           {AdminI18n.t('settings.infrastructure.schemaOrphanDrop')}
         </Button>
       </li>

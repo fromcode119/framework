@@ -103,7 +103,6 @@ export class GeneralUsageReportCard extends AdminComponent {
               onClick={this.sendNow}
               isLoading={this.isSending}
               icon={<FrameworkIcons.Send size={13} />}
-              className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
             >
               {AdminI18n.t('settings.general.usageReportSendNow')}
             </Button>
@@ -116,7 +115,7 @@ export class GeneralUsageReportCard extends AdminComponent {
             title={AdminI18n.t('settings.general.usageReportAddress')}
             description={<AdminRichText k="settings.general.usageReportAddressDescription" vars={{ address: UsageReportDefaults.ADDRESS }} />}
           >
-            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="w-full md:w-80 font-medium" placeholder={UsageReportDefaults.ADDRESS} />
+            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="w-full md:w-80" placeholder={UsageReportDefaults.ADDRESS} />
           </SettingRow>
         )}
 

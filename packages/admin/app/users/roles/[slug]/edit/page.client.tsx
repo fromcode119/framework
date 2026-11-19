@@ -148,18 +148,14 @@ export class EditRolePage extends AdminComponent {
                       value={formData.slug}
                       disabled
                       size={FieldSize.SM}
-                      className="opacity-50 grayscale"
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
-                    <TextArea
+                  <TextArea label={AdminI18n.t('users.description')}
                       placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
                       disabled={!editable}
                       onChange={(e) => this.updateForm({ description: e.target.value })}
                     />
-                  </div>
                 </div>
               </Card>
 

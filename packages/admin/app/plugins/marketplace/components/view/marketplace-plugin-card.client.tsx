@@ -72,11 +72,11 @@ export class MarketplacePluginCard extends PureReactor {
                 </Badge>
               )}
               {isFeatured && (
-                <Badge variant={BadgeVariant.BLUE} className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
+                <Badge variant={BadgeVariant.BLUE}>
                   {AdminI18n.t('plugins.list.featured')}
                 </Badge>
               )}
-              <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-medium">
+              <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0">
                 {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.available'))}
               </Badge>
             </div>

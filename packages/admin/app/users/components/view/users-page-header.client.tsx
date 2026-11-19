@@ -26,7 +26,6 @@ export class UsersPageHeader extends PureReactor {
             <AdminLink href={AdminConstants.ROUTES.USERS.NEW}>
               <Button
                 variant={ButtonVariant.SECONDARY}
-                className="h-9 px-4 rounded-lg font-medium tracking-tight text-xs border-slate-200 dark:border-slate-800"
                 icon={<FrameworkIcons.Plus size={15} />}
               >
                 {AdminI18n.t('users.createUser')}
@@ -34,7 +33,6 @@ export class UsersPageHeader extends PureReactor {
             </AdminLink>
             <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_LIST}>
               <Button
-                className="h-9 px-4 rounded-lg font-medium tracking-tight text-xs text-white"
                 icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
               >
                 {AdminI18n.t('users.manageRoles')}

@@ -1,3 +1,9 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Label } from '@/components/ui/view/label.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
@@ -26,49 +32,41 @@ export class PersonAccountPanel extends PureReactor {
   }
 
   render(): ReactNode {
-    const { person, theme, granting, onGrantLogin } = this;
+    const { person, granting, onGrantLogin } = this;
     const account = person.account;
-    const card = `rounded-xl border p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`;
-    const heading = `text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`;
 
     if (!account) {
       return (
-        <div className={card}>
-          <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
-          <p className="text-[13px] font-medium text-slate-400 mb-4">{AdminI18n.t('users.noLoginAccountIsLinked')}</p>
-          <Button variant={ButtonVariant.SECONDARY} isLoading={granting} disabled={!person.email}
-            icon={<FrameworkIcons.Plus size={14} />} onClick={onGrantLogin}
-            className="h-9 px-4 rounded-xl font-medium tracking-tight text-[12px]">
-            {AdminI18n.t('users.createLoginAccount')}
-          </Button>
-          {!person.email ? <p className="text-[12px] text-slate-400 mt-2">{AdminI18n.t('users.anEmailIsRequiredTo')}</p> : null}
-        </div>
+        <RecordCard title={AdminI18n.t('users.loginAccount')}>
+          <div className="fc-stack">
+            <Text muted>{AdminI18n.t('users.noLoginAccountIsLinked')}</Text>
+            <Button variant={ButtonVariant.SECONDARY} isLoading={granting} disabled={!person.email} icon={<FrameworkIcons.Plus size={15} />} onClick={onGrantLogin}>
+              {AdminI18n.t('users.createLoginAccount')}
+            </Button>
+            {!person.email ? <Hint>{AdminI18n.t('users.anEmailIsRequiredTo')}</Hint> : null}
+          </div>
+        </RecordCard>
       );
     }
 
     return (
-      <div className={card}>
-        <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
-        <div className="flex items-center gap-2 text-[13px] font-medium text-emerald-500 mb-3">
-          <FrameworkIcons.UserCheck size={16} /> {AdminI18n.t('users.linkedUser', { id: account.id })}
-        </div>
-        <div className="space-y-1.5 mb-4">
-          <div className="text-[12px] font-medium text-slate-500">{account.email}</div>
-          {account.username ? <div className="text-[12px] text-slate-400">@{account.username}</div> : null}
-        </div>
-        <div className="mb-4">
-          <div className="text-[12px] font-medium text-slate-400 mb-1.5">{AdminI18n.t('users.roles')}</div>
-          <div className="flex flex-wrap gap-1.5">
-            {account.roles.length
-              ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)} className="font-medium tracking-tight">{r}</Badge>)
-              : <span className="text-[12px] text-slate-400">{AdminI18n.t('users.noRoles')}</span>}
+      <RecordCard title={AdminI18n.t('users.loginAccount')} aside={<StateBadge tone="success">{AdminI18n.t('users.linkedUser', { id: account.id })}</StateBadge>}>
+        <div className="fc-stack">
+          <AdminFactGrid facts={[
+            { key: 'email', label: 'Email', value: account.email },
+            ...(account.username ? [{ key: 'username', label: AdminI18n.t('users.username'), value: `@${account.username}` }] : []),
+          ]} />
+          <div>
+            <Label>{AdminI18n.t('users.roles')}</Label>
+            <div className="fc-chip-row">
+              {account.roles.length
+                ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)}>{r}</Badge>)
+                : <Text size="xsmall" muted as="span">{AdminI18n.t('users.noRoles')}</Text>}
+            </div>
           </div>
+          <Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}>{AdminI18n.t('users.openUserRecord')}</Button>
         </div>
-        <AdminLink href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}
-          className="inline-flex items-center gap-1.5 text-[12px] font-medium text-indigo-600 hover:text-indigo-700">
-          {AdminI18n.t('users.openUserRecord')} <FrameworkIcons.Right size={14} />
-        </AdminLink>
-      </div>
+      </RecordCard>
     );
   }
 }

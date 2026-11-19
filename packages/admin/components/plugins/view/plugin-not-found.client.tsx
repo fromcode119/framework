@@ -32,7 +32,6 @@ export class PluginNotFound extends PureReactor {
         <AdminLink href="/plugins">
           <Button
             variant={ButtonVariant.PRIMARY}
-            className="rounded-xl px-10 py-5 font-medium tracking-tight text-[13px] shadow-2xl shadow-rose-500/20 bg-rose-500 hover:bg-rose-600 border-none transition-all hover:scale-105 active:scale-95"
             icon={<FrameworkIcons.Plugins size={18} />}
           >
             {AdminI18n.t('plugins.list.managePlugins')}
@@ -41,7 +40,6 @@ export class PluginNotFound extends PureReactor {
         <Button
           variant={ButtonVariant.GHOST}
           onClick={() => window.history.back()}
-          className="rounded-xl px-8 font-medium tracking-tight text-[13px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all"
           icon={<FrameworkIcons.Left size={16} />}
         >
           {AdminI18n.t('plugins.list.goBack')}

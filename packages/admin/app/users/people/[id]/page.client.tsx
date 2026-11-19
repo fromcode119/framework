@@ -1,3 +1,7 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
@@ -14,7 +18,6 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PersonFieldsPanel } from '@/app/users/people/[id]/components/view/person-fields-panel.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
-import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { PersonEditPageActions } from '@/app/users/people/[id]/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -44,7 +47,7 @@ export class PersonEditPage extends PersonEditPageActions {
     const { person, loading, saving, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
 
     if (loading) {
-      return <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('users.loadingPerson')} /></div>;
+      return <Loader fullPage label={AdminI18n.t('users.loadingPerson')} />;
     }
 
     if (loadError) {
@@ -63,10 +66,7 @@ export class PersonEditPage extends PersonEditPageActions {
       // as the plugin pages do, instead of implying the person does not exist.
       return (
         <SiteScopeGate what={AdminI18n.t('users.people2', { routeId: this.routeId })}>
-          <div className="w-full flex flex-col items-center justify-center gap-4 py-20">
-            <p className="font-medium text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
-            <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-medium text-sm">{AdminI18n.t('users.backToPeople')}</AdminLink>
-          </div>
+          <StatePage title={AdminI18n.t('users.thisPersonCouldNotBe2')} actions={<Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.ROOT}>{AdminI18n.t('users.backToPeople')}</Button>} />
         </SiteScopeGate>
       );
     }
@@ -74,7 +74,7 @@ export class PersonEditPage extends PersonEditPageActions {
     const linked = person.userId != null && person.userId !== '';
 
     return (
-      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
+      <div className={`w-full flex flex-col ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme.value}
           backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
@@ -83,63 +83,61 @@ export class PersonEditPage extends PersonEditPageActions {
           subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || AdminI18n.t('users.sourceContact')} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
-        <div className="w-full py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
-            <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-              <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
-              {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{error}</div> : null}
-              {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-medium dark:bg-emerald-500/10">{notice}</div> : null}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {this.field(AdminI18n.t('users.firstName2'), 'firstName')}
-                {this.field(AdminI18n.t('users.lastName2'), 'lastName')}
-              </div>
-              {this.field(AdminI18n.t('users.displayName'), 'displayName')}
-              {this.field('Email', 'email', 'email', linked)}
-              {linked ? <p className="-mt-3 text-[12px] text-slate-400">{AdminI18n.t('users.thisPersonHasALogin')}</p> : null}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {this.field('Phone', 'phone', 'tel')}
-                {this.field(AdminI18n.t('users.birthDate'), 'birthDate', 'date')}
-              </div>
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.saveChanges')}</Button>
-                {linked ? (
-                  <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}
-                    className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
-                ) : null}
-                <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</AdminLink>
-              </div>
+        <div className="fc-columns__stack">
+          <div className="fc-record-split">
+            <form onSubmit={(e) => this.save(e)}>
+              <RecordCard title={AdminI18n.t('users.identity')}>
+                <div className="fc-stack">
+                  {error ? <Alert tone="danger">{error}</Alert> : null}
+                  {notice ? <Alert tone="success">{notice}</Alert> : null}
+                  <div className="fc-form-grid">
+                    {this.field(AdminI18n.t('users.firstName2'), 'firstName')}
+                    {this.field(AdminI18n.t('users.lastName2'), 'lastName')}
+                    {this.field(AdminI18n.t('users.displayName'), 'displayName')}
+                    {this.field('Email', 'email', 'email', linked)}
+                    {this.field('Phone', 'phone', 'tel')}
+                    {this.field(AdminI18n.t('users.birthDate'), 'birthDate', 'date')}
+                  </div>
+                  {linked ? <Hint>{AdminI18n.t('users.thisPersonHasALogin')}</Hint> : null}
+                  <div className="fc-chip-row fc-chip-row--cell">
+                    <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving}>{AdminI18n.t('users.saveChanges')}</Button>
+                    {linked ? <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}>{AdminI18n.t('users.sendPasswordResetEmail')}</Button> : null}
+                    <Button variant={ButtonVariant.GHOST} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.ROOT}>{AdminI18n.t('users.cancel')}</Button>
+                  </div>
+                </div>
+              </RecordCard>
             </form>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />
           </div>
 
           <PersonFieldsPanel personId={person.id} theme={theme} />
 
-          <div className={`mt-6 ${AdminClass.SURFACE} p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-            <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>{AdminI18n.t('users.accountManagement')}</h3>
-            <div className="flex flex-wrap items-center gap-3">
-              {reassignOpen ? (
-                <>
-                  <Select
-                    className="w-72"
-                    value={reassignTo}
-                    onChange={(value) => { this.reassignTo = value; }}
-                    options={[
-                      { label: AdminI18n.t('users.noLoginAccountUnlink'), value: '__none__' },
-                      ...users.map((u) => ({ label: `${u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #${u.id}`, value: String(u.id) })),
-                    ]}
-                  />
-                  <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.apply')}</Button>
-                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.cancel')}</Button>
-                </>
-              ) : (
-                <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.UserCheck size={14} />}
-                  onClick={() => { this.reassignOpen = true; this.reassignTo = linked ? String(person.userId) : '__none__'; }}
-                  className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.reassignUnlinkLogin')}</Button>
-              )}
-              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.deletePerson')}</Button>
+          <RecordCard title={AdminI18n.t('users.accountManagement')}>
+            <div className="fc-stack">
+              <div className="fc-chip-row fc-chip-row--cell">
+                {reassignOpen ? (
+                  <>
+                    <Select
+                      className="w-72"
+                      value={reassignTo}
+                      onChange={(value) => { this.reassignTo = value; }}
+                      options={[
+                        { label: AdminI18n.t('users.noLoginAccountUnlink'), value: '__none__' },
+                        ...users.map((u) => ({ label: `${u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #${u.id}`, value: String(u.id) })),
+                      ]}
+                    />
+                    <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()}>{AdminI18n.t('users.apply')}</Button>
+                    <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }}>{AdminI18n.t('users.cancel')}</Button>
+                  </>
+                ) : (
+                  <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.UserCheck size={15} />}
+                    onClick={() => { this.reassignOpen = true; this.reassignTo = linked ? String(person.userId) : '__none__'; }}>{AdminI18n.t('users.reassignUnlinkLogin')}</Button>
+                )}
+                <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={15} />} onClick={() => { this.confirmDelete = true; }}>{AdminI18n.t('users.deletePerson')}</Button>
+              </div>
+              <Hint>{AdminI18n.t('users.deletingRemovesThePersonRecord')}</Hint>
             </div>
-            <p className="text-[12px] text-slate-400 mt-3">{AdminI18n.t('users.deletingRemovesThePersonRecord')}</p>
-          </div>
+          </RecordCard>
 
           {/* The admin's own confirmation, as every other destructive action uses — not a second pair of
               buttons swapped in beside the first, which read as part of the toolbar. */}
@@ -154,7 +152,7 @@ export class PersonEditPage extends PersonEditPageActions {
             isLoading={deleting}
           />
 
-          <div className="mt-6">
+          <div>
             <RecordsHub
               theme={theme.value}
               title={AdminI18n.t('users.documentsRecords')}

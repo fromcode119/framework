@@ -3640,3 +3640,11 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* A choice with nothing chosen, and the arrow at its end, in the quiet ink. */
 .fc-field__empty, .fc-field__chevron { color: var(--fc-text-muted); }
+/* A form's fields in a card: two to a row where there is room, one on a phone, the console's own gaps. */
+.fc-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 640px) { .fc-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fc-form-grid + .fc-form-grid, .fc-alert + .fc-form-grid, .fc-text + .fc-form-grid { margin-top: 12px; }
+/* A record with a narrow column beside it: the form, and what belongs to it at the side; one column
+   when there is no room for two. */
+.fc-record-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); align-items: start; }
+@media (min-width: 1024px) { .fc-record-split { grid-template-columns: minmax(0, 1fr) 360px; } }

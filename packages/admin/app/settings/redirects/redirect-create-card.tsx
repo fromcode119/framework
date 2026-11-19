@@ -90,7 +90,6 @@ export class RedirectCreateCard extends PureReactor {
             onClick={this.handleSubmit}
             isLoading={this.isSubmitting}
             disabled={!this.canSubmit}
-            className="h-9 px-4 rounded-lg font-medium text-xs text-white"
           >
             {AdminI18n.t('settings.redirects.add')}
           </Button>

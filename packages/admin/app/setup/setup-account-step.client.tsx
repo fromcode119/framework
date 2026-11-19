@@ -54,7 +54,6 @@ export class SetupAccountStep extends PureReactor {
           value={this.email}
           onChange={this.handleEmail}
           error={this.errors.email}
-          className="py-3 text-sm"
         />
         <Input
           label={this.text('setup.account.password')}
@@ -64,7 +63,6 @@ export class SetupAccountStep extends PureReactor {
           value={this.password}
           onChange={this.handlePassword}
           error={this.errors.password}
-          className="py-3 text-sm"
         />
         <Input
           label={this.text('setup.account.confirmPassword')}
@@ -74,7 +72,6 @@ export class SetupAccountStep extends PureReactor {
           value={this.confirmPassword}
           onChange={this.handleConfirmPassword}
           error={this.errors.confirmPassword}
-          className="py-3 text-sm"
         />
 
         <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-indigo-500/5`}>

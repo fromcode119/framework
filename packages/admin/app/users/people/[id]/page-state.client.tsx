@@ -54,12 +54,6 @@ export abstract class PersonEditPageState extends AdminComponent {
   }
 
   protected field(label: string, key: keyof IPersonEditPageFields, type = 'text', locked = false): ReactNode {
-    return (
-      <label className="block">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{label}</span>
-        <Input type={type} value={this.fields[key]} disabled={this.saving || locked}
-          onChange={(e) => this.set(key, e.target.value)} className="w-full" />
-      </label>
-    );
+    return <Input label={label} type={type} value={this.fields[key]} disabled={this.saving || locked} onChange={(e) => this.set(key, e.target.value)} />;
   }
 }

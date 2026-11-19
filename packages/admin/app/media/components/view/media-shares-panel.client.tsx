@@ -159,7 +159,7 @@ export class MediaSharesPanel extends AdminComponent {
           </p>
         </div>
         {grant.revokedAt ? (
-          <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.revoked')}</Badge>
+          <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.revoked')}</Badge>
         ) : (
           <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id, shareId)}>{AdminI18n.t('media.revoke')}</Button>
         )}
@@ -219,9 +219,9 @@ export class MediaSharesPanel extends AdminComponent {
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] font-medium truncate">{share.title}</span>
                   {share.activeCount === 0 ? (
-                    <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.allRevoked')}</Badge>
+                    <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.allRevoked')}</Badge>
                   ) : (
-                    <Badge variant={BadgeVariant.SUCCESS} className="text-[12px]">
+                    <Badge variant={BadgeVariant.SUCCESS}>
                       {AdminI18n.t('media.activeCount', { count: share.activeCount })}
                     </Badge>
                   )}

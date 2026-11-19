@@ -36,7 +36,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
           <FrameworkIcons.Left size={18} strokeWidth={2.5} />
         </AdminLink>
         <div className="flex-1 min-w-0">
-          <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-medium text-[12px] rounded-lg mb-1">
+          <Badge variant={BadgeVariant.BLUE}>
             {AdminI18n.t('themes.marketplacePremium')}
           </Badge>
           <div className="flex items-center gap-3">

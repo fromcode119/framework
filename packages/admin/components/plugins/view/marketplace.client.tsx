@@ -142,7 +142,7 @@ export class Marketplace extends AdminComponent {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Badge variant={installed ? "success" : "blue"} className="font-medium tracking-wide px-4 py-1.5 text-[12px] rounded-xl mb-3 inline-flex shadow-sm bg-indigo-600 text-white border-0">
+                      <Badge variant={installed ? "success" : "blue"} className="inline-flex">
                         {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.availablePlugin'))}
                       </Badge>
                       <h3 className={`text-3xl font-medium tracking-tight transition-colors duration-300 group-hover:text-indigo-500 truncate ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>

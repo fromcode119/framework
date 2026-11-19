@@ -69,13 +69,13 @@ export class DomainAliasesInput extends Reactor {
           onKeyDown={this.handleKeyDown}
           placeholder="https://alias.example.com"
           disabled={this.disabled}
-          className="flex-1 font-medium"
+          className="flex-1"
         />
         <Button
           onClick={this.addAlias}
           disabled={this.disabled || !draft.trim()}
           icon={<FrameworkIcons.Plus size={13} strokeWidth={3} />}
-          className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight flex-shrink-0"
+          className="flex-shrink-0"
         >
           {AdminI18n.t('settings.general.add')}
         </Button>

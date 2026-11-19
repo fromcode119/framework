@@ -26,11 +26,11 @@ export class ThemeNotFound extends PureReactor {
         <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-8 px-6">{AdminI18n.t('themes.notAvailableHereHelp')}</p>
         <div className="flex items-center gap-4">
           <AdminLink href={this.themesHref}>
-            <Button variant={ButtonVariant.PRIMARY} className="rounded-xl px-10 py-5 font-medium tracking-tight text-[13px]" icon={<FrameworkIcons.Palette size={18} />}>
+            <Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Palette size={18} />}>
               {AdminI18n.t('themes.manageThemes')}
             </Button>
           </AdminLink>
-          <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} className="rounded-xl px-8 font-medium tracking-tight text-[13px]" icon={<FrameworkIcons.Left size={16} />}>
+          <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} icon={<FrameworkIcons.Left size={16} />}>
             {AdminI18n.t('plugins.list.goBack')}
           </Button>
         </div>

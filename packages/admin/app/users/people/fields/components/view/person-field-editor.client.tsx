@@ -80,11 +80,11 @@ export class PersonFieldEditor extends Reactor {
               <Input key={locale.value} label={locale.label} value={option.label[locale.value] ?? ''}
                 onChange={(event) => set(index, { label: { ...option.label, [locale.value]: event.target.value } })} />
             ))}
-            <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />} className="h-10 px-3 rounded-xl"
+            <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />}
               onClick={() => this.change({ options: options.filter((_, at) => at !== index) })}>{AdminI18n.t('users.fields.removeOption')}</Button>
           </div>
         ))}
-        <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Plus size={14} />} className="h-9 px-4 rounded-xl text-[12px] font-medium"
+        <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Plus size={14} />}
           onClick={() => this.change({ options: [...options, { key: '', label: {} }] })}>{AdminI18n.t('users.fields.addOption')}</Button>
       </div>
     );
@@ -116,10 +116,8 @@ export class PersonFieldEditor extends Reactor {
               onChange={(value) => this.change({ sortOrder: Number(value) || 0 })} /></label>
         </div>
         <div className="flex flex-wrap items-center gap-3 pt-2">
-          <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={saving} onClick={() => void this.save()}
-            className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.fields.saveField')}</Button>
-          <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => this.onCancel()}
-            className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.cancel')}</Button>
+          <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={saving} onClick={() => void this.save()}>{AdminI18n.t('users.fields.saveField')}</Button>
+          <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => this.onCancel()}>{AdminI18n.t('users.cancel')}</Button>
         </div>
       </div>
     );

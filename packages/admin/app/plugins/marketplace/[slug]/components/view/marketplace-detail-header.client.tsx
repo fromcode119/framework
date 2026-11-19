@@ -79,7 +79,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                       </div>
                     )}
                  </div>
-                 <Badge variant={installedPlugin ? "success" : "blue"} className="px-4 py-1 text-xs font-medium">{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>
+                 <Badge variant={installedPlugin ? "success" : "blue"}>{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>
               </div>
               <p className={`mt-2 text-sm leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                 {MarketplacePluginCopy.description(plugin, installedPlugin)}

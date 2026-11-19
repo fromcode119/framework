@@ -1,3 +1,9 @@
+import { Loader } from '@/components/ui/view/loader.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Label } from '@/components/ui/view/label.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
@@ -66,45 +72,36 @@ export class PersonFieldsPanel extends Reactor {
   }
 
   private body(): ReactNode {
-    if (this.loading) return <p className="text-[12px] text-slate-400">{AdminI18n.t('users.fields.loading')}</p>;
+    if (this.loading) return <Loader label={AdminI18n.t('users.fields.loading')} />;
     if (!this.fields.length) {
-      return (
-        <p className="text-[12px] text-slate-400">
-          {AdminI18n.t('users.fields.noneDeclared')}{' '}
-          <AdminLink href={AdminConstants.ROUTES.PEOPLE.FIELDS} className="text-indigo-600 font-medium">{AdminI18n.t('users.fields.declare')}</AdminLink>
-        </p>
-      );
+      return <EmptyState inline title={AdminI18n.t('users.fields.noneDeclared')} action={<Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.FIELDS}>{AdminI18n.t('users.fields.declare')}</Button>} />;
     }
     return (
       <>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="fc-form-grid">
           {this.fields.map((field) => (
-            <label key={field.key} className="block">
-              <span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{PersonFieldWords.pick(field.label, field.key)}</span>
+            <div key={field.key} className="fc-field-stack">
+              <Label>{PersonFieldWords.pick(field.label, field.key)}</Label>
               <PersonFieldControl field={field} value={this.values[field.key] ?? null} disabled={this.saving} theme={this.theme}
                 onChange={(value) => { this.values = { ...this.values, [field.key]: value }; }} />
-              {PersonFieldWords.pick(field.description) ? <span className="block text-[12px] text-slate-400 mt-1">{PersonFieldWords.pick(field.description)}</span> : null}
-            </label>
+              {PersonFieldWords.pick(field.description) ? <Hint>{PersonFieldWords.pick(field.description)}</Hint> : null}
+            </div>
           ))}
         </div>
-        <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={this.saving} onClick={() => void this.save()}
-          className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.fields.save')}</Button>
+        <div><Button variant={ButtonVariant.PRIMARY} type="button" isLoading={this.saving} onClick={() => void this.save()}>{AdminI18n.t('users.fields.save')}</Button></div>
       </>
     );
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`mt-6 ${AdminClass.SURFACE} p-8 space-y-5 ${dark ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-        <div className="flex items-center justify-between gap-3">
-          <h3 className={`text-[12px] font-medium ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.fields.title')}</h3>
-          <AdminLink href={AdminConstants.ROUTES.PEOPLE.FIELDS} className="text-[12px] font-medium text-indigo-600">{AdminI18n.t('users.fields.manage')}</AdminLink>
+      <RecordCard title={AdminI18n.t('users.fields.title')} aside={<div className="fc-record-card__table-tools"><Button variant={ButtonVariant.GHOST} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.FIELDS}>{AdminI18n.t('users.fields.manage')}</Button></div>}>
+        <div className="fc-stack">
+          {this.error ? <Alert tone="danger">{this.error}</Alert> : null}
+          {this.notice ? <Alert tone="success">{this.notice}</Alert> : null}
+          {this.body()}
         </div>
-        {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{this.error}</div> : null}
-        {this.notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-medium dark:bg-emerald-500/10">{this.notice}</div> : null}
-        {this.body()}
-      </div>
+      </RecordCard>
     );
   }
 }

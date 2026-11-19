@@ -196,11 +196,11 @@ export class MediaItemCard extends MediaItemCardState {
             {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
          </div>
          <div className="hidden lg:flex w-24 items-center gap-1 flex-shrink-0">
-            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY} className="text-[12px]">{AdminI18n.t('media.theme')}</Badge> : null}
+            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.theme')}</Badge> : null}
             {String(item.visibility || 'public') === 'private' ? (
-              <Badge variant={BadgeVariant.WARNING} className="text-[12px]">{AdminI18n.t('media.private')}</Badge>
+              <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('media.private')}</Badge>
             ) : null}
-            {item.optimizedUrl ? <Badge variant={BadgeVariant.SUCCESS} className="text-[12px]">WebP</Badge> : null}
+            {item.optimizedUrl ? <Badge variant={BadgeVariant.SUCCESS}>WebP</Badge> : null}
          </div>
          <div className="flex items-center gap-0.5 flex-shrink-0">
             {/* The row's counterpart to the grid bar's Details — see the note there. */}
