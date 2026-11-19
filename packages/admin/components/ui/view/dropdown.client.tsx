@@ -85,7 +85,7 @@ export class Dropdown extends DropdownPositioning {
               // inside itself now instead.
               maxHeight: coords.maxHeight,
               overflowY: 'auto',
-              minWidth: '13rem',
+              minWidth: '220px',
               // Laid out (so it can be measured) but not shown until the measurement has been applied —
               // otherwise the first frame paints the unclamped guess and the panel visibly jumps.
               visibility: this.positioned ? 'visible' : 'hidden'
@@ -98,12 +98,11 @@ export class Dropdown extends DropdownPositioning {
             // measured, and an animation started then would be over by the time anything was on screen.
             // It asked for `animate-in fade-in-0 zoom-in-95`, which no stylesheet here defines, so until
             // now the menu simply appeared between two frames.
-            className={`fc-menu-sheet w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] border z-[9999] ${
+            className={`fc-menu-sheet w-max max-w-[min(22rem,calc(100vw-2rem))] z-[9999] ${
               this.positioned ? 'fc-enter fc-enter--menu' : ''
             } ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'
-            } bg-white border-slate-200 shadow-lg shadow-slate-900/[0.08]
-              dark:bg-slate-900 dark:border-slate-800 dark:shadow-black/40`}
+            }`}
           >
             {header && (
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">

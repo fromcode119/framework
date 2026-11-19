@@ -1,14 +1,12 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { PromptInputType } from '@/components/ui/enums/prompt-input-type.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import {prop, state, ref, bound, Platform} from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { RootFramework } from '@fromcode119/react';
+import { Dialog } from '@/components/ui/view/dialog.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PromptDialog extends AdminComponent {
@@ -76,52 +74,25 @@ export class PromptDialog extends AdminComponent {
     // attribute entirely, and the input fell back to `text`. The read-only override dialog asked for
     // the operator's account password and showed every character of it on screen.
     const inputType = PromptInputType.resolve(this.inputType ?? PromptInputType.TEXT);
-    const { onClose, title, description, icon } = this;
-    const theme = this.theme;
+    const { onClose, title, description } = this;
     const value = this.value;
 
-    if (!this.isOpen) return null;
-
     return (
-    <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        {/* Backdrop */}
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={onClose}
-        />
-
-        {/* Dialog */}
-        <div className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-8 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
-          theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
-        }`}>
-        <div className="flex items-start gap-4 mb-6">
-          {icon && (
-            <div className={`p-3 rounded-xl flex-shrink-0 ${
-              theme === ThemeMode.DARK ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'
-            }`}>
-              {icon}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h3 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {title}
-            </h3>
-            {description && (
-              <p className={`mt-1 text-sm leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                {description}
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-1 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}
-          >
-            <FrameworkIcons.Close size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={this.handleSubmit} className="space-y-6">
+      <Dialog
+        isOpen={this.isOpen}
+        onClose={onClose}
+        title={title}
+        description={description}
+        busy={isLoading}
+        foot={(
+          <>
+            <Button variant={ButtonVariant.SECONDARY} onClick={onClose} type="button" disabled={isLoading}>{cancelLabel}</Button>
+            <Button variant={ButtonVariant.PRIMARY} onClick={this.handleSubmit} isLoading={isLoading} disabled={!value.trim()}>{confirmLabel}</Button>
+          </>
+        )}
+      >
+        {/* The answer is typed in the dialog's body; Enter sends it, like the button. */}
+        <form onSubmit={this.handleSubmit}>
           <Input
             ref={this.inputRef}
             type={inputType.value}
@@ -132,31 +103,8 @@ export class PromptDialog extends AdminComponent {
             className="w-full"
             autoFocus
           />
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="flex-1"
-              onClick={onClose}
-              type="button"
-              disabled={isLoading}
-            >
-              {cancelLabel}
-            </Button>
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              className="flex-1"
-              type="submit"
-              isLoading={isLoading}
-              disabled={!value.trim()}
-            >
-              {confirmLabel}
-            </Button>
-          </div>
         </form>
-      </div>
-    </div>
-    </RootFramework>
+      </Dialog>
     );
   }
 }

@@ -20,6 +20,8 @@ import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CopyValue } from '@/components/ui/view/copy-value.client';
 import { ListSearchInput } from '@/components/ui/list-toolbar/view/list-search-input.client';
+import { KitSurfaces } from '@/app/kit/kit-surfaces.client';
+import { KitType } from '@/app/kit/kit-type.client';
 
 /**
  * Every console component on one sheet, each in its states, so the whole kit is judged in one look
@@ -130,6 +132,8 @@ export class KitPage extends AdminComponent {
           </div>
         ))}
         {this.block('Loader', <Loader label="Loading" />)}
+        <KitType />
+        <KitSurfaces />
       </div>
     );
   }
