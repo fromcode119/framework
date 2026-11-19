@@ -1,3 +1,7 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { Label } from '@/components/ui/view/label.client';
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { ApiPathUtils, SystemConstants } from '@fromcode119/core/client';
@@ -107,38 +111,32 @@ export class McpRemoteAccessPanel extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card title={AdminI18n.t('settings.integrations.remoteAccess')}>
-        <p className="mb-3 text-xs text-slate-500">
-          {AdminI18n.t('settings.integrations.letRemoteMcpClientsClaude')}
-        </p>
-        {this.loading ? (
-          <Loader />
-        ) : this.outOfScope ? (
-          <p className="text-xs text-slate-500">
-            {AdminI18n.t('settings.integrations.remoteAccessIsConfiguredPer')}
-          </p>
-        ) : (
-          <div className="space-y-5">
-            <Switch
-              checked={this.enabled}
-              disabled={this.saving}
-              label={AdminI18n.t('settings.integrations.hostedMcpEndpoint')}
-              description={this.enabled ? AdminI18n.t('settings.integrations.remoteClientsMayConnectTo', { path: ApiPathUtils.versioned('/mcp') }) : AdminI18n.t('settings.integrations.disabledTheEndpointAnswers403')}
-              onChange={(next: boolean) => { void this.setEnabled(next); }}
-            />
-            <div className="space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700">
-              <label className="block text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.mediaPayloadLimitMb')}</label>
-              <p className="text-xs text-slate-500">{AdminI18n.t('settings.integrations.maximumDecodedUploadOrRemote')}</p>
-              <div className="flex items-start gap-2">
-                <div className="w-36">
-                  <NumberStepper min={1} value={this.maxMediaMb} onChange={(value) => { this.maxMediaMb = value; }} />
+      <RecordCard title={AdminI18n.t('settings.integrations.remoteAccess')}>
+        <div className="fc-form-stack">
+          <Text size="small" muted as="p">{AdminI18n.t('settings.integrations.letRemoteMcpClientsClaude')}</Text>
+          {this.loading ? <Loader /> : this.outOfScope ? (
+            <Hint>{AdminI18n.t('settings.integrations.remoteAccessIsConfiguredPer')}</Hint>
+          ) : (
+            <>
+              <Switch
+                checked={this.enabled}
+                disabled={this.saving}
+                label={AdminI18n.t('settings.integrations.hostedMcpEndpoint')}
+                description={this.enabled ? AdminI18n.t('settings.integrations.remoteClientsMayConnectTo', { path: ApiPathUtils.versioned('/mcp') }) : AdminI18n.t('settings.integrations.disabledTheEndpointAnswers403')}
+                onChange={(next: boolean) => { void this.setEnabled(next); }}
+              />
+              <div className="fc-field-stack">
+                <Label>{AdminI18n.t('settings.integrations.mediaPayloadLimitMb')}</Label>
+                <div className="fc-field-row">
+                  <div className="fc-field-row__pick"><NumberStepper min={1} value={this.maxMediaMb} onChange={(value) => { this.maxMediaMb = value; }} /></div>
+                  <Button variant={ButtonVariant.SECONDARY} isLoading={this.saving} onClick={() => this.saveMediaLimit()}>{AdminI18n.t('settings.integrations.saveLimit')}</Button>
                 </div>
-                <Button variant={ButtonVariant.SECONDARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.saveMediaLimit()}>{AdminI18n.t('settings.integrations.saveLimit')}</Button>
+                <Hint>{AdminI18n.t('settings.integrations.maximumDecodedUploadOrRemote')}</Hint>
               </div>
-            </div>
-          </div>
-        )}
-      </Card>
+            </>
+          )}
+        </div>
+      </RecordCard>
     );
   }
 }

@@ -1,3 +1,5 @@
+import { Heading } from '@/components/ui/view/heading.client';
+import { Text } from '@/components/ui/view/text.client';
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminClass } from '@/lib/admin-class';
 import type { ReactElement, ReactNode } from 'react';
@@ -114,9 +116,9 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     // A type that declares NO providers is configured entirely by its own panel below.
     if (!integration.providers.length) {
       return (
-        <div>
-          <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
-          {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
+        <div className="fc-field-stack">
+          <Heading level="h2">{integration.label}</Heading>
+          {integration.description ? <Text size="small" muted as="p">{integration.description}</Text> : null}
         </div>
       );
     }
@@ -164,7 +166,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           {this.renderTypeTabs()}
         </div>
         <div className="fc-tabstack__body">
-          <section className={`${AdminClass.SURFACE} fc-tabstack__card`}>
+          <section className="fc-columns__stack">
             {this.renderBody()}
             {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
                 registry so this page never names a type. Hidden while one provider is open in place of

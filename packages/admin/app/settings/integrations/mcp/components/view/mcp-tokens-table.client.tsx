@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { DataTable } from '@/components/ui/view/data-table.client';
-import { ListShell } from '@/components/ui/view/list-shell.client';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
 import type { IMcpToken } from '@/app/settings/integrations/mcp/interfaces/mcp-token.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -51,15 +50,13 @@ export class McpTokensTable extends AdminComponent {
   render(): ReactNode {
     if (!this.tokens.length) return <EmptyState inline title={AdminI18n.t('settings.integrations.noTokensYet')} />;
     return (
-      <ListShell>
-        <DataTable
+      <DataTable
           columns={this.columns}
           data={this.tokens.map((token) => ({ ...token, id: token.tokenId }))}
           actions={(token: IMcpToken) => (
             <Button variant={ButtonVariant.GHOST} onClick={() => this.onRevoke(token)}>{AdminI18n.t('settings.integrations.revoke')}</Button>
           )}
-        />
-      </ListShell>
+      />
     );
   }
 }

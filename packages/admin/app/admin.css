@@ -3538,6 +3538,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-hint { display: inline-flex; align-items: flex-start; gap: 6px; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }
 .fc-hint svg { flex: none; margin-top: 3px; }
 .fc-hint--error { color: var(--fc-danger); }
+.fc-hint--success { color: var(--fc-success); }
 
 /* ── IconBadge ── an icon in a small tinted square. */
 .fc-icon-badge { display: inline-flex; flex: none; align-items: center; justify-content: center; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); color: var(--fc-tone, var(--fc-text-muted)); }
@@ -3812,3 +3813,12 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-field-row__pick { flex: 0 0 11rem; }
 .fc-field-row > .fc-btn { flex: none; height: var(--fc-field-h); }
 @media (max-width: 640px) { .fc-field-row__pick, .fc-field-row > .fc-btn { flex: 1 1 100%; } }
+
+/* A field that takes the whole line of a two-column form. */
+.fc-form-grid__wide { grid-column: 1 / -1; }
+/* A value that is shown, not edited, where a field would stand: the field's box, quieter. */
+.fc-field-shown { display: block; padding: 6px 8px; min-height: var(--fc-field-h); border-radius: 6px; background: var(--fc-surface-disabled); box-shadow: 0 0 0 1px var(--fc-border); font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text); }
+/* A setting that is one switch, standing in a form as a row of its own. */
+.fc-switch-row { padding: 12px; border-radius: 6px; box-shadow: 0 0 0 1px var(--fc-border); }
+/* The foot of a form inside a card: a hairline, then what removes or ends the thing. */
+.fc-form-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 16px; border-top: var(--fc-record-rule); }

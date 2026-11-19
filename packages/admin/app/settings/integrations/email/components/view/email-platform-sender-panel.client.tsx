@@ -1,3 +1,6 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
@@ -73,9 +76,7 @@ export class EmailPlatformSenderPanel extends AdminComponent {
   private renderBody(locks: PlatformSettingLocks): ReactNode {
     if (locks.isPlatformScope()) {
       return (
-        <p className="text-xs text-slate-500">
-          {AdminI18n.t('settings.integrations.thisIsDecidedPerSite')}
-        </p>
+        <Hint>{AdminI18n.t('settings.integrations.thisIsDecidedPerSite')}</Hint>
       );
     }
     const locked = locks.locks(EmailPlatformSenderPanel.KEY);
@@ -98,12 +99,12 @@ export class EmailPlatformSenderPanel extends AdminComponent {
     // A single-site deployment has no platform to borrow from: its own mail provider above is the only one.
     if (!this.loading && this.locks && !this.locks.isSiteScope() && !this.locks.isPlatformScope()) return null;
     return (
-      <Card title={AdminI18n.t('settings.integrations.platformMailFallback')}>
-        <p className="mb-3 text-xs text-slate-500">
-          {AdminI18n.t('settings.integrations.usedOnlyWhileThisSite')}
-        </p>
-        {this.loading || !this.locks ? <Loader /> : this.renderBody(this.locks)}
-      </Card>
+      <RecordCard title={AdminI18n.t('settings.integrations.platformMailFallback')}>
+        <div className="fc-form-stack">
+          <Text size="small" muted as="p">{AdminI18n.t('settings.integrations.usedOnlyWhileThisSite')}</Text>
+          {this.loading || !this.locks ? <Loader /> : this.renderBody(this.locks)}
+        </div>
+      </RecordCard>
     );
   }
 }

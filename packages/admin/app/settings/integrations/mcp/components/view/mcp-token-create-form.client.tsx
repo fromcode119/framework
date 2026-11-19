@@ -1,3 +1,8 @@
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { Heading } from '@/components/ui/view/heading.client';
 import type { ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
@@ -99,27 +104,22 @@ export class McpTokenCreateForm extends AdminComponent {
   private renderScopes(): ReactNode {
     const options = this.scopeOptions;
     if (options.length === 0) {
-      return (
-        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-          <p className="text-sm text-slate-500">{AdminI18n.t('settings.integrations.noToolsAreRegisteredYet')}</p>
-        </div>
-      );
+      return <EmptyState inline title={AdminI18n.t('settings.integrations.noToolsAreRegisteredYet')} />;
     }
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="fc-columns" data-count="3">
         {options.map((scope) => (
-          <div key={scope} className="rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2.5">
-            <Checkbox
-              checked={this.selectedScopes.includes(scope)}
-              onChange={() => this.toggleScope(scope)}
-              label={
-                <span className="flex items-center gap-2">
-                  <code className="font-mono text-xs text-slate-700 dark:text-slate-200">{scope}</code>
-                  {scope.startsWith('deploy.') ? <Badge variant={BadgeVariant.DANGER}>{AdminI18n.t('settings.integrations.restartsServices')}</Badge> : null}
-                </span>
-              }
-            />
-          </div>
+          <Checkbox
+            key={scope}
+            checked={this.selectedScopes.includes(scope)}
+            onChange={() => this.toggleScope(scope)}
+            label={
+              <span className="fc-chip-row fc-chip-row--cell">
+                <code>{scope}</code>
+                {scope.startsWith('deploy.') ? <Badge variant={BadgeVariant.DANGER}>{AdminI18n.t('settings.integrations.restartsServices')}</Badge> : null}
+              </span>
+            }
+          />
         ))}
       </div>
     );
@@ -127,28 +127,23 @@ export class McpTokenCreateForm extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card className="p-5">
-        <div className="mb-4">
-          <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.createAToken')}</h2>
-          <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}</p>
-        </div>
-        <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label={AdminI18n.t('settings.integrations.label')} placeholder={AdminI18n.t('settings.integrations.labelExample')} size={FieldSize.MD} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
+      <RecordCard title={AdminI18n.t('settings.integrations.createAToken')}>
+        <div className="fc-form-stack">
+          <Text size="small" muted as="p">{AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}</Text>
+          <div className="fc-form-grid">
+            <Input label={AdminI18n.t('settings.integrations.label')} placeholder={AdminI18n.t('settings.integrations.labelExample')} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
             {this.renderSiteChoice()}
           </div>
-          <div className="flex flex-col gap-3">
-            <div>
-              <h3 className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.scopes')}</h3>
-              <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.scopesOnlyNarrowWhatThis')}</p>
-            </div>
+          <div className="fc-field-stack">
+            <Heading level="h3">{AdminI18n.t('settings.integrations.scopes')}</Heading>
+            <Hint>{AdminI18n.t('settings.integrations.scopesOnlyNarrowWhatThis')}</Hint>
             {this.renderScopes()}
           </div>
-          <div className="flex justify-end">
-            <Button variant={ButtonVariant.PRIMARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.createToken()}>{AdminI18n.t('settings.integrations.createToken')}</Button>
+          <div className="fc-form-foot">
+            <Button variant={ButtonVariant.PRIMARY} isLoading={this.saving} onClick={() => this.createToken()}>{AdminI18n.t('settings.integrations.createToken')}</Button>
           </div>
         </div>
-      </Card>
+      </RecordCard>
     );
   }
 }

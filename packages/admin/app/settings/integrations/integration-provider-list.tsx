@@ -1,3 +1,8 @@
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import type { KeyboardEvent, ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -52,53 +57,28 @@ export class IntegrationProviderList extends PureReactor {
     const changing = this.changingProviderId === provider.id;
     const summary = this.summary(provider);
     return (
-      <div key={provider.id} role="button" tabIndex={0}
-        onClick={() => this.onOpenProvider(provider.id)}
-        onKeyDown={(event) => this.handleRowKey(event, provider.id)}
-        className="flex cursor-pointer items-center gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:border-indigo-500/50">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-slate-900 dark:text-slate-100">{provider.name || definition?.label || provider.providerKey}</p>
-          {summary ? <p className="mt-0.5 truncate text-[12px] text-slate-500">{summary}</p> : null}
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-indigo-600 dark:text-indigo-400">
-          {AdminI18n.t('settings.integrations.edit')}
-          <FrameworkIcons.ChevronRight size={14} />
-        </span>
-        {/* The switch acts on its own; it must not also open the provider. */}
-        <span className="shrink-0" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}>
+      <ListRow
+        key={provider.id}
+        title={<button type="button" className="fc-ext-row__link" onClick={() => this.onOpenProvider(provider.id)}>{provider.name || definition?.label || provider.providerKey}</button>}
+        description={summary || undefined}
+        actions={<>
+          <Button variant={ButtonVariant.GHOST} onClick={() => this.onOpenProvider(provider.id)}>{AdminI18n.t('settings.integrations.edit')}</Button>
           <Switch checked={enabled} disabled={changing} onChange={() => { if (!changing) this.onToggleProvider(provider); }} />
-        </span>
-      </div>
+        </>}
+      />
     );
   }
 
   render(): ReactNode {
     const integration = this.activeIntegration;
     return (
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
-            <p className="mt-1 text-[12px] text-slate-500">
-              {[integration.description, AdminI18n.t('settings.integrations.severalProvidersAtOnce')].filter(Boolean).join(' ')}
-            </p>
-          </div>
-          <button type="button" onClick={this.onAddProvider}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800">
-            <FrameworkIcons.Plus size={14} />
-            {AdminI18n.t('settings.integrations.addProvider')}
-          </button>
-        </div>
-
-        {this.activeProviders.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center dark:border-slate-800">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.noProvidersConfigured')}</p>
-            <p className="mt-1 text-xs text-slate-500">{AdminI18n.t('settings.integrations.noProvidersYetHint')}</p>
-          </div>
-        ) : (
-          <div className="space-y-2">{this.activeProviders.map((provider) => this.renderRow(provider))}</div>
-        )}
-      </div>
+      <ListShell title={integration.label} count={this.activeProviders.length}
+        subtitle={[integration.description, AdminI18n.t('settings.integrations.severalProvidersAtOnce')].filter(Boolean).join(' ')}
+        actions={<Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={14} />} onClick={this.onAddProvider}>{AdminI18n.t('settings.integrations.addProvider')}</Button>}>
+        {this.activeProviders.length === 0
+          ? <EmptyState title={AdminI18n.t('settings.integrations.noProvidersConfigured')} hint={AdminI18n.t('settings.integrations.noProvidersYetHint')} />
+          : <div>{this.activeProviders.map((provider) => this.renderRow(provider))}</div>}
+      </ListShell>
     );
   }
 }

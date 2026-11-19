@@ -1,3 +1,7 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { CodeBlock } from '@/components/ui/view/code-block.client';
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
@@ -104,48 +108,25 @@ export class McpTokensPanel extends AdminComponent {
     }
   }
 
-  /** Section shell matching Settings → Integrations: a Card with a bold title and a slate subtitle. */
-  private section(title: string, subtitle: string, children: ReactNode): ReactNode {
-    return (
-      <Card className="p-5">
-        <div className="mb-4">
-          <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{title}</h2>
-          <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
-        </div>
-        {children}
-      </Card>
-    );
-  }
-
+  /** The key of a token just made: shown this once, with the way to copy it. */
   private renderNewKey(): ReactNode {
     if (!this.newKey) return null;
     return (
-      <Card className="p-5 border-amber-300 dark:border-amber-500/40">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.integrations.shownOnce')}</Badge>
-            <span className="text-sm font-medium text-slate-900 dark:text-white">
-              {AdminI18n.t('settings.integrations.copyThisKeyNowIt')}
-            </span>
-          </div>
-          <code className="block break-all rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
-            {this.newKey}
-          </code>
-          <div>
-            <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={() => { this.newKey = null; }}>
-              {AdminI18n.t('settings.integrations.done')}
-            </Button>
-          </div>
+      <RecordCard title={AdminI18n.t('settings.integrations.copyThisKeyNowIt')} aside={<StateBadge tone="warning">{AdminI18n.t('settings.integrations.shownOnce')}</StateBadge>}>
+        <div className="fc-form-stack">
+          <CodeBlock code={this.newKey} />
+          <div><Button variant={ButtonVariant.SECONDARY} onClick={() => { this.newKey = null; }}>{AdminI18n.t('settings.integrations.done')}</Button></div>
         </div>
-      </Card>
+      </RecordCard>
     );
   }
 
   private renderTokens(): ReactNode {
-    return this.section(
-      AdminI18n.t('settings.integrations.existingTokens'),
-      this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis'),
-      <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />,
+    return (
+      <ListShell title={AdminI18n.t('settings.integrations.existingTokens')} count={this.tokens.length}
+        subtitle={this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis')}>
+        <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />
+      </ListShell>
     );
   }
 
