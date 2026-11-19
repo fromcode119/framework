@@ -22,10 +22,6 @@ export class KitFrame extends PureReactor {
               ))}
             </div>
           ))}
-          <div className="fc-kitdoc__group">
-            <p className="fc-kitdoc__group-name">Not yet split</p>
-            <AdminLink href="/kit/all" className={`fc-kitdoc__link${this.current === 'all' ? ' fc-kitdoc__link--on' : ''}`}>The old sheet</AdminLink>
-          </div>
         </nav>
         <div className="fc-kitdoc__main">{this.children}</div>
       </div>

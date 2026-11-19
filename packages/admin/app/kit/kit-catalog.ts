@@ -16,11 +16,15 @@ import { SmallKit } from '@/app/kit/docs/small.kit';
 import { TabsKit } from '@/app/kit/docs/tabs.kit';
 import { SurfacesKit } from '@/app/kit/docs/surfaces.kit';
 import { OverlaysKit } from '@/app/kit/docs/overlays.kit';
+import { FieldsRichKit } from '@/app/kit/docs/fields-rich.kit';
+import { ShellKit } from '@/app/kit/docs/shell.kit';
+import { PanelsKit } from '@/app/kit/docs/panels.kit';
+import { NewPiecesKit } from '@/app/kit/docs/new-pieces.kit';
 import { PageHeaderKit } from '@/app/kit/docs/page-header.kit';
 
 /** Every component's page in the kit, and the order the groups stand in. */
 export class KitCatalog {
-  private static readonly GROUPS = ['Actions', 'Forms', 'Data', 'Feedback', 'Navigation', 'Layout', 'Overlays'];
+  private static readonly GROUPS = ['Actions', 'Forms', 'Data', 'Feedback', 'Navigation', 'Layout', 'Overlays', 'Typography'];
   private static cache: KitDoc[] | null = null;
 
   static all(): KitDoc[] {
@@ -30,6 +34,7 @@ export class KitCatalog {
         InputKit.doc(), TextAreaKit.doc(), SelectKit.doc(), CheckboxKit.doc(), SwitchKit.doc(), RadioGroupKit.doc(), SearchFieldKit.doc(), ...FieldsMoreKit.docs(),
         BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(),
         ...TabsKit.docs(), ...SurfacesKit.docs(), PageHeaderKit.doc(), ...OverlaysKit.docs(),
+        ...FieldsRichKit.docs(), ...ShellKit.docs(), ...PanelsKit.docs(), ...NewPiecesKit.docs(),
       ];
     }
     return KitCatalog.cache;

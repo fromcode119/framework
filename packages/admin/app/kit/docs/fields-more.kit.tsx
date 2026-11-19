@@ -1,5 +1,6 @@
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';
+import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
 import type { KitDoc } from '@/app/kit/kit-doc';
 
@@ -38,6 +39,8 @@ export class FieldsMoreKit {
         examples: [
           { title: 'A day', demo: FieldsMoreKit.date({ placeholder: 'Date' }), code: '<DateTimePicker value={day} onChange={setDay} placeholder="Date" />' },
           { title: 'A day and a time', text: '`minuteStep` sets how fine the minutes are.', demo: <>{FieldsMoreKit.date({ showTime: true, placeholder: 'Date and time' })}{FieldsMoreKit.date({ showTime: true, minuteStep: 15, placeholder: 'Every 15 minutes' })}</>, code: '<DateTimePicker showTime value={at} onChange={setAt} />\n<DateTimePicker showTime minuteStep={15} … />' },
+          { title: 'A time of day alone', text: 'A time is not a moment: it carries no day and no zone — opening hours, a daily run.', demo: FieldsMoreKit.date({ granularity: DateTimePickerGranularity.TIME, placeholder: 'Time' }), code: '<DateTimePicker granularity={DateTimePickerGranularity.TIME} value={opensAt} onChange={setOpensAt} />' },
+          { title: 'A month or a year', demo: <>{FieldsMoreKit.date({ granularity: DateTimePickerGranularity.MONTH, placeholder: 'Month' })}{FieldsMoreKit.date({ granularity: DateTimePickerGranularity.YEAR, placeholder: 'Year' })}</>, code: '<DateTimePicker granularity={DateTimePickerGranularity.MONTH} … />' },
           { title: 'Disabled', demo: FieldsMoreKit.date({ disabled: true, placeholder: 'Date' }), code: '<DateTimePicker disabled … />' },
         ],
         options: [

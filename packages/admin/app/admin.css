@@ -3445,3 +3445,75 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* On the kit's sheet the page header stands clear of the card under it, so its line and the card's edge do not read as one thick line. */
 .fc-kit__page-header { margin-bottom: 8px; }
+
+/* ── Heading, Text, Label, Hint ── the console's type as components, so no screen writes a size. */
+.fc-heading { margin: 0; font-weight: 500; color: var(--fc-text); }
+.fc-heading--h1 { font-size: 18px; line-height: 28px; }
+.fc-heading--h2 { font-size: 16px; line-height: 24px; }
+.fc-heading--h3 { font-size: 14px; line-height: 20px; }
+.fc-text { margin: 0; color: var(--fc-text); font-weight: 400; }
+.fc-text--xsmall { font-size: 12px; line-height: 20px; }
+.fc-text--small { font-size: 13px; line-height: 20px; }
+.fc-text--base { font-size: 14px; line-height: 24px; }
+.fc-text--large { font-size: 16px; line-height: 28px; }
+.fc-text--plus { font-weight: 500; }
+.fc-text--muted { color: var(--fc-text-muted); }
+.fc-label { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-label__optional { font-weight: 400; color: var(--fc-text-muted); }
+.fc-hint { display: inline-flex; align-items: flex-start; gap: 6px; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }
+.fc-hint svg { flex: none; margin-top: 3px; }
+.fc-hint--error { color: var(--fc-danger); }
+
+/* ── IconBadge ── an icon in a small tinted square. */
+.fc-icon-badge { display: inline-flex; flex: none; align-items: center; justify-content: center; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); color: var(--fc-tone, var(--fc-text-muted)); }
+.fc-icon-badge--base { width: 24px; height: 24px; }
+.fc-icon-badge--large { width: 28px; height: 28px; }
+.fc-icon-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-icon-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-icon-badge[data-tone="danger"] { --fc-tone: var(--fc-danger); }
+.fc-icon-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
+.fc-icon-badge:not([data-tone="neutral"]) { border-color: color-mix(in srgb, var(--fc-tone) 30%, var(--fc-border)); background: color-mix(in srgb, var(--fc-tone) 8%, var(--fc-surface)); }
+
+/* ── InlineTip ── a bar, a strong word, a sentence. */
+.fc-inline-tip { display: grid; grid-template-columns: 4px 1fr; gap: 12px; align-items: stretch; padding: 12px; border: 1px solid var(--fc-border); border-radius: 8px; background: var(--fc-surface-muted); }
+.fc-inline-tip__bar { border-radius: 999px; background: var(--fc-tone, var(--fc-text-muted)); }
+.fc-inline-tip__text { margin: 0; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); text-wrap: pretty; }
+.fc-inline-tip__text strong { font-weight: 500; color: var(--fc-text); }
+.fc-inline-tip[data-tone="info"] { --fc-tone: var(--fc-info); }
+.fc-inline-tip[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-inline-tip[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-inline-tip[data-tone="error"] { --fc-tone: var(--fc-danger); }
+
+/* ── Popover ── a panel of its own content, opened from a control. */
+.fc-popover { position: relative; display: inline-flex; }
+.fc-popover__trigger { display: inline-flex; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.fc-popover__panel { position: absolute; z-index: 50; min-width: 220px; max-width: min(360px, 90vw); padding: 12px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text); box-shadow: 0 0 0 1px rgb(0 0 0 / .08), 0 8px 16px rgb(0 0 0 / .08); animation: fc-enter var(--fc-dur-ui) var(--fc-ease) both; --fc-enter-from: 4px; }
+.fc-popover__panel[data-side="bottom"] { top: calc(100% + 6px); }
+.fc-popover__panel[data-side="top"] { bottom: calc(100% + 6px); --fc-enter-from: -4px; }
+.fc-popover__panel[data-align="start"] { inset-inline-start: 0; }
+.fc-popover__panel[data-align="end"] { inset-inline-end: 0; }
+
+/* ── AffixInput ── a field with a fixed part before and/or after the value; one edge round the lot. */
+.fc-affix { display: flex; align-items: stretch; width: 100%; height: var(--fc-field-h); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); overflow: hidden; transition: box-shadow .15s ease; }
+.fc-affix:focus-within { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-affix--error, .fc-affix--error:focus-within { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
+.fc-affix--disabled { background: var(--fc-surface-disabled); }
+.fc-affix__part { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 32px; padding: 0 8px; font-size: var(--fc-control-text); color: var(--fc-text-muted); user-select: none; white-space: nowrap; }
+.fc-affix__part--leading { border-inline-end: 1px solid var(--fc-border); }
+.fc-affix__part--trailing { border-inline-start: 1px solid var(--fc-border); }
+.fc-affix__input { flex: 1 1 auto; min-width: 0; padding: 6px 8px; border: 0; outline: 0; background: transparent; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text); }
+.fc-affix__input--end { text-align: end; }
+.fc-affix__input::placeholder { color: var(--fc-text-muted); }
+.fc-affix__input:disabled { color: var(--fc-text-faint); cursor: not-allowed; }
+.fc-affix--error + .fc-field-mark { display: none; }
+
+/* ── OtpInput ── a code, a character a box. */
+.fc-otp { display: inline-flex; align-items: center; }
+.fc-otp__slot { display: inline-flex; align-items: center; }
+.fc-otp__gap { padding: 0 8px; color: var(--fc-text-muted); }
+.fc-otp__box { width: 36px; height: 40px; margin-inline-start: -1px; padding: 0; border: 0; border-radius: 0; background: var(--fc-surface-muted); box-shadow: 0 0 0 1px rgb(0 0 0 / .08); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 16px; text-align: center; color: var(--fc-text); outline: 0; }
+.fc-otp__slot:first-child .fc-otp__box, .fc-otp__gap + .fc-otp__box { border-start-start-radius: var(--fc-control-radius); border-end-start-radius: var(--fc-control-radius); margin-inline-start: 0; }
+.fc-otp__slot:last-child .fc-otp__box, .fc-otp__slot:has(+ .fc-otp__slot > .fc-otp__gap) .fc-otp__box { border-start-end-radius: var(--fc-control-radius); border-end-end-radius: var(--fc-control-radius); }
+.fc-otp__box:focus { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-otp--invalid .fc-otp__box { box-shadow: 0 0 0 1px var(--fc-danger); }
+.fc-otp__box:disabled { background: var(--fc-surface-disabled); color: var(--fc-text-faint); cursor: not-allowed; }
