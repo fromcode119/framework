@@ -92,6 +92,9 @@ services:
       # imports; the next.config resolves the package from that src. Both are read at startup, so they must be mounted
       # for a config or subpath change to take effect without rebuilding the image.
       - ./packages/react-class-components/package.json:/app/packages/react-class-components/package.json
+      # The dev script itself. Unmounted, the container runs the image's baked script, so a change to
+      # how the dev server is started never reaches a stack that runs a released image.
+      - ./packages/admin/package.json:/app/packages/admin/package.json
       - ./packages/admin/next.config.ts:/app/packages/admin/next.config.ts
       # next.config.ts is only half the config: every shared decision it makes (dev origins, aliases,
       # base path) lives in config/next-config-environment.ts and config/next-config-aliases.ts. Mounting the one without the other means a change
