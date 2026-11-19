@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -12,27 +16,28 @@ export class SecuritySuspiciousActivity extends PureReactor {
   @prop declare plugins: Array<{ slug: string; count: number }>;
 
   render(): ReactNode {
+    if (!this.plugins.length) {
+      return (
+        <RecordCard title={AdminI18n.t('settings.security.suspiciousActivity')}>
+          <EmptyState inline icon={<FrameworkIcons.Check size={16} />} title={AdminI18n.t('settings.security.noSuspiciousPatternsDetected')} />
+        </RecordCard>
+      );
+    }
     return (
-      <Card title={AdminI18n.t('settings.security.suspiciousActivity')}>
-        <div className="space-y-3 pt-2">
-          {this.plugins.length > 0 ? (
-            this.plugins.map((plugin) => (
-              <div key={plugin.slug} className="flex items-center justify-between p-3 rounded-xl bg-red-500/5 border border-red-500/10">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{plugin.slug}</span>
-                  <span className="text-[12px] text-slate-500 mt-0.5">{AdminI18n.t('settings.security.denialsRecorded', { count: plugin.count })}</span>
-                </div>
-                <div className="h-2 w-2 rounded-full bg-red-500" />
-              </div>
-            ))
-          ) : (
-            <p className="flex items-center gap-2 text-sm text-slate-500">
-              <FrameworkIcons.Check size={16} className="text-green-500" />
-              {AdminI18n.t('settings.security.noSuspiciousPatternsDetected')}
-            </p>
-          )}
+      <ListShell title={AdminI18n.t('settings.security.suspiciousActivity')} count={this.plugins.length}>
+        <div>
+          {this.plugins.map((plugin) => (
+            <ListRow
+              key={plugin.slug}
+              icon={<FrameworkIcons.ShieldAlert size={16} />}
+              title={plugin.slug}
+              description={AdminI18n.t('settings.security.denialsRecorded', { count: plugin.count })}
+              failed
+              actions={<StateBadge tone="danger">{plugin.count}</StateBadge>}
+            />
+          ))}
         </div>
-      </Card>
+      </ListShell>
     );
   }
 }

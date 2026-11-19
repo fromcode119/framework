@@ -3,6 +3,7 @@ import { Reactor } from '@fromcode119/react-class-components';
 import type { ReactNode } from 'react';
 import { AdminPanel } from '@/components/ui/view/admin-panel.client';
 import { StatCard } from '@/components/ui/view/stat-card.client';
+import { Columns } from '@/components/ui/view/columns.client';
 import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -52,11 +53,15 @@ export class PanelsKit {
         from: "import { StatCard } from '@fromcode119/sdk/admin';",
         examples: [
           { title: 'Rising, falling, plain', demo: <><div className="fc-kitdoc__cell"><StatCard title="Orders" value="128" icon={<FrameworkIcons.Clock size={18} />} trend={{ value: 12, isPositive: true }} /></div><div className="fc-kitdoc__cell"><StatCard title="Returns" value="3" icon={<FrameworkIcons.Refresh size={18} />} trend={{ value: 2, isPositive: false }} /></div><div className="fc-kitdoc__cell"><StatCard title="Products" value="64" icon={<FrameworkIcons.Plugins size={18} />} /></div></>, code: '<StatCard title="Orders" value="128" icon={<Icon />} trend={{ value: 12, isPositive: true }} />' },
+          { title: 'With a line under the figure, in columns', flush: true, text: '`Columns` lays cards side by side — two or three — and drops to one column on a narrow screen.', demo: <Columns count={3}><StatCard title="Plugins isolated" value="2 / 2" icon={<FrameworkIcons.Plugins size={15} />} note="Active plugins running in their own process." /><StatCard title="Threat alerts" value="0" icon={<FrameworkIcons.Check size={15} />} tone="success" note="Policy violations (24h)" /><StatCard title="Threat alerts" value="4" icon={<FrameworkIcons.Alert size={15} />} tone="danger" note="Policy violations (24h)" /></Columns>, code: '<Columns count={3}>\n  <StatCard title="Threat alerts" value="0" icon={<Icon size={15} />} tone="success" note="Policy violations (24h)" />\n  …\n</Columns>' },
         ],
         options: [
           { name: 'title, value', type: 'string', does: 'What is counted and the figure, already formatted.' },
           { name: 'icon', type: 'ReactNode', does: 'A quiet icon.' },
+          { name: 'Columns count, top', type: '2 | 3, boolean', initial: '2, false', does: 'How many columns; `top` lets each be as tall as its own content.' },
           { name: 'trend', type: '{ value, isPositive }', does: 'The change, in percent, and whether it is good.' },
+          { name: 'note', type: 'ReactNode', does: 'One line under the figure.' },
+          { name: 'tone', type: "'success' | 'warning' | 'danger' | 'info'", does: 'The colour of the icon when the figure is good or bad news.' },
         ],
       },
       {

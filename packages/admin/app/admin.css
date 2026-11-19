@@ -3562,3 +3562,25 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-otp__box:focus { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .fc-otp--invalid .fc-otp__box { box-shadow: 0 0 0 1px var(--fc-danger); }
 .fc-otp__box:disabled { background: var(--fc-surface-disabled); color: var(--fc-text-faint); cursor: not-allowed; }
+
+/* A quiet label over a group of rows in a menu that lists a whole section. */
+.fc-nav-label { margin: 12px 0 2px; padding-inline: 8px; font-size: var(--fc-text-xs); line-height: 20px; font-weight: 500; color: var(--fc-text-muted); }
+
+/* ── Columns ── cards side by side, one column on a narrow screen. */
+.fc-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); width: 100%; }
+.fc-columns[data-top="true"] { align-items: start; }
+.fc-columns > * { min-width: 0; }
+@media (min-width: 768px) { .fc-columns[data-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .fc-columns[data-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* A column that holds several cards stacks them with the same gap. */
+.fc-columns__stack { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
+
+/* StatCard: a line under the figure, and an icon that says whether the figure is good news. */
+.fc-stat__note { margin: 0; font-size: var(--fc-text-xs); line-height: 20px; color: var(--fc-text-muted); }
+.fc-stat__icon[data-tone="success"] { color: var(--fc-success); }
+.fc-stat__icon[data-tone="warning"] { color: var(--fc-warning); }
+.fc-stat__icon[data-tone="danger"] { color: var(--fc-danger); }
+.fc-stat__icon[data-tone="info"] { color: var(--fc-info); }
+/* A card whose body is a line and a few labels: the labels follow the line, 6px apart. */
+.fc-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fc-card-block + .fc-card-block { margin-top: 16px; }

@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -24,26 +27,20 @@ export class SecurityProcessLimits extends PureReactor {
     }
     const ordered = [...groups.values()].sort((a, b) => b.slugs.length - a.slugs.length);
     return (
-      <Card title={AdminI18n.t('settings.security.processLimitsTitle')}>
+      <RecordCard title={AdminI18n.t('settings.security.processLimitsTitle')}>
         {ordered.length === 0 ? (
-          <p className="pt-2 text-sm text-slate-500">{AdminI18n.t('settings.security.noPluginIsRunningIn')}</p>
-        ) : (
-          <div className="pt-2 space-y-4">
-            {ordered.map((group) => (
-              <div key={`${group.memoryMb}|${group.timeoutMs}`}>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                  {AdminI18n.t('settings.security.processLimitsGroup', { count: group.slugs.length, memory: group.memoryMb, seconds: Math.round(group.timeoutMs / 100) / 10 })}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {group.slugs.sort().map((slug) => (
-                    <span key={slug} className="px-2 py-0.5 rounded-md text-[12px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{slug}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <EmptyState inline title={AdminI18n.t('settings.security.noPluginIsRunningIn')} />
+        ) : ordered.map((group) => (
+          <div key={`${group.memoryMb}|${group.timeoutMs}`} className="fc-card-block">
+            <Text weight="plus">
+              {AdminI18n.t('settings.security.processLimitsGroup', { count: group.slugs.length, memory: group.memoryMb, seconds: Math.round(group.timeoutMs / 100) / 10 })}
+            </Text>
+            <div className="fc-chip-row">
+              {group.slugs.sort().map((slug) => <Badge key={slug}>{slug}</Badge>)}
+            </div>
           </div>
-        )}
-      </Card>
+        ))}
+      </RecordCard>
     );
   }
 }
