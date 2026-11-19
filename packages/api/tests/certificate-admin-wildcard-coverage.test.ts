@@ -17,6 +17,9 @@ const tenant = (slug: string, primaryHost: string, aliases: string[] = []): Tena
   id: slug, slug, primary_host: primaryHost, host_aliases: JSON.stringify(aliases), state: 'active', visibility: 'public',
 });
 
+// Relative to now: a fixed date drifts into the renewal window and the cover then reads as renewal_due.
+const NOT_AFTER = new Date(Date.now() + 60 * 86_400_000);
+
 const cert = (host: string, over: Record<string, unknown> = {}) => CertificateRecord.from({
   host,
   tenant_id: null,
@@ -26,7 +29,7 @@ const cert = (host: string, over: Record<string, unknown> = {}) => CertificateRe
   wildcard: true,
   certificate_pem: '-----BEGIN CERTIFICATE-----x-----END CERTIFICATE-----',
   private_key_enc: 'enc:v1:x',
-  not_after: new Date('2026-12-20T10:26:55Z'),
+  not_after: NOT_AFTER,
   attempts_in_window: 0,
   ...over,
 });
@@ -69,7 +72,7 @@ describe('CertificateAdminService — a host covered by a wildcard is shown as c
     const svc = service([tenant('shop', 'shop.example.com')], [cert('example.com')]);
 
     const found = await row(svc, 'shop.example.com');
-    expect(String(found?.coveredByNotAfter)).toContain('2026-12-20');
+    expect(String(found?.coveredByNotAfter)).toContain(NOT_AFTER.toISOString().slice(0, 10));
     expect(found?.daysRemaining).not.toBeNull();
   });
 
