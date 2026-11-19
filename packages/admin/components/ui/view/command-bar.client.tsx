@@ -13,12 +13,13 @@ export class CommandBar extends PureReactor {
   /** "3 selected". */
   @prop declare value: ReactNode;
   @prop declare children: ReactNode;
+  @prop declare className?: string;
 
   render(): ReactNode {
     if (!this.open || typeof document === 'undefined') return null;
     const name = AdminClass.of('command-bar');
     return createPortal(
-      <div className={name} role="toolbar">
+      <div className={`${name} ${this.className ?? ''}`} role="toolbar">
         <div className={`${name}__bar`}>
           <div className={`${name}__value`}>{this.value}</div>
           {this.children}

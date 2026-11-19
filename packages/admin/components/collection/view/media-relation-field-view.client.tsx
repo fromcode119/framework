@@ -52,12 +52,14 @@ export class MediaRelationFieldView extends PureReactor {
     return !this.hasMany && preview?.url && MediaRelationFieldUtils.mimeTypeOf(preview).startsWith('image/') ? preview : null;
   }
 
+  /** Nothing chosen: an empty square that opens the library. It was a line saying "No media selected"
+      above a button saying "Select media" — two things to read where one thing to press is enough. */
   private renderEmpty(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
+    const label = AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select');
     return (
-      <div className={`px-3.5 h-[var(--fc-field-h)] flex items-center rounded-[var(--fc-control-radius)] text-xs font-medium ${dark ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
-        {AdminI18n.t('ui.media.none')}
-      </div>
+      <button type="button" className={AdminClass.of('media-empty')} onClick={this.handleOpen} aria-label={label} title={label}>
+        {this.hasMany ? <FrameworkIcons.Plus size={15} /> : <FrameworkIcons.Image size={15} />}
+      </button>
     );
   }
 
@@ -126,10 +128,12 @@ export class MediaRelationFieldView extends PureReactor {
             indigo at its own height and its own text size — the console's primary look, worn by a
             secondary action, which inside the edit dialog stood level with Save. The compact view beside
             it already used the shared control; both do now. */}
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>
-          {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
-          {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
-        </Button>
+        {this.selectedIds.length ? (
+          <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>
+            {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
+            {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
+          </Button>
+        ) : null}
         {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );

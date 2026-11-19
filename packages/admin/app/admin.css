@@ -1272,7 +1272,7 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
 .fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
 .fc-nav-search__field::-webkit-search-cancel-button { display: none; }
-.fc-nav-search__kbd { position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); pointer-events: none; }
+.fc-nav-search__kbd { cursor: pointer; background: transparent; position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); pointer-events: none; }
 .fc-nav-empty { padding: 8px 10px; font-size: 12px; color: var(--fc-nav-muted); }
 .fc-nav__pinned { padding-block: 6px; border-top: 1px solid var(--fc-nav-border); }
 .fc-nav__pinned .fc-nav-foot { margin-top: 0; padding-top: 0; }
@@ -1567,7 +1567,7 @@ html:has(.fc-sheet) { overflow: hidden; }
 
 /* While a section is being edited it carries its own Cancel / Save; the page's save bar would offer the
    same save a second time for the same change, so it steps aside until the section is closed. */
-body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
+body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 
 /* ── A saved record's section card ───────────────────────────────────────────────────────────────────
  * RecordSectionCard: the values that are set, as label / value rows; Edit opens the sheet. */
@@ -2860,19 +2860,21 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    is why they read as three mismatched greys glued together. This is the single look they now share:
    the surface, a hairline, the row's height, a fill on hover; a count badge for the filters, and an
    icon-only square for the two on the right. */
+/* The console's button, nothing of its own: it had a border AND the control shadow, which is itself an
+   edge and a drop — three lines around one small button, beside head buttons that carry one. */
 .fc-toolbar-btn {
-  height: var(--fc-control-h); padding: 0 8px;
-  display: inline-flex; align-items: center; gap: 6px; line-height: 1;
-  border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
+  height: var(--fc-control-h); padding: 4px 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 20px;
+  border: 0; border-radius: var(--fc-control-radius);
   background: var(--fc-surface); color: var(--fc-text);
-  font-size: var(--fc-control-text); font-weight: 500; white-space: nowrap;
+  font-size: var(--fc-control-text); font-weight: var(--fc-weight-strong); white-space: nowrap;
   box-shadow: var(--fc-control-shadow); cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, color .15s ease;
+  transition: background-color .15s ease, color .15s ease;
 }
 .fc-toolbar-btn:hover { background: var(--fc-surface-muted); }
 .fc-toolbar-btn--icon { width: var(--fc-control-h); padding: 0; justify-content: center; }
-.fc-toolbar-btn--active { border-color: var(--primary); }
-.fc-toolbar-btn svg { opacity: .8; }
+.fc-toolbar-btn--active { box-shadow: 0 0 0 1px var(--fc-interactive), 0 1px 2px 0 rgb(0 0 0 / .12); }
+.fc-toolbar-btn svg { color: var(--fc-text-muted); }
 .fc-toolbar-btn__count {
   min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
   background: var(--primary); color: var(--primary-foreground, #fff);
@@ -3060,7 +3062,7 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 
 /* ---------- Tooltip, avatar, divider, command bar ---------- */
 .fc-tooltip__anchor { display: inline-flex; }
-.fc-tooltip { position: fixed; z-index: 2000; max-width: 220px; padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: center; pointer-events: none; transform: translate(-50%, -100%); }
+.fc-tooltip { position: fixed; z-index: 2000; width: max-content; max-width: min(320px, calc(100vw - 16px)); padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: start; pointer-events: none; transform: translate(-50%, -100%); }
 .fc-tooltip[data-side="bottom"] { transform: translate(-50%, 0); }
 
 .fc-avatar { display: inline-flex; flex: none; align-items: center; justify-content: center; overflow: hidden; width: 28px; height: 28px; border-radius: 999px; background: var(--fc-surface); box-shadow: var(--fc-control-shadow); color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
@@ -3187,3 +3189,60 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-command-bar__bar button:not(.fc-command-bar__command):hover { background: #27272a; color: var(--fc-command-ink); }
 .fc-command-bar__bar > span:not([class^="fc-command-bar"]) { gap: 0; }
 .fc-command-bar__bar > span:not([class^="fc-command-bar"]) > span:empty { width: 1px; height: 40px; margin: 0; background: var(--fc-command-line); }
+
+/* ---------- Media: nothing chosen is an empty square to press ---------- */
+.fc-media-empty { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; padding: 0; border: 1px dashed var(--fc-border-strong); border-radius: 8px; background: var(--fc-surface-muted); color: var(--fc-text-faint); cursor: pointer; transition: background-color .15s ease, border-color .15s ease, color .15s ease; }
+.fc-media-empty:hover { background: var(--fc-surface-disabled); color: var(--fc-text-muted); }
+.fc-media-empty:focus-visible { outline: 0; border-color: var(--fc-interactive); }
+
+/* ---------- The record's save bar, on the command bar ---------- */
+.fc-edit-footer__status { display: inline-flex; align-items: center; gap: 8px; }
+.fc-edit-footer__dot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: rgb(255 255 255 / .32); }
+.fc-edit-footer__dot[data-dirty="true"] { background: #f59e0b; }
+.fc-edit-footer__error { color: #fda4af; }
+.fc-edit-footer__summary { display: none; width: 220px; margin-inline: 4px 8px; }
+@media (min-width: 1024px) { .fc-edit-footer__summary { display: flex; } }
+.fc-command-bar__bar .fc-field { height: 28px; padding: 4px 8px; background: #27272a; color: rgb(255 255 255 / .88); box-shadow: 0 0 0 1px rgb(255 255 255 / .12); }
+.fc-command-bar__bar .fc-field::placeholder { color: rgb(255 255 255 / .4); }
+.fc-command-bar__bar .fc-field:hover:not(:disabled):not(:focus) { background: #3f3f46; }
+/* Room under the last card, so the bar never stands on the last field. */
+body:has(.fc-edit-footer) main { padding-bottom: 88px; }
+
+/* ---------- The big search ---------- */
+.fc-palette { position: fixed; inset: 0; z-index: 1500; display: flex; align-items: flex-start; justify-content: center; padding: min(18vh, 160px) 8px 8px; }
+.fc-palette__backdrop { position: absolute; inset: 0; background: rgb(24 24 27 / .4); }
+.fc-palette__panel { position: relative; display: flex; flex-direction: column; width: 100%; max-width: 672px; max-height: calc(100vh - 16px - min(18vh, 160px)); overflow: hidden; border-radius: 12px; background: var(--fc-surface); box-shadow: 0 0 0 1px var(--fc-border), 0 8px 16px rgb(0 0 0 / .08), 0 16px 32px rgb(0 0 0 / .16); }
+.fc-palette__head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--fc-border); }
+.fc-palette__icon { flex: none; color: var(--fc-text-muted); }
+.fc-palette__input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--fc-text); font-size: 13px; line-height: 20px; }
+.fc-palette__input::placeholder { color: var(--fc-text-faint); }
+.fc-palette__list { display: flex; flex-direction: column; max-height: 360px; padding: 4px; overflow-y: auto; }
+.fc-palette__item { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--fc-text); font-size: 13px; line-height: 20px; text-align: start; cursor: pointer; }
+.fc-palette__item[aria-selected="true"] { background: var(--fc-surface-muted); }
+.fc-palette__item-icon { display: inline-flex; flex: none; color: var(--fc-text-muted); }
+.fc-palette__item-icon svg { width: 15px; height: 15px; }
+.fc-palette__item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-palette__item-hint { flex: none; color: var(--fc-text-muted); }
+.fc-palette__empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 160px; padding: 24px; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; text-align: center; }
+.fc-palette__foot { display: flex; align-items: center; justify-content: flex-end; gap: 4px; padding: 12px 16px; border-top: 1px solid var(--fc-border); background: var(--fc-surface-muted); }
+.fc-palette__rule { width: 1px; height: 12px; margin-inline: 8px; background: var(--fc-border-strong); }
+
+/* ---------- Notifications: a row, its words, and the device switch, in the console's ink ---------- */
+.fc-notice { border-bottom: 1px solid var(--fc-border); }
+.fc-notice:last-child { border-bottom: 0; }
+.fc-notice__head { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 12px 16px; border: 0; background: transparent; text-align: start; cursor: pointer; transition: background-color .15s ease; }
+.fc-notice__head:hover { background: var(--fc-surface-muted); }
+.fc-notice__dot { flex: none; width: 8px; height: 8px; margin-top: 6px; border-radius: 999px; background: transparent; }
+.fc-notice__dot[data-unread="true"] { background: var(--fc-interactive); }
+.fc-notice__main { flex: 1; min-width: 0; }
+.fc-notice__line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.fc-notice__title { color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-notice__title[data-unread="true"] { color: var(--fc-text); }
+.fc-notice__ago, .fc-notice__when { flex: none; color: var(--fc-text-faint); font-size: 12px; line-height: 20px; font-variant-numeric: tabular-nums; }
+.fc-notice__when { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-notice__detail { padding: 0 16px 12px 36px; }
+.fc-notice__body { margin: 0; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.fc-notice__meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.fc-notice__open { display: inline-flex; flex: none; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--fc-interactive); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; }
+.fc-notice-device { padding: 12px 16px; border-top: 1px solid var(--fc-border); }
+.fc-kit__nav { width: 240px; max-width: 100%; }

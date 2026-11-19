@@ -11,6 +11,9 @@ import { RadioGroup } from '@/components/ui/view/radio-group.client';
 import { Skeleton } from '@/components/ui/view/skeleton.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
 import { ThemeMode } from '@fromcode119/core/client';
+import { CommandPalette } from '@/components/ui/view/command-palette.client';
+import { NotificationPanel } from '@/app/components/view/notification-panel.client';
+import { Input } from '@/components/ui/view/input.client';
 import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { Avatar } from '@/components/ui/view/avatar.client';
 import { Divider } from '@/components/ui/view/divider.client';
@@ -24,6 +27,10 @@ import { CodeEditor } from '@/components/ui/view/code-editor.client';
 export class KitExtras extends Reactor {
   @state private tab = 'general';
   @state private step = 'organize';
+  @state private palette = false;
+  @state private paletteQuery = '';
+  @state private menuQuery = '';
+  @state private filled: any = null;
   @state private radio = 'fixed';
   @state private media: any = null;
   @state private file: File | null = null;
@@ -33,6 +40,12 @@ export class KitExtras extends Reactor {
   @state private code = '{\n  "handle": "cotton-t-shirt"\n}';
 
   @bound private setTab(id: string): void { this.tab = id; }
+  @bound private openPalette(): void { this.paletteQuery = ''; this.palette = true; }
+  @bound private closePalette(): void { this.palette = false; }
+  @bound private setPaletteQuery(value: string): void { this.paletteQuery = value; }
+  @bound private setMenuQuery(event: any): void { this.menuQuery = event.target.value; }
+  @bound private setFilled(value: any): void { this.filled = value; }
+  private static nothing(): void { /* a sample has nothing to do */ }
   @bound private setStep(id: string): void { this.step = id; }
   @bound private setRadio(value: string): void { this.radio = value; }
   @bound private setMedia(value: any): void { this.media = value; }
@@ -60,6 +73,51 @@ export class KitExtras extends Reactor {
     return (
       <>
         {this.block('Tabs', <Tabs tabs={tabs} value={this.tab} onChange={this.setTab} label="Section" />)}
+        <RecordCard title="Tabs heading a page" id="kit-tabbar">
+          <nav className="fc-tabs fc-tabbar">
+            {tabs.slice(0, 3).map((tab) => (
+              <button key={tab.id} type="button" className={`fc-tab${tab.id === this.tab ? ' fc-tab--on' : ''}`} aria-current={tab.id === this.tab ? 'page' : undefined} onClick={() => this.setTab(tab.id)}>{tab.label}</button>
+            ))}
+          </nav>
+        </RecordCard>
+        {this.block('Menu search and shortcuts', (
+          <>
+            {/* The menu's search as it is drawn; the real one listens for ⌘K on the whole window, and a second
+                one here would open a second search. */}
+            <div className="fc-kit__nav">
+              <div className="fc-nav-search">
+                <FrameworkIcons.Search size={15} className="fc-nav-search__icon" />
+                <Input type="search" value={this.menuQuery} onChange={this.setMenuQuery} placeholder="Search" aria-label="Search" inputClassName="fc-nav-search__field" />
+                <button type="button" className="fc-nav-search__kbd" onClick={this.openPalette} aria-label="Search">⌘K</button>
+              </div>
+            </div>
+            <kbd className="fc-kbd">G</kbd>
+            <kbd className="fc-kbd">D</kbd>
+            <kbd className="fc-kbd">⌘K</kbd>
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.openPalette}>Open the big search</Button>
+          </>
+        ))}
+        <CommandPalette
+          open={this.palette}
+          onClose={this.closePalette}
+          query={this.paletteQuery}
+          onQuery={this.setPaletteQuery}
+          placeholder="Search"
+          empty="Nothing matches"
+          items={['Dashboard', 'Orders', 'Products', 'Customers', 'Settings'].filter((name) => name.toLowerCase().includes(this.paletteQuery.toLowerCase())).map((name) => ({ id: name, label: name, hint: name === 'Orders' || name === 'Products' ? 'Commerce' : undefined, onSelect: this.closePalette }))}
+        />
+        <RecordCard title="Notifications" id="kit-notifications">
+          <NotificationPanel
+            deviceOn={false}
+            onToggle={KitExtras.nothing}
+            onFollow={KitExtras.nothing}
+            onToggleDevice={KitExtras.nothing}
+            notifications={[
+              { id: '1', title: 'A plugin is waiting for approval', body: 'It was installed and is held until someone turns it on.', createdAt: new Date().toISOString(), source: 'system', read: false, link: '/plugins' },
+              { id: '2', title: 'Backup finished', body: 'The nightly archive was written.', createdAt: new Date().toISOString(), source: 'system', read: true },
+            ]}
+          />
+        </RecordCard>
         <RecordCard title="ProgressTabs" id="kit-progresstabs">
           <ProgressTabs
             label="Steps"
@@ -120,7 +178,10 @@ export class KitExtras extends Reactor {
           <div className="fc-kit__cell fc-kit__cell--wide"><FileDropzone file={this.file} onSelect={this.setFile} hint="One file, up to 20 MB" /></div>
         ))}
         {this.block('MediaRelationField', (
-          <div className="fc-kit__cell fc-kit__cell--wide"><MediaRelationField value={this.media} onChange={this.setMedia} theme={ThemeMode.LIGHT} /></div>
+          <>
+            <div className="fc-kit__cell"><MediaRelationField value={this.media} onChange={this.setMedia} theme={ThemeMode.LIGHT} /></div>
+            <div className="fc-kit__cell"><MediaRelationField hasMany value={this.filled} onChange={this.setFilled} theme={ThemeMode.LIGHT} /></div>
+          </>
         ))}
         {this.block('ColorField', <ColorField value={this.colour} onChange={this.setColour} />)}
         {this.block('ChipInputField', (

@@ -90,7 +90,7 @@ export class SettingRow extends PureReactor {
         <div className={AdminClass.of('settings-row__text')}>
           <div className={AdminClass.of('settings-row__title')}>
             <h3>{this.title}</h3>
-            {help ? <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.toggleHelp} /> : null}
+            {help ? <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.toggleHelp} text={help} /> : null}
           </div>
           {this.description && !(this.cut && this.helpOpen)
             ? <p ref={this.descRef} className={`${AdminClass.of('settings-row__desc')} ${AdminClass.of('setting-desc')} ${AdminClass.of('settings-row__desc--clamp')}`}>{this.description}</p>

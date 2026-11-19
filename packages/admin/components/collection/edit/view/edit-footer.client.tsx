@@ -1,8 +1,8 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
+import { CommandBar } from '@/components/ui/view/command-bar.client';
+import { CommandBarCommand } from '@/components/ui/view/command-bar-command.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -60,56 +60,37 @@ export class EditFooter extends PureReactor {
    */
   render(): ReactNode {
     if (!this.isDirty && !this.isNew && !this.saveError) return null;
-    const dark = this.theme === ThemeMode.DARK;
+    // The console's command bar: the same dark bar a list shows for its selection. It was a white strip
+    // across the foot of the page with its own shadow, a second kind of "what can be done now".
+    const status = (
+      <span className="fc-edit-footer__status">
+        <span className="fc-edit-footer__dot" data-dirty={this.isDirty && !this.isNew ? 'true' : 'false'} />
+        {/* A new entry is always "dirty" (nothing exists on the server yet), so testing isDirty
+            first made "New entry" unreachable and an untouched new form claimed unsaved changes. */}
+        <span>{this.isNew ? AdminI18n.t('collection.edit.newEntry') : AdminI18n.t('collection.edit.unsavedChanges')}</span>
+        {this.saveError ? <span role="alert" className="fc-edit-footer__error">{AdminI18n.t('collection.edit.notSaved', { reason: this.saveError })}</span> : null}
+      </span>
+    );
     return (
-      // `data-edit-footer` so anything sticky in the content column can measure this bar.
-      <div data-edit-footer className={`sticky bottom-0 z-[100] mt-auto border-t ${
-        dark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]'
-      }`}>
-        <div className="flex w-full items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 shrink-0 rounded-full ${this.isDirty && !this.isNew ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-              <span className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                {/* A new entry is always "dirty" (nothing exists on the server yet), so testing isDirty
-                    first made "New entry" unreachable and an untouched new form claimed unsaved changes. */}
-                {this.isNew
-                  ? AdminI18n.t('collection.edit.newEntry')
-                  : AdminI18n.t('collection.edit.unsavedChanges')}
-              </span>
-            </div>
-            {this.saveError && (
-              <span role="alert" className="mt-0.5 block text-[12px] font-medium text-rose-600 dark:text-rose-400">
-                {AdminI18n.t('collection.edit.notSaved', { reason: this.saveError })}
-              </span>
-            )}
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            {/* The note for the version history goes with the save it describes; a new record has no history yet. */}
-            {this.isNew ? null : (
-              <Input
-                placeholder={AdminI18n.t('collection.edit.summary')}
-                aria-label={AdminI18n.t('collection.edit.summary')}
-                value={this.changeSummary}
-                onChange={this.onSummaryChange}
-                className="hidden w-64 lg:block"
-              />
-            )}
-            <Button variant={ButtonVariant.GHOST} className="h-9 px-3 text-[13px] font-medium" onClick={this.onDiscard}>
-              {AdminI18n.t('collection.edit.discard')}
-            </Button>
-            <Button
-              className="h-9 px-4 text-[13px] font-medium"
-              onClick={this.onCommit}
-              isLoading={this.saving}
-              icon={<FrameworkIcons.Save size={14} />}
-            >
-              {AdminI18n.t(this.isNew ? 'common.create' : 'common.save')}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <CommandBar open value={status} className="fc-edit-footer">
+        {/* The note for the version history goes with the save it describes; a new record has no history yet. */}
+        {this.isNew ? null : (
+          <Input
+            placeholder={AdminI18n.t('collection.edit.summary')}
+            aria-label={AdminI18n.t('collection.edit.summary')}
+            value={this.changeSummary}
+            onChange={this.onSummaryChange}
+            className="fc-edit-footer__summary"
+          />
+        )}
+        <CommandBarCommand label={AdminI18n.t('collection.edit.discard')} onClick={this.onDiscard} />
+        <CommandBarCommand
+          label={AdminI18n.t(this.isNew ? 'common.create' : 'common.save')}
+          icon={this.saving ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Save size={15} />}
+          disabled={this.saving}
+          onClick={this.onCommit}
+        />
+      </CommandBar>
     );
   }
 }

@@ -36,6 +36,7 @@ export * from '@/components/ui/view/skeleton.client';
 export * from '@/components/ui/view/tooltip.client';
 export * from '@/components/ui/view/avatar.client';
 export * from '@/components/ui/view/divider.client';
+export * from '@/components/ui/view/command-palette.client';
 export * from '@/components/ui/view/command-bar.client';
 export * from '@/components/ui/view/command-bar-command.client';
 export * from '@/components/ui/view/stat-card.client';

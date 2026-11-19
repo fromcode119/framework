@@ -19,11 +19,15 @@ export class Tooltip extends PureReactor {
   @state private at: { x: number; y: number } | null = null;
 
   private static readonly GAP = 8;
+  private static readonly HALF = 160;
 
   @bound private show(event: { currentTarget: HTMLElement }): void {
     const box = event.currentTarget.getBoundingClientRect();
     const below = this.side === 'bottom';
-    this.at = { x: box.left + box.width / 2, y: below ? box.bottom + Tooltip.GAP : box.top - Tooltip.GAP };
+    // Kept a half-width from each edge of the window, so words about a control at the side stay on screen.
+    const reach = Math.min(Tooltip.HALF, window.innerWidth / 2 - Tooltip.GAP);
+    const middle = Math.min(Math.max(box.left + box.width / 2, reach + Tooltip.GAP), window.innerWidth - reach - Tooltip.GAP);
+    this.at = { x: middle, y: below ? box.bottom + Tooltip.GAP : box.top - Tooltip.GAP };
   }
 
   @bound private hide(): void {

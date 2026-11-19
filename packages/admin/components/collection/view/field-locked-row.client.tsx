@@ -37,7 +37,7 @@ export class FieldLockedRow extends PureReactor {
           <div className="fc-field-head mb-1 min-h-[22px]">
             <div className="flex min-w-0 items-center gap-1">
               {!this.hideLabel && <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>}
-              {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} />}
+              {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} text={description} />}
             </div>
             {this.summary}
           </div>

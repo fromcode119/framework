@@ -70,7 +70,7 @@ export class AdminPanel extends Reactor {
         <div className={`${card}__head${body || (description && !helpOnly) ? '' : ' fc-admin-panel__head--alone'}`}>
           <h2 className={`${card}__title fc-admin-panel__title`}>
             {title}
-            {helpOnly && description ? <FieldHelpButton label={title} open={this.helpOpen} onToggle={this.toggleHelp} /> : null}
+            {helpOnly && description ? <FieldHelpButton label={title} open={this.helpOpen} onToggle={this.toggleHelp} text={description} /> : null}
           </h2>
           {actions ? <div className={`${card}__aside fc-admin-panel__actions`}>{actions}</div> : null}
         </div>

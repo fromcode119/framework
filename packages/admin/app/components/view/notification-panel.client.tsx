@@ -38,7 +38,7 @@ export class NotificationPanel extends PureReactor {
 
   private get device(): ReactNode {
     return (
-      <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">
+      <div className="fc-notice-device">
         <Switch checked={this.deviceOn} onChange={this.onToggleDevice} disabled={!PushDevice.supported}
           label={AdminI18n.t('shell.notifications.device')}
           description={PushDevice.supported ? undefined : AdminI18n.t('shell.notifications.deviceUnsupported')} />
