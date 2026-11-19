@@ -92,7 +92,7 @@ export class SiteUploadsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay')}
         >
-          <div className="w-full md:w-40">
+          <div className="fc-settings-short fc-settings-short--narrow">
             <NumberStepper min={1} step={5} value={this.themeMaxMb} onChange={this.onThemeMaxMb} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default', { TENANT_THEME_MAX_MB_DEFAULT: SystemConstants.TENANT_THEME_MAX_MB_DEFAULT })} />
           </div>
         </SettingRow>
@@ -102,7 +102,7 @@ export class SiteUploadsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn')}
         >
-          <div className="w-full md:w-40">
+          <div className="fc-settings-short fc-settings-short--narrow">
             <NumberStepper min={1} step={1} value={this.themeMaxCount} onChange={this.onThemeMaxCount} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default2', { TENANT_THEME_MAX_COUNT_DEFAULT: SystemConstants.TENANT_THEME_MAX_COUNT_DEFAULT })} />
           </div>
         </SettingRow>
@@ -120,7 +120,7 @@ export class SiteUploadsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay2')}
         >
-          <div className="w-full md:w-40">
+          <div className="fc-settings-short fc-settings-short--narrow">
             <NumberStepper min={1} step={5} value={this.pluginMaxMb} onChange={this.onPluginMaxMb} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default3', { TENANT_PLUGIN_MAX_MB_DEFAULT: SystemConstants.TENANT_PLUGIN_MAX_MB_DEFAULT })} />
           </div>
         </SettingRow>
@@ -130,8 +130,8 @@ export class SiteUploadsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn2')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-40">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={1} step={1} value={this.pluginMaxCount} onChange={this.onPluginMaxCount} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default4', { TENANT_PLUGIN_MAX_COUNT_DEFAULT: SystemConstants.TENANT_PLUGIN_MAX_COUNT_DEFAULT })} />
             </div>
             <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>

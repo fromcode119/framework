@@ -146,7 +146,7 @@ export class GeneralSignInCard extends PureReactor {
                 <Input
                   value={settings.account_section_order}
                   onChange={this.changeAccountSectionOrder}
-                  className="w-full md:w-80"
+                  className="fc-settings-short"
                   placeholder={AdminI18n.t('settings.general.accountSectionOrderPlaceholder')}
                 />
               </SettingRow>

@@ -1,3 +1,6 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
@@ -97,19 +100,19 @@ export class GeoLocationCard extends AdminComponent {
         <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoLookupTitle')} stacked description={AdminI18n.t('settings.infrastructure.geoLookupDescription')}>
           <Switch checked={this.enabled} onChange={this.onToggle} disabled={!this.loaded || this.busy} label={this.enabled ? AdminI18n.t('settings.infrastructure.on') : AdminI18n.t('settings.infrastructure.off')} />
         </SettingRow>
-        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} stacked description={this.databaseLine()}>
-          <div className="flex flex-col gap-2">
-            {status?.lastCheckedAt ? <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</span> : null}
-            {status?.lastError ? <span className="text-xs text-rose-500">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</span> : null}
-            <Button onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.enabled} icon={<FrameworkIcons.Refresh size={13} />} className="self-start">
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} description={this.databaseLine()} width={SettingRowWidth.AUTO}>
+          <div className="fc-settings-group">
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.enabled} icon={<FrameworkIcons.Refresh size={13} />}>
               {AdminI18n.t('settings.infrastructure.geoUpdateNow')}
             </Button>
           </div>
         </SettingRow>
-        {source ? (
-          <p className="px-1 pt-2 text-xs text-slate-500">
-            <a href={source.url} target="_blank" rel="noreferrer" className="underline">{AdminI18n.t('settings.infrastructure.geoAttribution', { name: source.name, license: source.license })}</a>
-          </p>
+        {status?.lastCheckedAt || status?.lastError || source ? (
+          <div className="fc-settings-note">
+            {status?.lastCheckedAt ? <Hint>{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</Hint> : null}
+            {status?.lastError ? <Hint variant="error">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</Hint> : null}
+            {source ? <Hint><a href={source.url} target="_blank" rel="noreferrer" className="fc-link">{AdminI18n.t('settings.infrastructure.geoAttribution', { name: source.name, license: source.license })}</a></Hint> : null}
+          </div>
         ) : null}
       </Card>
     );

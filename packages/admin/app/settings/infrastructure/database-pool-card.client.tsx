@@ -57,8 +57,8 @@ export class DatabasePoolCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.databasePoolHelp')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-40">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={5} max={80} step={5} value={this.max} onChange={this.onMax} disabled={!this.loaded} />
             </div>
             <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>

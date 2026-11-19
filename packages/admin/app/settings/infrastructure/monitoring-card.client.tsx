@@ -135,7 +135,7 @@ export class MonitoringCard extends AdminComponent {
         </SettingRow>
         {MonitoringCard.THRESHOLDS.map(({ key, label }) => (
           <SettingRow key={key} theme={this.theme} title={AdminI18n.t(label)} stacked description={AdminI18n.t('settings.infrastructure.monitoringThresholdHelp')}>
-            <div className="w-full md:w-40">
+            <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={0} max={100} step={1} value={this.thresholds[key] ?? ''} onChange={(value: number | string) => this.onThreshold(key, value)} disabled={!this.loaded} />
             </div>
           </SettingRow>

@@ -57,8 +57,8 @@ export class ApiResponseCacheCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.apiResponseCacheHelp')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-40">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={0} step={10} value={this.seconds} onChange={this.onSeconds} disabled={!this.loaded} />
             </div>
             <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>

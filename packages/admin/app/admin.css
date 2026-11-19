@@ -3825,3 +3825,12 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* The bar at the top of a phone: the way to the menu, on the page's own ground. */
 .fc-phone-bar { display: flex; align-items: center; height: 56px; padding-inline: 12px; border-bottom: 1px solid var(--fc-border); }
+
+/* ── A switch with its words ──────────────────────────────────────────────────────────────────────
+ * The words take the room at the start; the switch stands at the END of the line, where every row of
+ * a form or a settings card ends — so a column of them reads down one edge. Alone, with no words of
+ * its own, it still goes to the end rather than the start of whatever holds it. */
+.fc-switch-field { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.fc-switch-field > .fc-switch:only-child { margin-inline-start: auto; }
+.fc-switch-field__text { display: flex; flex-direction: column; min-width: 0; cursor: pointer; user-select: none; }
+.fc-switch-field__text--off { cursor: not-allowed; opacity: .6; }

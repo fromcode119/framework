@@ -93,6 +93,15 @@
 .fc-settings-row__control--field { width: var(--fc-settings-control-field); }
 .fc-settings-row__control--narrow { width: var(--fc-settings-control-narrow); }
 .fc-settings-row__control--auto { width: auto; }
+/* Several controls in one row's control column: they end at the row's end, the way a single control
+   does. A field among them takes the room that is left; a switch or a button keeps its own width. */
+.fc-settings-group { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 100%; min-width: 0; }
+.fc-settings-group > :is(.fc-field, .fc-stepper, .fc-field-stack, .fc-select) { flex: 1 1 auto; min-width: 0; }
+.fc-settings-group > :is(.fc-switch-field, .fc-btn, .fc-badge, .fc-state-badge) { flex: none; }
+/* A row whose control is one switch gives the width a field would take back to the words: the switch
+   needs 32px, and with a field's 300px reserved for it the sentence beside it was cut at half a line. */
+.fc-settings-row__control:has(> .fc-switch-field:only-child) { width: auto; }
+.fc-settings-row__control > .fc-switch-field:only-child { flex: none; width: auto; }
 /* A read-only value in a row: what is recorded, not an input. */
 .fc-settings-value { font-size: var(--fc-settings-label); font-weight: var(--fc-weight-strong); color: var(--fc-text); overflow-wrap: anywhere; text-align: end; }
 .fc-settings-value--empty { font-weight: 400; color: var(--fc-text-muted); }
@@ -107,13 +116,41 @@
    their right. Several children (a row of buttons) still size themselves. */
 .fc-settings-row--wide > .fc-settings-row__control > * { width: auto; flex: 0 1 auto; }
 .fc-settings-row--wide > .fc-settings-row__control > :only-child { width: 100%; max-width: var(--fc-settings-control-wide); flex: 1 1 auto; min-width: 0; }
+/* A group of small controls under a long description still ends at the row's end: capped at a field's
+   widest, it stopped in the middle of the card, at neither edge. */
+.fc-settings-row--wide > .fc-settings-row__control > .fc-settings-group:only-child { max-width: none; }
+/* A stepper or a switch under a long description is still a small control: it keeps a field's width (or
+   its own) and stands at the row's end. Stretched to the widest a text field may be, a number sat in a
+   640px box and a switch at the far end of one, its state word 600px away at the other. */
+.fc-settings-row--wide > .fc-settings-row__control:has(> :only-child:is(.fc-stepper, .fc-switch-field, .fc-settings-group)) { justify-content: flex-end; }
+.fc-settings-row--wide > .fc-settings-row__control > .fc-stepper:only-child { flex: none; width: var(--fc-settings-control-field); max-width: 100%; }
+.fc-settings-row--wide > .fc-settings-row__control > .fc-switch-field:only-child { flex: none; width: auto; }
+/* A control that is short by nature (a number, a short choice) wrapped to keep it so: a field's width,
+   or the narrow one, never the whole row — and at the row's end wherever the row puts its control. */
+.fc-settings-short { flex: none; width: var(--fc-settings-control-field); max-width: 100%; }
+.fc-settings-short--narrow { width: var(--fc-settings-control-narrow); }
+.fc-settings-row--wide > .fc-settings-row__control:has(> .fc-settings-short:only-child) { justify-content: flex-end; }
+.fc-settings-row--wide > .fc-settings-row__control > .fc-settings-short:only-child { flex: none; width: var(--fc-settings-control-field); }
+.fc-settings-row--wide > .fc-settings-row__control > .fc-settings-short--narrow:only-child { width: var(--fc-settings-control-narrow); }
+.fc-settings-group > .fc-settings-short { flex: none; }
+@media (max-width: 639.98px) { .fc-settings-short, .fc-settings-row--wide > .fc-settings-row__control > .fc-settings-short:only-child { width: 100%; flex: 1 1 auto; } .fc-settings-group > .fc-settings-short { flex: 1 1 0; min-width: 0; } }
+/* A switch's state word stands right beside it. */
+.fc-settings-row__control > .fc-switch-field { gap: 8px; }
+.fc-settings-row__control > .fc-switch-field > .fc-switch-field__text .fc-field-label { color: var(--fc-text-muted); font-weight: 400; }
 @media (max-width: 639.98px) {
   .fc-settings-row { flex-wrap: wrap; gap: 8px; }
   .fc-settings-row__control--field, .fc-settings-row__control--narrow { width: 100%; justify-content: flex-start; }
+  /* A switch stays beside its words on a phone too, at the end of the line: under them, at the start,
+     it read as belonging to the next row. */
+  .fc-settings-row:has(> .fc-settings-row__control > .fc-switch-field:only-child) { flex-wrap: nowrap; }
+  .fc-settings-row > .fc-settings-row__control:has(> .fc-switch-field:only-child) { width: auto; }
+  .fc-settings-row__desc--clamp { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 }
 
 /* ── A file in a setting row: what is chosen and a Choose button, on one line ─────────────────── */
 .fc-media-inline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+/* With nothing chosen the control is one small button: it stands at the row's end, not at the start of the column. */
+.fc-settings-row__control > .fc-media-inline:has(> .fc-media-empty:only-child) { justify-content: flex-end; }
 .fc-media-inline__thumb { flex: none; width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--fc-border); object-fit: contain; background: var(--fc-surface-muted); }
 .fc-media-inline__name { flex: 1 1 auto; text-align: end; min-width: 0; font-size: var(--fc-settings-text); color: var(--fc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-media-inline__name--none { color: var(--fc-text-muted); }
@@ -267,3 +304,6 @@
 .fc-list-actions { padding-top: 4px; }
 .fc-list-actions__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .fc-list-actions__count { font-size: 12px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+
+/* What a settings card says under its rows: a checked-at time, a failure, a credit. At the rows' inset. */
+.fc-settings-note { display: flex; flex-direction: column; gap: 4px; padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x); border-top: 1px solid var(--fc-border); }

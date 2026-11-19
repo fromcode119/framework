@@ -89,8 +89,8 @@ export class DeploymentsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.restartEveryAppIsRecreated')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-72">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short">
               <Select
                 theme={this.theme}
                 value={this.mode}

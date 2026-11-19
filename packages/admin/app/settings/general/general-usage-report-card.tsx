@@ -1,3 +1,4 @@
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { UsageReportDefaults } from '@fromcode119/core/client';
 import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
@@ -97,9 +98,10 @@ export class GeneralUsageReportCard extends AdminComponent {
             </Explanation>
           )}
         >
-          <div className="flex items-center gap-3">
+          <div className="fc-settings-group">
             <Switch checked={settings.usage_report_enabled === true} onChange={this.changeEnabled} />
             <Button
+              variant={ButtonVariant.SECONDARY}
               onClick={this.sendNow}
               isLoading={this.isSending}
               icon={<FrameworkIcons.Send size={13} />}
@@ -115,7 +117,7 @@ export class GeneralUsageReportCard extends AdminComponent {
             title={AdminI18n.t('settings.general.usageReportAddress')}
             description={<AdminRichText k="settings.general.usageReportAddressDescription" vars={{ address: UsageReportDefaults.ADDRESS }} />}
           >
-            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="w-full md:w-80" placeholder={UsageReportDefaults.ADDRESS} />
+            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="fc-settings-short" placeholder={UsageReportDefaults.ADDRESS} />
           </SettingRow>
         )}
 

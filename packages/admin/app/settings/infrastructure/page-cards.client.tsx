@@ -69,8 +69,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.howManyDistinctThemePlugin')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={1}
                   step={1}
@@ -89,8 +89,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.aThemeWorldThatAllocates')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={128} step={64} value={this.ssrRenderMemoryMb} onChange={this.onSsrRenderMemory} placeholder={AdminI18n.t('settings.infrastructure.default6', { SSR_RENDER_MEMORY_MB_DEFAULT: SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT })} />
               </div>
             </div>
@@ -101,8 +101,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.aPageRenderThatDoes')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={AdminI18n.t('settings.infrastructure.default7', { SSR_RENDER_TIMEOUT_MS_DEFAULT: SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT })} />
               </div>
               <Button
@@ -136,8 +136,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.daysOfSystemLogHistory')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={0}
                   step={1}
@@ -173,8 +173,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               </Explanation>
             )}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={0}
                   step={1}

@@ -71,8 +71,8 @@ export class PluginIsolationCard extends AdminComponent {
         </SettingRow>
         {PluginIsolationCard.LIMITS.map((limit, index) => (
           <SettingRow key={limit.key} theme={theme} title={limit.title()} stacked description={limit.description()}>
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={limit.min} max={'max' in limit ? limit.max : undefined} step={limit.step} value={this.values[limit.key] ?? ''} onChange={this.onChange(limit.key)} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: limit.fallback })} />
               </div>
               {index === last ? (

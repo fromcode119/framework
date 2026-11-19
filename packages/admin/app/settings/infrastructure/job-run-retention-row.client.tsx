@@ -56,8 +56,8 @@ export class JobRunRetentionRow extends AdminComponent {
         stacked
         description={AdminI18n.t('settings.infrastructure.daysOfJobRunHistory')}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-full md:w-40">
+        <div className="fc-settings-group">
+          <div className="fc-settings-short fc-settings-short--narrow">
             <NumberStepper min={0} step={1} value={this.days} onChange={this.onChange} placeholder={AdminI18n.t('settings.infrastructure.keepForever')} />
           </div>
           <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />}>
