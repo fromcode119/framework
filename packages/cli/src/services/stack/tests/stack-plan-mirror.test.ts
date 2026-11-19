@@ -49,3 +49,40 @@ describe('StackPlan and the shared mirror', () => {
     fs.rmSync(worktree, { recursive: true, force: true });
   });
 });
+
+describe('StackPlan and the Next apps', () => {
+  it('runs the admin from the worktree source the way the dev overlay says, dropping absent mounts', () => {
+    const framework = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'fc-src-')));
+    fs.mkdirSync(path.join(framework, 'deploy'), { recursive: true });
+    fs.mkdirSync(path.join(framework, 'modules', 'admin', 'components'), { recursive: true });
+    fs.writeFileSync(path.join(framework, 'package.json'), JSON.stringify({ workspaces: ['modules/*'] }));
+    fs.writeFileSync(path.join(framework, 'deploy', 'docker-compose.full-stack.yml'), 'services:\n  api:\n    volumes:\n      - ../plugins:/srv/plugins\n');
+    fs.writeFileSync(
+      path.join(framework, 'docker-compose.sources.yml'),
+      [
+        'services:',
+        '  admin:',
+        '    command: ["npm", "run", "dev"]',
+        '    environment:',
+        '      - WATCHPACK_POLLING=true',
+        '    volumes:',
+        '      - ./modules/admin/components:/srv/modules/admin/components',
+        '      - ./modules/admin/missing:/srv/modules/admin/missing',
+        '    deploy:',
+        '      resources:',
+        '        limits:',
+        '          memory: 4G',
+        '',
+      ].join('\n'),
+    );
+
+    const overlay = new StackPlan({ name: 'demo', framework, plugins: [], version: 'v1.0.0', port: 8200 }).overlay();
+
+    expect(overlay).toContain('    command: ["npm","run","dev"]');
+    expect(overlay).toContain('      - WATCHPACK_POLLING=true');
+    expect(overlay).toContain(`${path.join(framework, 'modules', 'admin', 'components')}:/srv/modules/admin/components`);
+    expect(overlay).not.toContain('missing');
+    expect(overlay).toContain('          memory: 4G');
+    fs.rmSync(framework, { recursive: true, force: true });
+  });
+});

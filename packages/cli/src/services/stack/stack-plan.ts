@@ -3,6 +3,7 @@ import path from 'path';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 import { StackLayout } from '@cli/services/stack/stack-layout';
 import { StackExtensions } from '@cli/services/stack/stack-extensions';
+import { StackSourceApps } from '@cli/services/stack/stack-source-apps';
 
 /**
  * The files a local stack runs from.
@@ -34,6 +35,9 @@ export class StackPlan {
 
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
+
+  /** The Next apps that serve a baked build unless they are run from the worktree's source. */
+  private static readonly SOURCE_APPS = ['admin', 'frontend'];
 
   /** Read from the worktree, never assumed: see StackLayout. */
   private readonly layout: StackLayout;
@@ -108,17 +112,7 @@ export class StackPlan {
       for (const mount of runtime) lines.push(`      - ${mount}`);
     }
 
-    const admin = this.appMounts('admin');
-    if (admin.length) {
-      lines.push('  admin:', '    volumes:');
-      for (const mount of admin) lines.push(`      - ${mount}`);
-    }
-
-    const frontend = this.appMounts('frontend');
-    if (frontend.length) {
-      lines.push('  frontend:', '    volumes:');
-      for (const mount of frontend) lines.push(`      - ${mount}`);
-    }
+    for (const app of StackPlan.SOURCE_APPS) lines.push(...this.appSection(app));
 
     lines.push('');
     return lines.join('\n');
@@ -150,6 +144,26 @@ export class StackPlan {
 
   /** The extension kind a `--plugin` belongs to, as the topology names its mount. */
   private static readonly PLUGIN_KIND = 'plugins';
+
+  /**
+   * One app's overlay section: run from the worktree's source when the dev overlay describes how,
+   * otherwise only its built output over the image's own build.
+   */
+  private appSection(app: string): string[] {
+    const source = StackSourceApps.of(this.request.framework).app(app);
+    const mounts = source ? [...source.volumes, ...this.pluginMounts()] : this.appMounts(app);
+    if (!mounts.length) return [];
+
+    const lines = [`  ${app}:`];
+    if (source) {
+      lines.push(`    command: ${JSON.stringify(source.command)}`, '    environment:');
+      for (const line of source.environment) lines.push(`      - ${line}`);
+    }
+    if (source?.memory) lines.push('    deploy:', '      resources:', '        limits:', `          memory: ${source.memory}`);
+    lines.push('    volumes:');
+    for (const mount of mounts) lines.push(`      - ${mount}`);
+    return lines;
+  }
 
   private appMounts(app: string): string[] {
     const mounts: string[] = [];
