@@ -3,7 +3,6 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { UiFieldUtils } from '@/lib/ui';
 import { TagFieldDataService } from '@/components/ui/tag-field/data-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -27,8 +26,6 @@ export class TagFieldChips extends PureReactor {
 
   render(): ReactNode {
     const {
-      theme,
-      size,
       tags,
       labels,
       sourceCollection,
@@ -41,14 +38,8 @@ export class TagFieldChips extends PureReactor {
       onShowSuggestions,
       onAdd,
     } = this;
-    // The text typed here is the same size as in every other field (UiFieldUtils: one size).
-    const inputTextSizeClass = 'text-[12px]';
-    const wrapperClasses = hasMany
-      ? UiFieldUtils.getFieldClasses(size, 'flex flex-wrap gap-2', true)
-      : UiFieldUtils.getFieldClasses(size, 'flex items-center gap-2', false);
-
     return (
-      <div className={wrapperClasses}>
+      <div className="fc-chip-input">
         {tags.map((tag: string, i: number) => {
           const rawLabel = labels[tag] || tag;
           // A reference whose record is GONE must not wear the same chip as a real one. It used to,
@@ -56,9 +47,8 @@ export class TagFieldChips extends PureReactor {
           // nonsense data rather than as a broken link.
           const unresolved = TagFieldDataService.isUnresolved(rawLabel);
           const label = unresolved ? TagFieldDataService.describeUnresolved(rawLabel) : rawLabel;
-          const chipClass = unresolved
-            ? 'group border border-dashed border-amber-400 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-lg flex items-center gap-1.5 transition-all dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300'
-            : 'group bg-indigo-600 text-white px-2 py-0.5 rounded-lg flex items-center gap-1.5 shadow-md shadow-indigo-600/10 active:scale-95 transition-all';
+          // The console's one chip, the same as in a chip field; a missing record's is dashed.
+          const chipClass = `fc-chip fc-chip--removable${unresolved ? ' fc-chip--missing' : ''}`;
 
           return (
             <span
@@ -66,10 +56,8 @@ export class TagFieldChips extends PureReactor {
               className={chipClass}
               title={unresolved ? AdminI18n.t('ui.tags.missingRecord', { id: tag }) : undefined}
             >
-              <div className="flex flex-col leading-tight">
-                 <span className="text-[12px] font-medium leading-none mb-0">{label}</span>
-                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[12px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
-              </div>
+              <span>{label}</span>
+              {!sourceCollection && !unresolved && label !== tag ? <span className="fc-chip__note">{tag}</span> : null}
               <button
                 type="button"
                 onClick={() => {
@@ -81,7 +69,7 @@ export class TagFieldChips extends PureReactor {
                     onChange('');
                   }
                 }}
-                className="text-indigo-200 hover:text-white transition-colors p-0"
+                className="fc-chip__remove"
               >
                 <FrameworkIcons.Close size={10} strokeWidth={3} />
               </button>
@@ -108,12 +96,10 @@ export class TagFieldChips extends PureReactor {
                         onChange(hasMany ? newTags : '');
                     }
                 } }
-                className={`w-full bg-transparent outline-none ${inputTextSizeClass} font-medium ${
-                    theme === ThemeMode.DARK ? 'text-white placeholder:text-slate-600' : 'text-slate-900 placeholder:text-slate-400'
-                }`}
+                className="fc-chip-input__entry w-full"
                 />
             )}
-            {isCreating && <FrameworkIcons.Loader size={12} className="animate-spin text-indigo-500" />}
+            {isCreating && <FrameworkIcons.Loader size={12} className="animate-spin" />}
         </div>
       </div>
     );

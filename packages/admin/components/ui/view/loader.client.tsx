@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -17,53 +16,18 @@ export class Loader extends AdminComponent {
     const label = this.label ?? '';
     const className = this.className ?? '';
     const fullPage = this.fullPage ?? false;
-    const theme = this.theme;
 
+    // One small ring and one line, in the console's own ink. It used to be a 64px indigo ring around
+    // a pulsing square with three bouncing dots under the words — three animations, in a colour
+    // nothing else on the screen uses, for "wait a moment".
     const content = (
-      <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>
-        <div className="relative">
-          <div className={`h-16 w-16 border-4 rounded-full animate-spin transition-colors duration-500 ${
-            theme === ThemeMode.DARK ? 'border-indigo-500/10 border-t-indigo-500' : 'border-indigo-100 border-t-indigo-600'
-          }`}></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`h-8 w-8 rounded-xl animate-pulse transition-colors duration-500 ${
-              theme === ThemeMode.DARK ? 'bg-indigo-500/10' : 'bg-indigo-50'
-            }`}></div>
-          </div>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          {label ? (
-            <p className={`font-medium text-[12px] tracking-tight transition-colors duration-500 ${
-              theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'
-            }`}>
-              {label}
-            </p>
-          ) : (
-            <LoadingMessage className={theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} />
-          )}
-          <div className="flex gap-1.5 mt-1">
-            <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.3s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
-            <div className={`h-1.5 w-1.5 rounded-full animate-bounce [animation-delay:-0.15s] ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
-            <div className={`h-1.5 w-1.5 rounded-full animate-bounce ${theme === ThemeMode.DARK ? 'bg-indigo-500' : 'bg-indigo-600'}`}></div>
-          </div>
-        </div>
+      <div className={`fc-loader ${className}`} role="status">
+        <span className="fc-loader__ring" aria-hidden="true" />
+        {label ? <span className="fc-loader__label">{label}</span> : <LoadingMessage className="fc-loader__label" />}
       </div>
     );
 
-    if (fullPage) {
-      return (
-        <div className={`fixed inset-0 z-[200] flex items-center justify-center backdrop-blur-xl ${
-          theme === ThemeMode.DARK ? 'bg-slate-950/60' : 'bg-white/60'
-        }`}>
-          {content}
-        </div>
-      );
-    }
-
-    return (
-      <div className="py-20 flex items-center justify-center">
-        {content}
-      </div>
-    );
+    if (fullPage) return <div className="fc-loader-page">{content}</div>;
+    return <div className="fc-loader-block">{content}</div>;
   }
 }

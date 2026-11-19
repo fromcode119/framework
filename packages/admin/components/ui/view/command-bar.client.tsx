@@ -1,0 +1,30 @@
+import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminClass } from '@/lib/admin-class';
+
+/**
+ * What can be done to the rows that are selected: a dark bar at the foot of the window, there while
+ * something is selected and gone when nothing is. It says how many (`value`) and then lists what can
+ * be done (`CommandBarCommand`), so the actions stay in one place however far the list is scrolled.
+ */
+export class CommandBar extends PureReactor {
+  @prop declare open: boolean;
+  /** "3 selected". */
+  @prop declare value: ReactNode;
+  @prop declare children: ReactNode;
+
+  render(): ReactNode {
+    if (!this.open || typeof document === 'undefined') return null;
+    const name = AdminClass.of('command-bar');
+    return createPortal(
+      <div className={name} role="toolbar">
+        <div className={`${name}__bar`}>
+          <div className={`${name}__value`}>{this.value}</div>
+          {this.children}
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+}

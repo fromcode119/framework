@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { RecordCard } from '@/components/ui/view/record-card.client';
 import { DataTable } from '@/components/ui/view/data-table.client';
+import { CommandBar } from '@/components/ui/view/command-bar.client';
+import { CommandBarCommand } from '@/components/ui/view/command-bar-command.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
@@ -26,8 +28,11 @@ export class KitSurfaces extends Reactor {
   declare context: INotificationContextType | undefined;
 
   @state private open = '';
+  @state private selected: string[] = [];
 
   @bound private close(): void { this.open = ''; }
+  @bound private select(ids: string[]): void { this.selected = ids; }
+  @bound private clearSelection(): void { this.selected = []; }
   private opener(name: string): () => void { return () => { this.open = name; }; }
   private toast(type: NotificationType, title: string, message: string): () => void {
     return () => this.context?.notify(type, title, message);
@@ -67,8 +72,14 @@ export class KitSurfaces extends Reactor {
           </dl>
         </RecordCard>
         <RecordCard title="DataTable" id="kit-datatable">
-          <DataTable columns={columns as any} data={rows} selectable selectedIds={[]} onSelectionChange={() => undefined} totalDocs={2} limit={20} page={1} onPageChange={() => undefined} />
+          <DataTable columns={columns as any} data={rows} selectable selectedIds={this.selected} onSelectionChange={this.select} totalDocs={2} limit={20} page={1} onPageChange={() => undefined} />
         </RecordCard>
+        <CommandBar open={this.selected.length > 0} value={`${this.selected.length} selected`}>
+          <CommandBarCommand label="Publish" onClick={this.clearSelection} />
+          <CommandBarCommand label="Export" icon={<FrameworkIcons.Download size={15} />} onClick={this.clearSelection} />
+          <CommandBarCommand label="Delete" icon={<FrameworkIcons.Trash size={15} />} onClick={this.clearSelection} />
+          <CommandBarCommand label={<FrameworkIcons.Close size={15} />} title="Clear selection" onClick={this.clearSelection} />
+        </CommandBar>
         {this.block('Dropdown', (
           <Dropdown align={HorizontalAlign.LEFT} items={menu} trigger={<span className="fc-toolbar-btn"><FrameworkIcons.More size={15} />Menu</span>} />
         ))}

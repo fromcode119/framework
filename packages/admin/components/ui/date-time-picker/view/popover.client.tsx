@@ -74,7 +74,7 @@ export class DateTimePickerPopover extends PureReactor {
               // regardless of what the content grows into later — the height estimate can be wrong again
               // without the control becoming unusable.
               maxHeight: 'calc(100vh - 24px)',
-              overflowY: 'auto',
+              overflowY: 'auto', overflowX: 'hidden',
               zIndex: 9999
             }}
             // The sheet every menu in this console opens in, not a blurred pane of its own.

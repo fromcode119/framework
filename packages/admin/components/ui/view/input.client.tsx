@@ -3,6 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react';
 import { PureReactor, prop, ref } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
+import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
 
 export class Input extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -46,16 +47,16 @@ export class Input extends PureReactor {
     return (
       <div className={`fc-field-stack w-full ${className}`}>
         {this.label && <label className={UiFieldUtils.TEXT.LABEL}>{this.label}</label>}
-        <input
-          ref={this.elementRef}
-          {...this.rest}
-          value={this.normalizedValue}
-          className={`${UiFieldUtils.getFieldClasses(size, inputClassName)}
-            ${error ? 'fc-field--error' : ''}`}
-        />
-        {error && (
-          <p className="fc-field-error">{error}</p>
-        )}
+        <div className="fc-field-wrap">
+          <input
+            ref={this.elementRef}
+            {...this.rest}
+            value={this.normalizedValue}
+            aria-invalid={error ? true : undefined}
+            className={`${UiFieldUtils.getFieldClasses(size, inputClassName)} ${error ? 'fc-field--error' : ''}`}
+          />
+          {error ? <FieldErrorMark message={error} /> : null}
+        </div>
       </div>
     );
   }

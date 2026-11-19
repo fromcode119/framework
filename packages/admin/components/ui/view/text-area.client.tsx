@@ -1,6 +1,7 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode, TextareaHTMLAttributes } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
 import { UiFieldUtils } from '@/lib/ui';
 
 export class TextArea extends PureReactor {
@@ -37,15 +38,15 @@ export class TextArea extends PureReactor {
     return (
       <div className={`fc-field-stack w-full ${className}`}>
         {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
-        <textarea
-          {...props}
-          value={value}
-          className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
-            ${error ? 'fc-field--error' : ''}`}
-        />
-        {error && (
-          <p className="fc-field-error">{error}</p>
-        )}
+        <div className="fc-field-wrap">
+          <textarea
+            {...props}
+            value={value}
+            aria-invalid={error ? true : undefined}
+            className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)} ${error ? 'fc-field--error' : ''}`}
+          />
+          {error ? <FieldErrorMark message={error} /> : null}
+        </div>
       </div>
     );
   }

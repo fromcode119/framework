@@ -1206,7 +1206,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-th__inner { display: flex; align-items: center; gap: 4px; }
 .fc-dt-th--sortable { cursor: pointer; }
 .fc-dt-th--sortable:hover { color: var(--fc-text); }
-.fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline: 16px 4px; }
+/* Doubled selectors: `.fc-dt-td` is declared further down and its own padding would win for the rows only, leaving the head box 8px left of the row boxes. */
+.fc-dt-th.fc-dt-th--check, .fc-dt-td.fc-dt-td--check { width: 15px; padding-inline: 24px 0; }
 .fc-dt-th--actions, .fc-dt-td--actions { width: 1%; text-align: end; }
 .fc-dt-row { border-bottom: 1px solid var(--fc-border); transition: background-color .12s; }
 .fc-dt-row:last-child { border-bottom: 0; }
@@ -2168,13 +2169,15 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   align-items: center;
   gap: 4px;
   min-height: var(--fc-field-h);
-  padding: 4px 8px;
-  border: 1px solid var(--fc-border);
-  border-radius: var(--radius);
-  background: var(--fc-surface);
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted);
+  box-shadow: var(--fc-control-shadow);
   cursor: text;
 }
-.fc-chip-input:focus-within { border-color: var(--fc-brand); box-shadow: 0 0 0 4px var(--fc-brand-soft, rgb(99 102 241 / 0.1)); }
+/* The field's own ring, because this IS a field. */
+.fc-chip-input:focus-within { box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .fc-chip-input--locked { background: var(--fc-surface-muted); cursor: default; }
 .fc-chip-input__entry {
   flex: 1 1 6ch;
@@ -2182,7 +2185,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   border: 0;
   outline: none;
   background: none;
-  font-size: var(--fc-field-text);
+  font-size: var(--fc-control-text);
+  line-height: 20px;
   color: var(--fc-text);
 }
 .fc-chip--removable { display: inline-flex; align-items: center; gap: 4px; padding-inline-end: 3px; }
@@ -2198,6 +2202,8 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   color: var(--fc-text-muted);
   cursor: pointer;
 }
+.fc-chip__note { margin-inline-start: 4px; color: var(--fc-text-muted); font-weight: 400; }
+.fc-chip--missing { border-style: dashed; border-color: var(--fc-warning, #d97706); color: var(--fc-warning, #d97706); }
 .fc-chip__remove:hover { background: var(--fc-surface); color: var(--fc-text); }
 /* A chip carries a VALUE — a variant's size, a tag, a recipient — so it is read at the strength of the
    text beside it. It used to be muted grey on near-white with no edge: in a table the size of a variant
@@ -2800,7 +2806,10 @@ textarea.fc-record-json__layer { caret-color: var(--fc-text); }
 /* A field whose value was refused: a red ring where the hairline was, and the same ring wider on focus —
    the reference's error edge. It was a rose border on a field that has no border, so nothing showed. */
 .fc-field--error, .fc-field--error:focus, .fc-field--error:focus-visible { box-shadow: 0 0 0 1px var(--fc-danger), 0 0 0 3px color-mix(in srgb, var(--fc-danger) 15%, transparent); }
-.fc-field-error { margin: 0; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-danger); }
+.fc-field-wrap { position: relative; display: flex; width: 100%; }
+.fc-field.fc-field--error { padding-inline-end: 30px; }
+.fc-field-mark { position: absolute; inset-inline-end: 6px; top: 6px; display: inline-flex; }
+.fc-field-mark__button { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--fc-danger); cursor: help; }
 /* A box of several lines is not a line: it keeps the height its own content needs. */
 textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 
@@ -2808,7 +2817,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    inset lives on the COMPOUND selector because `.fc-field { padding: … }` is a shorthand that resets
    padding-left and would otherwise bury any `ps-*` utility under the icon (the stepper insets the
    same way, above). The icon is muted and takes the field's focus colour when the box is focused. */
-.fc-search { display: block; }
+/* `relative` is the icon's anchor and belongs to the block itself: a caller that forgot the utility got the icon on the next positioned box down. */
+.fc-search { display: block; position: relative; }
 .fc-search__icon {
   position: absolute; inset-inline-start: 8px; top: 50%; transform: translateY(-50%);
   display: inline-flex; color: var(--fc-text-muted); pointer-events: none;
@@ -2968,9 +2978,11 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 /* One of several choices, one on at a time: flat until chosen, and then simply the surface, lifted
    by the same edge a button carries. A solid brand-coloured pill made the quietest control on the
    screen the loudest thing on it. */
-.fc-tab { display: inline-flex; align-items: center; height: var(--fc-control-h); padding: 4px 8px; border: 0; border-radius: var(--fc-control-radius); background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
-.fc-tab:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
-.fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-control-shadow); }
+.fc-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fc-tab { display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; background: transparent; box-shadow: none; color: var(--fc-text-muted); font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.fc-tab:hover { color: var(--fc-text); }
+.fc-tab:disabled { color: var(--fc-text-faint); cursor: default; }
+.fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
 
 /* ---------- The drawer, by the dialogs' own measurements ----------
    A title reads 16/24 like every other card's name, the line under it 13/20.8 like every value, and
@@ -3019,6 +3031,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-kit__row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 16px var(--fc-card-pad-x); }
 .fc-kit__cell { width: 220px; max-width: 100%; }
 .fc-kit__cell--wide { width: 100%; }
+.fc-kit__stack { display: flex; flex-direction: column; gap: 16px; }
+.fc-kit__inline { display: flex; align-items: center; gap: 12px; }
 .fc-kit__type { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px var(--fc-card-pad-x); }
 
 /* ── A toast ── min 360, max 440, the component surface, 12px in, a flyout shadow (the reference's
@@ -3035,3 +3049,56 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-toast__close:hover { color: var(--fc-text); }
 /* A key: 20 high, at least 20 wide, the neutral tag. */
 .fc-kbd { display: inline-flex; align-items: center; justify-content: center; height: 20px; min-width: 20px; padding: 0 4px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); font-size: 12px; line-height: 18px; font-weight: 500; font-family: inherit; color: var(--fc-text-muted); }
+
+/* ---------- Tooltip, avatar, divider, command bar ---------- */
+.fc-tooltip__anchor { display: inline-flex; }
+.fc-tooltip { position: fixed; z-index: 2000; max-width: 220px; padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: center; pointer-events: none; transform: translate(-50%, -100%); }
+.fc-tooltip[data-side="bottom"] { transform: translate(-50%, 0); }
+
+.fc-avatar { display: inline-flex; flex: none; align-items: center; justify-content: center; overflow: hidden; width: 28px; height: 28px; border-radius: 999px; background: var(--fc-surface); box-shadow: var(--fc-control-shadow); color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
+.fc-avatar[data-size="2xsmall"] { width: 16px; height: 16px; font-size: 12px; }
+.fc-avatar[data-size="xsmall"] { width: 20px; height: 20px; font-size: 12px; }
+.fc-avatar[data-size="small"] { width: 24px; height: 24px; }
+.fc-avatar[data-size="large"] { width: 36px; height: 36px; font-size: 14px; }
+.fc-avatar[data-size="xlarge"] { width: 44px; height: 44px; font-size: 16px; }
+.fc-avatar__image { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.fc-avatar__fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: var(--fc-surface-disabled); text-transform: uppercase; user-select: none; }
+
+.fc-divider { flex: none; border: 0; background: var(--fc-border); }
+.fc-divider[data-orientation="horizontal"] { width: 100%; height: 1px; }
+.fc-divider[data-orientation="vertical"] { width: 1px; align-self: stretch; min-height: 16px; }
+.fc-divider[data-variant="dashed"][data-orientation="horizontal"] { background: linear-gradient(90deg, var(--fc-border-strong) 1px, transparent 1px) 0 0 / 4px 1px; }
+.fc-divider[data-variant="dashed"][data-orientation="vertical"] { background: linear-gradient(0deg, var(--fc-border-strong) 1px, transparent 1px) 0 0 / 1px 4px; }
+
+/* The bar is dark in both schemes: it is the one thing on the page that floats over the content, and
+   it has to read as apart from whatever row happens to be under it. */
+.fc-command-bar { position: fixed; inset-inline: 16px; bottom: 32px; z-index: 900; display: flex; justify-content: center; pointer-events: none; }
+.fc-command-bar__bar { --fc-command-ink: rgb(255 255 255 / .88); --fc-command-ink-quiet: rgb(255 255 255 / .56); --fc-command-line: rgb(255 255 255 / .16); display: flex; align-items: center; max-width: 100%; overflow: hidden; padding: 0 4px; border-radius: 999px; background: #18181b; box-shadow: 0 0 0 1px rgb(255 255 255 / .1), 0 8px 16px 0 rgb(0 0 0 / .16), 0 16px 32px 0 rgb(0 0 0 / .16); pointer-events: auto; }
+.fc-command-bar__value { padding: 10px 12px; color: var(--fc-command-ink-quiet); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; }
+.fc-command-bar__separator { flex: none; width: 1px; height: 40px; background: var(--fc-command-line); }
+.fc-command-bar__command { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border: 0; background: transparent; color: var(--fc-command-ink); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; cursor: pointer; transition: background-color .15s ease; }
+.fc-command-bar__command:hover, .fc-command-bar__command:focus-visible { background: #27272a; outline: 0; }
+.fc-command-bar__command:disabled { color: var(--fc-command-ink-quiet); cursor: default; }
+/* On a phone the actions do not fit one line: the bar becomes a block that wraps, the lines between go. */
+@media (max-width: 639.98px) {
+  .fc-command-bar { bottom: 16px; }
+  .fc-command-bar__bar { flex-wrap: wrap; justify-content: center; border-radius: 16px; padding: 4px; }
+  .fc-command-bar__separator { display: none; }
+  .fc-command-bar__command { border-radius: 8px; }
+  .fc-command-bar__value { width: 100%; padding-block: 6px 2px; text-align: center; }
+}
+
+/* ---------- Loader: one ring, one line ---------- */
+.fc-loader { display: inline-flex; align-items: center; gap: 8px; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; }
+.fc-loader__ring { flex: none; width: 16px; height: 16px; border: 2px solid var(--fc-border-strong); border-top-color: var(--fc-text-muted); border-radius: 999px; animation: fc-loader-spin .7s linear infinite; }
+.fc-loader__label { color: inherit; }
+.fc-loader-block { display: flex; align-items: center; justify-content: center; padding: 32px 16px; }
+.fc-loader-page { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--fc-surface) 70%, transparent); }
+@keyframes fc-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fc-loader__ring { animation-duration: 2s; } }
+
+/* ---------- Calendar: the time row and the foot ---------- */
+/* 120px: the narrowest a stepper is (two buttons and a two-digit value). At 68 it ran out of its cell and the popover scrolled sideways. */
+.fc-cal__time-cell { display: flex; flex-direction: column; gap: 2px; width: 120px; }
+.fc-cal__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--fc-border); }
+.fc-cal__apply { margin-inline-start: auto; }

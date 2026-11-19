@@ -29,6 +29,12 @@ export * from '@/components/ui/view/badge.client';
 export * from '@/components/ui/view/menu-action.client';
 export * from '@/components/ui/view/state-badge.client';
 export * from '@/components/ui/view/copy-value.client';
+export * from '@/components/ui/view/tabs.client';
+export * from '@/components/ui/view/tooltip.client';
+export * from '@/components/ui/view/avatar.client';
+export * from '@/components/ui/view/divider.client';
+export * from '@/components/ui/view/command-bar.client';
+export * from '@/components/ui/view/command-bar-command.client';
 export * from '@/components/ui/view/stat-card.client';
 export * from '@/components/ui/view/data-table.client';
 // `DataTable.columns` is typed `Column<T>[]`, so a caller outside this package could not name the

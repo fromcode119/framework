@@ -59,10 +59,6 @@ export class SelectMenu extends PureReactor {
       menuNote, searching,
     } = this;
     const canCreate = this.canCreate;
-    const isDarkTheme = theme === ThemeMode.DARK;
-    const searchInputThemeClasses = isDarkTheme
-      ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark]'
-      : '';
 
     return (
           <RootFramework>
@@ -88,9 +84,9 @@ export class SelectMenu extends PureReactor {
             >
               {searchable && (
                 <div className="p-1 pb-2 border-b border-[color:var(--fc-border)]">
-                  <div className="relative group">
-                    <div className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[color:var(--fc-text-muted)]">
-                      <FrameworkIcons.Search size={12} />
+                  <div className="fc-search">
+                    <div className="fc-search__icon">
+                      <FrameworkIcons.Search size={15} />
                     </div>
                     <input
                       ref={searchInputRef}
@@ -98,7 +94,7 @@ export class SelectMenu extends PureReactor {
                       placeholder={AdminI18n.t('ui.select.search')}
                       value={searchValue}
                       onChange={(e) => onSearchChange(e.target.value)}
-                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `ps-7 ${searchInputThemeClasses}`)}
+                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, 'fc-search-field')}
                     />
                   </div>
                 </div>
