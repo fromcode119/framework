@@ -2810,6 +2810,9 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    narrows the list (the filters) at the start, what works on it (search, the column chooser, the
    order) at the end. The search is a fixed width there, not a bar stretched across the row that shoves
    the buttons into the corner. On a phone the tools take the width and the filters sit under them. */
+/* The toolbar is a band of the card, inset like the head and the foot: 16px top and bottom, 24px at
+   the sides (the reference's figures). Without it the search sat flush to the frame. */
+.fc-list-toolbar-band { padding: 16px var(--fc-card-pad-x); }
 .fc-list-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; width: 100%; }
 .fc-list-toolbar__lead { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .fc-list-toolbar__tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
