@@ -97,8 +97,12 @@
      what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
      for short facts; the main column keeps the rest. */
   --fc-record-side: 440px;
-  /* The form column of a record page, the figure the target page keeps. */
-  --fc-record-main: 1120px;
+  /* The form column of a record page. 900, measured on the reference at 1600: main 900 + side 440.
+     Ours said 1120, which let the page stretch half a screen wider than the pages it follows. */
+  --fc-record-main: 900px;
+  /* A record read in ONE column — what the reference shows up to about 1440 — is 780 wide and
+     centred, not stretched to whatever the window gives. */
+  --fc-record-single: 780px;
   --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
@@ -834,16 +838,24 @@ html.dark {
 .fc-page-stack { display: flex; flex-direction: column; gap: var(--fc-stack-gap); }
 /* 12 between one card and the next, 16 between the two columns — the gap the record pages this
    console follows keep. One figure for both made the columns read as one wide column of cards. */
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; }
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; max-width: var(--fc-record-single); margin-inline: auto; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
-@container (min-width: 56rem) {
-  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
+/* The side column appears only where BOTH columns are full width — measured on the reference: one
+   column of 780 at 1280 and at 1440, main 900 + side 440 at 1600. Ours opened it from 896px of room
+   and then gave the form 531 — narrower than the single column it replaced, which is why a table in
+   it had to be squeezed. */
+@container (min-width: 84rem) {
+  .fc-edit-columns__grid--sidebar {
+    grid-template-columns: minmax(0, var(--fc-record-main)) var(--fc-record-side);
+    max-width: none;
+    justify-content: center;
+  }
 }
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
    column's first card — who the record is for — follows the record's first card instead of waiting under
    everything else. The rest keep their own column's order: the main column's, then the side column's. */
-@container (max-width: 55.99rem) {
+@container (max-width: 83.99rem) {
   .fc-edit-columns__grid--sidebar > .fc-edit-column,
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky,
   .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column { display: contents; }
