@@ -1,5 +1,6 @@
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { TenantOwnershipSql } from '@database/dialects/postgres/tenant/tenant-ownership-sql';
+import { PostgresTenantOwnerKey } from '@database/dialects/postgres/tenant/tenant-owner-key';
 import { TenantColumn } from '@database/tenant/tenant-column';
 import type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 import type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
@@ -113,6 +114,10 @@ export class PostgresTenantIsolation implements ITenantIsolation {
       // platform down for data that is merely unreachable.
       return false;
     }
+  }
+
+  async releaseOwnerKey(table: string): Promise<boolean> {
+    return new PostgresTenantOwnerKey(this.run).release(table);
   }
 
   async distinctOwners(table: string): Promise<string[]> {
