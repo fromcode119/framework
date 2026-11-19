@@ -3655,3 +3655,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-ext-row__plain { font-weight: 400; }
 
 .fc-btn__spinner { flex: none; width: 14px; height: 14px; }
+/* Colour swatches: a chip, its name, its value — three to a row, two on a phone. */
+.fc-swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .fc-swatches { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.fc-swatch { min-width: 0; }
+.fc-swatch__chip { height: 56px; margin-bottom: 6px; border: 1px solid var(--fc-border); border-radius: 8px; }
+.fc-swatch__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

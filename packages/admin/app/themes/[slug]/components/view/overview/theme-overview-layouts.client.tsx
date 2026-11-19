@@ -1,3 +1,6 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import { ThemeMode, LocalizationUtils } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -14,18 +17,17 @@ export class ThemeOverviewLayouts extends PureReactor {
 
   render(): ReactNode {
     if (!this.layouts.length) return null;
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <DetailBox title={AdminI18n.t('themes.layoutsTitle')} theme={this.theme}>
-        <ul className={`space-y-1 text-[13px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+      <ListShell title={AdminI18n.t('themes.layoutsTitle')} count={this.layouts.length}>
+        <div>
           {this.layouts.map((layout) => (
-            <li key={layout.name}>
-              {LocalizationUtils.resolveLabelText(layout.label, AdminI18n.locale) || layout.name}
-              {layout.name === this.defaultLayout ? <span className={dark ? 'text-slate-500' : 'text-slate-400'}> — {AdminI18n.t('themes.layoutDefault')}</span> : null}
-            </li>
+            <ListRow key={layout.name}
+              title={LocalizationUtils.resolveLabelText(layout.label, AdminI18n.locale) || layout.name}
+              badges={layout.name === this.defaultLayout ? <Badge>{AdminI18n.t('themes.layoutDefault')}</Badge> : undefined}
+              meta={layout.name} />
           ))}
-        </ul>
-      </DetailBox>
+        </div>
+      </ListShell>
     );
   }
 }

@@ -1,3 +1,8 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -15,26 +20,18 @@ export class ThemeOverviewIntegrations extends PureReactor {
 
   render(): ReactNode {
     if (!this.integrations.length) return null;
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <DetailBox title={AdminI18n.t('themes.integrationRequirements')} theme={this.theme}>
-        {this.integrations.map((integration) => (
-          <div key={integration.type} className={`flex flex-wrap items-center gap-3 border-t py-2.5 first:border-t-0 ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
-            <div className="min-w-0 flex-1">
-              <div className={`text-[13px] font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{integration.label || integration.type}</div>
-              <div className={`mt-0.5 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-                {integration.description || AdminI18n.t('themes.configureIntegrationForThisTheme', { type: integration.type })}
-              </div>
-            </div>
-            <Badge variant={integration.required === false ? 'gray' : 'warning'}>
-              {integration.required === false ? AdminI18n.t('themes.optional') : AdminI18n.t('themes.required')}
-            </Badge>
-            <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)} className="text-[13px] font-medium text-indigo-500 hover:underline">
-              {AdminI18n.t('themes.openIntegrationSettings')}
-            </AdminLink>
-          </div>
-        ))}
-      </DetailBox>
+      <ListShell title={AdminI18n.t('themes.integrationRequirements')} count={this.integrations.length}>
+        <div>
+          {this.integrations.map((integration) => (
+            <ListRow key={integration.type}
+              title={integration.label || integration.type}
+              badges={<Badge variant={integration.required === false ? BadgeVariant.DEFAULT : BadgeVariant.WARNING}>{integration.required === false ? AdminI18n.t('themes.optional') : AdminI18n.t('themes.required')}</Badge>}
+              description={integration.description || AdminI18n.t('themes.configureIntegrationForThisTheme', { type: integration.type })}
+              actions={<Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)}>{AdminI18n.t('themes.openIntegrationSettings')}</Button>} />
+          ))}
+        </div>
+      </ListShell>
     );
   }
 }
