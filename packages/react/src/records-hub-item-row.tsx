@@ -53,44 +53,37 @@ export class RecordsHubItemRow extends PureReactor {
 
   render(): ReactNode {
     const item = this.item;
-    const dark = this.dark;
     const Icon = this.icon(item.icon);
     const trailing = this.trailing(item);
     const date = this.date(item.date);
     const OpenIcon = this.icon('ExternalLink');
     const DownloadIcon = this.icon('Download');
-    const actionClass = `shrink-0 h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${dark ? 'text-slate-400 hover:bg-slate-800 hover:text-indigo-400' : 'text-slate-400 hover:bg-slate-100 hover:text-indigo-600'}`;
+    // The console's row of a named thing: icon, name and state, a line under it, a quiet fact, its controls.
     return (
-      <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${dark ? 'border-slate-800/50 bg-slate-900/30 hover:bg-slate-900/60' : 'border-slate-100 bg-white hover:bg-slate-50'}`}>
-        <div className={`h-9 w-9 shrink-0 rounded-xl flex items-center justify-center ${dark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-          <Icon size={16} strokeWidth={2} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className={`truncate text-[13px] font-bold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{item.title}</p>
-            {item.status ? (
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>{item.status}</span>
-            ) : null}
-            {(item.badges || []).map((b) => (
-              <span key={b} className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${dark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>{b}</span>
-            ))}
+      <div className="fc-ext-row">
+        <div className="fc-ext-row__icon"><Icon size={16} /></div>
+        <div className="fc-ext-row__text">
+          <div className="fc-ext-row__name">
+            <span>{item.title}</span>
+            {item.status ? <span className="fc-badge fc-badge--neutral">{item.status}</span> : null}
+            {(item.badges || []).map((b) => <span key={b} className="fc-badge fc-badge--success">{b}</span>)}
           </div>
-          {item.subtitle ? <p className="truncate text-[11px] font-semibold text-slate-400 mt-0.5">{item.subtitle}</p> : null}
+          {item.subtitle ? <p className="fc-ext-row__desc" title={item.subtitle}>{item.subtitle}</p> : null}
         </div>
-        <div className="shrink-0 text-right">
-          {trailing ? <p className={`text-[12px] font-bold tabular-nums ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{trailing}</p> : null}
-          {date ? <p className="text-[10px] font-bold text-slate-400 tabular-nums">{date}</p> : null}
-        </div>
-        {item.downloadUrl ? (
-          <button type="button" onClick={this.download} className={actionClass} aria-label={ViewTranslations.t('view.recordsHub.downloadItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.download')}>
-            <DownloadIcon size={15} />
-          </button>
-        ) : null}
-        {item.href ? (
-          <button type="button" onClick={this.open} className={actionClass} aria-label={ViewTranslations.t('view.recordsHub.openItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.open')}>
-            <OpenIcon size={15} />
-          </button>
+        {trailing || date ? <div className="fc-ext-row__meta" title={[trailing, date].filter(Boolean).join(' · ')}>{[trailing, date].filter(Boolean).join(' · ')}</div> : null}
+        {item.downloadUrl || item.href ? (
+          <div className="fc-ext-row__actions">
+            {item.downloadUrl ? (
+              <button type="button" onClick={this.download} className="fc-ext-row__more" aria-label={ViewTranslations.t('view.recordsHub.downloadItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.download')}>
+                <DownloadIcon size={15} />
+              </button>
+            ) : null}
+            {item.href ? (
+              <button type="button" onClick={this.open} className="fc-ext-row__more" aria-label={ViewTranslations.t('view.recordsHub.openItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.open')}>
+                <OpenIcon size={15} />
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
     );

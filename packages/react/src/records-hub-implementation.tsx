@@ -105,57 +105,53 @@ export class RecordsHubImplementation extends Reactor {
 
   render(): ReactNode {
     const dark = this.isDark();
-    const IconFolderOpen = this.icon('FolderOpen');
-    const IconLoader = this.icon('Loader2');
     const IconInbox = this.icon('Inbox');
     const IconAlertTriangle = this.icon('AlertTriangle');
     const { loading, error, groups, total, activeGroup, errors } = this;
     const title = this.title || 'Records';
     const visible = activeGroup === 'all' ? groups : groups.filter((g) => g.group === activeGroup);
 
+    // The console's own card: its head (name, count, what narrows it), then its body. The classes are the
+    // console's — this package draws no colours of its own, so the card follows the console's scheme.
     return (
-      <div className={`rounded-3xl border p-6 ${dark ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <IconFolderOpen size={16} className={dark ? 'text-indigo-400' : 'text-indigo-600'} />
-            <h3 className={`text-[13px] font-bold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{title}</h3>
-            <span className="text-[11px] font-bold text-slate-400">{total}</span>
-          </div>
+      <div className="fc-surface fc-record-card">
+        <div className="fc-record-card__head">
+          <h2 className="fc-record-card__title">
+            {title}
+            <span className="fc-record-card__count">{total}</span>
+          </h2>
           {!loading && groups.length > 1 ? (
-            <div className="flex flex-wrap gap-1.5 justify-end">
-              {['all', ...groups.map((g) => g.group)].map((key) => (
-                <button key={key} type="button" onClick={() => { this.activeGroup = key; }}
-                  className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${activeGroup === key
-                    ? (dark ? 'bg-indigo-500 text-white' : 'bg-indigo-600 text-white')
-                    : (dark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}`}>
-                  {key === 'all' ? ViewTranslations.t('view.recordsHub.all') : key}
-                </button>
-              ))}
+            <div className="fc-record-card__aside">
+              <div className="fc-tabs" role="tablist">
+                {['all', ...groups.map((g) => g.group)].map((key) => (
+                  <button key={key} type="button" role="tab" aria-selected={activeGroup === key} className={`fc-tab${activeGroup === key ? ' fc-tab--on' : ''}`} onClick={() => { this.activeGroup = key; }}>
+                    {key === 'all' ? ViewTranslations.t('view.recordsHub.all') : key}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : null}
         </div>
-
-        {loading ? (
-          <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-[12px] font-bold">
-            <IconLoader size={16} className="animate-spin" /> {ViewTranslations.t('view.recordsHub.loading')}
-          </div>
-        ) : error ? (
-          <div className="rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-[12px] font-bold dark:bg-rose-500/10">{error}</div>
-        ) : total === 0 ? (
-          <div className="py-10 flex flex-col items-center justify-center gap-2 text-center">
-            <IconInbox size={28} className="text-slate-300" />
-            <p className="text-[12px] font-bold text-slate-400">{this.emptyHint || ViewTranslations.t('view.recordsHub.empty')}</p>
-          </div>
-        ) : (
-          <div className="space-y-5">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
-        )}
-
-        {errors.length ? (
-          <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-700 dark:bg-amber-500/10">
-            <IconAlertTriangle size={13} className="mt-0.5 shrink-0" />
-            <span>{ViewTranslations.t('view.recordsHub.partial', undefined, { providers: errors.map((e) => e.provider).join(', ') })}</span>
-          </div>
-        ) : null}
+        <div className="fc-record-card__body">
+          {loading ? (
+            <div className="fc-loader" role="status"><span className="fc-loader__ring" aria-hidden="true" /><span className="fc-loader__label">{ViewTranslations.t('view.recordsHub.loading')}</span></div>
+          ) : error ? (
+            <div className="fc-alert" data-tone="danger" role="alert"><p className="fc-alert__text">{error}</p></div>
+          ) : total === 0 ? (
+            <div className="fc-empty fc-empty--inline">
+              <span className="fc-empty__icon"><IconInbox size={16} /></span>
+              <span className="fc-empty__text"><span className="fc-empty__title">{this.emptyHint || ViewTranslations.t('view.recordsHub.empty')}</span></span>
+            </div>
+          ) : (
+            <div className="fc-stack">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
+          )}
+          {errors.length ? (
+            <div className="fc-alert" data-tone="warning" role="status">
+              <span className="fc-alert__icon" aria-hidden="true"><IconAlertTriangle size={15} /></span>
+              <p className="fc-alert__text">{ViewTranslations.t('view.recordsHub.partial', undefined, { providers: errors.map((e) => e.provider).join(', ') })}</p>
+            </div>
+          ) : null}
+        </div>
       </div>
     );
   }

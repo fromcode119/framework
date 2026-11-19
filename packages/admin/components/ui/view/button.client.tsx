@@ -83,14 +83,13 @@ export class Button extends PureReactor {
       disabled={Boolean((props as any).disabled) || Boolean(isLoading)}
       aria-busy={isLoading || undefined}
     >
-      {isLoading ? (
-        <div className={`h-4 w-4 border-2 rounded-full animate-spin ${spinnerColor}`} />
-      ) : (
-        <>
-          {icon && <span className="flex-shrink-0">{icon}</span>}
-          {children}
-        </>
-      )}
+      {/* While it works the spinner takes the icon's place and the words stay, so the button keeps its
+          width and still says what it is doing. It used to be replaced by the spinner alone and shrank to
+          a square. */}
+      {isLoading
+        ? <span className={`fc-btn__spinner border-2 rounded-full animate-spin ${spinnerColor}`} aria-hidden="true" />
+        : icon ? <span className="flex-shrink-0">{icon}</span> : null}
+      {children}
     </Component>
   );
   }

@@ -3653,3 +3653,5 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* What hangs under a row and belongs to it — an error, an instruction — set in to the row's text. */
 .fc-list-band--under { padding-block: 0 12px; padding-inline-start: calc(var(--fc-card-pad-x) + 44px); }
 .fc-ext-row__plain { font-weight: 400; }
+
+.fc-btn__spinner { flex: none; width: 14px; height: 14px; }

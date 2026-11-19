@@ -15,12 +15,12 @@ export class RecordsHubGroupSection extends PureReactor {
     const group = this.group;
     const dark = this.dark;
     return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 px-1">
-          <h4 className={`text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{group.group}</h4>
-          <span className="text-[11px] font-bold text-slate-400">{group.items.length}</span>
+      <div className="fc-stack">
+        <div className="fc-dt-inline">
+          <h4 className="fc-heading fc-heading--h3">{group.group}</h4>
+          <span className="fc-record-card__count">{group.items.length}</span>
         </div>
-        <div className="space-y-1.5">{group.items.map((item) => <RecordsHubItemRow key={`${item.kind}:${item.id}`} item={item} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
+        <div className="fc-ext-list">{group.items.map((item) => <RecordsHubItemRow key={`${item.kind}:${item.id}`} item={item} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
       </div>
     );
   }
