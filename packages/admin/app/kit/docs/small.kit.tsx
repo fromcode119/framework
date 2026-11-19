@@ -3,6 +3,8 @@ import { Kbd } from '@/components/ui/view/kbd.client';
 import { Divider } from '@/components/ui/view/divider.client';
 import { Skeleton } from '@/components/ui/view/skeleton.client';
 import { ProgressBar } from '@/components/ui/view/progress-bar.client';
+import { ScreenshotGallery } from '@/components/ui/view/screenshot-gallery.client';
+import { KitPlay } from '@/app/kit/view/kit-play.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CopyValue } from '@/components/ui/view/copy-value.client';
 import { CodeBlock } from '@/components/ui/view/code-block.client';
@@ -13,6 +15,11 @@ import type { KitDoc } from '@/app/kit/kit-doc';
 
 /** The small pieces: each has few options, so each page is short. */
 export class SmallKit {
+  /** Four flat pictures drawn in place, so the example needs no file. */
+  static pictures(): string[] {
+    return ['#3f3f46', '#0f766e', '#7c3aed', '#b45309'].map((fill) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="100%" height="100%" fill="${fill}"/></svg>`)}`);
+  }
+
   static docs(): KitDoc[] {
     return [
       {
@@ -62,6 +69,23 @@ export class SmallKit {
           { name: 'value', type: 'number | null', does: '0–100; left out when the length is not known.' },
           { name: 'label', type: 'ReactNode', does: 'What is going on.' },
           { name: 'detail', type: 'ReactNode', does: 'How far, in the caller’s words.' },
+        ],
+      },
+      {
+        slug: 'screenshot-gallery', name: 'ScreenshotGallery', group: 'Data',
+        intro: 'The pictures of one thing as a card: the chosen one large, the rest in a strip under it. With no pictures the card is not drawn.',
+        from: "import { ScreenshotGallery } from '@fromcode119/sdk/admin';",
+        examples: [
+          { title: 'Several pictures', text: 'A small picture makes it the large one; the large one asks the page to open it full size.', demo: <div className="fc-kitdoc__cell--wide"><KitPlay initial={0}>{(value, set) => <ScreenshotGallery title="Screens" images={SmallKit.pictures()} active={value} alt="Storefront" onSelect={set} />}</KitPlay></div>, code: '<ScreenshotGallery title="Screens" images={urls} active={index} alt={name}\n  onSelect={setIndex} onOpen={openFullSize} />' },
+          { title: 'One picture', text: 'No strip: there is nothing to choose between.', demo: <div className="fc-kitdoc__cell--wide"><ScreenshotGallery title="Screens" images={SmallKit.pictures().slice(0, 1)} active={0} alt="Storefront" onSelect={() => undefined} /></div>, code: '<ScreenshotGallery title="Screens" images={[url]} active={0} alt={name} onSelect={setIndex} />' },
+        ],
+        options: [
+          { name: 'title', type: 'string', does: 'The card’s name.' },
+          { name: 'images', type: 'string[]', does: 'The pictures’ addresses, in order.' },
+          { name: 'active', type: 'number', does: 'Which picture is large.' },
+          { name: 'alt', type: 'string', does: 'What the pictures show, for a reader who cannot see them.' },
+          { name: 'onSelect', type: '(index: number) => void', does: 'A small picture was pressed.' },
+          { name: 'onOpen', type: '() => void', does: 'The large picture was pressed; the page owns the full-size view.' },
         ],
       },
       {

@@ -6,7 +6,12 @@ import { Lightbox } from '@/components/ui/view/lightbox.client';
 import { VersionComparisonService } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { ThemeMarketplaceHeader } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-header.client';
-import { ThemeMarketplaceGallery } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-gallery.client';
+import { ScreenshotGallery } from '@/components/ui/view/screenshot-gallery.client';
+import { DetailSplit } from '@/components/view/detail-split.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeMarketplaceAbout } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-about.client';
 import { ThemeMarketplaceSidebar } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-sidebar.client';
 import { prop, state } from '@fromcode119/react-class-components';
@@ -133,7 +138,6 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
   }
 
   render(): ReactElement | null {
-    const adminTheme = this.theme;
     const theme = this.themeDetail;
     const allVersions = this.allVersions;
     const selectedVersion = this.selectedVersion;
@@ -143,63 +147,46 @@ export class ThemeMarketplaceDetailPage extends AdminComponent {
     const activeImageIndex = this.activeImageIndex;
     const showLightbox = this.showLightbox;
 
-    if (loading) {
-      return (
-        <div className="flex h-[60vh] items-center justify-center">
-          <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
-        </div>
-      );
-    }
+    if (loading) return <Loader fullPage />;
 
     if (!theme) return null;
 
     const installedVersion = installedTheme?.version || null;
     // A site never updates the shared copy, so it is never offered one.
     const hasUpdate = !this.siteScope && Boolean(installedVersion && VersionComparisonService.isGreater(theme.version, installedVersion));
-
-    // Normalize screenshots for display
     const screenshots = Screenshot.fromAll(theme.screenshots).map((s) => s.url);
 
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <ThemeMarketplaceHeader
-          theme={theme}
-          adminTheme={adminTheme}
-          allVersions={allVersions}
-          selectedVersion={selectedVersion}
-          installedTheme={installedTheme}
-          hasUpdate={hasUpdate}
-          installing={installing}
-          siteScope={this.siteScope}
-          onSelectVersion={(version) => { this.selectedVersion = version; }}
-          onInstall={() => void this.handleInstall()}
-        />
+      <div className="fc-columns__stack">
+        <div><Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Left size={15} />} onClick={() => this.router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE)}>{AdminI18n.t('plugins.list.backToMarketplace')}</Button></div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-12">
-          <div className="lg:col-span-2 space-y-6">
-              <ThemeMarketplaceGallery
-                theme={theme}
-                adminTheme={adminTheme}
-                screenshots={screenshots}
-                activeImageIndex={activeImageIndex}
-                onOpenLightbox={() => { this.showLightbox = true; }}
-                onSelectImage={(idx) => { this.activeImageIndex = idx; }}
-              />
-
-              <ThemeMarketplaceAbout theme={theme} adminTheme={adminTheme} />
-          </div>
-
-          <ThemeMarketplaceSidebar
+        <DetailSplit
+          main={<>
+            <ThemeMarketplaceHeader
+              theme={theme}
+              allVersions={allVersions}
+              selectedVersion={selectedVersion}
+              onSelectVersion={(version) => { this.selectedVersion = version; }}
+            />
+            <ScreenshotGallery
+              title={AdminI18n.t('plugins.list.screenshots')}
+              images={screenshots}
+              active={activeImageIndex}
+              alt={theme.name}
+              onSelect={(idx) => { this.activeImageIndex = idx; }}
+              onOpen={() => { this.showLightbox = true; }}
+            />
+            <ThemeMarketplaceAbout theme={theme} />
+          </>}
+          aside={<ThemeMarketplaceSidebar
             theme={theme}
-            adminTheme={adminTheme}
             installedTheme={installedTheme}
             installedVersion={installedVersion}
             hasUpdate={hasUpdate}
             installing={installing}
             siteScope={this.siteScope}
             onInstall={() => void this.handleInstall()}
-          />
-        </div>
+          />} />
 
         <Lightbox
           images={screenshots}

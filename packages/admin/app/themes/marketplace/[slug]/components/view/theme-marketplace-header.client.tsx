@@ -1,97 +1,48 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Badge } from '@/components/ui/view/badge.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminLink } from '@/components/view/admin-link.client';
-import { Dropdown } from '@/components/ui/view/dropdown.client';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Select } from '@/components/ui/view/select.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * What a theme of the catalogue is: its name in the card's head, what it is for, who made it and which
+ * version is on show — with the other versions to choose from when the catalogue has them.
+ */
 export class ThemeMarketplaceHeader extends PureReactor {
-  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<ThemeMarketplaceHeader, 'theme' | 'adminTheme' | 'allVersions' | 'selectedVersion' | 'installedTheme' | 'hasUpdate' | 'installing' | 'siteScope' | 'onSelectVersion' | 'onInstall'>;
+  declare props: Pick<ThemeMarketplaceHeader, 'theme' | 'allVersions' | 'selectedVersion' | 'onSelectVersion'>;
 
   @prop declare theme: IMarketplaceTheme;
-  @prop declare adminTheme: ThemeMode;
   @prop declare allVersions: IMarketplaceTheme[];
   @prop declare selectedVersion: string;
-  @prop declare installedTheme: any | null;
-  @prop declare hasUpdate: boolean;
-  @prop declare installing: boolean;
-  /** In a site: the button adds the theme to this site. */
-  @prop declare siteScope: boolean;
   @prop declare onSelectVersion: (version: string) => void;
-  @prop declare onInstall: () => void;
+
+  private versionLabel(version: string): string {
+    return `v${version}${version === this.allVersions[0]?.version ? ` ${AdminI18n.t('themes.latest')}` : ''}`;
+  }
 
   render(): ReactNode {
-    const { theme, adminTheme, allVersions, selectedVersion, installedTheme, hasUpdate, installing, onSelectVersion, onInstall } = this;
+    const { theme, allVersions, selectedVersion, onSelectVersion } = this;
+    const facts = [
+      ...(theme.author ? [{ key: 'author', label: AdminI18n.t('themes.creator'), value: String(theme.author) }] : []),
+      { key: 'version', label: AdminI18n.t('themes.version'), value: this.versionLabel(selectedVersion || theme.version) },
+      ...(theme.authorUrl ? [{ key: 'portal', label: AdminI18n.t('themes.developerPortal'), value: String(theme.authorUrl) }] : []),
+    ];
     return (
-      <div className="flex items-center gap-4">
-        <AdminLink
-          href="/themes"
-          className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm ${adminTheme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 hover:shadow-md'}`}
-        >
-          <FrameworkIcons.Left size={18} strokeWidth={2.5} />
-        </AdminLink>
-        <div className="flex-1 min-w-0">
-          <Badge variant={BadgeVariant.BLUE}>
-            {AdminI18n.t('themes.marketplacePremium')}
-          </Badge>
-          <div className="flex items-center gap-3">
-            <h1 className={`text-xl font-medium tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {theme.name}
-            </h1>
-            {allVersions.length > 1 && (
-              <div className="ms-2">
-                <Dropdown
-                  align="left"
-                  trigger={
-                    <div className={`flex items-center gap-2 ps-3 pe-2 py-1.5 rounded-lg text-[12px] font-medium border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
-                      <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('themes.latest') : ''}</span>
-                      <div className={`transition-colors ${adminTheme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
-                        <FrameworkIcons.Down size={14} strokeWidth={3} />
-                      </div>
-                    </div>
-                  }
-                  items={allVersions.map(v => ({
-                    label: `v${v.version} ${v.version === allVersions[0].version ? '(Latest)' : ''}`,
-                    onClick: () => onSelectVersion(v.version),
-                    icon: <FrameworkIcons.Clock size={14} />
-                  }))}
-                />
-              </div>
-            )}
-          </div>
+      <RecordCard title={theme.name}>
+        <div className="fc-stack">
+          {theme.description ? <Text size="base">{theme.description}</Text> : null}
+          <AdminFactGrid facts={facts as any} />
+          {allVersions.length > 1 ? (
+            <div className="fc-form-grid">
+              <Select label={AdminI18n.t('themes.version')} value={selectedVersion} onChange={onSelectVersion}
+                options={allVersions.map((v) => ({ value: v.version, label: this.versionLabel(v.version) }))} />
+            </div>
+          ) : null}
         </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onInstall}
-            disabled={installing || (installedTheme && !hasUpdate)}
-            className={`h-9 px-4 text-xs font-medium rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 ${
-              installedTheme && !hasUpdate
-                ? 'bg-emerald-50 text-emerald-600 shadow-none cursor-default opacity-80'
-                : hasUpdate
-                ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-            }`}
-          >
-            {installing ? (
-              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : installedTheme && !hasUpdate ? (
-              <FrameworkIcons.Check size={18} strokeWidth={2.5} />
-            ) : hasUpdate ? (
-              <FrameworkIcons.Clock size={18} strokeWidth={2.5} />
-            ) : (
-              <FrameworkIcons.Download size={18} strokeWidth={2.5} />
-            )}
-            {this.siteScope
-              ? (installing ? AdminI18n.t('themes.adding') : installedTheme ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.addToThisSite'))
-              : (installing ? AdminI18n.t('themes.installing') : installedTheme && !hasUpdate ? AdminI18n.t('themes.installed') : hasUpdate ? AdminI18n.t('themes.updateTheme') : AdminI18n.t('themes.getThisTheme'))}
-          </button>
-        </div>
-      </div>
+      </RecordCard>
     );
   }
 }

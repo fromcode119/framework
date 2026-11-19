@@ -17,7 +17,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { MarketplaceDetailLoading } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-loading.client';
 import { MarketplaceDetailError } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-error.client';
 import { MarketplaceDetailHeader } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-header.client';
-import { MarketplaceScreenshots } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-screenshots.client';
+import { ScreenshotGallery } from '@/components/ui/view/screenshot-gallery.client';
 import { MarketplaceChangelog } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-changelog.client';
 import { MarketplaceDetailSidebar } from '@/app/plugins/marketplace/[slug]/components/view/marketplace-detail-sidebar.client';
 import { prop, state } from '@fromcode119/react-class-components';
@@ -179,12 +179,13 @@ export class MarketplaceDetailPage extends AdminComponent {
               installedPlugin={installedPlugin}
               onSelectVersion={(version) => { this.selectedVersion = version; }}
             />
-            <MarketplaceScreenshots
-              plugin={plugin}
-              theme={theme}
-              activeImageIndex={activeImageIndex}
-              onOpenLightbox={() => { this.showLightbox = true; }}
-              onSelectImage={(idx) => { this.activeImageIndex = idx; }}
+            <ScreenshotGallery
+              title={AdminI18n.t('plugins.list.screenshots')}
+              images={Screenshot.fromAll(plugin.screenshots).map((s) => s.url)}
+              active={activeImageIndex}
+              alt={plugin.name}
+              onSelect={(idx) => { this.activeImageIndex = idx; }}
+              onOpen={() => { this.showLightbox = true; }}
             />
             <MarketplaceChangelog plugin={plugin} theme={theme} />
           </>}

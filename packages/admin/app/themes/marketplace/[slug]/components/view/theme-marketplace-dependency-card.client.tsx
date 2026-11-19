@@ -1,42 +1,26 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
-import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** What the theme needs installed beside it, one row each. Not drawn when it needs nothing. */
 export class ThemeMarketplaceDependencyCard extends PureReactor {
   @prop declare theme: IMarketplaceTheme;
-  @prop declare adminTheme: ThemeMode;
 
   render(): ReactNode {
-    const { theme, adminTheme } = this;
-    if (!theme.dependencies || Object.keys(theme.dependencies).length === 0) return null;
-
+    const entries = Object.entries(this.theme.dependencies || {});
+    if (!entries.length) return null;
     return (
-      <Card className={`border-0 p-4 rounded-xl ${adminTheme === ThemeMode.DARK ? 'bg-indigo-500/5' : 'bg-indigo-50/50'}`}>
-        <h3 className={`text-[12px] font-medium mb-4 flex items-center gap-2 ${adminTheme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>
-          <FrameworkIcons.Puzzle size={16} />
-          {AdminI18n.t('themes.dependencyGuard')}
-        </h3>
-        <div className="space-y-3">
-          {Object.entries(theme.dependencies).map(([slug, version]) => (
-            <div key={slug} className={`flex items-center justify-between p-3 rounded-lg border ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-100'}`}>
-              <div className="flex flex-col">
-                <span className={`text-xs font-medium tracking-tight ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{slug}</span>
-                <span className="text-[12px] font-medium text-slate-500">{AdminI18n.t('themes.requiresVersion', { version })}</span>
-              </div>
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-50'}`}>
-                <FrameworkIcons.Check size={14} className="text-emerald-500" />
-              </div>
-            </div>
+      <ListShell title={AdminI18n.t('themes.dependencyGuard')} count={entries.length} subtitle={AdminI18n.t('themes.dependenciesAreAutomaticallyResolvedAnd')}>
+        <div>
+          {entries.map(([slug, version]) => (
+            <ListRow key={slug} icon={<FrameworkIcons.Puzzle size={16} />} title={<span className="fc-ext-row__plain">{slug}</span>} description={AdminI18n.t('themes.requiresVersion', { version })} />
           ))}
-          <p className="text-[12px] font-medium text-slate-400 italic leading-relaxed pt-2">
-            {AdminI18n.t('themes.dependenciesAreAutomaticallyResolvedAnd')}
-          </p>
         </div>
-      </Card>
+      </ListShell>
     );
   }
 }
