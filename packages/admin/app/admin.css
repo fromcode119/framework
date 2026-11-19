@@ -2849,10 +2849,13 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-list-toolbar__tools .fc-search { flex: 0 0 200px; width: 200px; max-width: 100%; }
 .fc-list-toolbar__chips { flex-basis: 100%; min-width: 0; }
 @media (max-width: 640px) {
-  .fc-list-toolbar__lead { order: 2; }
-  .fc-list-toolbar__tools { order: 1; width: 100%; }
-  .fc-list-toolbar__tools .fc-search { flex: 1 1 auto; width: auto; }
-  .fc-list-toolbar__chips { order: 3; }
+  /* One row on a phone: the filter, the search taking what is left, then the tools. The filter fell to
+     a row of its own under the search. */
+  .fc-list-toolbar { flex-wrap: nowrap; }
+  .fc-list-toolbar__lead { flex: none; }
+  .fc-list-toolbar__tools { flex: 1 1 auto; }
+  .fc-list-toolbar__tools .fc-search { flex: 1 1 auto; width: auto; min-width: 0; }
+  .fc-list-toolbar:has(.fc-list-toolbar__chips) { flex-wrap: wrap; }
 }
 
 /* ONE quiet toolbar control — the Filters button, the column chooser, the order. They were three
@@ -3089,14 +3092,16 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-command-bar__command { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border: 0; background: transparent; color: var(--fc-command-ink); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; cursor: pointer; transition: background-color .15s ease; }
 .fc-command-bar__command:hover, .fc-command-bar__command:focus-visible { background: #27272a; outline: 0; }
 .fc-command-bar__command:disabled { color: var(--fc-command-ink-quiet); cursor: default; }
-/* On a phone the actions do not fit one line: the bar becomes a block that wraps, the lines between go. */
-@media (max-width: 639.98px) {
-  .fc-command-bar { bottom: 16px; }
-  .fc-command-bar__bar { flex-wrap: wrap; justify-content: center; border-radius: 16px; padding: 4px; }
-  .fc-command-bar__separator { display: none; }
-  .fc-command-bar__command { border-radius: 8px; }
-  .fc-command-bar__value { width: 100%; padding-block: 6px 2px; text-align: center; }
-}
+/* More actions than the window is wide: the bar scrolls sideways under the count and the close, which
+   stay where they are. It used to cut the last actions off, the close among them. */
+.fc-command-bar__bar { overflow-x: auto; scrollbar-width: none; }
+.fc-command-bar__bar::-webkit-scrollbar { display: none; }
+.fc-command-bar__value { position: sticky; inset-inline-start: 0; z-index: 1; background: #18181b; }
+.fc-command-bar__bar > .fc-command-bar__command:last-child { position: sticky; inset-inline-end: 0; z-index: 1; background: #18181b; box-shadow: -1px 0 0 var(--fc-command-line); }
+.fc-command-bar__bar > .fc-command-bar__command:last-child:hover { background: #27272a; }
+.fc-command-bar__bar > span:not([class^="fc-command-bar"]) { display: contents; }
+.fc-command-bar__bar > *, .fc-command-bar__bar button { flex: none; }
+@media (max-width: 639.98px) { .fc-command-bar { bottom: 16px; } }
 
 /* ---------- Loader: one ring, one line ---------- */
 .fc-loader { display: inline-flex; align-items: center; gap: 8px; color: var(--fc-text-muted); font-size: 13px; line-height: 20px; }
