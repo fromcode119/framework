@@ -168,8 +168,10 @@ class AdminNextConfig {
     ];
   },
   webpack: (config: INextWebpackConfig, { isServer, dev }: INextWebpackContext) => {
-    // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
-    // with --webpack, so without this the dev server would never see the generated route exports and
+    // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above, for a run
+    // started with `--webpack` (the dev server itself runs Turbopack: webpack held 4.3-4.5 GB after eight
+    // console screens and was killed at the dev container's 4G limit, Turbopack peaked at 3.2 GB and
+    // settled near 1.1 GB). Without this such a run would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
     config.module.rules.unshift({
       // PRE loader: webpack runs pre-loaders before every normal loader whatever the rule order, so the
