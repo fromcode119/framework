@@ -1,3 +1,4 @@
+import { PageBar } from '@/components/ui/view/page-bar.client';
 import { DropArea } from '@/components/ui/view/drop-area.client';
 import { Alert } from '@/components/ui/view/alert.client';
 import { Tabs } from '@/components/ui/view/tabs.client';
@@ -89,13 +90,13 @@ export class MediaControls extends PureReactor {
           </Alert>
         ) : null}
 
-        <div className="flex flex-col md:flex-row gap-3 items-center">
+        <PageBar lead={
           <Tabs value={this.activeView} onChange={(key: string) => this.setActiveView(key)}
             tabs={[{ id: 'files', label: AdminI18n.t('media.files') }, { id: 'shares', label: AdminI18n.t('media.shared') }, { id: 'activity', label: AdminI18n.t('media.activity') }]} />
-
-          <SearchField className="flex-1 min-w-0" placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
+        }>
+          <SearchField placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
           {this.activeView === 'files' ? (
-            <div className="w-36 flex-shrink-0">
+            <div className="fc-page-bar__pick">
               <Select
                 value={this.source}
                 onChange={this.setSource}
@@ -107,10 +108,9 @@ export class MediaControls extends PureReactor {
               />
             </div>
           ) : null}
-
           <Tabs value={viewMode === ViewMode.GRID ? 'grid' : 'list'} onChange={(mode: string) => (mode === 'grid' ? this.selectGridView() : this.selectListView())}
             tabs={[{ id: 'grid', label: <FrameworkIcons.Grid size={15} /> }, { id: 'list', label: <FrameworkIcons.List size={15} /> }]} />
-        </div>
+        </PageBar>
       </>
     );
   }

@@ -44,7 +44,6 @@ export class MediaGrid extends PureReactor {
   }
 
   render(): ReactNode {
-    const theme = this.theme;
     const viewMode = this.viewMode;
 
     if (this.loading) return <Loader label={AdminI18n.t('media.loadingYourAssets')} />;
@@ -62,12 +61,11 @@ export class MediaGrid extends PureReactor {
       );
     }
 
-    return (
-      <div className={viewMode === ViewMode.GRID ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4" : "space-y-2"}>
+    const cards = (
+      <>
         {this.folders.map(folder => (
           <MediaFolderCard
             key={`folder-${folder.id}`}
-            theme={theme}
             folder={folder}
             viewMode={viewMode}
             setCurrentFolderId={this.setCurrentFolderId}
@@ -82,7 +80,6 @@ export class MediaGrid extends PureReactor {
         {this.items.map((item) => (
           <MediaItemCard
             key={item.id}
-            theme={theme}
             item={item}
             viewMode={viewMode}
             optimizingId={this.optimizingId}
@@ -96,7 +93,9 @@ export class MediaGrid extends PureReactor {
             handleOptimize={this.handleOptimize}
           />
         ))}
-      </div>
+      </>
     );
+    // Tiles stand in a grid; rows stand in one card, a hairline between them.
+    return viewMode === ViewMode.GRID ? <div className="fc-tile-grid">{cards}</div> : <ListCard>{cards}</ListCard>;
   }
 }

@@ -3381,7 +3381,17 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-page-bar__tools { display: flex; flex: 0 1 28rem; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
 .fc-page-bar__tools > .fc-search { flex: 1 1 0; width: auto; min-width: 8rem; }
 .fc-page-bar__tools > .fc-btn { flex: none; }
+/* A short choice beside the search: wide enough for its longest word, never squeezed. */
+.fc-page-bar__pick { flex: none; width: 9rem; }
+.fc-page-bar__tools > .fc-tabs { flex: none; }
 @media (max-width: 767.98px) { .fc-page-bar__tools { flex-basis: 100%; } }
+/* On a phone the tools that do not fit go to a line of their own, the search taking a whole one —
+   end-aligned and unwrapped, the first of them slid off the screen's start. */
+@media (max-width: 640px) {
+  .fc-page-bar__tools:has(> .fc-page-bar__pick) { flex-wrap: wrap; justify-content: flex-start; }
+  .fc-page-bar__tools:has(> .fc-page-bar__pick) > .fc-search { flex: 1 1 100%; }
+  .fc-page-bar__tools > .fc-page-bar__pick { flex: 1 1 0; width: auto; }
+}
 .fc-tab__count { margin-inline-start: 6px; color: var(--fc-text-faint); font-variant-numeric: tabular-nums; }
 .fc-tab--end { margin-inline-start: auto; }
 .fc-tab--end ~ .fc-tab--end { margin-inline-start: 0; }
@@ -3707,3 +3717,36 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-gallery__thumb:hover { opacity: 1; }
 .fc-gallery__thumb[aria-current='true'] { opacity: 1; box-shadow: 0 0 0 2px var(--fc-text); }
 .fc-gallery__main:focus-visible, .fc-gallery__thumb:focus-visible { outline: 2px solid var(--fc-text); outline-offset: 2px; }
+
+/* ── A thing shown by its picture ─────────────────────────────────────────────────────────────── */
+.fc-tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--fc-record-gap); }
+.fc-tile { display: flex; flex-direction: column; overflow: hidden; }
+.fc-tile--on { box-shadow: 0 0 0 2px var(--fc-text); }
+.fc-tile__picture {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1; overflow: hidden; background: var(--fc-surface-muted);
+}
+.fc-tile__picture img { width: 100%; height: 100%; object-fit: cover; }
+.fc-tile__open { position: absolute; inset: 0; z-index: 0; cursor: pointer; }
+.fc-tile__open:focus-visible { outline: 2px solid var(--fc-text); outline-offset: -2px; }
+.fc-tile__icon { display: flex; color: var(--fc-text-faint); }
+/* The tick shows itself to a pointer and stays once chosen; where nothing hovers it is always there. */
+.fc-tile__tick { position: absolute; top: 8px; inset-inline-start: 8px; z-index: 1; opacity: 0; transition: opacity var(--fc-dur-ui) var(--fc-ease); }
+.fc-tile:hover .fc-tile__tick, .fc-tile__tick:focus-visible, .fc-tile--on .fc-tile__tick { opacity: 1; }
+@media (hover: none) { .fc-tile__tick { opacity: 1; } }
+.fc-tile__marks { position: absolute; bottom: 8px; inset-inline-start: 8px; z-index: 1; display: flex; flex-wrap: wrap; gap: 4px; pointer-events: none; }
+.fc-tile__foot { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-top: var(--fc-record-rule); }
+.fc-tile__text { flex: 1 1 0; min-width: 0; }
+.fc-tile__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-tile__facts { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 16px; color: var(--fc-text-muted); font-variant-numeric: tabular-nums; }
+/* A row's tick, and a picture where its icon stands. */
+.fc-ext-row__lead { display: flex; flex: none; }
+.fc-ext-row__icon img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+/* ── Where this is: a path of places, the last one being here ─────────────────────────────────── */
+.fc-path { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fc-path__step { color: var(--fc-text-muted); cursor: pointer; border-radius: 4px; transition: color var(--fc-dur-ui) var(--fc-ease); }
+.fc-path__step:hover { color: var(--fc-text); }
+.fc-path__step[aria-current='page'] { color: var(--fc-text); font-weight: var(--fc-weight-strong); cursor: default; }
+.fc-path__step:focus-visible { outline: 2px solid var(--fc-text); outline-offset: 2px; }
+.fc-path__sep { color: var(--fc-text-faint); }

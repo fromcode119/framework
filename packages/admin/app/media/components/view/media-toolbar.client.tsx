@@ -70,21 +70,14 @@ export class MediaToolbar extends PureReactor {
             icon={<FrameworkIcons.Media size={18} strokeWidth={2.5} />}
             title={AdminI18n.t('media.mediaAssets')}
             subtitle={
-              <span className="flex items-center gap-2">
-                <button
-                  onClick={this.goToRoot}
-                  className={`font-medium tracking-wide transition-colors ${!currentFolderId ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
-                >
+              <span className="fc-path">
+                <button type="button" className="fc-path__step" aria-current={!currentFolderId ? 'page' : undefined} onClick={this.goToRoot}>
                   {AdminI18n.t('media.rootLibrary')}
                 </button>
                 {folderPath.map((folder, index) => (
                   <Fragment key={folder.id}>
-                    <span className="text-slate-300 dark:text-slate-700">/</span>
-                    <button
-                      data-folder-id={folder.id}
-                      onClick={this.goToFolder}
-                      className={`font-medium tracking-wide transition-colors ${index === folderPath.length - 1 ? 'text-indigo-500' : 'text-slate-400 hover:text-indigo-600'}`}
-                    >
+                    <span className="fc-path__sep" aria-hidden="true">/</span>
+                    <button type="button" className="fc-path__step" data-folder-id={folder.id} aria-current={index === folderPath.length - 1 ? 'page' : undefined} onClick={this.goToFolder}>
                       {folder.name}
                     </button>
                   </Fragment>

@@ -120,24 +120,14 @@ export abstract class MediaItemCardState extends PureReactor {
     this.setIsDeleteDialogOpen(true);
   }
 
-  /**
-   * An action this file cannot have, shown rather than hidden.
-   *
-   * Optimize, Move and Delete all act on an uploaded RECORD, and a theme asset has none — its id is
-   * `theme:<path>`, so `Number(id)` is `NaN` and each of them would call the API with it. Dropping
-   * them left the card visibly short of controls next to an uploaded file's, which reads as a bug in
-   * the page. So the pill keeps its place and its colour, dimmed and inert, and says WHY on hover.
-   *
-   * The `<span>` carries the title because a disabled button receives no mouse events at all, so a
-   * title on the button itself would never show.
-   */
-  protected renderLockedAction(icon: React.ReactNode, tone: string, reason: string, shell = 'bg-white'): React.ReactNode {
-    return (
-      <span className="pointer-events-auto inline-flex" title={reason}>
-        <button type="button" disabled aria-disabled className={`cursor-not-allowed p-2 rounded-lg opacity-40 ${shell} ${tone}`}>
-          {icon}
-        </button>
-      </span>
-    );
+  /** Takes the file: the browser is handed its address as a download, in a tab of its own. */
+  @bound
+  onDownload(): void {
+    const link = document.createElement('a');
+    link.href = this.mediaUrl;
+    link.download = '';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
   }
 }

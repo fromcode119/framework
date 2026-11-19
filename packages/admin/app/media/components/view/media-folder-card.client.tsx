@@ -1,16 +1,18 @@
 import { MovingItemType } from '@/app/media/enums/moving-item-type.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
-import type { MouseEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { Tile } from '@/components/ui/view/tile.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
+import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** One folder of the library, as a tile or a list row: pressing it goes inside, its menu works on it. */
 export class MediaFolderCard extends PureReactor {
-  @prop declare theme: ThemeMode;
   @prop declare folder: IMediaFolder;
   @prop declare viewMode: ViewMode;
   @prop declare setCurrentFolderId: (id: number | null) => void;
@@ -26,64 +28,43 @@ export class MediaFolderCard extends PureReactor {
   }
 
   @bound
-  rename(event: MouseEvent): void {
-    event.stopPropagation();
+  rename(): void {
     this.setEditingFolder(this.folder);
     this.setIsRenamePromptOpen(true);
   }
 
   @bound
-  move(event: MouseEvent): void {
-    event.stopPropagation();
+  move(): void {
     this.setMovingItem({ id: this.folder.id, type: MovingItemType.FOLDER });
     this.setIsMoveDialogOpen(true);
   }
 
   @bound
-  remove(event: MouseEvent): void {
-    event.stopPropagation();
+  remove(): void {
     this.setEditingFolder(this.folder);
     this.setIsFolderDeleteDialogOpen(true);
   }
 
+  private get menu(): IDropdownItem[] {
+    return [
+      { label: AdminI18n.t('media.renameFolder'), icon: <FrameworkIcons.Edit size={15} />, onClick: this.rename },
+      { label: AdminI18n.t('media.moveToFolder'), icon: <FrameworkIcons.External size={15} />, onClick: this.move },
+      { label: AdminI18n.t('media.deleteFolder'), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: this.remove },
+    ];
+  }
+
   render(): ReactNode {
-    const { theme, folder, viewMode } = this;
-
+    const { folder } = this;
+    if (this.viewMode === ViewMode.GRID) {
+      return <Tile title={folder.name} facts={AdminI18n.t('media.folder')} icon={<FrameworkIcons.Folder size={40} />} menu={this.menu} onOpen={this.open} openLabel={folder.name} />;
+    }
     return (
-      <Card
-        key={`folder-${folder.id}`}
-        className={`group cursor-pointer hover:border-indigo-500/50 transition-all relative rounded-xl ${viewMode === ViewMode.LIST ? 'p-3 flex items-center gap-4' : 'p-6 flex flex-col items-center justify-center text-center'}`}
-        onClick={this.open}
-      >
-        <div className={`p-3 rounded-xl ${theme === ThemeMode.DARK ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-50 text-amber-600'}`}>
-          <FrameworkIcons.Folder size={viewMode === ViewMode.GRID ? 32 : 20} />
-        </div>
-        <div className={viewMode === ViewMode.GRID ? "mt-4" : ""}>
-          <div className={`font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
-          {viewMode === ViewMode.GRID && <div className="text-[12px] text-slate-500 tracking-wide font-medium mt-1">{AdminI18n.t('media.folder')}</div>}
-        </div>
-
-        <div className={`absolute top-2 end-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === ViewMode.LIST ? 'static ms-auto opacity-100' : ''}`}>
-           <button
-            onClick={this.rename}
-            className={`p-2 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white' : 'bg-white shadow-sm border border-slate-100 hover:bg-slate-50 text-slate-500'}`}
-          >
-            <FrameworkIcons.Edit size={14} />
-          </button>
-           <button
-            onClick={this.move}
-            className={`p-2 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white' : 'bg-white shadow-sm border border-slate-100 hover:bg-slate-50 text-slate-500'}`}
-          >
-            <FrameworkIcons.External size={14} />
-          </button>
-          <button
-            onClick={this.remove}
-            className={`p-2 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400' : 'bg-white shadow-sm border border-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600'}`}
-          >
-            <FrameworkIcons.Trash size={14} />
-          </button>
-        </div>
-      </Card>
+      <ListRow
+        icon={<FrameworkIcons.Folder size={16} />}
+        title={<button type="button" className="fc-ext-row__link" onClick={this.open}>{folder.name}</button>}
+        meta={AdminI18n.t('media.folder')}
+        menu={this.menu}
+      />
     );
   }
 }

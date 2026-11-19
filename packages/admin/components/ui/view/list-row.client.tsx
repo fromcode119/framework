@@ -16,6 +16,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * not bring its own three dots.
  */
 export class ListRow extends PureReactor {
+  /** What stands before the icon: a tick, when rows can be chosen. */
+  @prop declare lead?: ReactNode;
   @prop declare icon?: ReactNode;
   @prop declare initials?: string;
   @prop declare title: ReactNode;
@@ -33,6 +35,7 @@ export class ListRow extends PureReactor {
     const row = AdminClass.of('ext-row');
     return (
       <div className={row}>
+        {this.lead ? <div className={`${row}__lead`}>{this.lead}</div> : null}
         {this.initials
           ? <Avatar fallback={this.initials} />
           : this.icon ? <div className={`${row}__icon`}>{this.icon}</div> : null}

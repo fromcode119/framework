@@ -4,6 +4,9 @@ import { Divider } from '@/components/ui/view/divider.client';
 import { Skeleton } from '@/components/ui/view/skeleton.client';
 import { ProgressBar } from '@/components/ui/view/progress-bar.client';
 import { ScreenshotGallery } from '@/components/ui/view/screenshot-gallery.client';
+import { Tile } from '@/components/ui/view/tile.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { CopyValue } from '@/components/ui/view/copy-value.client';
@@ -15,6 +18,10 @@ import type { KitDoc } from '@/app/kit/kit-doc';
 
 /** The small pieces: each has few options, so each page is short. */
 export class SmallKit {
+  static tileMenu(): any[] {
+    return [{ label: 'Details', onClick: () => undefined }, { label: 'Move to folder', onClick: () => undefined }];
+  }
+
   /** Four flat pictures drawn in place, so the example needs no file. */
   static pictures(): string[] {
     return ['#3f3f46', '#0f766e', '#7c3aed', '#b45309'].map((fill) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="100%" height="100%" fill="${fill}"/></svg>`)}`);
@@ -69,6 +76,26 @@ export class SmallKit {
           { name: 'value', type: 'number | null', does: '0–100; left out when the length is not known.' },
           { name: 'label', type: 'ReactNode', does: 'What is going on.' },
           { name: 'detail', type: 'ReactNode', does: 'How far, in the caller’s words.' },
+        ],
+      },
+      {
+        slug: 'tile', name: 'Tile', group: 'Data',
+        intro: 'One thing shown by its picture: a file, a folder. Pressing the picture opens it; everything that can be done with it is in its menu, so nothing waits for a pointer to hover.',
+        from: "import { Tile } from '@fromcode119/sdk/admin';",
+        examples: [
+          { title: 'A picture, a file without one, a folder', text: 'They stand in `fc-tile-grid`, which fits as many as the width holds.', demo: <div className="fc-tile-grid fc-kitdoc__cell--wide"><KitPlay initial={true}>{(value, set) => <Tile title="hero.jpg" facts="117 KB · JPEG" picture={SmallKit.pictures()[1]} marks={<Badge variant={BadgeVariant.SUCCESS}>WebP</Badge>} selected={value} onSelect={() => set(!value)} menu={SmallKit.tileMenu()} onOpen={() => undefined} openLabel="Open hero.jpg" />}</KitPlay><Tile title="price-list.pdf" facts="352 KB · PDF" icon={<FrameworkIcons.File size={40} />} onSelect={() => undefined} menu={SmallKit.tileMenu()} onOpen={() => undefined} openLabel="Open price-list.pdf" /><Tile title="Products" facts="Folder" icon={<FrameworkIcons.Folder size={40} />} menu={SmallKit.tileMenu()} onOpen={() => undefined} openLabel="Products" /></div>, code: '<div className="fc-tile-grid">\n  <Tile title="hero.jpg" facts="117 KB · JPEG" picture={url}\n    marks={<Badge variant={BadgeVariant.SUCCESS}>WebP</Badge>}\n    selected={chosen} onSelect={toggle}\n    menu={[{ label: \'Details\', onClick }, { label: \'Delete\', variant: DropdownItemVariant.DANGER, onClick }]}\n    onOpen={open} openLabel="Open hero.jpg" />\n</div>' },
+        ],
+        options: [
+          { name: 'title', type: 'string', does: 'The thing’s name, cut with an ellipsis when it is longer than the tile.' },
+          { name: 'facts', type: 'string', does: 'One quiet line under the name.' },
+          { name: 'picture', type: 'string', does: 'The picture’s address; without one the icon stands in its place.' },
+          { name: 'icon', type: 'ReactNode', does: 'Drawn when there is no picture.' },
+          { name: 'marks', type: 'ReactNode', does: 'Badges on the picture: what the thing is marked as.' },
+          { name: 'selected', type: 'boolean', does: 'Chosen: the tile is outlined and its tick stays.' },
+          { name: 'onSelect', type: '() => void', does: 'Given, the tile carries a tick.' },
+          { name: 'menu', type: 'IDropdownItem[]', does: 'What can be done with the thing.' },
+          { name: 'onOpen', type: '() => void', does: 'The picture was pressed.' },
+          { name: 'openLabel', type: 'string', does: 'What pressing the picture does, for a reader who cannot see it.' },
         ],
       },
       {

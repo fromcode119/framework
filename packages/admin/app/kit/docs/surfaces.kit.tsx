@@ -114,6 +114,7 @@ export class SurfacesKit {
           { title: 'Empty', flush: true, demo: <ListCard empty="No plugins installed." />, code: '<ListCard empty="No plugins installed." />' },
         ],
         options: [
+          { name: 'lead', type: 'ReactNode', does: 'What stands before the icon: a tick, when rows can be chosen.' },
           { name: 'icon / initials', type: 'ReactNode / string', does: 'What stands before the name: an icon, or a person’s initial.' },
           { name: 'title, badges', type: 'ReactNode', does: 'The name and the states beside it.' },
           { name: 'description, failed', type: 'ReactNode, boolean', does: 'One line under the name; `failed` turns it to the danger tone.' },
