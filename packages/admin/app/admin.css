@@ -1892,6 +1892,16 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   border-bottom: 1px solid var(--fc-border);
 }
 .fc-record-card__toolbar:empty { display: none; }
+
+/* ── A list as one card ──────────────────────────────────────────────────────────────────────────
+ * The reference gives a whole list ONE card: its name and its buttons in the head, the tools under
+ * them, the table, and the count at the foot, each band divided by the card's hairline. Ours had the
+ * name in the page header above the card, so the screen's name and the card's name stood one under
+ * the other with a gap between them and nothing in it. */
+.fc-list-card { display: flex; flex-direction: column; overflow: hidden; }
+.fc-list-card > * + * { border-top: 1px solid var(--fc-border); }
+.fc-list-card > .fc-record-card__head { flex-wrap: wrap; }
+.fc-record-card__subtitle { flex-basis: 100%; margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); order: 3; }
 /* What is on the right of the band keeps together. */
 .fc-record-card__toolbar > * { min-width: 0; }
 .fc-record-card__table-tools { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }

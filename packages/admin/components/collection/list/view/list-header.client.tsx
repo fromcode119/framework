@@ -7,7 +7,6 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
-import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -74,7 +73,15 @@ export class CollectionListHeader extends PureReactor {
     // again in a sentence, on every list in the console. The users list is the one that explains itself.
     const subtitle = this.collection.slug === 'users' ? AdminI18n.t('collection.list.usersDescription') : undefined;
     return (
-      <CompactPageHeader title={this.title()} subtitle={subtitle} actions={this.actions()} />
+      /* The list's name and its actions are the CARD's head, the way the reference draws a list:
+         one card holding the name and the buttons, then the tools, then the table, then the count.
+         It used to be the console's page header above the card, which put the name of the screen and
+         the name of the card one under the other with nothing between them. */
+      <div className={`${AdminClass.of('record-card')}__head`}>
+        <h2 className={`${AdminClass.of('record-card')}__title`}>{this.title()}</h2>
+        {subtitle ? <p className={`${AdminClass.of('record-card')}__subtitle`}>{subtitle}</p> : null}
+        <div className={`${AdminClass.of('record-card')}__aside`}>{this.actions()}</div>
+      </div>
     );
   }
 }
