@@ -76,6 +76,11 @@ services:
       # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      # `next dev` sizes its server child's heap at half of os.totalmem(), and inside a container that is
+      # the whole Docker VM (~16 GB), not the 4G limit below: V8 never felt pressure to collect, the
+      # cgroup killed the child mid-compile, and the container restarted (14 times in one session on
+      # 2026-11-19). A heap cap under the limit makes V8 collect instead. Keep it ~1 GB below `memory`.
+      - NODE_OPTIONS=--max-old-space-size=3072
     volumes:
       # The admin aliases `@fromcode119/react-class-components` to that package's SRC, so the dev server
       # compiles these files directly — mount them and a change there needs no build at all. (Unlike core: core
@@ -136,6 +141,11 @@ services:
       # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      # `next dev` sizes its server child's heap at half of os.totalmem(), and inside a container that is
+      # the whole Docker VM (~16 GB), not the 4G limit below: V8 never felt pressure to collect, the
+      # cgroup killed the child mid-compile, and the container restarted (14 times in one session on
+      # 2026-11-19). A heap cap under the limit makes V8 collect instead. Keep it ~1 GB below `memory`.
+      - NODE_OPTIONS=--max-old-space-size=3072
     volumes:
       # The four package sources the storefront's webpack aliases compile from `src` — the same list
       # `config/next-config-aliases.ts` declares. Without them a change to core, react or the sdk is
