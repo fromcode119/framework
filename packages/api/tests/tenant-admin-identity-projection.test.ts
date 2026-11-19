@@ -49,4 +49,18 @@ describe('TenantAdminController.identity — the fields adopt and import read', 
   it('reads them from a nested `tenant` object too, as the import screens send', () => {
     expect(project({ tenant: site }).kind).toBe('site');
   });
+
+  it('carries who may see the site and whether anything leaves it — a test site must not become production', () => {
+    const identity = TenantIdentity.from(project({ ...site, visibility: 'unlisted', environment: 'non-production' }));
+
+    expect(identity.visibility.value).toBe('unlisted');
+    expect(identity.environment.value).toBe('non-production');
+  });
+
+  it('a request that names neither still gets the closed, production defaults', () => {
+    const identity = TenantIdentity.from(project(site));
+
+    expect(identity.visibility.value).toBe('private');
+    expect(identity.environment.value).toBe('production');
+  });
 });
