@@ -1,3 +1,6 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -55,26 +58,26 @@ export class PluginAutoUpdatePanel extends AdminComponent {
   /** One sentence for what the last automatic check did, from its own report. */
   private get statusLine(): { text: string; tone: string } {
     const report = this.report;
-    if (!this.automatic) return { text: AdminI18n.t('settings.updates.pluginAuto.off'), tone: 'text-amber-600' };
-    if (!report?.checkedAt) return { text: AdminI18n.t('settings.updates.pluginAuto.notChecked'), tone: 'text-slate-500' };
+    if (!this.automatic) return { text: AdminI18n.t('settings.updates.pluginAuto.off'), tone: 'warning' };
+    if (!report?.checkedAt) return { text: AdminI18n.t('settings.updates.pluginAuto.notChecked'), tone: '' };
     const at = new Date(report.checkedAt).toLocaleString();
-    if (report.error) return { text: AdminI18n.t('settings.updates.pluginAuto.unreachable', { at, error: report.error }), tone: 'text-rose-500' };
+    if (report.error) return { text: AdminI18n.t('settings.updates.pluginAuto.unreachable', { at, error: report.error }), tone: 'danger' };
     if (report.failed?.length) {
       const failed = report.failed.map((entry) => `${entry.slug} (${entry.error})`).join('; ');
-      return { text: AdminI18n.t('settings.updates.pluginAuto.failed', { at, failed }), tone: 'text-rose-500' };
+      return { text: AdminI18n.t('settings.updates.pluginAuto.failed', { at, failed }), tone: 'danger' };
     }
     if (report.updated?.length) {
       const when = report.updatedAt ? new Date(report.updatedAt).toLocaleString() : at;
-      return { text: AdminI18n.t('settings.updates.pluginAuto.updated', { at, when, plugins: report.updated.join(', ') }), tone: 'text-emerald-600' };
+      return { text: AdminI18n.t('settings.updates.pluginAuto.updated', { at, when, plugins: report.updated.join(', ') }), tone: 'success' };
     }
-    return { text: AdminI18n.t('settings.updates.pluginAuto.current', { at }), tone: 'text-slate-500' };
+    return { text: AdminI18n.t('settings.updates.pluginAuto.current', { at }), tone: '' };
   }
 
   render(): ReactNode {
     if (!this.loaded) return null;
     const line = this.statusLine;
     return (
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/40 fc-page-stack">
+      <RecordCard><div className="fc-stack">
         <Switch
           checked={this.automatic}
           onChange={this.setAutomatic}
@@ -82,8 +85,8 @@ export class PluginAutoUpdatePanel extends AdminComponent {
           label={AdminI18n.t('settings.updates.pluginAuto.automatic')}
           description={AdminI18n.t('settings.updates.pluginAuto.automaticExplained')}
         />
-        <p className={`text-[12px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
-      </div>
+        {line.tone ? <Alert tone={line.tone as any}>{line.text}</Alert> : <Text size="xsmall" muted>{line.text}</Text>}
+      </div></RecordCard>
     );
   }
 }

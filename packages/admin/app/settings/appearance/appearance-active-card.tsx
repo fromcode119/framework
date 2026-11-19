@@ -1,10 +1,13 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Switch } from '@/components/ui/view/switch.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -35,58 +38,32 @@ export class AppearanceActiveCard extends PureReactor {
   }
 
   render(): ReactNode {
-    const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove, canManagePackages, canChoose } = this;
+    const { items, catalogBySlug, active, busy, onSwitch, onUpdate, onRemove, canManagePackages, canChoose } = this;
     return (
-      <Card title={AdminI18n.t('settings.appearance.activeAppearance')}>
-        {items.map((it) => {
-          const catalog = catalogBySlug[it.slug];
-          const canUpdate = !it.builtIn && (!!catalog?.updateAvailable || !!it.sourceUrl);
-          return (
-            <div key={it.slug} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                aria-pressed={active === it.slug}
-                onClick={() => onSwitch(it.slug)}
-                disabled={busy || !canChoose}
-                className={`flex flex-1 items-center justify-between gap-4 p-4 rounded-xl border text-start transition-all disabled:opacity-60 disabled:cursor-not-allowed ${active === it.slug
-                    ? 'border-indigo-600 bg-indigo-600/5 ring-1 ring-indigo-600'
-                    : dark
-                      ? 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
-                      : 'border-slate-200 bg-white hover:border-indigo-300'
-                  }`}
-              >
-                <span className="flex items-center gap-4">
-                  <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                    <FrameworkIcons.Palette size={18} />
-                  </span>
-                  <span>
-                    <span className={`block text-sm font-medium tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}</span>
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
-                      {catalog?.updateAvailable && (
-                        <span className="text-[12px] font-medium tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
-                          {AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                </span>
-                {active === it.slug && <FrameworkIcons.Check size={20} className="text-indigo-600" />}
-              </button>
-              {!it.builtIn && canManagePackages && (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {canUpdate && (
-                    <Button variant={catalog?.updateAvailable ? ButtonVariant.PRIMARY : ButtonVariant.GHOST} icon={<FrameworkIcons.Refresh size={14} />} onClick={() => onUpdate(it)} disabled={busy}>
-                      {catalog?.updateAvailable ? AdminI18n.t('settings.appearance.updateToV', { version: catalog.version }) : AdminI18n.t('settings.appearance.reInstall')}
-                    </Button>
-                  )}
-                  <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={() => onRemove(it.slug)} disabled={busy}>{AdminI18n.t('settings.appearance.remove')}</Button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </Card>
+      <ListShell title={AdminI18n.t('settings.appearance.activeAppearance')} count={items.length}>
+        <div>
+          {items.map((it) => {
+            const catalog = catalogBySlug[it.slug];
+            const canUpdate = !it.builtIn && (!!catalog?.updateAvailable || !!it.sourceUrl);
+            const menu = !it.builtIn && canManagePackages ? [
+              ...(canUpdate ? [{ label: catalog?.updateAvailable ? AdminI18n.t('settings.appearance.updateToV', { version: catalog.version }) : AdminI18n.t('settings.appearance.reInstall'), icon: <FrameworkIcons.Refresh size={15} />, onClick: () => { if (!busy) onUpdate(it); } }] : []),
+              { label: AdminI18n.t('settings.appearance.remove'), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: () => { if (!busy) onRemove(it.slug); } },
+            ] : undefined;
+            return (
+              <ListRow
+                key={it.slug}
+                icon={<FrameworkIcons.Palette size={16} />}
+                title={it.name}
+                badges={catalog?.updateAvailable ? <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}</Badge> : undefined}
+                description={this.subtitle(it)}
+                menu={menu}
+                // The one in use is on and stays on: an appearance is left by choosing another.
+                actions={<Switch checked={active === it.slug} disabled={busy || !canChoose || active === it.slug} onChange={() => onSwitch(it.slug)} />}
+              />
+            );
+          })}
+        </div>
+      </ListShell>
     );
   }
 }

@@ -1,3 +1,8 @@
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { Card } from '@/components/ui/view/card.client';
+import { Switch } from '@/components/ui/view/switch.client';
+import { Select } from '@/components/ui/view/select.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
@@ -30,6 +35,24 @@ export class FieldsMoreKit {
           { name: 'placeholder', type: 'string', does: 'Shown while empty.' },
           { name: 'error', type: 'string', does: 'What is wrong, under the field.' },
           { name: 'disabled', type: 'boolean', initial: 'false', does: 'Not available.' },
+        ],
+      },
+      {
+        slug: 'setting-row', name: 'SettingRow', group: 'Forms',
+        intro: 'One setting: its name and a line about it at the start, its control at the end. Every settings screen is a card of these, so all of them change here.',
+        from: "import { SettingRow, SettingRowWidth } from '@fromcode119/sdk/admin';",
+        examples: [
+          { title: 'A switch, a number, a choice', flush: true, text: 'The control is as wide as its kind needs: `AUTO` for a switch, `NARROW` for a number, `FIELD` (the default) for a text or a choice.', demo: <Card noPadding><SettingRow title="Two-factor sign-in" description="Accounts may add a second factor to their sign-in." width={SettingRowWidth.AUTO}><KitPlay initial={true}>{(value, set) => <Switch checked={value} onChange={set} />}</KitPlay></SettingRow><SettingRow title="Failed logins before lockout" description="How many failed sign-ins lock the account." width={SettingRowWidth.NARROW}><KitPlay initial={5}>{(value, set) => <NumberStepper value={value} onChange={set} min={1} />}</KitPlay></SettingRow><SettingRow title="Default language" description="The language a new visitor sees."><KitPlay initial="en">{(value, set) => <Select value={value} onChange={set} options={[{ label: 'English', value: 'en' }, { label: 'Bulgarian', value: 'bg' }]} />}</KitPlay></SettingRow></Card>, code: '<Card noPadding>\n  <SettingRow title="Two-factor sign-in" description="Accounts may add a second factor." width={SettingRowWidth.AUTO}>\n    <Switch checked={on} onChange={setOn} />\n  </SettingRow>\n  <SettingRow title="Failed logins before lockout" width={SettingRowWidth.NARROW}>\n    <NumberStepper value={count} onChange={setCount} />\n  </SettingRow>\n</Card>' },
+          { title: 'With an explanation', flush: true, text: 'What the control does, per state, sits behind the ⓘ beside the name. A description too long for its one line is cut and opens from the same ⓘ.', demo: <Card noPadding><SettingRow title="Under attack mode" description="Every visitor passes a browser check before reaching a site." explanation="On: every request is checked first, which slows the first visit. Off: only requests that look like an attack are checked." width={SettingRowWidth.AUTO}><Switch checked={false} onChange={() => undefined} /></SettingRow></Card>, code: '<SettingRow title="Under attack mode" description="…" explanation="On: … Off: …" width={SettingRowWidth.AUTO}>…</SettingRow>' },
+          { title: 'A control under the text', flush: true, text: '`wide` puts the control on a line of its own — for a list, a long text, a file with its preview.', demo: <Card noPadding><SettingRow title="Trusted relays" description="Addresses whose forwarded headers are believed." wide><KitPlay initial="">{(value, set) => <NumberStepper value={value} onChange={set} placeholder="A wide control stands here" />}</KitPlay></SettingRow></Card>, code: '<SettingRow title="Trusted relays" description="…" wide>…</SettingRow>' },
+        ],
+        options: [
+          { name: 'title', type: 'ReactNode', does: 'The setting’s name.' },
+          { name: 'description', type: 'ReactNode', does: 'One line under the name.' },
+          { name: 'explanation', type: 'ReactNode', does: 'What the control does, behind the ⓘ.' },
+          { name: 'children', type: 'ReactNode', does: 'The control.' },
+          { name: 'width', type: 'SettingRowWidth', initial: 'FIELD', does: 'NARROW, FIELD or AUTO: how much room the control takes.' },
+          { name: 'wide', type: 'boolean', initial: 'false', does: 'The control on a line of its own.' },
         ],
       },
       {

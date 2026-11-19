@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
@@ -6,16 +5,20 @@ import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client'
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Card } from '@/components/ui/view/card.client';
 import { Loader } from '@/components/ui/view/loader.client';
-import { Badge } from '@/components/ui/view/badge.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { AdminClass } from '@/lib/admin-class';
 import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
 import { SelfUpdatePanel } from '@/app/settings/updates/self-update-panel.client';
 import { PluginAutoUpdatePanel } from '@/app/settings/updates/plugin-auto-update-panel.client';
@@ -162,11 +165,7 @@ export class UpdatesPage extends AdminComponent {
     const updating = this.updating;
     const status = this.status;
 
-    if (loading && !status) return (
-      <div className="flex-1 flex items-center justify-center py-20">
-         <Loader label={AdminI18n.t('settings.updates.checkingTheUpdateRegistry')} />
-      </div>
-    );
+    if (loading && !status) return <Loader fullPage label={AdminI18n.t('settings.updates.checkingTheUpdateRegistry')} />;
 
     const installedVersion = this.installedVersion;
     const latestVersion = this.latestVersion;
@@ -174,116 +173,57 @@ export class UpdatesPage extends AdminComponent {
     const latestVersionUnknown = this.latestVersionUnknown;
 
     return (
-      <div className="flex flex-col h-full animate-in fade-in duration-500">
+      <div className="flex flex-col h-full">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.System size={18} strokeWidth={2} />}
           title={AdminI18n.t('settings.updates.systemUpdates')}
           subtitle={AdminI18n.t('settings.updates.frameworkCoreRegistrySynchronization')}
-          actions={
-            <button
-              onClick={() => this.fetchStatus(true) /* look again, not from the api's memory */}
-              disabled={loading}
-              className={`flex items-center gap-2 h-9 px-4 rounded-lg text-xs font-medium tracking-tight transition-all active:scale-95 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-800 text-slate-100 hover:bg-slate-700'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-              }`}
-            >
-              <FrameworkIcons.Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          actions={(
+            <Button variant={ButtonVariant.SECONDARY} isLoading={loading} icon={<FrameworkIcons.Refresh size={15} />} onClick={() => this.fetchStatus(true) /* look again, not from the api's memory */}>
               {loading ? AdminI18n.t('settings.updates.verifyingRegistry') : AdminI18n.t('settings.updates.checkForUpdates')}
-            </button>
-          }
+            </Button>
+          )}
         />
 
-        <div className="py-6 w-full pb-10 fc-page-stack">
-          <Card className={`p-6 border-0 ${AdminClass.SURFACE} overflow-hidden relative ${theme === ThemeMode.DARK ? 'bg-slate-900/40 ring-1 ring-white/5' : 'bg-white shadow-sm'}`}>
-            {/* Background Accent */}
-            <div className="absolute top-0 end-0 w-80 h-80 bg-indigo-500/10 blur-[80px] -translate-y-1/2 translate-x-1/2 rtl:-translate-x-1/2 rounded-full" />
+        <div className="fc-columns__stack">
+          <RecordCard
+            title={AppEnv.PRODUCT_NAME}
+            aside={(
+              <StateBadge tone={hasUpdate ? 'warning' : latestVersionUnknown ? 'default' : 'success'}>
+                {hasUpdate ? AdminI18n.t('settings.updates.updateAvailable') : latestVersionUnknown ? AdminI18n.t('settings.updates.updateCheckFailed') : AdminI18n.t('settings.updates.frameworkUpToDate')}
+              </StateBadge>
+            )}
+          >
+            <div className="fc-stack">
+              <Text muted>{AdminI18n.t('settings.updates.theCoreEnginePowersAll')}</Text>
+              {/* NEVER echo the installed version as the latest. That is what made an unreachable
+                  registry look like "you are current". */}
+              <AdminFactGrid facts={[
+                { key: 'installed', label: AdminI18n.t('settings.updates.installedVersion'), value: installedVersion ? `v${installedVersion}` : '-' },
+                { key: 'latest', label: AdminI18n.t('settings.updates.latestRegistryVersion'), value: latestVersionUnknown ? AdminI18n.t('settings.updates.unknown') : `v${latestVersion}` },
+              ]} />
+              {latestVersionUnknown ? <Alert tone="danger">{this.checkError || AdminI18n.t('settings.updates.theRegistryDidNotReport')}</Alert> : null}
 
-            <div className="flex flex-col xl:flex-row items-start gap-6 relative">
-              <div className={`h-16 w-16 rounded-xl flex items-center justify-center shrink-0 ${theme === ThemeMode.DARK ? 'bg-indigo-500/10 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600'}`}>
-                <FrameworkIcons.System size={32} strokeWidth={1.5} />
-              </div>
-
-              <div className="flex-1 space-y-5">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className={`text-2xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AppEnv.PRODUCT_NAME}</h2>
-                    <Badge
-                      variant={hasUpdate ? 'warning' : latestVersionUnknown ? 'gray' : 'success'}
-                      className="px-3 py-1 text-[12px] font-medium tracking-tight rounded-full"
-                    >
-                      {hasUpdate ? AdminI18n.t('settings.updates.updateAvailable') : latestVersionUnknown ? AdminI18n.t('settings.updates.updateCheckFailed') : AdminI18n.t('settings.updates.frameworkUpToDate')}
-                    </Badge>
-                  </div>
-
-                  <p className={`text-sm leading-relaxed max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {AdminI18n.t('settings.updates.theCoreEnginePowersAll')}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[12px] font-medium tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.installedVersion')}</div>
-                    <div className={`font-mono font-medium text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{installedVersion ? `v${installedVersion}` : '-'}</div>
-                  </div>
-                  <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[12px] font-medium tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.latestRegistryVersion')}</div>
-                    {/* NEVER echo the installed version here. That is what made an unreachable
-                        registry look like "you are current". */}
-                    <div className={`font-mono font-medium text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? AdminI18n.t('settings.updates.unknown') : `v${latestVersion}`}</div>
-                  </div>
-                </div>
-
-                {latestVersionUnknown && (
-                  <p className="text-[12px] font-medium leading-relaxed text-rose-500">
-                    {this.checkError || AdminI18n.t('settings.updates.theRegistryDidNotReport')}
-                  </p>
-                )}
-
-                {hasUpdate && (
-                  <div className={`mt-5 p-5 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
-                    <div className="flex items-center gap-2.5 text-amber-600 font-medium tracking-tight mb-2">
-                      <div className="p-1.5 bg-amber-500/10 rounded-lg">
-                        <FrameworkIcons.Warning size={18} />
-                      </div>
-                      <span>{AdminI18n.t('settings.updates.recommendedUpdate', { version: latestVersion })}</span>
-                    </div>
-                    {/* A hardcoded paragraph sat here — "cumulative improvements to the plugin
-                        isolation layer and enhanced database driver stability" — shown verbatim as
-                        the release notes for EVERY version. `SystemUpdateService.checkUpdate()`
-                        returns only current/latest/hasUpdate/downloadUrl/lastUpdated; no release
-                        notes exist anywhere in the payload, so the operator was making an
-                        "should I update?" decision on invented changelog text. Removed. Re-add a
-                        real paragraph only when the marketplace core payload carries release notes. */}
-                    <PendingReleaseList releases={this.status?.releases || []} />
-
-                    {/* An image installation's button asks its updater service; any other installs in place. */}
-                    {this.canApplyInPlace || this.status?.selfUpdate ? (
-                      <button
-                        onClick={this.openConfirm}
-                        disabled={updating}
-                        className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
-                      >
+              {hasUpdate ? (
+                <>
+                  {/* An image installation's button asks its updater service; any other installs in place. */}
+                  <Alert tone="warning" title={AdminI18n.t('settings.updates.recommendedUpdate', { version: latestVersion })}
+                    action={this.canApplyInPlace || this.status?.selfUpdate ? (
+                      <Button variant={ButtonVariant.PRIMARY} isLoading={updating} onClick={this.openConfirm}>
                         {updating ? AdminI18n.t('settings.updates.applyingUpdate') : AdminI18n.t('settings.updates.installCore', { version: latestVersion })}
-                      </button>
-                    ) : null}
-                  </div>
-                )}
-              </div>
+                      </Button>
+                    ) : undefined} />
+                  {/* The notes are the release's own; nothing is written here for a release that said nothing. */}
+                  <PendingReleaseList releases={this.status?.releases || []} />
+                </>
+              ) : null}
             </div>
-          </Card>
+          </RecordCard>
 
-          {/* Below the card, not in it: the card clips a decorative glow, and focusing a control inside scrolled it sideways. */}
           {status?.selfUpdate && <SelfUpdatePanel selfUpdate={status.selfUpdate} onChanged={this.fetchStatus} onPolled={this.takeStatus} />}
           <PluginAutoUpdatePanel />
 
-          {status?.lastUpdated && (
-            <div className="text-center text-[12px] font-medium tracking-tight text-slate-500 opacity-40">
-              {AdminI18n.t('settings.updates.lastRegistrySync', { at: new Date(status.lastUpdated).toLocaleString() })}
-            </div>
-          )}
+          {status?.lastUpdated ? <Text size="xsmall" muted>{AdminI18n.t('settings.updates.lastRegistrySync', { at: new Date(status.lastUpdated).toLocaleString() })}</Text> : null}
 
           <ConfirmDialog
             isOpen={this.showConfirm}

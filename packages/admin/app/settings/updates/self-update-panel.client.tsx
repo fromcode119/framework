@@ -1,3 +1,8 @@
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -106,17 +111,17 @@ export class SelfUpdatePanel extends AdminComponent {
   /** One sentence for where the updater is, from its own report. */
   private get statusLine(): { text: string; tone: string } {
     const { status, updaterRunning, plan } = this.selfUpdate;
-    if (!updaterRunning) return { text: AdminI18n.t('settings.updates.selfUpdate.notRunning'), tone: 'text-rose-500' };
-    if (status?.step === SelfUpdatePanel.OFF_STEP) return { text: AdminI18n.t('settings.updates.selfUpdate.turnedOff'), tone: 'text-amber-600' };
-    if (status?.state === 'updating') return { text: AdminI18n.t('settings.updates.selfUpdate.updating', { to: status.to, step: status.step }), tone: 'text-indigo-500' };
-    if (this.held) return { text: AdminI18n.t('settings.updates.selfUpdate.heldRolling', { version: plan.heldBy, reason: status?.deployReason ?? '' }), tone: 'text-amber-600' };
-    if (plan?.reason === 'heldFailed') return { text: AdminI18n.t('settings.updates.selfUpdate.heldFailed', { version: plan.heldBy, error: status?.error ?? '' }), tone: 'text-rose-500' };
-    if (status?.state === 'failed') return { text: AdminI18n.t('settings.updates.selfUpdate.failed', { to: status.to, error: status.error }), tone: 'text-rose-500' };
-    if (status?.state === 'rolledBack') return { text: AdminI18n.t('settings.updates.selfUpdate.rolledBack', { to: status.to, error: status.error }), tone: 'text-rose-500' };
-    if (plan?.reason === 'unknown') return { text: AdminI18n.t('settings.updates.selfUpdate.unknown'), tone: 'text-amber-600' };
-    if (plan?.reason === 'heldBreaking') return { text: AdminI18n.t('settings.updates.selfUpdate.heldBreaking', { version: plan.heldBy }), tone: 'text-amber-600' };
-    if (status?.state === 'succeeded' && String(status.to).replace(/^v/, '') === String(plan?.current ?? '')) return { text: AdminI18n.t('settings.updates.selfUpdate.succeeded', { to: status.to }), tone: 'text-emerald-600' };
-    return { text: AdminI18n.t('settings.updates.selfUpdate.ready'), tone: 'text-slate-500' };
+    if (!updaterRunning) return { text: AdminI18n.t('settings.updates.selfUpdate.notRunning'), tone: 'danger' };
+    if (status?.step === SelfUpdatePanel.OFF_STEP) return { text: AdminI18n.t('settings.updates.selfUpdate.turnedOff'), tone: 'warning' };
+    if (status?.state === 'updating') return { text: AdminI18n.t('settings.updates.selfUpdate.updating', { to: status.to, step: status.step }), tone: 'info' };
+    if (this.held) return { text: AdminI18n.t('settings.updates.selfUpdate.heldRolling', { version: plan.heldBy, reason: status?.deployReason ?? '' }), tone: 'warning' };
+    if (plan?.reason === 'heldFailed') return { text: AdminI18n.t('settings.updates.selfUpdate.heldFailed', { version: plan.heldBy, error: status?.error ?? '' }), tone: 'danger' };
+    if (status?.state === 'failed') return { text: AdminI18n.t('settings.updates.selfUpdate.failed', { to: status.to, error: status.error }), tone: 'danger' };
+    if (status?.state === 'rolledBack') return { text: AdminI18n.t('settings.updates.selfUpdate.rolledBack', { to: status.to, error: status.error }), tone: 'danger' };
+    if (plan?.reason === 'unknown') return { text: AdminI18n.t('settings.updates.selfUpdate.unknown'), tone: 'warning' };
+    if (plan?.reason === 'heldBreaking') return { text: AdminI18n.t('settings.updates.selfUpdate.heldBreaking', { version: plan.heldBy }), tone: 'warning' };
+    if (status?.state === 'succeeded' && String(status.to).replace(/^v/, '') === String(plan?.current ?? '')) return { text: AdminI18n.t('settings.updates.selfUpdate.succeeded', { to: status.to }), tone: 'success' };
+    return { text: AdminI18n.t('settings.updates.selfUpdate.ready'), tone: '' };
   }
 
   /** How the last update replaced the apps and why — a restart takes every site down while it runs. */
@@ -129,7 +134,7 @@ export class SelfUpdatePanel extends AdminComponent {
   render(): ReactNode {
     const line = this.statusLine;
     return (
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/40 fc-page-stack">
+      <RecordCard><div className="fc-stack">
         <Switch
           checked={this.selfUpdate.plan?.automatic === true}
           onChange={this.setAutomatic}
@@ -137,17 +142,12 @@ export class SelfUpdatePanel extends AdminComponent {
           label={AdminI18n.t('settings.updates.selfUpdate.automatic')}
           description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
         />
-        <p className={`text-[12px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
-        {this.deployLine && !this.held ? <p className="text-[12px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
+        {line.tone ? <Alert tone={line.tone as any}>{line.text}</Alert> : <Text size="xsmall" muted>{line.text}</Text>}
+        {this.deployLine && !this.held ? <Text size="xsmall" muted>{this.deployLine}</Text> : null}
         {this.held ? (
-          <button
-            type="button"
-            onClick={() => { this.confirmRestart = true; }}
-            disabled={this.restarting}
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
-          >
+          <Button variant={ButtonVariant.PRIMARY} isLoading={this.restarting} onClick={() => { this.confirmRestart = true; }}>
             {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
-          </button>
+          </Button>
         ) : null}
         <ConfirmDialog
           isOpen={this.confirmRestart}
@@ -157,7 +157,7 @@ export class SelfUpdatePanel extends AdminComponent {
           title={AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
           description={AdminI18n.t('settings.updates.selfUpdate.updateWithRestartExplained')}
         />
-      </div>
+      </div></RecordCard>
     );
   }
 }

@@ -3627,3 +3627,13 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 @media (max-width: 640px) { .fc-record-card__body:not(:empty) { padding-inline: 16px; } }
 /* Things one under another inside a card, 12px apart: a line of text, a list, a tip, a bar. */
 .fc-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.fc-pre-line { white-space: pre-line; }
+/* A field with the button that acts on it: side by side, the field taking the room; one under the
+   other on a phone. */
+.fc-field-action { display: flex; align-items: flex-start; gap: 8px; }
+.fc-field-action > :first-child { flex: 1 1 auto; min-width: 0; }
+.fc-field-action > .fc-btn { height: var(--fc-field-h); flex: none; }
+@media (max-width: 480px) { .fc-field-action { flex-direction: column; align-items: stretch; } .fc-field-action > .fc-btn { width: 100%; } }
+/* A control inside a table cell fills the cell, and the row grows to hold it. */
+.fc-dt-td > .fc-dt-cell > .fc-field-stack, .fc-dt-td > .fc-dt-cell > .fc-select { min-width: 180px; }
+.fc-dt-row:has(.fc-field, .fc-field-stack) > .fc-dt-td { padding-block: 8px; }

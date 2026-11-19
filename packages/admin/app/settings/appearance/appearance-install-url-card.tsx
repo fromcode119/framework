@@ -1,3 +1,5 @@
+import { Text } from '@/components/ui/view/text.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
@@ -23,13 +25,13 @@ export class AppearanceInstallUrlCard extends PureReactor {
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.appearance.installFromAPackageUrl')}>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <Input value={this.url} onChange={this.handleChange} placeholder="https://…/my-appearance.zip" className="flex-1 font-medium" />
-          <Button icon={<FrameworkIcons.Download size={14} />} onClick={this.onInstall} disabled={this.busy || !this.url.trim()}>{AdminI18n.t('settings.appearance.install')}</Button>
+        <div className="fc-stack">
+          <div className="fc-field-action">
+            <Input value={this.url} onChange={this.handleChange} placeholder="https://…/my-appearance.zip" />
+            <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Download size={15} />} onClick={this.onInstall} disabled={this.busy || !this.url.trim()}>{AdminI18n.t('settings.appearance.install')}</Button>
+          </div>
+          <Text muted><AdminRichText k="settings.appearance.installUrlHint" /></Text>
         </div>
-        <p className="text-[13px] text-slate-500 mt-2 leading-relaxed">
-          <AdminRichText k="settings.appearance.installUrlHint" />
-        </p>
       </Card>
     );
   }

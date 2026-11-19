@@ -1,3 +1,5 @@
+import { InlineTip } from '@/components/ui/view/inline-tip.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -20,28 +22,17 @@ export class PendingReleaseList extends PureReactor {
     if (!this.releases?.length) return null;
 
     return (
-      <div className="mt-4 space-y-3">
-        <p className="text-[12px] font-medium text-slate-400">
+      <div className="fc-stack">
+        <Text size="xsmall" muted>
           {this.releases.length === 1
             ? AdminI18n.t('settings.updates.releasesSinceOne')
             : AdminI18n.t('settings.updates.releasesSinceMany', { count: this.releases.length })}
-        </p>
-        <ol className="space-y-3">
-          {this.releases.map((release) => (
-            <li key={release.version} className="border-s-2 border-slate-200 ps-3 dark:border-slate-700">
-              <p className="font-mono text-[12px] font-medium text-slate-800 dark:text-slate-100">
-                v{release.version}
-              </p>
-              {release.notes ? (
-                <p className="mt-1 whitespace-pre-line text-[12px] leading-relaxed text-slate-600 dark:text-slate-300">
-                  {release.notes}
-                </p>
-              ) : (
-                <p className="mt-1 text-[12px] italic text-slate-400">{AdminI18n.t('settings.updates.noNotesWereWrittenFor')}</p>
-              )}
-            </li>
-          ))}
-        </ol>
+        </Text>
+        {this.releases.map((release) => (
+          <InlineTip key={release.version} label={`v${release.version}`}>
+            {release.notes ? <span className="fc-pre-line">{release.notes}</span> : AdminI18n.t('settings.updates.noNotesWereWrittenFor')}
+          </InlineTip>
+        ))}
       </div>
     );
   }
