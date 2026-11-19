@@ -235,6 +235,11 @@ export class TenantAdminController extends BaseController {
       state: tenant.state,
       kind: tenant.kind,
       appearance: tenant.appearance,
+      // Who may see the site and whether anything leaves it. Dropped here, both fell back to their
+      // defaults: a site adopted as "non-production — nothing leaves this site" was stored as PRODUCTION,
+      // and would have sent real email, payments and shipments.
+      visibility: tenant.visibility,
+      environment: tenant.environment,
     };
   }
 

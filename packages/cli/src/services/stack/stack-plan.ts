@@ -132,8 +132,24 @@ export class StackPlan {
       const host = path.join(this.workspacesDir(), pkg, StackPlan.PACKAGE_OUTPUT);
       mounts.push(`${host}:${this.layout.containerPackage(pkg, StackPlan.PACKAGE_OUTPUT)}`);
     }
-    mounts.push(...this.pluginMounts());
+    mounts.push(...this.versionMount(), ...this.pluginMounts());
     return mounts;
+  }
+
+  /** The root manifest: the one file that says which version of the platform is running. */
+  private static readonly ROOT_MANIFEST = 'package.json';
+
+  /**
+   * The worktree's root manifest over the image's.
+   *
+   * The platform reads its own version from that file. Without this the containers run the worktree's
+   * code and report the IMAGE's version, so every plugin that declares it needs a newer core than the
+   * image's tag is held as "needs a newer platform" — on a stack that is running exactly that core.
+   * Read-only: a container must never rewrite a worktree's manifest.
+   */
+  private versionMount(): string[] {
+    const host = path.join(this.request.framework, StackPlan.ROOT_MANIFEST);
+    return fs.existsSync(host) ? [`${host}:${this.layout.containerRoot}/${StackPlan.ROOT_MANIFEST}:ro`] : [];
   }
 
   /** A Next app serves its build, so these are what a worktree has to supply for one. */

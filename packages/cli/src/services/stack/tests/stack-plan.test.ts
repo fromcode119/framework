@@ -37,6 +37,13 @@ describe('StackPlan', () => {
     expect(overlay).toContain(`${path.join(framework, 'modules', 'core', 'dist')}:/srv/modules/core/dist`);
   });
 
+  it('reports the worktree\'s version, not the image\'s: its root manifest is mounted read-only', () => {
+    const overlay = new StackPlan(request).overlay();
+
+    // Without it a plugin that needs a newer core than the image's tag is held on a stack running that core.
+    expect(overlay).toContain(`${path.join(framework, 'package.json')}:/srv/package.json:ro`);
+  });
+
   it('mounts a plugin where the topology says plugins go', () => {
     fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
     const plugin = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-plugin-'));

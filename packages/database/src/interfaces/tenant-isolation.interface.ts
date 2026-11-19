@@ -88,6 +88,14 @@ export interface ITenantIsolation {
   requireOwner(table: string): Promise<boolean>;
 
   /**
+   * Take the site out of a table's key and stop requiring it — for a deployment with NO tenants, where
+   * there is no site for a row to name and a key that includes one refuses every insert.
+   *
+   * Returns whether the table changed. Never called while tenants exist.
+   */
+  releaseOwnerKey(table: string): Promise<boolean>;
+
+  /**
    * Which sites this table's rows belong to (at most a handful — the question is only ever whether
    * it is more than one).
    *
