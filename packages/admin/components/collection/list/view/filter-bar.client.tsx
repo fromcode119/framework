@@ -1,8 +1,7 @@
 import { ReorderDirection } from '@/components/collection/list/enums/reorder-direction.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound, Ref } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.client';
 import { SortMenu } from '@/components/collection/list/view/sort-menu.client';
@@ -31,9 +30,6 @@ export class FilterBar extends PureReactor {
   @prop declare archivable?: boolean;
   @prop declare showArchived?: boolean;
   @prop declare setShowArchived?: (val: boolean) => void;
-  @prop declare showColumnsMenu: boolean;
-  @prop declare setShowColumnsMenu: (val: boolean | ((prev: boolean) => boolean)) => void;
-  @prop declare columnsMenuRef: Ref<HTMLDivElement>;
   @prop declare allColumns: any[];
   @prop declare visibleColumnIds: string[];
   @prop declare toggleColumn: (id: string) => void;
@@ -70,35 +66,18 @@ export class FilterBar extends PureReactor {
     return filters;
   }
 
-  @bound private toggleColumnsMenu(): void {
-    this.setShowColumnsMenu((prev) => !prev);
-  }
-
   private renderColumnsButton(): ReactNode {
     return (
-      <div className="fc-list-table-only relative shrink-0" ref={this.columnsMenuRef}>
-        {/* The column chooser is an icon on the reference — a quiet square beside the search, not a
-            labelled button. It shares the one toolbar-control look with Filters and the order. */}
-        <button
-          type="button"
-          onClick={this.toggleColumnsMenu}
-          title={AdminI18n.t('collection.list.columns')}
-          aria-label={AdminI18n.t('collection.list.columns')}
-          className="fc-toolbar-btn fc-toolbar-btn--icon"
-        >
-          <FrameworkIcons.Layout size={15} />
-        </button>
-        {this.showColumnsMenu && (
-          <CollectionColumnsMenu
-            theme={this.theme}
-            allColumns={this.allColumns}
-            visibleColumnIds={this.visibleColumnIds}
-            toggleColumn={this.toggleColumn}
-            reorderColumn={this.reorderColumn}
-            stickyColumnIds={this.stickyColumnIds}
-            toggleStickyColumn={this.toggleStickyColumn}
-          />
-        )}
+      <div className="fc-list-table-only shrink-0">
+        <CollectionColumnsMenu
+          theme={this.theme}
+          allColumns={this.allColumns}
+          visibleColumnIds={this.visibleColumnIds}
+          toggleColumn={this.toggleColumn}
+          reorderColumn={this.reorderColumn}
+          stickyColumnIds={this.stickyColumnIds}
+          toggleStickyColumn={this.toggleStickyColumn}
+        />
       </div>
     );
   }

@@ -9,11 +9,11 @@ import type { ICollectionListPageViewModel } from '@/components/collection/list/
 export class CollectionListPageProps {
   static build({ pluginSlug, slug, state }: IBuildPageClientPropsArgs) {
     const {
-      router, settings, theme, columnsMenuRef, collection, resolvedSlug, slotSlug,
+      router, settings, theme, collection, resolvedSlug, slotSlug,
       data, pluginSettings, total, loading, loadError, search, setSearch, page, setPage, sort, handleSort,
       selectedIds, setSelectedIds, statusFilter, setStatusFilter, fieldFilters, setFieldFilters,
       archivable, showArchived, setShowArchived, handleArchive,
-      visibleColumnIds, setVisibleColumnIds, stickyColumnIds, setStickyColumnIds, showColumnsMenu, setShowColumnsMenu,
+      visibleColumnIds, setVisibleColumnIds, stickyColumnIds, setStickyColumnIds,
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
@@ -25,7 +25,7 @@ export class CollectionListPageProps {
       filterBarProps: {
         collection, slug, theme, total, search, setSearch, sort, onSort: handleSort, statusFilter, setStatusFilter, statusOptions, setPage,
         archivable, showArchived, setShowArchived,
-        showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds, stickyColumnIds,
+        allColumns, visibleColumnIds, stickyColumnIds,
         toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
         reorderColumn: (columnId: string, direction: ReorderDirection) => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
         toggleStickyColumn: (columnId: string) => CollectionListPageActions.toggleStickyColumn({ columnId, pluginSlug, resolvedSlug, setStickyColumnIds }),

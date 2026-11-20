@@ -2631,6 +2631,24 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 /* The sheet a menu opens in: the card's corner, and 4px around its rows so the first and the last do
    not sit against the edge. It was rounded-xl (12px) against the card's 8 and the controls' 6. */
 .fc-menu-sheet { min-width: 220px; padding: 4px; border-radius: var(--fc-card-radius); background: var(--fc-surface); color: var(--fc-text); box-shadow: 0 0 0 1px var(--fc-border), 0 8px 16px rgb(0 0 0 / .08); }
+/* A heading inside a menu sheet: it starts a group, with the space above it and no rule. */
+.fc-menu-section { margin: 6px 0 2px; padding: 0 8px; font-size: 12px; line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-menu-section:first-child { margin-block-start: 2px; }
+
+/* The column chooser of a list, the panel of its toolbar Dropdown: a checkbox per column; the shown ones carry a
+   pin and the handle that orders them. */
+.fc-columns-menu { width: 288px; max-width: 100%; padding: 4px; }
+.fc-columns-menu__hint { margin: 0; padding: 0 8px 6px; font-size: 12px; line-height: 18px; color: var(--fc-text-muted); }
+.fc-columns-menu__scroll { max-height: 20rem; overflow-y: auto; overscroll-behavior: contain; }
+.fc-columns-menu__rows { gap: 0; margin: 0; padding: 0; list-style: none; }
+.fc-columns-menu__row { display: flex; align-items: center; gap: 2px; min-height: 32px; padding: 2px 2px 2px 8px; border-radius: var(--fc-control-radius); }
+.fc-columns-menu__row:hover { background: var(--fc-surface-muted); }
+.fc-columns-menu__row[data-dragging] { opacity: .5; }
+.fc-columns-menu__check { flex: 1; min-width: 0; font-size: 13px; line-height: 20px; color: var(--fc-text); }
+/* The checkbox reaches past its box for a larger tap area; in a row that fills the menu it must not reach past the right edge. */
+.fc-columns-menu__row > .fc-columns-menu__check { margin-inline-end: 0; }
+.fc-columns-menu__check > :last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-columns-menu .fc-repeat__tool[aria-pressed="true"] { color: var(--fc-text); background: var(--fc-surface-muted); }
 
 /* ── Asking before something cannot be undone ────────────────────────────────────────────────────
  * ConfirmDialog. Measured against the record pages this one follows: 400px wide, 24px of inset on

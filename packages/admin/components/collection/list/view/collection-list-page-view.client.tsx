@@ -1,8 +1,7 @@
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
-import {Reactor, prop, ref, state, Platform} from '@fromcode119/react-class-components';
-import type { Ref } from '@fromcode119/react-class-components';
+import {Reactor, prop, state, Platform} from '@fromcode119/react-class-components';
 
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
@@ -65,7 +64,6 @@ export class CollectionListPageView extends Reactor {
   @state showArchived = false;
   @state visibleColumnIds: string[] = [];
   @state stickyColumnIds: string[] = [];
-  @state showColumnsMenu = false;
   @state quickEditExpandedId: string | null = null;
   @state quickEditLoadingId: string | null = null;
   @state quickEditSavingId: string | null = null;
@@ -87,9 +85,7 @@ export class CollectionListPageView extends Reactor {
     return layout.groupField || layout.orderField ? 200 : 10;
   }
 
-  @ref declare columnsMenuRef: Ref<HTMLDivElement>;
   private searchTimer: any = null;
-  private onClickOutside: ((event: MouseEvent) => void) | null = null;
 
   componentDidMount(): void {
     CollectionListPageLifecycle.onMount(this);

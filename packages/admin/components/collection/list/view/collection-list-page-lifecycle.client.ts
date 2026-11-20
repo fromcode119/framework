@@ -14,7 +14,7 @@ import { CollectionListLayout } from '@/components/collection/list/collection-li
  * `useCollectionListPage` hook. Each method is the class-component equivalent of one useEffect, with
  * an explicit changed-guard so it is idempotent (re-running with no change is a no-op). `self` is the
  * `CollectionListPageView` instance (typed loosely to avoid a circular import) exposing `props`,
- * `state`, `updateState`, `fetchData`, `columnsMenuRef`, and the mutable `searchTimer`/`onClickOutside`.
+ * `state`, `updateState`, `fetchData`, and the mutable `searchTimer`.
  */
 export class CollectionListPageLifecycle {
   static onMount(self: any): void {
@@ -52,7 +52,6 @@ export class CollectionListPageLifecycle {
     if (searchParamsChanged) CollectionListPageLifecycle.syncPageFromUrl(self);
     if (searchParamsChanged || prevState.page !== self.state.page) CollectionListPageLifecycle.syncPageToUrl(self);
 
-    if (prevState.showColumnsMenu !== self.state.showColumnsMenu) CollectionListPageLifecycle.manageColumnsMenuListener(self);
     if (prevState.search !== self.state.search) CollectionListPageLifecycle.scheduleSearchDebounce(self);
 
     CollectionListPageLifecycle.maybeFetch(self, prevProps, prevState);
@@ -60,7 +59,6 @@ export class CollectionListPageLifecycle {
 
   static onUnmount(self: any): void {
     if (self.searchTimer) clearTimeout(self.searchTimer);
-    if (self.onClickOutside) document.removeEventListener('mousedown', self.onClickOutside);
   }
 
   private static collectionOf(self: any): any {
@@ -145,20 +143,6 @@ export class CollectionListPageLifecycle {
     // Remembered for this tab, so the edit screen's way back returns to this page of the list.
     AdminServices.getInstance().uiPreference.writeCollectionListHref(self.props.pluginSlug, self.props.slug, href);
     if (nextQuery !== current) self.props.router.replace(href, { scroll: false });
-  }
-
-  private static manageColumnsMenuListener(self: any): void {
-    if (self.state.showColumnsMenu && !self.onClickOutside) {
-      self.onClickOutside = (event: MouseEvent) => {
-        if (self.columnsMenuRef.current && !self.columnsMenuRef.current.contains(event.target as Node)) self.updateState('showColumnsMenu', false);
-      };
-      document.addEventListener('mousedown', self.onClickOutside);
-      return;
-    }
-    if (!self.state.showColumnsMenu && self.onClickOutside) {
-      document.removeEventListener('mousedown', self.onClickOutside);
-      self.onClickOutside = null;
-    }
   }
 
   private static scheduleSearchDebounce(self: any): void {

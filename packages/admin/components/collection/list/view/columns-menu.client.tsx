@@ -1,10 +1,20 @@
 import { ReorderDirection } from '@/components/collection/list/enums/reorder-direction.enum';
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import type { DragEvent, ReactNode } from 'react';
+import { PureReactor, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { RepeatRowGrip } from '@/components/ui/view/repeat-row-grip.client';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The column chooser of a list, as the reference draws it: an icon in the toolbar opening a menu with a
+ * checkbox per column. It is a Dropdown like the order beside it, so the list card cannot clip it.
+ * Ours also pins a column to the left edge and orders the shown ones — the order by the row's handle
+ * (dragged, or focused and moved with the arrow keys), not by a pair of arrows on every row.
+ */
 export class CollectionColumnsMenu extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare allColumns: any[];
@@ -15,120 +25,95 @@ export class CollectionColumnsMenu extends PureReactor {
   @prop declare stickyColumnIds: string[];
   @prop declare toggleStickyColumn: (id: string) => void;
 
-  render(): ReactNode {
-    const { theme, allColumns, visibleColumnIds, toggleColumn, reorderColumn, stickyColumnIds, toggleStickyColumn } = this;
-    const isDark = theme === ThemeMode.DARK;
-    const visibleColumns = visibleColumnIds.map((id) => allColumns.find((c) => c.id === id)).filter(Boolean);
-    const hiddenColumns = allColumns.filter((c) => !visibleColumnIds.includes(c.id));
+  /** The shown column being dragged, and whether the pointer is on a handle (only then may a row move). */
+  @state private dragged: string | null = null;
+  @state private held = false;
+
+  /** Moves a shown column from one place to another, one step at a time through the page's own reorder. */
+  private moveTo(id: string, to: number): void {
+    const from = this.visibleColumnIds.indexOf(id);
+    if (from === -1 || to === from || to < 0 || to >= this.visibleColumnIds.length) return;
+    const direction = to < from ? ReorderDirection.UP : ReorderDirection.DOWN;
+    for (let step = 0; step < Math.abs(to - from); step++) this.reorderColumn(id, direction);
+  }
+
+  private moveByKey(id: string, index: number, key: string): number | null {
+    const to = key === 'ArrowUp' ? index - 1 : key === 'ArrowDown' ? index + 1 : -1;
+    if (to < 0 || to >= this.visibleColumnIds.length) return null;
+    this.moveTo(id, to);
+    return to;
+  }
+
+  private dropOn(event: DragEvent<HTMLLIElement>, index: number): void {
+    event.preventDefault();
+    if (this.dragged) this.moveTo(this.dragged, index);
+    this.dragged = null;
+  }
+
+  private renderShown(column: any, index: number, count: number): ReactNode {
+    const pinned = this.stickyColumnIds.includes(column.id);
+    const pinLabel = AdminI18n.t(pinned ? 'collection.list.unpin' : 'collection.list.pin');
     return (
-      <div
-        className={`absolute end-0 mt-3 w-72 max-w-[92vw] rounded-xl border shadow-2xl p-2 z-30 animate-in fade-in zoom-in duration-200 ${
-          isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
-        }`}
+      <li
+        key={column.id}
+        className="fc-columns-menu__row"
+        data-dragging={this.dragged === column.id ? 'true' : undefined}
+        draggable={count > 1 && this.held}
+        onDragStart={() => { this.dragged = column.id; }}
+        onDragEnd={() => { this.dragged = null; }}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => this.dropOn(event, index)}
       >
-        <div className="px-2.5 py-2 mb-1 text-[12px] font-medium text-slate-500/80">
-          {AdminI18n.t('collection.list.visibleColumns')}
-        </div>
-        <div className="px-2.5 pb-2 text-[12px] leading-relaxed text-slate-400">
-          {AdminI18n.t('collection.list.pinnedHint')}
-        </div>
-        <div className="max-h-80 overflow-auto pe-1 space-y-0.5 custom-scrollbar">
-          {visibleColumns.map((column: any, idx: number) => (
-            <div
-              key={column.id}
-              className={`w-full px-2.5 py-2 rounded-xl flex items-center gap-2 ${
-                isDark ? 'bg-indigo-500/10' : 'bg-indigo-50/60'
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => toggleColumn(column.id)}
-                className="flex items-center gap-3 flex-1 min-w-0"
-              >
-                <div
-                  className={`h-5 w-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
-                    isDark
-                      ? 'bg-indigo-500 border-indigo-500 shadow-lg shadow-indigo-500/20'
-                      : 'bg-indigo-600 border-indigo-600 shadow-sm shadow-indigo-600/20'
-                  }`}
-                >
-                  <FrameworkIcons.Check size={11} className="text-white scale-110" strokeWidth={3} />
-                </div>
-                <span className={`text-xs font-medium truncate ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
-                  {column.header}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleStickyColumn(column.id)}
-                title={AdminI18n.t(stickyColumnIds.includes(column.id) ? 'collection.list.unpin' : 'collection.list.pin')}
-                aria-pressed={stickyColumnIds.includes(column.id)}
-                className={`p-1 rounded-lg shrink-0 transition-colors ${
-                  stickyColumnIds.includes(column.id)
-                    ? isDark ? 'text-indigo-300 bg-indigo-500/20' : 'text-indigo-600 bg-indigo-100'
-                    : isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-400 hover:text-slate-700'
-                }`}
-              >
-                <FrameworkIcons.Pin size={12} />
-              </button>
-              <div className="flex flex-col shrink-0">
-                <button
-                  type="button"
-                  onClick={() => reorderColumn(column.id, ReorderDirection.UP)}
-                  disabled={idx === 0}
-                  className={`p-0.5 rounded transition-colors ${
-                    idx === 0
-                      ? 'opacity-20 cursor-not-allowed'
-                      : isDark
-                        ? 'text-slate-400 hover:text-white'
-                        : 'text-slate-400 hover:text-slate-900'
-                  }`}
-                >
-                  <FrameworkIcons.ChevronUp size={12} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => reorderColumn(column.id, ReorderDirection.DOWN)}
-                  disabled={idx === visibleColumns.length - 1}
-                  className={`p-0.5 rounded transition-colors ${
-                    idx === visibleColumns.length - 1
-                      ? 'opacity-20 cursor-not-allowed'
-                      : isDark
-                        ? 'text-slate-400 hover:text-white'
-                        : 'text-slate-400 hover:text-slate-900'
-                  }`}
-                >
-                  <FrameworkIcons.ChevronDown size={12} />
-                </button>
-              </div>
-            </div>
-          ))}
-          {hiddenColumns.length > 0 && (
+        <Checkbox className="fc-columns-menu__check" checked label={column.header} onChange={() => this.toggleColumn(column.id)} />
+        <button type="button" className="fc-repeat__tool" aria-pressed={pinned} title={pinLabel} aria-label={pinLabel} onClick={() => this.toggleStickyColumn(column.id)}>
+          <FrameworkIcons.Pin size={14} />
+        </button>
+        {count > 1 ? (
+          <RepeatRowGrip label={AdminI18n.t('ui.array.reorder')} onMove={(key: string) => this.moveByKey(column.id, index, key)} onHover={(on: boolean) => { this.held = on; }} />
+        ) : null}
+      </li>
+    );
+  }
+
+  render(): ReactNode {
+    return (
+      <Dropdown
+        align={HorizontalAlign.RIGHT}
+        trigger={
+          <span title={AdminI18n.t('collection.list.columns')} aria-label={AdminI18n.t('collection.list.columns')} className="fc-toolbar-btn fc-toolbar-btn--icon">
+            <FrameworkIcons.Layout size={15} />
+          </span>
+        }
+        items={[]}
+        panel={this.renderPanel()}
+      />
+    );
+  }
+
+  private renderPanel(): ReactNode {
+    const { allColumns, visibleColumnIds, toggleColumn } = this;
+    const shown = visibleColumnIds.map((id) => allColumns.find((c) => c.id === id)).filter(Boolean);
+    const hidden = allColumns.filter((c) => !visibleColumnIds.includes(c.id));
+    return (
+      <div className="fc-columns-menu">
+        <div className="fc-menu-section">{AdminI18n.t('collection.list.visibleColumns')}</div>
+        <p className="fc-columns-menu__hint">{AdminI18n.t('collection.list.pinnedHint')}</p>
+        <div className="fc-columns-menu__scroll">
+          <ul className="fc-repeat__rows fc-columns-menu__rows">
+            {shown.map((column: any, index: number) => this.renderShown(column, index, shown.length))}
+          </ul>
+          {hidden.length > 0 ? (
             <>
-              <div className="px-2.5 py-2 mt-1 text-[12px] font-medium text-slate-500/80">
-                {AdminI18n.t('collection.list.hidden')}
-              </div>
-              {hiddenColumns.map((column: any) => (
-                <button
-                  key={column.id}
-                  type="button"
-                  onClick={() => toggleColumn(column.id)}
-                  className={`w-full px-2.5 py-2.5 rounded-xl text-start text-xs font-medium transition-all flex items-center gap-3 ${
-                    isDark
-                      ? 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  <div
-                    className={`h-5 w-5 rounded-lg border-2 flex items-center justify-center shrink-0 ${
-                      isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-50'
-                    }`}
-                  />
-                  <span className="truncate flex-1">{column.header}</span>
-                </button>
-              ))}
+              <div className="fc-menu-section">{AdminI18n.t('collection.list.hidden')}</div>
+              <ul className="fc-columns-menu__rows">
+                {hidden.map((column: any) => (
+                  <li key={column.id} className="fc-columns-menu__row">
+                    <Checkbox className="fc-columns-menu__check" checked={false} label={column.header} onChange={() => toggleColumn(column.id)} />
+                  </li>
+                ))}
+              </ul>
             </>
-          )}
+          ) : null}
         </div>
       </div>
     );

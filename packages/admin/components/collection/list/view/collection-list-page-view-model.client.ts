@@ -54,7 +54,7 @@ export class CollectionListPageViewModelBuilder {
       && Object.values(self.state.fieldFilters || {}).every((value) => value === 'all');
 
     return {
-      router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
+      router, settings, theme, collection, resolvedSlug, slotSlug,
       pageSize: self.pageSize, frontendUrl, access,
       data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
       loadError: self.state.loadError,
@@ -74,7 +74,7 @@ export class CollectionListPageViewModelBuilder {
       fieldFilters: self.state.fieldFilters, setFieldFilters: (v: any) => self.updateState('fieldFilters', v),
       visibleColumnIds: self.state.visibleColumnIds, setVisibleColumnIds: (v: any) => self.updateState('visibleColumnIds', v),
       stickyColumnIds: self.state.stickyColumnIds, setStickyColumnIds: (v: any) => self.updateState('stickyColumnIds', v),
-      showColumnsMenu: self.state.showColumnsMenu, setShowColumnsMenu: (v: any) => self.updateState('showColumnsMenu', v),
+      
       quickEditExpandedId: self.state.quickEditExpandedId, setQuickEditExpandedId: (v: any) => self.updateState('quickEditExpandedId', v),
       quickEditLoadingId: self.state.quickEditLoadingId, setQuickEditLoadingId: (v: any) => self.updateState('quickEditLoadingId', v),
       quickEditSavingId: self.state.quickEditSavingId, setQuickEditSavingId: (v: any) => self.updateState('quickEditSavingId', v),

@@ -12,7 +12,6 @@ export interface ICollectionListPageViewModel {
   router: any;
   settings: any;
   theme: any;
-  columnsMenuRef: React.RefObject<HTMLDivElement>;
   collection: any;
   resolvedSlug: string;
   slotSlug: string;
@@ -53,8 +52,6 @@ export interface ICollectionListPageViewModel {
   stickyColumnIds: string[];
   setStickyColumnIds: (value: any) => void;
   setVisibleColumnIds: React.Dispatch<React.SetStateAction<string[]>>;
-  showColumnsMenu: boolean;
-  setShowColumnsMenu: React.Dispatch<React.SetStateAction<boolean>>;
   quickEditExpandedId: string | null;
   setQuickEditExpandedId: React.Dispatch<React.SetStateAction<string | null>>;
   quickEditLoadingId: string | null;
