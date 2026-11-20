@@ -1,10 +1,12 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { StatePage } from '@/components/ui/view/state-page.client';
 
 export class NotFound extends AdminComponent {
   @bound
@@ -13,48 +15,19 @@ export class NotFound extends AdminComponent {
   }
 
   render(): ReactNode {
-    const theme = this.theme;
-
+    // The console's state page, the same face a missing collection, plugin or theme shows.
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 animate-in fade-in duration-500">
-        <div className={`p-6 rounded-xl ${theme === ThemeMode.DARK ? 'bg-indigo-900/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'} mb-8`}>
-          <FrameworkIcons.Search size={64} strokeWidth={1.5} />
-        </div>
-
-        <h1 className={`text-6xl font-medium mb-4 tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-          404
-        </h1>
-
-        <h2 className={`text-2xl font-medium mb-4 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
-          {AdminI18n.t('notFound.title')}
-        </h2>
-
-        <p className={`max-w-md mx-auto mb-10 leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-          {AdminI18n.t('notFound.text')}
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button
-            onClick={this.goBack}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all border ${
-              theme === ThemeMode.DARK
-                ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
-            }`}
-          >
-            <FrameworkIcons.Left size={18} />
-            <span>{AdminI18n.t('common.goBack')}</span>
-          </button>
-
-          <AdminLink
-            href="/"
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-600/20"
-          >
-            <FrameworkIcons.Home size={18} />
-            <span>{AdminI18n.t('nav.items.dashboard')}</span>
-          </AdminLink>
-        </div>
-      </div>
+      <StatePage
+        icon={<FrameworkIcons.Search size={18} />}
+        title={AdminI18n.t('notFound.title')}
+        hint={AdminI18n.t('notFound.text')}
+        actions={(
+          <>
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.goBack}>{AdminI18n.t('common.goBack')}</Button>
+            <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href="/">{AdminI18n.t('nav.items.dashboard')}</Button>
+          </>
+        )}
+      />
     );
   }
 }

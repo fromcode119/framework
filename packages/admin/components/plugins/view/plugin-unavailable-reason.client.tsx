@@ -62,9 +62,8 @@ export class PluginUnavailableReason extends AdminComponent {
     if (!this.reason) return null;
 
     return (
-      <p className="mb-8 max-w-md px-6 text-center text-[13px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-        {this.reason}
-      </p>
+      // A second sentence of the state page's hint, in its voice.
+      <span>{this.reason}</span>
     );
   }
 }

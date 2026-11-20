@@ -6,46 +6,26 @@ import { Button } from '@/components/ui/view/button.client';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PluginUnavailableReason } from '@/components/plugins/view/plugin-unavailable-reason.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { StatePage } from '@/components/ui/view/state-page.client';
 
 export class PluginNotFound extends PureReactor {
   @prop declare pluginSlug: string;
 
   render(): ReactNode {
-    const pluginSlug = this.pluginSlug;
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center animate-in fade-in duration-700 slide-in-from-bottom-4">
-      <div className="p-8 rounded-xl mb-8 relative group bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200 dark:shadow-black/50">
-        <div className="absolute inset-0 bg-rose-500/20 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
-        <FrameworkIcons.Zap size={64} className="text-rose-500 relative z-10 animate-pulse" strokeWidth={1} />
-      </div>
-
-      <h1 className="text-4xl font-medium tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('plugins.list.moduleNotFound')}</h1>
-
-      <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-4 px-6">
-        {AdminI18n.t('plugins.list.nothingServing', { path: `/${pluginSlug}` })}
-      </p>
-
-      {/* When the extension exists but is not running, its STATE is the answer — see the component. */}
-      <PluginUnavailableReason pluginSlug={pluginSlug} />
-
-      <div className="flex items-center gap-4">
-        <AdminLink href="/plugins">
-          <Button
-            variant={ButtonVariant.PRIMARY}
-            icon={<FrameworkIcons.Plugins size={18} />}
-          >
-            {AdminI18n.t('plugins.list.managePlugins')}
-          </Button>
-        </AdminLink>
-        <Button
-          variant={ButtonVariant.GHOST}
-          onClick={() => window.history.back()}
-          icon={<FrameworkIcons.Left size={16} />}
-        >
-          {AdminI18n.t('plugins.list.goBack')}
-        </Button>
-      </div>
-    </div>
-  );
+    // The console's state page, the same face a missing collection or theme shows. When the extension
+    // exists but is not running, its STATE is the answer, said after the first sentence.
+    return (
+      <StatePage
+        icon={<FrameworkIcons.Plugins size={18} />}
+        title={AdminI18n.t('plugins.list.moduleNotFound')}
+        hint={<>{AdminI18n.t('plugins.list.nothingServing', { path: `/${this.pluginSlug}` })} <PluginUnavailableReason pluginSlug={this.pluginSlug} /></>}
+        actions={(
+          <>
+            <Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('plugins.list.goBack')}</Button>
+            <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href="/plugins">{AdminI18n.t('plugins.list.managePlugins')}</Button>
+          </>
+        )}
+      />
+    );
   }
 }

@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { StatePage } from '@/components/ui/view/state-page.client';
 
 /**
  * The theme page for a slug this site cannot see — a bookmark, a link from another site, a theme the
@@ -17,24 +18,19 @@ export class ThemeNotFound extends PureReactor {
   @prop declare themesHref: string;
 
   render(): ReactNode {
+    // The console's state page, the same face a missing collection or plugin shows.
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-        <div className="p-8 rounded-xl mb-8 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200 dark:shadow-black/50">
-          <FrameworkIcons.Palette size={64} className="text-rose-500" strokeWidth={1} />
-        </div>
-        <h1 className="text-4xl font-medium tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('themes.notAvailableHere', { slug: this.themeSlug })}</h1>
-        <p className="text-slate-500 font-medium text-center max-w-sm leading-relaxed mb-8 px-6">{AdminI18n.t('themes.notAvailableHereHelp')}</p>
-        <div className="flex items-center gap-4">
-          <AdminLink href={this.themesHref}>
-            <Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Palette size={18} />}>
-              {AdminI18n.t('themes.manageThemes')}
-            </Button>
-          </AdminLink>
-          <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} icon={<FrameworkIcons.Left size={16} />}>
-            {AdminI18n.t('plugins.list.goBack')}
-          </Button>
-        </div>
-      </div>
+      <StatePage
+        icon={<FrameworkIcons.Palette size={18} />}
+        title={AdminI18n.t('themes.notAvailableHere', { slug: this.themeSlug })}
+        hint={AdminI18n.t('themes.notAvailableHereHelp')}
+        actions={(
+          <>
+            <Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('plugins.list.goBack')}</Button>
+            <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href={this.themesHref}>{AdminI18n.t('themes.manageThemes')}</Button>
+          </>
+        )}
+      />
     );
   }
 }
