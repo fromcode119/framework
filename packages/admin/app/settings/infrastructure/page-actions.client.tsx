@@ -23,6 +23,7 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       this.ssrGenerationCap = String(response?.ssr_generation_cap ?? '');
       this.ssrRenderMemoryMb = String(response?.ssr_render_memory_mb ?? '');
       this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
+      this.pendingMaintenance?.mark();
       this.pendingSsr?.mark();
       this.pendingLogs?.mark();
       this.pendingAudit?.mark();
@@ -41,17 +42,22 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
   }
 
   @bound
-  async toggleMaintenance(val: boolean) {
-    const addNotification = this.runtime.notify.addNotification;
+  toggleMaintenance(val: boolean): void {
+    // The switch only changes what is on screen; the page's save bar writes it, like every other value
+    // here. Flipped and written at once, a slip of the hand took every site offline.
     if (this.maintenance === null) return;
-    const previous = this.maintenance;
     this.maintenance = val;
+  }
+
+  @bound
+  async saveMaintenance(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    const val = this.maintenance === true;
     try {
       await AdminSystemSettingsClient.update({ maintenance_mode: val });
       addNotification({ title: AdminI18n.t('settings.infrastructure.systemUpdated'), message: (val ? AdminI18n.t('settings.infrastructure.maintenanceNowActive') : AdminI18n.t('settings.infrastructure.maintenanceNowInactive')), type: NotificationType.INFO });
     } catch (err: any) {
-      // The switch must not keep showing the position the write failed to reach.
-      this.maintenance = previous;
+      this.pendingMaintenance?.failed();
       addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToToggleMaintenanceMode'), type: NotificationType.ERROR });
     }
   }

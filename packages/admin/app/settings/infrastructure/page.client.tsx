@@ -36,6 +36,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     this.pendingSsr?.dispose();
     this.pendingLogs?.dispose();
     this.pendingAudit?.dispose();
+    this.pendingMaintenance?.dispose();
   }
 
   async componentDidMount() {

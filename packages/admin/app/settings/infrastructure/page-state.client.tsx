@@ -41,8 +41,10 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   protected pendingSsr: PendingSave | null = null;
   protected pendingLogs: PendingSave | null = null;
   protected pendingAudit: PendingSave | null = null;
+  protected pendingMaintenance: PendingSave | null = null;
 
   protected startPending(): void {
+    this.pendingMaintenance = new PendingSave(() => this.maintenance, () => (this as any).saveMaintenance(), (value) => { this.maintenance = value; });
     this.pendingSsr = new PendingSave(
       () => ({ ssrGenerationCap: this.ssrGenerationCap, ssrRenderMemoryMb: this.ssrRenderMemoryMb, ssrRenderTimeoutMs: this.ssrRenderTimeoutMs }),
       () => (this as any).saveSsrCap(),
