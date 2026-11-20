@@ -3536,7 +3536,7 @@
     "isRemovedFromPeopleKeepsLogin": "{{name}} is removed from People permanently. Their login account is kept.",
     "usernamePlaceholder": "username",
     "selectedCount": "{{count}} selected",
-    "permissionsCount": "{{count}} permissions",
+    "permissionsCount": "Permissions: {{count}}",
     "roleSlugExample": "e.g. editor",
     "countOfTotal": "{{count}} of {{total}}",
     "ipAddress": "IP: {{ip}}",
