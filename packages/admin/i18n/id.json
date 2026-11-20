@@ -4660,19 +4660,9 @@
     "roles": "Peran",
     "permissions": "Izin",
     "eventDetails": "Detail Peristiwa",
-    "context": "Konteks",
     "resource": "Sumber Daya",
     "system": "Sistem",
     "timestamp": "Waktu",
-    "authority": "Otoritas",
-    "actorId": "ID Pelaku",
-    "type": "Jenis",
-    "systemLog": "Log Sistem",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Pesan Aktivitas",
-    "actionTaken": "Tindakan yang Dilakukan",
-    "resourcePool": "Kumpulan Sumber Daya",
-    "rawMetadata": "Metadata Mentah",
     "thisEntryIsPartOf": "Entri ini merupakan bagian dari jejak audit yang tidak dapat diubah.",
     "exportJson": "Ekspor JSON",
     "event": "Peristiwa",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Tindakan",
     "time": "Waktu",
-    "logSignature": "Tanda Tangan Log: {{id}}",
     "internal": "INTERNAL",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entri #{{id}}",
+    "recordedData": "Data tercatat"
   },
   "mediaPicker": {
     "showingOnly": "Hanya menampilkan: {{types}}",

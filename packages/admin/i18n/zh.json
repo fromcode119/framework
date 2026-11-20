@@ -4660,19 +4660,9 @@
     "roles": "角色",
     "permissions": "权限",
     "eventDetails": "事件详情",
-    "context": "上下文",
     "resource": "资源",
     "system": "系统",
     "timestamp": "时间戳",
-    "authority": "权限主体",
-    "actorId": "操作者 ID",
-    "type": "类型",
-    "systemLog": "系统日志",
-    "audit": "审计：{{status}}",
-    "activityMessage": "活动消息",
-    "actionTaken": "执行的操作",
-    "resourcePool": "资源池",
-    "rawMetadata": "原始元数据",
     "thisEntryIsPartOf": "此条目属于不可篡改的审计记录。",
     "exportJson": "导出 JSON",
     "event": "事件",
@@ -4682,7 +4672,6 @@
     "status": "状态",
     "action": "操作",
     "time": "时间",
-    "logSignature": "日志签名：{{id}}",
     "internal": "内部",
     "level": {
       "INFO": "信息",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "条目 #{{id}}",
+    "recordedData": "记录的数据"
   },
   "mediaPicker": {
     "showingOnly": "仅显示：{{types}}",

@@ -4660,19 +4660,9 @@
     "roles": "Улоги",
     "permissions": "Дозволи",
     "eventDetails": "Детали за настанот",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Систем",
     "timestamp": "Време",
-    "authority": "Овластување",
-    "actorId": "ID на извршител",
-    "type": "Тип",
-    "systemLog": "Системски дневник",
-    "audit": "Ревизија: {{status}}",
-    "activityMessage": "Порака за активноста",
-    "actionTaken": "Преземено дејство",
-    "resourcePool": "Збир на ресурси",
-    "rawMetadata": "Необработени метаподатоци",
     "thisEntryIsPartOf": "Овој запис е дел од непроменлива ревизорска трага.",
     "exportJson": "Извези JSON",
     "event": "Настан",
@@ -4682,7 +4672,6 @@
     "status": "Статус",
     "action": "Дејство",
     "time": "Време",
-    "logSignature": "Потпис на записот: {{id}}",
     "internal": "ВНАТРЕШНО",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запис бр. {{id}}",
+    "recordedData": "Запишани податоци"
   },
   "mediaPicker": {
     "showingOnly": "Се прикажуваат само: {{types}}",

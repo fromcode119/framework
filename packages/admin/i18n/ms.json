@@ -4660,19 +4660,9 @@
     "roles": "Peranan",
     "permissions": "Kebenaran",
     "eventDetails": "Butiran Peristiwa",
-    "context": "Konteks",
     "resource": "Sumber",
     "system": "Sistem",
     "timestamp": "Cap Masa",
-    "authority": "Pihak Berkuasa",
-    "actorId": "ID Pelaku",
-    "type": "Jenis",
-    "systemLog": "Log Sistem",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mesej Aktiviti",
-    "actionTaken": "Tindakan Diambil",
-    "resourcePool": "Kumpulan Sumber",
-    "rawMetadata": "Metadata Mentah",
     "thisEntryIsPartOf": "Entri ini adalah sebahagian daripada jejak audit yang tidak boleh diubah.",
     "exportJson": "Eksport JSON",
     "event": "Peristiwa",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Tindakan",
     "time": "Masa",
-    "logSignature": "Tandatangan Log: {{id}}",
     "internal": "DALAMAN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entri #{{id}}",
+    "recordedData": "Data direkodkan"
   },
   "mediaPicker": {
     "showingOnly": "Hanya menunjukkan: {{types}}",

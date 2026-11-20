@@ -4660,19 +4660,9 @@
     "roles": "Szerepkörök",
     "permissions": "Jogosultságok",
     "eventDetails": "Esemény részletei",
-    "context": "Környezet",
     "resource": "Erőforrás",
     "system": "Rendszer",
     "timestamp": "Időbélyeg",
-    "authority": "Jogosultság",
-    "actorId": "Végrehajtó azonosítója",
-    "type": "Típus",
-    "systemLog": "Rendszernapló",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Tevékenység üzenete",
-    "actionTaken": "Végrehajtott művelet",
-    "resourcePool": "Erőforráskészlet",
-    "rawMetadata": "Nyers metaadatok",
     "thisEntryIsPartOf": "Ez a bejegyzés egy megváltoztathatatlan auditnapló része.",
     "exportJson": "Exportálás JSON-ként",
     "event": "Esemény",
@@ -4682,7 +4672,6 @@
     "status": "Állapot",
     "action": "Művelet",
     "time": "Idő",
-    "logSignature": "Naplóaláírás: {{id}}",
     "internal": "BELSŐ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "#{{id}} bejegyzés",
+    "recordedData": "Rögzített adatok"
   },
   "mediaPicker": {
     "showingOnly": "Csak ezek láthatók: {{types}}",

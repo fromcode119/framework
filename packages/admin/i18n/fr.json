@@ -4660,19 +4660,9 @@
     "roles": "Rôles",
     "permissions": "Autorisations",
     "eventDetails": "Détails de l’événement",
-    "context": "Contexte",
     "resource": "Ressource",
     "system": "Système",
     "timestamp": "Horodatage",
-    "authority": "Autorité",
-    "actorId": "ID de l’acteur",
-    "type": "Type",
-    "systemLog": "Journal système",
-    "audit": "Audit : {{status}}",
-    "activityMessage": "Message d’activité",
-    "actionTaken": "Action effectuée",
-    "resourcePool": "Pool de ressources",
-    "rawMetadata": "Métadonnées brutes",
     "thisEntryIsPartOf": "Cette entrée fait partie d’une piste d’audit immuable.",
     "exportJson": "Exporter en JSON",
     "event": "Événement",
@@ -4682,7 +4672,6 @@
     "status": "État",
     "action": "Action",
     "time": "Heure",
-    "logSignature": "Signature du journal : {{id}}",
     "internal": "INTERNE",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entrée n° {{id}}",
+    "recordedData": "Données enregistrées"
   },
   "mediaPicker": {
     "showingOnly": "Affichage limité à : {{types}}",

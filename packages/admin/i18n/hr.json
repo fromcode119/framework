@@ -4660,19 +4660,9 @@
     "roles": "Uloge",
     "permissions": "Dopuštenja",
     "eventDetails": "Detalji događaja",
-    "context": "Kontekst",
     "resource": "Resurs",
     "system": "Sustav",
     "timestamp": "Vremenska oznaka",
-    "authority": "Ovlast",
-    "actorId": "ID izvršitelja",
-    "type": "Vrsta",
-    "systemLog": "Zapis sustava",
-    "audit": "Revizija: {{status}}",
-    "activityMessage": "Poruka aktivnosti",
-    "actionTaken": "Izvršena radnja",
-    "resourcePool": "Skup resursa",
-    "rawMetadata": "Neobrađeni metapodaci",
     "thisEntryIsPartOf": "Ovaj zapis dio je nepromjenjivog revizijskog traga.",
     "exportJson": "Izvezi JSON",
     "event": "Događaj",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Radnja",
     "time": "Vrijeme",
-    "logSignature": "Potpis zapisa: {{id}}",
     "internal": "INTERNO",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Zapis br. {{id}}",
+    "recordedData": "Zabilježeni podaci"
   },
   "mediaPicker": {
     "showingOnly": "Prikazuje se samo: {{types}}",

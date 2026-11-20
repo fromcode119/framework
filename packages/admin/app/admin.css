@@ -1046,6 +1046,8 @@ html.dark {
 .fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
 /* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
 /* Two-factor setup: the QR code keeps a white ground in either theme, since a scanner reads dark on light. */
+.fc-activity-detail { display: flex; flex-direction: column; gap: 16px; }
+.fc-activity-detail__sub { display: inline-flex; align-items: center; gap: 8px; }
 /* Personal data: one row per dataset, four columns once the card is wide enough. */
 .fc-pd { container-type: inline-size; padding: 0 var(--fc-settings-pad-x) 8px; }
 .fc-pd__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }

@@ -4660,19 +4660,9 @@
     "roles": "Rollid",
     "permissions": "Õigused",
     "eventDetails": "Sündmuse üksikasjad",
-    "context": "Kontekst",
     "resource": "Ressurss",
     "system": "Süsteem",
     "timestamp": "Ajatempel",
-    "authority": "Volitus",
-    "actorId": "Toimija ID",
-    "type": "Tüüp",
-    "systemLog": "Süsteemilogi",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Tegevuse sõnum",
-    "actionTaken": "Tehtud toiming",
-    "resourcePool": "Ressursikogum",
-    "rawMetadata": "Toormetaandmed",
     "thisEntryIsPartOf": "See kirje on osa muutumatust auditijäljest.",
     "exportJson": "Ekspordi JSON",
     "event": "Sündmus",
@@ -4682,7 +4672,6 @@
     "status": "Olek",
     "action": "Toiming",
     "time": "Aeg",
-    "logSignature": "Logi allkiri: {{id}}",
     "internal": "SISEMINE",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Kirje #{{id}}",
+    "recordedData": "Salvestatud andmed"
   },
   "mediaPicker": {
     "showingOnly": "Kuvatakse ainult: {{types}}",

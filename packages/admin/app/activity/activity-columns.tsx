@@ -70,7 +70,7 @@ export class ActivityColumnsFactory {
         id: 'actor',
         // The entry says who it was. It used to be cut out of the message — `message.split('for ')[1]`
         // — which only ever worked while that message was an English sentence.
-        accessor: (row: any) => ActivityColumnsFactory.who(String(row.actor_id || row.context?.email || AdminI18n.t('activity.system'))),
+        accessor: (row: any) => ActivityColumnsFactory.who(String(row.context?.email || AdminI18n.t('activity.system'))),
       },
       {
         header: AdminI18n.t('activity.resource'),

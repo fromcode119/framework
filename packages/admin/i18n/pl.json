@@ -4660,19 +4660,9 @@
     "roles": "Role",
     "permissions": "Uprawnienia",
     "eventDetails": "Szczegóły zdarzenia",
-    "context": "Kontekst",
     "resource": "Zasób",
     "system": "System",
     "timestamp": "Znacznik czasu",
-    "authority": "Uprawnienie",
-    "actorId": "ID wykonawcy",
-    "type": "Typ",
-    "systemLog": "Dziennik systemowy",
-    "audit": "Audyt: {{status}}",
-    "activityMessage": "Komunikat aktywności",
-    "actionTaken": "Wykonane działanie",
-    "resourcePool": "Pula zasobów",
-    "rawMetadata": "Surowe metadane",
     "thisEntryIsPartOf": "Ten wpis jest częścią niezmiennego dziennika audytu.",
     "exportJson": "Eksportuj JSON",
     "event": "Zdarzenie",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Działanie",
     "time": "Czas",
-    "logSignature": "Sygnatura wpisu: {{id}}",
     "internal": "WEWNĘTRZNE",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Wpis nr {{id}}",
+    "recordedData": "Zapisane dane"
   },
   "mediaPicker": {
     "showingOnly": "Wyświetlane tylko: {{types}}",

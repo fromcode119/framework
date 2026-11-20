@@ -4660,19 +4660,9 @@
     "roles": "Vaidmenys",
     "permissions": "Teisės",
     "eventDetails": "Įvykio informacija",
-    "context": "Kontekstas",
     "resource": "Išteklius",
     "system": "Sistema",
     "timestamp": "Laiko žyma",
-    "authority": "Įgaliojimas",
-    "actorId": "Vykdytojo ID",
-    "type": "Tipas",
-    "systemLog": "Sistemos žurnalas",
-    "audit": "Auditas: {{status}}",
-    "activityMessage": "Veiklos pranešimas",
-    "actionTaken": "Atliktas veiksmas",
-    "resourcePool": "Išteklių telkinys",
-    "rawMetadata": "Neapdoroti metaduomenys",
     "thisEntryIsPartOf": "Šis įrašas yra nekeičiamo audito žurnalo dalis.",
     "exportJson": "Eksportuoti JSON",
     "event": "Įvykis",
@@ -4682,7 +4672,6 @@
     "status": "Būsena",
     "action": "Veiksmas",
     "time": "Laikas",
-    "logSignature": "Žurnalo parašas: {{id}}",
     "internal": "VIDINIS",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Įrašas Nr. {{id}}",
+    "recordedData": "Užfiksuoti duomenys"
   },
   "mediaPicker": {
     "showingOnly": "Rodoma tik: {{types}}",

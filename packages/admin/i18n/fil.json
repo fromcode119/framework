@@ -4660,19 +4660,9 @@
     "roles": "Mga Role",
     "permissions": "Mga Pahintulot",
     "eventDetails": "Mga Detalye ng Event",
-    "context": "Konteksto",
     "resource": "Resource",
     "system": "System",
     "timestamp": "Timestamp",
-    "authority": "Awtoridad",
-    "actorId": "Actor ID",
-    "type": "Uri",
-    "systemLog": "System Log",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mensahe ng Aktibidad",
-    "actionTaken": "Ginawang Aksyon",
-    "resourcePool": "Resource Pool",
-    "rawMetadata": "Raw Metadata",
     "thisEntryIsPartOf": "Bahagi ang entry na ito ng hindi nababagong audit trail.",
     "exportJson": "I-export ang JSON",
     "event": "Event",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Aksyon",
     "time": "Oras",
-    "logSignature": "Log Signature: {{id}}",
     "internal": "INTERNAL",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entry #{{id}}",
+    "recordedData": "Naitalang data"
   },
   "mediaPicker": {
     "showingOnly": "Ipinapakita lamang: {{types}}",

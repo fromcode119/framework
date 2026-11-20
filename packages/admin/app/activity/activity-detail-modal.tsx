@@ -1,20 +1,28 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
-import { Card } from '@/components/ui/view/card.client';
-import { Badge } from '@/components/ui/view/badge.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { CodeBlock } from '@/components/ui/view/code-block.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { RootFramework } from '@fromcode119/react';
-import { AdminClass } from '@/lib/admin-class';
+import type { IAdminFact } from '@/components/ui/interfaces/admin-fact.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * One activity entry, read in the console's side drawer — the way a file's details open in Media.
+ *
+ * System-log rows carry `level` and `message`; audit rows carry `status`, `action`, `resource` and a
+ * `metadata` object instead. Neither has an actor column: an audit row names who acted inside its
+ * metadata (`email`, `userId`), so that is where the actor is read from, and a row naming nobody
+ * shows no actor rather than claiming "System".
+ */
 export class ActivityDetailModal extends PureReactor {
   @prop declare selectedLog: any;
   @prop declare mode: ActivityMode;
-  @prop declare theme: ThemeMode;
   @prop declare onClose: () => void;
   @prop declare onExport: (log: any) => void;
 
@@ -23,114 +31,77 @@ export class ActivityDetailModal extends PureReactor {
     this.onExport(this.selectedLog);
   }
 
+  /** The metadata object, whether the API sent it parsed or as JSON text; null when unreadable. */
+  private get details(): Record<string, any> | null {
+    const raw = this.selectedLog.context || this.selectedLog.metadata;
+    if (!raw) return null;
+    if (typeof raw !== 'string') return raw;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return { value: raw };
+    }
+  }
+
+  private get pluginName(): string {
+    const slug = String(this.selectedLog.pluginSlug || '');
+    return slug && slug !== 'system' ? slug.charAt(0).toUpperCase() + slug.slice(1) : AdminI18n.t('activity.system');
+  }
+
+  private get actor(): string {
+    const details = this.details;
+    return String(details?.email || details?.userId || '');
+  }
+
+  private get badge(): React.ReactNode {
+    const log = this.selectedLog;
+    if (log.level) {
+      const level = String(log.level);
+      const tone = level === 'ERROR' ? 'danger' : level === 'WARN' ? 'warning' : 'default';
+      return <StateBadge tone={tone}>{AdminI18n.t(`activity.level.${level}`)}</StateBadge>;
+    }
+    const status = String(log.status || '');
+    if (!status) return null;
+    const tone = status === 'violation' ? 'danger' : status === 'denied' ? 'warning' : 'success';
+    return <StateBadge tone={tone}>{status}</StateBadge>;
+  }
+
+  private get facts(): IAdminFact[] {
+    const log = this.selectedLog;
+    const facts: IAdminFact[] = [
+      { key: 'plugin', label: AdminI18n.t('activity.plugin'), value: this.pluginName },
+      { key: 'time', label: AdminI18n.t('activity.time'), value: new Date(log.timestamp || log.createdAt).toLocaleString() },
+    ];
+    if (this.actor) facts.push({ key: 'actor', label: AdminI18n.t('activity.actor'), value: this.actor });
+    if (this.mode === ActivityMode.SYSTEM) {
+      facts.push({ key: 'message', label: AdminI18n.t('activity.event'), value: String(log.message || ''), wide: true });
+    } else {
+      facts.push({ key: 'action', label: AdminI18n.t('activity.action'), value: String(log.action || '') });
+      facts.push({ key: 'resource', label: AdminI18n.t('activity.resource'), value: String(log.resource || ''), wide: true });
+    }
+    return facts.filter((fact) => fact.value);
+  }
+
   render(): React.ReactNode {
-    const { selectedLog, mode, theme, onClose } = this;
+    const details = this.details;
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6 lg:p-12 animate-in fade-in duration-300">
-           <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose} />
-
-          <div className={`w-full max-w-2xl max-h-[90vh] ${AdminClass.SURFACE} flex flex-col overflow-hidden relative transform animate-in zoom-in-95 slide-in-from-bottom-4 duration-500`}>
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-               <div className="flex items-center gap-3">
-                  {/* System-log rows carry `level`; audit rows carry `status` instead — an audit
-                      row rendered `level[0]` and crashed the whole screen on the first click. */}
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-medium ${
-                    selectedLog.level === 'ERROR' || selectedLog.status === 'violation' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' :
-                    selectedLog.level === 'WARN' || selectedLog.status === 'denied' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' :
-                    'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                  }`}>
-                     {String(selectedLog.level ?? selectedLog.status ?? '').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className={`text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                      {AdminI18n.t('activity.eventDetails')}
-                    </h3>
-                    <p className="text-[12px] font-medium text-slate-500 tracking-wide leading-none mt-1">
-                      {AdminI18n.t('activity.logSignature', { id: selectedLog.id })}
-                    </p>
-                  </div>
-               </div>
-               <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900 dark:hover:text-white transition-colors">
-                 <FrameworkIcons.Close size={20} />
-               </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-hide">
-               <div className="grid grid-cols-2 gap-4">
-                  <Card title={AdminI18n.t('activity.context')}>
-                     <div className="space-y-4">
-                        <div className="flex flex-col">
-                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.resource')}</span>
-                           <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">{selectedLog.pluginSlug && selectedLog.pluginSlug !== 'system' ? (selectedLog.pluginSlug.charAt(0).toUpperCase() + selectedLog.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.timestamp')}</span>
-                           <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300">
-                             {new Date(selectedLog.timestamp || selectedLog.createdAt).toLocaleString()}
-                           </span>
-                        </div>
-                     </div>
-                  </Card>
-                  <Card title={AdminI18n.t('activity.authority')}>
-                     <div className="space-y-4">
-                        <div className="flex flex-col">
-                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.actorId')}</span>
-                           <span className="text-[13px] font-medium text-indigo-500">{selectedLog.actor_id || AdminI18n.t('activity.system')}</span>
-                        </div>
-                        <div className="flex flex-col">
-                           <span className="text-[12px] font-medium tracking-wide text-slate-400 mb-1">{AdminI18n.t('activity.type')}</span>
-                           <Badge variant={mode === ActivityMode.SECURITY ? (selectedLog.status === 'violation' ? 'danger' : 'blue') : 'blue'}>
-                              {mode === ActivityMode.SYSTEM ? AdminI18n.t('activity.systemLog') : AdminI18n.t('activity.audit', { status: selectedLog.status })}
-                           </Badge>
-                        </div>
-                     </div>
-                  </Card>
-               </div>
-
-               {mode === ActivityMode.SYSTEM ? (
-                  <Card title={AdminI18n.t('activity.activityMessage')}>
-                      <p className="text-[13px] font-medium text-slate-500 leading-relaxed italic">
-                      "{selectedLog.message}"
-                      </p>
-                  </Card>
-               ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                      <Card title={AdminI18n.t('activity.actionTaken')}>
-                          <span className="text-[13px] font-medium text-slate-900 dark:text-white">{selectedLog.action}</span>
-                      </Card>
-                      <Card title={AdminI18n.t('activity.resourcePool')}>
-                          <span className="text-[13px] font-mono text-slate-500">{selectedLog.resource}</span>
-                      </Card>
-                  </div>
-               )}
-
-               {(selectedLog.context || selectedLog.metadata) && (
-                 <Card title={AdminI18n.t('activity.rawMetadata')} className="overflow-hidden">
-                    <div className={`p-6 ${AdminClass.SURFACE} font-mono text-xs overflow-x-auto ${theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400' : 'bg-slate-50 text-slate-600'}`}>
-                      <pre>{JSON.stringify(selectedLog.context || (typeof selectedLog.metadata === 'string' ? JSON.parse(selectedLog.metadata) : selectedLog.metadata), null, 2)}</pre>
-                    </div>
-                 </Card>
-               )}
-            </div>
-
-            <div className={`p-8 border-t ${theme === ThemeMode.DARK ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
-               <div className="flex items-center justify-between">
-                  <p className="text-[12px] font-medium text-slate-400 tracking-wide italic">
-                    {AdminI18n.t('activity.thisEntryIsPartOf')}
-                  </p>
-                  <Button
-                    variant={ButtonVariant.GHOST}
-                    icon={<FrameworkIcons.More size={14} />}
-                    onClick={this.handleExport}
-                  >
-                     {AdminI18n.t('activity.exportJson')}
-                  </Button>
-               </div>
-            </div>
-          </div>
+      <EditSheet
+        isOpen
+        title={AdminI18n.t('activity.eventDetails')}
+        subtitle={<span className="fc-activity-detail__sub">{AdminI18n.t('activity.entryNumber', { id: this.selectedLog.id })}{this.badge}</span>}
+        onClose={this.onClose}
+        foot={
+          <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Download size={14} />} onClick={this.handleExport}>
+            {AdminI18n.t('activity.exportJson')}
+          </Button>
+        }
+      >
+        <div className="fc-activity-detail">
+          <AdminFactGrid facts={this.facts} />
+          {details ? <CodeBlock label={AdminI18n.t('activity.recordedData')} code={JSON.stringify(details, null, 2)} /> : null}
+          <Hint>{AdminI18n.t('activity.thisEntryIsPartOf')}</Hint>
         </div>
-      </RootFramework>
+      </EditSheet>
     );
   }
 }

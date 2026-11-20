@@ -4660,19 +4660,9 @@
     "roles": "역할",
     "permissions": "권한",
     "eventDetails": "이벤트 세부 정보",
-    "context": "컨텍스트",
     "resource": "리소스",
     "system": "시스템",
     "timestamp": "타임스탬프",
-    "authority": "권한 주체",
-    "actorId": "행위자 ID",
-    "type": "유형",
-    "systemLog": "시스템 로그",
-    "audit": "감사: {{status}}",
-    "activityMessage": "활동 메시지",
-    "actionTaken": "수행된 작업",
-    "resourcePool": "리소스 풀",
-    "rawMetadata": "원시 메타데이터",
     "thisEntryIsPartOf": "이 항목은 변경할 수 없는 감사 추적의 일부입니다.",
     "exportJson": "JSON 내보내기",
     "event": "이벤트",
@@ -4682,7 +4672,6 @@
     "status": "상태",
     "action": "작업",
     "time": "시간",
-    "logSignature": "로그 서명: {{id}}",
     "internal": "내부",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "항목 #{{id}}",
+    "recordedData": "기록된 데이터"
   },
   "mediaPicker": {
     "showingOnly": "표시 중: {{types}}",

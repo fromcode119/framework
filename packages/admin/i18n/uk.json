@@ -4660,19 +4660,9 @@
     "roles": "Ролі",
     "permissions": "Дозволи",
     "eventDetails": "Відомості про подію",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Час",
-    "authority": "Повноваження",
-    "actorId": "ID виконавця",
-    "type": "Тип",
-    "systemLog": "Системний журнал",
-    "audit": "Аудит: {{status}}",
-    "activityMessage": "Повідомлення",
-    "actionTaken": "Виконана дія",
-    "resourcePool": "Пул ресурсів",
-    "rawMetadata": "Необроблені метадані",
     "thisEntryIsPartOf": "Цей запис є частиною незмінного журналу аудиту.",
     "exportJson": "Експортувати JSON",
     "event": "Подія",
@@ -4682,7 +4672,6 @@
     "status": "Статус",
     "action": "Дія",
     "time": "Час",
-    "logSignature": "Підпис запису: {{id}}",
     "internal": "ВНУТРІШНЄ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запис № {{id}}",
+    "recordedData": "Записані дані"
   },
   "mediaPicker": {
     "showingOnly": "Показано лише: {{types}}",

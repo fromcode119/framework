@@ -4660,19 +4660,9 @@
     "roles": "Роли",
     "permissions": "Разрешения",
     "eventDetails": "Сведения о событии",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Время",
-    "authority": "Полномочия",
-    "actorId": "ID исполнителя",
-    "type": "Тип",
-    "systemLog": "Системный журнал",
-    "audit": "Аудит: {{status}}",
-    "activityMessage": "Сообщение",
-    "actionTaken": "Выполненное действие",
-    "resourcePool": "Пул ресурсов",
-    "rawMetadata": "Исходные метаданные",
     "thisEntryIsPartOf": "Эта запись входит в неизменяемый журнал аудита.",
     "exportJson": "Экспорт JSON",
     "event": "Событие",
@@ -4682,7 +4672,6 @@
     "status": "Статус",
     "action": "Действие",
     "time": "Время",
-    "logSignature": "Подпись записи: {{id}}",
     "internal": "ВНУТРЕННИЙ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запись № {{id}}",
+    "recordedData": "Записанные данные"
   },
   "mediaPicker": {
     "showingOnly": "Показаны только: {{types}}",

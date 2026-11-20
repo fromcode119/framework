@@ -4660,19 +4660,9 @@
     "roles": "Roles",
     "permissions": "Permisos",
     "eventDetails": "Detalles del evento",
-    "context": "Contexto",
     "resource": "Recurso",
     "system": "Sistema",
     "timestamp": "Marca de tiempo",
-    "authority": "Autoridad",
-    "actorId": "ID del actor",
-    "type": "Tipo",
-    "systemLog": "Registro del sistema",
-    "audit": "Auditoría: {{status}}",
-    "activityMessage": "Mensaje de actividad",
-    "actionTaken": "Acción realizada",
-    "resourcePool": "Grupo de recursos",
-    "rawMetadata": "Metadatos sin procesar",
     "thisEntryIsPartOf": "Esta entrada forma parte de un registro de auditoría inmutable.",
     "exportJson": "Exportar JSON",
     "event": "Evento",
@@ -4682,7 +4672,6 @@
     "status": "Estado",
     "action": "Acción",
     "time": "Hora",
-    "logSignature": "Firma del registro: {{id}}",
     "internal": "INTERNO",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entrada n.º {{id}}",
+    "recordedData": "Datos registrados"
   },
   "mediaPicker": {
     "showingOnly": "Mostrando solo: {{types}}",

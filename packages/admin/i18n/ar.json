@@ -4660,19 +4660,9 @@
     "roles": "الأدوار",
     "permissions": "الأذونات",
     "eventDetails": "تفاصيل الحدث",
-    "context": "السياق",
     "resource": "المورد",
     "system": "النظام",
     "timestamp": "الطابع الزمني",
-    "authority": "الجهة",
-    "actorId": "معرّف المنفِّذ",
-    "type": "النوع",
-    "systemLog": "سجل النظام",
-    "audit": "التدقيق: {{status}}",
-    "activityMessage": "رسالة النشاط",
-    "actionTaken": "الإجراء المتخذ",
-    "resourcePool": "مجموعة الموارد",
-    "rawMetadata": "البيانات الوصفية الخام",
     "thisEntryIsPartOf": "هذا الإدخال جزء من سجل تدقيق غير قابل للتعديل.",
     "exportJson": "تصدير JSON",
     "event": "الحدث",
@@ -4682,7 +4672,6 @@
     "status": "الحالة",
     "action": "الإجراء",
     "time": "الوقت",
-    "logSignature": "توقيع السجل: {{id}}",
     "internal": "داخلي",
     "level": {
       "INFO": "معلومات",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "الإدخال #{{id}}",
+    "recordedData": "البيانات المسجلة"
   },
   "mediaPicker": {
     "showingOnly": "يُعرض فقط: {{types}}",

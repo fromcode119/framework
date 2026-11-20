@@ -4660,19 +4660,9 @@
     "roles": "Roller",
     "permissions": "Tillatelser",
     "eventDetails": "Hendelsesdetaljer",
-    "context": "Kontekst",
     "resource": "Ressurs",
     "system": "System",
     "timestamp": "Tidsstempel",
-    "authority": "Myndighet",
-    "actorId": "Aktør-ID",
-    "type": "Type",
-    "systemLog": "Systemlogg",
-    "audit": "Revisjon: {{status}}",
-    "activityMessage": "Aktivitetsmelding",
-    "actionTaken": "Utført handling",
-    "resourcePool": "Ressursgruppe",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Denne oppføringen er en del av et uforanderlig revisjonsspor.",
     "exportJson": "Eksporter JSON",
     "event": "Hendelse",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Handling",
     "time": "Tid",
-    "logSignature": "Loggsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Oppføring #{{id}}",
+    "recordedData": "Registrerte data"
   },
   "mediaPicker": {
     "showingOnly": "Viser bare: {{types}}",

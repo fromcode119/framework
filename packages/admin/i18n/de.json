@@ -4660,19 +4660,9 @@
     "roles": "Rollen",
     "permissions": "Berechtigungen",
     "eventDetails": "Ereignisdetails",
-    "context": "Kontext",
     "resource": "Ressource",
     "system": "System",
     "timestamp": "Zeitstempel",
-    "authority": "Berechtigung",
-    "actorId": "Akteur-ID",
-    "type": "Typ",
-    "systemLog": "Systemprotokoll",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Aktivitätsmeldung",
-    "actionTaken": "Durchgeführte Aktion",
-    "resourcePool": "Ressourcenpool",
-    "rawMetadata": "Rohdaten (Metadaten)",
     "thisEntryIsPartOf": "Dieser Eintrag ist Teil eines unveränderlichen Audit-Trails.",
     "exportJson": "JSON exportieren",
     "event": "Ereignis",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Aktion",
     "time": "Zeit",
-    "logSignature": "Protokollsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Eintrag #{{id}}",
+    "recordedData": "Erfasste Daten"
   },
   "mediaPicker": {
     "showingOnly": "Nur angezeigt: {{types}}",

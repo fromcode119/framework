@@ -4660,19 +4660,9 @@
     "roles": "Ruoli",
     "permissions": "Permessi",
     "eventDetails": "Dettagli evento",
-    "context": "Contesto",
     "resource": "Risorsa",
     "system": "Sistema",
     "timestamp": "Data e ora",
-    "authority": "Autorità",
-    "actorId": "ID autore",
-    "type": "Tipo",
-    "systemLog": "Log di sistema",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Messaggio attività",
-    "actionTaken": "Azione eseguita",
-    "resourcePool": "Pool di risorse",
-    "rawMetadata": "Metadati grezzi",
     "thisEntryIsPartOf": "Questa voce fa parte di un audit trail immutabile.",
     "exportJson": "Esporta JSON",
     "event": "Evento",
@@ -4682,7 +4672,6 @@
     "status": "Stato",
     "action": "Azione",
     "time": "Ora",
-    "logSignature": "Firma del log: {{id}}",
     "internal": "INTERNO",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Voce n. {{id}}",
+    "recordedData": "Dati registrati"
   },
   "mediaPicker": {
     "showingOnly": "Visualizzati solo: {{types}}",

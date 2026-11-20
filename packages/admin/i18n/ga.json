@@ -4660,19 +4660,9 @@
     "roles": "Róil",
     "permissions": "Ceadanna",
     "eventDetails": "Sonraí an Imeachta",
-    "context": "Comhthéacs",
     "resource": "Acmhainn",
     "system": "Córas",
     "timestamp": "Stampa ama",
-    "authority": "Údarás",
-    "actorId": "ID an Ghníomhaí",
-    "type": "Cineál",
-    "systemLog": "Logáil an Chórais",
-    "audit": "Iniúchadh: {{status}}",
-    "activityMessage": "Teachtaireacht Ghníomhaíochta",
-    "actionTaken": "Gníomh a Rinneadh",
-    "resourcePool": "Linn Acmhainní",
-    "rawMetadata": "Meiteashonraí Amha",
     "thisEntryIsPartOf": "Is cuid de rian iniúchta do-athraithe an iontráil seo.",
     "exportJson": "Easpórtáil JSON",
     "event": "Imeacht",
@@ -4682,7 +4672,6 @@
     "status": "Stádas",
     "action": "Gníomh",
     "time": "Am",
-    "logSignature": "Síniú Logála: {{id}}",
     "internal": "INMHEÁNACH",
     "level": {
       "INFO": "Faisnéis",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Iontráil #{{id}}",
+    "recordedData": "Sonraí taifeadta"
   },
   "mediaPicker": {
     "showingOnly": "Á dtaispeáint amháin: {{types}}",

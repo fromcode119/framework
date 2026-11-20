@@ -4660,19 +4660,9 @@
     "roles": "Roller",
     "permissions": "Tilladelser",
     "eventDetails": "Hændelsesdetaljer",
-    "context": "Kontekst",
     "resource": "Ressource",
     "system": "System",
     "timestamp": "Tidsstempel",
-    "authority": "Myndighed",
-    "actorId": "Aktør-ID",
-    "type": "Type",
-    "systemLog": "Systemlog",
-    "audit": "Revision: {{status}}",
-    "activityMessage": "Aktivitetsmeddelelse",
-    "actionTaken": "Udført handling",
-    "resourcePool": "Ressourcepulje",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Denne post er en del af et uforanderligt revisionsspor.",
     "exportJson": "Eksportér JSON",
     "event": "Hændelse",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Handling",
     "time": "Tid",
-    "logSignature": "Logsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Post #{{id}}",
+    "recordedData": "Registrerede data"
   },
   "mediaPicker": {
     "showingOnly": "Viser kun: {{types}}",

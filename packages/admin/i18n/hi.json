@@ -4660,19 +4660,9 @@
     "roles": "भूमिकाएँ",
     "permissions": "अनुमतियाँ",
     "eventDetails": "घटना का विवरण",
-    "context": "संदर्भ",
     "resource": "संसाधन",
     "system": "सिस्टम",
     "timestamp": "टाइमस्टैम्प",
-    "authority": "प्राधिकरण",
-    "actorId": "कर्ता ID",
-    "type": "प्रकार",
-    "systemLog": "सिस्टम लॉग",
-    "audit": "ऑडिट: {{status}}",
-    "activityMessage": "गतिविधि संदेश",
-    "actionTaken": "की गई कार्रवाई",
-    "resourcePool": "संसाधन पूल",
-    "rawMetadata": "रॉ मेटाडेटा",
     "thisEntryIsPartOf": "यह प्रविष्टि एक अपरिवर्तनीय ऑडिट ट्रेल का हिस्सा है।",
     "exportJson": "JSON निर्यात करें",
     "event": "घटना",
@@ -4682,7 +4672,6 @@
     "status": "स्थिति",
     "action": "कार्रवाई",
     "time": "समय",
-    "logSignature": "लॉग हस्ताक्षर: {{id}}",
     "internal": "आंतरिक",
     "level": {
       "INFO": "जानकारी",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "प्रविष्टि #{{id}}",
+    "recordedData": "दर्ज डेटा"
   },
   "mediaPicker": {
     "showingOnly": "केवल दिखाया जा रहा है: {{types}}",

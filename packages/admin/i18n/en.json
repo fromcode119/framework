@@ -4660,19 +4660,9 @@
     "roles": "Roles",
     "permissions": "Permissions",
     "eventDetails": "Event Details",
-    "context": "Context",
     "resource": "Resource",
     "system": "System",
     "timestamp": "Timestamp",
-    "authority": "Authority",
-    "actorId": "Actor ID",
-    "type": "Type",
-    "systemLog": "System Log",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Activity Message",
-    "actionTaken": "Action Taken",
-    "resourcePool": "Resource Pool",
-    "rawMetadata": "Raw Metadata",
     "thisEntryIsPartOf": "This entry is part of an immutable audit trail.",
     "exportJson": "Export JSON",
     "event": "Event",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Action",
     "time": "Time",
-    "logSignature": "Log Signature: {{id}}",
     "internal": "INTERNAL",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entry #{{id}}",
+    "recordedData": "Recorded data"
   },
   "mediaPicker": {
     "showingOnly": "Showing only: {{types}}",

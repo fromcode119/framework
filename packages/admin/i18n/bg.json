@@ -4084,19 +4084,9 @@
     "roles": "Роли",
     "permissions": "Права",
     "eventDetails": "Подробности за събитието",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Време",
-    "authority": "Извършител",
-    "actorId": "Номер на извършителя",
-    "type": "Вид",
-    "systemLog": "Системен запис",
-    "audit": "Одит: {{status}}",
-    "activityMessage": "Съобщение",
-    "actionTaken": "Действие",
-    "resourcePool": "Група ресурси",
-    "rawMetadata": "Необработени метаданни",
     "thisEntryIsPartOf": "Този запис е част от неизменима одитна следа.",
     "exportJson": "Експорт в JSON",
     "event": "Събитие",
@@ -4106,7 +4096,6 @@
     "status": "Статус",
     "action": "Действие",
     "time": "Време",
-    "logSignature": "Подпис на записа: {{id}}",
     "internal": "ВЪТРЕШНО",
     "level": {
       "INFO": "Инфо",
@@ -4127,7 +4116,9 @@
         },
         "registered": "Създаден акаунт"
       }
-    }
+    },
+    "entryNumber": "Запис №{{id}}",
+    "recordedData": "Записани данни"
   },
   "sites": {
     "couldNotLoadTheSites": "Сайтовете не можаха да бъдат заредени.",

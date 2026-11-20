@@ -4660,19 +4660,9 @@
     "roles": "บทบาท",
     "permissions": "สิทธิ์",
     "eventDetails": "รายละเอียดเหตุการณ์",
-    "context": "บริบท",
     "resource": "ทรัพยากร",
     "system": "ระบบ",
     "timestamp": "เวลาที่บันทึก",
-    "authority": "ผู้มีอำนาจ",
-    "actorId": "ID ผู้ดำเนินการ",
-    "type": "ประเภท",
-    "systemLog": "บันทึกระบบ",
-    "audit": "การตรวจสอบ: {{status}}",
-    "activityMessage": "ข้อความกิจกรรม",
-    "actionTaken": "การดำเนินการที่ทำ",
-    "resourcePool": "กลุ่มทรัพยากร",
-    "rawMetadata": "เมทาดาทาดิบ",
     "thisEntryIsPartOf": "รายการนี้เป็นส่วนหนึ่งของบันทึกการตรวจสอบที่ไม่สามารถแก้ไขได้",
     "exportJson": "ส่งออก JSON",
     "event": "เหตุการณ์",
@@ -4682,7 +4672,6 @@
     "status": "สถานะ",
     "action": "การดำเนินการ",
     "time": "เวลา",
-    "logSignature": "ลายเซ็นบันทึก: {{id}}",
     "internal": "ภายใน",
     "level": {
       "INFO": "ข้อมูล",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "รายการ #{{id}}",
+    "recordedData": "ข้อมูลที่บันทึก"
   },
   "mediaPicker": {
     "showingOnly": "แสดงเฉพาะ: {{types}}",

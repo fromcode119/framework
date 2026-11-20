@@ -4660,19 +4660,9 @@
     "roles": "Lomas",
     "permissions": "Atļaujas",
     "eventDetails": "Notikuma informācija",
-    "context": "Konteksts",
     "resource": "Resurss",
     "system": "Sistēma",
     "timestamp": "Laikspiedols",
-    "authority": "Pilnvaras",
-    "actorId": "Izpildītāja ID",
-    "type": "Tips",
-    "systemLog": "Sistēmas žurnāls",
-    "audit": "Audits: {{status}}",
-    "activityMessage": "Darbības ziņojums",
-    "actionTaken": "Veiktā darbība",
-    "resourcePool": "Resursu kopa",
-    "rawMetadata": "Neapstrādātie metadati",
     "thisEntryIsPartOf": "Šis ieraksts ir daļa no nemaināmas audita takas.",
     "exportJson": "Eksportēt JSON",
     "event": "Notikums",
@@ -4682,7 +4672,6 @@
     "status": "Statuss",
     "action": "Darbība",
     "time": "Laiks",
-    "logSignature": "Žurnāla paraksts: {{id}}",
     "internal": "IEKŠĒJS",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Ieraksts #{{id}}",
+    "recordedData": "Reģistrētie dati"
   },
   "mediaPicker": {
     "showingOnly": "Rāda tikai: {{types}}",

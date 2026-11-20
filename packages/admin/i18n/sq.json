@@ -4660,19 +4660,9 @@
     "roles": "Rolet",
     "permissions": "Lejet",
     "eventDetails": "Detajet e ngjarjes",
-    "context": "Konteksti",
     "resource": "Burimi",
     "system": "Sistemi",
     "timestamp": "Vula kohore",
-    "authority": "Autoriteti",
-    "actorId": "ID e aktorit",
-    "type": "Lloji",
-    "systemLog": "Regjistri i sistemit",
-    "audit": "Auditi: {{status}}",
-    "activityMessage": "Mesazhi i aktivitetit",
-    "actionTaken": "Veprimi i kryer",
-    "resourcePool": "Grupi i burimeve",
-    "rawMetadata": "Metadata të papërpunuara",
     "thisEntryIsPartOf": "Ky regjistrim është pjesë e një gjurme auditi të pandryshueshme.",
     "exportJson": "Eksporto JSON",
     "event": "Ngjarja",
@@ -4682,7 +4672,6 @@
     "status": "Statusi",
     "action": "Veprimi",
     "time": "Koha",
-    "logSignature": "Nënshkrimi i regjistrit: {{id}}",
     "internal": "I BRENDSHËM",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Hyrja #{{id}}",
+    "recordedData": "Të dhënat e regjistruara"
   },
   "mediaPicker": {
     "showingOnly": "Shfaqen vetëm: {{types}}",

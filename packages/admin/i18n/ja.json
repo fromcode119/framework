@@ -4660,19 +4660,9 @@
     "roles": "ロール",
     "permissions": "権限",
     "eventDetails": "イベントの詳細",
-    "context": "コンテキスト",
     "resource": "リソース",
     "system": "システム",
     "timestamp": "タイムスタンプ",
-    "authority": "権限主体",
-    "actorId": "実行者 ID",
-    "type": "種類",
-    "systemLog": "システムログ",
-    "audit": "監査: {{status}}",
-    "activityMessage": "アクティビティメッセージ",
-    "actionTaken": "実行された操作",
-    "resourcePool": "リソースプール",
-    "rawMetadata": "生のメタデータ",
     "thisEntryIsPartOf": "このエントリは改ざん不可能な監査証跡の一部です。",
     "exportJson": "JSON をエクスポート",
     "event": "イベント",
@@ -4682,7 +4672,6 @@
     "status": "ステータス",
     "action": "操作",
     "time": "時刻",
-    "logSignature": "ログ署名: {{id}}",
     "internal": "内部",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "エントリ #{{id}}",
+    "recordedData": "記録されたデータ"
   },
   "mediaPicker": {
     "showingOnly": "表示中: {{types}} のみ",

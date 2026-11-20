@@ -4660,19 +4660,9 @@
     "roles": "Roluri",
     "permissions": "Permisiuni",
     "eventDetails": "Detalii eveniment",
-    "context": "Context",
     "resource": "Resursă",
     "system": "Sistem",
     "timestamp": "Marcaj temporal",
-    "authority": "Autoritate",
-    "actorId": "ID actor",
-    "type": "Tip",
-    "systemLog": "Jurnal sistem",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mesaj activitate",
-    "actionTaken": "Acțiune efectuată",
-    "resourcePool": "Grup de resurse",
-    "rawMetadata": "Metadate brute",
     "thisEntryIsPartOf": "Această intrare face parte dintr-un jurnal de audit imuabil.",
     "exportJson": "Exportați JSON",
     "event": "Eveniment",
@@ -4682,7 +4672,6 @@
     "status": "Stare",
     "action": "Acțiune",
     "time": "Oră",
-    "logSignature": "Semnătură jurnal: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Înregistrarea nr. {{id}}",
+    "recordedData": "Date înregistrate"
   },
   "mediaPicker": {
     "showingOnly": "Se afișează doar: {{types}}",

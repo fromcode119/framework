@@ -4660,19 +4660,9 @@
     "roles": "תפקידים",
     "permissions": "הרשאות",
     "eventDetails": "פרטי האירוע",
-    "context": "הקשר",
     "resource": "משאב",
     "system": "מערכת",
     "timestamp": "חותמת זמן",
-    "authority": "גורם מוסמך",
-    "actorId": "מזהה מבצע",
-    "type": "סוג",
-    "systemLog": "יומן מערכת",
-    "audit": "ביקורת: {{status}}",
-    "activityMessage": "הודעת הפעילות",
-    "actionTaken": "הפעולה שבוצעה",
-    "resourcePool": "מאגר משאבים",
-    "rawMetadata": "מטא-נתונים גולמיים",
     "thisEntryIsPartOf": "רשומה זו היא חלק מנתיב ביקורת שאינו ניתן לשינוי.",
     "exportJson": "ייצוא JSON",
     "event": "אירוע",
@@ -4682,7 +4672,6 @@
     "status": "סטטוס",
     "action": "פעולה",
     "time": "זמן",
-    "logSignature": "חתימת יומן: {{id}}",
     "internal": "פנימי",
     "level": {
       "INFO": "מידע",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "רשומה #{{id}}",
+    "recordedData": "נתונים שנרשמו"
   },
   "mediaPicker": {
     "showingOnly": "מוצגים רק: {{types}}",

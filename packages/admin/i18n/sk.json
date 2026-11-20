@@ -4660,19 +4660,9 @@
     "roles": "Roly",
     "permissions": "Oprávnenia",
     "eventDetails": "Podrobnosti udalosti",
-    "context": "Kontext",
     "resource": "Prostriedok",
     "system": "Systém",
     "timestamp": "Časová pečiatka",
-    "authority": "Oprávnenie",
-    "actorId": "ID aktéra",
-    "type": "Typ",
-    "systemLog": "Systémový záznam",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Správa o aktivite",
-    "actionTaken": "Vykonaná akcia",
-    "resourcePool": "Skupina prostriedkov",
-    "rawMetadata": "Nespracované metadáta",
     "thisEntryIsPartOf": "Tento záznam je súčasťou nemennej auditnej stopy.",
     "exportJson": "Exportovať JSON",
     "event": "Udalosť",
@@ -4682,7 +4672,6 @@
     "status": "Stav",
     "action": "Akcia",
     "time": "Čas",
-    "logSignature": "Podpis záznamu: {{id}}",
     "internal": "INTERNÉ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Záznam č. {{id}}",
+    "recordedData": "Zaznamenané údaje"
   },
   "mediaPicker": {
     "showingOnly": "Zobrazené len: {{types}}",

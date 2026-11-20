@@ -4660,19 +4660,9 @@
     "roles": "Roller",
     "permissions": "İzinler",
     "eventDetails": "Olay Ayrıntıları",
-    "context": "Bağlam",
     "resource": "Kaynak",
     "system": "Sistem",
     "timestamp": "Zaman damgası",
-    "authority": "Yetki",
-    "actorId": "İşlemi Yapan Kimliği",
-    "type": "Tür",
-    "systemLog": "Sistem Günlüğü",
-    "audit": "Denetim: {{status}}",
-    "activityMessage": "Etkinlik Mesajı",
-    "actionTaken": "Yapılan İşlem",
-    "resourcePool": "Kaynak Havuzu",
-    "rawMetadata": "Ham Meta Veriler",
     "thisEntryIsPartOf": "Bu kayıt, değiştirilemez bir denetim izinin parçasıdır.",
     "exportJson": "JSON olarak dışa aktar",
     "event": "Olay",
@@ -4682,7 +4672,6 @@
     "status": "Durum",
     "action": "İşlem",
     "time": "Zaman",
-    "logSignature": "Günlük İmzası: {{id}}",
     "internal": "DAHİLİ",
     "level": {
       "INFO": "Bi̇lgi̇",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Kayıt #{{id}}",
+    "recordedData": "Kaydedilen veriler"
   },
   "mediaPicker": {
     "showingOnly": "Yalnızca gösterilen: {{types}}",

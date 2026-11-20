@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { state, bound, watch } from '@fromcode119/react-class-components';
 import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
@@ -115,7 +114,6 @@ export class ActivityPage extends AdminComponent {
   }
 
   render(): ReactNode {
-    const theme = this.theme;
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-500">
         <ListShell
@@ -146,7 +144,6 @@ export class ActivityPage extends AdminComponent {
           <ActivityDetailModal
             selectedLog={this.selectedLog}
             mode={this.mode}
-            theme={theme}
             onClose={this.handleCloseDetail}
             onExport={this.handleExportJSON}
           />

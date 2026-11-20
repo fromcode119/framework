@@ -4660,19 +4660,9 @@
     "roles": "Vloge",
     "permissions": "Dovoljenja",
     "eventDetails": "Podrobnosti dogodka",
-    "context": "Kontekst",
     "resource": "Vir",
     "system": "Sistem",
     "timestamp": "Časovni žig",
-    "authority": "Pooblastilo",
-    "actorId": "ID izvajalca",
-    "type": "Vrsta",
-    "systemLog": "Sistemski dnevnik",
-    "audit": "Revizija: {{status}}",
-    "activityMessage": "Sporočilo dejavnosti",
-    "actionTaken": "Izvedeno dejanje",
-    "resourcePool": "Skupina virov",
-    "rawMetadata": "Neobdelani metapodatki",
     "thisEntryIsPartOf": "Ta vnos je del nespremenljive revizijske sledi.",
     "exportJson": "Izvozi JSON",
     "event": "Dogodek",
@@ -4682,7 +4672,6 @@
     "status": "Stanje",
     "action": "Dejanje",
     "time": "Čas",
-    "logSignature": "Podpis dnevnika: {{id}}",
     "internal": "INTERNO",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Vnos št. {{id}}",
+    "recordedData": "Zabeleženi podatki"
   },
   "mediaPicker": {
     "showingOnly": "Prikazano samo: {{types}}",

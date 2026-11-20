@@ -4660,19 +4660,9 @@
     "roles": "Ρόλοι",
     "permissions": "Δικαιώματα",
     "eventDetails": "Λεπτομέρειες συμβάντος",
-    "context": "Πλαίσιο",
     "resource": "Πόρος",
     "system": "Σύστημα",
     "timestamp": "Χρονική σήμανση",
-    "authority": "Αρχή",
-    "actorId": "ID ενεργούντος",
-    "type": "Τύπος",
-    "systemLog": "Αρχείο συστήματος",
-    "audit": "Έλεγχος: {{status}}",
-    "activityMessage": "Μήνυμα δραστηριότητας",
-    "actionTaken": "Ενέργεια που εκτελέστηκε",
-    "resourcePool": "Ομάδα πόρων",
-    "rawMetadata": "Ακατέργαστα μεταδεδομένα",
     "thisEntryIsPartOf": "Αυτή η εγγραφή αποτελεί μέρος ενός αμετάβλητου ίχνους ελέγχου.",
     "exportJson": "Εξαγωγή JSON",
     "event": "Συμβάν",
@@ -4682,7 +4672,6 @@
     "status": "Κατάσταση",
     "action": "Ενέργεια",
     "time": "Ώρα",
-    "logSignature": "Υπογραφή καταγραφής: {{id}}",
     "internal": "ΕΣΩΤΕΡΙΚΟ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Εγγραφή #{{id}}",
+    "recordedData": "Καταγεγραμμένα δεδομένα"
   },
   "mediaPicker": {
     "showingOnly": "Εμφάνιση μόνο: {{types}}",

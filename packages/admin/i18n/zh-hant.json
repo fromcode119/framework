@@ -4660,19 +4660,9 @@
     "roles": "角色",
     "permissions": "權限",
     "eventDetails": "事件詳細資料",
-    "context": "情境",
     "resource": "資源",
     "system": "系統",
     "timestamp": "時間戳記",
-    "authority": "權限來源",
-    "actorId": "執行者 ID",
-    "type": "類型",
-    "systemLog": "系統記錄",
-    "audit": "稽核：{{status}}",
-    "activityMessage": "活動訊息",
-    "actionTaken": "執行的動作",
-    "resourcePool": "資源池",
-    "rawMetadata": "原始中繼資料",
     "thisEntryIsPartOf": "此項目屬於不可變更的稽核軌跡。",
     "exportJson": "匯出 JSON",
     "event": "事件",
@@ -4682,7 +4672,6 @@
     "status": "狀態",
     "action": "動作",
     "time": "時間",
-    "logSignature": "記錄簽章：{{id}}",
     "internal": "內部",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "項目 #{{id}}",
+    "recordedData": "記錄的資料"
   },
   "mediaPicker": {
     "showingOnly": "僅顯示：{{types}}",

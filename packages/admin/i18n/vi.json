@@ -4660,19 +4660,9 @@
     "roles": "Vai trò",
     "permissions": "Quyền",
     "eventDetails": "Chi tiết sự kiện",
-    "context": "Ngữ cảnh",
     "resource": "Tài nguyên",
     "system": "Hệ thống",
     "timestamp": "Thời điểm",
-    "authority": "Thẩm quyền",
-    "actorId": "ID tác nhân",
-    "type": "Loại",
-    "systemLog": "Nhật ký hệ thống",
-    "audit": "Kiểm toán: {{status}}",
-    "activityMessage": "Nội dung hoạt động",
-    "actionTaken": "Thao tác đã thực hiện",
-    "resourcePool": "Nhóm tài nguyên",
-    "rawMetadata": "Siêu dữ liệu thô",
     "thisEntryIsPartOf": "Mục này thuộc nhật ký kiểm toán không thể thay đổi.",
     "exportJson": "Xuất JSON",
     "event": "Sự kiện",
@@ -4682,7 +4672,6 @@
     "status": "Trạng thái",
     "action": "Thao tác",
     "time": "Thời gian",
-    "logSignature": "Chữ ký nhật ký: {{id}}",
     "internal": "NỘI BỘ",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Mục #{{id}}",
+    "recordedData": "Dữ liệu đã ghi"
   },
   "mediaPicker": {
     "showingOnly": "Chỉ hiển thị: {{types}}",

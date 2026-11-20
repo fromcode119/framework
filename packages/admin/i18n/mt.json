@@ -4660,19 +4660,9 @@
     "roles": "Rwoli",
     "permissions": "Permessi",
     "eventDetails": "Dettalji tal-Avveniment",
-    "context": "Kuntest",
     "resource": "Riżorsa",
     "system": "Sistema",
     "timestamp": "Timbru tal-ħin",
-    "authority": "Awtorità",
-    "actorId": "ID tal-Attur",
-    "type": "Tip",
-    "systemLog": "Log tas-Sistema",
-    "audit": "Verifika: {{status}}",
-    "activityMessage": "Messaġġ tal-Attività",
-    "actionTaken": "Azzjoni Meħuda",
-    "resourcePool": "Ġabra ta' Riżorsi",
-    "rawMetadata": "Metadata Mhux Ipproċessata",
     "thisEntryIsPartOf": "Din l-entrata hija parti minn traċċa ta' verifika li ma tistax tinbidel.",
     "exportJson": "Esporta JSON",
     "event": "Avveniment",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Azzjoni",
     "time": "Ħin",
-    "logSignature": "Firma tal-Log: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Daħla #{{id}}",
+    "recordedData": "Data rreġistrata"
   },
   "mediaPicker": {
     "showingOnly": "Qed jintwerew biss: {{types}}",

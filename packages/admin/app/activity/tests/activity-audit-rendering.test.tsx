@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ThemeMode } from '@fromcode119/core/client';
 import { ActivityDetailModal } from '@/app/activity/activity-detail-modal';
 import { ActivityColumnsFactory } from '@/app/activity/activity-columns';
 import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
@@ -41,7 +40,6 @@ describe('Activity screen renders API rows', () => {
       <ActivityDetailModal
         selectedLog={auditRow}
         mode={ActivityMode.SECURITY}
-        theme={ThemeMode.LIGHT}
         onClose={vi.fn()}
         onExport={vi.fn()}
       />,
@@ -56,7 +54,6 @@ describe('Activity screen renders API rows', () => {
       <ActivityDetailModal
         selectedLog={auditRow}
         mode={ActivityMode.SECURITY}
-        theme={ThemeMode.LIGHT}
         onClose={vi.fn()}
         onExport={vi.fn()}
       />,
@@ -70,7 +67,6 @@ describe('Activity screen renders API rows', () => {
       <ActivityDetailModal
         selectedLog={auditRow}
         mode={ActivityMode.SECURITY}
-        theme={ThemeMode.LIGHT}
         onClose={vi.fn()}
         onExport={vi.fn()}
       />,

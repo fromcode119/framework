@@ -4660,19 +4660,9 @@
     "roles": "Rollen",
     "permissions": "Rechten",
     "eventDetails": "Gebeurtenisdetails",
-    "context": "Context",
     "resource": "Resource",
     "system": "Systeem",
     "timestamp": "Tijdstempel",
-    "authority": "Autoriteit",
-    "actorId": "Actor-ID",
-    "type": "Type",
-    "systemLog": "Systeemlog",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Activiteitsbericht",
-    "actionTaken": "Uitgevoerde actie",
-    "resourcePool": "Resourcepool",
-    "rawMetadata": "Ruwe metadata",
     "thisEntryIsPartOf": "Deze vermelding maakt deel uit van een onveranderlijk audittrail.",
     "exportJson": "JSON exporteren",
     "event": "Gebeurtenis",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Actie",
     "time": "Tijd",
-    "logSignature": "Loghandtekening: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Item #{{id}}",
+    "recordedData": "Vastgelegde gegevens"
   },
   "mediaPicker": {
     "showingOnly": "Alleen weergegeven: {{types}}",

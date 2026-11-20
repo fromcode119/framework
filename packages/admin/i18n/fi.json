@@ -4660,19 +4660,9 @@
     "roles": "Roolit",
     "permissions": "Käyttöoikeudet",
     "eventDetails": "Tapahtuman tiedot",
-    "context": "Konteksti",
     "resource": "Resurssi",
     "system": "Järjestelmä",
     "timestamp": "Aikaleima",
-    "authority": "Valtuutus",
-    "actorId": "Tekijän tunnus",
-    "type": "Tyyppi",
-    "systemLog": "Järjestelmäloki",
-    "audit": "Tarkastus: {{status}}",
-    "activityMessage": "Tapahtumaviesti",
-    "actionTaken": "Suoritettu toiminto",
-    "resourcePool": "Resurssivaranto",
-    "rawMetadata": "Raakametatiedot",
     "thisEntryIsPartOf": "Tämä merkintä on osa muuttumatonta tarkastuslokia.",
     "exportJson": "Vie JSON",
     "event": "Tapahtuma",
@@ -4682,7 +4672,6 @@
     "status": "Tila",
     "action": "Toiminto",
     "time": "Aika",
-    "logSignature": "Lokin allekirjoitus: {{id}}",
     "internal": "SISÄINEN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Merkintä #{{id}}",
+    "recordedData": "Tallennetut tiedot"
   },
   "mediaPicker": {
     "showingOnly": "Näytetään vain: {{types}}",

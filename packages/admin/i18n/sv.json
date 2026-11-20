@@ -4660,19 +4660,9 @@
     "roles": "Roller",
     "permissions": "Behörigheter",
     "eventDetails": "Händelsedetaljer",
-    "context": "Kontext",
     "resource": "Resurs",
     "system": "System",
     "timestamp": "Tidsstämpel",
-    "authority": "Behörighet",
-    "actorId": "Aktörs-ID",
-    "type": "Typ",
-    "systemLog": "Systemlogg",
-    "audit": "Granskning: {{status}}",
-    "activityMessage": "Aktivitetsmeddelande",
-    "actionTaken": "Utförd åtgärd",
-    "resourcePool": "Resurspool",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Den här posten ingår i en oföränderlig granskningslogg.",
     "exportJson": "Exportera JSON",
     "event": "Händelse",
@@ -4682,7 +4672,6 @@
     "status": "Status",
     "action": "Åtgärd",
     "time": "Tid",
-    "logSignature": "Loggsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
       "INFO": "Info",
@@ -4703,7 +4692,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Post #{{id}}",
+    "recordedData": "Registrerade data"
   },
   "mediaPicker": {
     "showingOnly": "Visar endast: {{types}}",
