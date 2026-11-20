@@ -620,7 +620,8 @@
       "filters": "Filtre",
       "clearFilters": "Golește tot",
       "removeFilter": "Elimină filtrul {{label}}",
-      "showResults": "Afișează {{count}} rezultate"
+      "showResults": "Afișează {{count}} rezultate",
+      "showResultsOne": "Afișează 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Nu se salvează într-un câmp de persoană",

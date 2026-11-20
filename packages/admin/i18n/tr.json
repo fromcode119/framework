@@ -620,7 +620,8 @@
       "filters": "Filtreler",
       "clearFilters": "Tümünü temizle",
       "removeFilter": "{{label}} filtresini kaldır",
-      "showResults": "{{count}} sonucu göster"
+      "showResults": "{{count}} sonucu göster",
+      "showResultsOne": "1 sonucu göster"
     },
     "personFieldPicker": {
       "none": "Bir kişi alanına kaydedilmez",

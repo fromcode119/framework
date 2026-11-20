@@ -620,7 +620,8 @@
       "filters": "Penapis",
       "clearFilters": "Kosongkan semua",
       "removeFilter": "Alih keluar penapis {{label}}",
-      "showResults": "Tunjukkan {{count}} hasil"
+      "showResults": "Tunjukkan {{count}} hasil",
+      "showResultsOne": "Tunjukkan 1 hasil"
     },
     "personFieldPicker": {
       "none": "Tidak disimpan ke medan orang",

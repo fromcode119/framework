@@ -620,7 +620,8 @@
       "filters": "フィルター",
       "clearFilters": "すべてクリア",
       "removeFilter": "{{label}}フィルターを削除",
-      "showResults": "{{count}}件の結果を表示"
+      "showResults": "{{count}}件の結果を表示",
+      "showResultsOne": "1件の結果を表示"
     },
     "personFieldPicker": {
       "none": "連絡先フィールドに保存しない",

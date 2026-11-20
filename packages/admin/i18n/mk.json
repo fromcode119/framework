@@ -620,7 +620,8 @@
       "filters": "Филтри",
       "clearFilters": "Исчисти сè",
       "removeFilter": "Отстрани го филтерот {{label}}",
-      "showResults": "Прикажи {{count}} резултати"
+      "showResults": "Прикажи {{count}} резултати",
+      "showResultsOne": "Прикажи 1 резултат"
     },
     "personFieldPicker": {
       "none": "Не се зачувува во поле на лице",

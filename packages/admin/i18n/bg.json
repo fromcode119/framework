@@ -657,7 +657,8 @@
       "filters": "Филтри",
       "clearFilters": "Изчисти всички",
       "removeFilter": "Премахни филтъра „{{label}}“",
-      "showResults": "Покажи {{count}} резултата"
+      "showResults": "Покажи {{count}} резултата",
+      "showResultsOne": "Покажи 1 резултат"
     },
     "personFieldPicker": {
       "none": "Не се записва в поле на човека",

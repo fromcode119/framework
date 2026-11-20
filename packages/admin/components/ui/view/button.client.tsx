@@ -7,7 +7,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class Button extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<Button, 'variant' | 'size' | 'children' | 'className' | 'isLoading' | 'icon' | 'as' | 'href' | 'target'>
+  declare props: Pick<Button, 'variant' | 'size' | 'children' | 'className' | 'isLoading' | 'icon' | 'as' | 'href' | 'target' | 'block'>
     & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className'>;
 
   @prop declare variant?: ButtonVariant;
@@ -25,6 +25,8 @@ export class Button extends PureReactor {
   @prop declare as?: any;
   @prop declare href?: string;
   @prop declare target?: string;
+  /** As wide as its container — the one way to widen a button, since the button's own width outranks a utility class. */
+  @prop declare block?: boolean;
 
   render(): ReactNode {
     const {
@@ -35,6 +37,7 @@ export class Button extends PureReactor {
       isLoading: _isLoading,
       icon: _icon,
       as: _as,
+      block: _block,
       ...props
     } = this.props as Record<string, any>;
   const variant = ButtonVariant.resolve(this.variant ?? ButtonVariant.PRIMARY);
@@ -77,7 +80,7 @@ export class Button extends PureReactor {
 
   return (
     <Component
-      className={`fc-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
+      className={`fc-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]}${this.block ? ' fc-btn--block' : ''} ${className}`}
       {...props}
       // A button that is carrying something out takes no second press: a save pressed twice saved twice.
       disabled={Boolean((props as any).disabled) || Boolean(isLoading)}

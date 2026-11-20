@@ -620,7 +620,8 @@
       "filters": "필터",
       "clearFilters": "모두 지우기",
       "removeFilter": "{{label}} 필터 제거",
-      "showResults": "결과 {{count}}개 보기"
+      "showResults": "결과 {{count}}개 보기",
+      "showResultsOne": "결과 1개 보기"
     },
     "personFieldPicker": {
       "none": "사람 필드에 저장하지 않음",

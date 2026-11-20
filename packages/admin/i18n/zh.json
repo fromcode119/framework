@@ -620,7 +620,8 @@
       "filters": "筛选",
       "clearFilters": "全部清除",
       "removeFilter": "移除“{{label}}”筛选条件",
-      "showResults": "显示 {{count}} 条结果"
+      "showResults": "显示 {{count}} 条结果",
+      "showResultsOne": "显示 1 条结果"
     },
     "personFieldPicker": {
       "none": "不保存到联系人字段",

@@ -41,7 +41,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
         <RecordCard title={installedTheme ? AdminI18n.t('themes.installed') : AdminI18n.t('themes.installTheme2')} aside={state}>
           <div className="fc-stack">
             {action ? (
-              <Button variant={ButtonVariant.PRIMARY} className="w-full" isLoading={installing} icon={action.icon} onClick={onInstall}>{action.label}</Button>
+              <Button variant={ButtonVariant.PRIMARY} block isLoading={installing} icon={action.icon} onClick={onInstall}>{action.label}</Button>
             ) : null}
             <AdminFactGrid facts={[
               { key: 'installed', label: AdminI18n.t('themes.installedRelease'), value: installedVersion ? `v${installedVersion}` : AdminI18n.t('themes.notInstalled') },

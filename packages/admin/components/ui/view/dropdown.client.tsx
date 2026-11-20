@@ -84,6 +84,8 @@ export class Dropdown extends DropdownPositioning {
               // than the space below the trigger simply ran off the bottom of the window. It scrolls
               // inside itself now instead.
               maxHeight: coords.maxHeight,
+              // The same limit for a panel that keeps its own head and foot in view and scrolls only between them.
+              ['--fc-dropdown-max-h' as string]: `${coords.maxHeight}px`,
               overflowY: 'auto',
               minWidth: '220px',
               // Laid out (so it can be measured) but not shown until the measurement has been applied —

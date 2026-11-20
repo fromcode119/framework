@@ -620,7 +620,8 @@
       "filters": "ตัวกรอง",
       "clearFilters": "ล้างทั้งหมด",
       "removeFilter": "ลบตัวกรอง {{label}}",
-      "showResults": "แสดง {{count}} ผลลัพธ์"
+      "showResults": "แสดง {{count}} ผลลัพธ์",
+      "showResultsOne": "แสดง 1 ผลลัพธ์"
     },
     "personFieldPicker": {
       "none": "ไม่บันทึกลงในฟิลด์บุคคล",

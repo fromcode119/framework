@@ -2,12 +2,14 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * Every filter of the list in one place. Under the Filters button on a wide screen, a sheet from the
- * bottom on a phone. A filter applies the moment a value is picked, as the old dropdowns did; the
- * button at the bottom only closes the panel.
+ * Every filter of the list in one place, the panel of the Filters button's Dropdown. A filter applies
+ * the moment a value is picked; the button at the bottom only closes the panel.
  */
 export class FilterPanel extends PureReactor {
   declare props: Pick<FilterPanel, 'filters' | 'total' | 'onClose'>;
@@ -31,22 +33,14 @@ export class FilterPanel extends PureReactor {
 
   private renderFilter(filter: ListFilter): ReactNode {
     return (
-      <div key={filter.key} className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
-        <p className="mb-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">{filter.label}</p>
-        <div className="flex flex-wrap gap-1.5">
+      <div key={filter.key} className="fc-filter-panel__group">
+        <div className="fc-menu-section">{filter.label}</div>
+        <div className="fc-filter-panel__options">
           {filter.options.map((option) => {
             const chosen = option.value === filter.value;
             return (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={chosen}
-                onClick={() => filter.apply(option.value)}
-                /* One of several choices, only one of which is on: the console's tab. A pill in the
-                   brand's solid colour read as the page's primary action - the loudest thing on a
-                   toolbar was "All". */
-                className={`fc-tab${chosen ? ' fc-tab--on' : ''}`}
-              >
+              /* One of several choices, only one of which is on: the console's tab. */
+              <button key={option.value} type="button" aria-pressed={chosen} onClick={() => filter.apply(option.value)} className={`fc-tab${chosen ? ' fc-tab--on' : ''}`}>
                 {option.label}
               </button>
             );
@@ -59,37 +53,20 @@ export class FilterPanel extends PureReactor {
   render(): ReactNode {
     const anyActive = this.filters.some((filter) => filter.isActive);
     return (
-      <>
-        <div className="fixed inset-0 z-40 bg-slate-900/40 sm:bg-transparent" onClick={this.onClose} />
-        <div
-          role="dialog"
-          aria-label={AdminI18n.t('ui.listToolbar.filters')}
-          className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] flex flex-col rounded-t-2xl border bg-white border-slate-200 shadow-2xl
-            sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[24rem] sm:max-h-[70vh] sm:rounded-2xl
-            dark:bg-slate-900 dark:border-slate-800"
-        >
-          <div className="relative flex items-center justify-between px-4 pt-5 pb-3 sm:pt-3 border-b border-slate-200 dark:border-slate-800">
-            <span className="absolute left-1/2 top-2 -translate-x-1/2 h-1 w-9 rounded-full bg-slate-300 dark:bg-slate-700 sm:hidden" />
-            <span className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('ui.listToolbar.filters')}</span>
-            {anyActive ? (
-              <button type="button" onClick={this.clearAll} className="text-[12px] font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
-                {AdminI18n.t('ui.listToolbar.clearFilters')}
-              </button>
-            ) : null}
-          </div>
-          <div className="overflow-y-auto">{this.filters.map((filter) => this.renderFilter(filter))}</div>
-          <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-            <button
-              type="button"
-              onClick={this.onClose}
-              className="w-full h-[var(--fc-field-h)] rounded-xl inline-flex items-center justify-center gap-2 text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700"
-            >
-              <FrameworkIcons.Check size={15} />
-              {AdminI18n.t('ui.listToolbar.showResults', { count: this.total })}
-            </button>
-          </div>
+      <div role="dialog" aria-label={AdminI18n.t('ui.listToolbar.filters')} className="fc-filter-panel">
+        <div className="fc-filter-panel__head">
+          <span className="fc-filter-panel__title">{AdminI18n.t('ui.listToolbar.filters')}</span>
+          {anyActive ? (
+            <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.clearAll}>{AdminI18n.t('ui.listToolbar.clearFilters')}</Button>
+          ) : null}
         </div>
-      </>
+        <div className="fc-filter-panel__body">{this.filters.map((filter) => this.renderFilter(filter))}</div>
+        <div className="fc-filter-panel__foot">
+          <Button block icon={<FrameworkIcons.Check size={15} />} onClick={this.onClose}>
+            {this.total === 1 ? AdminI18n.t('ui.listToolbar.showResultsOne') : AdminI18n.t('ui.listToolbar.showResults', { count: this.total })}
+          </Button>
+        </div>
+      </div>
     );
   }
 }

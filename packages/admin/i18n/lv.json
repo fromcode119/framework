@@ -620,7 +620,8 @@
       "filters": "Filtri",
       "clearFilters": "Notīrīt visus",
       "removeFilter": "Noņemt filtru {{label}}",
-      "showResults": "Rādīt rezultātus: {{count}}"
+      "showResults": "Rādīt rezultātus: {{count}}",
+      "showResultsOne": "Rādīt 1 rezultātu"
     },
     "personFieldPicker": {
       "none": "Netiek saglabāts personas laukā",

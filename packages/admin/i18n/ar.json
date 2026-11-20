@@ -620,7 +620,8 @@
       "filters": "عوامل التصفية",
       "clearFilters": "مسح الكل",
       "removeFilter": "إزالة عامل التصفية {{label}}",
-      "showResults": "عرض {{count}} نتيجة"
+      "showResults": "عرض {{count}} نتيجة",
+      "showResultsOne": "عرض نتيجة واحدة"
     },
     "personFieldPicker": {
       "none": "لا يُحفظ في حقل شخص",

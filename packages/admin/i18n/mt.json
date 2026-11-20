@@ -620,7 +620,8 @@
       "filters": "Filtri",
       "clearFilters": "Ħassar kollox",
       "removeFilter": "Neħħi l-filtru {{label}}",
-      "showResults": "Uri {{count}} riżultat"
+      "showResults": "Uri {{count}} riżultat",
+      "showResultsOne": "Uri riżultat wieħed"
     },
     "personFieldPicker": {
       "none": "Mhux issejvjat f'qasam ta' persuna",

@@ -620,7 +620,8 @@
       "filters": "फ़िल्टर",
       "clearFilters": "सभी साफ़ करें",
       "removeFilter": "{{label}} फ़िल्टर हटाएँ",
-      "showResults": "{{count}} परिणाम दिखाएँ"
+      "showResults": "{{count}} परिणाम दिखाएँ",
+      "showResultsOne": "1 परिणाम दिखाएँ"
     },
     "personFieldPicker": {
       "none": "किसी व्यक्ति फ़ील्ड में सहेजा नहीं गया",

@@ -86,6 +86,7 @@ export class ButtonKit {
         { name: 'variant', type: 'ButtonVariant', initial: 'SECONDARY', does: 'PRIMARY, SECONDARY, GHOST or DANGER.' },
         { name: 'size', type: 'FieldSize', initial: 'one height', does: 'Only ICON changes anything: a square for a button that is an icon alone.' },
         { name: 'icon', type: 'ReactNode', does: 'An icon before the words.' },
+        { name: 'block', type: 'boolean', initial: 'false', does: 'As wide as its container, for the one button at the foot of a panel.' },
         { name: 'isLoading', type: 'boolean', initial: 'false', does: 'Shows a spinner and stops further presses.' },
         { name: 'disabled', type: 'boolean', initial: 'false', does: 'The action is not available.' },
         { name: 'as, href, target', type: 'component, string', does: 'Renders a link that looks like the button.' },

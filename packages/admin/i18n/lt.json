@@ -620,7 +620,8 @@
       "filters": "Filtrai",
       "clearFilters": "Išvalyti viską",
       "removeFilter": "Pašalinti filtrą „{{label}}“",
-      "showResults": "Rodyti rezultatus ({{count}})"
+      "showResults": "Rodyti rezultatus ({{count}})",
+      "showResultsOne": "Rodyti 1 rezultatą"
     },
     "personFieldPicker": {
       "none": "Neišsaugoma asmens lauke",

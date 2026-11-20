@@ -620,7 +620,8 @@
       "filters": "Filtri",
       "clearFilters": "Počisti vse",
       "removeFilter": "Odstrani filter {{label}}",
-      "showResults": "Prikaži rezultate ({{count}})"
+      "showResults": "Prikaži rezultate ({{count}})",
+      "showResultsOne": "Prikaži 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Ni shranjeno v polje osebe",

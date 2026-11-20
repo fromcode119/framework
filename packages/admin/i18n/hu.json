@@ -620,7 +620,8 @@
       "filters": "Szűrők",
       "clearFilters": "Összes törlése",
       "removeFilter": "A(z) {{label}} szűrő eltávolítása",
-      "showResults": "{{count}} találat megjelenítése"
+      "showResults": "{{count}} találat megjelenítése",
+      "showResultsOne": "1 találat megjelenítése"
     },
     "personFieldPicker": {
       "none": "Nincs személymezőbe mentve",

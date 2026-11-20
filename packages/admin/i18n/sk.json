@@ -620,7 +620,8 @@
       "filters": "Filtre",
       "clearFilters": "Vymazať všetko",
       "removeFilter": "Odstrániť filter {{label}}",
-      "showResults": "Zobraziť výsledky ({{count}})"
+      "showResults": "Zobraziť výsledky ({{count}})",
+      "showResultsOne": "Zobraziť 1 výsledok"
     },
     "personFieldPicker": {
       "none": "Neukladá sa do poľa osoby",

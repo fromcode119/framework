@@ -620,7 +620,8 @@
       "filters": "Filters",
       "clearFilters": "Alles wissen",
       "removeFilter": "Filter {{label}} verwijderen",
-      "showResults": "{{count}} resultaten tonen"
+      "showResults": "{{count}} resultaten tonen",
+      "showResultsOne": "1 resultaat tonen"
     },
     "personFieldPicker": {
       "none": "Niet opgeslagen in een persoonsveld",

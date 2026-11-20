@@ -620,7 +620,8 @@
       "filters": "Mga Filter",
       "clearFilters": "I-clear lahat",
       "removeFilter": "Alisin ang filter na {{label}}",
-      "showResults": "Ipakita ang {{count}} resulta"
+      "showResults": "Ipakita ang {{count}} resulta",
+      "showResultsOne": "Ipakita ang 1 resulta"
     },
     "personFieldPicker": {
       "none": "Hindi naka-save sa person field",

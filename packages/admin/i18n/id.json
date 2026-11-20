@@ -620,7 +620,8 @@
       "filters": "Filter",
       "clearFilters": "Hapus semua",
       "removeFilter": "Hapus filter {{label}}",
-      "showResults": "Tampilkan {{count}} hasil"
+      "showResults": "Tampilkan {{count}} hasil",
+      "showResultsOne": "Tampilkan 1 hasil"
     },
     "personFieldPicker": {
       "none": "Tidak disimpan ke kolom orang",

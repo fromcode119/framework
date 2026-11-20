@@ -620,7 +620,8 @@
       "filters": "Filters",
       "clearFilters": "Clear all",
       "removeFilter": "Remove the {{label}} filter",
-      "showResults": "Show {{count}} results"
+      "showResults": "Show {{count}} results",
+      "showResultsOne": "Show 1 result"
     },
     "personFieldPicker": {
       "none": "Not saved to a person field",

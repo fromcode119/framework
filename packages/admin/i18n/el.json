@@ -620,7 +620,8 @@
       "filters": "Φίλτρα",
       "clearFilters": "Εκκαθάριση όλων",
       "removeFilter": "Αφαίρεση του φίλτρου {{label}}",
-      "showResults": "Εμφάνιση {{count}} αποτελεσμάτων"
+      "showResults": "Εμφάνιση {{count}} αποτελεσμάτων",
+      "showResultsOne": "Εμφάνιση 1 αποτελέσματος"
     },
     "personFieldPicker": {
       "none": "Δεν αποθηκεύεται σε πεδίο ατόμου",

@@ -48,11 +48,11 @@ export class MarketplaceDetailSidebar extends PureReactor {
       <RecordCard title={installedPlugin ? AdminI18n.t('plugins.list.installed') : AdminI18n.t('plugins.list.installExtension')} aside={state}>
         <div className="fc-stack">
           {!installedPlugin ? (
-            <Button variant={ButtonVariant.PRIMARY} className="w-full" isLoading={installing} icon={<FrameworkIcons.Download size={15} />} onClick={onInstall}>
+            <Button variant={ButtonVariant.PRIMARY} block isLoading={installing} icon={<FrameworkIcons.Download size={15} />} onClick={onInstall}>
               {installing ? AdminI18n.t('plugins.list.installing2') : AdminI18n.t('plugins.list.installExtension')}
             </Button>
           ) : hasUpdate ? (
-            <Button variant={ButtonVariant.PRIMARY} className="w-full" isLoading={installing} icon={<FrameworkIcons.Refresh size={15} />} onClick={onInstall}>
+            <Button variant={ButtonVariant.PRIMARY} block isLoading={installing} icon={<FrameworkIcons.Refresh size={15} />} onClick={onInstall}>
               {installing ? AdminI18n.t('plugins.list.updating2') : AdminI18n.t('plugins.list.applyUpdateNow')}
             </Button>
           ) : null}

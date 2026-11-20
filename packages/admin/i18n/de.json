@@ -620,7 +620,8 @@
       "filters": "Filter",
       "clearFilters": "Alle löschen",
       "removeFilter": "Filter {{label}} entfernen",
-      "showResults": "{{count}} Ergebnisse anzeigen"
+      "showResults": "{{count}} Ergebnisse anzeigen",
+      "showResultsOne": "1 Ergebnis anzeigen"
     },
     "personFieldPicker": {
       "none": "Nicht in einem Personenfeld gespeichert",

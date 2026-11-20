@@ -620,7 +620,8 @@
       "filters": "Фильтры",
       "clearFilters": "Сбросить все",
       "removeFilter": "Удалить фильтр «{{label}}»",
-      "showResults": "Показать результаты: {{count}}"
+      "showResults": "Показать результаты: {{count}}",
+      "showResultsOne": "Показать 1 результат"
     },
     "personFieldPicker": {
       "none": "Не сохраняется в поле человека",

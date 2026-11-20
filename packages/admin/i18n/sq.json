@@ -620,7 +620,8 @@
       "filters": "Filtrat",
       "clearFilters": "Pastro të gjitha",
       "removeFilter": "Hiq filtrin {{label}}",
-      "showResults": "Shfaq {{count}} rezultate"
+      "showResults": "Shfaq {{count}} rezultate",
+      "showResultsOne": "Shfaq 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Nuk ruhet në një fushë personi",

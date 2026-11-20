@@ -620,7 +620,8 @@
       "filters": "Filtre",
       "clearFilters": "Fjern alle",
       "removeFilter": "Fjern filteret {{label}}",
-      "showResults": "Vis {{count}} resultater"
+      "showResults": "Vis {{count}} resultater",
+      "showResultsOne": "Vis 1 resultat"
     },
     "personFieldPicker": {
       "none": "Lagres ikke i et personfelt",

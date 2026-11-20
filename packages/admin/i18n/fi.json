@@ -620,7 +620,8 @@
       "filters": "Suodattimet",
       "clearFilters": "Tyhjennä kaikki",
       "removeFilter": "Poista suodatin {{label}}",
-      "showResults": "Näytä tulokset ({{count}})"
+      "showResults": "Näytä tulokset ({{count}})",
+      "showResultsOne": "Näytä 1 tulos"
     },
     "personFieldPicker": {
       "none": "Ei tallenneta henkilökenttään",

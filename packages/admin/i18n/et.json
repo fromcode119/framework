@@ -620,7 +620,8 @@
       "filters": "Filtrid",
       "clearFilters": "Tühjenda kõik",
       "removeFilter": "Eemalda filter {{label}}",
-      "showResults": "Näita tulemusi ({{count}})"
+      "showResults": "Näita tulemusi ({{count}})",
+      "showResultsOne": "Näita 1 tulemust"
     },
     "personFieldPicker": {
       "none": "Ei salvestata isiku välja",

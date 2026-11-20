@@ -2667,6 +2667,17 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-setup__title { font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-setup__step[data-done] .fc-setup__title { color: var(--fc-text-muted); text-decoration: line-through; }
 .fc-setup__detail { font-size: 12px; line-height: 18px; color: var(--fc-text-muted); }
+
+/* The list's filters, the panel of the Filters dropdown: a heading, a group of choices per filter, and
+   the button that closes it. */
+/* As tall as the dropdown lets it be (its max-height, less the sheet's own padding); only the filters scroll. */
+.fc-filter-panel { display: flex; flex-direction: column; width: 22rem; max-width: 100%; max-height: calc(var(--fc-dropdown-max-h, 70vh) - 8px); padding: 4px; }
+.fc-filter-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; padding: 0 0 4px 8px; border-bottom: 1px solid var(--fc-border); }
+.fc-filter-panel__title { font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-filter-panel__body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-block-end: 8px; }
+.fc-filter-panel__group { padding-block-start: 6px; }
+.fc-filter-panel__options { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 8px 0; }
+.fc-filter-panel__foot { padding: 8px 4px 4px; border-top: 1px solid var(--fc-border); }
 /* On a phone the step's button goes under its text, in line with it, instead of squeezing it to a column. */
 @media (max-width: 639px) {
   .fc-setup__step { flex-wrap: wrap; align-items: flex-start; row-gap: 8px; }
@@ -3086,6 +3097,7 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 /* A button that cannot be pressed is ONE thing whatever it would have been: the disabled ground, the
    faint ink and the neutral edge. A disabled primary kept its dark ring and a disabled danger its red
    one, so they read as an outlined button of a kind the kit does not have. */
+.fc-btn--block { width: 100%; }
 .fc-btn:disabled { pointer-events: none; background: var(--fc-surface-disabled); color: var(--fc-text-faint); box-shadow: 0 0 0 1px var(--fc-border); filter: none; }
 .fc-btn:disabled svg { opacity: .6; }
 /* A button carrying something out is disabled to a press but keeps its own look, so the spinner sits on the

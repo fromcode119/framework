@@ -620,7 +620,8 @@
       "filters": "Bộ lọc",
       "clearFilters": "Xóa tất cả",
       "removeFilter": "Xóa bộ lọc {{label}}",
-      "showResults": "Hiển thị {{count}} kết quả"
+      "showResults": "Hiển thị {{count}} kết quả",
+      "showResultsOne": "Hiển thị 1 kết quả"
     },
     "personFieldPicker": {
       "none": "Không lưu vào trường thông tin người",

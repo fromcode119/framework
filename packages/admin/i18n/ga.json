@@ -620,7 +620,8 @@
       "filters": "Scagairí",
       "clearFilters": "Glan gach rud",
       "removeFilter": "Bain an scagaire {{label}}",
-      "showResults": "Taispeáin {{count}} toradh"
+      "showResults": "Taispeáin {{count}} toradh",
+      "showResultsOne": "Taispeáin 1 toradh"
     },
     "personFieldPicker": {
       "none": "Gan sábháil i réimse duine",

@@ -620,7 +620,8 @@
       "filters": "篩選條件",
       "clearFilters": "全部清除",
       "removeFilter": "移除「{{label}}」篩選條件",
-      "showResults": "顯示 {{count}} 筆結果"
+      "showResults": "顯示 {{count}} 筆結果",
+      "showResultsOne": "顯示 1 筆結果"
     },
     "personFieldPicker": {
       "none": "不儲存至聯絡人欄位",
