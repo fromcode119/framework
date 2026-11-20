@@ -229,6 +229,7 @@
       "editSection": "แก้ไข",
       "notFilledIn": "ยังไม่ได้กรอก",
       "statusSection": "สถานะ",
+      "statusConfirm": "เปลี่ยนสถานะเป็น “{{status}}” หรือไม่?",
       "recordSection": "ระเบียน",
       "showJson": "แสดงเป็น JSON",
       "showForm": "แสดงเป็นฟอร์ม",

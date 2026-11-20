@@ -229,6 +229,7 @@
       "editSection": "Upravit",
       "notFilledIn": "Nevyplněno",
       "statusSection": "Stav",
+      "statusConfirm": "Změnit stav na „{{status}}“?",
       "recordSection": "Záznam",
       "showJson": "Zobrazit jako JSON",
       "showForm": "Zobrazit jako formulář",

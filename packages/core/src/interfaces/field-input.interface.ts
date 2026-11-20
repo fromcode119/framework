@@ -16,8 +16,9 @@ export interface IFieldInput extends Omit<IField, 'options' | 'relationTo' | 'fi
   /**
    * `tone`: how a list shows the value as a badge (`success`, `warning`, `danger`, `info`, `default`).
    * `reachableFrom`: on a `status` option, the stored statuses it may be chosen from (see `IField.options`).
+   * `confirm`: on a `status` option, what choosing it does, asked before it is saved (see `IField.options`).
    */
-  readonly options?: readonly { readonly label: string; readonly value: any; readonly tone?: string; readonly reachableFrom?: readonly string[] }[];
+  readonly options?: readonly { readonly label: string; readonly value: any; readonly tone?: string; readonly reachableFrom?: readonly string[]; readonly confirm?: string }[];
   readonly relationTo?: string | readonly string[];
   readonly fields?: readonly IFieldInput[];
   readonly inputAliases?: readonly string[];

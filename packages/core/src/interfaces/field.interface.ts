@@ -31,8 +31,10 @@ export interface IField {
    * For select type. `tone` = list badge colour. `reachableFrom`, on a record's `status` options: the
    * stored statuses this option may be chosen from. Absent = from any. The record's header offers only
    * the options reachable from what the record holds now, so it never offers a move the server refuses.
+   * `confirm`, on the same options: what choosing it sets off (an email, stock given back), said in the
+   * question the header asks before it saves the new status. Absent = the question names only the status.
    */
-  options?: { label: string; value: any; tone?: string; reachableFrom?: string[] }[];
+  options?: { label: string; value: any; tone?: string; reachableFrom?: string[]; confirm?: string }[];
   relationTo?: string | string[]; // For relationship/upload type
   /**
    * A relationship to whichever collection REGISTERED itself as this entity's provider, instead of a

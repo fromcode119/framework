@@ -191,7 +191,7 @@ export class CollectionEditPageView extends Reactor {
               statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
               handleInputChange={edit.handleInputChange}
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
-              handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
+              handleSubmit={edit.handleSubmit} commitStatus={edit.commitStatus} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
               canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
               isDirty={edit.isDirty} saveBar={!edit.hideFooter && canSave}
               openedSections={edit.openedSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.replace(href, { scroll: false })}

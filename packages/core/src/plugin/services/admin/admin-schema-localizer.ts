@@ -18,6 +18,7 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *   admin.collections.<collection>.tabs.<name>         admin tabs / sections (`.sections.<name>.label|description`)
  *   admin.collections.<collection>.fields.<field>.label | description | placeholder | patternNote
  *   admin.collections.<collection>.fields.<field>.options.<value>
+ *   admin.collections.<collection>.fields.<field>.confirm.<value>         what choosing a status option does
  *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names (dictionary only)
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
@@ -216,7 +217,11 @@ export class AdminSchemaLocalizer {
       if (Object.keys(keyLabels).length) next.admin = { ...(next.admin ?? {}), keyLabels };
       if (Array.isArray(field.options)) {
         next.options = field.options.map((option: any) => (option && typeof option === 'object'
-          ? { ...option, label: this.text(pluginSlug, `${key}.options.${option.value}`, option.label) }
+          ? {
+            ...option,
+            label: this.text(pluginSlug, `${key}.options.${option.value}`, option.label),
+            ...(option.confirm ? { confirm: this.text(pluginSlug, `${key}.confirm.${option.value}`, option.confirm) } : {}),
+          }
           : option));
       }
       if (Array.isArray(field.fields)) next.fields = this.fields(pluginSlug, `${key}.fields`, field.fields, sectionsBase);

@@ -229,6 +229,7 @@
       "editSection": "Muokkaa",
       "notFilledIn": "Ei täytetty",
       "statusSection": "Tila",
+      "statusConfirm": "Muutetaanko tilaksi ”{{status}}”?",
       "recordSection": "Tietue",
       "showJson": "Näytä JSON-muodossa",
       "showForm": "Näytä lomakkeena",

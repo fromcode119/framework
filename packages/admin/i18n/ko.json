@@ -229,6 +229,7 @@
       "editSection": "편집",
       "notFilledIn": "입력되지 않음",
       "statusSection": "상태",
+      "statusConfirm": "상태를 “{{status}}”(으)로 변경할까요?",
       "recordSection": "레코드",
       "showJson": "JSON으로 보기",
       "showForm": "양식으로 보기",

@@ -229,6 +229,7 @@
       "editSection": "تعديل",
       "notFilledIn": "غير مُعبّأ",
       "statusSection": "الحالة",
+      "statusConfirm": "تغيير الحالة إلى «{{status}}»؟",
       "recordSection": "السجل",
       "showJson": "عرض كـ JSON",
       "showForm": "عرض كنموذج",

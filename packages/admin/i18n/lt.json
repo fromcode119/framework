@@ -229,6 +229,7 @@
       "editSection": "Redaguoti",
       "notFilledIn": "Neužpildyta",
       "statusSection": "Būsena",
+      "statusConfirm": "Pakeisti būseną į „{{status}}“?",
       "recordSection": "Įrašas",
       "showJson": "Rodyti kaip JSON",
       "showForm": "Rodyti kaip formą",

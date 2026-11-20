@@ -229,6 +229,7 @@
       "editSection": "Chỉnh sửa",
       "notFilledIn": "Chưa điền",
       "statusSection": "Trạng thái",
+      "statusConfirm": "Đổi trạng thái thành “{{status}}”?",
       "recordSection": "Bản ghi",
       "showJson": "Hiển thị dạng JSON",
       "showForm": "Hiển thị dạng biểu mẫu",

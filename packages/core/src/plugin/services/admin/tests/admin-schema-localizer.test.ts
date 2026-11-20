@@ -86,6 +86,16 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[2].fields[0].label).toBe('Код');
   });
 
+  it("translates what an option says it does before it is chosen, and adds nothing to an option that says nothing", () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.status.confirm.archived': 'Изчезва от витрината.' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog',
+      fields: [{ name: 'status', options: [{ label: 'Draft', value: 'draft' }, { label: 'Archived', value: 'archived', confirm: 'Leaves the storefront.' }] }],
+    });
+    expect(out.fields[0].options[1].confirm).toBe('Изчезва от витрината.');
+    expect('confirm' in out.fields[0].options[0]).toBe(false);
+  });
+
   it('names the keys a structured field prints from the dictionary alone, with nothing listed in the schema', () => {
     const block = (plugin: string, key: string) => Object.fromEntries(Object.entries(dictionary)
       .filter(([name]) => name.startsWith(`${plugin}.${key}.`))

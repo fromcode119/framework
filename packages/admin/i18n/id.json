@@ -229,6 +229,7 @@
       "editSection": "Edit",
       "notFilledIn": "Belum diisi",
       "statusSection": "Status",
+      "statusConfirm": "Ubah status menjadi “{{status}}”?",
       "recordSection": "Catatan",
       "showJson": "Tampilkan sebagai JSON",
       "showForm": "Tampilkan sebagai formulir",

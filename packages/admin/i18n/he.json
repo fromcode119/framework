@@ -229,6 +229,7 @@
       "editSection": "עריכה",
       "notFilledIn": "לא מולא",
       "statusSection": "סטטוס",
+      "statusConfirm": "לשנות את הסטטוס ל\"{{status}}\"?",
       "recordSection": "רשומה",
       "showJson": "הצג כ־JSON",
       "showForm": "הצג כטופס",

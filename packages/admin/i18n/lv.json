@@ -229,6 +229,7 @@
       "editSection": "Rediģēt",
       "notFilledIn": "Nav aizpildīts",
       "statusSection": "Statuss",
+      "statusConfirm": "Mainīt statusu uz “{{status}}”?",
       "recordSection": "Ieraksts",
       "showJson": "Rādīt kā JSON",
       "showForm": "Rādīt kā veidlapu",

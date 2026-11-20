@@ -24,13 +24,14 @@ export class CollectionEditDerivations {
    * always listed, as the checked row. When nothing else is reachable (a closed record) there is no
    * choice to make, so no status rows at all. A new record holds no status yet and is offered all.
    */
-  static reachableStatusOptions(options: any[], stored: unknown): { label: string; value: string; tone: string }[] {
+  static reachableStatusOptions(options: any[], stored: unknown): { label: string; value: string; tone: string; confirm?: string }[] {
     const held = String(stored ?? '').trim();
     const all = options
       .map((option: any) => ({
         label: String(option?.label || option?.value || '').trim(),
         value: String(option?.value || '').trim(),
         tone: String(option?.tone || '').trim(),
+        ...(option?.confirm ? { confirm: String(option.confirm) } : {}),
         reachableFrom: Array.isArray(option?.reachableFrom) ? option.reachableFrom.map((value: unknown) => String(value)) : null,
       }))
       .filter((option) => option.value);

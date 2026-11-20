@@ -229,6 +229,7 @@
       "editSection": "編集",
       "notFilledIn": "未入力",
       "statusSection": "ステータス",
+      "statusConfirm": "ステータスを「{{status}}」に変更しますか？",
       "recordSection": "レコード",
       "showJson": "JSON で表示",
       "showForm": "フォームで表示",

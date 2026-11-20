@@ -15,6 +15,12 @@ describe('the record header offers only the statuses reachable from the stored o
     expect(values('processing')).toEqual(['processing', 'completed', 'cancelled']);
   });
 
+  it('carries what a status says it does, so the header can ask before saving it', () => {
+    const asked = CollectionEditDerivations.reachableStatusOptions(
+      [{ label: 'Open', value: 'open' }, { label: 'Closed', value: 'closed', confirm: 'The buyer is emailed.' }], 'open');
+    expect(asked.map((o) => o.confirm)).toEqual([undefined, 'The buyer is emailed.']);
+  });
+
   it('offers nothing on a record that can no longer move', () => {
     expect(values('cancelled')).toEqual([]);
   });

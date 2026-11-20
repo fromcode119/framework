@@ -229,6 +229,7 @@
       "editSection": "Bearbeiten",
       "notFilledIn": "Nicht ausgefüllt",
       "statusSection": "Status",
+      "statusConfirm": "Status auf „{{status}}“ ändern?",
       "recordSection": "Datensatz",
       "showJson": "Als JSON anzeigen",
       "showForm": "Als Formular anzeigen",

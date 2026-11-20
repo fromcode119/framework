@@ -229,6 +229,7 @@
       "editSection": "编辑",
       "notFilledIn": "未填写",
       "statusSection": "状态",
+      "statusConfirm": "将状态更改为“{{status}}”？",
       "recordSection": "记录",
       "showJson": "以 JSON 显示",
       "showForm": "以表单显示",

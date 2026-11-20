@@ -229,6 +229,7 @@
       "editSection": "Cuir in eagar",
       "notFilledIn": "Gan líonadh",
       "statusSection": "Stádas",
+      "statusConfirm": "An stádas a athrú go “{{status}}”?",
       "recordSection": "Taifead",
       "showJson": "Taispeáin mar JSON",
       "showForm": "Taispeáin mar fhoirm",

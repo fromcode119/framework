@@ -229,6 +229,7 @@
       "editSection": "Редактировать",
       "notFilledIn": "Не заполнено",
       "statusSection": "Статус",
+      "statusConfirm": "Изменить статус на «{{status}}»?",
       "recordSection": "Запись",
       "showJson": "Показать как JSON",
       "showForm": "Показать как форму",

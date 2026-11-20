@@ -229,6 +229,7 @@
       "editSection": "Editează",
       "notFilledIn": "Necompletat",
       "statusSection": "Stare",
+      "statusConfirm": "Schimbați starea în „{{status}}”?",
       "recordSection": "Înregistrare",
       "showJson": "Afișează ca JSON",
       "showForm": "Afișează ca formular",

@@ -229,6 +229,7 @@
       "editSection": "संपादित करें",
       "notFilledIn": "नहीं भरा गया",
       "statusSection": "स्थिति",
+      "statusConfirm": "स्थिति को “{{status}}” में बदलें?",
       "recordSection": "रिकॉर्ड",
       "showJson": "JSON के रूप में दिखाएँ",
       "showForm": "फ़ॉर्म के रूप में दिखाएँ",

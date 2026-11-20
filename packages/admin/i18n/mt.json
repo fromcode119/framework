@@ -229,6 +229,7 @@
       "editSection": "Editja",
       "notFilledIn": "Mhux mimli",
       "statusSection": "Status",
+      "statusConfirm": "Tibdel l-istatus għal “{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Uri bħala JSON",
       "showForm": "Uri bħala formola",

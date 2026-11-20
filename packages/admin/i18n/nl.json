@@ -229,6 +229,7 @@
       "editSection": "Bewerken",
       "notFilledIn": "Niet ingevuld",
       "statusSection": "Status",
+      "statusConfirm": "Status wijzigen naar ‘{{status}}’?",
       "recordSection": "Record",
       "showJson": "Toon als JSON",
       "showForm": "Toon als formulier",

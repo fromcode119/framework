@@ -229,6 +229,7 @@
       "editSection": "Rediger",
       "notFilledIn": "Ikke utfylt",
       "statusSection": "Status",
+      "statusConfirm": "Endre status til «{{status}}»?",
       "recordSection": "Post",
       "showJson": "Vis som JSON",
       "showForm": "Vis som skjema",

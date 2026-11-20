@@ -229,6 +229,7 @@
       "editSection": "Muuda",
       "notFilledIn": "Täitmata",
       "statusSection": "Olek",
+      "statusConfirm": "Kas muuta olekuks „{{status}}“?",
       "recordSection": "Kirje",
       "showJson": "Näita JSON-ina",
       "showForm": "Näita vormina",

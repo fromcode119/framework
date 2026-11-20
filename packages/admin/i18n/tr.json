@@ -229,6 +229,7 @@
       "editSection": "Düzenle",
       "notFilledIn": "Doldurulmadı",
       "statusSection": "Durum",
+      "statusConfirm": "Durum “{{status}}” olarak değiştirilsin mi?",
       "recordSection": "Kayıt",
       "showJson": "JSON olarak göster",
       "showForm": "Form olarak göster",

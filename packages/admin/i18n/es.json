@@ -229,6 +229,7 @@
       "editSection": "Editar",
       "notFilledIn": "Sin completar",
       "statusSection": "Estado",
+      "statusConfirm": "¿Cambiar el estado a «{{status}}»?",
       "recordSection": "Registro",
       "showJson": "Ver como JSON",
       "showForm": "Ver como formulario",

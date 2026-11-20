@@ -229,6 +229,7 @@
       "editSection": "I-edit",
       "notFilledIn": "Hindi pa napupunan",
       "statusSection": "Status",
+      "statusConfirm": "Palitan ang status sa “{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Ipakita bilang JSON",
       "showForm": "Ipakita bilang form",

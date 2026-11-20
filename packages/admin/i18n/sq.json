@@ -229,6 +229,7 @@
       "editSection": "Redakto",
       "notFilledIn": "I paplotësuar",
       "statusSection": "Statusi",
+      "statusConfirm": "Të ndryshohet statusi në “{{status}}”?",
       "recordSection": "Regjistrimi",
       "showJson": "Shfaq si JSON",
       "showForm": "Shfaq si formular",

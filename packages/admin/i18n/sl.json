@@ -229,6 +229,7 @@
       "editSection": "Uredi",
       "notFilledIn": "Ni izpolnjeno",
       "statusSection": "Stanje",
+      "statusConfirm": "Spremenim stanje v »{{status}}«?",
       "recordSection": "Zapis",
       "showJson": "Prikaži kot JSON",
       "showForm": "Prikaži kot obrazec",

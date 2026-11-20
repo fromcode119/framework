@@ -44,6 +44,23 @@ export class CollectionEditPageHandlers {
     CollectionEditPageHandlers.setFieldValue(self, name, value);
   }
 
+  /**
+   * A status chosen from the record's ⋯ menu, saved at once. The choice used to change only the form: the
+   * page showed nothing new but an "Unsaved changes" bar, and the move (and the email it sends) waited on
+   * a Save nobody connected with the menu. The header asks first; this saves the record with the new
+   * status. A refused save puts the stored status back, so the menu never shows one that is not saved.
+   */
+  static async commitStatus(self: any, value: string): Promise<void> {
+    const held = self.state.pristineFormData?.status;
+    await new Promise<void>((resolve) => self.setState((prev: any) => ({ formData: { ...prev.formData, status: value } }), resolve));
+    try {
+      await CollectionEditPageHandlers.handleSubmit(self);
+    } catch (error) {
+      await new Promise<void>((resolve) => self.setState((prev: any) => ({ formData: { ...prev.formData, status: held } }), resolve));
+      throw error;
+    }
+  }
+
   static handlePatch(self: any, partial: Record<string, any>): void {
     for (const [name, value] of Object.entries(partial || {})) CollectionEditPageHandlers.setFieldValue(self, name, value);
   }

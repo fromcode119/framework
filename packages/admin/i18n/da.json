@@ -229,6 +229,7 @@
       "editSection": "Rediger",
       "notFilledIn": "Ikke udfyldt",
       "statusSection": "Status",
+      "statusConfirm": "Skift status til “{{status}}”?",
       "recordSection": "Post",
       "showJson": "Vis som JSON",
       "showForm": "Vis som formular",
