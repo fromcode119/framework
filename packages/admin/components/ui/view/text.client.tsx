@@ -1,4 +1,3 @@
-import { createElement } from 'react';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
@@ -20,6 +19,7 @@ export class Text extends PureReactor {
   render(): ReactNode {
     const name = AdminClass.of('text');
     const classes = [name, `${name}--${this.size ?? 'small'}`, this.weight === 'plus' ? `${name}--plus` : '', this.muted ? `${name}--muted` : '', this.className ?? ''];
-    return createElement(this.as ?? 'p', { className: classes.filter(Boolean).join(' ') }, this.children);
+    const Tag = this.as ?? 'p';
+    return <Tag className={classes.filter(Boolean).join(' ')}>{this.children}</Tag>;
   }
 }

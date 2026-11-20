@@ -6,6 +6,7 @@ import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
 import { CustomerAccountMetaKeys } from '@core/constants/customer-account-meta-keys.constants';
 import { LocalizationMetaKeys } from '@core/constants/localization-meta-keys.constants';
+import { AdminLookMetaKeys } from '@core/constants/admin-look-meta-keys.constants';
 
 /**
  * Well-known keys in the system meta table.
@@ -67,18 +68,7 @@ export class SystemMetaKeys {
   TIMEZONE: 'timezone',
   /** 12- or 24-hour clock for the site's times; `locale` follows the site's language. See TimeFormat. */
   TIME_FORMAT: 'time_format',
-  ADMIN_APPEARANCE: 'admin_appearance',
-  /** Whether admin surfaces render elevated (shadows) or flat. Absent = elevated. */
-  ADMIN_SHADOWS: 'admin_shadows',
-  /**
-   * Whether a section's pages stand in a SECOND column beside the menu, or under their line inside
-   * the one menu. Absent = one menu.
-   *
-   * It is a width decision, not a taste one: the second column costs 220px of every screen, and a
-   * record page needs 896px before its side column fits beside the form. At 1280 with both columns
-   * the record gets 767px, so the side column never fits and every card falls into one tall stack.
-   */
-  ADMIN_NAV_COLUMN: 'admin_nav_column',
+  ...AdminLookMetaKeys.ALL,
   /**
    * How much a SITE may store in themes it uploaded itself, and how many it may keep.
    *

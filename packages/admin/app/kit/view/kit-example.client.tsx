@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { CodeBlock } from '@/components/ui/view/code-block.client';
-import type { KitExample } from '@/app/kit/kit-doc';
+import type { KitExample } from '@/app/kit/kit-example';
 
 /** One example on a component's page: its name, a line about it, the component, and how it is written. */
 export class KitExampleView extends PureReactor {

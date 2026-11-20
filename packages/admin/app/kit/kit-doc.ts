@@ -1,22 +1,5 @@
-import type { ReactNode } from 'react';
-
-/** One option a component takes: its name, what it accepts, what it is when left out, and what it does. */
-export class KitOption {
-  declare name: string;
-  declare type: string;
-  declare initial?: string;
-  declare does: string;
-}
-
-/** One way of using a component: what it is for, the component itself, and how it is written. */
-export class KitExample {
-  declare title: string;
-  declare text?: string;
-  declare demo: ReactNode;
-  declare code?: string;
-  /** The demo fills the example's width instead of sitting in a padded row (a table, a card, a bar). */
-  declare flush?: boolean;
-}
+import type { KitExample } from '@/app/kit/kit-example';
+import type { KitOption } from '@/app/kit/kit-option';
 
 /** A component's page in the kit. */
 export class KitDoc {

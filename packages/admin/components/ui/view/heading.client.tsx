@@ -1,4 +1,3 @@
-import { createElement } from 'react';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
@@ -11,6 +10,7 @@ export class Heading extends PureReactor {
 
   render(): ReactNode {
     const level = this.level ?? 'h1';
-    return createElement(level, { className: `${AdminClass.of('heading')} ${AdminClass.of('heading')}--${level} ${this.className ?? ''}` }, this.children);
+    const Tag = level;
+    return <Tag className={`${AdminClass.of('heading')} ${AdminClass.of('heading')}--${level} ${this.className ?? ''}`}>{this.children}</Tag>;
   }
 }
