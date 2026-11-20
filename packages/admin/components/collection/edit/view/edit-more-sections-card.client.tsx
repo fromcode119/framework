@@ -39,7 +39,7 @@ export class EditMoreSectionsCard extends PureReactor {
   /** The address now names the section, so the page has drawn it: move the page by what it moved. */
   componentDidUpdate(): void {
     const pending = this.pending;
-    if (!pending || !(this.openedSections || []).includes(pending.key) || typeof window === 'undefined') return;
+    if (!pending || !(this.openedSections || []).includes(pending.key)) return;
     this.pending = null;
     window.requestAnimationFrame(() => {
       // At the foot a section is drawn under its own key (`section-side:…` for a side one); in its card
