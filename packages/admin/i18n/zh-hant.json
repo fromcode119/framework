@@ -606,7 +606,6 @@
         "openSites": "開啟網站"
       }
     },
-    "relativeOverridesInheritTheCollection": "相對覆寫會沿用集合的前綴。啟用絕對模式即可略過 `/shop` 等前綴。",
     "range": "範圍",
     "noDataForThisRange": "此範圍內沒有資料",
     "peak": "· 峰值 {{value}}",

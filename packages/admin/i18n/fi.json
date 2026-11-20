@@ -606,7 +606,6 @@
         "openSites": "Avaa Sivustot"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suhteelliset ohitukset perivät kokoelman etuliitteen. Ota absoluuttinen tila käyttöön ohittaaksesi etuliitteet, kuten `/shop`.",
     "range": "Aikaväli",
     "noDataForThisRange": "Ei tietoja tältä aikaväliltä",
     "peak": "· huippu {{value}}",

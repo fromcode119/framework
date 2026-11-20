@@ -606,7 +606,6 @@
         "openSites": "Otwórz Witryny"
       }
     },
-    "relativeOverridesInheritTheCollection": "Względne nadpisania dziedziczą prefiks kolekcji. Włącz tryb bezwzględny, aby pominąć prefiksy takie jak `/shop`.",
     "range": "Zakres",
     "noDataForThisRange": "Brak danych dla tego zakresu",
     "peak": "· szczyt {{value}}",

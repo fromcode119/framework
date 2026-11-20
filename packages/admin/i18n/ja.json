@@ -606,7 +606,6 @@
         "openSites": "サイトを開く"
       }
     },
-    "relativeOverridesInheritTheCollection": "相対パスの上書きはコレクションのプレフィックスを継承します。`/shop` などのプレフィックスを無視するには絶対モードを有効にしてください。",
     "range": "期間",
     "noDataForThisRange": "この期間のデータはありません",
     "peak": "· ピーク {{value}}",

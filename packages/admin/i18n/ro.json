@@ -606,7 +606,6 @@
         "openSites": "Deschide Site-uri"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suprascrierile relative moștenesc prefixul colecției. Activați modul absolut pentru a ocoli prefixe precum `/shop`.",
     "range": "Interval",
     "noDataForThisRange": "Nu există date pentru acest interval",
     "peak": "· vârf {{value}}",

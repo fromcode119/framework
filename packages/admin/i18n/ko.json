@@ -606,7 +606,6 @@
         "openSites": "사이트 열기"
       }
     },
-    "relativeOverridesInheritTheCollection": "상대 경로 재정의는 컬렉션 접두사를 상속합니다. `/shop` 같은 접두사를 무시하려면 절대 모드를 사용하세요.",
     "range": "기간",
     "noDataForThisRange": "이 기간에 대한 데이터가 없습니다",
     "peak": "· 최고 {{value}}",

@@ -606,7 +606,6 @@
         "openSites": "فتح المواقع"
       }
     },
-    "relativeOverridesInheritTheCollection": "ترث التجاوزات النسبية بادئة المجموعة. فعّل الوضع المطلق لتجاوز بادئات مثل `/shop`.",
     "range": "النطاق",
     "noDataForThisRange": "لا توجد بيانات لهذا النطاق",
     "peak": "· الذروة {{value}}",

@@ -606,7 +606,6 @@
         "openSites": "Webhelyek megnyitása"
       }
     },
-    "relativeOverridesInheritTheCollection": "A relatív felülbírálások öröklik a gyűjtemény előtagját. Kapcsolja be az abszolút módot az olyan előtagok megkerüléséhez, mint a `/shop`.",
     "range": "Időszak",
     "noDataForThisRange": "Nincs adat erre az időszakra",
     "peak": "· csúcs: {{value}}",

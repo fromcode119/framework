@@ -606,7 +606,6 @@
         "openSites": "Otvori Web-mjesta"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativna nadjačavanja nasljeđuju prefiks zbirke. Omogućite apsolutni način kako biste zaobišli prefikse poput `/shop`.",
     "range": "Raspon",
     "noDataForThisRange": "Nema podataka za ovaj raspon",
     "peak": "· vrhunac {{value}}",

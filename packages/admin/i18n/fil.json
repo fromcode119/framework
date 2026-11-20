@@ -606,7 +606,6 @@
         "openSites": "Buksan ang Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Minamana ng mga relative override ang prefix ng collection. I-enable ang absolute mode para lampasan ang mga prefix gaya ng `/shop`.",
     "range": "Saklaw",
     "noDataForThisRange": "Walang data para sa saklaw na ito",
     "peak": "· pinakamataas {{value}}",

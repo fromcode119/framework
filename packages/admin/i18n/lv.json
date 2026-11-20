@@ -606,7 +606,6 @@
         "openSites": "Atvērt vietnes"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relatīvās pārrakstīšanas manto kolekcijas prefiksu. Iespējojiet absolūto režīmu, lai apietu tādus prefiksus kā `/shop`.",
     "range": "Diapazons",
     "noDataForThisRange": "Šim diapazonam nav datu",
     "peak": "· maksimums {{value}}",

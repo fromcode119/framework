@@ -606,7 +606,6 @@
         "openSites": "Apri Siti"
       }
     },
-    "relativeOverridesInheritTheCollection": "Le sostituzioni relative ereditano il prefisso della raccolta. Attiva la modalità assoluta per ignorare prefissi come `/shop`.",
     "range": "Intervallo",
     "noDataForThisRange": "Nessun dato per questo intervallo",
     "peak": "· picco {{value}}",

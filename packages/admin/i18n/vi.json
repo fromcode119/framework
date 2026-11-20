@@ -606,7 +606,6 @@
         "openSites": "Mở Trang"
       }
     },
-    "relativeOverridesInheritTheCollection": "Ghi đè tương đối sẽ kế thừa tiền tố của bộ sưu tập. Bật chế độ tuyệt đối để bỏ qua các tiền tố như `/shop`.",
     "range": "Khoảng thời gian",
     "noDataForThisRange": "Không có dữ liệu trong khoảng thời gian này",
     "peak": "· cao nhất {{value}}",

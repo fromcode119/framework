@@ -606,7 +606,6 @@
         "openSites": "Odpri Spletna mesta"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativne preglasitve podedujejo predpono zbirke. Omogočite absolutni način, da obidete predpone, kot je `/shop`.",
     "range": "Obdobje",
     "noDataForThisRange": "Za to obdobje ni podatkov",
     "peak": "· vrh {{value}}",

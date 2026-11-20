@@ -606,7 +606,6 @@
         "openSites": "Ouvrir Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Les remplacements relatifs héritent du préfixe de la collection. Activez le mode absolu pour ignorer les préfixes comme `/shop`.",
     "range": "Période",
     "noDataForThisRange": "Aucune donnée pour cette période",
     "peak": "· pic {{value}}",

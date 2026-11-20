@@ -606,7 +606,6 @@
         "openSites": "เปิดไซต์"
       }
     },
-    "relativeOverridesInheritTheCollection": "การกำหนดแบบสัมพัทธ์จะรับคำนำหน้าของคอลเลกชัน เปิดโหมดสัมบูรณ์เพื่อข้ามคำนำหน้าอย่าง `/shop`",
     "range": "ช่วง",
     "noDataForThisRange": "ไม่มีข้อมูลในช่วงนี้",
     "peak": "· สูงสุด {{value}}",

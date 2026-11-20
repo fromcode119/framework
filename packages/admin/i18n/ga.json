@@ -606,7 +606,6 @@
         "openSites": "Oscail Suíomhanna"
       }
     },
-    "relativeOverridesInheritTheCollection": "Faigheann sárúcháin choibhneasta réimír an bhailiúcháin le hoidhreacht. Cumasaigh an mód absalóideach chun réimíreanna mar `/shop` a sheachaint.",
     "range": "Raon",
     "noDataForThisRange": "Níl aon sonraí don raon seo",
     "peak": "· buaic {{value}}",

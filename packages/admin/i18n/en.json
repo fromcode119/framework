@@ -606,7 +606,6 @@
         "openSites": "Open Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.",
     "range": "Range",
     "noDataForThisRange": "No data for this range",
     "peak": "· peak {{value}}",

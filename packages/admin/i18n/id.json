@@ -606,7 +606,6 @@
         "openSites": "Buka Situs"
       }
     },
-    "relativeOverridesInheritTheCollection": "Override relatif mewarisi prefiks koleksi. Aktifkan mode absolut untuk melewati prefiks seperti `/shop`.",
     "range": "Rentang",
     "noDataForThisRange": "Tidak ada data untuk rentang ini",
     "peak": "· puncak {{value}}",

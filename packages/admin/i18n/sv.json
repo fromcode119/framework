@@ -606,7 +606,6 @@
         "openSites": "Öppna Webbplatser"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativa åsidosättningar ärver samlingens prefix. Aktivera absolut läge för att kringgå prefix som `/shop`.",
     "range": "Intervall",
     "noDataForThisRange": "Inga data för det här intervallet",
     "peak": "· topp {{value}}",

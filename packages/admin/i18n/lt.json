@@ -606,7 +606,6 @@
         "openSites": "Atidaryti svetaines"
       }
     },
-    "relativeOverridesInheritTheCollection": "Santykiniai perrašymai paveldi kolekcijos prefiksą. Įjunkite absoliutų režimą, kad apeitumėte prefiksus, pvz., `/shop`.",
     "range": "Laikotarpis",
     "noDataForThisRange": "Šiam laikotarpiui duomenų nėra",
     "peak": "· piko reikšmė {{value}}",

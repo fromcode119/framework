@@ -606,7 +606,6 @@
         "openSites": "Otevřít Weby"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativní přepsání dědí prefix kolekce. Zapněte absolutní režim, chcete-li obejít prefixy jako `/shop`.",
     "range": "Rozsah",
     "noDataForThisRange": "Pro tento rozsah nejsou žádná data",
     "peak": "· maximum {{value}}",

@@ -606,7 +606,6 @@
         "openSites": "Abrir Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "As substituições relativas herdam o prefixo da coleção. Ative o modo absoluto para ignorar prefixos como `/shop`.",
     "range": "Intervalo",
     "noDataForThisRange": "Sem dados para este intervalo",
     "peak": "· pico {{value}}",

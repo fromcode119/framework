@@ -606,7 +606,6 @@
         "openSites": "Websites öffnen"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relative Überschreibungen übernehmen das Präfix der Sammlung. Aktivieren Sie den absoluten Modus, um Präfixe wie `/shop` zu umgehen.",
     "range": "Zeitraum",
     "noDataForThisRange": "Keine Daten für diesen Zeitraum",
     "peak": "· Spitze {{value}}",

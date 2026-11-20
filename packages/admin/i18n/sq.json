@@ -606,7 +606,6 @@
         "openSites": "Hap Sajtet"
       }
     },
-    "relativeOverridesInheritTheCollection": "Mbishkrimet relative trashëgojnë prefiksin e koleksionit. Aktivizoni modalitetin absolut për të anashkaluar prefikse si `/shop`.",
     "range": "Intervali",
     "noDataForThisRange": "Nuk ka të dhëna për këtë interval",
     "peak": "· kulmi {{value}}",

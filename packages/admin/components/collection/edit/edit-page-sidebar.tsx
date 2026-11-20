@@ -166,7 +166,7 @@ export class EditPageSidebar extends PureReactor {
               pluginSettings={pluginSettings}
             />
             {hasDisablePermalink && (
-              <div className="mt-4">
+              <div className="fc-permalink-card__row">
                 <Switch
                   checked={Boolean(formData.disablePermalink)}
                   disabled={saving}
@@ -175,7 +175,7 @@ export class EditPageSidebar extends PureReactor {
                 />
               </div>
             )}
-            <p className="mt-3 text-[12px] text-slate-400 font-medium">
+            <p className="fc-permalink-card__hint">
               {AdminI18n.t('collection.edit.permalinkHint')}
             </p>
           </RecordCard>

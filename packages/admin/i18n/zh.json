@@ -606,7 +606,6 @@
         "openSites": "打开站点"
       }
     },
-    "relativeOverridesInheritTheCollection": "相对覆盖会继承集合前缀。启用绝对模式可跳过 `/shop` 等前缀。",
     "range": "范围",
     "noDataForThisRange": "此范围内无数据",
     "peak": "· 峰值 {{value}}",

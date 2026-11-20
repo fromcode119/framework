@@ -606,7 +606,6 @@
         "openSites": "פתיחת אתרים"
       }
     },
-    "relativeOverridesInheritTheCollection": "דריסות יחסיות יורשות את קידומת האוסף. הפעילו מצב מוחלט כדי לעקוף קידומות כמו `/shop`.",
     "range": "טווח",
     "noDataForThisRange": "אין נתונים לטווח זה",
     "peak": "· שיא {{value}}",

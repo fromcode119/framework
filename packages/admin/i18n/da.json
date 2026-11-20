@@ -606,7 +606,6 @@
         "openSites": "Åbn Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relative tilsidesættelser arver samlingens præfiks. Aktivér absolut tilstand for at omgå præfikser som `/shop`.",
     "range": "Periode",
     "noDataForThisRange": "Ingen data for denne periode",
     "peak": "· top {{value}}",

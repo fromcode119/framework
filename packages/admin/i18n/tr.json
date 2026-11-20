@@ -606,7 +606,6 @@
         "openSites": "Siteleri Aç"
       }
     },
-    "relativeOverridesInheritTheCollection": "Göreli geçersiz kılmalar koleksiyon önekini devralır. `/shop` gibi önekleri atlamak için mutlak modu etkinleştirin.",
     "range": "Aralık",
     "noDataForThisRange": "Bu aralık için veri yok",
     "peak": "· en yüksek {{value}}",

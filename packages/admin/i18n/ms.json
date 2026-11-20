@@ -606,7 +606,6 @@
         "openSites": "Buka Laman"
       }
     },
-    "relativeOverridesInheritTheCollection": "Penggantian relatif mewarisi awalan koleksi. Dayakan mod mutlak untuk memintas awalan seperti `/shop`.",
     "range": "Julat",
     "noDataForThisRange": "Tiada data untuk julat ini",
     "peak": "· puncak {{value}}",

@@ -9,6 +9,8 @@ import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
  * field knows nothing of what the value means.
  */
 export class AffixInput extends PureReactor<Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'prefix'>> {
+  /** The input's own attributes plus the declared @prop fields, so call sites are type-checked. */
+  declare props: Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'prefix'> & Pick<AffixInput, 'value' | 'onChange' | 'leading' | 'trailing' | 'label' | 'error' | 'alignEnd' | 'className'>;
   @prop declare value: string | number;
   @prop declare onChange: (value: string) => void;
   /** The fixed part before the value. */

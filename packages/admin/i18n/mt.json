@@ -606,7 +606,6 @@
         "openSites": "Iftaħ is-Siti"
       }
     },
-    "relativeOverridesInheritTheCollection": "L-overrides relattivi jirtu l-prefiss tal-kollezzjoni. Ixgħel il-modalità assoluta biex taqbeż prefissi bħal `/shop`.",
     "range": "Medda",
     "noDataForThisRange": "L-ebda data għal din il-medda",
     "peak": "· quċċata {{value}}",

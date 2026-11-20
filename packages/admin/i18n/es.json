@@ -606,7 +606,6 @@
         "openSites": "Abrir Sitios"
       }
     },
-    "relativeOverridesInheritTheCollection": "Las rutas relativas personalizadas heredan el prefijo de la colección. Active el modo absoluto para omitir prefijos como `/shop`.",
     "range": "Intervalo",
     "noDataForThisRange": "No hay datos para este intervalo",
     "peak": "· máximo {{value}}",

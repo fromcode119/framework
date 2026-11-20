@@ -606,7 +606,6 @@
         "openSites": "Sites openen"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relatieve overschrijvingen nemen het voorvoegsel van de collectie over. Schakel de absolute modus in om voorvoegsels zoals `/shop` te omzeilen.",
     "range": "Bereik",
     "noDataForThisRange": "Geen gegevens voor dit bereik",
     "peak": "· piek {{value}}",

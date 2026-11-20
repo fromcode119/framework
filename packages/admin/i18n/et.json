@@ -606,7 +606,6 @@
         "openSites": "Ava saidid"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suhtelised alistused pärivad kogumi eesliite. Lülitage sisse absoluutne režiim, et eesliiteid nagu `/shop` vältida.",
     "range": "Vahemik",
     "noDataForThisRange": "Selle vahemiku kohta andmed puuduvad",
     "peak": "· tipp {{value}}",

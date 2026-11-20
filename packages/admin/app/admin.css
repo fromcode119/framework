@@ -3736,6 +3736,24 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-affix__input { flex: 1 1 auto; min-width: 0; padding: 6px 8px; border: 0; outline: 0; background: transparent; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text); }
 .fc-affix__input--end { text-align: end; }
 .fc-affix__input::placeholder { color: var(--fc-text-muted); }
+
+/* The record's public address: one line read like a field, opened in place to change it. */
+.fc-permalink { display: flex; align-items: center; gap: 8px; width: 100%; min-height: var(--fc-field-h); padding: 6px 10px; border: 0; border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); text-align: start; cursor: pointer; transition: box-shadow .15s ease; }
+.fc-permalink:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--fc-border-strong); }
+.fc-permalink:focus-visible { outline: 0; box-shadow: 0 0 0 1px var(--primary), 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.fc-permalink:disabled { cursor: not-allowed; background: var(--fc-surface-disabled); }
+.fc-permalink__text { display: flex; flex: 1 1 auto; min-width: 0; flex-direction: column; font-size: var(--fc-control-text); line-height: 18px; overflow-wrap: anywhere; }
+.fc-permalink__prefix { color: var(--fc-text-muted); }
+.fc-permalink__path { color: var(--fc-text); font-weight: 500; }
+.fc-permalink__path--custom { color: var(--primary); }
+.fc-permalink__edit { display: inline-flex; flex: none; color: var(--fc-text-muted); }
+.fc-permalink:hover:not(:disabled) .fc-permalink__edit { color: var(--primary); }
+.fc-permalink-edit { display: flex; flex-direction: column; gap: 12px; }
+.fc-permalink-edit__address { margin: -6px 0 0; font-size: var(--fc-control-text); line-height: 18px; color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-permalink-edit__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fc-permalink-edit__revert { margin-inline-start: auto; }
+.fc-permalink-card__row { margin-top: 16px; }
+.fc-permalink-card__hint { margin: 12px 0 0; font-size: var(--fc-control-text); line-height: 18px; color: var(--fc-text-muted); }
 .fc-affix__input:disabled { color: var(--fc-text-faint); cursor: not-allowed; }
 .fc-affix--error + .fc-field-mark { display: none; }
 
@@ -3918,7 +3936,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 /* Figures side by side: as many to a line as fit, each at least wide enough for its name. */
 .fc-stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: var(--fc-record-gap); }
 /* A link in running text: the text's own colour, underlined, so it reads as a way somewhere. */
-.fc-link { color: var(--fc-text); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--fc-border-strong, var(--fc-border)); }
+.fc-link { color: var(--fc-text); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--fc-border-strong); }
 .fc-link:hover { text-decoration-color: currentColor; }
 
 .fc-stat-strip--tight { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -3935,7 +3953,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-figure__unit { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
 
 /* ── A dashboard widget while the dashboard is being arranged ─────────────────────────────────── */
-.fc-widget-edit { min-width: 0; cursor: grab; touch-action: none; user-select: none; border-radius: var(--fc-card-radius); outline: 1px dashed var(--fc-border-strong, var(--fc-border)); outline-offset: 4px; transition: opacity var(--fc-dur-ui) var(--fc-ease), background-color var(--fc-dur-ui) var(--fc-ease); }
+.fc-widget-edit { min-width: 0; cursor: grab; touch-action: none; user-select: none; border-radius: var(--fc-card-radius); outline: 1px dashed var(--fc-border-strong); outline-offset: 4px; transition: opacity var(--fc-dur-ui) var(--fc-ease), background-color var(--fc-dur-ui) var(--fc-ease); }
 .fc-widget-edit:active { cursor: grabbing; }
 .fc-widget-edit--dragging { opacity: .4; }
 .fc-widget-edit--target { outline: 2px solid var(--fc-text); background: var(--fc-surface-muted); }
