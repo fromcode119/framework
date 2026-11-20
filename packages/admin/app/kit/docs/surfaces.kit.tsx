@@ -48,6 +48,7 @@ export class SurfacesKit {
           { title: 'With a toolbar', flush: true, text: 'A band of its own under the head: what narrows the list at the start, what works on it at the end.', demo: <RecordCard title="Variants" count={8} toolbar={<><Tabs label="Kind" value="all" onChange={() => undefined} tabs={[{ id: 'all', label: 'All' }, { id: 'low', label: 'Low stock' }]} /><Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={15} />}>Add</Button></>}><p className="fc-field-note">Whatever the card holds.</p></RecordCard>, code: '<RecordCard title="Variants" count={8} toolbar={<>…</>}>…</RecordCard>' },
           { title: 'Without a head', flush: true, demo: <RecordCard><p className="fc-field-note">A card with no name is body only.</p></RecordCard>, code: '<RecordCard>…</RecordCard>' },
           { title: 'Card', flush: true, text: 'The bare surface, with or without its own padding.', demo: <div className="fc-kitdoc__stack"><Card title="Card" description="A title and a line under it."><p className="fc-field-note">Padded body.</p></Card><Card noPadding><p className="fc-field-note fc-kitdoc__pad">`noPadding`: the content brings its own.</p></Card></div>, code: '<Card title="Card" description="A title and a line under it.">…</Card>\n<Card noPadding>…</Card>' },
+          { title: 'Card with actions', flush: true, text: '`actions` stand at the end of the card’s title line — a quiet button that works on what the card shows.', demo: <Card title="Process" description="What this plugin runs and has registered." actions={<Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Refresh size={14} />}>Refresh</Button>}><p className="fc-field-note">Whatever the card holds.</p></Card>, code: '<Card title="Process" description="…"\n  actions={<Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Refresh size={14} />}>Refresh</Button>}>\n  …\n</Card>' },
         ],
         options: [
           { name: 'title', type: 'string', does: 'The card’s name. Without one there is no head.' },
@@ -56,6 +57,7 @@ export class SurfacesKit {
           { name: 'menu', type: 'ReactNode', does: 'The card’s ⋯.' },
           { name: 'toolbar', type: 'ReactNode', does: 'A band under the head.' },
           { name: 'Card noPadding', type: 'boolean', initial: 'false', does: 'The content brings its own padding.' },
+          { name: 'Card actions', type: 'ReactNode', does: 'Buttons at the end of the card’s title line.' },
         ],
       },
       {
