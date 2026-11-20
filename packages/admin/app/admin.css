@@ -3741,6 +3741,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
    theme change reaches them too. Declared after the utilities, so they win over a stray utility. */
 .fc-tone-text { color: var(--fc-text); }
 .fc-tone-muted { color: var(--fc-text-muted); }
+.fc-tone-faint { color: var(--fc-text-faint); }
 .fc-tone-line { border-color: var(--fc-border); }
 .fc-tone-divide > * + * { border-color: var(--fc-border); }
 .fc-tone-surface { background-color: var(--fc-surface); }
