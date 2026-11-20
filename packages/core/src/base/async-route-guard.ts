@@ -48,6 +48,10 @@ export class AsyncRouteGuard {
         (result as PromiseLike<unknown>).then(undefined, (error: unknown) => {
           AsyncRouteGuard.forward(error, req, res, next, source);
         });
+        // Not handed back: Express 5 forwards a returned promise's rejection to next() itself, so the
+        // error went through the chain twice — the second time after the answer was sent, where Express's
+        // last-resort handler printed its stack for every ordinary 404 a plugin threw.
+        return undefined;
       }
 
       return result;

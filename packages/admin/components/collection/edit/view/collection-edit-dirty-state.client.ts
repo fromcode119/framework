@@ -32,7 +32,7 @@ export class CollectionEditDirtyState {
    * to `undefined` are not reported as an edit — that difference is an artefact of the wire format, not
    * something the operator did. Everything else compares strictly, so a real change is never swallowed.
    */
-  private static equal(a: unknown, b: unknown): boolean {
+  static equal(a: unknown, b: unknown): boolean {
     if (a === b) return true;
     if (a === null || a === undefined || b === null || b === undefined) return a == null && b == null;
 

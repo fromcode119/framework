@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CustomFieldErrorBoundary } from '@/components/collection/custom-field-error-boundary';
+import { RecordReloadContext } from '@/components/collection/edit/record-reload-context.client';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class FieldCustomComponent extends PureReactor {
@@ -55,7 +56,7 @@ export class FieldCustomComponent extends PureReactor {
 
     if (canRenderComponent) {
       try {
-        const customNode = React.createElement(CustomComponent, {
+        const customNode = <RecordReloadContext.context.Consumer>{(reloadRecord) => React.createElement(CustomComponent, {
           value: currentValue,
           onChange: updateValue,
           theme,
@@ -71,7 +72,9 @@ export class FieldCustomComponent extends PureReactor {
           // password-gated unlock. Without it, merging silently removed the only way past read-only.
           onRequestReadOnlyOverride: onRequestReadOnlyOverride || (() => {}),
           readOnlyOverrideGranted: Boolean(readOnlyOverrideGranted),
-        });
+          // Reads the saved record again after the component's own action wrote it; null off a saved record.
+          reloadRecord,
+        })}</RecordReloadContext.context.Consumer>;
 
         const boundNode = (
           <CustomFieldErrorBoundary componentName={componentName}>

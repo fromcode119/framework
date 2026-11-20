@@ -58,7 +58,7 @@ export class CollectionRecordPart extends Reactor {
 
   private async fetchItems(fresh: boolean): Promise<void> {
     try {
-      const result = await RecordPartSource.load(this.links.url, fresh);
+      const result = await RecordPartSource.load(this.links.url, fresh, this.links.reads);
       if (!this.alive) return;
       this.actions = result.actions;
       this.items = result.items;

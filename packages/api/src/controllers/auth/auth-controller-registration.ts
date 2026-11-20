@@ -175,6 +175,8 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const verification = await this.issueEmailVerificationToken(user.id, email);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
     const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: this.readUserFirstName(user) });
+    // The site's mail failed, not the person: this request does not use up their allowance.
+    if (!emailSent) await this.restoreVerificationResendState(throttleKey, existingThrottleState);
     if (!emailSent && process.env.NODE_ENV === 'production') return res.status(500).json({ error: 'Unable to send verification email. Please try again later.', code: AuthErrorCode.EMAIL_SEND_FAILED.value });
     const response: Record<string, any> = { success: true, message: 'Verification email sent.' };
     if (process.env.NODE_ENV !== 'production') { response.verificationUrl = verificationUrl; response.emailDelivery = emailSent ? 'sent' : 'failed'; }
@@ -236,6 +238,15 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   protected requiresVerificationResendCaptcha(settings: ILoginThrottleSettings): boolean {
     return settings.captchaEnabled;
+  }
+
+  /** Puts the count back to what it was before this request — deleted when there was none. */
+  protected async restoreVerificationResendState(key: string, previous: ILoginThrottleState): Promise<void> {
+    if (!Number(previous.count || 0)) {
+      await this.clearLoginThrottleState(key);
+      return;
+    }
+    await this.upsertMeta(key, JSON.stringify(previous));
   }
 
   protected async recordVerificationResendAttempt(

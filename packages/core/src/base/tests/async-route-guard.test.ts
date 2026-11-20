@@ -138,3 +138,31 @@ describe('AsyncRouteGuard', () => {
     expect(forwarded).toBe(boom);
   });
 });
+
+describe('AsyncRouteGuard under Express 5, which forwards a returned promise itself', () => {
+  it('sends a rejection through the error handlers once, and Express prints nothing', async () => {
+    const app = express();
+    app.set('env', 'development');
+    const notFound = Object.assign(new Error('Navigation not found'), { status: 404 });
+    app.get('/navigation/:slug', AsyncRouteGuard.wrap(async () => { throw notFound; }, 'alpha'));
+    let answered = 0;
+    app.use((error: { status: number; message: string }, _req: Request, res: Response, next: NextFunction) => {
+      answered += 1;
+      if (res.headersSent) { next(error); return; }
+      res.status(error.status).json({ error: error.message });
+    });
+    const printed = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const server = app.listen(0);
+    try {
+      const port = (server.address() as { port: number }).port;
+      const reply = await fetch(`http://127.0.0.1:${port}/navigation/missing`);
+      expect(reply.status).toBe(404);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(answered).toBe(1);
+      expect(printed).not.toHaveBeenCalled();
+    } finally {
+      printed.mockRestore();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
+});

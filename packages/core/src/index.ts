@@ -297,6 +297,7 @@ export { EmailPreferencesTokenService } from '@core/email/email-preferences-toke
 export { FrameworkEmailSender } from '@core/email/framework-email-sender';
 export { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
 export { EmailLogoUrl } from '@core/email/email-logo-url';
+export { EmailCategoryAvailability } from '@core/email/email-category-availability';
 export { MediaPickerAsset } from '@core/utils/media-picker-asset';
 export { SiteIconSource } from '@core/enums/site-icon-source.enum';
 export { SiteIconChoice } from '@core/theme/site-icon/site-icon-choice';

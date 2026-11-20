@@ -27,4 +27,10 @@ export interface IEmailCategory {
    * cannot be muted. Honoured only for `admin` streams.
    */
   locked?: boolean;
+  /**
+   * The declaring plugin's own on/off setting that offers this stream on a site (`wishlistEnabled`). While
+   * it is off — or has never been set and its schema default is off — the stream is not listed: a site that
+   * sends no wishlist mail must not ask its customers whether they want it. Absent, the stream is always listed.
+   */
+  enabledBy?: string;
 }

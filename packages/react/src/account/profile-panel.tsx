@@ -75,6 +75,19 @@ export class AccountProfilePanel extends PluginComponent {
     );
   }
 
+  /** The sign-in address: shown so the person can see which one the account uses. There is no way to change it here. */
+  private renderEmail(): ReactNode {
+    const email = String(this.person?.email ?? '').trim();
+    if (!email) return null;
+    return (
+      <label className={AccountClass.of('field', 'wide')} key="email">
+        {this.t('account.profile.email')}
+        <input className={AccountClass.of('input')} type="email" value={email} readOnly aria-describedby="fc-acct-profile-email-note" />
+        <small id="fc-acct-profile-email-note" className={AccountClass.of('intro')}>{this.t('account.profile.emailNote')}</small>
+      </label>
+    );
+  }
+
   render(): ReactNode {
     const { loading, saving, saved, error } = this;
     if (loading) return <div className={AccountClass.of('card')}>{this.t('account.profile.loading')}</div>;
@@ -82,6 +95,7 @@ export class AccountProfilePanel extends PluginComponent {
       <div className={AccountClass.of('card')}>
         <h2 className={AccountClass.of('h2')}>{this.t('account.profile.heading')}</h2>
         <div className={AccountClass.of('grid-2')}>
+          {this.renderEmail()}
           {this.renderField('firstName', 'text')}
           {this.renderField('lastName', 'text')}
           {this.renderField('birthDate', 'date')}

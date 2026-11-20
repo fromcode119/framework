@@ -55,6 +55,8 @@
       }
     },
     "profile": {
+      "email": "Имейл",
+      "emailNote": "Адресът, с който влизате.",
       "heading": "Лични данни",
       "firstName": "Име",
       "lastName": "Фамилия",

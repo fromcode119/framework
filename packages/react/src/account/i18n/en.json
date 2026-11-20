@@ -55,6 +55,8 @@
       }
     },
     "profile": {
+      "email": "Email",
+      "emailNote": "The address you sign in with.",
       "heading": "Personal details",
       "firstName": "First name",
       "lastName": "Last name",

@@ -35,6 +35,7 @@ export class EmailCategoryRegistry {
       pluginSlug: String(category?.pluginSlug || '').trim(),
       audience: category?.audience === EmailCategoryAudience.ADMIN ? EmailCategoryAudience.ADMIN : EmailCategoryAudience.PERSON,
       locked: category?.audience === EmailCategoryAudience.ADMIN && category?.locked === true,
+      ...(String(category?.enabledBy || '').trim() ? { enabledBy: String(category.enabledBy).trim() } : {}),
     });
   }
 

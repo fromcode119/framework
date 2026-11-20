@@ -29,6 +29,10 @@ export interface ICollectionEditPageViewModel {
   handleSubmit: (e?: any, summary?: string) => Promise<any>;
   /** Saves the record with a status chosen from its ⋯ menu; a refused save keeps the stored one. */
   commitStatus: (value: string) => Promise<void>;
+  /** Reads the saved record again after a field's own action wrote it; see `RecordReloadContext`. */
+  reloadRecord: () => Promise<Record<string, any>>;
+  /** How many times the saved record has been read again since the page loaded it. */
+  recordReads: number;
   saving: boolean;
   fieldErrors: Record<string, string[]>;
   resolvedTitleValue: string;
