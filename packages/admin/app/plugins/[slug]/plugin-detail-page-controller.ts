@@ -45,7 +45,6 @@ export class PluginDetailPageController {
     const searchParams = useSearchParams();
     const [plugin, setPlugin] = useState<ILoadedPlugin | null>(null);
     const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [installOperation, setInstallOperation] = useState<IPluginInstallOperation | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -210,19 +209,20 @@ export class PluginDetailPageController {
       }
     };
 
-    const handleSaveSandbox = async () => {
-      if (!plugin) return;
-      setIsSaving(true);
+    /** Saved from the page's save bar; false when refused, so the bar keeps the values unsaved. */
+    const handleSaveSandbox = async (): Promise<boolean> => {
+      if (!plugin) return false;
       try {
         // No optimistic write to `plugin`: `triggerRefresh` below re-reads the sandbox state from the server.
+        // A plain success needs no message (the bar closing says it); a restart that is needed or failed does.
         const notice = PluginDetailPageService.sandboxSaveNotice(await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings), plugin.manifest.name);
-        notify(notice.type, notice.title, notice.message);
+        if (notice) notify(notice.type, notice.title, notice.message);
         triggerRefresh();
+        return true;
       } catch (error: any) {
         console.error('[PluginDetailPage] Save sandbox error:', error);
         notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.saveFailed'), error.message || AdminI18n.t('plugins.detail.failedToUpdateSandboxLimits'));
-      } finally {
-        setIsSaving(false);
+        return false;
       }
     };
 
@@ -274,7 +274,6 @@ export class PluginDetailPageController {
       installOperation,
       isDeleting,
       isolationDefaults,
-      isSaving,
       isUpdating,
       loading,
       loadingLogs,

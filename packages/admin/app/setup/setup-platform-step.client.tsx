@@ -39,7 +39,6 @@ export class SetupPlatformStep extends PureReactor {
             label={this.text('setup.platform.name')}
             value={this.platformName}
             onChange={this.handleName}
-            className="py-3 text-sm"
           />
           <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
             {this.text('setup.platform.nameHelp')}

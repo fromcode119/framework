@@ -162,6 +162,7 @@
       "reorderHandle": "拖曳以重新排序，或聚焦後使用方向鍵",
       "reorderEnable": "以清單自訂順序顯示後即可重新排序",
       "reorderFailed": "無法儲存新的順序",
+      "noMatch": "沒有符合搜尋或篩選條件的項目。",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "匯入 {{file}}？",
@@ -234,7 +235,6 @@
       "editSection": "編輯",
       "notFilledIn": "未填寫",
       "statusSection": "狀態",
-      "statusConfirm": "將狀態變更為「{{status}}」？",
       "recordSection": "記錄",
       "showJson": "以 JSON 顯示",
       "showForm": "以表單顯示",
@@ -245,7 +245,8 @@
       "copied": "已複製",
       "more": "更多",
       "moreFields": "{{count}} 個欄位",
-      "moreOneField": "{{count}} 個欄位"
+      "moreOneField": "{{count}} 個欄位",
+      "statusConfirm": "將狀態變更為「{{status}}」？"
     },
     "notFound": {
       "title": "找不到集合",
@@ -366,7 +367,8 @@
     "reset": "重設",
     "notScheduledYet": "尚未排程",
     "more": "更多動作",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "移除"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "選擇顏色",
-      "colour": "顏色",
-      "pick": "挑選顏色",
       "hex": "十六進位色碼",
-      "confirm": "確認顏色",
       "notSet": "未設定"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "偵測到未啟用的相依套件",
       "intro": "若要啟用 {{plugin}}，需要處理以下項目：",
       "notInstalled": "未安裝",
+      "inactive": "已關閉",
+      "incompatible": "版本不符",
       "requires": "需要版本 {{version}}。可從市集下載。",
       "needsActivation": "已安裝但需要啟用（版本 {{version}}）。",
       "mismatch": "版本不符：需要 {{expected}}，目前為 {{actual}}。",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "平台預覽",
-      "image": "預覽 {{number}}"
+      "image": "預覽 {{number}}",
+      "previous": "上一個",
+      "next": "下一個"
     },
     "menuField": {
       "newItem": "新選單項目",
-      "structure": "選單結構",
-      "add": "新增選單項目"
+      "add": "新增選單項目",
+      "reorder": "拖曳以移動；方向鍵：上下移動，向右巢狀，向左移出"
     },
     "field": {
       "notSet": "未設定",
@@ -461,8 +464,8 @@
       "record": "記錄"
     },
     "array": {
-      "addNew": "新增{{label}}",
-      "item": "項目"
+      "add": "新增",
+      "reorder": "拖曳以移動，或使用方向鍵"
     },
     "stepper": {
       "increment": "增加",
@@ -528,9 +531,7 @@
       "noContact": "聯絡人中沒有電子郵件或電話",
       "hasLogin": "具有登入帳號",
       "noLogin": "無登入帳號",
-      "source": "姓名、電子郵件與電話來自聯絡人 #{{id}},請至該處修改。",
       "open": "在聯絡人中開啟",
-      "choose": "選擇其他人",
       "searchFailed": "目前無法搜尋聯絡人。",
       "noMatch": "聯絡人中沒有符合的人。請在下方輸入其資料,儲存後即會新增至聯絡人。",
       "ref": "聯絡人 #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "開啟網站"
       }
     },
-    "relativeOverridesInheritTheCollection": "相對覆寫會沿用集合的前綴。啟用絕對模式即可略過 `/shop` 等前綴。",
     "range": "範圍",
     "noDataForThisRange": "此範圍內沒有資料",
     "peak": "· 峰值 {{value}}",
@@ -626,7 +626,8 @@
       "filters": "篩選條件",
       "clearFilters": "全部清除",
       "removeFilter": "移除「{{label}}」篩選條件",
-      "showResults": "顯示 {{count}} 筆結果"
+      "showResults": "顯示 {{count}} 筆結果",
+      "showResultsOne": "顯示 1 筆結果"
     },
     "personFieldPicker": {
       "none": "不儲存至聯絡人欄位",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} 的沙箱限制已儲存，但其處理程序無法以新設定重新啟動：{{value}}",
       "restartRequired": "需要重新啟動",
       "sandboxSettingsForWereSaved": "{{name}} 的沙箱設定已儲存，但須重新啟動 API 後才會生效。",
-      "resourcesUpdated": "資源已更新",
-      "sandboxLimitsForUpdated": "{{name}} 的沙箱限制已更新。",
       "sandboxDisabledFor": "已停用 {{name}} 的沙箱。",
       "saveFailed": "儲存失敗",
       "failedToUpdateSandboxLimits": "無法更新沙箱限制。",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "閒置中，近期沒有記錄到任何事件。",
       "updating": "正在更新...",
       "updateAvailable": "有可用更新",
-      "updatePolicy": "更新原則",
       "saveChanges": "儲存變更",
       "unsavedChanges": "有未儲存的變更",
       "exportSettingsAsJson": "將設定匯出為 JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "v{{version}} 新功能",
       "installedVersion": "已安裝 {{version}}",
       "marketplaceVersion": "市集版本 {{version}}",
-      "saving": "儲存中...",
       "saveSettings": "儲存設定",
       "viewDefinition": "檢視定義",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "外觀",
       "failedToLoadAppearances": "無法載入外觀",
       "failedToSaveShadowSetting": "無法儲存陰影設定",
+      "failedToSaveMenuSetting": "選單設定儲存失敗",
       "switchedToReloading": "已切換至「{{slug}}」，正在重新載入…",
       "failedToSwitchAppearance": "無法切換外觀",
       "installFailed": "安裝失敗",
@@ -1919,6 +1917,8 @@
       "install": "安裝",
       "surfaceShadows": "表面陰影",
       "depthOnPanelsDialogsAnd": "為面板、對話方塊與按鈕加上立體感。關閉後管理後台會呈現扁平風格，邊框與圓角則維持不變。",
+      "secondMenuColumn": "第二選單欄",
+      "sectionPagesBesideTheMenu": "分區的頁面排在選單旁邊的一欄中。關閉後它們會在同一個選單裡自己那一行下方展開，每個畫面寬出 220px。",
       "installFromAPackageUrl": "從套件 URL 安裝",
       "builtIn": "內建",
       "installed": "已安裝",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP 位置未更新",
       "geoUnavailable": "無法取得 IP 位置狀態",
       "geoAttribution": "IP 地理定位資料由 {{name}} 提供（{{license}}）。啟用期間每月更新。",
-      "geoSaved": "已儲存",
-      "geoSavedOn": "正在下載資料庫，大小約 60 MB。",
-      "geoSavedOff": "已從伺服器移除資料庫。",
       "everyPluginRunsIsolated": "隔離：每個外掛皆在獨立的程序中執行。記憶體上限與執行期限適用於所有外掛；CPU 配額、總記憶體、磁碟與程序數僅適用於網站自行上傳的外掛。",
       "schemaOrphans": "資料庫結構",
       "schemaOrphansHelp": "資料庫中仍存在、但已無任何項目宣告的欄位。平台只會列出這些欄位，在您決定前不會刪除任何欄位；欄位一經刪除即無法復原。",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "已停用 — 此端點對所有人一律回應 403。",
       "mediaPayloadLimitMb": "媒體資料大小上限 (MB)",
       "maximumDecodedUploadOrRemote": "MCP 媒體工具可接受的解碼後上傳或遠端下載大小上限。",
-      "saveLimit": "儲存上限",
       "allSites": "所有網站",
       "issuedBeforeSites": "於網站功能推出前核發",
       "noTokensYet": "尚無權杖。",
@@ -3210,12 +3206,17 @@
       "platformDefault": "平台預設值",
       "thisSite": "此網站",
       "inForceNow": "目前生效",
-      "saving": "正在儲存…",
-      "savePolicy": "儲存政策",
       "thePlatformDefaultIsSet": "平台預設值由平台管理員設定。",
       "useTheLayerBelow": "使用下層設定",
       "whyTheLawRequiresThese": "法律要求保留這些紀錄的原因",
-      "inheritsThePlatformDefault": "繼承：平台預設值"
+      "inheritsThePlatformDefault": "繼承：平台預設值",
+      "strategyDelete": "刪除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保留",
+      "declaredBy": "由 {{plugin}} 宣告的預設值",
+      "inheritsValue": "繼承：{{value}}",
+      "legalBasis": "法律依據",
+      "theSiteColumnIsSet": "「此網站」欄位需在網站內設定。若要變更，請在切換器中選擇網站。"
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "顯示名稱",
     "thisPersonHasALogin": "此人員有登入帳號；電子郵件需在該帳號上變更。",
     "birthDate": "出生日期",
-    "saveChanges": "儲存變更",
     "sendPasswordResetEmail": "寄送密碼重設電子郵件",
     "cancel": "取消",
     "accountManagement": "帳號管理",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "請手動複製復原碼。",
     "nameRequired": "必須填寫名稱",
     "enterATokenNameFirst": "請先輸入權杖名稱。",
-    "tokenCreated": "已建立權杖",
     "copyTheTokenNowIt": "請立即複製權杖，此權杖只會顯示一次。",
     "failedToCreateApiToken": "無法建立 API 權杖",
     "areYouSureYouWant2": "確定要停用此使用者的雙重驗證嗎？這會降低帳號安全性。",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "已撤銷工作階段",
     "deviceSessionRevokedSuccessfully": "已成功撤銷裝置工作階段。",
     "failedToRevokeSession": "無法撤銷工作階段",
-    "rolesUpdated": "已更新角色",
-    "theUserSRolesWere": "已儲存此使用者的角色。",
     "saveFailed": "儲存失敗",
     "failedToSaveRoles": "無法儲存角色。",
     "loadingRoles": "正在載入角色",
@@ -3448,8 +3445,6 @@
     "remove": "移除",
     "loadFailed": "載入失敗",
     "couldNotRetrieveRoleDetails": "無法取得角色詳細資料。",
-    "roleUpdated": "已更新角色",
-    "wasSaved": "已儲存「{{name}}」。",
     "updateFailed": "更新失敗",
     "anErrorOccurredWhileSaving": "儲存時發生錯誤。",
     "loadingRole": "正在載入角色...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "返回使用者",
     "selfServiceSecurityControls": "自助式安全性控制",
     "sessionDeviceControlsAndPersonal": "工作階段／裝置控制與個人 API 權杖僅在檢視您自己的使用者帳號時提供。",
-    "securityRecommendations": "安全性建議",
     "twoFactorAuthentication": "雙重驗證",
-    "activeAndProtectingThisAccount": "已啟用，正在保護此帳號",
-    "notEnabledHighlyRecommendedFor": "未啟用 - 強烈建議管理員帳號啟用",
-    "passwordProtected": "已設定密碼保護",
-    "accountHasASecurePassword": "帳號已設定安全的密碼",
-    "administratorAccess": "管理員存取權",
     "fullSystemAccess2faStrongly": "完整系統存取權 - 強烈建議啟用雙重驗證",
     "personalApiTokens": "個人 API 權杖",
     "tokenNameEGCi": "權杖名稱（例如 CI 部署）",
     "days": "天數",
     "createToken": "建立權杖",
-    "copyNowShownOnce": "立即複製（僅顯示一次）",
     "loadingApiTokens": "正在載入 API 權杖...",
     "noApiTokensCreatedYet": "尚未建立任何 API 權杖。",
     "revoke": "撤銷",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "登入與工作階段活動",
     "loadingAuthActivity": "正在載入驗證活動...",
     "noRecentLoginSessionEvents": "此使用者近期沒有登入／工作階段事件。",
-    "unknownTime": "未知時間",
-    "activityEvent": "活動事件",
     "openFullGlobalActivity": "開啟完整的全域活動",
-    "2faStatus": "雙重驗證狀態",
     "addAnExtraLayerOf": "使用驗證器應用程式（TOTP）增加一層額外的安全防護",
-    "recommended": "建議",
     "enableTwoFactorAuthenticationTo": "啟用雙重驗證，以限時一次性密碼（TOTP）保護此帳號。",
     "enable2fa": "啟用雙重驗證",
     "step1ScanQrCode": "步驟 1：掃描 QR 碼",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "步驟 2：驗證代碼",
     "enterThe6DigitCode": "請輸入驗證器應用程式中的 6 位數代碼以完成設定：",
     "verifyEnable": "驗證並啟用",
-    "protectionActive": "保護已啟用",
     "thisAccountRequiresA6": "此帳號登入時需要輸入驗證器應用程式產生的 6 位數代碼。",
     "regenerateRecoveryCodes": "重新產生復原碼",
     "disable2fa": "停用雙重驗證",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "撤銷其他工作階段",
     "loadingSessions": "正在載入工作階段...",
     "noActiveSessions": "沒有作用中的工作階段。",
-    "currentSession": "目前的工作階段",
-    "deviceSession": "裝置工作階段",
     "current": "目前",
     "unknownDevice": "未知裝置",
     "editAccount2": "編輯帳號",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "開啟使用者記錄",
     "token": "權杖",
     "createdOn": "建立於 {{date}}",
-    "notAvailable": "不適用",
     "revokedOn": "撤銷於 {{date}}",
     "recoveryCodesRemaining": "剩餘復原碼：",
-    "unknownValue": "未知",
     "expiresOn": "到期：{{date}}",
     "person2": "人員",
     "added": "新增日期",
@@ -3591,12 +3570,10 @@
       "loading": "正在載入個人欄位…",
       "loadFailed": "無法載入個人欄位。",
       "saveFailed": "無法儲存欄位。",
-      "saved": "欄位已儲存。",
       "empty": "尚無個人欄位。新增一個欄位，即可開始為每個人保存該資料。",
       "noneDeclared": "此網站尚無個人欄位。",
       "declare": "新增個人欄位",
       "manage": "管理欄位",
-      "save": "儲存欄位",
       "saveField": "儲存欄位",
       "delete": "刪除",
       "deleteTitle": "要刪除此欄位嗎？",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "有效期（天）",
+    "revokeOtherSessionsConfirm": "其他所有裝置會立即登出。",
+    "revokeSessionConfirm": "該裝置會立即登出。",
+    "revokeCurrentSessionConfirm": "這是你正在使用的裝置。你會立即登出。",
+    "revokeTokenConfirm": "「{{name}}」會立即停止運作。",
+    "twoFactorTurnedOff": "此網站已關閉雙重驗證登入，因此無法在這裡設定。",
+    "openSecuritySettings": "開啟安全設定"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "網站設定（{{what}}）需在各網站內設定，請從網站選單中選擇一個網站。",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "無法開啟此網站的預覽。",
     "couldNotLoadTheSite": "無法載入網站。",
     "couldNotReloadThePlugin": "無法重新載入外掛清單。",
-    "siteSaved": "網站已儲存",
-    "routingFollowsImmediatelyNoRestart": "路由會立即生效，無須重新啟動。",
     "notSaved": "未儲存",
     "theSiteCouldNotBe2": "無法儲存網站。",
     "couldNotOpenTheSite": "無法開啟網站",
@@ -3789,7 +3771,6 @@
     "visit": "前往",
     "openThisSite": "開啟此網站",
     "export": "匯出",
-    "save": "儲存",
     "couldNotLoadCertificates": "無法載入憑證。",
     "couldNotSwitchThisHost": "無法將此主機切換為自動。",
     "couldNotSwitchThisHost2": "無法將此主機切換為自動（萬用字元）。",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "有可用的更新",
     "isNowActive": "{{name}} 現已啟用。",
     "themeHasBeenUpdated2": "佈景主題 {{name}} 已更新。",
-    "configurationSaved": "設定已儲存",
-    "visualProtocolsUpdatedSuccessfully": "外觀設定已成功更新。",
     "saveFailed": "儲存失敗",
     "hasBeenRemoved2": "{{name}} 已移除。",
     "seedsExecuted": "種子資料已執行",
@@ -4300,7 +4279,6 @@
     "layoutSection": "版面配置",
     "extensionsSection": "擴充功能",
     "versionReady": "版本 {{version}} 已就緒",
-    "saveChanges": "儲存變更",
     "runSeedsHint": "將佈景主題的種子資料（範例頁面與內容）重新套用到此網站。",
     "resetThemeHint": "清除此網站已儲存的佈景主題設定，並重新套用種子資料。",
     "notActiveHint": "此網站使用其他佈景主題。",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} 的變更內容",
     "whatChanged": "變更內容",
-    "closeBuildSourceDialog": "關閉建置來源對話方塊",
-    "close": "關閉",
     "couldNotInstallThatVersion": "無法安裝該版本。",
     "couldNotChangeAutomaticUpdating": "無法變更自動更新設定。",
     "failed": "失敗",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "自動憑證已關閉。{{reason}}",
     "automaticCertificatesComeFrom": "自動憑證由 {{authority}} 簽發。",
     "noSecretKeyIsConfigured": "此伺服器未設定 SECRET_KEY，因此無法儲存私密金鑰。設定之前將停用上傳功能。",
-    "nothingToSavePasteA": "沒有可儲存的內容——請貼上權杖，或使用「清除」移除已儲存的權杖。",
     "savedThisSiteNowUses": "已儲存。此網站現在使用自己的 Cloudflare 權杖。",
     "removedThisSiteFallsBack": "已移除。此網站改用平台的權杖。",
     "couldNotSaveTheToken": "無法儲存權杖。",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "此網站的權杖",
     "savedLeaveBlankToKeep": "已儲存——留空即保留，或使用「清除」移除",
     "pasteACloudflareApiToken": "貼上 Cloudflare API 權杖",
-    "save": "儲存",
     "clear": "清除",
     "nothingStoredThisHostCannot": "未儲存任何憑證——此平台無法透過 HTTPS 提供此主機。",
     "nothingStoredHereTlsFor": "此處未儲存任何憑證——此主機的 TLS 在抵達平台前即已終止，憑證存放在該處。",
@@ -4706,36 +4680,26 @@
     "roles": "角色",
     "permissions": "權限",
     "eventDetails": "事件詳細資料",
-    "context": "情境",
     "resource": "資源",
     "system": "系統",
     "timestamp": "時間戳記",
-    "authority": "權限來源",
-    "actorId": "執行者 ID",
-    "type": "類型",
-    "systemLog": "系統記錄",
-    "audit": "稽核：{{status}}",
-    "activityMessage": "活動訊息",
-    "actionTaken": "執行的動作",
-    "resourcePool": "資源池",
-    "rawMetadata": "原始中繼資料",
     "thisEntryIsPartOf": "此項目屬於不可變更的稽核軌跡。",
     "exportJson": "匯出 JSON",
     "event": "事件",
     "actor": "執行者",
+    "plugin": "外掛",
     "activity": "活動",
     "status": "狀態",
     "action": "動作",
     "time": "時間",
-    "logSignature": "記錄簽章：{{id}}",
     "internal": "內部",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "項目 #{{id}}",
+    "recordedData": "記錄的資料"
   },
   "mediaPicker": {
     "showingOnly": "僅顯示：{{types}}",
@@ -4782,7 +4748,8 @@
       "task": "任務",
       "schedule": "執行頻率",
       "lastRun": "上次執行",
-      "nextRun": "下次執行"
+      "nextRun": "下次執行",
+      "duration": "持續時間"
     },
     "ownedBy": "{{owner}}",
     "platform": "平台",

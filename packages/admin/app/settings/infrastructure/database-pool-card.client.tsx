@@ -1,11 +1,11 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
@@ -23,11 +23,20 @@ export class DatabasePoolCard extends AdminComponent {
   @state loaded = false;
   @state saving = false;
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ max: this.max }),
+      () => this.save(),
+      (values) => { this.max = values.max; },
+    );
     try {
       const settings = await AdminSystemSettingsClient.getAll();
       this.max = String(settings?.[SystemConstants.META_KEY.DATABASE_POOL_MAX] ?? '');
       this.loaded = true;
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.databasePoolUnavailable'), err?.message || '');
     }
@@ -42,10 +51,19 @@ export class DatabasePoolCard extends AdminComponent {
       await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.DATABASE_POOL_MAX]: this.max });
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.databasePoolSaved'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || '');
     } finally {
       this.saving = false;
     }
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -57,13 +75,10 @@ export class DatabasePoolCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.databasePoolHelp')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-40">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={5} max={80} step={5} value={this.max} onChange={this.onMax} disabled={!this.loaded} />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
-              {AdminI18n.t('settings.infrastructure.save')}
-            </Button>
           </div>
         </SettingRow>
       </Card>

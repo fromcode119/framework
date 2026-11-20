@@ -1,11 +1,13 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
@@ -29,7 +31,6 @@ import { FrameworkIcons } from '@fromcode119/react';
  */
 export class PersonalDataSettingsPage extends AdminComponent {
   @state isLoading = true;
-  @state isSaving = false;
   @state loadError: string | null = null;
   /** `null` means NEVER LOADED — never an empty list, which would claim this platform holds nothing. */
   @state datasets: IPersonalDataPolicyDataset[] | null = null;
@@ -49,8 +50,24 @@ export class PersonalDataSettingsPage extends AdminComponent {
   private hadSite = false;
   private hadPlatform = false;
 
+  /** What the page's one save bar reads and writes; made once the page is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount() {
+    this.pending = new PendingSave(
+      () => ({ site: this.site, platform: this.platform }),
+      () => this.save(),
+      (values) => { this.site = values.site; this.platform = values.platform; },
+    );
     await this.load();
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   @bound
@@ -76,9 +93,11 @@ export class PersonalDataSettingsPage extends AdminComponent {
       // column is read against it and hiding it would make the inherited value unexplainable.
       const inSite = platformKeys?.tenantMode === true && platformKeys?.siteSelected !== false;
       this.platformEditable = Boolean(platformKeys?.editable) && !inSite;
-      // With no site chosen the settings PUT refuses any per-site key outright, so the site column is
-      // shown as read-only rather than offering an edit that cannot be saved.
-      this.siteEditable = Boolean(platformKeys?.siteSelected);
+      // With no site chosen on a multi-site deployment the settings PUT refuses any per-site key, so
+      // the site column is read-only there. A single-site deployment has no such scope: its one site's
+      // row is always the one written (the rule `PlatformSettingLocks` applies to every settings page).
+      this.siteEditable = platformKeys?.tenantMode !== true || platformKeys?.siteSelected !== false;
+      this.pending?.mark();
     } catch (error: any) {
       this.loadError = error?.message || AdminI18n.t('settings.personalData.unknownError');
     } finally {
@@ -103,7 +122,6 @@ export class PersonalDataSettingsPage extends AdminComponent {
    */
   @bound
   private async save(): Promise<void> {
-    this.isSaving = true;
     try {
       const payload: Record<string, unknown> = {};
       if (this.siteEditable && (this.hadSite || Object.keys(this.site).length > 0)) {
@@ -119,24 +137,20 @@ export class PersonalDataSettingsPage extends AdminComponent {
         title: AdminI18n.t('settings.personalData.erasurePolicySaved'), message: AdminI18n.t('settings.personalData.theNewPolicyAppliesTo'), type: NotificationType.INFO,
       });
     } catch (error: any) {
+      this.pending?.failed();
       this.runtime.notify.addNotification({
         title: AdminI18n.t('settings.personalData.error'), message: error?.message || AdminI18n.t('settings.personalData.couldNotSaveTheErasure'), type: NotificationType.ERROR,
       });
-    } finally {
-      this.isSaving = false;
     }
   }
 
   render(): ReactNode {
-    const theme = this.theme;
-    const isDark = theme === ThemeMode.DARK;
-
     if (this.isLoading) return <Loader />;
 
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <CompactPageHeader icon={<FrameworkIcons.ShieldCheck size={18} strokeWidth={2} />} title={AdminI18n.t('settings.personalData.personalData')} subtitle={AdminI18n.t('settings.personalData.whatHappensToEachDataset')} />
-        <div className="w-full p-6">
+        <div className="w-full py-6">
 
         {this.loadError && (
           <LoadErrorPanel
@@ -149,40 +163,43 @@ export class PersonalDataSettingsPage extends AdminComponent {
 
         {this.datasets && (
           <Card title={AdminI18n.t('settings.personalData.erasureStrategyPerDataset')}>
-            <div className={`hidden md:grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 pb-2 text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              <span>{AdminI18n.t('settings.personalData.dataset')}</span>
-              <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
-              <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
-              <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
+            <div className="fc-pd">
+              <div className="fc-pd__grid fc-pd__head">
+                <span>{AdminI18n.t('settings.personalData.dataset')}</span>
+                <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
+                <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
+                <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
+              </div>
+              {this.datasets.map((dataset) => (
+                <PersonalDataPolicyRow
+                  key={dataset.id}
+                  dataset={dataset}
+                  site={this.site[dataset.id]}
+                  platform={this.platform[dataset.id]}
+                  platformEditable={this.platformEditable}
+                  siteEditable={this.siteEditable}
+                  onSiteChange={this.onSiteChange}
+                  onPlatformChange={this.onPlatformChange}
+                  theme={this.theme}
+                />
+              ))}
             </div>
 
-            {this.datasets.map((dataset) => (
-              <PersonalDataPolicyRow
-                key={dataset.id}
-                dataset={dataset}
-                site={this.site[dataset.id]}
-                platform={this.platform[dataset.id]}
-                platformEditable={this.platformEditable}
-                siteEditable={this.siteEditable}
-                onSiteChange={this.onSiteChange}
-                onPlatformChange={this.onPlatformChange}
-                theme={theme}
-              />
-            ))}
-
-            <div className="pt-4 flex items-center gap-3">
-              <Button onClick={this.save} disabled={this.isSaving || (!this.siteEditable && !this.platformEditable)}>
-                {this.isSaving ? AdminI18n.t('settings.personalData.saving') : AdminI18n.t('settings.personalData.savePolicy')}
-              </Button>
-              {!this.platformEditable && (
-                <span className={`text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                  {AdminI18n.t('settings.personalData.thePlatformDefaultIsSet')}
-                </span>
-              )}
-            </div>
+            {!this.platformEditable ? (
+              <div className="fc-settings-note">
+                <Hint>{AdminI18n.t('settings.personalData.thePlatformDefaultIsSet')}</Hint>
+              </div>
+            ) : null}
+            {/* The site column is read-only in the platform scope, where the API refuses a per-site key. */}
+            {!this.siteEditable ? (
+              <div className="fc-settings-note">
+                <Hint>{AdminI18n.t('settings.personalData.theSiteColumnIsSet')}</Hint>
+              </div>
+            ) : null}
           </Card>
         )}
         </div>
+        <PendingSavesBar />
       </div>
     );
   }

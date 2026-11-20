@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * The record as editable JSON — the "advanced" half of the form/JSON view switch.
@@ -155,9 +157,6 @@ export class RecordJsonView extends Reactor {
 
   render(): ReactNode {
     const unsurfaced = this.unsurfacedKeys;
-    // The console's button, like everything else that is pressed. It stood at 9 units tall with the
-    // SITE's brand radius, which is replaced at runtime, so these three changed shape per site.
-    const buttonClass = 'fc-btn';
 
     return (
       <div className="space-y-4">
@@ -166,9 +165,9 @@ export class RecordJsonView extends Reactor {
               the other, the same words twice. The sentence under it stays. */}
           <p className="fc-switch__hint">{AdminI18n.t('collection.json.hint')}</p>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={this.onReformat} className={buttonClass}>{AdminI18n.t('collection.json.reformat')}</button>
-            <button type="button" onClick={this.onImportClick} className={buttonClass}>{AdminI18n.t('collection.json.import')}</button>
-            <button type="button" onClick={this.onExport} className={buttonClass}>{AdminI18n.t('common.export')}</button>
+            <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.onReformat}>{AdminI18n.t('collection.json.reformat')}</Button>
+            <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.onImportClick}>{AdminI18n.t('collection.json.import')}</Button>
+            <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.onExport}>{AdminI18n.t('common.export')}</Button>
             <input
               ref={this.fileInput}
               type="file"
@@ -219,8 +218,8 @@ export class RecordJsonView extends Reactor {
         <div className="min-h-[20px]">
           {this.error
             ? <p className="text-[length:var(--fc-control-text)] font-medium leading-5 text-[color:var(--fc-danger)]">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
-            : <p className="text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{AdminI18n.t('collection.json.validState')}</p>}
-          {this.notice && !this.error && <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{this.notice}</p>}
+            : <p className="text-[length:var(--fc-control-text)] leading-5 fc-tone-muted">{AdminI18n.t('collection.json.validState')}</p>}
+          {this.notice && !this.error && <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 fc-tone-muted">{this.notice}</p>}
         </div>
       </div>
     );

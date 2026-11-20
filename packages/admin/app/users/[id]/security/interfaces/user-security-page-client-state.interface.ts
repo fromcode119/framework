@@ -7,6 +7,7 @@ export interface IUserSecurityPageClientState {
   loading: boolean;
   user: ISecurityUserRecord | null;
   twoFactorEnabled: boolean;
+  twoFactorAvailable: boolean;
   qrCode: string | null;
   secret: string | null;
   verificationCode: string;

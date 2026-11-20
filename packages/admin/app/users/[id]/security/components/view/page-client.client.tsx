@@ -27,6 +27,8 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
   @state loading = true;
   @state user: ISecurityUserRecord | null = null;
   @state twoFactorEnabled = false;
+  /** Whether 2FA can be set up at all; false when Settings → Security has it switched off. */
+  @state twoFactorAvailable = true;
   @state qrCode: string | null = null;
   @state secret: string | null = null;
   @state verificationCode = '';
@@ -127,6 +129,7 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
       tokenName,
       tokensLoading,
       twoFactorEnabled,
+      twoFactorAvailable,
       user,
       verificationCode,
     } = this;
@@ -137,6 +140,7 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
       copyRecoveryCodes: () => this.actions.copyRecoveryCodes(),
       createApiToken: () => this.actions.createApiToken(),
       createdToken,
+      dismissCreatedToken: () => { this.createdToken = ''; },
       generatedRecoveryCodes,
       handleDisable2FA: () => this.actions.disableTwoFactor(),
       handleEnable2FA: () => this.actions.enableTwoFactor(),
@@ -169,6 +173,7 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
       tokenName,
       tokensLoading,
       twoFactorEnabled,
+      twoFactorAvailable,
       user,
       verificationCode,
     };

@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { Card } from '@/components/ui/view/card.client';
@@ -74,10 +73,9 @@ export class UserOwnershipCard extends AdminComponent {
     if (this.targetIsOwner) return this.renderCurrentOwner();
     if (!this.viewerIsOwner) return null;
 
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
-        <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="fc-tone-warning" />}>
+        <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.handOwnership', { name: this.targetName })}
         </p>
         {this.confirming ? (
@@ -99,10 +97,9 @@ export class UserOwnershipCard extends AdminComponent {
   }
 
   private renderCurrentOwner(): ReactElement {
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
-        <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="fc-tone-warning" />}>
+        <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.thisAccountOwnsThePlatform')}
         </p>
       </Card>

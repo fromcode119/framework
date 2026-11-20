@@ -1,6 +1,8 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode, TextareaHTMLAttributes } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, prop, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
+import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
 import { UiFieldUtils } from '@/lib/ui';
 
 export class TextArea extends PureReactor {
@@ -14,6 +16,8 @@ export class TextArea extends PureReactor {
   @prop declare inputClassName?: string;
   @prop declare value?: TextareaHTMLAttributes<HTMLTextAreaElement>['value'];
   @prop declare size?: FieldSize;
+
+  @ref private declare elementRef: Ref<HTMLTextAreaElement>;
 
   render(): ReactNode {
     const {
@@ -34,31 +38,25 @@ export class TextArea extends PureReactor {
 
     // `h-auto`: a text area is as tall as its `rows`, never less than the minimum. Without it the
     // single-line height every field carries stayed on, and `rows` changed nothing on any screen.
-    const field = (
-      <textarea
-        {...props}
-        value={value}
-        className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
-          ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
-      />
-    );
-    // The label wraps the field so that clicking it focuses the field, as `Input` does.
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {label ? (
-          <label className="fc-field-stack">
-            <span className={UiFieldUtils.TEXT.LABEL}>{label}</span>
-            {field}
+        {/* Bound like Input: `htmlFor` when the caller gave an id, otherwise the label names the field. */}
+        {label && (
+          <label className={UiFieldUtils.TEXT.LABEL} htmlFor={props.id} onClick={props.id ? undefined : () => this.elementRef.current?.focus()}>
+            {label}
           </label>
-        ) : field}
-        {error && (
-          <div className="flex items-center gap-2 px-1 animate-fade-in-up">
-            <span className={UiFieldUtils.TEXT.ERROR}>
-              {error}
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-r from-rose-500/20 to-transparent" />
-          </div>
         )}
+        <div className="fc-field-wrap">
+          <textarea
+            ref={this.elementRef}
+            {...props}
+            value={value}
+            aria-label={!props.id && label && !props['aria-label'] ? label : props['aria-label']}
+            aria-invalid={error ? true : undefined}
+            className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)} ${error ? 'fc-field--error' : ''}`}
+          />
+          {error ? <FieldErrorMark message={error} /> : null}
+        </div>
       </div>
     );
   }

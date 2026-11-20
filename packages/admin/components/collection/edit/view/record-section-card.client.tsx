@@ -2,20 +2,17 @@ import type { ReactNode, RefObject } from 'react';
 import { prop, state, ref, bound } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import { RecordSectionSearch } from '@/components/collection/edit/view/record-section-search.client';
 import { RecordSectionMenu } from '@/components/collection/edit/view/record-section-menu.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
-import { RecordSectionChips } from '@/components/collection/edit/record-section-chips';
 import { RecordSectionCount } from '@/components/collection/edit/record-section-count';
 import { RecordSectionCardEditing } from '@/components/collection/edit/view/record-section-card-editing.client';
+import { RecordSectionValue } from '@/components/collection/edit/record-section-value';
 import { RecordSectionData } from '@/components/collection/edit/record-section-data';
 import { RecordSectionNamedRows } from '@/components/collection/edit/view/record-section-named-rows.client';
-import { RecordCellRenderers } from '@/components/collection/list/record-cell-renderers';
-import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
 import { FieldDisplayLabel } from '@/lib/collection/field-display-label';
 import { AdminClass } from '@/lib/admin-class';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One section of a SAVED record: a card that reads, and a sheet that edits.
@@ -34,16 +31,16 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * be changed turns into a control. A locked value stays with its lock, a recorded one stays as it reads.
  */
 export class RecordSectionCard extends RecordSectionCardEditing {
-  /** The page's own field renderer, so a field in the sheet is the field the full form would draw. */
-  /** The page's last save error, in words; shown in the sheet when its own save fails. */
-  /** What the record is called, under the sheet's title. */
   /**
    * Records of other plugins placed in this section (payments under totals, a shipment under delivery),
    * drawn at each place of the card it is asked for — see CollectionRecordPart.
    */
   @prop declare recordPart?: (place: RecordPartPlace) => ReactNode;
-  /** Forgets the page's last save error, so a sheet closed with Cancel leaves no failure behind it. */
-  /** `admin.collection.<slug>.edit.section`; with the section's key it names the section's slots. */
+  /** When this is the record's FIRST card, the record header (title, state, actions) is its head — a
+      render fn given this section's own edit opener, so its ⋯ carries both Edit and the record actions. */
+  @prop declare recordHeader?: (opts?: { bare?: boolean; onEditDetails?: () => void }) => ReactNode;
+  /** The record's title field: shown in the head above, so it is not repeated as a row here. */
+  @prop declare titleFieldName?: string;
   @prop declare slotBase?: string;
   /** What every slot of the page is handed: the record, its setter, and saving. */
   @prop declare slotProps?: Record<string, any>;
@@ -82,34 +79,6 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     this.menuWatch?.disconnect();
   }
 
-  private renderValue(field: any): ReactNode {
-    const raw = this.formData?.[field.name];
-    if (RecordSectionFields.isMissing(field, raw)) {
-      return <span className={AdminClass.of('record-card__missing')}>{AdminI18n.t('collection.edit.notFilledIn')}</span>;
-    }
-    const kind = String(field?.type || '');
-    // A field that DECLARES its values reads by their labels, whatever its type: a computed `text`
-    // holding "shown" printed that word beside a select whose same three values read as sentences.
-    if (['text', 'textarea', 'email', 'url', 'slug', 'code'].includes(kind) && !field?.admin?.cell && !Array.isArray(field?.options)) {
-      return FieldRendererUtils.resolveRenderableText(raw);
-    }
-    if (kind === 'richText') {
-      return FieldRendererUtils.resolveRenderableText(raw).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    }
-    // Never a relationship: its value is a list of ids, and "Categories 5 55 75" is not a value
-    // anyone can read. The renderer below resolves the related records' names.
-    const chips = kind === 'relationship' ? null : RecordSectionChips.of(raw);
-    if (chips) {
-      return (
-        <span className={AdminClass.of('chips')}>
-          {chips.map((chip, at) => <span key={`${chip}-${at}`} className={AdminClass.of('chip')}>{chip}</span>)}
-        </span>
-      );
-    }
-    return RecordCellRenderers.renderCellValue({ columnName: field.name, field, header: FieldDisplayLabel.of(field), raw, row: this.formData });
-  }
-
-
   /**
    * A section with fields of which none is filled in or drawn by a control of its own.
    *
@@ -125,17 +94,22 @@ export class RecordSectionCard extends RecordSectionCardEditing {
   }
 
   private renderRows(tableField?: string): ReactNode {
-    const shown = RecordSectionFields.shownFields(this.section.fields, this.formData);
-    const own = this.section.fields.filter(RecordSectionFields.ownsItsControl);
-    const read = this.section.fields.filter(RecordSectionFields.readsByComponent);
-    const display = RecordSectionFields.displayFields(this.section.fields, this.formData);
+    // The record's title field is shown by the first card's head (the record's name), so it is not
+    // also a row underneath — that was the "Product name: <title>" that repeated the heading.
+    const sectionFields = (this.recordHeader && this.titleFieldName)
+      ? this.section.fields.filter((field: any) => field.name !== this.titleFieldName)
+      : this.section.fields;
+    const shown = RecordSectionFields.shownFields(sectionFields, this.formData);
+    const own = sectionFields.filter(RecordSectionFields.ownsItsControl);
+    const read = sectionFields.filter(RecordSectionFields.readsByComponent);
+    const display = RecordSectionFields.displayFields(sectionFields, this.formData);
     // Data the record holds — variants, choices, prices per currency — read as the table the console
     // draws for any recorded value. The section's sheet is where it changes.
-    const data = this.section.fields.filter((field: any) => RecordSectionFields.readsAsData(field)
+    const data = sectionFields.filter((field: any) => RecordSectionFields.readsAsData(field)
       && !RecordSectionFields.isEmpty(field, this.formData?.[field.name]));
     const card = AdminClass.of('record-card');
     // A section only parts fill (an order's invoices) says nothing of fields: the part speaks for itself.
-    if (!this.section.fields.length) return null;
+    if (!sectionFields.length) return null;
     // Nothing filled in: said by the body slot's fallback, so a card a plugin fills (a timeline) does not
     // also claim to be empty.
     if (!shown.length && !own.length && !read.length && !display.length && !data.length) return null;
@@ -151,7 +125,7 @@ export class RecordSectionCard extends RecordSectionCardEditing {
             {shown.map((field) => (
               <div key={field.name} className={`${card}__row`}>
                 <dt className={`${card}__label`}>{FieldDisplayLabel.of(field)}</dt>
-                <dd className={`${card}__value`}>{this.renderValue(field)}</dd>
+                <dd className={`${card}__value`}>{RecordSectionValue.of(field, this.formData)}</dd>
               </div>
             ))}
           </dl>
@@ -259,41 +233,38 @@ export class RecordSectionCard extends RecordSectionCardEditing {
     const editable = RecordSectionFields.canEdit(this.section.fields);
     const tableField = this.sectionTableField;
     return (
-      <Card id={`section-${this.section.key}`} noPadding className={this.open ? `${card} ${card}--editing` : card}>
-        {title || editable ? (
-          <div className={`${card}__head`}>
-            <h2 className={`${card}__title`}>
-              {title}
-              {RecordSectionCount.of(this.section.fields, this.formData) !== null
-                ? <span className={`${card}__count`}>{RecordSectionCount.of(this.section.fields, this.formData)}</span>
-                : null}
-            </h2>
-            <div className={`${card}__aside`}>
-              {tableField
-                ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
-                : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
-              {/* Making one more of what the table lists stands beside the table's own tools, where
-                  the record pages this console follows put it. */}
-              {this.renderTableCreate()}
-              {this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}
-            </div>
-            <RecordSectionMenu
-              editable={editable}
-              hasOffers={this.hasMenu}
-              offers={this.offers}
-              probeRef={this.menuProbe}
-              onEdit={this.openSheet}
-            />
-          </div>
-        ) : null}
-        <div className={`${card}__body`}>
-          {this.renderSheet(title)}
-          {this.recordPart?.(RecordPartPlace.LEAD)}
-          {this.renderRows(tableField)}
-          {this.recordPart?.(RecordPartPlace.BODY)}
-          {this.slot('body', this.isBlank() ? <RecordSectionNamedRows fields={this.section.fields} /> : null)}
-        </div>
-      </Card>
+      <RecordCard
+        id={`section-${this.section.key}`}
+        className={this.open ? `${card}--editing` : undefined}
+        headOverride={this.recordHeader ? this.recordHeader({ bare: true, onEditDetails: editable ? () => this.openSheet() : undefined }) : undefined}
+        title={title || undefined}
+        count={RecordSectionCount.of(this.section.fields, this.formData)}
+        aside={title || editable ? <>{this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}</> : undefined}
+        toolbar={tableField || this.dataRowCount ? (
+          <>
+            {tableField
+              ? <div className="fc-record-card__table-tools" ref={this.tableToolbarRef} />
+              : <RecordSectionSearch rows={this.dataRowCount} value={this.searchText} onChange={this.onSearch} />}
+            {/* Making one more of what the table lists stands beside the table's own tools. */}
+            {this.renderTableCreate()}
+          </>
+        ) : undefined}
+        menu={title || editable ? (
+          <RecordSectionMenu
+            editable={editable}
+            hasOffers={this.hasMenu}
+            offers={this.offers}
+            probeRef={this.menuProbe}
+            onEdit={this.openSheet}
+          />
+        ) : undefined}
+      >
+        {this.renderSheet(title)}
+        {this.recordPart?.(RecordPartPlace.LEAD)}
+        {this.renderRows(tableField)}
+        {this.recordPart?.(RecordPartPlace.BODY)}
+        {this.slot('body', this.isBlank() ? <RecordSectionNamedRows fields={this.section.fields} /> : null)}
+      </RecordCard>
     );
   }
 

@@ -1,5 +1,6 @@
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
@@ -50,45 +51,26 @@ export class FrameworkSettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.framework.adminLevelDocsApiAnd')}
         />
 
-        <div className="p-6 w-full fc-page-stack">
-          <Card title={AdminI18n.t('settings.framework.coreResources')}>
-            <div className="space-y-4">
+        <div className="py-6 w-full fc-page-stack">
+          <Card noPadding title={AdminI18n.t('settings.framework.coreResources')} className="fc-card--rows">
+            <ListCard>
               {FrameworkSettingsPage.resources.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div
+                  <ListRow
                     key={item.title}
-                    className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border ${
-                      theme === ThemeMode.DARK ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50/60 border-slate-100'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2.5 rounded-xl ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                        <Icon size={18} />
-                      </div>
-                      <div>
-                        <h3 className={`text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-100' : 'text-slate-900'}`}>
-                          {item.title}
-                        </h3>
-                        <p className="text-[13px] text-slate-500 leading-relaxed mt-0.5">
-                          {item.description}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      as="a"
-                      href={item.href}
-                      target={item.external ? '_blank' : undefined}
-                      rel={item.external ? 'noopener noreferrer' : undefined}
-                      variant={ButtonVariant.SECONDARY}
-                      className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
-                    >
-                      {AdminI18n.t('settings.framework.open')}
-                    </Button>
-                  </div>
+                    icon={<Icon size={16} />}
+                    title={<span>{item.title}</span>}
+                    description={item.description}
+                    actions={(
+                      <Button as="a" href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined} variant={ButtonVariant.SECONDARY}>
+                        {AdminI18n.t('settings.framework.open')}
+                      </Button>
+                    )}
+                  />
                 );
               })}
-            </div>
+            </ListCard>
           </Card>
 
           <Card title={AdminI18n.t('settings.framework.community')}>
@@ -100,8 +82,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  variant={ButtonVariant.OUTLINE}
-                  className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
+                  variant={ButtonVariant.SECONDARY}
                 >
                   {item.label}
                 </Button>

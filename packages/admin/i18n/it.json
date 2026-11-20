@@ -162,6 +162,7 @@
       "reorderHandle": "Trascina per riordinare, oppure seleziona e usa i tasti freccia",
       "reorderEnable": "Mostra l'elenco nel suo ordine per poterlo riordinare",
       "reorderFailed": "Impossibile salvare il nuovo ordine",
+      "noMatch": "Nulla corrisponde alla ricerca o ai filtri.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importare {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Modifica",
       "notFilledIn": "Non compilato",
       "statusSection": "Stato",
-      "statusConfirm": "Cambiare lo stato in «{{status}}»?",
       "recordSection": "Record",
       "showJson": "Mostra come JSON",
       "showForm": "Mostra come modulo",
@@ -245,7 +245,8 @@
       "copied": "Copiato",
       "more": "Altro",
       "moreFields": "{{count}} campi",
-      "moreOneField": "{{count}} campo"
+      "moreOneField": "{{count}} campo",
+      "statusConfirm": "Cambiare lo stato in «{{status}}»?"
     },
     "notFound": {
       "title": "Collezione non trovata",
@@ -366,7 +367,8 @@
     "reset": "Reimposta",
     "notScheduledYet": "non ancora pianificato",
     "more": "Altre azioni",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Rimuovi"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Scegli colore",
-      "colour": "Colore",
-      "pick": "Scegli un colore",
       "hex": "Codice esadecimale",
-      "confirm": "Conferma colore",
       "notSet": "Non impostato"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Dipendenze inattive rilevate",
       "intro": "Per abilitare {{plugin}} è necessario gestire quanto segue:",
       "notInstalled": "NON INSTALLATO",
+      "inactive": "disattivato",
+      "incompatible": "versione diversa",
       "requires": "Richiede la versione {{version}}. Può essere scaricata dal marketplace.",
       "needsActivation": "Già installato ma deve essere attivato (versione {{version}}).",
       "mismatch": "Versione non corrispondente: richiesta {{expected}}, trovata {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Anteprima piattaforma",
-      "image": "Anteprima {{number}}"
+      "image": "Anteprima {{number}}",
+      "previous": "Precedente",
+      "next": "Successivo"
     },
     "menuField": {
       "newItem": "Nuova voce di menu",
-      "structure": "Struttura del menu",
-      "add": "Aggiungi voce di menu"
+      "add": "Aggiungi voce di menu",
+      "reorder": "Trascina per spostare; frecce: su e giù per spostare, destra per annidare, sinistra per estrarre"
     },
     "field": {
       "notSet": "Non impostato",
@@ -461,8 +464,8 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Aggiungi {{label}}",
-      "item": "Elemento"
+      "add": "Aggiungi",
+      "reorder": "Trascina per spostare o usa i tasti freccia"
     },
     "stepper": {
       "increment": "Aumenta",
@@ -528,9 +531,7 @@
       "noContact": "Nessuna email o telefono in Persone",
       "hasLogin": "Ha un accesso",
       "noLogin": "Nessun accesso",
-      "source": "Nome, email e telefono provengono da Persone #{{id}}; modificali lì.",
       "open": "Apri in Persone",
-      "choose": "Scegli un'altra persona",
       "searchFailed": "Al momento non è possibile cercare in Persone.",
       "noMatch": "Nessuna corrispondenza in Persone. Inserisci i dati qui sotto; salvando la persona verrà aggiunta a Persone.",
       "ref": "Persone #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Apri Siti"
       }
     },
-    "relativeOverridesInheritTheCollection": "Le sostituzioni relative ereditano il prefisso della raccolta. Attiva la modalità assoluta per ignorare prefissi come `/shop`.",
     "range": "Intervallo",
     "noDataForThisRange": "Nessun dato per questo intervallo",
     "peak": "· picco {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtri",
       "clearFilters": "Cancella tutto",
       "removeFilter": "Rimuovi il filtro {{label}}",
-      "showResults": "Mostra {{count}} risultati"
+      "showResults": "Mostra {{count}} risultati",
+      "showResultsOne": "Mostra 1 risultato"
     },
     "personFieldPicker": {
       "none": "Non salvato in un campo persona",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "I limiti della sandbox per {{name}} sono stati salvati, ma il riavvio del processo con i nuovi limiti non è riuscito: {{value}}",
       "restartRequired": "Riavvio necessario",
       "sandboxSettingsForWereSaved": "Le impostazioni della sandbox per {{name}} sono state salvate, ma è necessario riavviare l'API perché abbiano effetto.",
-      "resourcesUpdated": "Risorse aggiornate",
-      "sandboxLimitsForUpdated": "Limiti della sandbox per {{name}} aggiornati.",
       "sandboxDisabledFor": "Sandbox disattivata per {{name}}.",
       "saveFailed": "Salvataggio non riuscito",
       "failedToUpdateSandboxLimits": "Impossibile aggiornare i limiti della sandbox.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inattivo. Nessun evento recente registrato.",
       "updating": "Aggiornamento...",
       "updateAvailable": "Aggiornamento disponibile",
-      "updatePolicy": "Criterio di aggiornamento",
       "saveChanges": "Salva modifiche",
       "unsavedChanges": "Modifiche non salvate",
       "exportSettingsAsJson": "Esporta impostazioni in JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Novità della v{{version}}",
       "installedVersion": "Installata {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "Salvataggio...",
       "saveSettings": "Salva impostazioni",
       "viewDefinition": "Visualizza definizione",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Aspetto",
       "failedToLoadAppearances": "Impossibile caricare gli aspetti",
       "failedToSaveShadowSetting": "Impossibile salvare l'impostazione delle ombre",
+      "failedToSaveMenuSetting": "Impossibile salvare l'impostazione del menu",
       "switchedToReloading": "Passato a \"{{slug}}\". Ricaricamento…",
       "failedToSwitchAppearance": "Impossibile cambiare aspetto",
       "installFailed": "Installazione non riuscita",
@@ -1919,6 +1917,8 @@
       "install": "Installa",
       "surfaceShadows": "Ombre delle superfici",
       "depthOnPanelsDialogsAnd": "Profondità su pannelli, finestre di dialogo e pulsanti. Disattiva per un'amministrazione piatta — bordi e angoli restano invariati.",
+      "secondMenuColumn": "Seconda colonna del menu",
+      "sectionPagesBesideTheMenu": "Le pagine di una sezione stanno in una colonna accanto al menu. Disattivandola si aprono sotto la loro riga nel menu unico e ogni schermata guadagna 220px.",
       "installFromAPackageUrl": "Installa da URL di un pacchetto",
       "builtIn": "Integrato",
       "installed": "Installato",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "La geolocalizzazione IP non è stata aggiornata",
       "geoUnavailable": "Lo stato della geolocalizzazione IP non è disponibile",
       "geoAttribution": "Geolocalizzazione IP fornita da {{name}} ({{license}}). Aggiornata ogni mese finché è attiva.",
-      "geoSaved": "Salvato",
-      "geoSavedOn": "Download del database in corso; pesa circa 60 MB.",
-      "geoSavedOff": "Il database è stato rimosso dal server.",
       "everyPluginRunsIsolated": "Isolato: ogni plugin viene eseguito in un proprio processo. Il limite di memoria e il tempo massimo valgono per tutti i plugin; quota di CPU, memoria totale, disco e processi valgono solo per i plugin caricati da un sito.",
       "schemaOrphans": "Schema del database",
       "schemaOrphansHelp": "Colonne ancora presenti nel database che nessuno dichiara più. La piattaforma si limita a elencarle; nulla viene eliminato finché non decide Lei, e una colonna eliminata non può essere ripristinata.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Disattivato: l'endpoint risponde 403 a chiunque.",
       "mediaPayloadLimitMb": "Limite payload media (MB)",
       "maximumDecodedUploadOrRemote": "Dimensione massima del caricamento decodificato o del download remoto accettata dagli strumenti media MCP.",
-      "saveLimit": "Salva limite",
       "allSites": "tutti i siti",
       "issuedBeforeSites": "emesso prima dei siti",
       "noTokensYet": "Nessun token.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Predefinito della piattaforma",
       "thisSite": "Questo sito",
       "inForceNow": "In vigore ora",
-      "saving": "Salvataggio…",
-      "savePolicy": "Salva criterio",
       "thePlatformDefaultIsSet": "Il valore predefinito della piattaforma è impostato da un amministratore della piattaforma.",
       "useTheLayerBelow": "Usa il livello sottostante",
       "whyTheLawRequiresThese": "Perché la legge impone di conservare questi dati",
-      "inheritsThePlatformDefault": "eredita: il predefinito della piattaforma"
+      "inheritsThePlatformDefault": "eredita: il predefinito della piattaforma",
+      "strategyDelete": "Elimina",
+      "strategyAnonymise": "Anonimizza",
+      "strategyRetain": "Conserva",
+      "declaredBy": "Predefinito dichiarato da {{plugin}}",
+      "inheritsValue": "eredita: {{value}}",
+      "legalBasis": "Base giuridica",
+      "theSiteColumnIsSet": "La colonna «Questo sito» si imposta all’interno di un sito. Scegli un sito nel selettore per modificarla."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Nome visualizzato",
     "thisPersonHasALogin": "Questa persona ha un account di accesso; l'email va modificata nell'account.",
     "birthDate": "Data di nascita",
-    "saveChanges": "Salva modifiche",
     "sendPasswordResetEmail": "Invia email di ripristino password",
     "cancel": "Annulla",
     "accountManagement": "Gestione account",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Copia manualmente i codici di recupero.",
     "nameRequired": "Nome obbligatorio",
     "enterATokenNameFirst": "Inserisci prima un nome per il token.",
-    "tokenCreated": "Token creato",
     "copyTheTokenNowIt": "Copia subito il token. Viene mostrato una sola volta.",
     "failedToCreateApiToken": "Impossibile creare il token API",
     "areYouSureYouWant2": "Disattivare la 2FA per questo utente? La sicurezza dell'account verrà ridotta.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sessione revocata",
     "deviceSessionRevokedSuccessfully": "Sessione del dispositivo revocata correttamente.",
     "failedToRevokeSession": "Impossibile revocare la sessione",
-    "rolesUpdated": "Ruoli aggiornati",
-    "theUserSRolesWere": "I ruoli dell'utente sono stati salvati.",
     "saveFailed": "Salvataggio non riuscito",
     "failedToSaveRoles": "Impossibile salvare i ruoli.",
     "loadingRoles": "Caricamento ruoli",
@@ -3448,8 +3445,6 @@
     "remove": "Rimuovi",
     "loadFailed": "Caricamento non riuscito",
     "couldNotRetrieveRoleDetails": "Impossibile recuperare i dettagli del ruolo.",
-    "roleUpdated": "Ruolo aggiornato",
-    "wasSaved": "\"{{name}}\" è stato salvato.",
     "updateFailed": "Aggiornamento non riuscito",
     "anErrorOccurredWhileSaving": "Si è verificato un errore durante il salvataggio.",
     "loadingRole": "Caricamento ruolo...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Torna agli utenti",
     "selfServiceSecurityControls": "Controlli di sicurezza personali",
     "sessionDeviceControlsAndPersonal": "I controlli di sessioni e dispositivi e i token API personali sono disponibili solo quando si visualizza il proprio account utente.",
-    "securityRecommendations": "Raccomandazioni di sicurezza",
     "twoFactorAuthentication": "Autenticazione a due fattori",
-    "activeAndProtectingThisAccount": "Attiva e a protezione di questo account",
-    "notEnabledHighlyRecommendedFor": "Non attiva - vivamente consigliata per gli account amministratore",
-    "passwordProtected": "Protetto da password",
-    "accountHasASecurePassword": "L'account ha una password sicura",
-    "administratorAccess": "Accesso amministratore",
     "fullSystemAccess2faStrongly": "Accesso completo al sistema - 2FA vivamente consigliata",
     "personalApiTokens": "Token API personali",
     "tokenNameEGCi": "Nome del token (es. deploy CI)",
     "days": "Giorni",
     "createToken": "Crea token",
-    "copyNowShownOnce": "Copia ora (mostrato una sola volta)",
     "loadingApiTokens": "Caricamento token API...",
     "noApiTokensCreatedYet": "Nessun token API ancora creato.",
     "revoke": "Revoca",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Attività di accesso e sessioni",
     "loadingAuthActivity": "Caricamento attività di autenticazione...",
     "noRecentLoginSessionEvents": "Nessun evento recente di accesso o sessione per questo utente.",
-    "unknownTime": "Ora sconosciuta",
-    "activityEvent": "Evento di attività",
     "openFullGlobalActivity": "Apri l'attività globale completa",
-    "2faStatus": "Stato 2FA",
     "addAnExtraLayerOf": "Aggiungi un ulteriore livello di sicurezza con l'autenticazione tramite app (TOTP)",
-    "recommended": "Consigliato",
     "enableTwoFactorAuthenticationTo": "Attiva l'autenticazione a due fattori per proteggere questo account con password monouso basate sul tempo (TOTP).",
     "enable2fa": "Attiva 2FA",
     "step1ScanQrCode": "Passaggio 1: scansiona il codice QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Passaggio 2: verifica il codice",
     "enterThe6DigitCode": "Inserisci il codice a 6 cifre dell'app di autenticazione per completare la configurazione:",
     "verifyEnable": "Verifica e attiva",
-    "protectionActive": "Protezione attiva",
     "thisAccountRequiresA6": "Per accedere a questo account è richiesto un codice a 6 cifre da un'app di autenticazione.",
     "regenerateRecoveryCodes": "Rigenera codici di recupero",
     "disable2fa": "Disattiva 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Revoca le altre sessioni",
     "loadingSessions": "Caricamento sessioni...",
     "noActiveSessions": "Nessuna sessione attiva.",
-    "currentSession": "Sessione corrente",
-    "deviceSession": "Sessione del dispositivo",
     "current": "Corrente",
     "unknownDevice": "Dispositivo sconosciuto",
     "editAccount2": "Modifica account",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Apri il record utente",
     "token": "Token",
     "createdOn": "Creato il {{date}}",
-    "notAvailable": "n/d",
     "revokedOn": "Revocato il {{date}}",
     "recoveryCodesRemaining": "Codici di recupero rimanenti:",
-    "unknownValue": "sconosciuto",
     "expiresOn": "Scadenza: {{date}}",
     "person2": "Persona",
     "added": "Aggiunto",
@@ -3591,12 +3570,10 @@
       "loading": "Caricamento dei campi persona…",
       "loadFailed": "Impossibile caricare i campi persona.",
       "saveFailed": "Impossibile salvare i campi.",
-      "saved": "Campi salvati.",
       "empty": "Nessun campo persona. Aggiungine uno per iniziare a conservarlo per ogni persona.",
       "noneDeclared": "Questo sito non ha ancora campi persona.",
       "declare": "Aggiungi campi persona",
       "manage": "Gestisci campi",
-      "save": "Salva campi",
       "saveField": "Salva campo",
       "delete": "Elimina",
       "deleteTitle": "Eliminare questo campo?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Valido per (giorni)",
+    "revokeOtherSessionsConfirm": "Tutti gli altri dispositivi vengono disconnessi subito.",
+    "revokeSessionConfirm": "Quel dispositivo viene disconnesso subito.",
+    "revokeCurrentSessionConfirm": "È il dispositivo che stai usando ora. Verrai disconnesso subito.",
+    "revokeTokenConfirm": "«{{name}}» smette subito di funzionare.",
+    "twoFactorTurnedOff": "L'accesso a due fattori è disattivato per questo sito, quindi non può essere configurato qui.",
+    "openSecuritySettings": "Apri impostazioni di sicurezza"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Le impostazioni del sito ({{what}}) si configurano all'interno di ciascun sito: sceglierne uno dal menu dei siti.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Impossibile aprire l'anteprima di questo sito.",
     "couldNotLoadTheSite": "Impossibile caricare il sito.",
     "couldNotReloadThePlugin": "Impossibile ricaricare l'elenco dei plugin.",
-    "siteSaved": "Sito salvato",
-    "routingFollowsImmediatelyNoRestart": "L'instradamento si aggiorna subito, senza riavvio.",
     "notSaved": "Non salvato",
     "theSiteCouldNotBe2": "Impossibile salvare il sito.",
     "couldNotOpenTheSite": "Impossibile aprire il sito",
@@ -3789,7 +3771,6 @@
     "visit": "Visita",
     "openThisSite": "Apri questo sito",
     "export": "Esporta",
-    "save": "Salva",
     "couldNotLoadCertificates": "Impossibile caricare i certificati.",
     "couldNotSwitchThisHost": "Impossibile passare questo host alla modalità automatica.",
     "couldNotSwitchThisHost2": "Impossibile passare questo host alla modalità automatica (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Aggiornamento disponibile",
     "isNowActive": "{{name}} è ora attivo.",
     "themeHasBeenUpdated2": "Il tema {{name}} è stato aggiornato.",
-    "configurationSaved": "Configurazione salvata",
-    "visualProtocolsUpdatedSuccessfully": "Protocolli visivi aggiornati correttamente.",
     "saveFailed": "Salvataggio non riuscito",
     "hasBeenRemoved2": "{{name}} è stato rimosso.",
     "seedsExecuted": "Seed eseguiti",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Estensioni",
     "versionReady": "La versione {{version}} è pronta",
-    "saveChanges": "Salva modifiche",
     "runSeedsHint": "Reinserisce in questo sito i dati iniziali del tema: pagine e contenuti di esempio.",
     "resetThemeHint": "Cancella le impostazioni del tema salvate per questo sito e reinserisce i dati iniziali.",
     "notActiveHint": "Questo sito usa un altro tema.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Novità della v{{version}}",
     "whatChanged": "Novità",
-    "closeBuildSourceDialog": "Chiudi la finestra della sorgente di build",
-    "close": "Chiudi",
     "couldNotInstallThatVersion": "Impossibile installare questa versione.",
     "couldNotChangeAutomaticUpdating": "Impossibile modificare l'aggiornamento automatico.",
     "failed": "Non riuscito",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "I certificati automatici sono disattivati. {{reason}}",
     "automaticCertificatesComeFrom": "I certificati automatici provengono da {{authority}}.",
     "noSecretKeyIsConfigured": "Su questo server non è configurata alcuna SECRET_KEY, quindi non è possibile archiviare una chiave privata. Il caricamento è disattivato finché non ne viene impostata una.",
-    "nothingToSavePasteA": "Niente da salvare: incolli un token oppure usi Cancella per rimuovere quello salvato.",
     "savedThisSiteNowUses": "Salvato. Questo sito ora usa il proprio token Cloudflare.",
     "removedThisSiteFallsBack": "Rimosso. Questo sito torna a usare il token della piattaforma.",
     "couldNotSaveTheToken": "Impossibile salvare il token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token di questo sito",
     "savedLeaveBlankToKeep": "Salvato: lasci vuoto per mantenerlo o usi Cancella per rimuoverlo",
     "pasteACloudflareApiToken": "Incolli un token API Cloudflare",
-    "save": "Salva",
     "clear": "Cancella",
     "nothingStoredThisHostCannot": "Nulla di archiviato: questo host non può essere servito in HTTPS da questa piattaforma.",
     "nothingStoredHereTlsFor": "Nulla di archiviato qui: il TLS per questo host viene terminato prima della piattaforma, quindi il suo certificato si trova lì.",
@@ -4706,36 +4680,26 @@
     "roles": "Ruoli",
     "permissions": "Permessi",
     "eventDetails": "Dettagli evento",
-    "context": "Contesto",
     "resource": "Risorsa",
     "system": "Sistema",
     "timestamp": "Data e ora",
-    "authority": "Autorità",
-    "actorId": "ID autore",
-    "type": "Tipo",
-    "systemLog": "Log di sistema",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Messaggio attività",
-    "actionTaken": "Azione eseguita",
-    "resourcePool": "Pool di risorse",
-    "rawMetadata": "Metadati grezzi",
     "thisEntryIsPartOf": "Questa voce fa parte di un audit trail immutabile.",
     "exportJson": "Esporta JSON",
     "event": "Evento",
     "actor": "Autore",
+    "plugin": "Plugin",
     "activity": "Attività",
     "status": "Stato",
     "action": "Azione",
     "time": "Ora",
-    "logSignature": "Firma del log: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVVISO",
-      "ERROR": "ERRORE",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Avviso",
+      "ERROR": "Errore",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Voce n. {{id}}",
+    "recordedData": "Dati registrati"
   },
   "mediaPicker": {
     "showingOnly": "Visualizzati solo: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Attività",
       "schedule": "Frequenza",
       "lastRun": "Ultima esecuzione",
-      "nextRun": "Prossima esecuzione"
+      "nextRun": "Prossima esecuzione",
+      "duration": "Durata"
     },
     "ownedBy": "{{owner}}",
     "platform": "Piattaforma",

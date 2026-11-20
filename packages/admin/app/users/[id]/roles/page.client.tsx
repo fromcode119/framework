@@ -1,19 +1,23 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { FrameworkIcons } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Loader } from '@/components/ui/view/loader.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { RoleChoices } from '@/app/users/components/view/role-choices.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 export class UserRolesPage extends AdminComponent {
   private mounted = false;
+  private pending: PendingSave | null = null;
 
   @prop declare params: Promise<{ id: string }>;
 
@@ -26,14 +30,20 @@ export class UserRolesPage extends AdminComponent {
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.pending = new PendingSave(() => this.selectedRoles, () => this.handleSave(), (values: string[]) => { this.selectedRoles = values; });
     const params = await this.params;
     if (!this.mounted) return;
     this.routeId = params.id;
     void this.fetchData();
   }
 
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
   componentWillUnmount(): void {
     this.mounted = false;
+    this.pending?.dispose();
   }
 
   private async fetchData(): Promise<void> {
@@ -47,6 +57,7 @@ export class UserRolesPage extends AdminComponent {
       if (foundUser && this.mounted) {
         this.user = foundUser;
         this.selectedRoles = foundUser.roles || [];
+        this.pending?.mark();
       }
 
       if (this.mounted) this.roles = rolesRes || [];
@@ -57,6 +68,7 @@ export class UserRolesPage extends AdminComponent {
     }
   }
 
+  /** Written by the page's save bar; the page stays on the account it saved. */
   @bound private async handleSave(): Promise<void> {
     this.saving = true;
     try {
@@ -64,9 +76,8 @@ export class UserRolesPage extends AdminComponent {
         userId: this.routeId,
         roles: this.selectedRoles
       });
-      this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('users.rolesUpdated'), AdminI18n.t('users.theUserSRolesWere'));
-      this.router.push('/users');
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('users.saveFailed'), err?.message || AdminI18n.t('users.failedToSaveRoles'));
     } finally {
       this.saving = false;
@@ -83,66 +94,21 @@ export class UserRolesPage extends AdminComponent {
     const theme = this.theme;
     const { user, roles, selectedRoles, loading, saving } = this;
 
-    const dark = theme === ThemeMode.DARK;
-    if (loading) return <Loader label={AdminI18n.t('users.loadingRoles')} className="py-20" />;
-    if (!user) return <div className="p-8 text-center font-medium text-red-500">{AdminI18n.t('users.userNotFound2')}</div>;
+    if (loading) return <Loader fullPage label={AdminI18n.t('users.loadingRoles')} />;
+    if (!user) return <StatePage title={AdminI18n.t('users.userNotFound2')} />;
 
     return (
-      <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
+      <div className={`w-full flex flex-col ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
           backHref="/users"
           title={AdminI18n.t('users.manageRoles2')}
           subtitle={user.email}
-          actions={
-            <Button
-              className="h-9 px-4 rounded-lg font-medium text-xs text-white"
-              isLoading={saving}
-              onClick={() => void this.handleSave()}
-              icon={<FrameworkIcons.Save size={14} strokeWidth={2} />}
-            >
-              {AdminI18n.t('users.save')}
-            </Button>
-          }
         />
-
-        <div className="w-full p-6">
-          <div className="max-w-2xl space-y-2">
-            {roles.map(role => {
-              const isSelected = selectedRoles.includes(role.slug);
-              const permCount = Array.isArray(role.permissions) ? role.permissions.length : 0;
-              return (
-                <button
-                  key={role.slug}
-                  type="button"
-                  onClick={() => this.toggleRole(role.slug)}
-                  className={`w-full text-start flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${
-                    isSelected
-                      ? (dark ? 'bg-indigo-500/10 border-indigo-500/60' : 'bg-indigo-50 border-indigo-300')
-                      : (dark ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900' : 'bg-white border-slate-200 hover:bg-slate-50')
-                  }`}
-                >
-                  <span className={`h-8 w-8 shrink-0 rounded-lg flex items-center justify-center ${
-                    isSelected ? 'bg-indigo-600 text-white' : (dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400')
-                  }`}>
-                    <FrameworkIcons.Shield size={15} />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className={`block text-sm font-medium tracking-tight ${dark ? 'text-slate-100' : 'text-slate-900'}`}>{role.name}</span>
-                    <span className="block text-xs font-medium text-slate-500 truncate">
-                      {role.description || AdminI18n.t('users.noDescription')}{permCount ? ` · ${AdminI18n.t('users.permissionsCount', { count: permCount })}` : ''}
-                    </span>
-                  </span>
-                  <span className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
-                    isSelected ? 'bg-indigo-600 border-indigo-600 text-white' : (dark ? 'border-slate-700' : 'border-slate-300')
-                  }`}>
-                    {isSelected && <FrameworkIcons.Check size={12} strokeWidth={3} />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ListShell title={AdminI18n.t('users.rolesPermissions')} count={selectedRoles.length}>
+          <RoleChoices roles={roles} selected={selectedRoles} onToggle={(slug: string) => this.toggleRole(slug)} disabled={saving} />
+        </ListShell>
+        <PendingSavesBar />
       </div>
     );
   }

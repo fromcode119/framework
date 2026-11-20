@@ -1,3 +1,4 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 
@@ -13,25 +14,14 @@ export class DashboardSupportCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title={AdminI18n.t('dashboard.support')}>
-         <div className="space-y-3">
-            {/* The hardcoded English marketing pull-quote that used to sit here was copy living in a
-                .tsx that no admin field produced and no locale file owned. Dropped rather than
-                re-homed: it carried no information the operator could act on. */}
-            <Button
-              variant={ButtonVariant.SECONDARY}
-              className="w-full justify-between group"
-              as="a"
-              href={AdminConstants.ROUTES.SETTINGS.FRAMEWORK}
-            >
-               {AdminI18n.t('dashboard.developerGuide')}
-               <FrameworkIcons.ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <div className="pt-2 flex items-center justify-center gap-4 text-[12px] font-medium tracking-wide text-slate-400">
-               <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
-            </div>
-         </div>
-      </Card>
+      <RecordCard title={AdminI18n.t('dashboard.support')}>
+        <div className="fc-chip-row fc-chip-row--cell">
+          <Button variant={ButtonVariant.SECONDARY} as="a" href={AdminConstants.ROUTES.SETTINGS.FRAMEWORK}>
+            {AdminI18n.t('dashboard.developerGuide')} <FrameworkIcons.ArrowRight size={14} />
+          </Button>
+          <Button variant={ButtonVariant.GHOST} as="a" href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank">GitHub</Button>
+        </div>
+      </RecordCard>
     );
   }
 }

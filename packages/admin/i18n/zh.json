@@ -162,6 +162,7 @@
       "reorderHandle": "拖动以调整顺序，或聚焦后使用方向键",
       "reorderEnable": "按自定义顺序显示列表后即可调整顺序",
       "reorderFailed": "无法保存新的顺序",
+      "noMatch": "没有符合搜索或筛选条件的项目。",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "导入 {{file}}？",
@@ -234,7 +235,6 @@
       "editSection": "编辑",
       "notFilledIn": "未填写",
       "statusSection": "状态",
-      "statusConfirm": "将状态更改为“{{status}}”？",
       "recordSection": "记录",
       "showJson": "以 JSON 显示",
       "showForm": "以表单显示",
@@ -245,7 +245,8 @@
       "copied": "已复制",
       "more": "更多",
       "moreFields": "{{count}} 个字段",
-      "moreOneField": "{{count}} 个字段"
+      "moreOneField": "{{count}} 个字段",
+      "statusConfirm": "将状态更改为“{{status}}”？"
     },
     "notFound": {
       "title": "未找到集合",
@@ -366,7 +367,8 @@
     "reset": "重置",
     "notScheduledYet": "尚未安排",
     "more": "更多操作",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "移除"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "选择颜色",
-      "colour": "颜色",
-      "pick": "选取颜色",
       "hex": "十六进制代码",
-      "confirm": "确认颜色",
       "notSet": "未设置"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "检测到未激活的依赖项",
       "intro": "要启用 {{plugin}}，需要处理以下事项：",
       "notInstalled": "未安装",
+      "inactive": "已关闭",
+      "incompatible": "版本不符",
       "requires": "需要版本 {{version}}。可从市场下载。",
       "needsActivation": "已安装但需要激活（版本 {{version}}）。",
       "mismatch": "版本不匹配：需要 {{expected}}，实际为 {{actual}}。",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "平台预览",
-      "image": "预览 {{number}}"
+      "image": "预览 {{number}}",
+      "previous": "上一页",
+      "next": "下一页"
     },
     "menuField": {
       "newItem": "新菜单项",
-      "structure": "菜单结构",
-      "add": "添加菜单项"
+      "add": "添加菜单项",
+      "reorder": "拖动以移动；方向键：上下移动，向右嵌套，向左移出"
     },
     "field": {
       "notSet": "未设置",
@@ -461,8 +464,8 @@
       "record": "记录"
     },
     "array": {
-      "addNew": "添加新{{label}}",
-      "item": "项目"
+      "add": "添加",
+      "reorder": "拖动以移动，或使用方向键"
     },
     "stepper": {
       "increment": "增加",
@@ -528,9 +531,7 @@
       "noContact": "联系人中没有邮箱或电话",
       "hasLogin": "有登录账号",
       "noLogin": "无登录账号",
-      "source": "姓名、邮箱和电话来自联系人 #{{id}}，请在该处修改。",
       "open": "在联系人中打开",
-      "choose": "选择其他人",
       "searchFailed": "暂时无法搜索联系人。",
       "noMatch": "联系人中没有匹配项。请在下方填写其信息，保存后将添加到联系人。",
       "ref": "联系人 #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "打开站点"
       }
     },
-    "relativeOverridesInheritTheCollection": "相对覆盖会继承集合前缀。启用绝对模式可跳过 `/shop` 等前缀。",
     "range": "范围",
     "noDataForThisRange": "此范围内无数据",
     "peak": "· 峰值 {{value}}",
@@ -626,7 +626,8 @@
       "filters": "筛选",
       "clearFilters": "全部清除",
       "removeFilter": "移除“{{label}}”筛选条件",
-      "showResults": "显示 {{count}} 条结果"
+      "showResults": "显示 {{count}} 条结果",
+      "showResultsOne": "显示 1 条结果"
     },
     "personFieldPicker": {
       "none": "不保存到联系人字段",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} 的沙箱限制已保存，但其进程无法按新限制重启：{{value}}",
       "restartRequired": "需要重启",
       "sandboxSettingsForWereSaved": "{{name}} 的沙箱设置已保存，但需要重启 API 后才能生效。",
-      "resourcesUpdated": "资源已更新",
-      "sandboxLimitsForUpdated": "{{name}} 的沙箱限制已更新。",
       "sandboxDisabledFor": "已为 {{name}} 禁用沙箱。",
       "saveFailed": "保存失败",
       "failedToUpdateSandboxLimits": "无法更新沙箱限制。",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "空闲。最近没有记录到事件。",
       "updating": "正在更新...",
       "updateAvailable": "有可用更新",
-      "updatePolicy": "更新策略",
       "saveChanges": "保存更改",
       "unsavedChanges": "有未保存的更改",
       "exportSettingsAsJson": "将设置导出为 JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "v{{version}} 新增内容",
       "installedVersion": "已安装 {{version}}",
       "marketplaceVersion": "市场版本 {{version}}",
-      "saving": "正在保存...",
       "saveSettings": "保存设置",
       "viewDefinition": "查看定义",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "外观",
       "failedToLoadAppearances": "加载外观失败",
       "failedToSaveShadowSetting": "保存阴影设置失败",
+      "failedToSaveMenuSetting": "菜单设置保存失败",
       "switchedToReloading": "已切换到“{{slug}}”。正在重新加载…",
       "failedToSwitchAppearance": "切换外观失败",
       "installFailed": "安装失败",
@@ -1919,6 +1917,8 @@
       "install": "安装",
       "surfaceShadows": "界面阴影",
       "depthOnPanelsDialogsAnd": "为面板、对话框和按钮添加立体感。关闭后后台呈扁平风格，边框和圆角保持不变。",
+      "secondMenuColumn": "第二菜单栏",
+      "sectionPagesBesideTheMenu": "分区的页面排在菜单旁边的一栏中。关闭后它们会在同一个菜单里自己那一行下方展开，每个页面宽出 220px。",
       "installFromAPackageUrl": "从包 URL 安装",
       "builtIn": "内置",
       "installed": "已安装",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP 定位未更新",
       "geoUnavailable": "无法获取 IP 定位状态",
       "geoAttribution": "IP 地理定位由 {{name}} 提供（{{license}}）。开启期间每月更新。",
-      "geoSaved": "已保存",
-      "geoSavedOn": "正在下载数据库，大小约 60 MB。",
-      "geoSavedOff": "数据库已从服务器中删除。",
       "everyPluginRunsIsolated": "隔离：每个插件在独立进程中运行。内存上限和超时期限适用于所有插件；CPU 配额、总内存、磁盘和进程数限制仅适用于站点上传的插件。",
       "schemaOrphans": "数据库架构",
       "schemaOrphansHelp": "数据库中仍存在但已不再被任何声明引用的列。平台仅列出这些列，在您决定之前不会删除任何内容；列一旦删除将无法恢复。",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "已禁用 — 该端点对所有请求返回 403。",
       "mediaPayloadLimitMb": "媒体负载上限（MB）",
       "maximumDecodedUploadOrRemote": "MCP 媒体工具可接受的解码后上传或远程下载的最大大小。",
-      "saveLimit": "保存上限",
       "allSites": "所有站点",
       "issuedBeforeSites": "在站点功能之前签发",
       "noTokensYet": "暂无令牌。",
@@ -3210,12 +3206,17 @@
       "platformDefault": "平台默认值",
       "thisSite": "本站点",
       "inForceNow": "当前生效",
-      "saving": "正在保存…",
-      "savePolicy": "保存策略",
       "thePlatformDefaultIsSet": "平台默认值由平台管理员设置。",
       "useTheLayerBelow": "使用下一层设置",
       "whyTheLawRequiresThese": "法律要求保留这些记录的原因",
-      "inheritsThePlatformDefault": "继承：平台默认值"
+      "inheritsThePlatformDefault": "继承：平台默认值",
+      "strategyDelete": "删除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保留",
+      "declaredBy": "由 {{plugin}} 声明的默认值",
+      "inheritsValue": "继承：{{value}}",
+      "legalBasis": "法律依据",
+      "theSiteColumnIsSet": "“此站点”列在站点内设置。要更改，请在切换器中选择一个站点。"
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "显示名称",
     "thisPersonHasALogin": "此人员拥有登录账户，其邮箱需在账户中修改。",
     "birthDate": "出生日期",
-    "saveChanges": "保存更改",
     "sendPasswordResetEmail": "发送密码重置邮件",
     "cancel": "取消",
     "accountManagement": "账户管理",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "请手动复制恢复代码。",
     "nameRequired": "名称为必填项",
     "enterATokenNameFirst": "请先输入令牌名称。",
-    "tokenCreated": "令牌已创建",
     "copyTheTokenNowIt": "请立即复制该令牌，它仅显示一次。",
     "failedToCreateApiToken": "创建 API 令牌失败",
     "areYouSureYouWant2": "确定要为此用户停用双重验证吗？这将降低账户安全性。",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "会话已撤销",
     "deviceSessionRevokedSuccessfully": "设备会话已成功撤销。",
     "failedToRevokeSession": "撤销会话失败",
-    "rolesUpdated": "角色已更新",
-    "theUserSRolesWere": "用户的角色已保存。",
     "saveFailed": "保存失败",
     "failedToSaveRoles": "保存角色失败。",
     "loadingRoles": "正在加载角色",
@@ -3448,8 +3445,6 @@
     "remove": "移除",
     "loadFailed": "加载失败",
     "couldNotRetrieveRoleDetails": "无法获取角色详情。",
-    "roleUpdated": "角色已更新",
-    "wasSaved": "“{{name}}”已保存。",
     "updateFailed": "更新失败",
     "anErrorOccurredWhileSaving": "保存时出错。",
     "loadingRole": "正在加载角色...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "返回用户列表",
     "selfServiceSecurityControls": "自助安全控制",
     "sessionDeviceControlsAndPersonal": "会话/设备控制和个人 API 令牌仅在查看您自己的用户账户时可用。",
-    "securityRecommendations": "安全建议",
     "twoFactorAuthentication": "双重身份验证",
-    "activeAndProtectingThisAccount": "已启用，正在保护此账户",
-    "notEnabledHighlyRecommendedFor": "未启用 - 强烈建议管理员账户启用",
-    "passwordProtected": "密码保护",
-    "accountHasASecurePassword": "账户已设置安全密码",
-    "administratorAccess": "管理员访问权限",
     "fullSystemAccess2faStrongly": "拥有完整系统访问权限 - 强烈建议启用双重身份验证",
     "personalApiTokens": "个人 API 令牌",
     "tokenNameEGCi": "令牌名称（例如 CI 部署）",
     "days": "天数",
     "createToken": "创建令牌",
-    "copyNowShownOnce": "立即复制（仅显示一次）",
     "loadingApiTokens": "正在加载 API 令牌...",
     "noApiTokensCreatedYet": "尚未创建 API 令牌。",
     "revoke": "撤销",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "登录与会话活动",
     "loadingAuthActivity": "正在加载身份验证活动...",
     "noRecentLoginSessionEvents": "此用户近期没有登录/会话事件。",
-    "unknownTime": "未知时间",
-    "activityEvent": "活动事件",
     "openFullGlobalActivity": "打开完整全局活动",
-    "2faStatus": "双重身份验证状态",
     "addAnExtraLayerOf": "使用基于应用的身份验证（TOTP）增加一层额外的安全保护",
-    "recommended": "推荐",
     "enableTwoFactorAuthenticationTo": "启用双重身份验证，使用基于时间的一次性密码（TOTP）保护此账户。",
     "enable2fa": "启用双重身份验证",
     "step1ScanQrCode": "第 1 步：扫描二维码",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "第 2 步：验证代码",
     "enterThe6DigitCode": "输入身份验证器应用中的 6 位代码以完成设置：",
     "verifyEnable": "验证并启用",
-    "protectionActive": "保护已启用",
     "thisAccountRequiresA6": "此账户登录时需要输入身份验证器应用中的 6 位代码。",
     "regenerateRecoveryCodes": "重新生成恢复代码",
     "disable2fa": "停用双重身份验证",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "撤销其他会话",
     "loadingSessions": "正在加载会话...",
     "noActiveSessions": "没有活动会话。",
-    "currentSession": "当前会话",
-    "deviceSession": "设备会话",
     "current": "当前",
     "unknownDevice": "未知设备",
     "editAccount2": "编辑账户",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "打开用户记录",
     "token": "令牌",
     "createdOn": "创建于 {{date}}",
-    "notAvailable": "不适用",
     "revokedOn": "撤销于 {{date}}",
     "recoveryCodesRemaining": "剩余恢复代码：",
-    "unknownValue": "未知",
     "expiresOn": "过期时间：{{date}}",
     "person2": "人员",
     "added": "添加时间",
@@ -3591,12 +3570,10 @@
       "loading": "正在加载人员字段…",
       "loadFailed": "无法加载人员字段。",
       "saveFailed": "无法保存字段。",
-      "saved": "字段已保存。",
       "empty": "尚无人员字段。添加一个字段，即可开始为每个人保存该信息。",
       "noneDeclared": "此网站尚无人员字段。",
       "declare": "添加人员字段",
       "manage": "管理字段",
-      "save": "保存字段",
       "saveField": "保存字段",
       "delete": "删除",
       "deleteTitle": "删除此字段？",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "有效期（天）",
+    "revokeOtherSessionsConfirm": "其他所有设备会立即退出登录。",
+    "revokeSessionConfirm": "该设备会立即退出登录。",
+    "revokeCurrentSessionConfirm": "这是你正在使用的设备。你会立即退出登录。",
+    "revokeTokenConfirm": "“{{name}}”会立即停止工作。",
+    "twoFactorTurnedOff": "此站点已关闭双重验证登录，因此无法在这里设置。",
+    "openSecuritySettings": "打开安全设置"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "网站设置（{{what}}）需在各网站内设置——请从网站菜单中选择一个网站。",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "无法打开此站点进行预览。",
     "couldNotLoadTheSite": "无法加载站点。",
     "couldNotReloadThePlugin": "无法重新加载插件列表。",
-    "siteSaved": "站点已保存",
-    "routingFollowsImmediatelyNoRestart": "路由立即生效，无需重启。",
     "notSaved": "未保存",
     "theSiteCouldNotBe2": "无法保存站点。",
     "couldNotOpenTheSite": "无法打开站点",
@@ -3789,7 +3771,6 @@
     "visit": "访问",
     "openThisSite": "打开此站点",
     "export": "导出",
-    "save": "保存",
     "couldNotLoadCertificates": "无法加载证书。",
     "couldNotSwitchThisHost": "无法将此主机切换为自动。",
     "couldNotSwitchThisHost2": "无法将此主机切换为自动（通配符）。",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "有可用更新",
     "isNowActive": "{{name}} 已启用。",
     "themeHasBeenUpdated2": "主题 {{name}} 已更新。",
-    "configurationSaved": "配置已保存",
-    "visualProtocolsUpdatedSuccessfully": "外观配置已成功更新。",
     "saveFailed": "保存失败",
     "hasBeenRemoved2": "{{name}} 已移除。",
     "seedsExecuted": "种子数据已执行",
@@ -4300,7 +4279,6 @@
     "layoutSection": "布局",
     "extensionsSection": "扩展",
     "versionReady": "版本 {{version}} 已就绪",
-    "saveChanges": "保存更改",
     "runSeedsHint": "将主题的种子数据（示例页面和内容）重新导入此站点。",
     "resetThemeHint": "清除此站点已保存的主题设置，并重新导入种子数据。",
     "notActiveHint": "此站点正在使用其他主题。",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} 的变更内容",
     "whatChanged": "变更内容",
-    "closeBuildSourceDialog": "关闭构建源对话框",
-    "close": "关闭",
     "couldNotInstallThatVersion": "无法安装该版本。",
     "couldNotChangeAutomaticUpdating": "无法更改自动更新设置。",
     "failed": "失败",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "自动证书已关闭。{{reason}}",
     "automaticCertificatesComeFrom": "自动证书由 {{authority}} 签发。",
     "noSecretKeyIsConfigured": "此服务器未配置 SECRET_KEY，因此无法存储私钥。设置之前将禁用上传。",
-    "nothingToSavePasteA": "没有可保存的内容——请粘贴令牌，或使用“清除”移除已保存的令牌。",
     "savedThisSiteNowUses": "已保存。此站点现在使用自己的 Cloudflare 令牌。",
     "removedThisSiteFallsBack": "已移除。此站点将改用平台的令牌。",
     "couldNotSaveTheToken": "无法保存令牌。",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "此站点的令牌",
     "savedLeaveBlankToKeep": "已保存——留空以保留，或使用“清除”移除",
     "pasteACloudflareApiToken": "粘贴 Cloudflare API 令牌",
-    "save": "保存",
     "clear": "清除",
     "nothingStoredThisHostCannot": "未存储任何证书——此平台无法通过 HTTPS 为该主机提供服务。",
     "nothingStoredHereTlsFor": "此处未存储证书——该主机的 TLS 在到达平台之前已被终止，其证书位于该处。",
@@ -4706,28 +4680,18 @@
     "roles": "角色",
     "permissions": "权限",
     "eventDetails": "事件详情",
-    "context": "上下文",
     "resource": "资源",
     "system": "系统",
     "timestamp": "时间戳",
-    "authority": "权限主体",
-    "actorId": "操作者 ID",
-    "type": "类型",
-    "systemLog": "系统日志",
-    "audit": "审计：{{status}}",
-    "activityMessage": "活动消息",
-    "actionTaken": "执行的操作",
-    "resourcePool": "资源池",
-    "rawMetadata": "原始元数据",
     "thisEntryIsPartOf": "此条目属于不可篡改的审计记录。",
     "exportJson": "导出 JSON",
     "event": "事件",
     "actor": "操作者",
+    "plugin": "插件",
     "activity": "活动",
     "status": "状态",
     "action": "操作",
     "time": "时间",
-    "logSignature": "日志签名：{{id}}",
     "internal": "内部",
     "level": {
       "INFO": "信息",
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "条目 #{{id}}",
+    "recordedData": "记录的数据"
   },
   "mediaPicker": {
     "showingOnly": "仅显示：{{types}}",
@@ -4782,7 +4748,8 @@
       "task": "任务",
       "schedule": "运行频率",
       "lastRun": "上次运行",
-      "nextRun": "下次运行"
+      "nextRun": "下次运行",
+      "duration": "时长"
     },
     "ownedBy": "{{owner}}",
     "platform": "平台",

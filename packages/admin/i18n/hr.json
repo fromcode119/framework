@@ -162,6 +162,7 @@
       "reorderHandle": "Povucite za promjenu redoslijeda ili fokusirajte i koristite tipke sa strelicama",
       "reorderEnable": "Prikažite popis prema vlastitom redoslijedu kako biste ga mogli preurediti",
       "reorderFailed": "Novi redoslijed nije moguće spremiti",
+      "noMatch": "Ništa ne odgovara pretrazi ili filtrima.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Uvesti {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Uredi",
       "notFilledIn": "Nije ispunjeno",
       "statusSection": "Status",
-      "statusConfirm": "Promijeniti status u „{{status}}”?",
       "recordSection": "Zapis",
       "showJson": "Prikaži kao JSON",
       "showForm": "Prikaži kao obrazac",
@@ -245,7 +245,8 @@
       "copied": "Kopirano",
       "more": "Više",
       "moreFields": "{{count}} polja",
-      "moreOneField": "{{count}} polje"
+      "moreOneField": "{{count}} polje",
+      "statusConfirm": "Promijeniti status u „{{status}}”?"
     },
     "notFound": {
       "title": "Zbirka nije pronađena",
@@ -366,7 +367,8 @@
     "reset": "Poništi",
     "notScheduledYet": "još nije zakazano",
     "more": "Više radnji",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Ukloni"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Odaberite boju",
-      "colour": "Boja",
-      "pick": "Odaberite boju",
       "hex": "Hex kod",
-      "confirm": "Potvrdi boju",
       "notSet": "Nije postavljeno"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Otkrivene su neaktivne ovisnosti",
       "intro": "Da bi se omogućio {{plugin}}, potrebno je riješiti sljedeće:",
       "notInstalled": "NIJE INSTALIRANO",
+      "inactive": "isključen",
+      "incompatible": "druga verzija",
       "requires": "Potrebna je verzija {{version}}. Možemo je preuzeti s tržnice.",
       "needsActivation": "Već je instalirano, ali ga treba aktivirati (verzija {{version}}).",
       "mismatch": "Neusklađena verzija: potrebna je {{expected}}, pronađena {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Pregled platforme",
-      "image": "Pregled {{number}}"
+      "image": "Pregled {{number}}",
+      "previous": "Prethodno",
+      "next": "Sljedeće"
     },
     "menuField": {
       "newItem": "Nova stavka izbornika",
-      "structure": "Struktura izbornika",
-      "add": "Dodaj stavku izbornika"
+      "add": "Dodaj stavku izbornika",
+      "reorder": "Povucite za premještanje; strelice: gore i dolje premještaju, desno ugniježđuje, lijevo izvlači"
     },
     "field": {
       "notSet": "Nije postavljeno",
@@ -461,8 +464,8 @@
       "record": "zapis"
     },
     "array": {
-      "addNew": "Dodaj novo: {{label}}",
-      "item": "Stavka"
+      "add": "Dodaj",
+      "reorder": "Povucite za premještanje ili koristite strelice"
     },
     "stepper": {
       "increment": "Povećaj",
@@ -528,9 +531,7 @@
       "noContact": "Nema e-pošte ni telefona u Osobama",
       "hasLogin": "Ima prijavu",
       "noLogin": "Nema prijave",
-      "source": "Ime, e-pošta i telefon dolaze iz Osobe #{{id}}; promijenite ih ondje.",
       "open": "Otvori u Osobama",
-      "choose": "Odaberi nekog drugog",
       "searchFailed": "Pretraživanje Osoba trenutačno nije moguće.",
       "noMatch": "Nitko u Osobama ne odgovara. Unesite podatke u nastavku; spremanjem će se osoba dodati u Osobe.",
       "ref": "Osoba #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Otvori Web-mjesta"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativna nadjačavanja nasljeđuju prefiks zbirke. Omogućite apsolutni način kako biste zaobišli prefikse poput `/shop`.",
     "range": "Raspon",
     "noDataForThisRange": "Nema podataka za ovaj raspon",
     "peak": "· vrhunac {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtri",
       "clearFilters": "Očisti sve",
       "removeFilter": "Ukloni filtar {{label}}",
-      "showResults": "Prikaži rezultate ({{count}})"
+      "showResults": "Prikaži rezultate ({{count}})",
+      "showResultsOne": "Prikaži 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Ne sprema se u polje osobe",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Ograničenja izoliranog okruženja za {{name}} su spremljena, ali se njegov proces nije uspio ponovno pokrenuti s njima: {{value}}",
       "restartRequired": "Potrebno ponovno pokretanje",
       "sandboxSettingsForWereSaved": "Postavke izoliranog okruženja za {{name}} su spremljene, ali je potrebno ponovno pokrenuti API da bi stupile na snagu.",
-      "resourcesUpdated": "Resursi ažurirani",
-      "sandboxLimitsForUpdated": "Ograničenja izoliranog okruženja za {{name}} su ažurirana.",
       "sandboxDisabledFor": "Izolirano okruženje onemogućeno za {{name}}.",
       "saveFailed": "Spremanje nije uspjelo",
       "failedToUpdateSandboxLimits": "Ažuriranje ograničenja izoliranog okruženja nije uspjelo.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Neaktivno. Nema nedavno zabilježenih događaja.",
       "updating": "Ažuriranje...",
       "updateAvailable": "Dostupno ažuriranje",
-      "updatePolicy": "Pravila ažuriranja",
       "saveChanges": "Spremi promjene",
       "unsavedChanges": "Nespremljene promjene",
       "exportSettingsAsJson": "Izvezi postavke kao JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Novo u v{{version}}",
       "installedVersion": "Instalirano {{version}}",
       "marketplaceVersion": "Trgovina {{version}}",
-      "saving": "Spremanje...",
       "saveSettings": "Spremi postavke",
       "viewDefinition": "Prikaži definiciju",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Izgled",
       "failedToLoadAppearances": "Učitavanje izgleda nije uspjelo",
       "failedToSaveShadowSetting": "Spremanje postavke sjena nije uspjelo",
+      "failedToSaveMenuSetting": "Postavku izbornika nije moguće spremiti",
       "switchedToReloading": "Prebačeno na \"{{slug}}\". Ponovno učitavanje…",
       "failedToSwitchAppearance": "Promjena izgleda nije uspjela",
       "installFailed": "Instalacija nije uspjela",
@@ -1919,6 +1917,8 @@
       "install": "Instaliraj",
       "surfaceShadows": "Sjene površina",
       "depthOnPanelsDialogsAnd": "Dubina na pločama, dijalozima i gumbima. Isključite za ravnu administraciju — obrubi i kutovi ostaju potpuno isti.",
+      "secondMenuColumn": "Drugi stupac izbornika",
+      "sectionPagesBesideTheMenu": "Stranice odjeljka stoje u stupcu pokraj izbornika. Isključeno, otvaraju se ispod svog retka u jednom izborniku, a svaki zaslon dobiva 220px.",
       "installFromAPackageUrl": "Instaliraj s URL-a paketa",
       "builtIn": "Ugrađeno",
       "installed": "Instalirano",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Lokacija IP adrese nije ažurirana",
       "geoUnavailable": "Status lokacije IP adrese nije dostupan",
       "geoAttribution": "Geolokaciju IP adresa pruža {{name}} ({{license}}). Dok je uključeno, ažurira se mjesečno.",
-      "geoSaved": "Spremljeno",
-      "geoSavedOn": "Baza se upravo preuzima; velika je oko 60 MB.",
-      "geoSavedOff": "Baza je uklonjena s poslužitelja.",
       "everyPluginRunsIsolated": "Izolirano: svaki dodatak radi u vlastitom procesu. Ograničenje memorije i vremensko ograničenje vrijede za sve dodatke; udio CPU-a, ukupna memorija, disk i procesi vrijede samo za dodatke koje je prenijela neka stranica.",
       "schemaOrphans": "Shema baze podataka",
       "schemaOrphansHelp": "Stupci koji su još u bazi, ali ih više ništa ne deklarira. Platforma ih samo navodi; ništa se ne briše dok vi ne odlučite, a izbrisani stupac ne može se vratiti.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Onemogućeno — krajnja točka svima odgovara s 403.",
       "mediaPayloadLimitMb": "Ograničenje veličine medija (MB)",
       "maximumDecodedUploadOrRemote": "Najveći dekodirani prijenos ili udaljeno preuzimanje koje MCP alati za medije prihvaćaju.",
-      "saveLimit": "Spremi ograničenje",
       "allSites": "sve stranice",
       "issuedBeforeSites": "izdano prije stranica",
       "noTokensYet": "Još nema tokena.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Zadano za platformu",
       "thisSite": "Ovo web-mjesto",
       "inForceNow": "Trenutačno na snazi",
-      "saving": "Spremanje…",
-      "savePolicy": "Spremi pravila",
       "thePlatformDefaultIsSet": "Zadana pravila platforme postavlja administrator platforme.",
       "useTheLayerBelow": "Koristi razinu ispod",
       "whyTheLawRequiresThese": "Zašto zakon zahtijeva čuvanje ovih zapisa",
-      "inheritsThePlatformDefault": "nasljeđuje: zadano za platformu"
+      "inheritsThePlatformDefault": "nasljeđuje: zadano za platformu",
+      "strategyDelete": "Izbriši",
+      "strategyAnonymise": "Anonimiziraj",
+      "strategyRetain": "Zadrži",
+      "declaredBy": "Zadano prema {{plugin}}",
+      "inheritsValue": "nasljeđuje: {{value}}",
+      "legalBasis": "Pravna osnova",
+      "theSiteColumnIsSet": "Stupac „Ova stranica” postavlja se unutar stranice. Odaberite stranicu u izborniku da biste ga promijenili."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Prikazno ime",
     "thisPersonHasALogin": "Ova osoba ima račun za prijavu; adresa e-pošte mijenja se na računu.",
     "birthDate": "Datum rođenja",
-    "saveChanges": "Spremi promjene",
     "sendPasswordResetEmail": "Pošalji e-poruku za ponovno postavljanje lozinke",
     "cancel": "Odustani",
     "accountManagement": "Upravljanje računom",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Ručno kopirajte kodove za oporavak.",
     "nameRequired": "Naziv je obavezan",
     "enterATokenNameFirst": "Najprije unesite naziv tokena.",
-    "tokenCreated": "Token je stvoren",
     "copyTheTokenNowIt": "Kopirajte token sada. Prikazuje se samo jednom.",
     "failedToCreateApiToken": "Stvaranje API tokena nije uspjelo",
     "areYouSureYouWant2": "Jeste li sigurni da želite onemogućiti 2FA za ovog korisnika? Time će se smanjiti sigurnost računa.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesija je opozvana",
     "deviceSessionRevokedSuccessfully": "Sesija uređaja uspješno je opozvana.",
     "failedToRevokeSession": "Opoziv sesije nije uspio",
-    "rolesUpdated": "Uloge su ažurirane",
-    "theUserSRolesWere": "Uloge korisnika su spremljene.",
     "saveFailed": "Spremanje nije uspjelo",
     "failedToSaveRoles": "Spremanje uloga nije uspjelo.",
     "loadingRoles": "Učitavanje uloga",
@@ -3448,8 +3445,6 @@
     "remove": "Ukloni",
     "loadFailed": "Učitavanje nije uspjelo",
     "couldNotRetrieveRoleDetails": "Nije moguće dohvatiti podatke o ulozi.",
-    "roleUpdated": "Uloga je ažurirana",
-    "wasSaved": "\"{{name}}\" je spremljeno.",
     "updateFailed": "Ažuriranje nije uspjelo",
     "anErrorOccurredWhileSaving": "Došlo je do pogreške prilikom spremanja.",
     "loadingRole": "Učitavanje uloge...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Natrag na korisnike",
     "selfServiceSecurityControls": "Samostalno upravljanje sigurnošću",
     "sessionDeviceControlsAndPersonal": "Upravljanje sesijama i uređajima te osobni API tokeni dostupni su samo kada pregledavate vlastiti korisnički račun.",
-    "securityRecommendations": "Sigurnosne preporuke",
     "twoFactorAuthentication": "Dvofaktorska autentifikacija",
-    "activeAndProtectingThisAccount": "Aktivna i štiti ovaj račun",
-    "notEnabledHighlyRecommendedFor": "Nije omogućena – izričito se preporučuje za administratorske račune",
-    "passwordProtected": "Zaštićeno lozinkom",
-    "accountHasASecurePassword": "Račun ima sigurnu lozinku",
-    "administratorAccess": "Administratorski pristup",
     "fullSystemAccess2faStrongly": "Potpuni pristup sustavu – 2FA se izričito preporučuje",
     "personalApiTokens": "Osobni API tokeni",
     "tokenNameEGCi": "Naziv tokena (npr. CI deploy)",
     "days": "Dana",
     "createToken": "Izradi token",
-    "copyNowShownOnce": "Kopirajte odmah (prikazuje se samo jednom)",
     "loadingApiTokens": "Učitavanje API tokena...",
     "noApiTokensCreatedYet": "Još nije izrađen nijedan API token.",
     "revoke": "Opozovi",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktivnost prijava i sesija",
     "loadingAuthActivity": "Učitavanje aktivnosti autentifikacije...",
     "noRecentLoginSessionEvents": "Nema nedavnih događaja prijave ili sesije za ovog korisnika.",
-    "unknownTime": "Nepoznato vrijeme",
-    "activityEvent": "Događaj aktivnosti",
     "openFullGlobalActivity": "Otvori cjelokupnu aktivnost",
-    "2faStatus": "Status 2FA",
     "addAnExtraLayerOf": "Dodajte dodatnu razinu sigurnosti autentifikacijom putem aplikacije (TOTP)",
-    "recommended": "Preporučeno",
     "enableTwoFactorAuthenticationTo": "Omogućite dvofaktorsku autentifikaciju kako biste ovaj račun zaštitili vremenski ograničenim jednokratnim lozinkama (TOTP).",
     "enable2fa": "Omogući 2FA",
     "step1ScanQrCode": "Korak 1: Skenirajte QR kôd",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Korak 2: Potvrdite kôd",
     "enterThe6DigitCode": "Unesite 6-znamenkasti kôd iz aplikacije za autentifikaciju kako biste dovršili postavljanje:",
     "verifyEnable": "Potvrdi i omogući",
-    "protectionActive": "Zaštita aktivna",
     "thisAccountRequiresA6": "Za prijavu na ovaj račun potreban je 6-znamenkasti kôd iz aplikacije za autentifikaciju.",
     "regenerateRecoveryCodes": "Ponovno generiraj kodove za oporavak",
     "disable2fa": "Onemogući 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Opozovi ostale sesije",
     "loadingSessions": "Učitavanje sesija...",
     "noActiveSessions": "Nema aktivnih sesija.",
-    "currentSession": "Trenutačna sesija",
-    "deviceSession": "Sesija uređaja",
     "current": "Trenutačna",
     "unknownDevice": "Nepoznat uređaj",
     "editAccount2": "Uredi račun",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Otvori zapis korisnika",
     "token": "Token",
     "createdOn": "Izrađeno {{date}}",
-    "notAvailable": "n/d",
     "revokedOn": "Opozvano {{date}}",
     "recoveryCodesRemaining": "Preostali kodovi za oporavak:",
-    "unknownValue": "nepoznato",
     "expiresOn": "Istječe: {{date}}",
     "person2": "Osoba",
     "added": "Dodano",
@@ -3591,12 +3570,10 @@
       "loading": "Učitavanje polja osoba…",
       "loadFailed": "Polja osoba nije moguće učitati.",
       "saveFailed": "Polja nije moguće spremiti.",
-      "saved": "Polja su spremljena.",
       "empty": "Još nema polja osoba. Dodajte jedno kako biste ga počeli voditi za svaku osobu.",
       "noneDeclared": "Ova stranica još nema polja osoba.",
       "declare": "Dodaj polja osoba",
       "manage": "Upravljaj poljima",
-      "save": "Spremi polja",
       "saveField": "Spremi polje",
       "delete": "Izbriši",
       "deleteTitle": "Izbrisati ovo polje?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Vrijedi (dana)",
+    "revokeOtherSessionsConfirm": "Svi ostali uređaji odmah se odjavljuju.",
+    "revokeSessionConfirm": "Taj se uređaj odmah odjavljuje.",
+    "revokeCurrentSessionConfirm": "Ovo je uređaj koji sada koristite. Odmah ćete biti odjavljeni.",
+    "revokeTokenConfirm": "„{{name}}” odmah prestaje raditi.",
+    "twoFactorTurnedOff": "Prijava u dva koraka isključena je za ovu stranicu pa se ovdje ne može postaviti.",
+    "openSecuritySettings": "Otvori sigurnosne postavke"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Postavke stranice ({{what}}) postavljaju se unutar svake stranice — odaberite jednu u izborniku stranica.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Ovo web-mjesto nije moguće otvoriti za pregled.",
     "couldNotLoadTheSite": "Web-mjesto nije moguće učitati.",
     "couldNotReloadThePlugin": "Popis dodataka nije moguće ponovno učitati.",
-    "siteSaved": "Web-mjesto spremljeno",
-    "routingFollowsImmediatelyNoRestart": "Usmjeravanje se primjenjuje odmah — bez ponovnog pokretanja.",
     "notSaved": "Nije spremljeno",
     "theSiteCouldNotBe2": "Web-mjesto nije moguće spremiti.",
     "couldNotOpenTheSite": "Web-mjesto nije moguće otvoriti",
@@ -3789,7 +3771,6 @@
     "visit": "Posjeti",
     "openThisSite": "Otvori ovo web-mjesto",
     "export": "Izvezi",
-    "save": "Spremi",
     "couldNotLoadCertificates": "Certifikate nije moguće učitati.",
     "couldNotSwitchThisHost": "Ovaj host nije moguće prebaciti na automatski način.",
     "couldNotSwitchThisHost2": "Ovaj host nije moguće prebaciti na automatski način (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Dostupno je ažuriranje",
     "isNowActive": "{{name}} je sada aktivna.",
     "themeHasBeenUpdated2": "Tema {{name}} je ažurirana.",
-    "configurationSaved": "Konfiguracija je spremljena",
-    "visualProtocolsUpdatedSuccessfully": "Vizualni protokoli uspješno su ažurirani.",
     "saveFailed": "Spremanje nije uspjelo",
     "hasBeenRemoved2": "{{name}} je uklonjena.",
     "seedsExecuted": "Početni podaci su učitani",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Izgled",
     "extensionsSection": "Proširenja",
     "versionReady": "Verzija {{version}} je spremna",
-    "saveChanges": "Spremi promjene",
     "runSeedsHint": "Ponovno učitava početne podatke teme — njezine ogledne stranice i sadržaj — u ovu stranicu.",
     "resetThemeHint": "Briše spremljene postavke teme ove stranice i ponovno učitava početne podatke.",
     "notActiveHint": "Ova stranica koristi drugu temu.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Što je novo u v{{version}}",
     "whatChanged": "Što je novo",
-    "closeBuildSourceDialog": "Zatvori dijalog izvora izgradnje",
-    "close": "Zatvori",
     "couldNotInstallThatVersion": "Tu verziju nije moguće instalirati.",
     "couldNotChangeAutomaticUpdating": "Nije moguće promijeniti automatsko ažuriranje.",
     "failed": "Neuspjelo",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatski certifikati su isključeni. {{reason}}",
     "automaticCertificatesComeFrom": "Automatske certifikate izdaje {{authority}}.",
     "noSecretKeyIsConfigured": "Na ovom poslužitelju nije konfiguriran SECRET_KEY, pa se privatni ključ ne može spremiti. Učitavanje je onemogućeno dok se ne postavi.",
-    "nothingToSavePasteA": "Nema se što spremiti — zalijepite token ili upotrijebite Očisti za uklanjanje spremljenog.",
     "savedThisSiteNowUses": "Spremljeno. Ova stranica sada koristi vlastiti Cloudflare token.",
     "removedThisSiteFallsBack": "Uklonjeno. Ova stranica sada koristi token platforme.",
     "couldNotSaveTheToken": "Spremanje tokena nije uspjelo.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token ove stranice",
     "savedLeaveBlankToKeep": "Spremljeno — ostavite prazno za zadržavanje ili upotrijebite Očisti za uklanjanje",
     "pasteACloudflareApiToken": "Zalijepite Cloudflare API token",
-    "save": "Spremi",
     "clear": "Očisti",
     "nothingStoredThisHostCannot": "Ništa nije spremljeno — ova platforma ne može posluživati ovaj host preko HTTPS-a.",
     "nothingStoredHereTlsFor": "Ovdje ništa nije spremljeno — TLS za ovaj host terminira se prije platforme, pa je njegov certifikat ondje.",
@@ -4706,36 +4680,26 @@
     "roles": "Uloge",
     "permissions": "Dopuštenja",
     "eventDetails": "Detalji događaja",
-    "context": "Kontekst",
     "resource": "Resurs",
     "system": "Sustav",
     "timestamp": "Vremenska oznaka",
-    "authority": "Ovlast",
-    "actorId": "ID izvršitelja",
-    "type": "Vrsta",
-    "systemLog": "Zapis sustava",
-    "audit": "Revizija: {{status}}",
-    "activityMessage": "Poruka aktivnosti",
-    "actionTaken": "Izvršena radnja",
-    "resourcePool": "Skup resursa",
-    "rawMetadata": "Neobrađeni metapodaci",
     "thisEntryIsPartOf": "Ovaj zapis dio je nepromjenjivog revizijskog traga.",
     "exportJson": "Izvezi JSON",
     "event": "Događaj",
     "actor": "Izvršitelj",
+    "plugin": "Dodatak",
     "activity": "Aktivnost",
     "status": "Status",
     "action": "Radnja",
     "time": "Vrijeme",
-    "logSignature": "Potpis zapisa: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "UPOZORENJE",
-      "ERROR": "POGREŠKA",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SUSTAV",
-      "AUDIT": "REVIZIJA"
+      "INFO": "Info",
+      "WARN": "Upozorenje",
+      "ERROR": "Pogreška",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sustav",
+      "AUDIT": "Revizija"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Zapis br. {{id}}",
+    "recordedData": "Zabilježeni podaci"
   },
   "mediaPicker": {
     "showingOnly": "Prikazuje se samo: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Zadatak",
       "schedule": "Izvodi se",
       "lastRun": "Posljednje izvođenje",
-      "nextRun": "Sljedeće izvođenje"
+      "nextRun": "Sljedeće izvođenje",
+      "duration": "Trajanje"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

@@ -1,3 +1,5 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -31,6 +33,10 @@ export class FocusModal extends PureReactor {
   @prop declare cancelLabel?: string;
   @prop declare confirmDisabled?: boolean;
   @prop declare saving?: boolean;
+  /** What the buttons will act on, drawn at the start of the foot ("hero.jpg"). */
+  @prop declare footNote?: ReactNode;
+  /** For a grid of pictures rather than a form: the column takes up to 1120px instead of 720. */
+  @prop declare wide?: boolean;
   @prop declare children: ReactNode;
 
   componentDidMount(): void {
@@ -38,6 +44,7 @@ export class FocusModal extends PureReactor {
   }
 
   componentWillUnmount(): void {
+    this.presence.dispose();
     if (Platform.isBrowser) document.removeEventListener('keydown', this.onKeyDown);
   }
 
@@ -49,20 +56,24 @@ export class FocusModal extends PureReactor {
     if (!this.saving) this.onClose();
   }
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
   render(): ReactNode {
-    if (!this.isOpen || !Platform.isBrowser) return null;
+    const shown = Platform.isBrowser ? this.presence.state(this.isOpen) : null;
+    if (!shown) return null;
     const focus = AdminClass.of('focus');
     const tabs = this.tabs ?? [];
     // Through a portal, onto `body`: a fixed overlay drawn inside a card obeys the card's stacking
     // context, not the page, and the navigation then draws over it.
     return this.portal(
-      <div className={focus} role="dialog" aria-modal="true" aria-label={this.label}>
+      <div className={focus} data-state={shown} aria-hidden={shown === 'closed' || undefined} role={shown === 'open' ? 'dialog' : undefined} aria-modal="true" aria-label={this.label}>
         <div className={`${focus}__backdrop`} onClick={this.close} />
         <div className={`${focus}__panel`}>
           <div className={`${focus}__head`}>
             <div className={`${focus}__head-start`}>
               <button type="button" className={`${focus}__esc`} onClick={this.close}>
-                {AdminI18n.t('common.escKey')}
+                <Kbd>{AdminI18n.t('common.escKey')}</Kbd>
               </button>
               {tabs.length ? (
                 <div className={`${focus}__tabs`} role="tablist">
@@ -84,10 +95,11 @@ export class FocusModal extends PureReactor {
           </div>
           <div className={`${focus}__body`}>
             <div className={`${focus}__scroll`}>
-              <div className={`${focus}__form`}>{this.children}</div>
+              <div className={`${focus}__form${this.wide ? ` ${focus}__form--wide` : ''}`}>{this.children}</div>
             </div>
           </div>
           <div className={`${focus}__foot`}>
+            {this.footNote ? <span className={`${focus}__note`}>{this.footNote}</span> : null}
             <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
               {this.cancelLabel ?? AdminI18n.t('common.cancel')}
             </Button>

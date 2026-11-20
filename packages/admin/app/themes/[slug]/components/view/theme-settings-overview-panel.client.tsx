@@ -1,4 +1,12 @@
-import { ThemeMode, ThemeState, VersionComparisonService } from '@fromcode119/core/client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { ThemeState, VersionComparisonService } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -25,72 +33,43 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
   @bound private activate(): void { void this.page.handleActivate(); }
   @bound private update(): void { void this.page.handleUpdate(); }
 
-  private get dark(): boolean {
-    return this.model.adminTheme === ThemeMode.DARK;
-  }
-
   private get newerVersion(): string | null {
     const { marketplaceVersion, themeDetail } = this.model;
     return marketplaceVersion && VersionComparisonService.isGreater(marketplaceVersion, themeDetail.version) ? marketplaceVersion : null;
   }
 
   private updateBanner(version: string): ReactNode {
-    const dark = this.dark;
     const updating = this.page.isUpdating;
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <FrameworkIcons.Download size={16} className={dark ? 'text-indigo-300' : 'text-indigo-600'} />
-        <span className={`flex-1 text-[13px] font-medium ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.versionReady', { version })}</span>
-        <button type="button" onClick={this.update} disabled={updating}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-medium text-white hover:bg-indigo-500 disabled:opacity-60">
-          {updating ? <FrameworkIcons.Loader size={13} className="animate-spin" /> : <FrameworkIcons.Zap size={13} />}
-          {updating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
-        </button>
-      </div>
-    );
-  }
-
-  private row(label: string, value: ReactNode): ReactNode {
-    const dark = this.dark;
-    return (
-      <div key={label} className="flex items-center justify-between gap-4 py-1.5 text-[13px]">
-        <span className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</span>
-        <span className={`text-end font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</span>
-      </div>
+      <Alert tone="info" title={AdminI18n.t('themes.versionReady', { version })}
+        action={<Button variant={ButtonVariant.PRIMARY} isLoading={updating} icon={<FrameworkIcons.Zap size={15} />} onClick={this.update}>{updating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}</Button>} />
     );
   }
 
   private status(): ReactNode {
-    const dark = this.dark;
     const active = this.model.themeDetail.state === ThemeState.ACTIVE;
     return (
-      <DetailBox title={AdminI18n.t('themes.status')} theme={this.model.adminTheme}>
-        <div className="flex flex-wrap items-center justify-between gap-3 py-1.5 text-[13px]">
-          <span className={`flex items-center gap-2 font-medium ${active ? 'text-emerald-500' : dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            <span className={`h-2 w-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-slate-500'}`} />
-            {AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}
-          </span>
-          {active ? null : (
-            <button type="button" onClick={this.activate} className="inline-flex h-8 items-center rounded-lg bg-indigo-600 px-3.5 text-[13px] font-medium text-white hover:bg-indigo-500">
-              {AdminI18n.t('themes.activate')}
-            </button>
-          )}
-        </div>
-        {active ? null : <p className={`mt-2 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.notActiveHint')}</p>}
+      <DetailBox title={AdminI18n.t('themes.status')} theme={this.model.adminTheme}
+        action={<StateBadge tone={active ? 'success' : 'default'}>{AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}</StateBadge>}>
+        {active ? null : (
+          <div className="fc-stack">
+            <Hint>{AdminI18n.t('themes.notActiveHint')}</Hint>
+            <div><Button variant={ButtonVariant.PRIMARY} onClick={this.activate}>{AdminI18n.t('themes.activate')}</Button></div>
+          </div>
+        )}
       </DetailBox>
     );
   }
 
   private details(): ReactNode {
     const { themeDetail, adminTheme } = this.model;
-    return (
-      <DetailBox title={AdminI18n.t('themes.details')} theme={adminTheme}>
-        {this.row(AdminI18n.t('themes.version'), themeDetail.version)}
-        {this.newerVersion ? this.row(AdminI18n.t('themes.availableVersion'), this.newerVersion) : null}
-        {themeDetail.author ? this.row(AdminI18n.t('themes.author'), themeDetail.author) : null}
-        {this.row(AdminI18n.t('themes.vendor'), String(themeDetail.namespace || '').trim() || AdminI18n.t('themes.noVendorDeclared'))}
-      </DetailBox>
-    );
+    const facts = [
+      { key: 'version', label: AdminI18n.t('themes.version'), value: themeDetail.version },
+      ...(this.newerVersion ? [{ key: 'available', label: AdminI18n.t('themes.availableVersion'), value: this.newerVersion }] : []),
+      ...(themeDetail.author ? [{ key: 'author', label: AdminI18n.t('themes.author'), value: String(themeDetail.author) }] : []),
+      { key: 'vendor', label: AdminI18n.t('themes.vendor'), value: String(themeDetail.namespace || '').trim() || AdminI18n.t('themes.noVendorDeclared') },
+    ];
+    return <DetailBox title={AdminI18n.t('themes.details')} theme={adminTheme}><AdminFactGrid facts={facts as any} /></DetailBox>;
   }
 
   render(): ReactNode {
@@ -103,9 +82,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
       <DetailSplit theme={adminTheme}
         main={<>
           {version ? this.updateBanner(version) : null}
-          <p className={`text-[15px] leading-relaxed ${this.dark ? 'text-slate-300' : 'text-slate-700'}`}>
-            {themeDetail.description || AdminI18n.t('themes.noDescriptionProvidedForThis')}
-          </p>
+          <RecordCard><Text size="base">{themeDetail.description || AdminI18n.t('themes.noDescriptionProvidedForThis')}</Text></RecordCard>
           <ThemeOverviewColours swatches={model.previewSwatches} theme={adminTheme} />
           <ThemeOverviewLayouts layouts={themeDetail.layouts ?? []} defaultLayout={defaultLayout} theme={adminTheme} />
           {model.integrationRequirements.length ? <ThemeOverviewIntegrations integrations={model.integrationRequirements} theme={adminTheme} /> : null}

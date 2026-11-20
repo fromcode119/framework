@@ -1,22 +1,34 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { PureReactor, prop, state } from '@fromcode119/react-class-components';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { IconBadge } from '@/components/ui/view/icon-badge.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { CodeBlock } from '@/components/ui/view/code-block.client';
 import { Input } from '@/components/ui/view/input.client';
+import { Label } from '@/components/ui/view/label.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IUserApiTokenRecord } from '@/app/users/[id]/security/interfaces/user-api-token-record.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The account's own API tokens: one row each, a new one made from a drawer, and its key shown once
+ * above the list — the way the MCP token list does it.
+ */
 export class UserApiTokensCard extends PureReactor {
   @prop declare createdToken: string;
-  @prop declare isDark: boolean;
-  @prop declare onCreateToken: () => Promise<void>;
-  @prop declare onRevokeToken: (tokenId: string) => Promise<void>;
+  @prop declare onCreateToken: () => Promise<boolean>;
+  @prop declare onDismissCreatedToken: () => void;
+  @prop declare onRevokeToken: (token: IUserApiTokenRecord) => void;
   @prop declare setTokenDays: (value: string) => void;
   @prop declare setTokenName: (value: string) => void;
   @prop declare tokenDays: string;
@@ -24,27 +36,78 @@ export class UserApiTokensCard extends PureReactor {
   @prop declare tokens: IUserApiTokenRecord[];
   @prop declare tokensLoading: boolean;
 
+  @state private creating = false;
+  @state private saving = false;
+
+  private async create(): Promise<void> {
+    this.saving = true;
+    try {
+      if (await this.onCreateToken()) this.creating = false;
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  private description(token: IUserApiTokenRecord): string {
+    const created = token.createdAt ? AdminI18n.t('users.createdOn', { date: new Date(token.createdAt).toLocaleDateString(AdminI18n.locale) }) : '';
+    return [token.prefix || '', created].filter(Boolean).join(' · ');
+  }
+
+  private renderCreatedToken(): ReactNode {
+    if (!this.createdToken) return null;
+    return (
+      <RecordCard title={AdminI18n.t('users.copyTheTokenNowIt')} aside={<StateBadge tone="warning">{AdminI18n.t('settings.integrations.shownOnce')}</StateBadge>}>
+        <div className="fc-form-stack">
+          <CodeBlock code={this.createdToken} />
+          <div><Button variant={ButtonVariant.SECONDARY} onClick={this.onDismissCreatedToken}>{AdminI18n.t('users.done')}</Button></div>
+        </div>
+      </RecordCard>
+    );
+  }
+
+  private renderRows(): ReactNode {
+    if (this.tokensLoading) return <Loader label={AdminI18n.t('users.loadingApiTokens')} />;
+    if (this.tokens.length === 0) return <EmptyState inline icon={<FrameworkIcons.Key size={16} />} title={AdminI18n.t('users.noApiTokensCreatedYet')} />;
+    return this.tokens.map((token) => (
+      <ListRow
+        key={String(token.id)}
+        icon={<IconBadge tone={token.revokedAt ? 'neutral' : 'info'}><FrameworkIcons.Key size={14} /></IconBadge>}
+        title={<span className="fc-ext-row__plain">{token.name || AdminI18n.t('users.token')}</span>}
+        badges={token.revokedAt ? <Badge variant={BadgeVariant.DANGER}>{AdminI18n.t('users.revokedOn', { date: new Date(token.revokedAt).toLocaleDateString(AdminI18n.locale) })}</Badge> : null}
+        description={this.description(token) || undefined}
+        actions={token.revokedAt ? null : <Button variant={ButtonVariant.OUTLINE} onClick={() => this.onRevokeToken(token)}>{AdminI18n.t('users.revoke')}</Button>}
+      />
+    ));
+  }
+
   render(): ReactNode {
-    const {
-  createdToken,
-  isDark,
-  onCreateToken,
-  onRevokeToken,
-  setTokenDays,
-  setTokenName,
-  tokenDays,
-  tokenName,
-  tokens,
-  tokensLoading,
-} = this;
-  return (
-    <Card title={AdminI18n.t('users.personalApiTokens')} icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3"><div className="md:col-span-5"><Input placeholder={AdminI18n.t('users.tokenNameEGCi')} value={tokenName} onChange={(event) => setTokenName(event.target.value)} /></div><div className="md:col-span-3"><NumberStepper min={1} max={3650} placeholder={AdminI18n.t('users.days')} value={tokenDays} onChange={(v) => setTokenDays(v === '' ? '' : String(v))} /></div><div className="md:col-span-4"><Button className="w-full font-medium text-xs tracking-tight" onClick={() => void onCreateToken()}>{AdminI18n.t('users.createToken')}</Button></div></div>
-        {createdToken ? <div className="rounded-xl border border-amber-200 bg-amber-50 p-3"><p className="text-[12px] font-medium tracking-tight text-amber-600 mb-2">{AdminI18n.t('users.copyNowShownOnce')}</p><code className="text-[12px] break-all font-mono text-amber-800">{createdToken}</code></div> : null}
-        {tokensLoading ? <Loader label={AdminI18n.t('users.loadingApiTokens')} /> : tokens.length === 0 ? <div className="text-xs font-medium tracking-tight text-slate-400 py-2">{AdminI18n.t('users.noApiTokensCreatedYet')}</div> : <div className="space-y-2">{tokens.map((token) => <div key={String(token.id)} className={`p-3 ${AdminClass.SURFACE} ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}><div className="flex items-center justify-between gap-3"><div className="space-y-1"><p className="text-xs font-medium text-slate-700 dark:text-slate-200">{String(token.name || AdminI18n.t('users.token'))}</p><p className="text-[12px] font-medium tracking-tight text-slate-400">{String(token.prefix || 'fct_***')} • {AdminI18n.t('users.createdOn', { date: token.createdAt ? new Date(token.createdAt).toLocaleDateString() : AdminI18n.t('users.notAvailable') })}</p>{token.revokedAt ? <p className="text-[12px] font-medium tracking-tight text-rose-500">{AdminI18n.t('users.revokedOn', { date: new Date(token.revokedAt).toLocaleString() })}</p> : null}</div>{!token.revokedAt ? <Button variant={ButtonVariant.OUTLINE} size={FieldSize.SM} className="text-[12px] font-medium tracking-tight" onClick={() => void onRevokeToken(String(token.id))}>{AdminI18n.t('users.revoke')}</Button> : null}</div></div>)}</div>}
-      </div>
-    </Card>
-  );
+    return (
+      <>
+        {this.renderCreatedToken()}
+        <ListShell
+          title={AdminI18n.t('users.personalApiTokens')}
+          count={this.tokensLoading ? null : this.tokens.length}
+          actions={<Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Plus size={15} />} onClick={() => { this.creating = true; }}>{AdminI18n.t('users.createToken')}</Button>}
+        >
+          <div>{this.renderRows()}</div>
+        </ListShell>
+        <EditSheet
+          isOpen={this.creating}
+          onClose={() => { this.creating = false; }}
+          onSave={() => void this.create()}
+          saving={this.saving}
+          saveLabel={AdminI18n.t('users.createToken')}
+          title={AdminI18n.t('users.createToken')}
+        >
+          <div className="fc-form-stack">
+            <Input label={AdminI18n.t('users.name')} placeholder={AdminI18n.t('users.tokenNameEGCi')} value={this.tokenName} autoFocus onChange={(event: any) => this.setTokenName(event?.target?.value ?? '')} />
+            <div className="fc-field-stack">
+              <Label>{AdminI18n.t('users.validForDays')}</Label>
+              <NumberStepper min={1} max={3650} value={this.tokenDays} onChange={(value) => this.setTokenDays(value === '' ? '' : String(value))} />
+            </div>
+          </div>
+        </EditSheet>
+      </>
+    );
   }
 }

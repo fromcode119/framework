@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -18,22 +17,19 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The page's header (the shared compact one): which plugin, its state and version — and the one action of the
- * tab you are on (resources: save the policy). Settings are saved from the bar at the foot of the form,
+ * tab you are on. Settings and the resource policy are saved from the bar at the foot of the page,
  * which shows only while something is changed, like on every other settings page. Everything that is not an everyday action
  * (exporting, importing or resetting the settings, the raw definition) sits in the ⋯ menu.
  */
 export class PluginDetailHeader extends PureReactor {
   @prop declare activeTab: PluginDetailTab;
-  @prop declare isSaving: boolean;
   @prop declare onOpenDefinition: () => void;
-  @prop declare onSaveSandbox: () => void;
-  /** The platform's own actions (definition, the resource policy) — only in Platform scope, for a platform admin. */
+  /** The platform's own actions (the raw definition) — only in Platform scope, for a platform admin. */
   @prop declare platformActions: boolean;
   @prop declare plugin: ILoadedPlugin;
   @prop declare settingsFormRef: Ref<IPluginSettingsFormHandle | null>;
   /** False for a plugin with nothing to set (or one that is not running yet): no Save, Export, Import or Reset. */
   @prop declare settingsHasFields: boolean;
-  @prop declare theme: ThemeMode;
 
   /** The state in the operator's words; `plugin.state` may still be a plain string before hydration. */
   private get stateLabel(): string {
@@ -60,16 +56,8 @@ export class PluginDetailHeader extends PureReactor {
     return items;
   }
 
-  private button(label: ReactNode, onClick: () => void, primary = false, disabled = false): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const tone = primary
-      ? 'bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed'
-      : (dark ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50');
-    return <button type="button" onClick={onClick} disabled={disabled} className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors ${primary ? 'font-medium' : ''} ${tone}`}>{label}</button>;
-  }
-
   render(): ReactNode {
-    const { activeTab, plugin } = this;
+    const { plugin } = this;
     const items = this.menuItems;
     // One quiet line: state, version, author. The vendor id (an install refuses a same-slug plugin from
     // another vendor) is the author's tooltip rather than a fourth word on the line.
@@ -82,10 +70,9 @@ export class PluginDetailHeader extends PureReactor {
     );
     const actions = (
       <>
-        {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
         {items.length ? (
           <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={
-            <span aria-label={AdminI18n.t('common.more')} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            <span aria-label={AdminI18n.t('common.more')} className="fc-toolbar-btn fc-toolbar-btn--icon">
               <FrameworkIcons.More size={16} />
             </span>
           } />

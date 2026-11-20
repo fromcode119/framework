@@ -11,6 +11,7 @@ import type { IOption } from '@/components/ui/interfaces/option.interface';
 import { ThemeContext } from '@/components/view/theme-context-store.client';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 export class Select extends Reactor {
   /**
@@ -225,10 +226,10 @@ export class Select extends Reactor {
               other. Padding moved the wrong element. */}
           <span className="relative z-10 ms-2 flex flex-shrink-0 items-center">
             {isLoading ? (
-              <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
+              <Spinner small className="fc-spinner--muted" />
             ) : (
-              <span className={`transition-transform duration-150 ${isOpen ? 'rotate-180' : ''} ${chevronThemeClasses}`}>
-                <FrameworkIcons.Down size={15} />
+              <span className={chevronThemeClasses}>
+                <FrameworkIcons.ChevronsUpDown size={14} />
               </span>
             )}
           </span>
@@ -254,11 +255,7 @@ export class Select extends Reactor {
               this.clearSearch();
               setIsOpen(false);
             }}
-            className={`absolute top-1/2 end-8 z-20 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-medium leading-none transition-colors ${
-              isDarkTheme
-                ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'
-            }`}
+            className={`absolute top-1/2 end-8 z-20 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full fc-size-xs font-medium leading-none transition-colors fc-tone-muted fc-tone-hover fc-tone-hover-text`}
           >
             x
           </button>

@@ -6,6 +6,9 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * What is left of the top header: nothing, while all is well.
@@ -51,7 +54,7 @@ export class ClientLayoutHeader extends AdminComponent {
   private get warning(): ReactElement | null {
     if (this.apiStatus === ApiStatus.OFFLINE) {
       return (
-        <div role="alert" className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-6 py-2 text-[12px] font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 lg:px-12">
+        <div role="alert" className="flex items-center gap-2 border-b fc-tone-danger-line fc-tone-danger-soft px-6 py-2 fc-size-xs font-medium fc-tone-danger lg:px-12">
           <FrameworkIcons.Alert size={14} />
           {AdminI18n.t('shell.status.offlineHint')}
         </div>
@@ -59,7 +62,7 @@ export class ClientLayoutHeader extends AdminComponent {
     }
     if (this.isMaintenance) {
       return (
-        <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-[12px] font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 lg:px-12">
+        <div role="status" className="flex items-center gap-2 border-b fc-tone-warning-line fc-tone-warning-soft px-6 py-2 fc-size-xs font-medium fc-tone-warning lg:px-12">
           <FrameworkIcons.Zap size={14} />
           {AdminI18n.t('shell.status.maintenance')}
         </div>
@@ -71,15 +74,10 @@ export class ClientLayoutHeader extends AdminComponent {
   render(): ReactElement {
     return (
       <>
-        <header className="flex h-14 items-center border-b bg-white px-4 dark:border-slate-800 dark:bg-[#020617] lg:hidden">
-          <button
-            type="button"
-            onClick={this.onMenuClick}
-            aria-label={AdminI18n.t('shell.openMenu')}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
+        <header className="fc-phone-bar fc-canvas lg:hidden">
+          <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={this.onMenuClick} aria-label={AdminI18n.t('shell.openMenu')}>
             <FrameworkIcons.Menu size={20} />
-          </button>
+          </Button>
         </header>
         {this.warning}
       </>

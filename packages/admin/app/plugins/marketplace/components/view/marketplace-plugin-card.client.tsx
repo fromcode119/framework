@@ -1,17 +1,24 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { MouseEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
-import { Card } from '@/components/ui/view/card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { Badge } from '@/components/ui/view/badge.client';
+import { Button } from '@/components/ui/view/button.client';
+import { Tooltip } from '@/components/ui/view/tooltip.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
-import { MarketplaceCardActions } from '@/app/plugins/marketplace/components/view/marketplace-card-actions.client';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
+/**
+ * One plugin of the catalogue, as the same row an installed plugin is: its icon, name and state, what
+ * it does, its version and maker, and the one thing to do with it at the end. It was a tall tile with
+ * a full-width coloured button, so the catalogue and the list of what is installed looked like two
+ * different programs.
+ */
 export class MarketplacePluginCard extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<MarketplacePluginCard, 'plugin' | 'theme' | 'installed' | 'installedVersion' | 'hasUpdate' | 'hasImageError' | 'installing' | 'canInstall' | 'onOpenDetail' | 'onOpenInstalled' | 'onInstall' | 'onImageError'>;
@@ -23,135 +30,59 @@ export class MarketplacePluginCard extends PureReactor {
   @prop declare hasUpdate: boolean;
   @prop declare hasImageError: boolean;
   @prop declare installing: string | null;
-  /** May this admin install onto the platform? See {@link MarketplaceCardActions.canInstall}. */
+  /** May this admin install onto the platform? Installing puts code on every site, so only the platform may. */
   @prop declare canInstall: boolean;
   @prop declare onOpenDetail: () => void;
   @prop declare onOpenInstalled: (e: MouseEvent) => void;
   @prop declare onInstall: (e: MouseEvent) => void;
   @prop declare onImageError: () => void;
 
+  /** The one action the row offers, by what the plugin is here. */
+  private action(): ReactNode {
+    const { plugin, installed, hasUpdate, installing, canInstall } = this;
+    const busy = installing === plugin.slug;
+    if (installed && !hasUpdate) {
+      return <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Check size={15} />} onClick={this.onOpenInstalled}>{AdminI18n.t('plugins.list.installed')}</Button>;
+    }
+    if (!canInstall) {
+      return <Tooltip content={AdminI18n.t('plugins.list.installingAPluginPutsCode')}><Badge>{AdminI18n.t('plugins.list.platformAdminInstallsThis')}</Badge></Tooltip>;
+    }
+    if (hasUpdate) {
+      return <Button variant={ButtonVariant.PRIMARY} isLoading={busy} disabled={Boolean(installing)} icon={<FrameworkIcons.Refresh size={15} />} onClick={this.onInstall}>{busy ? AdminI18n.t('plugins.list.updating') : AdminI18n.t('plugins.list.updatePlugin')}</Button>;
+    }
+    return <Button variant={ButtonVariant.SECONDARY} isLoading={busy} disabled={Boolean(installing)} icon={<FrameworkIcons.Download size={15} />} onClick={this.onInstall}>{busy ? AdminI18n.t('plugins.list.installing') : AdminI18n.t('plugins.list.installNow')}</Button>;
+  }
+
   render(): ReactNode {
-    const {
-      plugin, theme, installed, installedVersion, hasUpdate, hasImageError, installing,
-      onOpenDetail, onOpenInstalled, onInstall, onImageError, canInstall
-    } = this;
-    const isFeatured = Boolean(plugin.isFeatured);
-    const isVerified = Boolean(plugin.isVerified);
-    const isTrending = Boolean(plugin.isTrending);
+    const { plugin, installed, installedVersion, hasUpdate, hasImageError } = this;
     // Built on THIS server through Sources rather than offered by a catalogue. Both arrive in one
-    // merged list and render identically, so without saying so the screen offers an operator who is
-    // connected to no marketplace a page that looks exactly like a marketplace.
+    // merged list, so without saying so the screen offers an operator who is connected to no
+    // marketplace a page that looks exactly like a marketplace.
     const isBuiltHere = String(plugin.source || '') === 'local';
-
+    const label = MarketplacePluginCopy.label(plugin, installed);
+    const description = MarketplacePluginCopy.description(plugin, installed);
     return (
-      <Card
-        onClick={onOpenDetail}
-        className={`group flex flex-col h-full border-0 relative transition-all duration-300 cursor-pointer overflow-hidden ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-sm hover:shadow-indigo-500/10'}`}
-      >
-        <div className="p-3.5 space-y-3 flex-1 relative">
-          <div className="flex items-start justify-between gap-3">
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm flex-shrink-0 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-              {plugin.iconUrl && !hasImageError ? (
-                <img
-                  src={plugin.iconUrl}
-                  alt={MarketplacePluginCopy.label(plugin, installed)}
-                  className="w-6 h-6 object-contain"
-                  onError={onImageError}
-                />
-              ) : (
-                <Icon name={String(plugin.icon || 'Box')} size={22} strokeWidth={1.5} />
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {isBuiltHere && (
-                <Badge
-                  variant={BadgeVariant.AMBER}
-                  title={AdminI18n.t('plugins.list.builtOnThisServerFrom')}
-                >
-                  {AdminI18n.t('plugins.list.builtHere')}
-                </Badge>
-              )}
-              {isFeatured && (
-                <Badge variant={BadgeVariant.BLUE} className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
-                  {AdminI18n.t('plugins.list.featured')}
-                </Badge>
-              )}
-              <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-medium">
-                {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.available'))}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <h3 className={`text-base font-medium tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-1 flex-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {MarketplacePluginCopy.label(plugin, installed)}
-              </h3>
-              {isVerified && (
-                <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-500" title={AdminI18n.t('plugins.list.verifiedPublisher')}>
-                  <FrameworkIcons.Shield size={14} fill="currentColor" className="opacity-80" />
-                </div>
-              )}
-            </div>
-            <p className={`text-xs leading-snug font-medium line-clamp-2 transition-colors duration-300 ${theme === ThemeMode.DARK ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
-              {MarketplacePluginCopy.description(plugin, installed)}
-            </p>
-          </div>
-
-          <div className={`flex flex-wrap items-center gap-2.5 text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-            {installed ? (
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
-                {AdminI18n.t('plugins.detail.installedVersion', { version: installedVersion })}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-                {AdminI18n.t('plugins.list.available')}
-              </div>
-            )}
-            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-              {AdminI18n.t('plugins.detail.marketplaceVersion', { version: plugin.version })}
-            </div>
-            {/* The catalogue's own author, or no line at all — never a stand-in endorsement. */}
-            {plugin.author && (<>
-            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-            <div className="flex items-center gap-1.5 min-w-0">
-              <FrameworkIcons.User size={12} className="text-indigo-500/70" />
-              <span className="truncate flex items-center gap-1">
-                {plugin.author}
-                {isVerified && (
-                  <FrameworkIcons.Check size={10} className="text-emerald-500" strokeWidth={3} />
-                )}
-              </span>
-            </div>
-            </>)}
-            {isTrending && (
-              <>
-                <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                <div className="flex items-center gap-1.5 text-rose-500">
-                  <FrameworkIcons.Loader size={10} className="animate-spin" />
-                  {AdminI18n.t('plugins.list.trending')}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        <MarketplaceCardActions
-          plugin={plugin}
-          theme={theme}
-          installed={installed}
-          installedVersion={installedVersion}
-          hasUpdate={hasUpdate}
-          installing={installing}
-          canInstall={canInstall}
-          onOpenInstalled={onOpenInstalled}
-          onInstall={onInstall}
-        />
-      </Card>
+      <ListRow
+        icon={plugin.iconUrl && !hasImageError
+          ? <img src={plugin.iconUrl} alt="" onError={this.onImageError} />
+          : <Icon name={String(plugin.icon || 'Box')} size={16} />}
+        title={<button type="button" className="fc-ext-row__link" onClick={this.onOpenDetail}>{label}</button>}
+        badges={(
+          <>
+            {hasUpdate ? <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('plugins.list.updateFromTo', { from: installedVersion, to: plugin.version })}</Badge> : null}
+            {installed && !hasUpdate ? <Badge variant={BadgeVariant.SUCCESS}>{AdminI18n.t('plugins.list.installed')}</Badge> : null}
+            {isBuiltHere ? <Tooltip content={AdminI18n.t('plugins.list.builtOnThisServerFrom')}><Badge variant={BadgeVariant.INFO}>{AdminI18n.t('plugins.list.builtHere')}</Badge></Tooltip> : null}
+            {plugin.isFeatured ? <Badge variant={BadgeVariant.INFO}>{AdminI18n.t('plugins.list.featured')}</Badge> : null}
+            {plugin.isTrending ? <Badge>{AdminI18n.t('plugins.list.trending')}</Badge> : null}
+            {plugin.isVerified ? <Tooltip content={AdminI18n.t('plugins.list.verifiedPublisher')}><Badge variant={BadgeVariant.SUCCESS}>{AdminI18n.t('plugins.list.verifiedPublisher')}</Badge></Tooltip> : null}
+            {!installed && plugin.category ? <Badge>{plugin.category}</Badge> : null}
+          </>
+        )}
+        description={description || undefined}
+        descriptionTitle={description || undefined}
+        meta={[`v${plugin.version}`, plugin.author].filter(Boolean).join(' · ')}
+        actions={this.action()}
+      />
     );
   }
 }

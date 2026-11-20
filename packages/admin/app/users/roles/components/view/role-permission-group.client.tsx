@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { DataTable } from '@/components/ui/view/data-table.client';
+import { Text } from '@/components/ui/view/text.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -19,16 +22,6 @@ export class RolePermissionGroup extends PureReactor {
   @prop declare onChange: (next: string[]) => void;
   /** Show what the role holds without offering to change it. */
   @prop declare readOnly?: boolean;
-
-  @state private open: boolean | null = null;
-
-  private get expanded(): boolean {
-    return this.open ?? RolePermissionSelection.countIn(this.selected, this.group) > 0;
-  }
-
-  @bound private toggleOpen(): void {
-    this.open = !this.expanded;
-  }
 
   private change(next: string[]): void {
     if (!this.readOnly) this.onChange(next);
@@ -50,79 +43,45 @@ export class RolePermissionGroup extends PureReactor {
   private renderAll(): ReactNode {
     const { group } = this;
     if (!group.all) return null;
-    return (
-      <label className="flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/60 px-3 py-2.5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
-        {this.box(group.all)}
-        <span className="flex flex-col gap-0.5">
-          <span className="text-xs font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('users.everythingIn', { group: group.label })}</span>
-          <span className="text-[12px] text-slate-500">{AdminI18n.t('users.everythingInHint', { group: group.label })}</span>
-        </span>
-      </label>
-    );
+    return <ListRow title={AdminI18n.t('users.everythingIn', { group: group.label })} description={AdminI18n.t('users.everythingInHint', { group: group.label })} actions={this.box(group.all)} />;
   }
 
   private renderPermissions(): ReactNode {
-    if (this.group.permissions.length === 0) return null;
-    return (
-      <div className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
-        {this.group.permissions.map((permission) => (
-          <label key={permission.name} className="flex items-start gap-3 py-2.5">
-            {this.box(permission.name)}
-            <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-xs font-medium text-slate-800 dark:text-slate-100">{permission.label}</span>
-              <span className="text-[12px] text-slate-500">{permission.description}</span>
-              <code className="text-[12px] text-slate-400">{permission.name}</code>
-            </span>
-          </label>
-        ))}
-      </div>
-    );
+    return this.group.permissions.map((permission) => (
+      <ListRow key={permission.name} title={permission.label} description={permission.description} descriptionTitle={permission.description} meta={permission.name} actions={this.box(permission.name)} />
+    ));
   }
 
+  /** Read / Create / Update / Delete over the area's collections; the first box of a row ticks all of them. */
   private renderCollections(): ReactNode {
     const { collections } = this.group;
     if (collections.length === 0) return null;
     return (
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-slate-50 text-[12px] font-medium tracking-tight text-slate-400 dark:bg-slate-900/60">
-              <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
-              {RolePermissionSelection.ACTIONS.map((action) => (
-                <th key={action} className="w-16 px-2 py-2 text-center">{action}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {collections.map((collection) => {
-              const names = Object.values(collection.actions);
-              const onCount = names.filter((name) => RolePermissionSelection.isOn(this.selected, name)).length;
-              return (
-                <tr key={collection.key}>
-                  <td className="px-3 py-2">
-                    <span className="flex items-center gap-2">
-                      <Checkbox
-                        checked={onCount === names.length}
-                        indeterminate={onCount > 0 && onCount < names.length}
-                        disabled={this.readOnly}
-                        onChange={(on: boolean) => this.change(RolePermissionSelection.setAll(this.selected, names, on))}
-                      />
-                      <span className="font-medium text-slate-700 dark:text-slate-200">{collection.label}</span>
-                    </span>
-                  </td>
-                  {RolePermissionSelection.ACTIONS.map((action) => (
-                    <td key={action} className="px-2 py-2">
-                      <span className="flex justify-center">
-                        {collection.actions[action] ? this.box(collection.actions[action]) : <span className="text-slate-300" title={AdminI18n.t('users.doesNotAllow', { label: collection.label, action: action })}>—</span>}
-                      </span>
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        cards={false}
+        columns={[
+          { header: AdminI18n.t('users.collection'), id: 'collection', className: 'fc-dt-fill', accessor: (collection: any) => {
+            const names = Object.values(collection.actions) as string[];
+            const onCount = names.filter((name) => RolePermissionSelection.isOn(this.selected, name)).length;
+            return (
+              <Checkbox
+                checked={onCount === names.length}
+                indeterminate={onCount > 0 && onCount < names.length}
+                disabled={this.readOnly}
+                onChange={(on: boolean) => this.change(RolePermissionSelection.setAll(this.selected, names, on))}
+                label={<span className="fc-dt-strong">{collection.label}</span>}
+              />
+            );
+          } },
+          ...RolePermissionSelection.ACTIONS.map((action) => ({
+            header: action, id: action,
+            accessor: (collection: any) => (collection.actions[action]
+              ? this.box(collection.actions[action])
+              : <span className="fc-dt-quiet" title={AdminI18n.t('users.doesNotAllow', { label: collection.label, action })}>—</span>),
+          })),
+        ] as any}
+        data={collections.map((collection) => ({ ...collection, id: collection.key }))}
+      />
     );
   }
 
@@ -131,24 +90,15 @@ export class RolePermissionGroup extends PureReactor {
     const count = RolePermissionSelection.countIn(this.selected, group);
     const total = RolePermissionSelection.namesOf(group).length;
     return (
-      <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
-        <button type="button" onClick={this.toggleOpen} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start">
-          <span className="flex items-center gap-2">
-            {this.expanded ? <FrameworkIcons.ChevronDown size={14} className="text-slate-400" /> : <FrameworkIcons.ChevronRight size={14} className="text-slate-400" />}
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">{group.label}</span>
-          </span>
-          <span className={`text-[12px] font-medium tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
-            {AdminI18n.t('users.countOfTotal', { count, total })}
-          </span>
-        </button>
-        {this.expanded ? (
-          <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 dark:border-slate-800">
-            {this.renderAll()}
-            {this.renderPermissions()}
-            {this.renderCollections()}
-          </div>
-        ) : null}
-      </section>
+      // Always open: a group that folds hides the permissions a role holds behind a click, and a role is
+      // read by reading all of them. The head is a heading, not a control.
+      <ListShell title={group.label} actions={<Text size="xsmall" muted as="span">{AdminI18n.t('users.countOfTotal', { count, total })}</Text>}>
+        <div>
+          {this.renderAll()}
+          {this.renderPermissions()}
+        </div>
+        {this.renderCollections()}
+      </ListShell>
     );
   }
 }

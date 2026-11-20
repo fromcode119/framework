@@ -1,6 +1,8 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { Alert } from '@/components/ui/view/alert.client';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { AdminScope, ThemeMode } from '@fromcode119/core/client';
+import { AdminScope } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
@@ -16,6 +18,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminClass } from '@/lib/admin-class';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { CertificateListPoller } from '@/lib/certificates/certificate-list-poller';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -134,8 +137,7 @@ export class CertificatesPageClient extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    if (this.isLoading) return <Loader />;
+    if (this.isLoading) return <Loader fullPage />;
 
     return (
       <div className={`fc-certificates ${AdminClass.of('settings-page')}`}>
@@ -146,16 +148,16 @@ export class CertificatesPageClient extends AdminComponent {
           subtitle={this.subtitle}
         />
         <div className="fc-certificates__body">
-        <Card title="TLS">
+        <ListShell title="TLS" count={this.entries.length}>
+          <div className="fc-list-band fc-stack">
           <CertificateStatusNotices
             edge={this.edge}
             automation={this.automation}
             encryptionAvailable={this.encryptionAvailable}
           />
 
-          {this.loadError ? (
-            <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>{this.loadError}</p>
-          ) : null}
+          {this.loadError ? <Alert tone="danger">{this.loadError}</Alert> : null}
+          </div>
 
           <CertificateHostTable
             entries={this.entries}
@@ -171,7 +173,7 @@ export class CertificatesPageClient extends AdminComponent {
             onAutomate={this.automate}
             onAutomateWildcard={this.automateWildcard}
           />
-        </Card>
+        </ListShell>
 
         {/*
           Only inside a site: the token belongs to whoever owns the DNS, and a site's domain usually
@@ -180,7 +182,10 @@ export class CertificatesPageClient extends AdminComponent {
           places writing one value.
         */}
         {this.scope?.isSite ? (
-          <CertificateDnsTokenCard automation={this.automation} onChanged={this.load} />
+          <>
+            <CertificateDnsTokenCard automation={this.automation} onChanged={this.load} />
+            <PendingSavesBar />
+          </>
         ) : null}
         </div>
 

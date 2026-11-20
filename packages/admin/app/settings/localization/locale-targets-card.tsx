@@ -40,7 +40,7 @@ export class LocaleTargetsCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectSystemLocale')}
             searchable={false}
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
 
@@ -56,7 +56,7 @@ export class LocaleTargetsCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectAdminLocale')}
             searchable={false}
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
 
@@ -72,7 +72,7 @@ export class LocaleTargetsCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectFrontendLocale')}
             searchable={false}
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
 
@@ -92,7 +92,7 @@ export class LocaleTargetsCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectLocaleUrlStrategy')}
             searchable={false}
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
       </Card>

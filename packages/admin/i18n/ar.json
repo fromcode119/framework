@@ -162,6 +162,7 @@
       "reorderHandle": "اسحب لإعادة الترتيب — أو انقل التركيز إليه واستخدم مفاتيح الأسهم",
       "reorderEnable": "اعرض القائمة بترتيبها الخاص لتتمكن من إعادة ترتيبها",
       "reorderFailed": "تعذّر حفظ الترتيب الجديد",
+      "noMatch": "لا شيء يطابق البحث أو عوامل التصفية.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "هل تريد استيراد {{file}}؟",
@@ -234,7 +235,6 @@
       "editSection": "تعديل",
       "notFilledIn": "غير مُعبّأ",
       "statusSection": "الحالة",
-      "statusConfirm": "تغيير الحالة إلى «{{status}}»؟",
       "recordSection": "السجل",
       "showJson": "عرض كـ JSON",
       "showForm": "عرض كنموذج",
@@ -245,7 +245,8 @@
       "copied": "تم النسخ",
       "more": "المزيد",
       "moreFields": "{{count}} حقول",
-      "moreOneField": "{{count}} حقل"
+      "moreOneField": "{{count}} حقل",
+      "statusConfirm": "تغيير الحالة إلى «{{status}}»؟"
     },
     "notFound": {
       "title": "المجموعة غير موجودة",
@@ -366,7 +367,8 @@
     "reset": "إعادة تعيين",
     "notScheduledYet": "لم تتم الجدولة بعد",
     "more": "إجراءات أخرى",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "إزالة"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "اختيار اللون",
-      "colour": "اللون",
-      "pick": "اختر لونًا",
       "hex": "رمز Hex",
-      "confirm": "تأكيد اللون",
       "notSet": "غير محدد"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "تم اكتشاف اعتماديات غير مفعّلة",
       "intro": "لتفعيل {{plugin}}، يلزم معالجة ما يلي:",
       "notInstalled": "غير مثبّت",
+      "inactive": "معطّل",
+      "incompatible": "إصدار مختلف",
       "requires": "يتطلب الإصدار {{version}}. يمكن تنزيله من المتجر.",
       "needsActivation": "مثبّت بالفعل لكنه يحتاج إلى التفعيل (الإصدار {{version}}).",
       "mismatch": "عدم تطابق الإصدار: المطلوب {{expected}}، والموجود {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "معاينة المنصة",
-      "image": "معاينة {{number}}"
+      "image": "معاينة {{number}}",
+      "previous": "السابق",
+      "next": "التالي"
     },
     "menuField": {
       "newItem": "عنصر قائمة جديد",
-      "structure": "بنية القائمة",
-      "add": "إضافة عنصر قائمة"
+      "add": "إضافة عنصر قائمة",
+      "reorder": "اسحب للنقل؛ الأسهم: لأعلى ولأسفل للنقل، لليمين للتضمين، لليسار للإخراج"
     },
     "field": {
       "notSet": "غير محدد",
@@ -461,8 +464,8 @@
       "record": "سجل"
     },
     "array": {
-      "addNew": "إضافة {{label}} جديد",
-      "item": "عنصر"
+      "add": "إضافة",
+      "reorder": "اسحب للنقل، أو استخدم مفاتيح الأسهم"
     },
     "stepper": {
       "increment": "زيادة",
@@ -528,9 +531,7 @@
       "noContact": "لا يوجد بريد إلكتروني أو هاتف في الأشخاص",
       "hasLogin": "لديه حساب دخول",
       "noLogin": "ليس لديه حساب دخول",
-      "source": "الاسم والبريد الإلكتروني والهاتف مأخوذة من الأشخاص #{{id}}؛ يمكنك تغييرها هناك.",
       "open": "فتح في الأشخاص",
-      "choose": "اختيار شخص آخر",
       "searchFailed": "تعذّر البحث في الأشخاص حاليًا.",
       "noMatch": "لا يوجد أحد في الأشخاص يطابق البحث. أدخل بياناته أدناه، وسيُضاف إلى الأشخاص عند الحفظ.",
       "ref": "الأشخاص #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "فتح المواقع"
       }
     },
-    "relativeOverridesInheritTheCollection": "ترث التجاوزات النسبية بادئة المجموعة. فعّل الوضع المطلق لتجاوز بادئات مثل `/shop`.",
     "range": "النطاق",
     "noDataForThisRange": "لا توجد بيانات لهذا النطاق",
     "peak": "· الذروة {{value}}",
@@ -626,7 +626,8 @@
       "filters": "عوامل التصفية",
       "clearFilters": "مسح الكل",
       "removeFilter": "إزالة عامل التصفية {{label}}",
-      "showResults": "عرض {{count}} نتيجة"
+      "showResults": "عرض {{count}} نتيجة",
+      "showResultsOne": "عرض نتيجة واحدة"
     },
     "personFieldPicker": {
       "none": "لا يُحفظ في حقل شخص",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "تم حفظ حدود بيئة العزل لـ {{name}}، لكن تعذّرت إعادة تشغيل عمليتها بها: {{value}}",
       "restartRequired": "إعادة التشغيل مطلوبة",
       "sandboxSettingsForWereSaved": "تم حفظ إعدادات بيئة العزل لـ {{name}}، لكن يلزم إعادة تشغيل API لتصبح سارية.",
-      "resourcesUpdated": "تم تحديث الموارد",
-      "sandboxLimitsForUpdated": "تم تحديث حدود بيئة العزل لـ {{name}}.",
       "sandboxDisabledFor": "تم تعطيل بيئة العزل لـ {{name}}.",
       "saveFailed": "فشل الحفظ",
       "failedToUpdateSandboxLimits": "تعذّر تحديث حدود بيئة العزل.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "خاملة. لا توجد أحداث حديثة مسجّلة.",
       "updating": "جارٍ التحديث...",
       "updateAvailable": "يتوفر تحديث",
-      "updatePolicy": "سياسة التحديث",
       "saveChanges": "حفظ التغييرات",
       "unsavedChanges": "تغييرات غير محفوظة",
       "exportSettingsAsJson": "تصدير الإعدادات بصيغة JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "الجديد في v{{version}}",
       "installedVersion": "المثبّت {{version}}",
       "marketplaceVersion": "في المتجر {{version}}",
-      "saving": "جارٍ الحفظ...",
       "saveSettings": "حفظ الإعدادات",
       "viewDefinition": "عرض التعريف",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "المظهر",
       "failedToLoadAppearances": "تعذّر تحميل المظاهر",
       "failedToSaveShadowSetting": "تعذّر حفظ إعداد الظلال",
+      "failedToSaveMenuSetting": "تعذّر حفظ إعداد القائمة",
       "switchedToReloading": "تم التبديل إلى \"{{slug}}\". جارٍ إعادة التحميل…",
       "failedToSwitchAppearance": "تعذّر تبديل المظهر",
       "installFailed": "فشل التثبيت",
@@ -1919,6 +1917,8 @@
       "install": "تثبيت",
       "surfaceShadows": "ظلال الأسطح",
       "depthOnPanelsDialogsAnd": "عمق على اللوحات ومربعات الحوار والأزرار. أوقفه للحصول على لوحة إدارة مسطحة — تبقى الحدود والزوايا كما هي تمامًا.",
+      "secondMenuColumn": "عمود القائمة الثاني",
+      "sectionPagesBesideTheMenu": "صفحات القسم تقف في عمود بجانب القائمة. عند إيقافه تُفتح أسفل سطرها داخل القائمة الواحدة، ويتسع كل شاشة بمقدار 220 بكسل.",
       "installFromAPackageUrl": "التثبيت من رابط حزمة",
       "builtIn": "مدمج",
       "installed": "مثبّت",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "لم يتم تحديث بيانات الموقع حسب IP",
       "geoUnavailable": "حالة الموقع حسب IP غير متاحة",
       "geoAttribution": "تحديد الموقع الجغرافي حسب IP مقدَّم من {{name}} ‏({{license}}). يُحدَّث شهريًا طالما الميزة مفعّلة.",
-      "geoSaved": "تم الحفظ",
-      "geoSavedOn": "جارٍ تنزيل قاعدة البيانات الآن، وحجمها نحو 60 ميغابايت.",
-      "geoSavedOff": "حُذفت قاعدة البيانات من الخادم.",
       "everyPluginRunsIsolated": "معزولة: تعمل كل إضافة في عملية مستقلة. ينطبق الحد الأقصى للذاكرة والمهلة الزمنية على جميع الإضافات، أما حصة المعالج وإجمالي الذاكرة والقرص والعمليات فتنطبق فقط على الإضافات التي رفعها أحد المواقع.",
       "schemaOrphans": "مخطط قاعدة البيانات",
       "schemaOrphansHelp": "أعمدة لا تزال موجودة في قاعدة البيانات ولم يعد أي شيء يعرّفها. تكتفي المنصة بعرضها، ولا يُحذف شيء حتى تقرر ذلك، ولا يمكن استعادة العمود بعد حذفه.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "معطّل — تردّ نقطة النهاية بالرمز 403 على الجميع.",
       "mediaPayloadLimitMb": "حدّ حجم الوسائط (ميغابايت)",
       "maximumDecodedUploadOrRemote": "الحد الأقصى لحجم الملف المرفوع بعد فك ترميزه أو المُنزَّل عن بُعد الذي تقبله أدوات الوسائط في MCP.",
-      "saveLimit": "حفظ الحد",
       "allSites": "كل المواقع",
       "issuedBeforeSites": "صدر قبل المواقع",
       "noTokensYet": "لا توجد رموز مميزة بعد.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "الإعداد الافتراضي للمنصة",
       "thisSite": "هذا الموقع",
       "inForceNow": "السارية حاليًا",
-      "saving": "جارٍ الحفظ…",
-      "savePolicy": "حفظ السياسة",
       "thePlatformDefaultIsSet": "يحدد مسؤول المنصة الإعداد الافتراضي للمنصة.",
       "useTheLayerBelow": "استخدام المستوى الأدنى",
       "whyTheLawRequiresThese": "سبب إلزام القانون بالاحتفاظ بهذه السجلات",
-      "inheritsThePlatformDefault": "موروث: الإعداد الافتراضي للمنصة"
+      "inheritsThePlatformDefault": "موروث: الإعداد الافتراضي للمنصة",
+      "strategyDelete": "حذف",
+      "strategyAnonymise": "إخفاء الهوية",
+      "strategyRetain": "الاحتفاظ",
+      "declaredBy": "افتراضي أعلنه {{plugin}}",
+      "inheritsValue": "يرث: {{value}}",
+      "legalBasis": "الأساس القانوني",
+      "theSiteColumnIsSet": "يُضبط عمود \"هذا الموقع\" داخل موقع. اختر موقعًا من المبدّل لتغييره."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "الاسم المعروض",
     "thisPersonHasALogin": "لدى هذا الشخص حساب تسجيل دخول، ويُغيَّر بريده الإلكتروني من خلال الحساب.",
     "birthDate": "تاريخ الميلاد",
-    "saveChanges": "حفظ التغييرات",
     "sendPasswordResetEmail": "إرسال بريد إعادة تعيين كلمة المرور",
     "cancel": "إلغاء",
     "accountManagement": "إدارة الحساب",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "يُرجى نسخ رموز الاسترداد يدويًا.",
     "nameRequired": "الاسم مطلوب",
     "enterATokenNameFirst": "أدخل اسمًا للرمز المميز أولًا.",
-    "tokenCreated": "تم إنشاء الرمز المميز",
     "copyTheTokenNowIt": "انسخ الرمز المميز الآن، فهو يُعرض مرة واحدة فقط.",
     "failedToCreateApiToken": "تعذّر إنشاء رمز API المميز",
     "areYouSureYouWant2": "هل تريد بالتأكيد تعطيل المصادقة الثنائية لهذا المستخدم؟ سيؤدي ذلك إلى تقليل أمان الحساب.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "تم إنهاء الجلسة",
     "deviceSessionRevokedSuccessfully": "تم إنهاء جلسة الجهاز بنجاح.",
     "failedToRevokeSession": "تعذّر إنهاء الجلسة",
-    "rolesUpdated": "تم تحديث الأدوار",
-    "theUserSRolesWere": "تم حفظ أدوار المستخدم.",
     "saveFailed": "فشل الحفظ",
     "failedToSaveRoles": "تعذّر حفظ الأدوار.",
     "loadingRoles": "جارٍ تحميل الأدوار",
@@ -3448,8 +3445,6 @@
     "remove": "إزالة",
     "loadFailed": "فشل التحميل",
     "couldNotRetrieveRoleDetails": "تعذّر جلب تفاصيل الدور.",
-    "roleUpdated": "تم تحديث الدور",
-    "wasSaved": "تم حفظ \"{{name}}\".",
     "updateFailed": "فشل التحديث",
     "anErrorOccurredWhileSaving": "حدث خطأ أثناء الحفظ.",
     "loadingRole": "جارٍ تحميل الدور...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "العودة إلى المستخدمين",
     "selfServiceSecurityControls": "عناصر التحكم الذاتي في الأمان",
     "sessionDeviceControlsAndPersonal": "لا تتوفر عناصر التحكم في الجلسات والأجهزة ورموز API الشخصية إلا عند عرض حساب المستخدم الخاص بك.",
-    "securityRecommendations": "توصيات الأمان",
     "twoFactorAuthentication": "المصادقة الثنائية",
-    "activeAndProtectingThisAccount": "مفعّلة وتحمي هذا الحساب",
-    "notEnabledHighlyRecommendedFor": "غير مفعّلة - يُوصى بها بشدة لحسابات المسؤولين",
-    "passwordProtected": "محمي بكلمة مرور",
-    "accountHasASecurePassword": "للحساب كلمة مرور آمنة",
-    "administratorAccess": "صلاحيات المسؤول",
     "fullSystemAccess2faStrongly": "وصول كامل إلى النظام - يُوصى بشدة بالمصادقة الثنائية",
     "personalApiTokens": "رموز API الشخصية",
     "tokenNameEGCi": "اسم الرمز (مثل: نشر CI)",
     "days": "الأيام",
     "createToken": "إنشاء رمز",
-    "copyNowShownOnce": "انسخه الآن (يُعرض مرة واحدة)",
     "loadingApiTokens": "جارٍ تحميل رموز API...",
     "noApiTokensCreatedYet": "لم يتم إنشاء أي رموز API بعد.",
     "revoke": "إلغاء",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "نشاط تسجيل الدخول والجلسات",
     "loadingAuthActivity": "جارٍ تحميل نشاط المصادقة...",
     "noRecentLoginSessionEvents": "لا توجد أحداث حديثة لتسجيل الدخول أو الجلسات لهذا المستخدم.",
-    "unknownTime": "وقت غير معروف",
-    "activityEvent": "حدث نشاط",
     "openFullGlobalActivity": "فتح سجل النشاط العام الكامل",
-    "2faStatus": "حالة المصادقة الثنائية",
     "addAnExtraLayerOf": "أضف طبقة أمان إضافية باستخدام المصادقة عبر تطبيق (TOTP)",
-    "recommended": "موصى به",
     "enableTwoFactorAuthenticationTo": "فعّل المصادقة الثنائية لحماية هذا الحساب بكلمات مرور لمرة واحدة مستندة إلى الوقت (TOTP).",
     "enable2fa": "تفعيل المصادقة الثنائية",
     "step1ScanQrCode": "الخطوة 1: امسح رمز QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "الخطوة 2: تحقق من الرمز",
     "enterThe6DigitCode": "أدخل الرمز المكوّن من 6 أرقام من تطبيق المصادقة لإكمال الإعداد:",
     "verifyEnable": "تحقق وتفعيل",
-    "protectionActive": "الحماية مفعّلة",
     "thisAccountRequiresA6": "يتطلب هذا الحساب رمزًا من 6 أرقام من تطبيق مصادقة عند تسجيل الدخول.",
     "regenerateRecoveryCodes": "إعادة إنشاء رموز الاسترداد",
     "disable2fa": "تعطيل المصادقة الثنائية",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "إلغاء الجلسات الأخرى",
     "loadingSessions": "جارٍ تحميل الجلسات...",
     "noActiveSessions": "لا توجد جلسات نشطة.",
-    "currentSession": "الجلسة الحالية",
-    "deviceSession": "جلسة جهاز",
     "current": "الحالية",
     "unknownDevice": "جهاز غير معروف",
     "editAccount2": "تعديل الحساب",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "فتح سجل المستخدم",
     "token": "الرمز",
     "createdOn": "أُنشئ في {{date}}",
-    "notAvailable": "غير متاح",
     "revokedOn": "أُلغي في {{date}}",
     "recoveryCodesRemaining": "رموز الاسترداد المتبقية:",
-    "unknownValue": "غير معروف",
     "expiresOn": "ينتهي في: {{date}}",
     "person2": "الشخص",
     "added": "تاريخ الإضافة",
@@ -3591,12 +3570,10 @@
       "loading": "جارٍ تحميل حقول الأشخاص…",
       "loadFailed": "تعذّر تحميل حقول الأشخاص.",
       "saveFailed": "تعذّر حفظ الحقول.",
-      "saved": "تم حفظ الحقول.",
       "empty": "لا توجد حقول للأشخاص بعد. أضف حقلاً لبدء الاحتفاظ به لكل شخص.",
       "noneDeclared": "لا توجد حقول للأشخاص في هذا الموقع بعد.",
       "declare": "إضافة حقول للأشخاص",
       "manage": "إدارة الحقول",
-      "save": "حفظ الحقول",
       "saveField": "حفظ الحقل",
       "delete": "حذف",
       "deleteTitle": "حذف هذا الحقل؟",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "صالح لمدة (أيام)",
+    "revokeOtherSessionsConfirm": "يتم تسجيل خروج كل الأجهزة الأخرى فورًا.",
+    "revokeSessionConfirm": "يتم تسجيل خروج هذا الجهاز فورًا.",
+    "revokeCurrentSessionConfirm": "هذا هو الجهاز الذي تستخدمه الآن. سيتم تسجيل خروجك فورًا.",
+    "revokeTokenConfirm": "يتوقف \"{{name}}\" عن العمل فورًا.",
+    "twoFactorTurnedOff": "تسجيل الدخول بخطوتين متوقف لهذا الموقع، لذلك لا يمكن إعداده هنا.",
+    "openSecuritySettings": "فتح إعدادات الأمان"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "تُضبط إعدادات الموقع ({{what}}) داخل كل موقع — اختر موقعاً من قائمة المواقع.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "تعذّر فتح هذا الموقع للمعاينة.",
     "couldNotLoadTheSite": "تعذّر تحميل الموقع.",
     "couldNotReloadThePlugin": "تعذّرت إعادة تحميل قائمة الإضافات.",
-    "siteSaved": "تم حفظ الموقع",
-    "routingFollowsImmediatelyNoRestart": "يُطبَّق التوجيه فورًا — دون إعادة تشغيل.",
     "notSaved": "لم يُحفظ",
     "theSiteCouldNotBe2": "تعذّر حفظ الموقع.",
     "couldNotOpenTheSite": "تعذّر فتح الموقع",
@@ -3789,7 +3771,6 @@
     "visit": "زيارة",
     "openThisSite": "فتح هذا الموقع",
     "export": "تصدير",
-    "save": "حفظ",
     "couldNotLoadCertificates": "تعذّر تحميل الشهادات.",
     "couldNotSwitchThisHost": "تعذّر تحويل هذا المضيف إلى الوضع التلقائي.",
     "couldNotSwitchThisHost2": "تعذّر تحويل هذا المضيف إلى الوضع التلقائي (شهادة شاملة).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "تحديث متاح",
     "isNowActive": "أصبح {{name}} نشطًا الآن.",
     "themeHasBeenUpdated2": "تم تحديث القالب {{name}}.",
-    "configurationSaved": "تم حفظ الإعدادات",
-    "visualProtocolsUpdatedSuccessfully": "تم تحديث البروتوكولات المرئية بنجاح.",
     "saveFailed": "فشل الحفظ",
     "hasBeenRemoved2": "تمت إزالة {{name}}.",
     "seedsExecuted": "تم تنفيذ البيانات الأولية",
@@ -4300,7 +4279,6 @@
     "layoutSection": "التخطيط",
     "extensionsSection": "الامتدادات",
     "versionReady": "الإصدار {{version}} جاهز",
-    "saveChanges": "حفظ التغييرات",
     "runSeedsHint": "يعيد تطبيق البيانات الأولية للقالب — صفحاته ومحتواه النموذجي — على هذا الموقع.",
     "resetThemeHint": "يمسح إعدادات القالب المحفوظة لهذا الموقع ويعيد تطبيق البيانات الأولية.",
     "notActiveHint": "يستخدم هذا الموقع قالبًا آخر.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "ما الجديد في الإصدار v{{version}}",
     "whatChanged": "ما الجديد",
-    "closeBuildSourceDialog": "إغلاق نافذة مصدر البناء",
-    "close": "إغلاق",
     "couldNotInstallThatVersion": "تعذّر تثبيت هذا الإصدار.",
     "couldNotChangeAutomaticUpdating": "تعذّر تغيير إعداد التحديث التلقائي.",
     "failed": "فشل",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "الشهادات التلقائية معطّلة. {{reason}}",
     "automaticCertificatesComeFrom": "تصدر الشهادات التلقائية من {{authority}}.",
     "noSecretKeyIsConfigured": "لم يُضبط SECRET_KEY على هذا الخادم، لذا لا يمكن تخزين مفتاح خاص. الرفع معطّل إلى أن يُضبط.",
-    "nothingToSavePasteA": "لا يوجد ما يُحفظ — الصق رمزًا، أو استخدم «مسح» لإزالة الرمز المحفوظ.",
     "savedThisSiteNowUses": "تم الحفظ. يستخدم هذا الموقع الآن رمز Cloudflare الخاص به.",
     "removedThisSiteFallsBack": "تمت الإزالة. يعود هذا الموقع إلى استخدام رمز المنصة.",
     "couldNotSaveTheToken": "تعذّر حفظ الرمز.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "رمز هذا الموقع",
     "savedLeaveBlankToKeep": "محفوظ — اتركه فارغًا للإبقاء عليه، أو استخدم «مسح» لإزالته",
     "pasteACloudflareApiToken": "الصق رمز Cloudflare API",
-    "save": "حفظ",
     "clear": "مسح",
     "nothingStoredThisHostCannot": "لا شيء محفوظ — لا يمكن لهذه المنصة تقديم هذا المضيف عبر HTTPS.",
     "nothingStoredHereTlsFor": "لا شيء محفوظ هنا — يُنهى TLS لهذا المضيف قبل المنصة، لذا توجد شهادته هناك.",
@@ -4706,28 +4680,18 @@
     "roles": "الأدوار",
     "permissions": "الأذونات",
     "eventDetails": "تفاصيل الحدث",
-    "context": "السياق",
     "resource": "المورد",
     "system": "النظام",
     "timestamp": "الطابع الزمني",
-    "authority": "الجهة",
-    "actorId": "معرّف المنفِّذ",
-    "type": "النوع",
-    "systemLog": "سجل النظام",
-    "audit": "التدقيق: {{status}}",
-    "activityMessage": "رسالة النشاط",
-    "actionTaken": "الإجراء المتخذ",
-    "resourcePool": "مجموعة الموارد",
-    "rawMetadata": "البيانات الوصفية الخام",
     "thisEntryIsPartOf": "هذا الإدخال جزء من سجل تدقيق غير قابل للتعديل.",
     "exportJson": "تصدير JSON",
     "event": "الحدث",
     "actor": "المنفِّذ",
+    "plugin": "إضافة",
     "activity": "النشاط",
     "status": "الحالة",
     "action": "الإجراء",
     "time": "الوقت",
-    "logSignature": "توقيع السجل: {{id}}",
     "internal": "داخلي",
     "level": {
       "INFO": "معلومات",
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "الإدخال #{{id}}",
+    "recordedData": "البيانات المسجلة"
   },
   "mediaPicker": {
     "showingOnly": "يُعرض فقط: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "المهمة",
       "schedule": "التكرار",
       "lastRun": "آخر تشغيل",
-      "nextRun": "التشغيل التالي"
+      "nextRun": "التشغيل التالي",
+      "duration": "المدة"
     },
     "ownedBy": "{{owner}}",
     "platform": "المنصة",

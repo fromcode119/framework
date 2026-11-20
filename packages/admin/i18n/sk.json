@@ -162,6 +162,7 @@
       "reorderHandle": "Presunutím zmeníte poradie — alebo označte a použite klávesy so šípkami",
       "reorderEnable": "Ak chcete zmeniť poradie, zobrazte zoznam vo vlastnom poradí",
       "reorderFailed": "Nové poradie sa nepodarilo uložiť",
+      "noMatch": "Vyhľadávaniu ani filtrom nič nezodpovedá.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importovať {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Upraviť",
       "notFilledIn": "Nevyplnené",
       "statusSection": "Stav",
-      "statusConfirm": "Zmeniť stav na „{{status}}“?",
       "recordSection": "Záznam",
       "showJson": "Zobraziť ako JSON",
       "showForm": "Zobraziť ako formulár",
@@ -245,7 +245,8 @@
       "copied": "Skopírované",
       "more": "Ďalšie",
       "moreFields": "{{count}} polí",
-      "moreOneField": "{{count}} pole"
+      "moreOneField": "{{count}} pole",
+      "statusConfirm": "Zmeniť stav na „{{status}}“?"
     },
     "notFound": {
       "title": "Kolekcia sa nenašla",
@@ -366,7 +367,8 @@
     "reset": "Obnoviť pôvodné",
     "notScheduledYet": "zatiaľ nenaplánované",
     "more": "Ďalšie akcie",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Odstrániť"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Vybrať farbu",
-      "colour": "Farba",
-      "pick": "Vyberte farbu",
       "hex": "Hex kód",
-      "confirm": "Potvrdiť farbu",
       "notSet": "Nenastavené"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Zistili sa neaktívne závislosti",
       "intro": "Na zapnutie pluginu {{plugin}} je potrebné vyriešiť nasledujúce:",
       "notInstalled": "NENAINŠTALOVANÉ",
+      "inactive": "vypnutý",
+      "incompatible": "iná verzia",
       "requires": "Vyžaduje verziu {{version}}. Môžeme ju stiahnuť z marketplace.",
       "needsActivation": "Už je nainštalované, ale treba ho aktivovať (verzia {{version}}).",
       "mismatch": "Nezhoda verzií: vyžaduje sa {{expected}}, nájdená {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Náhľad platformy",
-      "image": "Náhľad {{number}}"
+      "image": "Náhľad {{number}}",
+      "previous": "Predchádzajúce",
+      "next": "Ďalšie"
     },
     "menuField": {
       "newItem": "Nová položka menu",
-      "structure": "Štruktúra menu",
-      "add": "Pridať položku menu"
+      "add": "Pridať položku menu",
+      "reorder": "Presuňte potiahnutím; šípky: hore a dole presun, vpravo vnorenie, vľavo vynorenie"
     },
     "field": {
       "notSet": "Nenastavené",
@@ -461,8 +464,8 @@
       "record": "záznam"
     },
     "array": {
-      "addNew": "Pridať: {{label}}",
-      "item": "Položka"
+      "add": "Pridať",
+      "reorder": "Presuňte potiahnutím alebo použite šípky"
     },
     "stepper": {
       "increment": "Zvýšiť",
@@ -528,9 +531,7 @@
       "noContact": "V People nie je e-mail ani telefón",
       "hasLogin": "Má prihlasovací účet",
       "noLogin": "Bez prihlasovacieho účtu",
-      "source": "Meno, e-mail a telefón pochádzajú zo záznamu People #{{id}}; zmeňte ich tam.",
       "open": "Otvoriť v People",
-      "choose": "Vybrať niekoho iného",
       "searchFailed": "V People sa momentálne nedá vyhľadávať.",
       "noMatch": "V People sa nikto nezhoduje. Zadajte údaje nižšie; uložením sa osoba pridá do People.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Otvoriť Weby"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relatívne prepísania dedia prefix kolekcie. Ak chcete obísť prefixy ako `/shop`, zapnite absolútny režim.",
     "range": "Rozsah",
     "noDataForThisRange": "Pre tento rozsah nie sú k dispozícii žiadne údaje",
     "peak": "· maximum {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtre",
       "clearFilters": "Vymazať všetko",
       "removeFilter": "Odstrániť filter {{label}}",
-      "showResults": "Zobraziť výsledky ({{count}})"
+      "showResults": "Zobraziť výsledky ({{count}})",
+      "showResultsOne": "Zobraziť 1 výsledok"
     },
     "personFieldPicker": {
       "none": "Neukladá sa do poľa osoby",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Limity sandboxu pre {{name}} boli uložené, ale proces sa s nimi nepodarilo reštartovať: {{value}}",
       "restartRequired": "Vyžaduje sa reštart",
       "sandboxSettingsForWereSaved": "Nastavenia sandboxu pre {{name}} boli uložené, ale na ich uplatnenie je potrebný reštart API.",
-      "resourcesUpdated": "Prostriedky aktualizované",
-      "sandboxLimitsForUpdated": "Limity sandboxu pre {{name}} boli aktualizované.",
       "sandboxDisabledFor": "Sandbox pre {{name}} bol vypnutý.",
       "saveFailed": "Uloženie zlyhalo",
       "failedToUpdateSandboxLimits": "Limity sandboxu sa nepodarilo aktualizovať.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Nečinný. Nezaznamenali sa žiadne nedávne udalosti.",
       "updating": "Aktualizuje sa...",
       "updateAvailable": "Dostupná aktualizácia",
-      "updatePolicy": "Politika aktualizácií",
       "saveChanges": "Uložiť zmeny",
       "unsavedChanges": "Neuložené zmeny",
       "exportSettingsAsJson": "Exportovať nastavenia ako JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Novinky vo v{{version}}",
       "installedVersion": "Nainštalovaná {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "Ukladá sa...",
       "saveSettings": "Uložiť nastavenia",
       "viewDefinition": "Zobraziť definíciu",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Vzhľad",
       "failedToLoadAppearances": "Vzhľady sa nepodarilo načítať",
       "failedToSaveShadowSetting": "Nastavenie tieňov sa nepodarilo uložiť",
+      "failedToSaveMenuSetting": "Nastavenie ponuky sa nepodarilo uložiť",
       "switchedToReloading": "Prepnuté na „{{slug}}“. Načítava sa znova…",
       "failedToSwitchAppearance": "Vzhľad sa nepodarilo prepnúť",
       "installFailed": "Inštalácia zlyhala",
@@ -1919,6 +1917,8 @@
       "install": "Inštalovať",
       "surfaceShadows": "Tiene plôch",
       "depthOnPanelsDialogsAnd": "Hĺbka panelov, dialógov a tlačidiel. Vypnite pre plochú administráciu — okraje a rohy zostanú presne také, aké sú.",
+      "secondMenuColumn": "Druhý stĺpec ponuky",
+      "sectionPagesBesideTheMenu": "Stránky sekcie stoja v stĺpci vedľa ponuky. Po vypnutí sa otvárajú pod svojím riadkom v jednej ponuke a každá obrazovka získa 220px.",
       "installFromAPackageUrl": "Inštalovať z URL balíka",
       "builtIn": "Vstavané",
       "installed": "Nainštalované",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Polohu podľa IP sa nepodarilo aktualizovať",
       "geoUnavailable": "Stav polohy podľa IP nie je k dispozícii",
       "geoAttribution": "Geolokácia IP od {{name}} ({{license}}). Kým je zapnutá, aktualizuje sa mesačne.",
-      "geoSaved": "Uložené",
-      "geoSavedOn": "Databáza sa práve sťahuje; má približne 60 MB.",
-      "geoSavedOff": "Databáza bola zo servera odstránená.",
       "everyPluginRunsIsolated": "Izolované: každý plugin beží vo vlastnom procese. Limit pamäte a časový limit platia pre každý plugin; podiel CPU, celková pamäť, disk a procesy platia iba pre pluginy nahrané stránkou.",
       "schemaOrphans": "Schéma databázy",
       "schemaOrphansHelp": "Stĺpce, ktoré databáza stále obsahuje, ale už ich nič nedeklaruje. Platforma ich iba zobrazuje; nič sa neodstráni, kým sa nerozhodnete, a odstránený stĺpec nie je možné obnoviť.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Vypnuté — koncový bod odpovedá všetkým kódom 403.",
       "mediaPayloadLimitMb": "Limit veľkosti médií (MB)",
       "maximumDecodedUploadOrRemote": "Maximálna veľkosť dekódovaného nahrávaného súboru alebo vzdialeného sťahovania, ktorú prijmú mediálne nástroje MCP.",
-      "saveLimit": "Uložiť limit",
       "allSites": "všetky weby",
       "issuedBeforeSites": "vydaný pred zavedením webov",
       "noTokensYet": "Zatiaľ žiadne tokeny.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Predvolené pre platformu",
       "thisSite": "Táto stránka",
       "inForceNow": "Aktuálne platí",
-      "saving": "Ukladá sa…",
-      "savePolicy": "Uložiť pravidlá",
       "thePlatformDefaultIsSet": "Predvolené nastavenie platformy určuje administrátor platformy.",
       "useTheLayerBelow": "Použiť nižšiu úroveň",
       "whyTheLawRequiresThese": "Prečo zákon vyžaduje uchovávanie týchto záznamov",
-      "inheritsThePlatformDefault": "dedí: predvolené nastavenie platformy"
+      "inheritsThePlatformDefault": "dedí: predvolené nastavenie platformy",
+      "strategyDelete": "Odstrániť",
+      "strategyAnonymise": "Anonymizovať",
+      "strategyRetain": "Ponechať",
+      "declaredBy": "Predvolené podľa {{plugin}}",
+      "inheritsValue": "dedí: {{value}}",
+      "legalBasis": "Právny základ",
+      "theSiteColumnIsSet": "Stĺpec „Tento web“ sa nastavuje vo vnútri webu. Ak ho chcete zmeniť, vyberte web v prepínači."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Zobrazované meno",
     "thisPersonHasALogin": "Táto osoba má prihlasovací účet; e-mail sa mení v nastaveniach účtu.",
     "birthDate": "Dátum narodenia",
-    "saveChanges": "Uložiť zmeny",
     "sendPasswordResetEmail": "Odoslať e-mail na obnovenie hesla",
     "cancel": "Zrušiť",
     "accountManagement": "Správa účtu",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Skopírujte kódy na obnovenie ručne.",
     "nameRequired": "Názov je povinný",
     "enterATokenNameFirst": "Najprv zadajte názov tokenu.",
-    "tokenCreated": "Token bol vytvorený",
     "copyTheTokenNowIt": "Skopírujte token teraz. Zobrazí sa iba raz.",
     "failedToCreateApiToken": "Nepodarilo sa vytvoriť API token",
     "areYouSureYouWant2": "Naozaj chcete pre tohto používateľa vypnúť 2FA? Zníži sa tým zabezpečenie účtu.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Relácia ukončená",
     "deviceSessionRevokedSuccessfully": "Relácia zariadenia bola úspešne ukončená.",
     "failedToRevokeSession": "Nepodarilo sa ukončiť reláciu",
-    "rolesUpdated": "Roly boli aktualizované",
-    "theUserSRolesWere": "Roly používateľa boli uložené.",
     "saveFailed": "Uloženie zlyhalo",
     "failedToSaveRoles": "Nepodarilo sa uložiť roly.",
     "loadingRoles": "Načítavajú sa roly",
@@ -3448,8 +3445,6 @@
     "remove": "Odstrániť",
     "loadFailed": "Načítanie zlyhalo",
     "couldNotRetrieveRoleDetails": "Nepodarilo sa načítať podrobnosti roly.",
-    "roleUpdated": "Rola bola aktualizovaná",
-    "wasSaved": "„{{name}}“ bolo uložené.",
     "updateFailed": "Aktualizácia zlyhala",
     "anErrorOccurredWhileSaving": "Pri ukladaní sa vyskytla chyba.",
     "loadingRole": "Načítava sa rola...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Späť na používateľov",
     "selfServiceSecurityControls": "Samoobslužné nastavenia zabezpečenia",
     "sessionDeviceControlsAndPersonal": "Správa relácií a zariadení a osobné API tokeny sú dostupné len pri zobrazení vlastného používateľského účtu.",
-    "securityRecommendations": "Odporúčania pre zabezpečenie",
     "twoFactorAuthentication": "Dvojfaktorové overenie",
-    "activeAndProtectingThisAccount": "Aktívne a chráni tento účet",
-    "notEnabledHighlyRecommendedFor": "Nezapnuté – pre účty správcov dôrazne odporúčané",
-    "passwordProtected": "Chránené heslom",
-    "accountHasASecurePassword": "Účet má bezpečné heslo",
-    "administratorAccess": "Prístup správcu",
     "fullSystemAccess2faStrongly": "Úplný prístup k systému – 2FA dôrazne odporúčané",
     "personalApiTokens": "Osobné API tokeny",
     "tokenNameEGCi": "Názov tokenu (napr. CI deploy)",
     "days": "Dni",
     "createToken": "Vytvoriť token",
-    "copyNowShownOnce": "Skopírujte teraz (zobrazí sa len raz)",
     "loadingApiTokens": "Načítavajú sa API tokeny...",
     "noApiTokensCreatedYet": "Zatiaľ neboli vytvorené žiadne API tokeny.",
     "revoke": "Zrušiť",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktivita prihlásení a relácií",
     "loadingAuthActivity": "Načítava sa aktivita overenia...",
     "noRecentLoginSessionEvents": "Pre tohto používateľa nie sú žiadne nedávne udalosti prihlásenia či relácie.",
-    "unknownTime": "Neznámy čas",
-    "activityEvent": "Udalosť aktivity",
     "openFullGlobalActivity": "Otvoriť celú globálnu aktivitu",
-    "2faStatus": "Stav 2FA",
     "addAnExtraLayerOf": "Pridajte ďalšiu vrstvu zabezpečenia pomocou overovania cez aplikáciu (TOTP)",
-    "recommended": "Odporúčané",
     "enableTwoFactorAuthenticationTo": "Zapnite dvojfaktorové overenie a chráňte tento účet jednorazovými časovými heslami (TOTP).",
     "enable2fa": "Zapnúť 2FA",
     "step1ScanQrCode": "Krok 1: Naskenujte QR kód",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Krok 2: Overte kód",
     "enterThe6DigitCode": "Na dokončenie nastavenia zadajte 6-miestny kód z overovacej aplikácie:",
     "verifyEnable": "Overiť a zapnúť",
-    "protectionActive": "Ochrana aktívna",
     "thisAccountRequiresA6": "Tento účet pri prihlásení vyžaduje 6-miestny kód z overovacej aplikácie.",
     "regenerateRecoveryCodes": "Znovu vygenerovať záložné kódy",
     "disable2fa": "Vypnúť 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Zrušiť ostatné relácie",
     "loadingSessions": "Načítavajú sa relácie...",
     "noActiveSessions": "Žiadne aktívne relácie.",
-    "currentSession": "Aktuálna relácia",
-    "deviceSession": "Relácia zariadenia",
     "current": "Aktuálna",
     "unknownDevice": "Neznáme zariadenie",
     "editAccount2": "Upraviť účet",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Otvoriť záznam používateľa",
     "token": "Token",
     "createdOn": "Vytvorené {{date}}",
-    "notAvailable": "neuvedené",
     "revokedOn": "Zrušené {{date}}",
     "recoveryCodesRemaining": "Zostávajúce záložné kódy:",
-    "unknownValue": "neznáme",
     "expiresOn": "Platnosť do: {{date}}",
     "person2": "Osoba",
     "added": "Pridané",
@@ -3591,12 +3570,10 @@
       "loading": "Načítavajú sa polia osôb…",
       "loadFailed": "Polia osôb sa nepodarilo načítať.",
       "saveFailed": "Polia sa nepodarilo uložiť.",
-      "saved": "Polia boli uložené.",
       "empty": "Zatiaľ nie sú žiadne polia osôb. Pridajte pole, aby sa uchovávalo pre každú osobu.",
       "noneDeclared": "Tento web zatiaľ nemá žiadne polia osôb.",
       "declare": "Pridať polia osôb",
       "manage": "Spravovať polia",
-      "save": "Uložiť polia",
       "saveField": "Uložiť pole",
       "delete": "Odstrániť",
       "deleteTitle": "Odstrániť toto pole?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Platnosť (dni)",
+    "revokeOtherSessionsConfirm": "Všetky ostatné zariadenia sa ihneď odhlásia.",
+    "revokeSessionConfirm": "Toto zariadenie sa ihneď odhlási.",
+    "revokeCurrentSessionConfirm": "Toto je zariadenie, ktoré práve používate. Budete ihneď odhlásení.",
+    "revokeTokenConfirm": "„{{name}}“ okamžite prestane fungovať.",
+    "twoFactorTurnedOff": "Dvojfázové prihlásenie je pre tento web vypnuté, preto ho tu nemožno nastaviť.",
+    "openSecuritySettings": "Otvoriť nastavenia zabezpečenia"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Nastavenia webu ({{what}}) sa nastavujú v rámci každého webu – vyberte web z ponuky webov.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Túto lokalitu sa nepodarilo otvoriť na ukážku.",
     "couldNotLoadTheSite": "Lokalitu sa nepodarilo načítať.",
     "couldNotReloadThePlugin": "Zoznam pluginov sa nepodarilo znova načítať.",
-    "siteSaved": "Lokalita bola uložená",
-    "routingFollowsImmediatelyNoRestart": "Smerovanie sa prejaví okamžite — bez reštartu.",
     "notSaved": "Neuložené",
     "theSiteCouldNotBe2": "Lokalitu sa nepodarilo uložiť.",
     "couldNotOpenTheSite": "Lokalitu sa nepodarilo otvoriť",
@@ -3789,7 +3771,6 @@
     "visit": "Navštíviť",
     "openThisSite": "Otvoriť túto lokalitu",
     "export": "Exportovať",
-    "save": "Uložiť",
     "couldNotLoadCertificates": "Certifikáty sa nepodarilo načítať.",
     "couldNotSwitchThisHost": "Tohto hostiteľa sa nepodarilo prepnúť na automatický režim.",
     "couldNotSwitchThisHost2": "Tohto hostiteľa sa nepodarilo prepnúť na automatický režim (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "K dispozícii je aktualizácia",
     "isNowActive": "{{name}} je teraz aktívna.",
     "themeHasBeenUpdated2": "Téma {{name}} bola aktualizovaná.",
-    "configurationSaved": "Konfigurácia bola uložená",
-    "visualProtocolsUpdatedSuccessfully": "Vizuálne protokoly boli úspešne aktualizované.",
     "saveFailed": "Uloženie zlyhalo",
     "hasBeenRemoved2": "{{name}} bola odstránená.",
     "seedsExecuted": "Počiatočné dáta boli spustené",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Rozloženie",
     "extensionsSection": "Rozšírenia",
     "versionReady": "Verzia {{version}} je pripravená",
-    "saveChanges": "Uložiť zmeny",
     "runSeedsHint": "Znova nahrá úvodné dáta témy — jej ukážkové stránky a obsah — do tohto webu.",
     "resetThemeHint": "Vymaže uložené nastavenia témy tohto webu a znova nahrá úvodné dáta.",
     "notActiveHint": "Tento web používa inú tému.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Čo sa zmenilo vo v{{version}}",
     "whatChanged": "Čo sa zmenilo",
-    "closeBuildSourceDialog": "Zavrieť dialóg zdroja zostavenia",
-    "close": "Zavrieť",
     "couldNotInstallThatVersion": "Túto verziu sa nepodarilo nainštalovať.",
     "couldNotChangeAutomaticUpdating": "Automatické aktualizácie sa nepodarilo zmeniť.",
     "failed": "Zlyhalo",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatické certifikáty sú vypnuté. {{reason}}",
     "automaticCertificatesComeFrom": "Automatické certifikáty vydáva {{authority}}.",
     "noSecretKeyIsConfigured": "Na tomto serveri nie je nastavený SECRET_KEY, preto nemožno uložiť súkromný kľúč. Nahrávanie je vypnuté, kým sa nenastaví.",
-    "nothingToSavePasteA": "Nie je čo uložiť — vložte token alebo uložený token odstráňte tlačidlom Vymazať.",
     "savedThisSiteNowUses": "Uložené. Táto stránka teraz používa vlastný Cloudflare token.",
     "removedThisSiteFallsBack": "Odstránené. Táto stránka sa vráti k tokenu platformy.",
     "couldNotSaveTheToken": "Token sa nepodarilo uložiť.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token tejto stránky",
     "savedLeaveBlankToKeep": "Uložené — nechajte prázdne na ponechanie alebo odstráňte tlačidlom Vymazať",
     "pasteACloudflareApiToken": "Vložte Cloudflare API token",
-    "save": "Uložiť",
     "clear": "Vymazať",
     "nothingStoredThisHostCannot": "Nič nie je uložené — tento hostiteľ nemôže byť touto platformou poskytovaný cez HTTPS.",
     "nothingStoredHereTlsFor": "Nič tu nie je uložené — TLS pre tohto hostiteľa sa ukončuje pred platformou, takže jeho certifikát je tam.",
@@ -4706,36 +4680,26 @@
     "roles": "Roly",
     "permissions": "Oprávnenia",
     "eventDetails": "Podrobnosti udalosti",
-    "context": "Kontext",
     "resource": "Prostriedok",
     "system": "Systém",
     "timestamp": "Časová pečiatka",
-    "authority": "Oprávnenie",
-    "actorId": "ID aktéra",
-    "type": "Typ",
-    "systemLog": "Systémový záznam",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Správa o aktivite",
-    "actionTaken": "Vykonaná akcia",
-    "resourcePool": "Skupina prostriedkov",
-    "rawMetadata": "Nespracované metadáta",
     "thisEntryIsPartOf": "Tento záznam je súčasťou nemennej auditnej stopy.",
     "exportJson": "Exportovať JSON",
     "event": "Udalosť",
     "actor": "Aktér",
+    "plugin": "Doplnok",
     "activity": "Aktivita",
     "status": "Stav",
     "action": "Akcia",
     "time": "Čas",
-    "logSignature": "Podpis záznamu: {{id}}",
     "internal": "INTERNÉ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Záznam č. {{id}}",
+    "recordedData": "Zaznamenané údaje"
   },
   "mediaPicker": {
     "showingOnly": "Zobrazené len: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Úloha",
       "schedule": "Spúšťanie",
       "lastRun": "Posledný beh",
-      "nextRun": "Ďalší beh"
+      "nextRun": "Ďalší beh",
+      "duration": "Trvanie"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

@@ -6,6 +6,8 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * One row per site: host, the theme actually serving it, and whether anything broke there today.
@@ -34,12 +36,12 @@ export class DashboardSitesPanel extends AdminComponent {
   }
 
   private stateDot(site: Record<string, any>): string {
-    if (Number(site.errors24h || 0) > 0) return 'bg-rose-500';
+    if (Number(site.errors24h || 0) > 0) return 'fc-tone-danger-solid';
     // Not published outranks "no theme": a site nobody can reach is the more surprising fact, and it
     // is the one an operator forgets. Amber, not red — it is a state somebody chose, not a fault.
-    if (site.visibility && site.visibility !== 'public') return 'bg-amber-500';
-    if (!site.themeSlug) return 'bg-amber-500';
-    return 'bg-emerald-500';
+    if (site.visibility && site.visibility !== 'public') return 'fc-tone-warning-solid';
+    if (!site.themeSlug) return 'fc-tone-warning-solid';
+    return 'fc-tone-success-solid';
   }
 
   /** What is WRONG, in the fewest words — or what is serving, when nothing is. */
@@ -58,18 +60,18 @@ export class DashboardSitesPanel extends AdminComponent {
     return (
       <div className="space-y-2">
         <DashboardSectionHeading label={AdminI18n.t('shell.account.sites')} count={this.sites.length} />
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
+        <div className={`${AdminClass.SURFACE} divide-y fc-tone-divide`}>
           {this.sites.map((site) => (
             <div key={String(site.id)} className="flex items-center gap-2.5 px-3 py-2">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${this.stateDot(site)}`} />
-              <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
+              <span className="min-w-0 flex-1 truncate fc-size-xs fc-tone-text">
                 {String(site.host || site.slug)}
               </span>
-              <span className="shrink-0 text-[12px] text-slate-500">{this.statusText(site)}</span>
+              <span className="shrink-0 fc-size-xs fc-tone-muted">{this.statusText(site)}</span>
               {site.state && site.state !== 'active' ? (
-                <span className="shrink-0 rounded border border-amber-500/30 px-1.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
+                <Badge variant={BadgeVariant.WARNING} className="shrink-0">
                   {AdminI18n.optional(`sites.stateValue.${site.state}`) || String(site.state)}
-                </span>
+                </Badge>
               ) : null}
             </div>
           ))}

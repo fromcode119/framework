@@ -4,6 +4,7 @@ import { AppEnv } from '@/lib/env';
 import { AppearanceBundleLoaderService } from '@/app/services/appearance-bundle-loader-service';
 import { ActiveAdminAppearanceService } from '@/lib/appearance/active-admin-appearance-service';
 import { SurfaceElevationService } from '@/lib/theme/surface-elevation-service';
+import { NavLayoutService } from '@/lib/theme/nav-layout-service';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -17,6 +18,8 @@ import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-l
 import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-choice';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SystemConstants } from '@fromcode119/core/client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * Loads the active external appearance's runtime bundle BEFORE rendering the admin tree, so the
@@ -65,6 +68,9 @@ export class AppearanceRuntimeLoader extends Reactor {
       // Elevation is stamped from the first-paint hint straight away so the login screen (which never
       // fetches settings) still honours a flat deployment instead of flashing shadows.
       SurfaceElevationService.sync(null);
+      // The menu's shape is stamped from the same first-paint hint, so a console configured with the
+      // second column does not flash without it (and one without it does not flash with it).
+      NavLayoutService.sync(null);
       // T6: a WORKSPACE domain is locked to its tenant's appearance — the kind decides, no setting
       // exists. Asked first and publicly, so the login on that domain already knows whose it is.
       const workspace = await HostInfoClient.workspace();
@@ -88,11 +94,16 @@ export class AppearanceRuntimeLoader extends Reactor {
             [SystemConstants.META_KEY.ADMIN_APPEARANCE]: desired,
             ...(String(available?.shadows ?? '') ? { [SystemConstants.META_KEY.ADMIN_SHADOWS]: available.shadows } : {}),
           });
+          NavLayoutService.sync({
+            [SystemConstants.META_KEY.ADMIN_APPEARANCE]: desired,
+            ...(String(available?.navColumn ?? '') ? { [SystemConstants.META_KEY.ADMIN_NAV_COLUMN]: available.navColumn } : {}),
+          });
         } else {
           try {
             const settings = await AdminSystemSettingsClient.getAll();
             desired = String((settings as Record<string, unknown>)?.admin_appearance || '').trim() || deploymentDefault;
             SurfaceElevationService.sync(settings as Record<string, unknown>);
+            NavLayoutService.sync(settings as Record<string, unknown>);
           } catch {
             /* settings fetch failed — fall back to the first-paint hint */
           }
@@ -157,22 +168,18 @@ export class AppearanceRuntimeLoader extends Reactor {
   }
 
   render(): ReactElement {
-    if (!this.resolved) return <div className="min-h-screen bg-slate-50 dark:bg-[#020617]" />;
+    if (!this.resolved) return <div className="min-h-screen fc-canvas" />;
     if (this.loadFailed) {
       return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+      <div className="flex min-h-screen items-center justify-center fc-canvas p-6 ">
         <div className={`w-full max-w-md ${AdminClass.SURFACE} p-8 text-center`}>
-          <h1 className="text-lg font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.unavailable')}</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="text-lg font-medium fc-tone-text">{AdminI18n.t('shell.workspace.unavailable')}</h1>
+          <p className="mt-2 text-sm fc-tone-muted">
             {AdminI18n.t('shell.workspace.unavailableText')}
           </p>
-          <button
-            type="button"
-            onClick={this.reload}
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-          >
+          <Button type="button" variant={ButtonVariant.PRIMARY} className="mt-6" onClick={this.reload}>
             {AdminI18n.t('common.reload')}
-          </button>
+          </Button>
         </div>
       </div>
       );

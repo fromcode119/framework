@@ -162,6 +162,7 @@
       "reorderHandle": "Lohistage järjestuse muutmiseks või fokuseerige ja kasutage nooleklahve",
       "reorderEnable": "Järjestuse muutmiseks kuvage loend selle oma järjestuses",
       "reorderFailed": "Uut järjestust ei õnnestunud salvestada",
+      "noMatch": "Otsingule või filtritele ei vasta midagi.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Kas importida {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Muuda",
       "notFilledIn": "Täitmata",
       "statusSection": "Olek",
-      "statusConfirm": "Kas muuta olekuks „{{status}}“?",
       "recordSection": "Kirje",
       "showJson": "Näita JSON-ina",
       "showForm": "Näita vormina",
@@ -245,7 +245,8 @@
       "copied": "Kopeeritud",
       "more": "Veel",
       "moreFields": "{{count}} välja",
-      "moreOneField": "{{count}} väli"
+      "moreOneField": "{{count}} väli",
+      "statusConfirm": "Kas muuta olekuks „{{status}}“?"
     },
     "notFound": {
       "title": "Kogumit ei leitud",
@@ -366,7 +367,8 @@
     "reset": "Lähtesta",
     "notScheduledYet": "pole veel ajastatud",
     "more": "Rohkem toiminguid",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Eemalda"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Vali värv",
-      "colour": "Värv",
-      "pick": "Valige värv",
       "hex": "Hex-kood",
-      "confirm": "Kinnita värv",
       "notSet": "Määramata"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Tuvastati mitteaktiivsed sõltuvused",
       "intro": "Plugina {{plugin}} lubamiseks tuleb teha järgmist:",
       "notInstalled": "PAIGALDAMATA",
+      "inactive": "väljas",
+      "incompatible": "teine versioon",
       "requires": "Nõutav versioon {{version}}. Saame selle turult alla laadida.",
       "needsActivation": "Juba paigaldatud, kuid vajab aktiveerimist (versioon {{version}}).",
       "mismatch": "Versioonid ei ühti: nõutav {{expected}}, leitud {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Platvormi eelvaade",
-      "image": "Eelvaade {{number}}"
+      "image": "Eelvaade {{number}}",
+      "previous": "Eelmine",
+      "next": "Järgmine"
     },
     "menuField": {
       "newItem": "Uus menüüüksus",
-      "structure": "Menüü struktuur",
-      "add": "Lisa menüüüksus"
+      "add": "Lisa menüüüksus",
+      "reorder": "Lohista liigutamiseks; nooleklahvid: üles ja alla liigutab, paremale pesastab, vasakule tõstab välja"
     },
     "field": {
       "notSet": "Määramata",
@@ -461,8 +464,8 @@
       "record": "kirje"
     },
     "array": {
-      "addNew": "Lisa uus: {{label}}",
-      "item": "Üksus"
+      "add": "Lisa",
+      "reorder": "Lohista liigutamiseks või kasuta nooleklahve"
     },
     "stepper": {
       "increment": "Suurenda",
@@ -528,9 +531,7 @@
       "noContact": "Isikute all pole e-posti ega telefoni",
       "hasLogin": "Sisselogimine olemas",
       "noLogin": "Sisselogimine puudub",
-      "source": "Nimi, e-post ja telefon pärinevad isikult #{{id}}; muutke neid seal.",
       "open": "Ava isikute all",
-      "choose": "Vali keegi teine",
       "searchFailed": "Isikute otsing ei õnnestunud praegu.",
       "noMatch": "Ükski isik ei vasta otsingule. Sisestage andmed allpool; salvestamisel lisatakse isik isikute hulka.",
       "ref": "Isik #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Ava saidid"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suhtelised alistused pärivad kogumi eesliite. Lülitage sisse absoluutne režiim, et eesliiteid nagu `/shop` vältida.",
     "range": "Vahemik",
     "noDataForThisRange": "Selle vahemiku kohta andmed puuduvad",
     "peak": "· tipp {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtrid",
       "clearFilters": "Tühjenda kõik",
       "removeFilter": "Eemalda filter {{label}}",
-      "showResults": "Näita tulemusi ({{count}})"
+      "showResults": "Näita tulemusi ({{count}})",
+      "showResultsOne": "Näita 1 tulemust"
     },
     "personFieldPicker": {
       "none": "Ei salvestata isiku välja",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Pistikprogrammi {{name}} liivakasti piirangud salvestati, kuid selle protsessi ei õnnestunud nendega taaskäivitada: {{value}}",
       "restartRequired": "Vajalik taaskäivitus",
       "sandboxSettingsForWereSaved": "Pistikprogrammi {{name}} liivakasti seaded salvestati, kuid nende jõustumiseks tuleb API taaskäivitada.",
-      "resourcesUpdated": "Ressursid uuendatud",
-      "sandboxLimitsForUpdated": "Pistikprogrammi {{name}} liivakasti piirangud uuendatud.",
       "sandboxDisabledFor": "Pistikprogrammi {{name}} liivakast keelatud.",
       "saveFailed": "Salvestamine ebaõnnestus",
       "failedToUpdateSandboxLimits": "Liivakasti piiranguid ei õnnestunud uuendada.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Jõude. Hiljutisi sündmusi pole salvestatud.",
       "updating": "Uuendamine...",
       "updateAvailable": "Uuendus saadaval",
-      "updatePolicy": "Uuenduspoliitika",
       "saveChanges": "Salvesta muudatused",
       "unsavedChanges": "Salvestamata muudatused",
       "exportSettingsAsJson": "Ekspordi seaded JSON-ina",
@@ -1185,7 +1183,6 @@
       "newIn": "Uus versioonis v{{version}}",
       "installedVersion": "Paigaldatud {{version}}",
       "marketplaceVersion": "Turul {{version}}",
-      "saving": "Salvestamine...",
       "saveSettings": "Salvesta seaded",
       "viewDefinition": "Vaata määratlust",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Välimus",
       "failedToLoadAppearances": "Välimuste laadimine ebaõnnestus",
       "failedToSaveShadowSetting": "Varjude seade salvestamine ebaõnnestus",
+      "failedToSaveMenuSetting": "Menüüseade salvestamine ebaõnnestus",
       "switchedToReloading": "Vahetatud välimusele „{{slug}}”. Laaditakse uuesti…",
       "failedToSwitchAppearance": "Välimuse vahetamine ebaõnnestus",
       "installFailed": "Paigaldamine ebaõnnestus",
@@ -1919,6 +1917,8 @@
       "install": "Paigalda",
       "surfaceShadows": "Pindade varjud",
       "depthOnPanelsDialogsAnd": "Sügavus paneelidel, dialoogidel ja nuppudel. Lülitage välja lameda halduse jaoks — äärised ja nurgad jäävad täpselt samaks.",
+      "secondMenuColumn": "Teine menüüveerg",
+      "sectionPagesBesideTheMenu": "Jaotise lehed on menüü kõrval veerus. Välja lülitatuna avanevad need ühes menüüs oma rea all ja iga ekraan muutub 220px laiemaks.",
       "installFromAPackageUrl": "Paigalda paketi URL-ilt",
       "builtIn": "Sisseehitatud",
       "installed": "Paigaldatud",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP-asukohta ei uuendatud",
       "geoUnavailable": "IP-asukoha olek pole saadaval",
       "geoAttribution": "IP-geolokatsioon: {{name}} ({{license}}). Sisselülitatuna uuendatakse igakuiselt.",
-      "geoSaved": "Salvestatud",
-      "geoSavedOn": "Andmebaasi laaditakse alla; selle maht on umbes 60 MB.",
-      "geoSavedOff": "Andmebaas eemaldati serverist.",
       "everyPluginRunsIsolated": "Isoleeritud: iga plugin töötab oma protsessis. Mälu ülempiir ja ajalimiit kehtivad kõigile pluginatele; protsessori osa, kogumälu, ketas ja protsessid kehtivad ainult saidi üleslaaditud pluginatele.",
       "schemaOrphans": "Andmebaasi skeem",
       "schemaOrphansHelp": "Veerud, mis on andmebaasis endiselt olemas, kuid mida enam miski ei deklareeri. Platvorm ainult loetleb need; midagi ei kustutata enne teie otsust ja kustutatud veergu ei saa taastada.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Keelatud — lõpp-punkt vastab kõigile koodiga 403.",
       "mediaPayloadLimitMb": "Meediafailide mahupiirang (MB)",
       "maximumDecodedUploadOrRemote": "Suurim dekodeeritud üleslaadimise või kaugallalaadimise maht, mida MCP meediatööriistad vastu võtavad.",
-      "saveLimit": "Salvesta piirang",
       "allSites": "kõik saidid",
       "issuedBeforeSites": "väljastatud enne saite",
       "noTokensYet": "Tokeneid veel pole.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platvormi vaikeväärtus",
       "thisSite": "See sait",
       "inForceNow": "Praegu kehtiv",
-      "saving": "Salvestamine…",
-      "savePolicy": "Salvesta poliitika",
       "thePlatformDefaultIsSet": "Platvormi vaikeväärtuse määrab platvormi administraator.",
       "useTheLayerBelow": "Kasuta alumist taset",
       "whyTheLawRequiresThese": "Miks seadus nõuab nende kirjete säilitamist",
-      "inheritsThePlatformDefault": "pärib: platvormi vaikeväärtus"
+      "inheritsThePlatformDefault": "pärib: platvormi vaikeväärtus",
+      "strategyDelete": "Kustuta",
+      "strategyAnonymise": "Anonüümi",
+      "strategyRetain": "Säilita",
+      "declaredBy": "Vaikimisi määranud {{plugin}}",
+      "inheritsValue": "pärib: {{value}}",
+      "legalBasis": "Õiguslik alus",
+      "theSiteColumnIsSet": "Veergu „See sait“ määratakse saidi sees. Selle muutmiseks vali lülitist sait."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Kuvatav nimi",
     "thisPersonHasALogin": "Sellel isikul on sisselogimiskonto; e-posti aadressi muudetakse kontol.",
     "birthDate": "Sünnikuupäev",
-    "saveChanges": "Salvesta muudatused",
     "sendPasswordResetEmail": "Saada parooli lähtestamise e-kiri",
     "cancel": "Tühista",
     "accountManagement": "Kontohaldus",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Kopeerige taastekoodid käsitsi.",
     "nameRequired": "Nimi on kohustuslik",
     "enterATokenNameFirst": "Sisestage esmalt tokeni nimi.",
-    "tokenCreated": "Token loodud",
     "copyTheTokenNowIt": "Kopeerige token kohe. Seda näidatakse ainult üks kord.",
     "failedToCreateApiToken": "API-tokeni loomine ebaõnnestus",
     "areYouSureYouWant2": "Kas soovite kindlasti selle kasutaja kaheastmelise autentimise välja lülitada? See vähendab konto turvalisust.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Seanss tühistatud",
     "deviceSessionRevokedSuccessfully": "Seadme seanss tühistati edukalt.",
     "failedToRevokeSession": "Seansi tühistamine ebaõnnestus",
-    "rolesUpdated": "Rollid uuendatud",
-    "theUserSRolesWere": "Kasutaja rollid salvestati.",
     "saveFailed": "Salvestamine ebaõnnestus",
     "failedToSaveRoles": "Rollide salvestamine ebaõnnestus.",
     "loadingRoles": "Rollide laadimine",
@@ -3448,8 +3445,6 @@
     "remove": "Eemalda",
     "loadFailed": "Laadimine ebaõnnestus",
     "couldNotRetrieveRoleDetails": "Rolli andmeid ei õnnestunud laadida.",
-    "roleUpdated": "Roll uuendatud",
-    "wasSaved": "„{{name}}” salvestati.",
     "updateFailed": "Uuendamine ebaõnnestus",
     "anErrorOccurredWhileSaving": "Salvestamisel tekkis viga.",
     "loadingRole": "Rolli laadimine...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Tagasi kasutajate juurde",
     "selfServiceSecurityControls": "Iseteeninduse turvaseaded",
     "sessionDeviceControlsAndPersonal": "Seansside ja seadmete haldus ning isiklikud API-tõendid on saadaval ainult oma kasutajakonto vaatamisel.",
-    "securityRecommendations": "Turvasoovitused",
     "twoFactorAuthentication": "Kaheastmeline autentimine",
-    "activeAndProtectingThisAccount": "Aktiivne ja kaitseb seda kontot",
-    "notEnabledHighlyRecommendedFor": "Pole lubatud – administraatorikontodele tungivalt soovitatav",
-    "passwordProtected": "Parooliga kaitstud",
-    "accountHasASecurePassword": "Kontol on turvaline parool",
-    "administratorAccess": "Administraatori juurdepääs",
     "fullSystemAccess2faStrongly": "Täielik juurdepääs süsteemile – 2FA tungivalt soovitatav",
     "personalApiTokens": "Isiklikud API-tõendid",
     "tokenNameEGCi": "Tõendi nimi (nt CI juurutus)",
     "days": "Päeva",
     "createToken": "Loo tõend",
-    "copyNowShownOnce": "Kopeerige kohe (kuvatakse üks kord)",
     "loadingApiTokens": "API-tõendite laadimine...",
     "noApiTokensCreatedYet": "API-tõendeid pole veel loodud.",
     "revoke": "Tühista",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Sisselogimised ja seansid",
     "loadingAuthActivity": "Autentimistegevuse laadimine...",
     "noRecentLoginSessionEvents": "Sellel kasutajal pole hiljutisi sisselogimis- ega seansisündmusi.",
-    "unknownTime": "Tundmatu aeg",
-    "activityEvent": "Tegevussündmus",
     "openFullGlobalActivity": "Ava kogu üldine tegevus",
-    "2faStatus": "2FA olek",
     "addAnExtraLayerOf": "Lisage täiendav turvakiht rakendusepõhise autentimisega (TOTP)",
-    "recommended": "Soovitatav",
     "enableTwoFactorAuthenticationTo": "Lubage kaheastmeline autentimine, et kaitsta seda kontot ajapõhiste ühekordsete paroolidega (TOTP).",
     "enable2fa": "Luba 2FA",
     "step1ScanQrCode": "1. samm: skannige QR-kood",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "2. samm: kinnitage kood",
     "enterThe6DigitCode": "Seadistamise lõpetamiseks sisestage autentimisrakenduse 6-kohaline kood:",
     "verifyEnable": "Kinnita ja luba",
-    "protectionActive": "Kaitse on aktiivne",
     "thisAccountRequiresA6": "Sellel kontol tuleb sisselogimisel sisestada autentimisrakenduse 6-kohaline kood.",
     "regenerateRecoveryCodes": "Loo uued taastekoodid",
     "disable2fa": "Keela 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Tühista teised seansid",
     "loadingSessions": "Seansside laadimine...",
     "noActiveSessions": "Aktiivseid seansse pole.",
-    "currentSession": "Praegune seanss",
-    "deviceSession": "Seadme seanss",
     "current": "Praegune",
     "unknownDevice": "Tundmatu seade",
     "editAccount2": "Muuda kontot",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Ava kasutaja kirje",
     "token": "Tõend",
     "createdOn": "Loodud {{date}}",
-    "notAvailable": "pole saadaval",
     "revokedOn": "Tühistatud {{date}}",
     "recoveryCodesRemaining": "Järelejäänud taastekoode:",
-    "unknownValue": "tundmatu",
     "expiresOn": "Aegub: {{date}}",
     "person2": "Isik",
     "added": "Lisatud",
@@ -3591,12 +3570,10 @@
       "loading": "Isikuvälkade laadimine…",
       "loadFailed": "Isikuvälju ei õnnestunud laadida.",
       "saveFailed": "Välju ei õnnestunud salvestada.",
-      "saved": "Väljad salvestatud.",
       "empty": "Isikuvälju veel pole. Lisage üks, et seda iga inimese kohta säilitada.",
       "noneDeclared": "Sellel saidil pole veel isikuvälju.",
       "declare": "Lisa isikuvälju",
       "manage": "Halda välju",
-      "save": "Salvesta väljad",
       "saveField": "Salvesta väli",
       "delete": "Kustuta",
       "deleteTitle": "Kas kustutada see väli?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Kehtib (päeva)",
+    "revokeOtherSessionsConfirm": "Kõik teised seadmed logitakse kohe välja.",
+    "revokeSessionConfirm": "See seade logitakse kohe välja.",
+    "revokeCurrentSessionConfirm": "See on seade, mida praegu kasutate. Teid logitakse kohe välja.",
+    "revokeTokenConfirm": "„{{name}}“ lakkab kohe töötamast.",
+    "twoFactorTurnedOff": "Kaheastmeline sisselogimine on sellel saidil välja lülitatud, seega ei saa seda siin seadistada.",
+    "openSecuritySettings": "Ava turvaseaded"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Saidi seaded ({{what}}) määratakse iga saidi sees – valige sait saidimenüüst.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Seda saiti ei õnnestunud eelvaateks avada.",
     "couldNotLoadTheSite": "Saiti ei õnnestunud laadida.",
     "couldNotReloadThePlugin": "Pluginate loendit ei õnnestunud uuesti laadida.",
-    "siteSaved": "Sait salvestatud",
-    "routingFollowsImmediatelyNoRestart": "Marsruutimine rakendub kohe — taaskäivitust pole vaja.",
     "notSaved": "Ei salvestatud",
     "theSiteCouldNotBe2": "Saiti ei õnnestunud salvestada.",
     "couldNotOpenTheSite": "Saiti ei õnnestunud avada",
@@ -3789,7 +3771,6 @@
     "visit": "Külasta",
     "openThisSite": "Ava see sait",
     "export": "Ekspordi",
-    "save": "Salvesta",
     "couldNotLoadCertificates": "Sertifikaate ei õnnestunud laadida.",
     "couldNotSwitchThisHost": "Seda hosti ei õnnestunud automaatseks lülitada.",
     "couldNotSwitchThisHost2": "Seda hosti ei õnnestunud automaatseks (metamärk) lülitada.",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Värskendus on saadaval",
     "isNowActive": "{{name}} on nüüd aktiivne.",
     "themeHasBeenUpdated2": "Teema {{name}} on värskendatud.",
-    "configurationSaved": "Konfiguratsioon on salvestatud",
-    "visualProtocolsUpdatedSuccessfully": "Visuaalsed protokollid on edukalt värskendatud.",
     "saveFailed": "Salvestamine ebaõnnestus",
     "hasBeenRemoved2": "{{name}} on eemaldatud.",
     "seedsExecuted": "Algandmed on käivitatud",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Paigutus",
     "extensionsSection": "Laiendused",
     "versionReady": "Versioon {{version}} on valmis",
-    "saveChanges": "Salvesta muudatused",
     "runSeedsHint": "Laadib teema algandmed — näidislehed ja sisu — sellele saidile uuesti.",
     "resetThemeHint": "Kustutab selle saidi salvestatud teemaseaded ja laadib algandmed uuesti.",
     "notActiveHint": "See sait kasutab teist teemat.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Mis muutus versioonis v{{version}}",
     "whatChanged": "Mis muutus",
-    "closeBuildSourceDialog": "Sulge järguallika dialoog",
-    "close": "Sulge",
     "couldNotInstallThatVersion": "Seda versiooni ei õnnestunud installida.",
     "couldNotChangeAutomaticUpdating": "Automaatse uuendamise muutmine ebaõnnestus.",
     "failed": "Ebaõnnestus",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automaatsed sertifikaadid on välja lülitatud. {{reason}}",
     "automaticCertificatesComeFrom": "Automaatsed sertifikaadid väljastab {{authority}}.",
     "noSecretKeyIsConfigured": "Selles serveris pole SECRET_KEY seadistatud, seega ei saa privaatvõtit salvestada. Üleslaadimine on keelatud, kuni see on määratud.",
-    "nothingToSavePasteA": "Pole midagi salvestada — kleepige tõend või kasutage salvestatud tõendi eemaldamiseks nuppu Tühjenda.",
     "savedThisSiteNowUses": "Salvestatud. See sait kasutab nüüd oma Cloudflare'i tõendit.",
     "removedThisSiteFallsBack": "Eemaldatud. See sait kasutab nüüd platvormi tõendit.",
     "couldNotSaveTheToken": "Tõendit ei õnnestunud salvestada.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Selle saidi tõend",
     "savedLeaveBlankToKeep": "Salvestatud — jätke tühjaks, et säilitada, või kasutage eemaldamiseks nuppu Tühjenda",
     "pasteACloudflareApiToken": "Kleepige Cloudflare'i API tõend",
-    "save": "Salvesta",
     "clear": "Tühjenda",
     "nothingStoredThisHostCannot": "Midagi pole salvestatud — see platvorm ei saa seda hosti HTTPS-i kaudu teenindada.",
     "nothingStoredHereTlsFor": "Siin pole midagi salvestatud — selle hosti TLS lõpetatakse enne platvormi, seega asub selle sertifikaat seal.",
@@ -4706,36 +4680,26 @@
     "roles": "Rollid",
     "permissions": "Õigused",
     "eventDetails": "Sündmuse üksikasjad",
-    "context": "Kontekst",
     "resource": "Ressurss",
     "system": "Süsteem",
     "timestamp": "Ajatempel",
-    "authority": "Volitus",
-    "actorId": "Toimija ID",
-    "type": "Tüüp",
-    "systemLog": "Süsteemilogi",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Tegevuse sõnum",
-    "actionTaken": "Tehtud toiming",
-    "resourcePool": "Ressursikogum",
-    "rawMetadata": "Toormetaandmed",
     "thisEntryIsPartOf": "See kirje on osa muutumatust auditijäljest.",
     "exportJson": "Ekspordi JSON",
     "event": "Sündmus",
     "actor": "Toimija",
+    "plugin": "Lisandmoodul",
     "activity": "Tegevus",
     "status": "Olek",
     "action": "Toiming",
     "time": "Aeg",
-    "logSignature": "Logi allkiri: {{id}}",
     "internal": "SISEMINE",
     "level": {
-      "INFO": "INFO",
-      "WARN": "HOIATUS",
-      "ERROR": "VIGA",
-      "DEBUG": "SILUMINE",
-      "SYSTEM": "SÜSTEEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Hoiatus",
+      "ERROR": "Viga",
+      "DEBUG": "Silumine",
+      "SYSTEM": "Süsteem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Kirje #{{id}}",
+    "recordedData": "Salvestatud andmed"
   },
   "mediaPicker": {
     "showingOnly": "Kuvatakse ainult: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Ülesanne",
       "schedule": "Käivitub",
       "lastRun": "Viimane käivitus",
-      "nextRun": "Järgmine käivitus"
+      "nextRun": "Järgmine käivitus",
+      "duration": "Kestus"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platvorm",

@@ -32,6 +32,9 @@ export interface ICollectionEditPageViewModel {
   saving: boolean;
   fieldErrors: Record<string, string[]>;
   resolvedTitleValue: string;
+  /** The field whose value is the record's title — not shown as a row in the first card, since the
+      card's head already shows it. */
+  titleFieldName?: string;
   slugManuallyEdited: boolean;
   slugWarning: string | null;
   activeTab: string;

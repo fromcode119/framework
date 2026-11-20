@@ -1,11 +1,11 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
@@ -33,10 +33,19 @@ export class PluginIsolationCard extends AdminComponent {
   @state values: Record<string, string> = {};
   @state saving = false;
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ values: this.values }),
+      () => this.save(),
+      (values) => { this.values = values.values; },
+    );
     try {
       const settings = await AdminSystemSettingsClient.getAll();
       this.values = Object.fromEntries(PluginIsolationCard.LIMITS.map((limit) => [limit.key, String(settings?.[limit.key] ?? '')]));
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.error'), err?.message || AdminI18n.t('settings.infrastructure.failedToSaveThePlugin'));
     }
@@ -55,10 +64,19 @@ export class PluginIsolationCard extends AdminComponent {
       // or share of the machine by restarting that plugin's own process.
       this.runtime.notify.notify(NotificationType.INFO, AdminI18n.t('settings.infrastructure.systemUpdated'), AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedAnd'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.error'), err?.message || AdminI18n.t('settings.infrastructure.failedToSaveThePlugin'));
     } finally {
       this.saving = false;
     }
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -67,19 +85,14 @@ export class PluginIsolationCard extends AdminComponent {
     return (
       <Card title={AdminI18n.t('settings.infrastructure.pluginIsolation')}>
         <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.wherePluginsRun')} stacked description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}>
-          <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
+          <p className="text-xs fc-tone-muted">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
         </SettingRow>
         {PluginIsolationCard.LIMITS.map((limit, index) => (
           <SettingRow key={limit.key} theme={theme} title={limit.title()} stacked description={limit.description()}>
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={limit.min} max={'max' in limit ? limit.max : undefined} step={limit.step} value={this.values[limit.key] ?? ''} onChange={this.onChange(limit.key)} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: limit.fallback })} />
               </div>
-              {index === last ? (
-                <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
-                  {AdminI18n.t('settings.infrastructure.save')}
-                </Button>
-              ) : null}
             </div>
           </SettingRow>
         ))}

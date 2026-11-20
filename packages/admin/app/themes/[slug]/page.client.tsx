@@ -21,6 +21,9 @@ import type { IPluginsContextSurface } from '@/app/interfaces/plugins-context-su
 import type { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsPageView, IThemeSettingsPageHost {
   @prop declare params: Promise<{ slug: string }>;
@@ -29,6 +32,8 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
   /** Public because `ThemeSettingsController` checks it before writing state — see IThemeSettingsPageHost. */
   mounted = false;
   private prevRefreshVersion: number | undefined = undefined;
+  /** The Settings tab's edits, as the page's one save bar reads, writes and puts back. */
+  private pending: PendingSave | null = null;
 
   @state routeSlug = '';
   @state resolved = false;
@@ -39,7 +44,6 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
   /** The Settings tab's open section (`?section=`); empty means the first. */
   @state activeSection = '';
   @state isUpdating = false;
-  @state isSaving = false;
   @state isReseeding = false;
   @state isResettingTheme = false;
   @state isDeleting = false;
@@ -84,6 +88,11 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.pending = new PendingSave(
+      () => ({ variables: this.tempVariables, defaultLayout: this.tempDefaultLayout, settings: this.tempSettings }),
+      async () => { if (!(await ThemeSettingsController.handleSaveConfig(this))) this.pending?.failed(); },
+      (values) => { this.tempVariables = values.variables; this.tempDefaultLayout = values.defaultLayout; this.tempSettings = values.settings; },
+    );
     SiteStorefrontClient.current().then((url) => { if (this.mounted) this.siteStorefrontUrl = url; });
     const params = await this.params;
     const searchParams = this.searchParams ? await this.searchParams : undefined;
@@ -95,23 +104,30 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     this.resolved = true;
     this.activeTab = nextTab;
     this.activeSection = String(searchParams?.section ?? '');
-    void ThemeSettingsController.fetchTheme(this);
+    void this.load();
+  }
+
+  /** Loads the theme and records what is stored, so the save bar compares edits against it. */
+  private async load(): Promise<void> {
+    await ThemeSettingsController.fetchTheme(this);
+    if (this.mounted) this.pending?.mark();
   }
 
   componentDidUpdate(): void {
+    PendingSaves.changed();
     if (this.resolved && this.pluginsContext?.refreshVersion !== this.prevRefreshVersion) {
       this.prevRefreshVersion = this.pluginsContext?.refreshVersion;
-      void ThemeSettingsController.fetchTheme(this);
+      void this.load();
     }
   }
 
   componentWillUnmount(): void {
     this.mounted = false;
+    this.pending?.dispose();
   }
 
   handleActivate(): Promise<void> { return ThemeSettingsController.handleActivate(this); }
   handleUpdate(): Promise<void> { return ThemeSettingsController.handleUpdate(this); }
-  handleSaveConfig(): Promise<void> { return ThemeSettingsController.handleSaveConfig(this); }
   handleDelete(): Promise<void> { return ThemeSettingsController.handleDelete(this); }
   handleRunSeeds(): Promise<void> { return ThemeSettingsController.handleRunSeeds(this); }
   handleResetTheme(): Promise<void> { return ThemeSettingsController.handleResetTheme(this); }
@@ -152,7 +168,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     if (this.loading) {
       return (
         <div className="flex h-[60vh] items-center justify-center">
-          <FrameworkIcons.Loader className="h-8 w-8 animate-spin text-indigo-600" />
+          <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
         </div>
       );
     }
@@ -178,14 +194,13 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
         {/* Tabs are bands under the header and the content one card below, as on Integrations. */}
         <ThemeDetailTabs activeTab={activeTab} onTabChange={this.handleTabChange} theme={adminTheme} />
         {activeTab === ThemeSettingsTab.SETTINGS ? <ThemeSettingsSections page={this} model={model} /> : (
-          <div className="w-full p-6">
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
-              {activeTab === ThemeSettingsTab.MAINTENANCE
-                ? <div className="p-6"><ThemeSettingsMaintenancePanel page={this} model={model} /></div>
-                : <ThemeSettingsOverviewPanel page={this} model={model} />}
-            </section>
+          <div className="w-full py-6">
+            {activeTab === ThemeSettingsTab.MAINTENANCE
+              ? <ThemeSettingsMaintenancePanel page={this} model={model} />
+              : <section><ThemeSettingsOverviewPanel page={this} model={model} /></section>}
           </div>
         )}
+        <PendingSavesBar />
         <ThemeSettingsDialogs page={this} model={model} />
       </div>
     );

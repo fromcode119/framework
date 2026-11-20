@@ -12,6 +12,10 @@ import { RevisionModal } from '@/components/collection/edit/view/revision-modal.
 import { EditFooter } from '@/components/collection/edit/view/edit-footer.client';
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
 import { EditPageDialogs } from '@/components/collection/edit/edit-page-dialogs';
+import { StatePage } from '@/components/ui/view/state-page.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FrameworkIcons } from '@fromcode119/react';
 import { EditCollectionNotFound } from '@/components/collection/edit/edit-collection-not-found';
 import { CollectionCreateDisabled } from '@/components/collection/edit/collection-create-disabled';
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
@@ -46,6 +50,8 @@ export class CollectionEditPageView extends Reactor {
   @state pluginSettingsSchema: Record<string, any> = {};
   @state status: { type: NotificationType; message: string; deleteRefused?: boolean } | null = null;
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
+  /** The record was asked for and did not come: missing, or not this operator's to open. */
+  @state loadFailed = false;
   @state deleting = false;
   @state showDeleteConfirm = false;
   /** Form vs JSON view. Owned here; switched from the header's record menu. */
@@ -184,6 +190,12 @@ export class CollectionEditPageView extends Reactor {
     // The record is still on the way. Drawing the form now would print "Not filled in" over every
     // field it has, so the page holds the record's shape until the values are here to put in it.
     if (this.loading && !edit.isNew) return <>{<RecordSkeleton />}{dialogs}</>;
+    if (this.loadFailed && !edit.isNew) {
+      return (
+        <StatePage icon={<FrameworkIcons.Alert size={18} />} title={AdminI18n.t('collection.edit.loadFailed')}
+          actions={<Button variant={ButtonVariant.SECONDARY} onClick={() => window.history.back()}>{AdminI18n.t('common.goBack')}</Button>} />
+      );
+    }
 
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-500">
@@ -201,8 +213,9 @@ export class CollectionEditPageView extends Reactor {
               listLabel={CollectionListUtils.resolveCollectionLabel(collection, slug)} title={edit.resolvedTitleValue || String(id)}
             />
           )}
-          head={(
+          head={(opts?: { bare?: boolean; onEditDetails?: () => void }) => (
             <EditHeader
+              bare={opts?.bare} onEditDetails={opts?.onEditDetails}
               collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
               resolvedTitleValue={edit.resolvedTitleValue}
               formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
@@ -215,6 +228,7 @@ export class CollectionEditPageView extends Reactor {
               openedSections={edit.openedSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.replace(href, { scroll: false })}
             />
           )}
+          titleFieldName={edit.titleFieldName}
         />
 
         <RevisionModal
@@ -223,6 +237,7 @@ export class CollectionEditPageView extends Reactor {
           formData={edit.formData} setFormData={edit.setFormData} theme={edit.theme} currentRevIndex={edit.currentRevIndex}
           revisions={edit.revisions} restoringPermanently={edit.restoringPermanently} handleHardRestore={edit.handleHardRestore}
           setActiveVersionId={edit.setActiveVersionId} setStatus={edit.setStatus}
+          fields={collection?.fields || []}
         />
 
         {!edit.hideFooter && canSave && (

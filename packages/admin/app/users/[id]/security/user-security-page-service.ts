@@ -3,14 +3,17 @@ import type { ISecurityUserRecord } from '@/app/users/[id]/security/interfaces/s
 import type { IUserApiTokenRecord } from '@/app/users/[id]/security/interfaces/user-api-token-record.interface';
 import type { IUserSessionRecord } from '@/app/users/[id]/security/interfaces/user-session-record.interface';
 export class UserSecurityPageService {
-  static buildActivityLevelClass(level: string): string {
-    if (level === 'ERROR') {
-      return 'bg-rose-50 border-rose-100 text-rose-700 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-300';
-    }
-    if (level === 'WARN') {
-      return 'bg-amber-50 border-amber-100 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300';
-    }
-    return 'bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300';
+  /**
+   * The browser and system a session was signed in from, read from its user agent ("Chrome · macOS");
+   * '' when the agent names neither, so the row falls back to its generic name.
+   */
+  static describeDevice(userAgent: string | undefined): string {
+    const agent = String(userAgent || '');
+    const browser = [['Edg/', 'Edge'], ['OPR/', 'Opera'], ['Firefox/', 'Firefox'], ['Chrome/', 'Chrome'], ['Safari/', 'Safari']]
+      .find(([token]) => agent.includes(token))?.[1] || '';
+    const system = [['iPhone', 'iOS'], ['iPad', 'iPadOS'], ['Android', 'Android'], ['Windows', 'Windows'], ['Mac OS X', 'macOS'], ['Linux', 'Linux']]
+      .find(([token]) => agent.includes(token))?.[1] || '';
+    return [browser, system].filter(Boolean).join(' · ');
   }
 
   static buildApiTokenPayload(tokenName: string, tokenDays: string): { expiresInDays?: number; name: string } {

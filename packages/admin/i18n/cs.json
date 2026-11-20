@@ -162,6 +162,7 @@
       "reorderHandle": "Přetažením změníte pořadí — nebo použijte šipky po zaměření",
       "reorderEnable": "Pro změnu pořadí zobrazte seznam ve vlastním pořadí",
       "reorderFailed": "Nové pořadí se nepodařilo uložit",
+      "noMatch": "Hledání ani filtrům nic neodpovídá.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importovat {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Upravit",
       "notFilledIn": "Nevyplněno",
       "statusSection": "Stav",
-      "statusConfirm": "Změnit stav na „{{status}}“?",
       "recordSection": "Záznam",
       "showJson": "Zobrazit jako JSON",
       "showForm": "Zobrazit jako formulář",
@@ -245,7 +245,8 @@
       "copied": "Zkopírováno",
       "more": "Další",
       "moreFields": "{{count}} polí",
-      "moreOneField": "{{count}} pole"
+      "moreOneField": "{{count}} pole",
+      "statusConfirm": "Změnit stav na „{{status}}“?"
     },
     "notFound": {
       "title": "Kolekce nenalezena",
@@ -366,7 +367,8 @@
     "reset": "Obnovit výchozí",
     "notScheduledYet": "zatím nenaplánováno",
     "more": "Další akce",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Odebrat"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Vybrat barvu",
-      "colour": "Barva",
-      "pick": "Vyberte barvu",
       "hex": "Hex kód",
-      "confirm": "Potvrdit barvu",
       "notSet": "Nenastaveno"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Zjištěny neaktivní závislosti",
       "intro": "Pro povolení pluginu {{plugin}} je třeba vyřešit následující:",
       "notInstalled": "NENAINSTALOVÁNO",
+      "inactive": "vypnutý",
+      "incompatible": "jiná verze",
       "requires": "Vyžaduje verzi {{version}}. Lze ji stáhnout z marketplace.",
       "needsActivation": "Již nainstalováno, ale je nutné aktivovat (verze {{version}}).",
       "mismatch": "Nesoulad verzí: vyžadováno {{expected}}, nalezeno {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Náhled platformy",
-      "image": "Náhled {{number}}"
+      "image": "Náhled {{number}}",
+      "previous": "Předchozí",
+      "next": "Další"
     },
     "menuField": {
       "newItem": "Nová položka menu",
-      "structure": "Struktura menu",
-      "add": "Přidat položku menu"
+      "add": "Přidat položku menu",
+      "reorder": "Přetažením přesunete; šipky: nahoru a dolů přesun, vpravo vnoření, vlevo vynoření"
     },
     "field": {
       "notSet": "Nenastaveno",
@@ -461,8 +464,8 @@
       "record": "záznam"
     },
     "array": {
-      "addNew": "Přidat: {{label}}",
-      "item": "Položka"
+      "add": "Přidat",
+      "reorder": "Přetažením přesunete, nebo použijte šipky"
     },
     "stepper": {
       "increment": "Zvýšit",
@@ -528,9 +531,7 @@
       "noContact": "V People není uveden e-mail ani telefon",
       "hasLogin": "Má přihlašovací účet",
       "noLogin": "Bez přihlašovacího účtu",
-      "source": "Jméno, e-mail a telefon pocházejí ze záznamu People #{{id}}; změňte je tam.",
       "open": "Otevřít v People",
-      "choose": "Vybrat někoho jiného",
       "searchFailed": "V People teď nelze vyhledávat.",
       "noMatch": "V People nikdo neodpovídá. Zadejte údaje níže; uložením se osoba přidá do People.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Otevřít Weby"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativní přepsání dědí prefix kolekce. Zapněte absolutní režim, chcete-li obejít prefixy jako `/shop`.",
     "range": "Rozsah",
     "noDataForThisRange": "Pro tento rozsah nejsou žádná data",
     "peak": "· maximum {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtry",
       "clearFilters": "Vymazat vše",
       "removeFilter": "Odebrat filtr {{label}}",
-      "showResults": "Zobrazit výsledky ({{count}})"
+      "showResults": "Zobrazit výsledky ({{count}})",
+      "showResultsOne": "Zobrazit 1 výsledek"
     },
     "personFieldPicker": {
       "none": "Neukládá se do pole osoby",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Limity sandboxu pro {{name}} byly uloženy, ale jeho proces se s nimi nepodařilo restartovat: {{value}}",
       "restartRequired": "Vyžadován restart",
       "sandboxSettingsForWereSaved": "Nastavení sandboxu pro {{name}} bylo uloženo, ale projeví se až po restartu API.",
-      "resourcesUpdated": "Prostředky aktualizovány",
-      "sandboxLimitsForUpdated": "Limity sandboxu pro {{name}} byly aktualizovány.",
       "sandboxDisabledFor": "Sandbox pro {{name}} byl vypnut.",
       "saveFailed": "Uložení se nezdařilo",
       "failedToUpdateSandboxLimits": "Limity sandboxu se nepodařilo aktualizovat.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Nečinný. Žádné nedávné události.",
       "updating": "Aktualizace...",
       "updateAvailable": "K dispozici aktualizace",
-      "updatePolicy": "Zásady aktualizací",
       "saveChanges": "Uložit změny",
       "unsavedChanges": "Neuložené změny",
       "exportSettingsAsJson": "Exportovat nastavení jako JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Novinky ve v{{version}}",
       "installedVersion": "Nainstalováno {{version}}",
       "marketplaceVersion": "Tržiště {{version}}",
-      "saving": "Ukládání...",
       "saveSettings": "Uložit nastavení",
       "viewDefinition": "Zobrazit definici",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Vzhled",
       "failedToLoadAppearances": "Vzhledy se nepodařilo načíst",
       "failedToSaveShadowSetting": "Nastavení stínů se nepodařilo uložit",
+      "failedToSaveMenuSetting": "Nastavení nabídky se nepodařilo uložit",
       "switchedToReloading": "Přepnuto na „{{slug}}“. Načítání…",
       "failedToSwitchAppearance": "Vzhled se nepodařilo přepnout",
       "installFailed": "Instalace selhala",
@@ -1919,6 +1917,8 @@
       "install": "Instalovat",
       "surfaceShadows": "Stíny ploch",
       "depthOnPanelsDialogsAnd": "Hloubka panelů, dialogů a tlačítek. Vypněte pro plochou administraci — okraje a rohy zůstanou přesně takové, jaké jsou.",
+      "secondMenuColumn": "Druhý sloupec nabídky",
+      "sectionPagesBesideTheMenu": "Stránky sekce stojí ve sloupci vedle nabídky. Po vypnutí se otevírají pod svým řádkem v jedné nabídce a každá obrazovka získá 220px.",
       "installFromAPackageUrl": "Instalovat z URL balíčku",
       "builtIn": "Vestavěné",
       "installed": "Nainstalováno",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Polohu podle IP se nepodařilo aktualizovat",
       "geoUnavailable": "Stav polohy podle IP není k dispozici",
       "geoAttribution": "Geolokace IP od {{name}} ({{license}}). Při zapnutí se aktualizuje měsíčně.",
-      "geoSaved": "Uloženo",
-      "geoSavedOn": "Databáze se nyní stahuje; má asi 60 MB.",
-      "geoSavedOff": "Databáze byla ze serveru odstraněna.",
       "everyPluginRunsIsolated": "Izolováno: každý plugin běží ve vlastním procesu. Limit paměti a časový limit platí pro všechny pluginy; podíl CPU, celková paměť, disk a procesy platí jen pro pluginy nahrané webem.",
       "schemaOrphans": "Schéma databáze",
       "schemaOrphansHelp": "Sloupce, které databáze stále obsahuje, ale nic je už nedeklaruje. Platforma je pouze vypisuje; nic se neodstraní, dokud se nerozhodnete, a odstraněný sloupec nelze obnovit.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Vypnuto — koncový bod všem odpovídá kódem 403.",
       "mediaPayloadLimitMb": "Limit velikosti médií (MB)",
       "maximumDecodedUploadOrRemote": "Maximální velikost dekódovaného nahrání nebo vzdáleného stažení, kterou přijmou mediální nástroje MCP.",
-      "saveLimit": "Uložit limit",
       "allSites": "všechny weby",
       "issuedBeforeSites": "vydáno před zavedením webů",
       "noTokensYet": "Zatím žádné tokeny.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Výchozí nastavení platformy",
       "thisSite": "Tento web",
       "inForceNow": "Aktuálně platí",
-      "saving": "Ukládání…",
-      "savePolicy": "Uložit zásady",
       "thePlatformDefaultIsSet": "Výchozí nastavení platformy určuje administrátor platformy.",
       "useTheLayerBelow": "Použít nižší úroveň",
       "whyTheLawRequiresThese": "Proč zákon vyžaduje uchování těchto záznamů",
-      "inheritsThePlatformDefault": "dědí: výchozí nastavení platformy"
+      "inheritsThePlatformDefault": "dědí: výchozí nastavení platformy",
+      "strategyDelete": "Smazat",
+      "strategyAnonymise": "Anonymizovat",
+      "strategyRetain": "Ponechat",
+      "declaredBy": "Výchozí hodnota určená {{plugin}}",
+      "inheritsValue": "dědí: {{value}}",
+      "legalBasis": "Právní základ",
+      "theSiteColumnIsSet": "Sloupec „Tento web“ se nastavuje uvnitř webu. Chcete-li ho změnit, vyberte web v přepínači."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Zobrazované jméno",
     "thisPersonHasALogin": "Tato osoba má přihlašovací účet; e-mail se mění v nastavení účtu.",
     "birthDate": "Datum narození",
-    "saveChanges": "Uložit změny",
     "sendPasswordResetEmail": "Odeslat e-mail pro obnovení hesla",
     "cancel": "Zrušit",
     "accountManagement": "Správa účtu",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Zkopírujte prosím záložní kódy ručně.",
     "nameRequired": "Je vyžadován název",
     "enterATokenNameFirst": "Nejprve zadejte název tokenu.",
-    "tokenCreated": "Token vytvořen",
     "copyTheTokenNowIt": "Zkopírujte token nyní. Zobrazí se pouze jednou.",
     "failedToCreateApiToken": "API token se nepodařilo vytvořit",
     "areYouSureYouWant2": "Opravdu chcete tomuto uživateli vypnout 2FA? Sníží se tím zabezpečení účtu.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Relace ukončena",
     "deviceSessionRevokedSuccessfully": "Relace zařízení byla úspěšně ukončena.",
     "failedToRevokeSession": "Relaci se nepodařilo ukončit",
-    "rolesUpdated": "Role aktualizovány",
-    "theUserSRolesWere": "Role uživatele byly uloženy.",
     "saveFailed": "Uložení se nezdařilo",
     "failedToSaveRoles": "Role se nepodařilo uložit.",
     "loadingRoles": "Načítání rolí",
@@ -3448,8 +3445,6 @@
     "remove": "Odebrat",
     "loadFailed": "Načtení se nezdařilo",
     "couldNotRetrieveRoleDetails": "Podrobnosti role se nepodařilo načíst.",
-    "roleUpdated": "Role aktualizována",
-    "wasSaved": "„{{name}}“ bylo uloženo.",
     "updateFailed": "Aktualizace se nezdařila",
     "anErrorOccurredWhileSaving": "Při ukládání došlo k chybě.",
     "loadingRole": "Načítání role...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Zpět na uživatele",
     "selfServiceSecurityControls": "Samoobslužné ovládání zabezpečení",
     "sessionDeviceControlsAndPersonal": "Správa relací a zařízení a osobní tokeny API jsou dostupné pouze při zobrazení vlastního uživatelského účtu.",
-    "securityRecommendations": "Doporučení k zabezpečení",
     "twoFactorAuthentication": "Dvoufázové ověření",
-    "activeAndProtectingThisAccount": "Aktivní a chrání tento účet",
-    "notEnabledHighlyRecommendedFor": "Nezapnuto – pro účty správců důrazně doporučeno",
-    "passwordProtected": "Chráněno heslem",
-    "accountHasASecurePassword": "Účet má bezpečné heslo",
-    "administratorAccess": "Přístup správce",
     "fullSystemAccess2faStrongly": "Plný přístup k systému – 2FA důrazně doporučeno",
     "personalApiTokens": "Osobní tokeny API",
     "tokenNameEGCi": "Název tokenu (např. CI deploy)",
     "days": "Dny",
     "createToken": "Vytvořit token",
-    "copyNowShownOnce": "Zkopírujte nyní (zobrazí se jen jednou)",
     "loadingApiTokens": "Načítání tokenů API...",
     "noApiTokensCreatedYet": "Zatím nebyly vytvořeny žádné tokeny API.",
     "revoke": "Odvolat",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktivita přihlášení a relací",
     "loadingAuthActivity": "Načítání aktivity ověřování...",
     "noRecentLoginSessionEvents": "Pro tohoto uživatele nejsou žádné nedávné události přihlášení či relací.",
-    "unknownTime": "Neznámý čas",
-    "activityEvent": "Událost aktivity",
     "openFullGlobalActivity": "Otevřít celou globální aktivitu",
-    "2faStatus": "Stav 2FA",
     "addAnExtraLayerOf": "Přidejte další vrstvu zabezpečení pomocí ověřovací aplikace (TOTP)",
-    "recommended": "Doporučeno",
     "enableTwoFactorAuthenticationTo": "Zapněte dvoufázové ověření a chraňte tento účet časově omezenými jednorázovými hesly (TOTP).",
     "enable2fa": "Zapnout 2FA",
     "step1ScanQrCode": "Krok 1: Naskenujte QR kód",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Krok 2: Ověřte kód",
     "enterThe6DigitCode": "Dokončete nastavení zadáním šestimístného kódu z ověřovací aplikace:",
     "verifyEnable": "Ověřit a zapnout",
-    "protectionActive": "Ochrana aktivní",
     "thisAccountRequiresA6": "Tento účet vyžaduje při přihlášení šestimístný kód z ověřovací aplikace.",
     "regenerateRecoveryCodes": "Znovu vygenerovat záložní kódy",
     "disable2fa": "Vypnout 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Odvolat ostatní relace",
     "loadingSessions": "Načítání relací...",
     "noActiveSessions": "Žádné aktivní relace.",
-    "currentSession": "Aktuální relace",
-    "deviceSession": "Relace zařízení",
     "current": "Aktuální",
     "unknownDevice": "Neznámé zařízení",
     "editAccount2": "Upravit účet",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Otevřít záznam uživatele",
     "token": "Token",
     "createdOn": "Vytvořeno {{date}}",
-    "notAvailable": "není k dispozici",
     "revokedOn": "Odvoláno {{date}}",
     "recoveryCodesRemaining": "Zbývající záložní kódy:",
-    "unknownValue": "neznámé",
     "expiresOn": "Platnost do: {{date}}",
     "person2": "Osoba",
     "added": "Přidáno",
@@ -3591,12 +3570,10 @@
       "loading": "Načítání polí osob…",
       "loadFailed": "Pole osob se nepodařilo načíst.",
       "saveFailed": "Pole se nepodařilo uložit.",
-      "saved": "Pole uložena.",
       "empty": "Zatím žádná pole osob. Přidejte pole a začněte ho uchovávat u každé osoby.",
       "noneDeclared": "Tento web zatím nemá žádná pole osob.",
       "declare": "Přidat pole osob",
       "manage": "Spravovat pole",
-      "save": "Uložit pole",
       "saveField": "Uložit pole",
       "delete": "Smazat",
       "deleteTitle": "Smazat toto pole?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Platnost (dny)",
+    "revokeOtherSessionsConfirm": "Všechna ostatní zařízení se ihned odhlásí.",
+    "revokeSessionConfirm": "Toto zařízení se ihned odhlásí.",
+    "revokeCurrentSessionConfirm": "Toto je zařízení, které právě používáte. Budete ihned odhlášeni.",
+    "revokeTokenConfirm": "„{{name}}“ okamžitě přestane fungovat.",
+    "twoFactorTurnedOff": "Dvoufázové přihlášení je pro tento web vypnuté, proto ho zde nelze nastavit.",
+    "openSecuritySettings": "Otevřít nastavení zabezpečení"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Nastavení webu ({{what}}) se nastavují v rámci každého webu – vyberte web z nabídky webů.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Tento web nelze otevřít v náhledu.",
     "couldNotLoadTheSite": "Web nelze načíst.",
     "couldNotReloadThePlugin": "Seznam pluginů nelze znovu načíst.",
-    "siteSaved": "Web uložen",
-    "routingFollowsImmediatelyNoRestart": "Směrování se projeví okamžitě — bez restartu.",
     "notSaved": "Neuloženo",
     "theSiteCouldNotBe2": "Web nelze uložit.",
     "couldNotOpenTheSite": "Web nelze otevřít",
@@ -3789,7 +3771,6 @@
     "visit": "Navštívit",
     "openThisSite": "Otevřít tento web",
     "export": "Exportovat",
-    "save": "Uložit",
     "couldNotLoadCertificates": "Certifikáty nelze načíst.",
     "couldNotSwitchThisHost": "Tohoto hostitele nelze přepnout na automatický režim.",
     "couldNotSwitchThisHost2": "Tohoto hostitele nelze přepnout na automatický režim (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "K dispozici je aktualizace",
     "isNowActive": "{{name}} je nyní aktivní.",
     "themeHasBeenUpdated2": "Šablona {{name}} byla aktualizována.",
-    "configurationSaved": "Konfigurace uložena",
-    "visualProtocolsUpdatedSuccessfully": "Vizuální protokoly byly úspěšně aktualizovány.",
     "saveFailed": "Uložení selhalo",
     "hasBeenRemoved2": "{{name}} byla odebrána.",
     "seedsExecuted": "Seedy spuštěny",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Rozvržení",
     "extensionsSection": "Rozšíření",
     "versionReady": "Verze {{version}} je připravena",
-    "saveChanges": "Uložit změny",
     "runSeedsHint": "Znovu načte výchozí data motivu – ukázkové stránky a obsah – do tohoto webu.",
     "resetThemeHint": "Vymaže uložená nastavení motivu tohoto webu a znovu načte výchozí data.",
     "notActiveHint": "Tento web používá jiný motiv.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Co se změnilo ve v{{version}}",
     "whatChanged": "Co se změnilo",
-    "closeBuildSourceDialog": "Zavřít dialog zdroje sestavení",
-    "close": "Zavřít",
     "couldNotInstallThatVersion": "Tuto verzi nelze nainstalovat.",
     "couldNotChangeAutomaticUpdating": "Automatické aktualizace nelze změnit.",
     "failed": "Selhalo",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatické certifikáty jsou vypnuté. {{reason}}",
     "automaticCertificatesComeFrom": "Automatické certifikáty vydává {{authority}}.",
     "noSecretKeyIsConfigured": "Na tomto serveru není nastaven SECRET_KEY, proto nelze uložit soukromý klíč. Nahrávání je vypnuté, dokud nebude nastaven.",
-    "nothingToSavePasteA": "Není co uložit — vložte token, nebo uložený odstraňte tlačítkem Vymazat.",
     "savedThisSiteNowUses": "Uloženo. Tento web nyní používá vlastní token Cloudflare.",
     "removedThisSiteFallsBack": "Odebráno. Tento web nyní používá token platformy.",
     "couldNotSaveTheToken": "Token se nepodařilo uložit.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token tohoto webu",
     "savedLeaveBlankToKeep": "Uloženo — ponechte prázdné pro zachování, nebo použijte Vymazat",
     "pasteACloudflareApiToken": "Vložte Cloudflare API token",
-    "save": "Uložit",
     "clear": "Vymazat",
     "nothingStoredThisHostCannot": "Nic není uloženo — tuto adresu nemůže platforma poskytovat přes HTTPS.",
     "nothingStoredHereTlsFor": "Nic zde není uloženo — TLS pro tohoto hostitele se ukončuje před platformou, takže jeho certifikát je tam.",
@@ -4706,36 +4680,26 @@
     "roles": "Role",
     "permissions": "Oprávnění",
     "eventDetails": "Podrobnosti události",
-    "context": "Kontext",
     "resource": "Prostředek",
     "system": "Systém",
     "timestamp": "Časové razítko",
-    "authority": "Oprávnění",
-    "actorId": "ID aktéra",
-    "type": "Typ",
-    "systemLog": "Systémový protokol",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Zpráva o aktivitě",
-    "actionTaken": "Provedená akce",
-    "resourcePool": "Skupina prostředků",
-    "rawMetadata": "Nezpracovaná metadata",
     "thisEntryIsPartOf": "Tento záznam je součástí neměnné auditní stopy.",
     "exportJson": "Exportovat JSON",
     "event": "Událost",
     "actor": "Aktér",
+    "plugin": "Zásuvný modul",
     "activity": "Aktivita",
     "status": "Stav",
     "action": "Akce",
     "time": "Čas",
-    "logSignature": "Podpis záznamu: {{id}}",
     "internal": "INTERNÍ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "VAROVÁNÍ",
-      "ERROR": "CHYBA",
-      "DEBUG": "LADĚNÍ",
-      "SYSTEM": "SYSTÉM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Varování",
+      "ERROR": "Chyba",
+      "DEBUG": "Ladění",
+      "SYSTEM": "Systém",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Záznam č. {{id}}",
+    "recordedData": "Zaznamenaná data"
   },
   "mediaPicker": {
     "showingOnly": "Zobrazeno pouze: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Úloha",
       "schedule": "Spouštění",
       "lastRun": "Poslední spuštění",
-      "nextRun": "Další spuštění"
+      "nextRun": "Další spuštění",
+      "duration": "Trvání"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

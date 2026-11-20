@@ -1,3 +1,6 @@
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -16,16 +19,6 @@ export class PluginOverviewDetails extends PureReactor {
   @prop declare onOpenSecurity: (() => void) | null;
   @prop declare theme: ThemeMode;
 
-  private row(label: string, value: ReactNode): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    return (
-      <div key={label} className="flex items-center justify-between gap-4 py-1.5 text-[13px]">
-        <span className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</span>
-        <span className={`text-end font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</span>
-      </div>
-    );
-  }
-
   render(): ReactNode {
     const { plugin, theme } = this;
     const manifest = plugin.manifest as typeof plugin.manifest & { ownerTenantId?: string };
@@ -33,16 +26,18 @@ export class PluginOverviewDetails extends PureReactor {
     const author = String((typeof manifest.author === 'object' ? manifest.author?.name : manifest.author) ?? '').trim();
     const capabilities = manifest.capabilities?.length ?? 0;
     const capabilityText = capabilities ? AdminI18n.t('plugins.detail.capabilitiesDeclared', { count: capabilities }) : AdminI18n.t('plugins.detail.none');
+    const facts = [
+      { key: 'version', label: AdminI18n.t('plugins.detail.version'), value: manifest.version },
+      ...(this.marketplaceVersion && this.marketplaceVersion !== manifest.version ? [{ key: 'available', label: AdminI18n.t('plugins.detail.availableVersion'), value: this.marketplaceVersion }] : []),
+      ...(owner ? [{ key: 'source', label: AdminI18n.t('plugins.detail.source'), value: AdminI18n.t('plugins.detail.uploadedBySite', { site: owner }) }] : []),
+      ...(!owner && author ? [{ key: 'author', label: AdminI18n.t('plugins.detail.author'), value: author }] : []),
+      ...(manifest.category ? [{ key: 'category', label: AdminI18n.t('plugins.detail.category'), value: manifest.category }] : []),
+      { key: 'capabilities', label: AdminI18n.t('plugins.detail.capabilities'), value: capabilityText },
+    ];
     return (
-      <DetailBox title={AdminI18n.t('plugins.detail.manifestDetails')} theme={theme}>
-        {this.row(AdminI18n.t('plugins.detail.version'), manifest.version)}
-        {this.marketplaceVersion && this.marketplaceVersion !== manifest.version ? this.row(AdminI18n.t('plugins.detail.availableVersion'), this.marketplaceVersion) : null}
-        {owner ? this.row(AdminI18n.t('plugins.detail.source'), AdminI18n.t('plugins.detail.uploadedBySite', { site: owner })) : null}
-        {!owner && author ? this.row(AdminI18n.t('plugins.detail.author'), author) : null}
-        {manifest.category ? this.row(AdminI18n.t('plugins.detail.category'), manifest.category) : null}
-        {this.row(AdminI18n.t('plugins.detail.capabilities'), capabilities && this.onOpenSecurity
-          ? <button type="button" onClick={this.onOpenSecurity} className="text-indigo-500 hover:underline">{capabilityText} ›</button>
-          : capabilityText)}
+      <DetailBox title={AdminI18n.t('plugins.detail.manifestDetails')} theme={theme}
+        action={capabilities && this.onOpenSecurity ? <Button variant={ButtonVariant.GHOST} onClick={this.onOpenSecurity}>{AdminI18n.t('plugins.detail.capabilities')}</Button> : undefined}>
+        <AdminFactGrid facts={facts as any} />
       </DetailBox>
     );
   }

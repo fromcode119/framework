@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminServices } from '@/lib/admin-services';
@@ -25,7 +24,7 @@ export class MediaShareFiles extends AdminComponent {
 
   private renderThumbnail(file: any): ReactNode {
     if (!String(file.mimeType || '').startsWith('image/') || this.failed[Number(file.id)]) {
-      return <FrameworkIcons.File size={12} className="text-slate-400" />;
+      return <FrameworkIcons.File size={12} />;
     }
 
     const src = AdminServices.getInstance().media.resolvePreviewUrl({
@@ -37,7 +36,6 @@ export class MediaShareFiles extends AdminComponent {
       <img
         src={src}
         alt=""
-        className="h-full w-full object-cover"
         onError={() => this.patch({ failed: { ...this.failed, [Number(file.id)]: true } })}
       />
     );
@@ -47,24 +45,12 @@ export class MediaShareFiles extends AdminComponent {
     const files: any[] = Array.isArray(this.files) ? this.files : [];
     if (!files.length) return null;
 
-    const dark = this.theme === ThemeMode.DARK;
-
     return (
-      <div className="mt-2.5 flex flex-wrap gap-2">
+      <div className="fc-chip-row">
         {files.map((file: any) => (
-          <span
-            key={file.id}
-            className={`inline-flex items-center gap-2 rounded-lg py-1 ps-1 pe-2.5 text-[12px] max-w-full ${
-              dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'
-            }`}
-            title={file.name}
-          >
-            <span className={`h-7 w-7 rounded-md overflow-hidden flex items-center justify-center flex-shrink-0 ${
-              dark ? 'bg-slate-900' : 'bg-white'
-            }`}>
-              {this.renderThumbnail(file)}
-            </span>
-            <span className="truncate">{file.name}</span>
+          <span key={file.id} className="fc-file-chip" title={file.name}>
+            <span className="fc-file-chip__picture">{this.renderThumbnail(file)}</span>
+            <span className="fc-file-chip__name">{file.name}</span>
           </span>
         ))}
       </div>

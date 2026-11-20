@@ -106,12 +106,14 @@ export class CollectionEditPageLifecycle {
           // The SAME normalized object seeds both, so a just-loaded record is byte-for-byte pristine and
           // the save bar reports no unsaved changes until something actually edits a value.
           const loaded = services.entityFormData.normalizeLoadedRecord(collection, entryData);
-          self.setState({ formData: loaded, pristineFormData: loaded });
+          self.setState({ formData: loaded, pristineFormData: loaded, loadFailed: false });
           if (entryData.slug) self.updateState('slugManuallyEdited', true);
           CollectionEditPageHandlers.fetchRevisions(self, 1);
           self.updateState('loading', false);
         })
-        .catch(() => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: AdminI18n.t('collection.edit.loadFailed') }, loading: false }); });
+        // A record that did not load is not a record: the page says so instead of drawing an empty form
+        // with a Save button under it.
+        .catch(() => { if (fresh()) self.setState({ loadFailed: true, loading: false }); });
     });
   }
 

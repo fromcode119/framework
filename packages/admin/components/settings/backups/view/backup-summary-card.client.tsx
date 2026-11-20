@@ -1,9 +1,9 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
-import { Card } from '@/components/ui/view/card.client';
+import { StatCard } from '@/components/ui/view/stat-card.client';
+import { Columns } from '@/components/ui/view/columns.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { prop } from '@fromcode119/react-class-components';
 import type { IBackupCatalogGroupView } from '@/components/settings/backups/interfaces/backup-catalog-group-view.interface';
@@ -16,69 +16,29 @@ export class BackupSummaryCard extends AdminComponent {
   @prop declare capabilities: ISystemBackupCapabilities;
 
   render(): ReactNode {
-    const groups = this.groups;
-    const capabilities = this.capabilities;
-    const theme = this.theme;
+    const { groups, capabilities } = this;
     const totalBackups = SystemBackupPageUtils.totalBackups(groups);
-    const totalBytes = SystemBackupPageUtils.totalBytes(groups);
     const latestBackup = SystemBackupPageUtils.getLatestBackup(groups);
-
+    // What this account may do with the archives, then the three figures of the inventory.
     return (
-    <Card>
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${theme === ThemeMode.DARK ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-              <FrameworkIcons.Database size={24} />
-            </div>
-            <div>
-              <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {AdminI18n.t('settings.components.backupInventory')}
-              </h2>
-              <p className="text-sm text-slate-500">
-                {AdminI18n.t('settings.components.reviewSystemSnapshotsPluginArchives')}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={capabilities.canManage ? 'success' : 'gray'}>
-              {capabilities.canManage ? AdminI18n.t('settings.components.createDeleteEnabled') : AdminI18n.t('settings.components.readOnly')}
-            </Badge>
-            <Badge variant={capabilities.canRestore ? 'warning' : 'gray'}>
-              {capabilities.canRestore ? AdminI18n.t('settings.components.restoreAuthorized') : AdminI18n.t('settings.components.restoreRestricted')}
-            </Badge>
-            <Badge variant={BadgeVariant.BLUE}>{AdminI18n.t('settings.components.itemsIndexed', { count: totalBackups })}</Badge>
-          </div>
+      <>
+        <div className="fc-chip-row fc-chip-row--cell">
+          <Badge variant={capabilities.canManage ? BadgeVariant.SUCCESS : BadgeVariant.GRAY}>
+            {capabilities.canManage ? AdminI18n.t('settings.components.createDeleteEnabled') : AdminI18n.t('settings.components.readOnly')}
+          </Badge>
+          <Badge variant={capabilities.canRestore ? BadgeVariant.WARNING : BadgeVariant.GRAY}>
+            {capabilities.canRestore ? AdminI18n.t('settings.components.restoreAuthorized') : AdminI18n.t('settings.components.restoreRestricted')}
+          </Badge>
         </div>
-
-        <div className="grid w-full gap-4 sm:grid-cols-3 lg:max-w-2xl">
-          <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.totalBackups')}</div>
-            <div className={`mt-3 text-3xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{totalBackups}</div>
-            <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.groupedInventoryAcrossManagedBackup')}</p>
-          </div>
-
-          <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.indexedSize')}</div>
-            <div className={`mt-3 text-3xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {SystemBackupPageUtils.formatBytes(totalBytes)}
-            </div>
-            <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.visibleArchiveSizeAcrossCurrent')}</p>
-          </div>
-
-          <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.latestSnapshot')}</div>
-            <div className={`mt-3 text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {latestBackup ? latestBackup.displayName : AdminI18n.t('settings.components.noSnapshotsYet')}
-            </div>
-            <p className="mt-2 text-xs text-slate-500">
-              {latestBackup ? SystemBackupPageUtils.formatTimestamp(latestBackup.modifiedAt) : AdminI18n.t('settings.components.createASystemBackupTo')}
-            </p>
-          </div>
-        </div>
-      </div>
-    </Card>
+        <Columns count={3}>
+          <StatCard title={AdminI18n.t('settings.components.totalBackups')} value={String(totalBackups)} icon={<FrameworkIcons.Database size={15} />}
+            note={AdminI18n.t('settings.components.groupedInventoryAcrossManagedBackup')} />
+          <StatCard title={AdminI18n.t('settings.components.indexedSize')} value={SystemBackupPageUtils.formatBytes(SystemBackupPageUtils.totalBytes(groups))} icon={<FrameworkIcons.Layers size={15} />}
+            note={AdminI18n.t('settings.components.visibleArchiveSizeAcrossCurrent')} />
+          <StatCard title={AdminI18n.t('settings.components.latestSnapshot')} value={latestBackup ? latestBackup.displayName : AdminI18n.t('settings.components.noSnapshotsYet')} icon={<FrameworkIcons.Clock size={15} />}
+            note={latestBackup ? SystemBackupPageUtils.formatTimestamp(latestBackup.modifiedAt) : AdminI18n.t('settings.components.createASystemBackupTo')} />
+        </Columns>
+      </>
     );
   }
 }

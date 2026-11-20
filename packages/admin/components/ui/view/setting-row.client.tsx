@@ -45,7 +45,8 @@ export class SettingRow extends PureReactor {
   private measure(): void {
     const line = this.descRef.current;
     if (!line) return;
-    const cut = line.scrollWidth > line.clientWidth + 1;
+    // One line with an ellipsis on a wide screen, two clamped lines on a phone: either way is cut.
+    const cut = line.scrollWidth > line.clientWidth + 1 || line.scrollHeight > line.clientHeight + 1;
     if (cut !== this.cut) this.cut = cut;
   }
 
@@ -90,7 +91,7 @@ export class SettingRow extends PureReactor {
         <div className={AdminClass.of('settings-row__text')}>
           <div className={AdminClass.of('settings-row__title')}>
             <h3>{this.title}</h3>
-            {help ? <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.toggleHelp} /> : null}
+            {help ? <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.toggleHelp} text={help} /> : null}
           </div>
           {this.description && !(this.cut && this.helpOpen)
             ? <p ref={this.descRef} className={`${AdminClass.of('settings-row__desc')} ${AdminClass.of('setting-desc')} ${AdminClass.of('settings-row__desc--clamp')}`}>{this.description}</p>

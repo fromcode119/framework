@@ -162,6 +162,7 @@
       "reorderHandle": "Húzza az átrendezéshez – vagy jelölje ki, és használja a nyílbillentyűket",
       "reorderEnable": "Az átrendezéshez jelenítse meg a listát a saját sorrendjében",
       "reorderFailed": "Az új sorrendet nem sikerült menteni",
+      "noMatch": "Semmi sem felel meg a keresésnek vagy a szűrőknek.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importálja a(z) {{file}} fájlt?",
@@ -234,7 +235,6 @@
       "editSection": "Szerkesztés",
       "notFilledIn": "Nincs kitöltve",
       "statusSection": "Állapot",
-      "statusConfirm": "Állapot módosítása erre: „{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Megjelenítés JSON-ként",
       "showForm": "Megjelenítés űrlapként",
@@ -245,7 +245,8 @@
       "copied": "Másolva",
       "more": "Továbbiak",
       "moreFields": "{{count}} mező",
-      "moreOneField": "{{count}} mező"
+      "moreOneField": "{{count}} mező",
+      "statusConfirm": "Állapot módosítása erre: „{{status}}”?"
     },
     "notFound": {
       "title": "A gyűjtemény nem található",
@@ -366,7 +367,8 @@
     "reset": "Visszaállítás",
     "notScheduledYet": "még nincs ütemezve",
     "more": "További műveletek",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Eltávolítás"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Szín kiválasztása",
-      "colour": "Szín",
-      "pick": "Válasszon színt",
       "hex": "Hexkód",
-      "confirm": "Szín megerősítése",
       "notSet": "Nincs beállítva"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Inaktív függőségek észlelve",
       "intro": "A(z) {{plugin}} engedélyezéséhez a következőket kell rendezni:",
       "notInstalled": "NINCS TELEPÍTVE",
+      "inactive": "kikapcsolva",
+      "incompatible": "eltérő verzió",
       "requires": "{{version}} verzió szükséges. Letölthetjük a piactérről.",
       "needsActivation": "Már telepítve van, de aktiválni kell ({{version}} verzió).",
       "mismatch": "Verzióeltérés: {{expected}} szükséges, {{actual}} található.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Platform előnézet",
-      "image": "{{number}}. előnézet"
+      "image": "{{number}}. előnézet",
+      "previous": "Előző",
+      "next": "Következő"
     },
     "menuField": {
       "newItem": "Új menüpont",
-      "structure": "Menüszerkezet",
-      "add": "Menüpont hozzáadása"
+      "add": "Menüpont hozzáadása",
+      "reorder": "Húzással mozgathatja; nyilak: fel és le mozgat, jobbra beágyaz, balra kiemel"
     },
     "field": {
       "notSet": "Nincs beállítva",
@@ -461,8 +464,8 @@
       "record": "rekord"
     },
     "array": {
-      "addNew": "Új {{label}} hozzáadása",
-      "item": "Elem"
+      "add": "Hozzáadás",
+      "reorder": "Húzással mozgathatja, vagy használja a nyílbillentyűket"
     },
     "stepper": {
       "increment": "Növelés",
@@ -528,9 +531,7 @@
       "noContact": "Nincs e-mail-cím vagy telefonszám a Személyekben",
       "hasLogin": "Van bejelentkezése",
       "noLogin": "Nincs bejelentkezése",
-      "source": "A név, az e-mail-cím és a telefonszám a Személyek #{{id}} rekordjából származik; ott módosíthatja őket.",
       "open": "Megnyitás a Személyekben",
-      "choose": "Másik személy kiválasztása",
       "searchFailed": "A Személyekben jelenleg nem lehet keresni.",
       "noMatch": "Nincs egyező személy a Személyekben. Adja meg az adatait alább; mentéskor bekerül a Személyek közé.",
       "ref": "Személyek #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Webhelyek megnyitása"
       }
     },
-    "relativeOverridesInheritTheCollection": "A relatív felülbírálások öröklik a gyűjtemény előtagját. Kapcsolja be az abszolút módot az olyan előtagok megkerüléséhez, mint a `/shop`.",
     "range": "Időszak",
     "noDataForThisRange": "Nincs adat erre az időszakra",
     "peak": "· csúcs: {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Szűrők",
       "clearFilters": "Összes törlése",
       "removeFilter": "A(z) {{label}} szűrő eltávolítása",
-      "showResults": "{{count}} találat megjelenítése"
+      "showResults": "{{count}} találat megjelenítése",
+      "showResultsOne": "1 találat megjelenítése"
     },
     "personFieldPicker": {
       "none": "Nincs személymezőbe mentve",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "A(z) {{name}} sandbox-korlátai mentésre kerültek, de a folyamata nem tudott újraindulni ezekkel: {{value}}",
       "restartRequired": "Újraindítás szükséges",
       "sandboxSettingsForWereSaved": "A(z) {{name}} sandbox-beállításai mentésre kerültek, de érvénybe lépésükhöz az API újraindítása szükséges.",
-      "resourcesUpdated": "Erőforrások frissítve",
-      "sandboxLimitsForUpdated": "A(z) {{name}} sandbox-korlátai frissítve.",
       "sandboxDisabledFor": "A sandbox letiltva a következőnél: {{name}}.",
       "saveFailed": "A mentés sikertelen",
       "failedToUpdateSandboxLimits": "Nem sikerült frissíteni a sandbox-korlátokat.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Tétlen. Nincs friss esemény rögzítve.",
       "updating": "Frissítés...",
       "updateAvailable": "Frissítés érhető el",
-      "updatePolicy": "Frissítési szabályzat",
       "saveChanges": "Módosítások mentése",
       "unsavedChanges": "Nem mentett módosítások",
       "exportSettingsAsJson": "Beállítások exportálása JSON-ként",
@@ -1185,7 +1183,6 @@
       "newIn": "Újdonságok a v{{version}} verzióban",
       "installedVersion": "Telepítve: {{version}}",
       "marketplaceVersion": "Piactér: {{version}}",
-      "saving": "Mentés...",
       "saveSettings": "Beállítások mentése",
       "viewDefinition": "Definíció megtekintése",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Megjelenés",
       "failedToLoadAppearances": "Nem sikerült betölteni a megjelenéseket",
       "failedToSaveShadowSetting": "Nem sikerült menteni az árnyékbeállítást",
+      "failedToSaveMenuSetting": "A menübeállítás mentése nem sikerült",
       "switchedToReloading": "Átváltva erre: „{{slug}}”. Újratöltés…",
       "failedToSwitchAppearance": "Nem sikerült megjelenést váltani",
       "installFailed": "A telepítés sikertelen",
@@ -1919,6 +1917,8 @@
       "install": "Telepítés",
       "surfaceShadows": "Felületi árnyékok",
       "depthOnPanelsDialogsAnd": "Mélységhatás a paneleken, párbeszédablakokon és gombokon. Kapcsolja ki a lapos adminfelülethez — a szegélyek és sarkok változatlanok maradnak.",
+      "secondMenuColumn": "Második menüoszlop",
+      "sectionPagesBesideTheMenu": "Egy szakasz oldalai a menü melletti oszlopban állnak. Kikapcsolva a saját soruk alatt nyílnak meg az egyetlen menüben, és minden képernyő 220px-szel szélesebb lesz.",
       "installFromAPackageUrl": "Telepítés csomag-URL-ről",
       "builtIn": "Beépített",
       "installed": "Telepítve",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Az IP-helyadatbázis nem frissült",
       "geoUnavailable": "Az IP-helymeghatározás állapota nem érhető el",
       "geoAttribution": "IP-geolokáció: {{name}} ({{license}}). Bekapcsolt állapotban havonta frissül.",
-      "geoSaved": "Mentve",
-      "geoSavedOn": "Az adatbázis letöltése folyamatban; mérete körülbelül 60 MB.",
-      "geoSavedOff": "Az adatbázis törölve lett a szerverről.",
       "everyPluginRunsIsolated": "Elkülönítve: minden bővítmény saját folyamatban fut. A memóriakorlát és az időkorlát minden bővítményre vonatkozik; a CPU-részesedés, a teljes memória, a lemez és a folyamatok korlátja csak a webhelyek által feltöltött bővítményekre.",
       "schemaOrphans": "Adatbázisséma",
       "schemaOrphansHelp": "Olyan oszlopok, amelyek még megvannak az adatbázisban, de már semmi sem deklarálja őket. A platform csak listázza őket; semmi sem törlődik, amíg Ön nem dönt, és a törölt oszlop nem állítható vissza.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Letiltva — a végpont mindenkinek 403-mal válaszol.",
       "mediaPayloadLimitMb": "Médiaadat-korlát (MB)",
       "maximumDecodedUploadOrRemote": "Az MCP médiaeszközök által elfogadott dekódolt feltöltés vagy távoli letöltés maximális mérete.",
-      "saveLimit": "Korlát mentése",
       "allSites": "összes webhely",
       "issuedBeforeSites": "a webhelyek előtt kiadva",
       "noTokensYet": "Még nincsenek tokenek.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platform alapértelmezése",
       "thisSite": "Ez a webhely",
       "inForceNow": "Jelenleg érvényes",
-      "saving": "Mentés…",
-      "savePolicy": "Szabályzat mentése",
       "thePlatformDefaultIsSet": "A platform alapértelmezését platformadminisztrátor állítja be.",
       "useTheLayerBelow": "Az alatta lévő szint használata",
       "whyTheLawRequiresThese": "Miért írja elő a jogszabály ezen nyilvántartások megőrzését",
-      "inheritsThePlatformDefault": "örökölt: a platform alapértelmezése"
+      "inheritsThePlatformDefault": "örökölt: a platform alapértelmezése",
+      "strategyDelete": "Törlés",
+      "strategyAnonymise": "Anonimizálás",
+      "strategyRetain": "Megőrzés",
+      "declaredBy": "A(z) {{plugin}} által megadott alapértelmezés",
+      "inheritsValue": "örökli: {{value}}",
+      "legalBasis": "Jogalap",
+      "theSiteColumnIsSet": "Az „Ez a webhely” oszlop egy webhelyen belül állítható. A módosításhoz válasszon webhelyet a váltóban."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Megjelenített név",
     "thisPersonHasALogin": "Ennek a személynek van bejelentkezési fiókja; az e-mail-címe a fiókban módosítható.",
     "birthDate": "Születési dátum",
-    "saveChanges": "Módosítások mentése",
     "sendPasswordResetEmail": "Jelszó-visszaállító e-mail küldése",
     "cancel": "Mégse",
     "accountManagement": "Fiókkezelés",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Másolja ki kézzel a helyreállítási kódokat.",
     "nameRequired": "A név megadása kötelező",
     "enterATokenNameFirst": "Először adja meg a token nevét.",
-    "tokenCreated": "Token létrehozva",
     "copyTheTokenNowIt": "Másolja ki most a tokent. Csak egyszer jelenik meg.",
     "failedToCreateApiToken": "Nem sikerült létrehozni az API-tokent",
     "areYouSureYouWant2": "Biztosan letiltja a kétlépcsős azonosítást ennél a felhasználónál? Ez csökkenti a fiók biztonságát.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Munkamenet visszavonva",
     "deviceSessionRevokedSuccessfully": "Az eszköz munkamenete sikeresen visszavonva.",
     "failedToRevokeSession": "Nem sikerült visszavonni a munkamenetet",
-    "rolesUpdated": "Szerepkörök frissítve",
-    "theUserSRolesWere": "A felhasználó szerepkörei mentve.",
     "saveFailed": "A mentés nem sikerült",
     "failedToSaveRoles": "Nem sikerült menteni a szerepköröket.",
     "loadingRoles": "Szerepkörök betöltése",
@@ -3448,8 +3445,6 @@
     "remove": "Eltávolítás",
     "loadFailed": "A betöltés nem sikerült",
     "couldNotRetrieveRoleDetails": "Nem sikerült lekérni a szerepkör adatait.",
-    "roleUpdated": "Szerepkör frissítve",
-    "wasSaved": "„{{name}}” mentve.",
     "updateFailed": "A frissítés nem sikerült",
     "anErrorOccurredWhileSaving": "Hiba történt mentés közben.",
     "loadingRole": "Szerepkör betöltése...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Vissza a felhasználókhoz",
     "selfServiceSecurityControls": "Önkiszolgáló biztonsági beállítások",
     "sessionDeviceControlsAndPersonal": "A munkamenet- és eszközkezelés, valamint a személyes API-tokenek csak a saját felhasználói fiók megtekintésekor érhetők el.",
-    "securityRecommendations": "Biztonsági javaslatok",
     "twoFactorAuthentication": "Kétlépcsős azonosítás",
-    "activeAndProtectingThisAccount": "Aktív, és védi ezt a fiókot",
-    "notEnabledHighlyRecommendedFor": "Nincs bekapcsolva – rendszergazdai fiókokhoz erősen ajánlott",
-    "passwordProtected": "Jelszóval védett",
-    "accountHasASecurePassword": "A fiók biztonságos jelszóval rendelkezik",
-    "administratorAccess": "Rendszergazdai hozzáférés",
     "fullSystemAccess2faStrongly": "Teljes rendszerhozzáférés – a kétlépcsős azonosítás erősen ajánlott",
     "personalApiTokens": "Személyes API-tokenek",
     "tokenNameEGCi": "Token neve (pl. CI telepítés)",
     "days": "Nap",
     "createToken": "Token létrehozása",
-    "copyNowShownOnce": "Másolja most (csak egyszer jelenik meg)",
     "loadingApiTokens": "API-tokenek betöltése...",
     "noApiTokensCreatedYet": "Még nincs létrehozott API-token.",
     "revoke": "Visszavonás",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Bejelentkezési és munkamenet-tevékenység",
     "loadingAuthActivity": "Hitelesítési tevékenység betöltése...",
     "noRecentLoginSessionEvents": "Ennek a felhasználónak nincsenek friss bejelentkezési vagy munkamenet-eseményei.",
-    "unknownTime": "Ismeretlen időpont",
-    "activityEvent": "Tevékenységesemény",
     "openFullGlobalActivity": "Teljes globális tevékenység megnyitása",
-    "2faStatus": "Kétlépcsős azonosítás állapota",
     "addAnExtraLayerOf": "Extra biztonsági szint hitelesítőalkalmazással (TOTP)",
-    "recommended": "Ajánlott",
     "enableTwoFactorAuthenticationTo": "Kapcsolja be a kétlépcsős azonosítást, hogy a fiókot időalapú egyszer használatos jelszavak (TOTP) védjék.",
     "enable2fa": "Kétlépcsős azonosítás bekapcsolása",
     "step1ScanQrCode": "1. lépés: QR-kód beolvasása",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "2. lépés: Kód ellenőrzése",
     "enterThe6DigitCode": "A beállítás befejezéséhez adja meg a hitelesítőalkalmazás 6 jegyű kódját:",
     "verifyEnable": "Ellenőrzés és bekapcsolás",
-    "protectionActive": "Védelem aktív",
     "thisAccountRequiresA6": "Ehhez a fiókhoz bejelentkezéskor egy hitelesítőalkalmazás 6 jegyű kódja szükséges.",
     "regenerateRecoveryCodes": "Helyreállítási kódok újragenerálása",
     "disable2fa": "Kétlépcsős azonosítás kikapcsolása",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Többi munkamenet visszavonása",
     "loadingSessions": "Munkamenetek betöltése...",
     "noActiveSessions": "Nincsenek aktív munkamenetek.",
-    "currentSession": "Jelenlegi munkamenet",
-    "deviceSession": "Eszközmunkamenet",
     "current": "Jelenlegi",
     "unknownDevice": "Ismeretlen eszköz",
     "editAccount2": "Fiók szerkesztése",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Felhasználói rekord megnyitása",
     "token": "Token",
     "createdOn": "Létrehozva: {{date}}",
-    "notAvailable": "n/a",
     "revokedOn": "Visszavonva: {{date}}",
     "recoveryCodesRemaining": "Fennmaradó helyreállítási kódok:",
-    "unknownValue": "ismeretlen",
     "expiresOn": "Lejár: {{date}}",
     "person2": "Személy",
     "added": "Hozzáadva",
@@ -3591,12 +3570,10 @@
       "loading": "Személymezők betöltése…",
       "loadFailed": "A személymezőket nem sikerült betölteni.",
       "saveFailed": "A mezőket nem sikerült menteni.",
-      "saved": "Mezők mentve.",
       "empty": "Még nincsenek személymezők. Adjon hozzá egyet, hogy minden személynél tárolja.",
       "noneDeclared": "Ezen a webhelyen még nincsenek személymezők.",
       "declare": "Személymezők hozzáadása",
       "manage": "Mezők kezelése",
-      "save": "Mezők mentése",
       "saveField": "Mező mentése",
       "delete": "Törlés",
       "deleteTitle": "Törli ezt a mezőt?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Érvényes (nap)",
+    "revokeOtherSessionsConfirm": "Minden más eszköz azonnal kijelentkezik.",
+    "revokeSessionConfirm": "Az eszköz azonnal kijelentkezik.",
+    "revokeCurrentSessionConfirm": "Ezt az eszközt használja most. Azonnal kijelentkezik.",
+    "revokeTokenConfirm": "A(z) „{{name}}” azonnal leáll.",
+    "twoFactorTurnedOff": "A kétlépcsős bejelentkezés ki van kapcsolva ezen az oldalon, ezért itt nem állítható be.",
+    "openSecuritySettings": "Biztonsági beállítások megnyitása"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "A webhelybeállítások ({{what}}) az egyes webhelyeken belül adhatók meg — válasszon egyet a webhely menüből.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Ezt a webhelyet nem sikerült megnyitni előnézetre.",
     "couldNotLoadTheSite": "Nem sikerült betölteni a webhelyet.",
     "couldNotReloadThePlugin": "Nem sikerült újratölteni a bővítménylistát.",
-    "siteSaved": "Webhely mentve",
-    "routingFollowsImmediatelyNoRestart": "Az útválasztás azonnal frissül — nincs szükség újraindításra.",
     "notSaved": "Nincs mentve",
     "theSiteCouldNotBe2": "Nem sikerült menteni a webhelyet.",
     "couldNotOpenTheSite": "Nem sikerült megnyitni a webhelyet",
@@ -3789,7 +3771,6 @@
     "visit": "Megtekintés",
     "openThisSite": "Webhely megnyitása",
     "export": "Exportálás",
-    "save": "Mentés",
     "couldNotLoadCertificates": "Nem sikerült betölteni a tanúsítványokat.",
     "couldNotSwitchThisHost": "Nem sikerült automatikusra váltani ezt a hosztot.",
     "couldNotSwitchThisHost2": "Nem sikerült automatikusra (helyettesítő karakteres) váltani ezt a hosztot.",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Frissítés érhető el",
     "isNowActive": "A(z) {{name}} mostantól aktív.",
     "themeHasBeenUpdated2": "A(z) {{name}} téma frissítve.",
-    "configurationSaved": "Konfiguráció mentve",
-    "visualProtocolsUpdatedSuccessfully": "A vizuális protokollok sikeresen frissítve.",
     "saveFailed": "A mentés sikertelen",
     "hasBeenRemoved2": "A(z) {{name}} eltávolítva.",
     "seedsExecuted": "Kezdőadatok betöltve",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Elrendezés",
     "extensionsSection": "Bővítmények",
     "versionReady": "A(z) {{version}} verzió elérhető",
-    "saveChanges": "Módosítások mentése",
     "runSeedsHint": "Újra betölti a téma kezdőadatait – mintaoldalait és tartalmát – erre a webhelyre.",
     "resetThemeHint": "Törli a webhely mentett témabeállításait, és újra betölti a kezdőadatokat.",
     "notActiveHint": "Ez a webhely másik témát használ.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "A v{{version}} változásai",
     "whatChanged": "Változások",
-    "closeBuildSourceDialog": "Buildforrás párbeszédablak bezárása",
-    "close": "Bezárás",
     "couldNotInstallThatVersion": "Nem sikerült telepíteni ezt a verziót.",
     "couldNotChangeAutomaticUpdating": "Nem sikerült módosítani az automatikus frissítést.",
     "failed": "Sikertelen",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Az automatikus tanúsítványok ki vannak kapcsolva. {{reason}}",
     "automaticCertificatesComeFrom": "Az automatikus tanúsítványokat a(z) {{authority}} adja ki.",
     "noSecretKeyIsConfigured": "Ezen a szerveren nincs beállítva SECRET_KEY, így titkos kulcs nem tárolható. A feltöltés a beállításáig le van tiltva.",
-    "nothingToSavePasteA": "Nincs mit menteni — illesszen be egy tokent, vagy a mentett eltávolításához használja a Törlés gombot.",
     "savedThisSiteNowUses": "Mentve. A webhely mostantól saját Cloudflare tokent használ.",
     "removedThisSiteFallsBack": "Eltávolítva. A webhely a platform tokenjét használja.",
     "couldNotSaveTheToken": "Nem sikerült menteni a tokent.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "A webhely tokenje",
     "savedLeaveBlankToKeep": "Mentve — hagyja üresen a megtartáshoz, vagy törölje a Törlés gombbal",
     "pasteACloudflareApiToken": "Illesszen be egy Cloudflare API-tokent",
-    "save": "Mentés",
     "clear": "Törlés",
     "nothingStoredThisHostCannot": "Nincs tárolt tanúsítvány — ezt a gazdagépet a platform nem tudja HTTPS-en kiszolgálni.",
     "nothingStoredHereTlsFor": "Itt nincs tárolt tanúsítvány — a gazdagép TLS-lezárása a platform előtt történik, így a tanúsítvány is ott található.",
@@ -4706,36 +4680,26 @@
     "roles": "Szerepkörök",
     "permissions": "Jogosultságok",
     "eventDetails": "Esemény részletei",
-    "context": "Környezet",
     "resource": "Erőforrás",
     "system": "Rendszer",
     "timestamp": "Időbélyeg",
-    "authority": "Jogosultság",
-    "actorId": "Végrehajtó azonosítója",
-    "type": "Típus",
-    "systemLog": "Rendszernapló",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Tevékenység üzenete",
-    "actionTaken": "Végrehajtott művelet",
-    "resourcePool": "Erőforráskészlet",
-    "rawMetadata": "Nyers metaadatok",
     "thisEntryIsPartOf": "Ez a bejegyzés egy megváltoztathatatlan auditnapló része.",
     "exportJson": "Exportálás JSON-ként",
     "event": "Esemény",
     "actor": "Végrehajtó",
+    "plugin": "Bővítmény",
     "activity": "Tevékenység",
     "status": "Állapot",
     "action": "Művelet",
     "time": "Idő",
-    "logSignature": "Naplóaláírás: {{id}}",
     "internal": "BELSŐ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "FIGYELMEZTETÉS",
-      "ERROR": "HIBA",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "RENDSZER",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Figyelmeztetés",
+      "ERROR": "Hiba",
+      "DEBUG": "Debug",
+      "SYSTEM": "Rendszer",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "#{{id}} bejegyzés",
+    "recordedData": "Rögzített adatok"
   },
   "mediaPicker": {
     "showingOnly": "Csak ezek láthatók: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Feladat",
       "schedule": "Futás",
       "lastRun": "Utolsó futás",
-      "nextRun": "Következő futás"
+      "nextRun": "Következő futás",
+      "duration": "Időtartam"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

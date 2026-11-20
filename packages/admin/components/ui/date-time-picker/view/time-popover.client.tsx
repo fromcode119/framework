@@ -4,7 +4,7 @@ import { TimePart } from '@/components/ui/date-time-picker/enums/time-part.enum'
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { RootFramework } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { TimeOfDayUtils } from '@/components/ui/date-time-picker/time-of-day-utils';
@@ -37,56 +37,33 @@ export class DateTimePickerTimePopover extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, coords, popoverRef, minuteStep, onClear, onClose } = this;
-    const dark = theme === ThemeMode.DARK;
+    const { coords, popoverRef, minuteStep, onClear, onClose } = this;
     const parts = TimeOfDayUtils.parse(this.value);
 
     return (
       <RootFramework>
         <div
           ref={popoverRef}
-          style={{ position: 'fixed', top: coords.top, left: coords.left, width: 'min(260px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', zIndex: 9999 }}
-          className={`fc-menu-sheet border p-2 shadow-lg ${
-            dark
-              ? 'bg-slate-900 border-slate-800 shadow-black/40'
-              : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
-          }`}
+          style={{ position: 'fixed', top: coords.top, left: coords.left, width: 'min(300px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', overflowX: 'hidden', zIndex: 9999 }}
+          className="fc-menu-sheet p-2"
         >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 text-[color:var(--fc-text-muted)]">
-                <FrameworkIcons.Clock size={15} />
-              </span>
-              <span className="fc-cal__sum-value">{AdminI18n.t('ui.date.time')}</span>
-            </div>
-
+          <div className="flex items-center justify-center">
             <div className="flex shrink-0 items-end gap-1.5">
-              <div className="flex w-[68px] flex-col gap-0.5">
+              <div className="fc-cal__time-cell">
                 <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
-              <span className="pb-1.5 text-[13px] font-medium text-[color:var(--fc-text-muted)]">:</span>
-              <div className="flex w-[68px] flex-col gap-0.5">
+              <span className="pb-1.5 fc-size-sm font-medium fc-tone-muted">:</span>
+              <div className="fc-cal__time-cell">
                 <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />
               </div>
             </div>
           </div>
 
-          <div className="mt-2 flex flex-col gap-2 border-t border-[color:var(--fc-border)] pt-2">
-            <button
-              type="button"
-              onClick={onClear}
-              className="fc-btn self-start"
-            >
-              {AdminI18n.t('ui.date.clear')}
-            </button>
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              size={FieldSize.MD}
-              className="w-full"
-              onClick={onClose}
-            >
+          <div className="fc-cal__foot">
+            <button type="button" onClick={onClear} className="fc-btn">{AdminI18n.t('ui.date.clear')}</button>
+            <Button variant={ButtonVariant.PRIMARY} size={FieldSize.SM} className="fc-cal__apply" onClick={onClose}>
               {AdminI18n.t('ui.date.done')}
             </Button>
           </div>

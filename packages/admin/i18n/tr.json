@@ -162,6 +162,7 @@
       "reorderHandle": "Yeniden sıralamak için sürükleyin ya da odaklanıp ok tuşlarını kullanın",
       "reorderEnable": "Yeniden sıralamak için listeyi kendi sırasıyla gösterin",
       "reorderFailed": "Yeni sıralama kaydedilemedi",
+      "noMatch": "Aramanız veya filtrelerinizle eşleşen bir şey yok.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "{{file}} içe aktarılsın mı?",
@@ -234,7 +235,6 @@
       "editSection": "Düzenle",
       "notFilledIn": "Doldurulmadı",
       "statusSection": "Durum",
-      "statusConfirm": "Durum “{{status}}” olarak değiştirilsin mi?",
       "recordSection": "Kayıt",
       "showJson": "JSON olarak göster",
       "showForm": "Form olarak göster",
@@ -245,7 +245,8 @@
       "copied": "Kopyalandı",
       "more": "Daha fazla",
       "moreFields": "{{count}} alan",
-      "moreOneField": "{{count}} alan"
+      "moreOneField": "{{count}} alan",
+      "statusConfirm": "Durum “{{status}}” olarak değiştirilsin mi?"
     },
     "notFound": {
       "title": "Koleksiyon Bulunamadı",
@@ -366,7 +367,8 @@
     "reset": "Sıfırla",
     "notScheduledYet": "henüz zamanlanmadı",
     "more": "Diğer işlemler",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Kaldır"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Renk seçin",
-      "colour": "Renk",
-      "pick": "Bir renk seçin",
       "hex": "Hex Kodu",
-      "confirm": "Rengi Onayla",
       "notSet": "Ayarlanmadı"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Etkin Olmayan Bağımlılıklar Algılandı",
       "intro": "{{plugin}} eklentisini etkinleştirmek için şunların halledilmesi gerekiyor:",
       "notInstalled": "YÜKLÜ DEĞİL",
+      "inactive": "kapalı",
+      "incompatible": "farklı sürüm",
       "requires": "{{version}} sürümü gerekiyor. Bunu marketten indirebiliriz.",
       "needsActivation": "Zaten yüklü ancak etkinleştirilmesi gerekiyor (Sürüm {{version}}).",
       "mismatch": "Sürüm uyuşmazlığı: {{expected}} gerekiyor, {{actual}} bulundu.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Platform Önizlemesi",
-      "image": "Önizleme {{number}}"
+      "image": "Önizleme {{number}}",
+      "previous": "Önceki",
+      "next": "Sonraki"
     },
     "menuField": {
       "newItem": "Yeni Menü Öğesi",
-      "structure": "Menü Yapısı",
-      "add": "Menü Öğesi Ekle"
+      "add": "Menü Öğesi Ekle",
+      "reorder": "Taşımak için sürükleyin; ok tuşları: yukarı ve aşağı taşır, sağ iç içe koyar, sol dışarı alır"
     },
     "field": {
       "notSet": "Ayarlanmadı",
@@ -461,8 +464,8 @@
       "record": "kayıt"
     },
     "array": {
-      "addNew": "Yeni {{label}} Ekle",
-      "item": "Öğe"
+      "add": "Ekle",
+      "reorder": "Taşımak için sürükleyin veya ok tuşlarını kullanın"
     },
     "stepper": {
       "increment": "Artır",
@@ -528,9 +531,7 @@
       "noContact": "Kişiler'de e-posta veya telefon yok",
       "hasLogin": "Oturum açma hesabı var",
       "noLogin": "Oturum açma hesabı yok",
-      "source": "Ad, e-posta ve telefon Kişiler #{{id}} kaydından gelir; bunları orada değiştirin.",
       "open": "Kişiler'de aç",
-      "choose": "Başka birini seçin",
       "searchFailed": "Kişiler şu anda aranamadı.",
       "noMatch": "Kişiler'de eşleşen kimse yok. Bilgilerini aşağıya girin; kaydettiğinizde Kişiler'e eklenir.",
       "ref": "Kişiler #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Siteleri Aç"
       }
     },
-    "relativeOverridesInheritTheCollection": "Göreli geçersiz kılmalar koleksiyon önekini devralır. `/shop` gibi önekleri atlamak için mutlak modu etkinleştirin.",
     "range": "Aralık",
     "noDataForThisRange": "Bu aralık için veri yok",
     "peak": "· en yüksek {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtreler",
       "clearFilters": "Tümünü temizle",
       "removeFilter": "{{label}} filtresini kaldır",
-      "showResults": "{{count}} sonucu göster"
+      "showResults": "{{count}} sonucu göster",
+      "showResultsOne": "1 sonucu göster"
     },
     "personFieldPicker": {
       "none": "Bir kişi alanına kaydedilmez",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} için korumalı alan sınırları kaydedildi, ancak işlem bu sınırlarla yeniden başlatılamadı: {{value}}",
       "restartRequired": "Yeniden Başlatma Gerekli",
       "sandboxSettingsForWereSaved": "{{name}} için korumalı alan ayarları kaydedildi, ancak geçerli olmaları için API'nin yeniden başlatılması gerekiyor.",
-      "resourcesUpdated": "Kaynaklar Güncellendi",
-      "sandboxLimitsForUpdated": "{{name}} için korumalı alan sınırları güncellendi.",
       "sandboxDisabledFor": "{{name}} için korumalı alan devre dışı bırakıldı.",
       "saveFailed": "Kaydetme Başarısız",
       "failedToUpdateSandboxLimits": "Korumalı alan sınırları güncellenemedi.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Boşta. Yakın zamanda kaydedilmiş olay yok.",
       "updating": "Güncelleniyor...",
       "updateAvailable": "Güncelleme Mevcut",
-      "updatePolicy": "Güncelleme İlkesi",
       "saveChanges": "Değişiklikleri Kaydet",
       "unsavedChanges": "Kaydedilmemiş değişiklikler",
       "exportSettingsAsJson": "Ayarları JSON olarak dışa aktar",
@@ -1185,7 +1183,6 @@
       "newIn": "v{{version}} sürümünde yeni",
       "installedVersion": "Yüklü {{version}}",
       "marketplaceVersion": "Mağaza {{version}}",
-      "saving": "Kaydediliyor...",
       "saveSettings": "Ayarları Kaydet",
       "viewDefinition": "Tanımı Görüntüle",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Görünüm",
       "failedToLoadAppearances": "Görünümler yüklenemedi",
       "failedToSaveShadowSetting": "Gölge ayarı kaydedilemedi",
+      "failedToSaveMenuSetting": "Menü ayarı kaydedilemedi",
       "switchedToReloading": "\"{{slug}}\" görünümüne geçildi. Yeniden yükleniyor…",
       "failedToSwitchAppearance": "Görünüm değiştirilemedi",
       "installFailed": "Kurulum başarısız",
@@ -1919,6 +1917,8 @@
       "install": "Kur",
       "surfaceShadows": "Yüzey gölgeleri",
       "depthOnPanelsDialogsAnd": "Paneller, iletişim kutuları ve düğmelerde derinlik. Düz bir yönetim paneli için kapatın — kenarlıklar ve köşeler olduğu gibi kalır.",
+      "secondMenuColumn": "İkinci menü sütunu",
+      "sectionPagesBesideTheMenu": "Bir bölümün sayfaları menünün yanındaki sütunda durur. Kapatıldığında tek menüde kendi satırlarının altında açılır ve her ekran 220px genişler.",
       "installFromAPackageUrl": "Paket URL'sinden kur",
       "builtIn": "Yerleşik",
       "installed": "Kurulu",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP konumu güncellenemedi",
       "geoUnavailable": "IP konumu durumu kullanılamıyor",
       "geoAttribution": "IP coğrafi konumu: {{name}} ({{license}}). Açık olduğu sürece her ay güncellenir.",
-      "geoSaved": "Kaydedildi",
-      "geoSavedOn": "Veritabanı şimdi indiriliyor; yaklaşık 60 MB boyutunda.",
-      "geoSavedOff": "Veritabanı sunucudan kaldırıldı.",
       "everyPluginRunsIsolated": "Yalıtılmış: her eklenti kendi sürecinde çalışır. Bellek üst sınırı ve süre sınırı tüm eklentilere uygulanır; CPU payı, toplam bellek, disk ve süreç sınırları yalnızca bir sitenin yüklediği eklentilere uygulanır.",
       "schemaOrphans": "Veritabanı şeması",
       "schemaOrphansHelp": "Veritabanında hâlâ bulunan ancak artık hiçbir şeyin tanımlamadığı sütunlar. Platform bunları yalnızca listeler; siz karar verene kadar hiçbiri silinmez ve silinen bir sütun geri yüklenemez.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Devre dışı — uç nokta herkese 403 yanıtı verir.",
       "mediaPayloadLimitMb": "Medya veri sınırı (MB)",
       "maximumDecodedUploadOrRemote": "MCP medya araçlarının kabul ettiği en büyük çözülmüş yükleme veya uzaktan indirme boyutu.",
-      "saveLimit": "Sınırı kaydet",
       "allSites": "tüm siteler",
       "issuedBeforeSites": "sitelerden önce oluşturuldu",
       "noTokensYet": "Henüz belirteç yok.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platform varsayılanı",
       "thisSite": "Bu site",
       "inForceNow": "Şu anda geçerli",
-      "saving": "Kaydediliyor…",
-      "savePolicy": "Politikayı kaydet",
       "thePlatformDefaultIsSet": "Platform varsayılanı bir platform yöneticisi tarafından belirlenir.",
       "useTheLayerBelow": "Alt katmanı kullan",
       "whyTheLawRequiresThese": "Yasanın bu kayıtların saklanmasını neden zorunlu kıldığı",
-      "inheritsThePlatformDefault": "devralınan: platform varsayılanı"
+      "inheritsThePlatformDefault": "devralınan: platform varsayılanı",
+      "strategyDelete": "Sil",
+      "strategyAnonymise": "Anonimleştir",
+      "strategyRetain": "Sakla",
+      "declaredBy": "{{plugin}} tarafından bildirilen varsayılan",
+      "inheritsValue": "devralır: {{value}}",
+      "legalBasis": "Hukuki dayanak",
+      "theSiteColumnIsSet": "\"Bu site\" sütunu bir sitenin içinden ayarlanır. Değiştirmek için seçiciden bir site seçin."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Görünen ad",
     "thisPersonHasALogin": "Bu kişinin bir oturum açma hesabı var; e-postası hesap üzerinden değiştirilir.",
     "birthDate": "Doğum tarihi",
-    "saveChanges": "Değişiklikleri kaydet",
     "sendPasswordResetEmail": "Parola sıfırlama e-postası gönder",
     "cancel": "İptal",
     "accountManagement": "Hesap yönetimi",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Lütfen kurtarma kodlarını elle kopyalayın.",
     "nameRequired": "Ad Gerekli",
     "enterATokenNameFirst": "Önce bir token adı girin.",
-    "tokenCreated": "Token Oluşturuldu",
     "copyTheTokenNowIt": "Token'ı şimdi kopyalayın. Yalnızca bir kez gösterilir.",
     "failedToCreateApiToken": "API token'ı oluşturulamadı",
     "areYouSureYouWant2": "Bu kullanıcı için 2FA'yı devre dışı bırakmak istediğinizden emin misiniz? Bu, hesap güvenliğini azaltır.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Oturum Sonlandırıldı",
     "deviceSessionRevokedSuccessfully": "Cihaz oturumu başarıyla sonlandırıldı.",
     "failedToRevokeSession": "Oturum sonlandırılamadı",
-    "rolesUpdated": "Roller güncellendi",
-    "theUserSRolesWere": "Kullanıcının rolleri kaydedildi.",
     "saveFailed": "Kaydetme başarısız",
     "failedToSaveRoles": "Roller kaydedilemedi.",
     "loadingRoles": "Roller yükleniyor",
@@ -3448,8 +3445,6 @@
     "remove": "Kaldır",
     "loadFailed": "Yükleme Başarısız",
     "couldNotRetrieveRoleDetails": "Rol bilgileri alınamadı.",
-    "roleUpdated": "Rol güncellendi",
-    "wasSaved": "\"{{name}}\" kaydedildi.",
     "updateFailed": "Güncelleme Başarısız",
     "anErrorOccurredWhileSaving": "Kaydedilirken bir hata oluştu.",
     "loadingRole": "Rol yükleniyor...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Kullanıcılara dön",
     "selfServiceSecurityControls": "Kişisel Güvenlik Denetimleri",
     "sessionDeviceControlsAndPersonal": "Oturum/cihaz denetimleri ve kişisel API belirteçleri yalnızca kendi kullanıcı hesabınızı görüntülerken kullanılabilir.",
-    "securityRecommendations": "Güvenlik Önerileri",
     "twoFactorAuthentication": "İki Adımlı Doğrulama",
-    "activeAndProtectingThisAccount": "Etkin ve bu hesabı koruyor",
-    "notEnabledHighlyRecommendedFor": "Etkin değil - yönetici hesapları için önemle önerilir",
-    "passwordProtected": "Parola Korumalı",
-    "accountHasASecurePassword": "Hesabın güvenli bir parolası var",
-    "administratorAccess": "Yönetici Erişimi",
     "fullSystemAccess2faStrongly": "Tam sistem erişimi - 2FA önemle önerilir",
     "personalApiTokens": "Kişisel API Belirteçleri",
     "tokenNameEGCi": "Belirteç adı (ör. CI dağıtımı)",
     "days": "Gün",
     "createToken": "Belirteç Oluştur",
-    "copyNowShownOnce": "Şimdi kopyalayın (yalnızca bir kez gösterilir)",
     "loadingApiTokens": "API belirteçleri yükleniyor...",
     "noApiTokensCreatedYet": "Henüz API belirteci oluşturulmadı.",
     "revoke": "İptal et",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Oturum Açma ve Oturum Etkinliği",
     "loadingAuthActivity": "Kimlik doğrulama etkinliği yükleniyor...",
     "noRecentLoginSessionEvents": "Bu kullanıcı için yakın zamanda oturum açma/oturum olayı yok.",
-    "unknownTime": "Bilinmeyen Zaman",
-    "activityEvent": "Etkinlik olayı",
     "openFullGlobalActivity": "Tüm Genel Etkinliği Aç",
-    "2faStatus": "2FA Durumu",
     "addAnExtraLayerOf": "Uygulama tabanlı kimlik doğrulama (TOTP) ile ek bir güvenlik katmanı ekleyin",
-    "recommended": "Önerilen",
     "enableTwoFactorAuthenticationTo": "Bu hesabı zamana dayalı tek kullanımlık parolalarla (TOTP) korumak için iki adımlı doğrulamayı etkinleştirin.",
     "enable2fa": "2FA'yı Etkinleştir",
     "step1ScanQrCode": "Adım 1: QR Kodunu Tarayın",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Adım 2: Kodu Doğrulayın",
     "enterThe6DigitCode": "Kurulumu tamamlamak için doğrulama uygulamanızdaki 6 haneli kodu girin:",
     "verifyEnable": "Doğrula ve Etkinleştir",
-    "protectionActive": "Koruma Etkin",
     "thisAccountRequiresA6": "Bu hesap, oturum açarken doğrulama uygulamasından 6 haneli bir kod gerektirir.",
     "regenerateRecoveryCodes": "Kurtarma Kodlarını Yeniden Oluştur",
     "disable2fa": "2FA'yı Devre Dışı Bırak",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Diğer Oturumları Sonlandır",
     "loadingSessions": "Oturumlar yükleniyor...",
     "noActiveSessions": "Etkin oturum yok.",
-    "currentSession": "Geçerli Oturum",
-    "deviceSession": "Cihaz Oturumu",
     "current": "Geçerli",
     "unknownDevice": "Bilinmeyen cihaz",
     "editAccount2": "Hesabı düzenle",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Kullanıcı kaydını aç",
     "token": "Belirteç",
     "createdOn": "Oluşturulma: {{date}}",
-    "notAvailable": "yok",
     "revokedOn": "İptal: {{date}}",
     "recoveryCodesRemaining": "Kalan kurtarma kodları:",
-    "unknownValue": "bilinmiyor",
     "expiresOn": "Bitiş: {{date}}",
     "person2": "Kişi",
     "added": "Eklenme",
@@ -3591,12 +3570,10 @@
       "loading": "Kişi alanları yükleniyor…",
       "loadFailed": "Kişi alanları yüklenemedi.",
       "saveFailed": "Alanlar kaydedilemedi.",
-      "saved": "Alanlar kaydedildi.",
       "empty": "Henüz kişi alanı yok. Her kişi için saklamaya başlamak üzere bir alan ekleyin.",
       "noneDeclared": "Bu sitede henüz kişi alanı yok.",
       "declare": "Kişi alanları ekle",
       "manage": "Alanları yönet",
-      "save": "Alanları kaydet",
       "saveField": "Alanı kaydet",
       "delete": "Sil",
       "deleteTitle": "Bu alan silinsin mi?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Geçerlilik (gün)",
+    "revokeOtherSessionsConfirm": "Diğer tüm cihazların oturumu hemen kapanır.",
+    "revokeSessionConfirm": "O cihazın oturumu hemen kapanır.",
+    "revokeCurrentSessionConfirm": "Şu an kullandığınız cihaz bu. Oturumunuz hemen kapanır.",
+    "revokeTokenConfirm": "\"{{name}}\" hemen çalışmayı durdurur.",
+    "twoFactorTurnedOff": "İki adımlı giriş bu sitede kapalı, bu yüzden burada kurulamaz.",
+    "openSecuritySettings": "Güvenlik ayarlarını aç"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Site ayarları ({{what}}) her sitenin içinde yapılır — site menüsünden bir site seçin.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Bu site önizleme için açılamadı.",
     "couldNotLoadTheSite": "Site yüklenemedi.",
     "couldNotReloadThePlugin": "Eklenti listesi yeniden yüklenemedi.",
-    "siteSaved": "Site kaydedildi",
-    "routingFollowsImmediatelyNoRestart": "Yönlendirme hemen uygulanır — yeniden başlatma gerekmez.",
     "notSaved": "Kaydedilmedi",
     "theSiteCouldNotBe2": "Site kaydedilemedi.",
     "couldNotOpenTheSite": "Site açılamadı",
@@ -3789,7 +3771,6 @@
     "visit": "Ziyaret et",
     "openThisSite": "Bu siteyi aç",
     "export": "Dışa aktar",
-    "save": "Kaydet",
     "couldNotLoadCertificates": "Sertifikalar yüklenemedi.",
     "couldNotSwitchThisHost": "Bu ana bilgisayar otomatiğe geçirilemedi.",
     "couldNotSwitchThisHost2": "Bu ana bilgisayar otomatiğe (joker karakter) geçirilemedi.",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Güncelleme Mevcut",
     "isNowActive": "{{name}} artık etkin.",
     "themeHasBeenUpdated2": "{{name}} teması güncellendi.",
-    "configurationSaved": "Yapılandırma Kaydedildi",
-    "visualProtocolsUpdatedSuccessfully": "Görsel protokoller başarıyla güncellendi.",
     "saveFailed": "Kaydetme Başarısız",
     "hasBeenRemoved2": "{{name}} kaldırıldı.",
     "seedsExecuted": "Başlangıç Verileri Çalıştırıldı",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Düzen",
     "extensionsSection": "Uzantılar",
     "versionReady": "{{version}} sürümü hazır",
-    "saveChanges": "Değişiklikleri kaydet",
     "runSeedsHint": "Temanın başlangıç verilerini (örnek sayfalar ve içerik) bu siteye yeniden yükler.",
     "resetThemeHint": "Bu sitenin kayıtlı tema ayarlarını temizler ve başlangıç verilerini yeniden yükler.",
     "notActiveHint": "Bu site başka bir tema kullanıyor.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} sürümündeki değişiklikler",
     "whatChanged": "Değişiklikler",
-    "closeBuildSourceDialog": "Derleme kaynağı penceresini kapat",
-    "close": "Kapat",
     "couldNotInstallThatVersion": "Bu sürüm yüklenemedi.",
     "couldNotChangeAutomaticUpdating": "Otomatik güncelleme ayarı değiştirilemedi.",
     "failed": "Başarısız",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Otomatik sertifikalar kapalı. {{reason}}",
     "automaticCertificatesComeFrom": "Otomatik sertifikalar {{authority}} tarafından sağlanır.",
     "noSecretKeyIsConfigured": "Bu sunucuda SECRET_KEY yapılandırılmamış, bu yüzden özel anahtar saklanamaz. Bir anahtar ayarlanana kadar yükleme devre dışıdır.",
-    "nothingToSavePasteA": "Kaydedilecek bir şey yok — bir token yapıştırın veya kayıtlı olanı kaldırmak için Temizle'yi kullanın.",
     "savedThisSiteNowUses": "Kaydedildi. Bu site artık kendi Cloudflare token'ını kullanıyor.",
     "removedThisSiteFallsBack": "Kaldırıldı. Bu site artık platformun token'ını kullanıyor.",
     "couldNotSaveTheToken": "Token kaydedilemedi.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Bu sitenin token'ı",
     "savedLeaveBlankToKeep": "Kaydedildi — korumak için boş bırakın veya kaldırmak için Temizle'yi kullanın",
     "pasteACloudflareApiToken": "Bir Cloudflare API token'ı yapıştırın",
-    "save": "Kaydet",
     "clear": "Temizle",
     "nothingStoredThisHostCannot": "Kayıtlı sertifika yok — bu ana bilgisayar bu platform tarafından HTTPS üzerinden sunulamaz.",
     "nothingStoredHereTlsFor": "Burada kayıtlı sertifika yok — bu ana bilgisayarın TLS'i platformdan önce sonlandırılıyor, bu yüzden sertifikası orada bulunuyor.",
@@ -4706,36 +4680,26 @@
     "roles": "Roller",
     "permissions": "İzinler",
     "eventDetails": "Olay Ayrıntıları",
-    "context": "Bağlam",
     "resource": "Kaynak",
     "system": "Sistem",
     "timestamp": "Zaman damgası",
-    "authority": "Yetki",
-    "actorId": "İşlemi Yapan Kimliği",
-    "type": "Tür",
-    "systemLog": "Sistem Günlüğü",
-    "audit": "Denetim: {{status}}",
-    "activityMessage": "Etkinlik Mesajı",
-    "actionTaken": "Yapılan İşlem",
-    "resourcePool": "Kaynak Havuzu",
-    "rawMetadata": "Ham Meta Veriler",
     "thisEntryIsPartOf": "Bu kayıt, değiştirilemez bir denetim izinin parçasıdır.",
     "exportJson": "JSON olarak dışa aktar",
     "event": "Olay",
     "actor": "İşlemi Yapan",
+    "plugin": "Eklenti",
     "activity": "Etkinlik",
     "status": "Durum",
     "action": "İşlem",
     "time": "Zaman",
-    "logSignature": "Günlük İmzası: {{id}}",
     "internal": "DAHİLİ",
     "level": {
-      "INFO": "BİLGİ",
-      "WARN": "UYARI",
-      "ERROR": "HATA",
-      "DEBUG": "HATA AYIKLAMA",
-      "SYSTEM": "SİSTEM",
-      "AUDIT": "DENETİM"
+      "INFO": "Bi̇lgi̇",
+      "WARN": "Uyari",
+      "ERROR": "Hata",
+      "DEBUG": "Hata ayiklama",
+      "SYSTEM": "Si̇stem",
+      "AUDIT": "Deneti̇m"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Kayıt #{{id}}",
+    "recordedData": "Kaydedilen veriler"
   },
   "mediaPicker": {
     "showingOnly": "Yalnızca gösterilen: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Görev",
       "schedule": "Çalışma sıklığı",
       "lastRun": "Son çalışma",
-      "nextRun": "Sonraki çalışma"
+      "nextRun": "Sonraki çalışma",
+      "duration": "Süre"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

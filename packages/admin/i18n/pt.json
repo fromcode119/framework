@@ -162,6 +162,7 @@
       "reorderHandle": "Arraste para reordenar — ou selecione e use as teclas de seta",
       "reorderEnable": "Mostre a lista na sua própria ordem para a reordenar",
       "reorderFailed": "Não foi possível guardar a nova ordem",
+      "noMatch": "Nada corresponde à sua pesquisa ou filtros.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importar {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Editar",
       "notFilledIn": "Não preenchido",
       "statusSection": "Estado",
-      "statusConfirm": "Alterar o estado para «{{status}}»?",
       "recordSection": "Registo",
       "showJson": "Mostrar como JSON",
       "showForm": "Mostrar como formulário",
@@ -245,7 +245,8 @@
       "copied": "Copiado",
       "more": "Mais",
       "moreFields": "{{count}} campos",
-      "moreOneField": "{{count}} campo"
+      "moreOneField": "{{count}} campo",
+      "statusConfirm": "Alterar o estado para «{{status}}»?"
     },
     "notFound": {
       "title": "Coleção não encontrada",
@@ -366,7 +367,8 @@
     "reset": "Repor",
     "notScheduledYet": "ainda não agendado",
     "more": "Mais ações",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Remover"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Escolher cor",
-      "colour": "Cor",
-      "pick": "Escolha uma cor",
       "hex": "Código hex",
-      "confirm": "Confirmar cor",
       "notSet": "Não definido"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Dependências inativas detetadas",
       "intro": "Para ativar {{plugin}}, é necessário tratar o seguinte:",
       "notInstalled": "NÃO INSTALADO",
+      "inactive": "desativado",
+      "incompatible": "versão diferente",
       "requires": "Requer a versão {{version}}. Podemos transferi-la do marketplace.",
       "needsActivation": "Já instalado, mas precisa de ser ativado (Versão {{version}}).",
       "mismatch": "Versão incompatível: requer {{expected}}, encontrada {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Pré-visualização da plataforma",
-      "image": "Pré-visualização {{number}}"
+      "image": "Pré-visualização {{number}}",
+      "previous": "Anterior",
+      "next": "Seguinte"
     },
     "menuField": {
       "newItem": "Novo item de menu",
-      "structure": "Estrutura do menu",
-      "add": "Adicionar item de menu"
+      "add": "Adicionar item de menu",
+      "reorder": "Arraste para mover; setas: cima e baixo para mover, direita para aninhar, esquerda para retirar"
     },
     "field": {
       "notSet": "Não definido",
@@ -461,8 +464,8 @@
       "record": "registo"
     },
     "array": {
-      "addNew": "Adicionar {{label}}",
-      "item": "Item"
+      "add": "Adicionar",
+      "reorder": "Arraste para mover ou use as setas"
     },
     "stepper": {
       "increment": "Aumentar",
@@ -528,9 +531,7 @@
       "noContact": "Sem email nem telefone em Pessoas",
       "hasLogin": "Tem conta de acesso",
       "noLogin": "Sem conta de acesso",
-      "source": "O nome, o email e o telefone provêm de Pessoas #{{id}}; altere-os aí.",
       "open": "Abrir em Pessoas",
-      "choose": "Escolher outra pessoa",
       "searchFailed": "Não foi possível pesquisar em Pessoas neste momento.",
       "noMatch": "Ninguém em Pessoas corresponde. Introduza os dados abaixo; ao guardar, a pessoa será adicionada a Pessoas.",
       "ref": "Pessoas #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Abrir Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "As substituições relativas herdam o prefixo da coleção. Ative o modo absoluto para ignorar prefixos como `/shop`.",
     "range": "Intervalo",
     "noDataForThisRange": "Sem dados para este intervalo",
     "peak": "· pico {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtros",
       "clearFilters": "Limpar tudo",
       "removeFilter": "Remover o filtro {{label}}",
-      "showResults": "Mostrar {{count}} resultados"
+      "showResults": "Mostrar {{count}} resultados",
+      "showResultsOne": "Mostrar 1 resultado"
     },
     "personFieldPicker": {
       "none": "Não guardado num campo de pessoa",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Os limites da sandbox de {{name}} foram guardados, mas o processo não conseguiu reiniciar com eles: {{value}}",
       "restartRequired": "Reinício necessário",
       "sandboxSettingsForWereSaved": "As definições da sandbox de {{name}} foram guardadas, mas é necessário reiniciar a API para que entrem em vigor.",
-      "resourcesUpdated": "Recursos atualizados",
-      "sandboxLimitsForUpdated": "Limites da sandbox de {{name}} atualizados.",
       "sandboxDisabledFor": "Sandbox desativada para {{name}}.",
       "saveFailed": "Falha ao guardar",
       "failedToUpdateSandboxLimits": "Não foi possível atualizar os limites da sandbox.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inativo. Sem eventos recentes registados.",
       "updating": "A atualizar...",
       "updateAvailable": "Atualização disponível",
-      "updatePolicy": "Política de atualizações",
       "saveChanges": "Guardar alterações",
       "unsavedChanges": "Alterações não guardadas",
       "exportSettingsAsJson": "Exportar definições como JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Novidades na v{{version}}",
       "installedVersion": "Instalada {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "A guardar...",
       "saveSettings": "Guardar definições",
       "viewDefinition": "Ver definição",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Aparência",
       "failedToLoadAppearances": "Falha ao carregar as aparências",
       "failedToSaveShadowSetting": "Falha ao guardar a definição de sombras",
+      "failedToSaveMenuSetting": "Não foi possível guardar a definição do menu",
       "switchedToReloading": "Mudado para \"{{slug}}\". A recarregar…",
       "failedToSwitchAppearance": "Falha ao mudar de aparência",
       "installFailed": "Falha na instalação",
@@ -1919,6 +1917,8 @@
       "install": "Instalar",
       "surfaceShadows": "Sombras das superfícies",
       "depthOnPanelsDialogsAnd": "Profundidade em painéis, caixas de diálogo e botões. Desative para uma administração plana — os contornos e cantos mantêm-se exatamente iguais.",
+      "secondMenuColumn": "Segunda coluna do menu",
+      "sectionPagesBesideTheMenu": "As páginas de uma secção ficam numa coluna ao lado do menu. Desligada, abrem sob a sua linha no menu único e cada ecrã ganha 220px.",
       "installFromAPackageUrl": "Instalar a partir do URL de um pacote",
       "builtIn": "Incorporada",
       "installed": "Instalada",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "A localização por IP não foi atualizada",
       "geoUnavailable": "O estado da localização por IP não está disponível",
       "geoAttribution": "Geolocalização por IP fornecida por {{name}} ({{license}}). Atualizada mensalmente enquanto estiver ativa.",
-      "geoSaved": "Guardado",
-      "geoSavedOn": "A transferir a base de dados; tem cerca de 60 MB.",
-      "geoSavedOff": "A base de dados foi removida do servidor.",
       "everyPluginRunsIsolated": "Isolado: cada plugin é executado no seu próprio processo. O limite de memória e o prazo aplicam-se a todos os plugins; a quota de CPU, a memória total, o disco e os processos aplicam-se apenas aos plugins carregados por um site.",
       "schemaOrphans": "Esquema da base de dados",
       "schemaOrphansHelp": "Colunas que ainda existem na base de dados, mas que já nada declara. A plataforma apenas as lista; nada é eliminado até decidir, e uma coluna eliminada não pode ser restaurada.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Desativado — o endpoint responde 403 a todos.",
       "mediaPayloadLimitMb": "Limite de carga de mídia (MB)",
       "maximumDecodedUploadOrRemote": "Tamanho máximo, após decodificação, de upload ou download remoto aceito pelas ferramentas de mídia do MCP.",
-      "saveLimit": "Salvar limite",
       "allSites": "todos os sites",
       "issuedBeforeSites": "emitido antes dos sites",
       "noTokensYet": "Nenhum token ainda.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Predefinição da plataforma",
       "thisSite": "Este site",
       "inForceNow": "Em vigor",
-      "saving": "A guardar…",
-      "savePolicy": "Guardar política",
       "thePlatformDefaultIsSet": "A predefinição da plataforma é definida por um administrador da plataforma.",
       "useTheLayerBelow": "Usar a camada inferior",
       "whyTheLawRequiresThese": "Porque é que a lei exige a conservação destes registos",
-      "inheritsThePlatformDefault": "herda: a predefinição da plataforma"
+      "inheritsThePlatformDefault": "herda: a predefinição da plataforma",
+      "strategyDelete": "Eliminar",
+      "strategyAnonymise": "Anonimizar",
+      "strategyRetain": "Manter",
+      "declaredBy": "Predefinição declarada por {{plugin}}",
+      "inheritsValue": "herda: {{value}}",
+      "legalBasis": "Base legal",
+      "theSiteColumnIsSet": "A coluna «Este site» é definida dentro de um site. Escolha um site no seletor para a alterar."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Nome a apresentar",
     "thisPersonHasALogin": "Esta pessoa tem uma conta de acesso; o email é alterado na conta.",
     "birthDate": "Data de nascimento",
-    "saveChanges": "Guardar alterações",
     "sendPasswordResetEmail": "Enviar email de reposição de palavra-passe",
     "cancel": "Cancelar",
     "accountManagement": "Gestão da conta",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Copie os códigos de recuperação manualmente.",
     "nameRequired": "Nome obrigatório",
     "enterATokenNameFirst": "Introduza primeiro um nome para o token.",
-    "tokenCreated": "Token criado",
     "copyTheTokenNowIt": "Copie o token agora. Só é apresentado uma vez.",
     "failedToCreateApiToken": "Falha ao criar o token de API",
     "areYouSureYouWant2": "Tem a certeza de que pretende desativar a 2FA para este utilizador? Isto reduzirá a segurança da conta.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sessão revogada",
     "deviceSessionRevokedSuccessfully": "Sessão do dispositivo revogada com sucesso.",
     "failedToRevokeSession": "Falha ao revogar a sessão",
-    "rolesUpdated": "Funções atualizadas",
-    "theUserSRolesWere": "As funções do utilizador foram guardadas.",
     "saveFailed": "Falha ao guardar",
     "failedToSaveRoles": "Falha ao guardar as funções.",
     "loadingRoles": "A carregar funções",
@@ -3448,8 +3445,6 @@
     "remove": "Remover",
     "loadFailed": "Falha ao carregar",
     "couldNotRetrieveRoleDetails": "Não foi possível obter os detalhes da função.",
-    "roleUpdated": "Função atualizada",
-    "wasSaved": "\"{{name}}\" foi guardada.",
     "updateFailed": "Falha na atualização",
     "anErrorOccurredWhileSaving": "Ocorreu um erro ao guardar.",
     "loadingRole": "A carregar função...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Voltar a Utilizadores",
     "selfServiceSecurityControls": "Controlos de segurança pessoais",
     "sessionDeviceControlsAndPersonal": "Os controlos de sessões/dispositivos e os tokens de API pessoais só estão disponíveis ao consultar a sua própria conta de utilizador.",
-    "securityRecommendations": "Recomendações de segurança",
     "twoFactorAuthentication": "Autenticação de dois fatores",
-    "activeAndProtectingThisAccount": "Ativa e a proteger esta conta",
-    "notEnabledHighlyRecommendedFor": "Não ativada - altamente recomendada para contas de administrador",
-    "passwordProtected": "Protegida por palavra-passe",
-    "accountHasASecurePassword": "A conta tem uma palavra-passe segura",
-    "administratorAccess": "Acesso de administrador",
     "fullSystemAccess2faStrongly": "Acesso total ao sistema - 2FA fortemente recomendada",
     "personalApiTokens": "Tokens de API pessoais",
     "tokenNameEGCi": "Nome do token (ex.: deploy de CI)",
     "days": "Dias",
     "createToken": "Criar token",
-    "copyNowShownOnce": "Copie agora (mostrado apenas uma vez)",
     "loadingApiTokens": "A carregar tokens de API...",
     "noApiTokensCreatedYet": "Ainda não foram criados tokens de API.",
     "revoke": "Revogar",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Atividade de início de sessão e sessões",
     "loadingAuthActivity": "A carregar atividade de autenticação...",
     "noRecentLoginSessionEvents": "Sem eventos recentes de início de sessão/sessão para este utilizador.",
-    "unknownTime": "Hora desconhecida",
-    "activityEvent": "Evento de atividade",
     "openFullGlobalActivity": "Abrir atividade global completa",
-    "2faStatus": "Estado da 2FA",
     "addAnExtraLayerOf": "Adicione uma camada extra de segurança com autenticação por aplicação (TOTP)",
-    "recommended": "Recomendado",
     "enableTwoFactorAuthenticationTo": "Ative a autenticação de dois fatores para proteger esta conta com palavras-passe de utilização única baseadas no tempo (TOTP).",
     "enable2fa": "Ativar 2FA",
     "step1ScanQrCode": "Passo 1: Ler o código QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Passo 2: Verificar o código",
     "enterThe6DigitCode": "Introduza o código de 6 dígitos da sua aplicação de autenticação para concluir a configuração:",
     "verifyEnable": "Verificar e ativar",
-    "protectionActive": "Proteção ativa",
     "thisAccountRequiresA6": "Esta conta exige um código de 6 dígitos de uma aplicação de autenticação ao iniciar sessão.",
     "regenerateRecoveryCodes": "Regenerar códigos de recuperação",
     "disable2fa": "Desativar 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Revogar outras sessões",
     "loadingSessions": "A carregar sessões...",
     "noActiveSessions": "Sem sessões ativas.",
-    "currentSession": "Sessão atual",
-    "deviceSession": "Sessão do dispositivo",
     "current": "Atual",
     "unknownDevice": "Dispositivo desconhecido",
     "editAccount2": "Editar conta",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Abrir registo do utilizador",
     "token": "Token",
     "createdOn": "Criado em {{date}}",
-    "notAvailable": "n/d",
     "revokedOn": "Revogado em {{date}}",
     "recoveryCodesRemaining": "Códigos de recuperação restantes:",
-    "unknownValue": "desconhecido",
     "expiresOn": "Expira: {{date}}",
     "person2": "Pessoa",
     "added": "Adicionado",
@@ -3591,12 +3570,10 @@
       "loading": "A carregar campos de pessoa…",
       "loadFailed": "Não foi possível carregar os campos de pessoa.",
       "saveFailed": "Não foi possível guardar os campos.",
-      "saved": "Campos guardados.",
       "empty": "Ainda não há campos de pessoa. Adicione um para começar a guardá-lo para cada pessoa.",
       "noneDeclared": "Este site ainda não tem campos de pessoa.",
       "declare": "Adicionar campos de pessoa",
       "manage": "Gerir campos",
-      "save": "Guardar campos",
       "saveField": "Guardar campo",
       "delete": "Eliminar",
       "deleteTitle": "Eliminar este campo?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Válido por (dias)",
+    "revokeOtherSessionsConfirm": "Todos os outros dispositivos saem da sessão de imediato.",
+    "revokeSessionConfirm": "Esse dispositivo sai da sessão de imediato.",
+    "revokeCurrentSessionConfirm": "Este é o dispositivo que está a usar agora. Sai da sessão de imediato.",
+    "revokeTokenConfirm": "«{{name}}» deixa de funcionar de imediato.",
+    "twoFactorTurnedOff": "O início de sessão em dois passos está desligado neste site, por isso não pode ser configurado aqui.",
+    "openSecuritySettings": "Abrir definições de segurança"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "As definições do site ({{what}}) são configuradas dentro de cada site — escolha um no menu de sites.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Não foi possível abrir este site para pré-visualização.",
     "couldNotLoadTheSite": "Não foi possível carregar o site.",
     "couldNotReloadThePlugin": "Não foi possível recarregar a lista de plugins.",
-    "siteSaved": "Site salvo",
-    "routingFollowsImmediatelyNoRestart": "O roteamento é atualizado imediatamente — sem reinicialização.",
     "notSaved": "Não salvo",
     "theSiteCouldNotBe2": "Não foi possível salvar o site.",
     "couldNotOpenTheSite": "Não foi possível abrir o site",
@@ -3789,7 +3771,6 @@
     "visit": "Visitar",
     "openThisSite": "Abrir este site",
     "export": "Exportar",
-    "save": "Salvar",
     "couldNotLoadCertificates": "Não foi possível carregar os certificados.",
     "couldNotSwitchThisHost": "Não foi possível mudar este host para automático.",
     "couldNotSwitchThisHost2": "Não foi possível mudar este host para automático (curinga).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Atualização disponível",
     "isNowActive": "{{name}} agora está ativo.",
     "themeHasBeenUpdated2": "O tema {{name}} foi atualizado.",
-    "configurationSaved": "Configuração salva",
-    "visualProtocolsUpdatedSuccessfully": "Protocolos visuais atualizados com sucesso.",
     "saveFailed": "Falha ao salvar",
     "hasBeenRemoved2": "{{name}} foi removido.",
     "seedsExecuted": "Seeds executados",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Extensões",
     "versionReady": "A versão {{version}} está pronta",
-    "saveChanges": "Guardar alterações",
     "runSeedsHint": "Reaplica os dados de seed do tema — as páginas e o conteúdo de exemplo — neste site.",
     "resetThemeHint": "Limpa as definições de tema guardadas deste site e reaplica os dados de seed.",
     "notActiveHint": "Este site usa outro tema.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "O que mudou na v{{version}}",
     "whatChanged": "O que mudou",
-    "closeBuildSourceDialog": "Fechar a caixa de diálogo da origem de compilação",
-    "close": "Fechar",
     "couldNotInstallThatVersion": "Não foi possível instalar essa versão.",
     "couldNotChangeAutomaticUpdating": "Não foi possível alterar a atualização automática.",
     "failed": "Falhou",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Os certificados automáticos estão desativados. {{reason}}",
     "automaticCertificatesComeFrom": "Os certificados automáticos são emitidos por {{authority}}.",
     "noSecretKeyIsConfigured": "Não existe SECRET_KEY configurada neste servidor, pelo que não é possível guardar uma chave privada. O carregamento está desativado até ser definida uma.",
-    "nothingToSavePasteA": "Nada para guardar — cole um token ou use Limpar para remover o guardado.",
     "savedThisSiteNowUses": "Guardado. Este site passa a usar o seu próprio token Cloudflare.",
     "removedThisSiteFallsBack": "Removido. Este site volta a usar o token da plataforma.",
     "couldNotSaveTheToken": "Não foi possível guardar o token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token deste site",
     "savedLeaveBlankToKeep": "Guardado — deixe em branco para manter ou use Limpar para remover",
     "pasteACloudflareApiToken": "Cole um token da API Cloudflare",
-    "save": "Guardar",
     "clear": "Limpar",
     "nothingStoredThisHostCannot": "Nada guardado — este host não pode ser servido por HTTPS por esta plataforma.",
     "nothingStoredHereTlsFor": "Nada guardado aqui — o TLS deste host é terminado antes da plataforma, pelo que o certificado reside aí.",
@@ -4706,36 +4680,26 @@
     "roles": "Funções",
     "permissions": "Permissões",
     "eventDetails": "Detalhes do evento",
-    "context": "Contexto",
     "resource": "Recurso",
     "system": "Sistema",
     "timestamp": "Data e hora",
-    "authority": "Autoridade",
-    "actorId": "ID do ator",
-    "type": "Tipo",
-    "systemLog": "Registo do sistema",
-    "audit": "Auditoria: {{status}}",
-    "activityMessage": "Mensagem da atividade",
-    "actionTaken": "Ação realizada",
-    "resourcePool": "Conjunto de recursos",
-    "rawMetadata": "Metadados brutos",
     "thisEntryIsPartOf": "Esta entrada faz parte de um registo de auditoria imutável.",
     "exportJson": "Exportar JSON",
     "event": "Evento",
     "actor": "Ator",
+    "plugin": "Plugin",
     "activity": "Atividade",
     "status": "Estado",
     "action": "Ação",
     "time": "Hora",
-    "logSignature": "Assinatura do registo: {{id}}",
     "internal": "INTERNO",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVISO",
-      "ERROR": "ERRO",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "AUDITORIA"
+      "INFO": "Info",
+      "WARN": "Aviso",
+      "ERROR": "Erro",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Auditoria"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entrada n.º {{id}}",
+    "recordedData": "Dados registados"
   },
   "mediaPicker": {
     "showingOnly": "A mostrar apenas: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Tarefa",
       "schedule": "Execução",
       "lastRun": "Última execução",
-      "nextRun": "Próxima execução"
+      "nextRun": "Próxima execução",
+      "duration": "Duração"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plataforma",

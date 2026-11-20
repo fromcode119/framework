@@ -162,6 +162,7 @@
       "reorderHandle": "Järjestä vetämällä – tai kohdista ja käytä nuolinäppäimiä",
       "reorderEnable": "Näytä luettelo omassa järjestyksessään, jotta voit järjestää sen uudelleen",
       "reorderFailed": "Uutta järjestystä ei voitu tallentaa",
+      "noMatch": "Mikään ei vastaa hakua tai suodattimia.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Tuodaanko {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Muokkaa",
       "notFilledIn": "Ei täytetty",
       "statusSection": "Tila",
-      "statusConfirm": "Muutetaanko tilaksi ”{{status}}”?",
       "recordSection": "Tietue",
       "showJson": "Näytä JSON-muodossa",
       "showForm": "Näytä lomakkeena",
@@ -245,7 +245,8 @@
       "copied": "Kopioitu",
       "more": "Lisää",
       "moreFields": "{{count}} kenttää",
-      "moreOneField": "{{count}} kenttä"
+      "moreOneField": "{{count}} kenttä",
+      "statusConfirm": "Muutetaanko tilaksi ”{{status}}”?"
     },
     "notFound": {
       "title": "Kokoelmaa ei löytynyt",
@@ -366,7 +367,8 @@
     "reset": "Palauta",
     "notScheduledYet": "ei vielä ajoitettu",
     "more": "Lisää toimintoja",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Poista"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Valitse väri",
-      "colour": "Väri",
-      "pick": "Valitse väri",
       "hex": "Hex-koodi",
-      "confirm": "Vahvista väri",
       "notSet": "Ei asetettu"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Havaittiin käytöstä poistettuja riippuvuuksia",
       "intro": "Lisäosan {{plugin}} käyttöönotto edellyttää seuraavia toimia:",
       "notInstalled": "EI ASENNETTU",
+      "inactive": "pois",
+      "incompatible": "eri versio",
       "requires": "Vaatii version {{version}}. Voimme ladata sen kauppapaikasta.",
       "needsActivation": "Asennettu, mutta on aktivoitava (versio {{version}}).",
       "mismatch": "Versioristiriita: vaaditaan {{expected}}, löytyi {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Alustan esikatselu",
-      "image": "Esikatselu {{number}}"
+      "image": "Esikatselu {{number}}",
+      "previous": "Edellinen",
+      "next": "Seuraava"
     },
     "menuField": {
       "newItem": "Uusi valikkokohde",
-      "structure": "Valikon rakenne",
-      "add": "Lisää valikkokohde"
+      "add": "Lisää valikkokohde",
+      "reorder": "Siirrä vetämällä; nuolet: ylös ja alas siirtää, oikealle sisentää, vasemmalle nostaa ylös"
     },
     "field": {
       "notSet": "Ei asetettu",
@@ -461,8 +464,8 @@
       "record": "tietue"
     },
     "array": {
-      "addNew": "Lisää uusi: {{label}}",
-      "item": "Kohde"
+      "add": "Lisää",
+      "reorder": "Siirrä vetämällä tai nuolinäppäimillä"
     },
     "stepper": {
       "increment": "Lisää",
@@ -528,9 +531,7 @@
       "noContact": "Henkilötiedoissa ei ole sähköpostia tai puhelinnumeroa",
       "hasLogin": "On käyttäjätunnus",
       "noLogin": "Ei käyttäjätunnusta",
-      "source": "Nimi, sähköposti ja puhelinnumero tulevat henkilöltä People #{{id}}; muuta ne siellä.",
       "open": "Avaa Henkilöissä",
-      "choose": "Valitse joku muu",
       "searchFailed": "Henkilöitä ei voitu hakea juuri nyt.",
       "noMatch": "Henkilöistä ei löytynyt osumia. Anna tiedot alla; tallennus lisää henkilön Henkilöihin.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Avaa Sivustot"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suhteelliset ohitukset perivät kokoelman etuliitteen. Ota absoluuttinen tila käyttöön ohittaaksesi etuliitteet, kuten `/shop`.",
     "range": "Aikaväli",
     "noDataForThisRange": "Ei tietoja tältä aikaväliltä",
     "peak": "· huippu {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Suodattimet",
       "clearFilters": "Tyhjennä kaikki",
       "removeFilter": "Poista suodatin {{label}}",
-      "showResults": "Näytä tulokset ({{count}})"
+      "showResults": "Näytä tulokset ({{count}})",
+      "showResultsOne": "Näytä 1 tulos"
     },
     "personFieldPicker": {
       "none": "Ei tallenneta henkilökenttään",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Lisäosan {{name}} hiekkalaatikkorajat tallennettiin, mutta sen prosessia ei voitu käynnistää uudelleen niillä: {{value}}",
       "restartRequired": "Uudelleenkäynnistys vaaditaan",
       "sandboxSettingsForWereSaved": "Lisäosan {{name}} hiekkalaatikkoasetukset tallennettiin, mutta API on käynnistettävä uudelleen, jotta ne tulevat voimaan.",
-      "resourcesUpdated": "Resurssit päivitetty",
-      "sandboxLimitsForUpdated": "Lisäosan {{name}} hiekkalaatikkorajat päivitetty.",
       "sandboxDisabledFor": "Hiekkalaatikko poistettu käytöstä lisäosalta {{name}}.",
       "saveFailed": "Tallennus epäonnistui",
       "failedToUpdateSandboxLimits": "Hiekkalaatikkorajojen päivittäminen epäonnistui.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Joutilas. Ei viimeaikaisia tapahtumia.",
       "updating": "Päivitetään...",
       "updateAvailable": "Päivitys saatavilla",
-      "updatePolicy": "Päivityskäytäntö",
       "saveChanges": "Tallenna muutokset",
       "unsavedChanges": "Tallentamattomia muutoksia",
       "exportSettingsAsJson": "Vie asetukset JSON-muodossa",
@@ -1185,7 +1183,6 @@
       "newIn": "Uutta versiossa v{{version}}",
       "installedVersion": "Asennettu {{version}}",
       "marketplaceVersion": "Kauppa {{version}}",
-      "saving": "Tallennetaan...",
       "saveSettings": "Tallenna asetukset",
       "viewDefinition": "Näytä määrittely",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Ulkoasu",
       "failedToLoadAppearances": "Ulkoasujen lataaminen epäonnistui",
       "failedToSaveShadowSetting": "Varjoasetuksen tallentaminen epäonnistui",
+      "failedToSaveMenuSetting": "Valikkoasetuksen tallennus epäonnistui",
       "switchedToReloading": "Vaihdettu ulkoasuun \"{{slug}}\". Ladataan uudelleen…",
       "failedToSwitchAppearance": "Ulkoasun vaihtaminen epäonnistui",
       "installFailed": "Asennus epäonnistui",
@@ -1919,6 +1917,8 @@
       "install": "Asenna",
       "surfaceShadows": "Pintojen varjot",
       "depthOnPanelsDialogsAnd": "Syvyys paneeleissa, valintaikkunoissa ja painikkeissa. Poista käytöstä saadaksesi litteän hallinnan — reunat ja kulmat pysyvät ennallaan.",
+      "secondMenuColumn": "Toinen valikkosarake",
+      "sectionPagesBesideTheMenu": "Osion sivut ovat sarakkeessa valikon vieressä. Pois päältä ne avautuvat oman rivinsä alle yhdessä valikossa, ja jokainen näkymä levenee 220px.",
       "installFromAPackageUrl": "Asenna paketin URL-osoitteesta",
       "builtIn": "Sisäänrakennettu",
       "installed": "Asennettu",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP-sijaintia ei päivitetty",
       "geoUnavailable": "IP-sijainnin tila ei ole saatavilla",
       "geoAttribution": "IP-geopaikannuksen tarjoaa {{name}} ({{license}}). Päivitetään kuukausittain, kun asetus on käytössä.",
-      "geoSaved": "Tallennettu",
-      "geoSavedOn": "Tietokantaa ladataan nyt; sen koko on noin 60 Mt.",
-      "geoSavedOff": "Tietokanta poistettiin palvelimelta.",
       "everyPluginRunsIsolated": "Eristetty: jokainen lisäosa toimii omassa prosessissaan. Muistin yläraja ja aikaraja koskevat kaikkia lisäosia; suoritinosuus, kokonaismuisti, levy ja prosessit koskevat vain sivuston lataamia lisäosia.",
       "schemaOrphans": "Tietokantaskeema",
       "schemaOrphansHelp": "Sarakkeet, jotka ovat yhä tietokannassa mutta joita mikään ei enää määrittele. Alusta vain luettelee ne; mitään ei poisteta ennen kuin päätät, eikä poistettua saraketta voi palauttaa.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Pois käytöstä — päätepiste vastaa kaikille 403.",
       "mediaPayloadLimitMb": "Mediatiedostojen kokoraja (Mt)",
       "maximumDecodedUploadOrRemote": "Suurin purettu lataus tai etälataus, jonka MCP:n mediatyökalut hyväksyvät.",
-      "saveLimit": "Tallenna raja",
       "allSites": "kaikki sivustot",
       "issuedBeforeSites": "myönnetty ennen sivustoja",
       "noTokensYet": "Ei vielä tunnuksia.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Alustan oletus",
       "thisSite": "Tämä sivusto",
       "inForceNow": "Voimassa nyt",
-      "saving": "Tallennetaan…",
-      "savePolicy": "Tallenna käytäntö",
       "thePlatformDefaultIsSet": "Alustan oletuksen määrittää alustan ylläpitäjä.",
       "useTheLayerBelow": "Käytä alemman tason asetusta",
       "whyTheLawRequiresThese": "Miksi laki edellyttää näiden tietojen säilyttämistä",
-      "inheritsThePlatformDefault": "periytyy: alustan oletus"
+      "inheritsThePlatformDefault": "periytyy: alustan oletus",
+      "strategyDelete": "Poista",
+      "strategyAnonymise": "Anonymisoi",
+      "strategyRetain": "Säilytä",
+      "declaredBy": "Oletus, jonka {{plugin}} määrittää",
+      "inheritsValue": "perii: {{value}}",
+      "legalBasis": "Oikeusperuste",
+      "theSiteColumnIsSet": "Sarake ”Tämä sivusto” asetetaan sivuston sisällä. Valitse sivusto vaihtimesta muuttaaksesi sitä."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Näyttönimi",
     "thisPersonHasALogin": "Tällä henkilöllä on kirjautumistili; sähköpostiosoite muutetaan tilin kautta.",
     "birthDate": "Syntymäaika",
-    "saveChanges": "Tallenna muutokset",
     "sendPasswordResetEmail": "Lähetä salasanan palautusviesti",
     "cancel": "Peruuta",
     "accountManagement": "Tilin hallinta",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Kopioi palautuskoodit käsin.",
     "nameRequired": "Nimi vaaditaan",
     "enterATokenNameFirst": "Anna ensin tunnuksen nimi.",
-    "tokenCreated": "Tunnus luotu",
     "copyTheTokenNowIt": "Kopioi tunnus nyt. Se näytetään vain kerran.",
     "failedToCreateApiToken": "API-tunnuksen luominen epäonnistui",
     "areYouSureYouWant2": "Haluatko varmasti poistaa kaksivaiheisen tunnistautumisen käytöstä tältä käyttäjältä? Tämä heikentää tilin suojausta.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Istunto lopetettu",
     "deviceSessionRevokedSuccessfully": "Laitteen istunto lopetettiin.",
     "failedToRevokeSession": "Istunnon lopettaminen epäonnistui",
-    "rolesUpdated": "Roolit päivitetty",
-    "theUserSRolesWere": "Käyttäjän roolit tallennettiin.",
     "saveFailed": "Tallennus epäonnistui",
     "failedToSaveRoles": "Roolien tallentaminen epäonnistui.",
     "loadingRoles": "Ladataan rooleja",
@@ -3448,8 +3445,6 @@
     "remove": "Poista",
     "loadFailed": "Lataus epäonnistui",
     "couldNotRetrieveRoleDetails": "Roolin tietoja ei voitu hakea.",
-    "roleUpdated": "Rooli päivitetty",
-    "wasSaved": "\"{{name}}\" tallennettiin.",
     "updateFailed": "Päivitys epäonnistui",
     "anErrorOccurredWhileSaving": "Tallennuksessa tapahtui virhe.",
     "loadingRole": "Ladataan roolia...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Palaa käyttäjiin",
     "selfServiceSecurityControls": "Omat suojausasetukset",
     "sessionDeviceControlsAndPersonal": "Istunto- ja laitehallinta sekä henkilökohtaiset API-tunnukset ovat käytettävissä vain omassa käyttäjätilissäsi.",
-    "securityRecommendations": "Suojaussuositukset",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
-    "activeAndProtectingThisAccount": "Käytössä ja suojaa tätä tiliä",
-    "notEnabledHighlyRecommendedFor": "Ei käytössä – erittäin suositeltava ylläpitäjätileille",
-    "passwordProtected": "Salasanasuojattu",
-    "accountHasASecurePassword": "Tilillä on turvallinen salasana",
-    "administratorAccess": "Ylläpitäjän oikeudet",
     "fullSystemAccess2faStrongly": "Täydet oikeudet järjestelmään – kaksivaiheinen tunnistautuminen on erittäin suositeltava",
     "personalApiTokens": "Henkilökohtaiset API-tunnukset",
     "tokenNameEGCi": "Tunnuksen nimi (esim. CI deploy)",
     "days": "Päivää",
     "createToken": "Luo tunnus",
-    "copyNowShownOnce": "Kopioi nyt (näytetään vain kerran)",
     "loadingApiTokens": "Ladataan API-tunnuksia...",
     "noApiTokensCreatedYet": "API-tunnuksia ei ole vielä luotu.",
     "revoke": "Peruuta",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Kirjautumis- ja istuntotapahtumat",
     "loadingAuthActivity": "Ladataan tunnistautumistapahtumia...",
     "noRecentLoginSessionEvents": "Tällä käyttäjällä ei ole viimeaikaisia kirjautumis- tai istuntotapahtumia.",
-    "unknownTime": "Tuntematon aika",
-    "activityEvent": "Tapahtuma",
     "openFullGlobalActivity": "Avaa koko tapahtumaloki",
-    "2faStatus": "Kaksivaiheisen tunnistautumisen tila",
     "addAnExtraLayerOf": "Lisää suojausta sovelluspohjaisella tunnistautumisella (TOTP)",
-    "recommended": "Suositeltu",
     "enableTwoFactorAuthenticationTo": "Ota kaksivaiheinen tunnistautuminen käyttöön suojataksesi tämän tilin aikaan perustuvilla kertakäyttöisillä salasanoilla (TOTP).",
     "enable2fa": "Ota käyttöön",
     "step1ScanQrCode": "Vaihe 1: Skannaa QR-koodi",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Vaihe 2: Vahvista koodi",
     "enterThe6DigitCode": "Viimeistele käyttöönotto syöttämällä todennussovelluksen 6-numeroinen koodi:",
     "verifyEnable": "Vahvista ja ota käyttöön",
-    "protectionActive": "Suojaus käytössä",
     "thisAccountRequiresA6": "Tähän tiliin kirjauduttaessa vaaditaan todennussovelluksen 6-numeroinen koodi.",
     "regenerateRecoveryCodes": "Luo uudet palautuskoodit",
     "disable2fa": "Poista käytöstä",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Lopeta muut istunnot",
     "loadingSessions": "Ladataan istuntoja...",
     "noActiveSessions": "Ei aktiivisia istuntoja.",
-    "currentSession": "Nykyinen istunto",
-    "deviceSession": "Laiteistunto",
     "current": "Nykyinen",
     "unknownDevice": "Tuntematon laite",
     "editAccount2": "Muokkaa tiliä",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Avaa käyttäjätietue",
     "token": "Tunnus",
     "createdOn": "Luotu {{date}}",
-    "notAvailable": "–",
     "revokedOn": "Peruutettu {{date}}",
     "recoveryCodesRemaining": "Palautuskoodeja jäljellä:",
-    "unknownValue": "tuntematon",
     "expiresOn": "Vanhenee: {{date}}",
     "person2": "Henkilö",
     "added": "Lisätty",
@@ -3591,12 +3570,10 @@
       "loading": "Ladataan henkilökenttiä…",
       "loadFailed": "Henkilökenttiä ei voitu ladata.",
       "saveFailed": "Kenttiä ei voitu tallentaa.",
-      "saved": "Kentät tallennettu.",
       "empty": "Henkilökenttiä ei vielä ole. Lisää kenttä, niin sitä säilytetään jokaisesta henkilöstä.",
       "noneDeclared": "Tällä sivustolla ei vielä ole henkilökenttiä.",
       "declare": "Lisää henkilökenttiä",
       "manage": "Hallitse kenttiä",
-      "save": "Tallenna kentät",
       "saveField": "Tallenna kenttä",
       "delete": "Poista",
       "deleteTitle": "Poistetaanko tämä kenttä?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Voimassa (päivää)",
+    "revokeOtherSessionsConfirm": "Kaikki muut laitteet kirjataan heti ulos.",
+    "revokeSessionConfirm": "Laite kirjataan heti ulos.",
+    "revokeCurrentSessionConfirm": "Tämä on laite, jota käytät nyt. Sinut kirjataan heti ulos.",
+    "revokeTokenConfirm": "”{{name}}” lakkaa toimimasta heti.",
+    "twoFactorTurnedOff": "Kaksivaiheinen kirjautuminen on poistettu käytöstä tällä sivustolla, joten sitä ei voi ottaa käyttöön tässä.",
+    "openSecuritySettings": "Avaa suojausasetukset"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Sivustoasetukset ({{what}}) määritetään kunkin sivuston sisällä – valitse sivusto sivustovalikosta.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Tätä sivustoa ei voitu avata esikatseluun.",
     "couldNotLoadTheSite": "Sivustoa ei voitu ladata.",
     "couldNotReloadThePlugin": "Lisäosaluetteloa ei voitu ladata uudelleen.",
-    "siteSaved": "Sivusto tallennettu",
-    "routingFollowsImmediatelyNoRestart": "Reititys päivittyy heti – uudelleenkäynnistystä ei tarvita.",
     "notSaved": "Ei tallennettu",
     "theSiteCouldNotBe2": "Sivustoa ei voitu tallentaa.",
     "couldNotOpenTheSite": "Sivustoa ei voitu avata",
@@ -3789,7 +3771,6 @@
     "visit": "Käy sivustolla",
     "openThisSite": "Avaa tämä sivusto",
     "export": "Vie",
-    "save": "Tallenna",
     "couldNotLoadCertificates": "Varmenteita ei voitu ladata.",
     "couldNotSwitchThisHost": "Tätä isäntää ei voitu vaihtaa automaattiseksi.",
     "couldNotSwitchThisHost2": "Tätä isäntää ei voitu vaihtaa automaattiseksi (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Päivitys saatavilla",
     "isNowActive": "{{name}} on nyt aktiivinen.",
     "themeHasBeenUpdated2": "Teema {{name}} on päivitetty.",
-    "configurationSaved": "Määritykset tallennettu",
-    "visualProtocolsUpdatedSuccessfully": "Ulkoasuasetukset päivitettiin.",
     "saveFailed": "Tallennus epäonnistui",
     "hasBeenRemoved2": "{{name}} on poistettu.",
     "seedsExecuted": "Alkudata ajettu",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Asettelu",
     "extensionsSection": "Laajennukset",
     "versionReady": "Versio {{version}} on valmis",
-    "saveChanges": "Tallenna muutokset",
     "runSeedsHint": "Ajaa teeman alkudatan – esimerkkisivut ja -sisällön – tähän sivustoon uudelleen.",
     "resetThemeHint": "Tyhjentää tämän sivuston tallennetut teema-asetukset ja ajaa alkudatan uudelleen.",
     "notActiveHint": "Tämä sivusto käyttää toista teemaa.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Muutokset versiossa v{{version}}",
     "whatChanged": "Muutokset",
-    "closeBuildSourceDialog": "Sulje koontilähteen valintaikkuna",
-    "close": "Sulje",
     "couldNotInstallThatVersion": "Version asentaminen epäonnistui.",
     "couldNotChangeAutomaticUpdating": "Automaattisen päivityksen muuttaminen epäonnistui.",
     "failed": "Epäonnistui",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automaattiset varmenteet ovat pois käytöstä. {{reason}}",
     "automaticCertificatesComeFrom": "Automaattiset varmenteet myöntää {{authority}}.",
     "noSecretKeyIsConfigured": "Palvelimelle ei ole määritetty SECRET_KEY-arvoa, joten yksityistä avainta ei voi tallentaa. Lataaminen on pois käytöstä, kunnes arvo asetetaan.",
-    "nothingToSavePasteA": "Ei tallennettavaa – liitä tunnus tai poista tallennettu tunnus Tyhjennä-painikkeella.",
     "savedThisSiteNowUses": "Tallennettu. Tämä sivusto käyttää nyt omaa Cloudflare-tunnustaan.",
     "removedThisSiteFallsBack": "Poistettu. Tämä sivusto käyttää jälleen alustan tunnusta.",
     "couldNotSaveTheToken": "Tunnuksen tallentaminen epäonnistui.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Tämän sivuston tunnus",
     "savedLeaveBlankToKeep": "Tallennettu – jätä tyhjäksi säilyttääksesi tai poista Tyhjennä-painikkeella",
     "pasteACloudflareApiToken": "Liitä Cloudflare API -tunnus",
-    "save": "Tallenna",
     "clear": "Tyhjennä",
     "nothingStoredThisHostCannot": "Ei tallennettua varmennetta – tämä alusta ei voi tarjoilla tätä isäntää HTTPS:n kautta.",
     "nothingStoredHereTlsFor": "Ei tallennettua varmennetta – tämän isännän TLS päätetään ennen alustaa, joten varmenne on siellä.",
@@ -4706,36 +4680,26 @@
     "roles": "Roolit",
     "permissions": "Käyttöoikeudet",
     "eventDetails": "Tapahtuman tiedot",
-    "context": "Konteksti",
     "resource": "Resurssi",
     "system": "Järjestelmä",
     "timestamp": "Aikaleima",
-    "authority": "Valtuutus",
-    "actorId": "Tekijän tunnus",
-    "type": "Tyyppi",
-    "systemLog": "Järjestelmäloki",
-    "audit": "Tarkastus: {{status}}",
-    "activityMessage": "Tapahtumaviesti",
-    "actionTaken": "Suoritettu toiminto",
-    "resourcePool": "Resurssivaranto",
-    "rawMetadata": "Raakametatiedot",
     "thisEntryIsPartOf": "Tämä merkintä on osa muuttumatonta tarkastuslokia.",
     "exportJson": "Vie JSON",
     "event": "Tapahtuma",
     "actor": "Tekijä",
+    "plugin": "Lisäosa",
     "activity": "Toiminta",
     "status": "Tila",
     "action": "Toiminto",
     "time": "Aika",
-    "logSignature": "Lokin allekirjoitus: {{id}}",
     "internal": "SISÄINEN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "VAROITUS",
-      "ERROR": "VIRHE",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "JÄRJESTELMÄ",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Varoitus",
+      "ERROR": "Virhe",
+      "DEBUG": "Debug",
+      "SYSTEM": "Järjestelmä",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Merkintä #{{id}}",
+    "recordedData": "Tallennetut tiedot"
   },
   "mediaPicker": {
     "showingOnly": "Näytetään vain: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Tehtävä",
       "schedule": "Suoritetaan",
       "lastRun": "Edellinen suoritus",
-      "nextRun": "Seuraava suoritus"
+      "nextRun": "Seuraava suoritus",
+      "duration": "Kesto"
     },
     "ownedBy": "{{owner}}",
     "platform": "Alusta",

@@ -6,6 +6,8 @@ import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 export class FieldSelectControl extends PureReactor {
   @prop declare field: ICollectionField;
@@ -75,21 +77,19 @@ export class FieldSelectControl extends PureReactor {
             {selectedValues.map((selected) => (
               <span
                 key={selected}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${
-                  theme === ThemeMode.DARK
-                    ? 'bg-slate-900 border-slate-700 text-slate-200'
-                    : 'bg-slate-50 border-slate-200 text-slate-700'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg fc-size-xs font-medium border fc-tone-raised fc-tone-line fc-tone-text`}
               >
                 <span>{optionValueToLabel.get(selected) || selected}</span>
                 {!isFieldReadOnly && (
-                  <button
+                  <Button
                     type="button"
+                    variant={ButtonVariant.GHOST}
+                    className="fc-btn--glyph"
+                    aria-label={AdminI18n.t('common.remove')}
                     onClick={() => persistSelected(selectedValues.filter((item) => item !== selected))}
-                    className="opacity-60 hover:opacity-100 transition-opacity"
                   >
                     <FrameworkIcons.Close size={12} />
-                  </button>
+                  </Button>
                 )}
               </span>
             ))}

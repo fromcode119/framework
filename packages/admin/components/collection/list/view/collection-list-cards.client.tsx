@@ -6,6 +6,7 @@ import { CollectionListLayout } from '@/components/collection/list/collection-li
 import { CollectionListCard } from '@/components/collection/list/view/collection-list-card.client';
 import { DataTablePagination } from '@/components/ui/view/data-table-pagination.client';
 import { DataTableSection } from '@/components/ui/data-table-section';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -13,7 +14,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * scrolls sideways or wraps every cell into a column of single words — so each record becomes a card.
  */
 export class CollectionListCards extends PureReactor {
-  declare props: Pick<CollectionListCards, 'data' | 'layout' | 'cells' | 'loading' | 'emptyMessage' | 'total' | 'page' | 'pageSize' | 'onPageChange' | 'onOpen' | 'renderActions' | 'renderExpanded' | 'selectedIds' | 'onSelectionChange' | 'sections' | 'sectionClassName' | 'renderHandle' | 'rowClassName'>;
+  declare props: Pick<CollectionListCards, 'data' | 'layout' | 'cells' | 'loading' | 'emptyMessage' | 'total' | 'page' | 'pageSize' | 'onPageChange' | 'onOpen' | 'renderActions' | 'selectedIds' | 'onSelectionChange' | 'sections' | 'sectionClassName' | 'renderHandle' | 'rowClassName'>;
 
   @prop declare data: any[];
   @prop declare layout: CollectionListLayout;
@@ -27,7 +28,6 @@ export class CollectionListCards extends PureReactor {
   @prop declare onOpen: (row: any) => void;
   @prop declare renderActions: (row: any) => ReactNode;
   /** The quick edit form for a record, or null when it is closed. */
-  @prop declare renderExpanded: (row: any) => ReactNode;
   @prop declare selectedIds: string[];
   @prop declare onSelectionChange: Dispatch<SetStateAction<string[]>>;
   /** In a grouped list, the records split into headed sections (shown in place of `data`). */
@@ -45,12 +45,7 @@ export class CollectionListCards extends PureReactor {
 
   private renderEmpty(): ReactNode {
     return (
-      <div className="px-6 py-16 flex flex-col items-center text-center">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
-          <FrameworkIcons.Search size={20} className="text-slate-400" />
-        </div>
-        <p className="font-medium text-slate-400 text-[12px]">{this.emptyMessage || AdminI18n.t('ui.table.empty')}</p>
-      </div>
+      <EmptyState icon={<FrameworkIcons.Search size={22} />} title={this.emptyMessage || AdminI18n.t('ui.table.empty')} />
     );
   }
 
@@ -62,7 +57,6 @@ export class CollectionListCards extends PureReactor {
         layout={this.layout}
         cells={this.cells}
         actions={this.renderActions(row)}
-        expanded={this.renderExpanded(row)}
         onOpen={this.onOpen}
         selected={(this.selectedIds || []).includes(String(row.id))}
         onToggle={this.toggle}
@@ -75,9 +69,9 @@ export class CollectionListCards extends PureReactor {
   private renderSections(sections: readonly DataTableSection<any>[]): ReactNode {
     return sections.map((section) => (
       <Fragment key={section.id}>
-        <div data-row-id={section.id} className={`px-4 py-2 bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 first:border-t-0 ${this.sectionClassName?.(section) || ''}`}>
-          <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{section.label}</span>
-          <span className="ms-2 text-[12px] font-medium text-slate-400">{section.rows.length}</span>
+        <div data-row-id={section.id} className={`fc-list-group ${this.sectionClassName?.(section) || ''}`}>
+          <span className="fc-list-group__label">{section.label}</span>
+          <span className="fc-list-group__count">{section.rows.length}</span>
         </div>
         {section.rows.map((row) => this.renderCard(row))}
       </Fragment>
@@ -89,7 +83,7 @@ export class CollectionListCards extends PureReactor {
     const sections = this.sections;
     const empty = sections ? !sections.length : rows.length === 0;
     return (
-      <div className={`transition-opacity ${this.loading ? 'opacity-60 pointer-events-none' : ''}`}>
+      <div className={`fc-list-cards__body${this.loading ? ' fc-list-cards__body--loading' : ''}`}>
         {empty && !this.loading ? this.renderEmpty() : sections ? this.renderSections(sections) : rows.map((row) => this.renderCard(row))}
         <DataTablePagination totalDocs={this.total} limit={this.pageSize} page={this.page} onPageChange={this.onPageChange} />
       </div>

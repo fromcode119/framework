@@ -1,5 +1,4 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -12,14 +11,17 @@ import { CollectionRecordLinksPanel } from '@/components/collection/edit/collect
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
-import { RecordJsonCard } from '@/components/collection/edit/view/record-json-card.client';
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 import { EditMoreSectionsCard } from '@/components/collection/edit/view/edit-more-sections-card.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
-import { AdminClass } from '@/lib/admin-class';
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { Alert } from '@/components/ui/view/alert.client';
 
 export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
@@ -32,7 +34,11 @@ export class EditPageBody extends PureReactor {
   /** Where the record sits — the way back to its list; above both columns. Null on a new record. */
   @prop declare crumbs: ReactNode;
   /** The card naming the record; it heads the main column, so the side column starts level with it. */
-  @prop declare head: ReactNode;
+  /** The record's header. A render function so the first section can pass its own "Edit" into the
+      header's ⋯ when the header becomes that card's head. */
+  @prop declare head: (opts?: { bare?: boolean; onEditDetails?: () => void }) => ReactNode;
+  /** The record's title field — the first card's head shows it, so it is not also a row. */
+  @prop declare titleFieldName?: string;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
@@ -112,45 +118,33 @@ export class EditPageBody extends PureReactor {
       */}
       <form onSubmit={(event) => event.preventDefault()}>
         {status && (
-          <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
-            <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
-              {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
-              <p className="text-sm opacity-90">{status.message}</p>
-            </div>
-            <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
-              <FrameworkIcons.Close size={18} />
-            </button>
-          </div>
+          <Alert
+            tone={status.type === NotificationType.SUCCESS ? 'success' : 'danger'}
+            role={status.type === NotificationType.SUCCESS ? 'status' : 'alert'}
+            title={AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}
+            className="mb-6"
+            action={(
+              <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={() => setStatus(null)}>
+                <FrameworkIcons.Close size={15} />
+              </Button>
+            )}
+          >
+            {status.message}
+          </Alert>
         )}
 
 
 
         {collection.admin?.tabs && collection.admin.tabs.length > 0 && (
-          <div className={`flex items-center gap-2 mb-8 p-1.5 ${AdminClass.SURFACE} w-fit ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
-            {collection.admin.tabs.map((tab: any) => (
-              <button
-                key={tab.name}
-                onClick={() => setActiveTab(tab.name)}
-                className={`px-6 py-2.5 rounded-xl text-[12px] font-medium transition-all ${
-                  activeTab === tab.name
-                    ? (theme === ThemeMode.DARK ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-indigo-600 shadow-sm')
-                    : (theme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <Tabs className="mb-8" value={activeTab} onChange={setActiveTab}
+            tabs={collection.admin.tabs.map((tab: any) => ({ id: tab.name, label: tab.label }))} />
         )}
 
         {this.crumbs}
         <div className="min-w-0">
         {this.advancedView ? (
           <div className="pb-32 space-y-6">
-            {this.head}
+            {this.head()}
             <RecordJsonView formData={formData} setFormData={setFormData} collectionSlug={resolvedSlug || slug} renderedFieldNames={renderedFieldNames} />
           </div>
         ) : (
@@ -162,8 +156,13 @@ export class EditPageBody extends PureReactor {
           <div className="fc-edit-columns">
           <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}`}>
           <div className="fc-edit-column">
-            {this.head}
+            {/* A saved record's header is the head of its FIRST card (recordHeader), so there is no
+                separate header card above it. A new record has no sections yet, so it keeps the header
+                as its own card. */}
+            {isNew ? this.head() : null}
             <EditPageMain
+              recordHeader={isNew ? undefined : this.head}
+              titleFieldName={this.titleFieldName}
               standardMainFieldSections={standardMainFieldSections}
               fullWidthMainFieldSections={fullWidthMainFieldSections}
               theme={theme}
@@ -223,15 +222,9 @@ export class EditPageBody extends PureReactor {
                 slotProps={slotProps}
               />
             )}
-            {/* The record as it is stored, under everything the page draws from it. */}
-            {!isNew && (
-              <RecordJsonCard
-                formData={formData}
-                setFormData={setFormData}
-                collectionSlug={resolvedSlug || slug}
-                renderedFieldNames={renderedFieldNames}
-              />
-            )}
+            {/* The record as it is stored is reached from the ⋯ menu's "Show as JSON", which swaps the
+                whole page to the JSON view — a raw-JSON CARD under every record as well was the same
+                thing twice, and a wall of keys the reference never shows on the record. */}
             {/* What else this record holds: one row per section the page does not draw, at its foot. */}
             {!isNew && (
               <EditMoreSectionsCard

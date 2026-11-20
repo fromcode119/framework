@@ -57,7 +57,7 @@ describe('DataTable — cards below desktop width', () => {
     const onEdit = vi.fn();
     render(<DataTable columns={COLUMNS as any} data={ROWS as any} onRowClick={onRowClick}
       actions={(row: any) => <button onClick={() => onEdit(row.id)}>Edit {row.id}</button>} />);
-    fireEvent.click(cards().querySelector('.text-\\[14px\\]')!);
+    fireEvent.click(cards().querySelector('.fc-size-md')!);
     expect(onRowClick).toHaveBeenCalledWith(ROWS[0]);
     const editButtons = screen.getAllByText('Edit 2');
     fireEvent.click(editButtons[0]!);

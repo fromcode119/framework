@@ -2,10 +2,9 @@ import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DataTable } from '@/components/ui/view/data-table.client';
-import { Badge } from '@/components/ui/view/badge.client';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import { AdminApi } from '@/lib/api';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
@@ -34,31 +33,30 @@ export class JobsQueueTable extends AdminComponent {
     }
   }
 
-  private get columns(): Array<{ header: string; id: string; accessor: (row: any) => ReactNode }> {
+  private static tone(state: string): string {
+    if (state === 'failed') return 'danger';
+    return state === 'active' ? 'info' : 'default';
+  }
+
+  private get columns(): Array<{ header: string; id: string; className?: string; accessor: (row: any) => ReactNode }> {
     return [
-      { header: AdminI18n.t('jobs.queue.job'), id: 'job', accessor: (row) => <div className="flex flex-col"><span className="text-[13px] font-medium text-slate-700 dark:text-white">{row.name}</span><span className="text-[12px] text-slate-400">{row.queue}</span></div> },
-      { header: AdminI18n.t('jobs.queue.state'), id: 'state', accessor: (row) => <Badge variant={row.state === 'failed' ? BadgeVariant.DANGER : row.state === 'active' ? BadgeVariant.INFO : BadgeVariant.GRAY}>{AdminI18n.optional(`jobs.queue.states.${row.state}`) || row.state}</Badge> },
-      { header: AdminI18n.t('jobs.queue.runs'), id: 'runAt', accessor: (row) => <span className="text-[12px] text-slate-500 tabular-nums">{row.runAt ? RelativeTimeFormatter.fromNow(row.runAt) : AdminI18n.t('jobs.queue.whenFree')}</span> },
-      { header: AdminI18n.t('jobs.queue.attempts'), id: 'attempts', accessor: (row) => <span className="text-[12px] text-slate-500 tabular-nums">{row.attemptsMade} / {row.attempts}</span> },
-      { header: AdminI18n.t('jobs.queue.error'), id: 'error', accessor: (row) => <span className="text-[12px] text-rose-700 dark:text-rose-300 break-words">{row.failedReason || ''}</span> },
+      { header: AdminI18n.t('jobs.queue.job'), id: 'job', accessor: (row) => <span className="fc-dt-inline"><span className="fc-dt-strong">{row.name}</span><span className="fc-dt-quiet">{row.queue}</span></span> },
+      { header: AdminI18n.t('jobs.queue.state'), id: 'state', accessor: (row) => <StateBadge tone={JobsQueueTable.tone(row.state)}>{AdminI18n.optional(`jobs.queue.states.${row.state}`) || row.state}</StateBadge> },
+      { header: AdminI18n.t('jobs.queue.runs'), id: 'runAt', accessor: (row) => (row.runAt ? RelativeTimeFormatter.fromNow(row.runAt) : AdminI18n.t('jobs.queue.whenFree')) },
+      { header: AdminI18n.t('jobs.queue.attempts'), id: 'attempts', accessor: (row) => `${row.attemptsMade} / ${row.attempts}` },
+      { header: AdminI18n.t('jobs.queue.error'), id: 'error', className: 'fc-dt-fill fc-dt-wrap', accessor: (row) => (row.failedReason ? <span className="fc-dt-lines" data-tone="danger">{row.failedReason}</span> : null) },
     ];
   }
 
   render(): ReactNode {
     return (
-      <section className="space-y-3">
-        <div>
-          <h2 className="text-sm font-medium text-slate-800 dark:text-slate-100">{AdminI18n.t('jobs.queue.heading')}</h2>
-          <p className="text-[12px] text-slate-500">{AdminI18n.t('jobs.queue.subheading')}</p>
-        </div>
-        <div className={`${AdminClass.SURFACE} overflow-hidden`}>
-          <DataTable
-            columns={this.columns}
-            data={this.jobs}
-            emptyMessage={this.loading ? AdminI18n.t('jobs.loading') : this.failed ? AdminI18n.t('jobs.queue.failed') : AdminI18n.t('jobs.queue.empty')}
-          />
-        </div>
-      </section>
+      <ListShell title={AdminI18n.t('jobs.queue.heading')} subtitle={AdminI18n.t('jobs.queue.subheading')}>
+        <DataTable
+          columns={this.columns as any}
+          data={this.jobs}
+          emptyMessage={this.loading ? AdminI18n.t('jobs.loading') : this.failed ? AdminI18n.t('jobs.queue.failed') : AdminI18n.t('jobs.queue.empty')}
+        />
+      </ListShell>
     );
   }
 }

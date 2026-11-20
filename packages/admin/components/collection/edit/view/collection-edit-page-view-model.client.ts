@@ -44,7 +44,7 @@ export class CollectionEditPageViewModelBuilder {
       handleSubmit: (e, summary) => CollectionEditPageHandlers.handleSubmit(self, e, summary),
       commitStatus: (value) => CollectionEditPageHandlers.commitStatus(self, value),
       saving: s.saving, fieldErrors: s.fieldErrors,
-      resolvedTitleValue: d.resolvedTitleValue, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,
+      resolvedTitleValue: d.resolvedTitleValue, titleFieldName: d.sourceField, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,
       activeTab: s.activeTab, setActiveTab: (v) => self.updateState('activeTab', v),
       selectedRevision: s.selectedRevision, setSelectedRevision: (v) => self.updateState('selectedRevision', v),
       activeVersionId: s.activeVersionId, setActiveVersionId: (v) => self.updateState('activeVersionId', v),

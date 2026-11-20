@@ -33,6 +33,26 @@ export class VersionChangeSummary {
   }
 
   /**
+   * Every field of a version beside what the record holds now, named the way the form names it, each
+   * marked when the two differ — for reading one version against the present, row by row.
+   */
+  static compare(current: Record<string, unknown> | null, version: Record<string, unknown> | null, fields: any[]): Array<{ key: string; label: string; current: string; version: string; changed: boolean }> {
+    if (!version) return [];
+    const labels = VersionChangeSummary.labelsOf(fields);
+    const now = VersionChangeSummary.canonical(current || {});
+    const then = VersionChangeSummary.canonical(version);
+    return Object.keys(then)
+      .filter((name) => !VersionChangeSummary.SYSTEM_KEYS.has(name.toLowerCase()))
+      .map((name) => ({
+        key: name,
+        label: labels.get(name.toLowerCase()) ?? name,
+        current: VersionChangeSummary.show(now[name]),
+        version: VersionChangeSummary.show(then[name]),
+        changed: JSON.stringify(VersionChangeSummary.blankAsNull(now[name])) !== JSON.stringify(VersionChangeSummary.blankAsNull(then[name])),
+      }));
+  }
+
+  /**
    * A field nobody filled reads as null in an older version and as "" or [] once the form saved it. All three
    * show as "—" and none of them is a change anyone made.
    */

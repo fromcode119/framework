@@ -7,6 +7,8 @@ import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { FieldLockControl } from '@/components/collection/view/field-lock-control.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 export class FieldRendererHeader extends PureReactor {
   private static readonly CONTROLS = 'input:not([type="hidden"]), textarea, select, button, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
@@ -41,7 +43,7 @@ export class FieldRendererHeader extends PureReactor {
 
   render(): ReactNode {
     const {
-      field, label, theme, isFieldReadOnly, supportsReadOnlyOverride, readOnlyOverrideGranted,
+      field, label, isFieldReadOnly, supportsReadOnlyOverride, readOnlyOverrideGranted,
       canRequestReadOnlyOverride, isLocalizedField, componentHandlesLocalization,
       shouldInlineLocaleSwitcher, onRequestReadOnlyOverride, localeSwitcher
     } = this;
@@ -58,7 +60,7 @@ export class FieldRendererHeader extends PureReactor {
         <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL} onClick={FieldRendererHeader.focusControl}>
           {label}
-          {field.required && <span className="text-rose-500 ms-1 font-medium font-sans">*</span>}
+          {field.required && <span className="fc-tone-danger ms-1 font-medium font-sans">*</span>}
         </label>
         {this.help}
         </span>
@@ -68,16 +70,10 @@ export class FieldRendererHeader extends PureReactor {
 
         <div className="flex items-center gap-2">
           {!isFieldReadOnly && supportsReadOnlyOverride && readOnlyOverrideGranted && (
-            <span
-              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[12px] font-medium tracking-wide border ${
-                theme === ThemeMode.DARK
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                  : 'bg-emerald-50 border-emerald-200 text-emerald-600'
-              }`}
-            >
+            <Badge variant={BadgeVariant.SUCCESS}>
               <FrameworkIcons.Check size={10} />
               {AdminI18n.t('ui.field.overrideUnlocked')}
-            </span>
+            </Badge>
           )}
           {isFieldReadOnly && <FieldLockControl label={label} canUnlock={canRequestReadOnlyOverride} onUnlock={onRequestReadOnlyOverride} />}
           {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher()}

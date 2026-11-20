@@ -1,16 +1,17 @@
 import type { IMediaItem } from '@/components/media/interfaces/media-item.interface';
 import type { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { Reactor, prop, state, bound, watch } from '@fromcode119/react-class-components';
 import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { RootFramework } from '@fromcode119/react';
+import { FrameworkIcons } from '@fromcode119/react';
 import { MediaPickerSourceService } from '@/components/media/media-picker-source-service';
-import { MediaPickerHeader } from '@/components/media/view/media-picker-header.client';
 import { MediaPickerToolbar } from '@/components/media/view/media-picker-toolbar.client';
-import { MediaPickerGrid } from '@/components/media/view/media-picker-grid.client';
-import { MediaPickerDetails } from '@/components/media/view/media-picker-details.client';
+import { MediaPickerTile } from '@/components/media/view/media-picker-tile.client';
+import { FocusModal } from '@/components/ui/view/focus-modal.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { MediaAcceptFilter } from '@/components/media/media-accept-filter';
 
@@ -41,6 +42,7 @@ export class MediaPicker extends Reactor {
   @state selectedId: string | null = null;
   @state mounted = false;
   @state themeSource = false;
+  @state uploadFailed = false;
 
   componentDidMount(): void {
     this.mounted = true;
@@ -131,8 +133,12 @@ export class MediaPicker extends Reactor {
     this.search = value;
   }
 
-  @bound private handleSourceChange(themeSource: boolean): void {
-    this.themeSource = themeSource;
+  @bound private handleSourceChange(tab: string): void {
+    this.themeSource = tab === 'theme';
+  }
+
+  @bound private insertSelected(): void {
+    if (this.selectedItem) this.handleConfirm(this.selectedItem);
   }
 
   @bound private handleTileSelect(item: IMediaItem): void {
@@ -146,6 +152,7 @@ export class MediaPicker extends Reactor {
 
   @bound async handleUpload(file: File): Promise<void> {
     this.uploading = true;
+    this.uploadFailed = false;
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -161,53 +168,64 @@ export class MediaPicker extends Reactor {
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      alert(AdminI18n.t('mediaPicker.uploadFailedPleaseTryAgain'));
+      this.uploadFailed = true;
     } finally {
       this.uploading = false;
     }
   }
 
+  private get tabs(): { id: string; label: string }[] {
+    if (this.allowThemeAssets === false) return [];
+    return [
+      { id: 'uploads', label: AdminI18n.t('mediaPicker.uploads') },
+      { id: 'theme', label: AdminI18n.t('mediaPicker.theme') },
+    ];
+  }
+
+  private renderFiles(): ReactNode {
+    if (this.visibleLoading) return <Loader />;
+    if (!this.visibleItems.length) return <EmptyState icon={<FrameworkIcons.Image size={20} />} title={this.emptyMessage} />;
+    return (
+      <div className="fc-tile-grid">
+        {this.visibleItems.map((item) => (
+          <MediaPickerTile key={item.id} item={item} selected={this.selectedId === item.id} onSelect={this.handleTileSelect} onConfirm={this.handleConfirm} />
+        ))}
+      </div>
+    );
+  }
+
+  /**
+   * The window-sized dialog of the kit, not a panel of its own: the files need the room, and the
+   * choice is confirmed from its foot, where the chosen file's name stands beside the button.
+   */
   render(): ReactNode {
     if (!this.mounted) return null;
-
-    return createPortal(
-    <RootFramework>
-      <div className="fixed inset-0 z-[2147483000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-        <div className="bg-white dark:bg-slate-900 w-full max-w-5xl h-[80vh] rounded-lg shadow-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-          <MediaPickerHeader
-            showSourceTabs={this.allowThemeAssets !== false}
-            themeSource={this.themeSource}
-            onSourceChange={this.handleSourceChange}
-            onClose={this.onClose}
-          />
-          <MediaPickerToolbar
-            search={this.search}
-            onSearchChange={this.handleSearchChange}
-            uploading={this.uploading}
-            canUpload={!this.themeSource}
-            onFile={this.handleUpload}
-            uploadAccept={this.filter.uploadAccept}
-            filterLabel={this.filter.active ? this.filter.label : ''}
-          />
-          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-            <div className="flex-1 min-h-0 p-4 md:p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-transparent">
-              <MediaPickerGrid
-                items={this.visibleItems}
-                loading={this.visibleLoading}
-                emptyMessage={this.emptyMessage}
-                selectedId={this.selectedId}
-                onSelect={this.handleTileSelect}
-                onConfirm={this.handleConfirm}
-              />
-            </div>
-            <div className={`${this.selectedItem ? 'flex' : 'hidden md:flex'} max-h-[45%] md:max-h-none w-full md:w-80 shrink-0 overflow-y-auto border-t md:border-t-0 md:border-s border-slate-100 dark:border-slate-800 p-4 md:p-6 bg-white dark:bg-slate-900 flex-col`}>
-              <MediaPickerDetails item={this.selectedItem} onConfirm={this.handleConfirm} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </RootFramework>,
-    document.body
+    return (
+      <FocusModal
+        isOpen
+        wide
+        label={AdminI18n.t('mediaPicker.mediaLibrary')}
+        tabs={this.tabs}
+        activeTab={this.themeSource ? 'theme' : 'uploads'}
+        onTab={this.handleSourceChange}
+        onClose={this.onClose}
+        onConfirm={this.insertSelected}
+        confirmLabel={AdminI18n.t('mediaPicker.insertAsset')}
+        confirmDisabled={!this.selectedItem}
+        footNote={this.selectedItem ? this.selectedItem.originalName || this.selectedItem.filename : undefined}
+      >
+        <MediaPickerToolbar
+          search={this.search}
+          onSearchChange={this.handleSearchChange}
+          uploading={this.uploading}
+          canUpload={!this.themeSource}
+          onFile={this.handleUpload}
+          uploadAccept={this.filter.uploadAccept}
+          filterLabel={this.filter.active ? this.filter.label : ''}
+        />
+        {this.uploadFailed ? <Hint variant="error">{AdminI18n.t('mediaPicker.uploadFailedPleaseTryAgain')}</Hint> : null}
+        {this.renderFiles()}
+      </FocusModal>
     );
   }
 }

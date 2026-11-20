@@ -1,3 +1,4 @@
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 
@@ -109,7 +110,7 @@ export class GeneralSystemCards extends PureReactor {
               { value: 'non-production', label: AdminI18n.t('sites.nonProductionNothingLeavesThis') },
             ]}
             theme={theme}
-            className="w-full md:w-80"
+            className="fc-settings-short"
             triggerClassName="font-medium rounded-xl"
           />
         </SettingRow>
@@ -161,7 +162,7 @@ export class GeneralSystemCards extends PureReactor {
                 placeholder={AdminI18n.t('settings.general.selectSystemTimezone')}
                 searchable
                 theme={theme}
-                className="w-full md:w-80"
+                className="fc-settings-short"
                 triggerClassName="font-medium rounded-xl"
               />
             </SettingRow>
@@ -176,7 +177,7 @@ export class GeneralSystemCards extends PureReactor {
                   onChange={this.changeTimeFormat}
                   options={this.timeFormatOptions}
                   theme={theme}
-                  className="w-full md:w-80"
+                  className="fc-settings-short"
                   triggerClassName="font-medium rounded-xl"
                 />
               </SettingRow>
@@ -195,7 +196,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email}
                   onChange={this.changeNotificationEmail}
-                  className="w-full md:w-80 font-medium"
+                  className="fc-settings-short"
                   placeholder="hello@example.com"
                 />
               </SettingRow>
@@ -210,7 +211,7 @@ export class GeneralSystemCards extends PureReactor {
                 <Input
                   value={settings.notification_email_cc}
                   onChange={this.changeNotificationEmailCc}
-                  className="w-full md:w-80 font-medium"
+                  className="fc-settings-short"
                   placeholder="ops@example.com, sales@example.com"
                 />
               </SettingRow>
@@ -222,16 +223,16 @@ export class GeneralSystemCards extends PureReactor {
                 title={AdminI18n.t('settings.general.emailTelemetry')}
                 description={AdminI18n.t('settings.general.receiveCriticalSystemAlertsAnd')}
               >
-                <div className="flex items-center gap-3">
+                <div className="fc-settings-group">
                   <Switch
                     checked={settings.email_notifications}
                     onChange={this.changeEmailNotifications}
                   />
                   <Button
+                    variant={ButtonVariant.SECONDARY}
                     onClick={this.onSendTelemetryTest}
                     isLoading={this.isSendingTelemetryTest}
                     icon={<FrameworkIcons.Mail size={13} />}
-                    className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
                   >
                     {AdminI18n.t('settings.general.sendTest')}
                   </Button>

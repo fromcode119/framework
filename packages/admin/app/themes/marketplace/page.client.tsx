@@ -1,15 +1,19 @@
-import { ThemeMode, VersionComparisonService } from '@fromcode119/core/client';
+import { VersionComparisonService } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { Card } from '@/components/ui/view/card.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Skeleton } from '@/components/ui/view/skeleton.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
@@ -87,127 +91,67 @@ export class ThemesMarketplacePage extends AdminComponent {
     }
   }
 
+  /** The one thing to do with a theme of the catalogue, by what it is here. */
+  private action(t: IMarketplaceTheme, installed: any, hasUpdate: boolean): ReactElement {
+    if (installed && !hasUpdate) {
+      return <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Check size={15} />} onClick={() => this.router.push(AdminConstants.ROUTES.THEMES.DETAIL(t.slug))}>{AdminI18n.t('themes.manageTheme')}</Button>;
+    }
+    if (hasUpdate) {
+      return <Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Refresh size={15} />} onClick={() => void this.handleInstall(t.slug, t.version)}>{AdminI18n.t('themes.upgradeNow')}</Button>;
+    }
+    return <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Download size={15} />} onClick={() => void this.handleInstall(t.slug, t.version)}>{this.siteScope ? AdminI18n.t('themes.addToThisSite') : AdminI18n.t('themes.installNow')}</Button>;
+  }
+
   render(): ReactElement {
-    const theme = this.theme;
     const { themes, installedThemes, loading } = this;
 
     if (loading) {
+      // The shape of the rows that are coming, so the list does not jump when they arrive.
       return (
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className={`h-64 ${AdminClass.SURFACE} animate-pulse ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white border border-slate-100 shadow-sm'}`} />
+        <ListCard>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="fc-ext-row">
+              <Skeleton width={32} height={32} />
+              <div className="fc-ext-row__text fc-stack"><Skeleton height={12} width="30%" /><Skeleton height={12} width="60%" /></div>
+            </div>
           ))}
-        </div>
+        </ListCard>
       );
     }
 
+    if (themes.length === 0) {
+      return <ListCard><EmptyState icon={<FrameworkIcons.ShoppingBag size={18} />} title={AdminI18n.t('themes.marketplaceEmpty')} hint={AdminI18n.t('themes.checkYourMarketplaceConnectionOr')} /></ListCard>;
+    }
+
+    // The same rows the list of installed themes is made of, so the catalogue and what is installed
+    // read as one program.
     return (
-      <div className="w-full space-y-6 animate-in fade-in duration-500">
-        <div className="w-full">
-          {themes.length === 0 ? (
-            <EmptyState
-              icon={<FrameworkIcons.ShoppingBag size={22} />}
-              title={AdminI18n.t('themes.marketplaceEmpty')}
-              hint={AdminI18n.t('themes.checkYourMarketplaceConnectionOr')}
+      <ListCard>
+        {themes.map((t) => {
+          const installed = installedThemes.find((it) => it.slug === t.slug);
+          // A site never updates the shared copy, so it is never offered one. Only a strictly NEWER
+          // version is an update: an older one in the catalogue would be a downgrade.
+          const installedVersion: string = installed?.version || '';
+          const hasUpdate = !this.siteScope && Boolean(installed) && VersionComparisonService.isGreater(t.version, installedVersion);
+          return (
+            <ListRow
+              key={t.slug}
+              icon={t.iconUrl ? <img src={t.iconUrl} alt="" /> : <FrameworkIcons.Palette size={16} />}
+              title={<button type="button" className="fc-ext-row__link" onClick={() => this.router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE_DETAIL(t.slug))}>{t.name}</button>}
+              badges={(
+                <>
+                  {hasUpdate ? <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('themes.updateAvailableVersion', { version: t.version })}</Badge> : null}
+                  {installed && !hasUpdate ? <Badge variant={BadgeVariant.SUCCESS}>{this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')}</Badge> : null}
+                </>
+              )}
+              description={t.description || undefined}
+              descriptionTitle={t.description || undefined}
+              meta={[installed && installedVersion ? AdminI18n.t('themes.installedVersionLabel', { version: installedVersion }) : '', `v${t.version}`, t.author].filter(Boolean).join(' · ')}
+              actions={this.action(t, installed, hasUpdate)}
             />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-              {themes.map(t => {
-                const installed = installedThemes.find(it => it.slug === t.slug);
-                // A site never updates the shared copy, so it is never offered one. Only a strictly NEWER
-                // version is an update: an older one in the catalogue would be a downgrade.
-                const installedVersion: string = installed?.version || '';
-                const hasUpdate = !this.siteScope && Boolean(installed) && VersionComparisonService.isGreater(t.version, installedVersion);
-
-                return (
-                  <Card
-                    key={t.slug}
-                    onClick={() => this.router.push(AdminConstants.ROUTES.THEMES.MARKETPLACE_DETAIL(t.slug))}
-                    className={`group flex flex-col border-0 relative transition-all duration-300 cursor-pointer overflow-hidden ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white shadow-sm hover:shadow-md'}`}
-                  >
-                    <div className="p-4 flex-1 fc-page-stack">
-                      <div className="flex items-start justify-between">
-                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-                          {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
-                        </div>
-                        <Badge variant={installed ? "success" : "blue"} className="font-medium px-2 py-1 text-[12px] rounded-lg">
-                          {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')) : AdminI18n.t('themes.premium')}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h3 className={`text-lg font-medium tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'} group-hover:text-indigo-600 transition-colors`}>
-                          {t.name}
-                        </h3>
-                        <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {t.description}
-                        </p>
-                        <div className={`flex flex-wrap items-center gap-3 text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                             {installed && installedVersion && (<>
-                             <div className="flex items-center gap-1.5">
-                               <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
-                               {AdminI18n.t('themes.installedVersionLabel', { version: installedVersion })}
-                             </div>
-                             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                             </>)}
-                             <div className="flex items-center gap-1.5">
-                               <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-                               {installed ? AdminI18n.t('themes.marketplaceVersionLabel', { version: t.version }) : `v${t.version}`}
-                             </div>
-                             {t.author && (<>
-                             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                             <div className="flex items-center gap-1.5">
-                               <FrameworkIcons.User size={12} className="text-indigo-500/70" />
-                               <span className="truncate">{t.author}</span>
-                             </div>
-                             </>)}
-                          </div>
-                      </div>
-
-                      <div className="pt-2 mt-auto space-y-3">
-                        {installed && hasUpdate && (
-                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
-                              <div className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                              <span className={`text-[12px] font-medium leading-none ${theme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-700'}`}>{AdminI18n.t('themes.updateAvailableVersion', { version: t.version })}</span>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-3">
-                          {installed && !hasUpdate ? (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); this.router.push(AdminConstants.ROUTES.THEMES.DETAIL(t.slug)); }}
-                              className={`w-full h-9 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-2 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border text-slate-400 hover:bg-slate-50 hover:text-indigo-600 shadow-sm'}`}
-                            >
-                              <FrameworkIcons.Check size={18} strokeWidth={3} />
-                              {AdminI18n.t('themes.manageTheme')}
-                            </button>
-                          ) : hasUpdate ? (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
-                              className={`w-full h-9 rounded-lg font-medium text-[12px] bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
-                            >
-                              <FrameworkIcons.Clock size={18} strokeWidth={3} />
-                              {AdminI18n.t('themes.upgradeNow')}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
-                              className={`w-full h-9 rounded-lg font-medium text-[12px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
-                            >
-                              <FrameworkIcons.Download size={18} strokeWidth={3} />
-                              {this.siteScope ? AdminI18n.t('themes.addToThisSite') : AdminI18n.t('themes.installNow')}
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+          );
+        })}
+      </ListCard>
     );
   }
 }

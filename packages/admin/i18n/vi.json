@@ -162,6 +162,7 @@
       "reorderHandle": "Kéo để sắp xếp lại — hoặc chọn rồi dùng các phím mũi tên",
       "reorderEnable": "Hiển thị danh sách theo thứ tự riêng để sắp xếp lại",
       "reorderFailed": "Không thể lưu thứ tự mới",
+      "noMatch": "Không có gì khớp với tìm kiếm hoặc bộ lọc.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Nhập {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Chỉnh sửa",
       "notFilledIn": "Chưa điền",
       "statusSection": "Trạng thái",
-      "statusConfirm": "Đổi trạng thái thành “{{status}}”?",
       "recordSection": "Bản ghi",
       "showJson": "Hiển thị dạng JSON",
       "showForm": "Hiển thị dạng biểu mẫu",
@@ -245,7 +245,8 @@
       "copied": "Đã sao chép",
       "more": "Thêm",
       "moreFields": "{{count}} trường",
-      "moreOneField": "{{count}} trường"
+      "moreOneField": "{{count}} trường",
+      "statusConfirm": "Đổi trạng thái thành “{{status}}”?"
     },
     "notFound": {
       "title": "Không tìm thấy bộ sưu tập",
@@ -366,7 +367,8 @@
     "reset": "Đặt lại",
     "notScheduledYet": "chưa được lên lịch",
     "more": "Thao tác khác",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Gỡ bỏ"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Chọn màu",
-      "colour": "Màu",
-      "pick": "Chọn một màu",
       "hex": "Mã Hex",
-      "confirm": "Xác nhận màu",
       "notSet": "Chưa đặt"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Phát hiện phụ thuộc chưa kích hoạt",
       "intro": "Để bật {{plugin}}, cần xử lý các mục sau:",
       "notInstalled": "CHƯA CÀI ĐẶT",
+      "inactive": "đang tắt",
+      "incompatible": "phiên bản khác",
       "requires": "Yêu cầu phiên bản {{version}}. Có thể tải về từ chợ ứng dụng.",
       "needsActivation": "Đã cài đặt nhưng cần được kích hoạt (Phiên bản {{version}}).",
       "mismatch": "Phiên bản không khớp: yêu cầu {{expected}}, hiện có {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Xem trước nền tảng",
-      "image": "Xem trước {{number}}"
+      "image": "Xem trước {{number}}",
+      "previous": "Trước",
+      "next": "Tiếp"
     },
     "menuField": {
       "newItem": "Mục menu mới",
-      "structure": "Cấu trúc menu",
-      "add": "Thêm mục menu"
+      "add": "Thêm mục menu",
+      "reorder": "Kéo để di chuyển; mũi tên: lên và xuống để di chuyển, phải để lồng vào, trái để đưa ra"
     },
     "field": {
       "notSet": "Chưa đặt",
@@ -461,8 +464,8 @@
       "record": "bản ghi"
     },
     "array": {
-      "addNew": "Thêm {{label}} mới",
-      "item": "Mục"
+      "add": "Thêm",
+      "reorder": "Kéo để di chuyển, hoặc dùng phím mũi tên"
     },
     "stepper": {
       "increment": "Tăng",
@@ -528,9 +531,7 @@
       "noContact": "Không có email hoặc số điện thoại trong People",
       "hasLogin": "Có tài khoản đăng nhập",
       "noLogin": "Không có tài khoản đăng nhập",
-      "source": "Tên, email và số điện thoại được lấy từ People #{{id}}; hãy thay đổi tại đó.",
       "open": "Mở trong People",
-      "choose": "Chọn người khác",
       "searchFailed": "Hiện không thể tìm kiếm trong People.",
       "noMatch": "Không có ai trong People khớp. Hãy nhập thông tin bên dưới; khi lưu, người này sẽ được thêm vào People.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Mở Trang"
       }
     },
-    "relativeOverridesInheritTheCollection": "Ghi đè tương đối sẽ kế thừa tiền tố của bộ sưu tập. Bật chế độ tuyệt đối để bỏ qua các tiền tố như `/shop`.",
     "range": "Khoảng thời gian",
     "noDataForThisRange": "Không có dữ liệu trong khoảng thời gian này",
     "peak": "· cao nhất {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Bộ lọc",
       "clearFilters": "Xóa tất cả",
       "removeFilter": "Xóa bộ lọc {{label}}",
-      "showResults": "Hiển thị {{count}} kết quả"
+      "showResults": "Hiển thị {{count}} kết quả",
+      "showResultsOne": "Hiển thị 1 kết quả"
     },
     "personFieldPicker": {
       "none": "Không lưu vào trường thông tin người",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Giới hạn sandbox cho {{name}} đã được lưu, nhưng tiến trình của plugin không khởi động lại được với các giới hạn này: {{value}}",
       "restartRequired": "Cần khởi động lại",
       "sandboxSettingsForWereSaved": "Cài đặt sandbox cho {{name}} đã được lưu, nhưng cần khởi động lại API để có hiệu lực.",
-      "resourcesUpdated": "Đã cập nhật tài nguyên",
-      "sandboxLimitsForUpdated": "Đã cập nhật giới hạn sandbox cho {{name}}.",
       "sandboxDisabledFor": "Đã tắt sandbox cho {{name}}.",
       "saveFailed": "Lưu thất bại",
       "failedToUpdateSandboxLimits": "Không thể cập nhật giới hạn sandbox.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Không hoạt động. Chưa ghi nhận sự kiện nào gần đây.",
       "updating": "Đang cập nhật...",
       "updateAvailable": "Có bản cập nhật",
-      "updatePolicy": "Chính sách cập nhật",
       "saveChanges": "Lưu thay đổi",
       "unsavedChanges": "Thay đổi chưa lưu",
       "exportSettingsAsJson": "Xuất cài đặt dạng JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Mới trong v{{version}}",
       "installedVersion": "Đã cài {{version}}",
       "marketplaceVersion": "Chợ ứng dụng {{version}}",
-      "saving": "Đang lưu...",
       "saveSettings": "Lưu cài đặt",
       "viewDefinition": "Xem định nghĩa",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Giao diện quản trị",
       "failedToLoadAppearances": "Không tải được giao diện quản trị",
       "failedToSaveShadowSetting": "Không lưu được cài đặt đổ bóng",
+      "failedToSaveMenuSetting": "Không lưu được cài đặt menu",
       "switchedToReloading": "Đã chuyển sang \"{{slug}}\". Đang tải lại…",
       "failedToSwitchAppearance": "Không chuyển được giao diện quản trị",
       "installFailed": "Cài đặt thất bại",
@@ -1919,6 +1917,8 @@
       "install": "Cài đặt",
       "surfaceShadows": "Đổ bóng bề mặt",
       "depthOnPanelsDialogsAnd": "Hiệu ứng chiều sâu cho bảng, hộp thoại và nút. Tắt để có giao diện quản trị phẳng — viền và góc vẫn giữ nguyên.",
+      "secondMenuColumn": "Cột menu thứ hai",
+      "sectionPagesBesideTheMenu": "Các trang của một mục nằm trong cột cạnh menu. Khi tắt, chúng mở ngay dưới dòng của mình trong menu duy nhất và mỗi màn hình rộng thêm 220px.",
       "installFromAPackageUrl": "Cài đặt từ URL gói",
       "builtIn": "Tích hợp sẵn",
       "installed": "Đã cài đặt",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Chưa cập nhật được vị trí IP",
       "geoUnavailable": "Không có thông tin trạng thái vị trí IP",
       "geoAttribution": "Định vị IP bởi {{name}} ({{license}}). Cập nhật hằng tháng khi bật.",
-      "geoSaved": "Đã lưu",
-      "geoSavedOn": "Đang tải cơ sở dữ liệu; dung lượng khoảng 60 MB.",
-      "geoSavedOff": "Đã xóa cơ sở dữ liệu khỏi máy chủ.",
       "everyPluginRunsIsolated": "Cô lập: mỗi plugin chạy trong tiến trình riêng. Giới hạn bộ nhớ và thời hạn áp dụng cho mọi plugin; phần CPU, tổng bộ nhớ, dung lượng đĩa và số tiến trình chỉ áp dụng cho plugin do một trang web tải lên.",
       "schemaOrphans": "Lược đồ cơ sở dữ liệu",
       "schemaOrphansHelp": "Các cột vẫn còn trong cơ sở dữ liệu nhưng không còn được khai báo ở đâu. Nền tảng chỉ liệt kê chúng; không có gì bị xóa cho đến khi bạn quyết định, và cột đã xóa thì không thể khôi phục.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Đã tắt — endpoint trả về 403 cho mọi yêu cầu.",
       "mediaPayloadLimitMb": "Giới hạn dung lượng media (MB)",
       "maximumDecodedUploadOrRemote": "Dung lượng tối đa của tệp tải lên (sau giải mã) hoặc tệp tải về từ xa mà các công cụ media của MCP chấp nhận.",
-      "saveLimit": "Lưu giới hạn",
       "allSites": "tất cả trang web",
       "issuedBeforeSites": "được cấp trước khi có trang web",
       "noTokensYet": "Chưa có token nào.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Mặc định của nền tảng",
       "thisSite": "Trang web này",
       "inForceNow": "Đang áp dụng",
-      "saving": "Đang lưu…",
-      "savePolicy": "Lưu chính sách",
       "thePlatformDefaultIsSet": "Mặc định của nền tảng do quản trị viên nền tảng thiết lập.",
       "useTheLayerBelow": "Dùng thiết lập cấp dưới",
       "whyTheLawRequiresThese": "Lý do pháp luật yêu cầu lưu giữ các bản ghi này",
-      "inheritsThePlatformDefault": "kế thừa: mặc định của nền tảng"
+      "inheritsThePlatformDefault": "kế thừa: mặc định của nền tảng",
+      "strategyDelete": "Xóa",
+      "strategyAnonymise": "Ẩn danh hóa",
+      "strategyRetain": "Giữ lại",
+      "declaredBy": "Mặc định do {{plugin}} khai báo",
+      "inheritsValue": "kế thừa: {{value}}",
+      "legalBasis": "Cơ sở pháp lý",
+      "theSiteColumnIsSet": "Cột \"Trang này\" được đặt bên trong một trang. Chọn một trang trong bộ chuyển để thay đổi."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Tên hiển thị",
     "thisPersonHasALogin": "Người này có tài khoản đăng nhập; email được thay đổi trong tài khoản.",
     "birthDate": "Ngày sinh",
-    "saveChanges": "Lưu thay đổi",
     "sendPasswordResetEmail": "Gửi email đặt lại mật khẩu",
     "cancel": "Hủy",
     "accountManagement": "Quản lý tài khoản",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Vui lòng sao chép mã khôi phục thủ công.",
     "nameRequired": "Cần nhập tên",
     "enterATokenNameFirst": "Vui lòng nhập tên token trước.",
-    "tokenCreated": "Đã tạo token",
     "copyTheTokenNowIt": "Hãy sao chép token ngay. Token chỉ hiển thị một lần.",
     "failedToCreateApiToken": "Không thể tạo API token",
     "areYouSureYouWant2": "Bạn có chắc muốn tắt 2FA cho người dùng này không? Việc này sẽ làm giảm mức độ bảo mật của tài khoản.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Đã thu hồi phiên",
     "deviceSessionRevokedSuccessfully": "Đã thu hồi phiên thiết bị thành công.",
     "failedToRevokeSession": "Không thể thu hồi phiên",
-    "rolesUpdated": "Đã cập nhật vai trò",
-    "theUserSRolesWere": "Đã lưu vai trò của người dùng.",
     "saveFailed": "Lưu thất bại",
     "failedToSaveRoles": "Không thể lưu vai trò.",
     "loadingRoles": "Đang tải vai trò",
@@ -3448,8 +3445,6 @@
     "remove": "Gỡ bỏ",
     "loadFailed": "Tải thất bại",
     "couldNotRetrieveRoleDetails": "Không thể lấy thông tin vai trò.",
-    "roleUpdated": "Đã cập nhật vai trò",
-    "wasSaved": "Đã lưu \"{{name}}\".",
     "updateFailed": "Cập nhật thất bại",
     "anErrorOccurredWhileSaving": "Đã xảy ra lỗi khi lưu.",
     "loadingRole": "Đang tải vai trò...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Quay lại Người dùng",
     "selfServiceSecurityControls": "Tự quản lý bảo mật",
     "sessionDeviceControlsAndPersonal": "Chỉ có thể quản lý phiên/thiết bị và token API cá nhân khi xem tài khoản của chính bạn.",
-    "securityRecommendations": "Khuyến nghị bảo mật",
     "twoFactorAuthentication": "Xác thực hai yếu tố",
-    "activeAndProtectingThisAccount": "Đang bật và bảo vệ tài khoản này",
-    "notEnabledHighlyRecommendedFor": "Chưa bật - rất nên bật cho tài khoản quản trị",
-    "passwordProtected": "Được bảo vệ bằng mật khẩu",
-    "accountHasASecurePassword": "Tài khoản có mật khẩu an toàn",
-    "administratorAccess": "Quyền quản trị viên",
     "fullSystemAccess2faStrongly": "Toàn quyền truy cập hệ thống - rất nên bật 2FA",
     "personalApiTokens": "Token API cá nhân",
     "tokenNameEGCi": "Tên token (vd: CI deploy)",
     "days": "Ngày",
     "createToken": "Tạo token",
-    "copyNowShownOnce": "Sao chép ngay (chỉ hiển thị một lần)",
     "loadingApiTokens": "Đang tải token API...",
     "noApiTokensCreatedYet": "Chưa có token API nào.",
     "revoke": "Thu hồi",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Hoạt động đăng nhập & phiên",
     "loadingAuthActivity": "Đang tải hoạt động xác thực...",
     "noRecentLoginSessionEvents": "Không có sự kiện đăng nhập/phiên gần đây cho người dùng này.",
-    "unknownTime": "Không rõ thời gian",
-    "activityEvent": "Sự kiện hoạt động",
     "openFullGlobalActivity": "Mở toàn bộ hoạt động hệ thống",
-    "2faStatus": "Trạng thái 2FA",
     "addAnExtraLayerOf": "Thêm một lớp bảo mật bằng xác thực qua ứng dụng (TOTP)",
-    "recommended": "Khuyến nghị",
     "enableTwoFactorAuthenticationTo": "Bật xác thực hai yếu tố để bảo vệ tài khoản này bằng mật khẩu dùng một lần theo thời gian (TOTP).",
     "enable2fa": "Bật 2FA",
     "step1ScanQrCode": "Bước 1: Quét mã QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Bước 2: Xác minh mã",
     "enterThe6DigitCode": "Nhập mã 6 chữ số từ ứng dụng xác thực để hoàn tất thiết lập:",
     "verifyEnable": "Xác minh & Bật",
-    "protectionActive": "Đang được bảo vệ",
     "thisAccountRequiresA6": "Tài khoản này yêu cầu mã 6 chữ số từ ứng dụng xác thực khi đăng nhập.",
     "regenerateRecoveryCodes": "Tạo lại mã khôi phục",
     "disable2fa": "Tắt 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Thu hồi các phiên khác",
     "loadingSessions": "Đang tải phiên...",
     "noActiveSessions": "Không có phiên nào đang hoạt động.",
-    "currentSession": "Phiên hiện tại",
-    "deviceSession": "Phiên thiết bị",
     "current": "Hiện tại",
     "unknownDevice": "Thiết bị không xác định",
     "editAccount2": "Chỉnh sửa tài khoản",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Mở bản ghi người dùng",
     "token": "Token",
     "createdOn": "Tạo ngày {{date}}",
-    "notAvailable": "không có",
     "revokedOn": "Thu hồi ngày {{date}}",
     "recoveryCodesRemaining": "Số mã khôi phục còn lại:",
-    "unknownValue": "không rõ",
     "expiresOn": "Hết hạn: {{date}}",
     "person2": "Người",
     "added": "Ngày thêm",
@@ -3591,12 +3570,10 @@
       "loading": "Đang tải các trường thông tin người dùng…",
       "loadFailed": "Không thể tải các trường thông tin người dùng.",
       "saveFailed": "Không thể lưu các trường.",
-      "saved": "Đã lưu các trường.",
       "empty": "Chưa có trường thông tin người dùng nào. Hãy thêm một trường để bắt đầu lưu thông tin đó cho mọi người.",
       "noneDeclared": "Trang web này chưa có trường thông tin người dùng nào.",
       "declare": "Thêm trường thông tin người dùng",
       "manage": "Quản lý trường",
-      "save": "Lưu các trường",
       "saveField": "Lưu trường",
       "delete": "Xóa",
       "deleteTitle": "Xóa trường này?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Hiệu lực (ngày)",
+    "revokeOtherSessionsConfirm": "Mọi thiết bị khác bị đăng xuất ngay.",
+    "revokeSessionConfirm": "Thiết bị đó bị đăng xuất ngay.",
+    "revokeCurrentSessionConfirm": "Đây là thiết bị bạn đang dùng. Bạn sẽ bị đăng xuất ngay.",
+    "revokeTokenConfirm": "\"{{name}}\" ngừng hoạt động ngay.",
+    "twoFactorTurnedOff": "Đăng nhập hai bước đang tắt cho trang này nên không thể thiết lập tại đây.",
+    "openSecuritySettings": "Mở cài đặt bảo mật"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Cài đặt trang web ({{what}}) được thiết lập trong từng trang web — hãy chọn một trang từ menu trang web.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Không thể mở trang web này để xem trước.",
     "couldNotLoadTheSite": "Không thể tải trang web.",
     "couldNotReloadThePlugin": "Không thể tải lại danh sách plugin.",
-    "siteSaved": "Đã lưu trang web",
-    "routingFollowsImmediatelyNoRestart": "Định tuyến được áp dụng ngay — không cần khởi động lại.",
     "notSaved": "Chưa lưu",
     "theSiteCouldNotBe2": "Không thể lưu trang web.",
     "couldNotOpenTheSite": "Không thể mở trang web",
@@ -3789,7 +3771,6 @@
     "visit": "Truy cập",
     "openThisSite": "Mở trang web này",
     "export": "Xuất",
-    "save": "Lưu",
     "couldNotLoadCertificates": "Không thể tải chứng chỉ.",
     "couldNotSwitchThisHost": "Không thể chuyển máy chủ này sang chế độ tự động.",
     "couldNotSwitchThisHost2": "Không thể chuyển máy chủ này sang chế độ tự động (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Có bản cập nhật",
     "isNowActive": "{{name}} hiện đang hoạt động.",
     "themeHasBeenUpdated2": "Giao diện {{name}} đã được cập nhật.",
-    "configurationSaved": "Đã lưu cấu hình",
-    "visualProtocolsUpdatedSuccessfully": "Đã cập nhật giao thức hiển thị thành công.",
     "saveFailed": "Lưu thất bại",
     "hasBeenRemoved2": "{{name}} đã được gỡ bỏ.",
     "seedsExecuted": "Đã chạy dữ liệu mẫu",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Bố cục",
     "extensionsSection": "Phần mở rộng",
     "versionReady": "Phiên bản {{version}} đã sẵn sàng",
-    "saveChanges": "Lưu thay đổi",
     "runSeedsHint": "Nạp lại dữ liệu mẫu của giao diện — các trang và nội dung mẫu — vào trang web này.",
     "resetThemeHint": "Xóa các cài đặt giao diện đã lưu của trang web này và nạp lại dữ liệu mẫu.",
     "notActiveHint": "Trang web này đang dùng giao diện khác.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Thay đổi trong v{{version}}",
     "whatChanged": "Những thay đổi",
-    "closeBuildSourceDialog": "Đóng hộp thoại nguồn build",
-    "close": "Đóng",
     "couldNotInstallThatVersion": "Không thể cài đặt phiên bản đó.",
     "couldNotChangeAutomaticUpdating": "Không thể thay đổi chế độ tự động cập nhật.",
     "failed": "Thất bại",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Chứng chỉ tự động đang tắt. {{reason}}",
     "automaticCertificatesComeFrom": "Chứng chỉ tự động được cấp bởi {{authority}}.",
     "noSecretKeyIsConfigured": "Máy chủ này chưa cấu hình SECRET_KEY nên không thể lưu khóa riêng tư. Tính năng tải lên bị tắt cho đến khi khóa này được thiết lập.",
-    "nothingToSavePasteA": "Không có gì để lưu — hãy dán token hoặc dùng Xóa để gỡ token đã lưu.",
     "savedThisSiteNowUses": "Đã lưu. Trang này hiện dùng token Cloudflare riêng.",
     "removedThisSiteFallsBack": "Đã gỡ. Trang này chuyển về dùng token của nền tảng.",
     "couldNotSaveTheToken": "Không thể lưu token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token của trang này",
     "savedLeaveBlankToKeep": "Đã lưu — để trống để giữ nguyên, hoặc dùng Xóa để gỡ",
     "pasteACloudflareApiToken": "Dán token API Cloudflare",
-    "save": "Lưu",
     "clear": "Xóa",
     "nothingStoredThisHostCannot": "Chưa lưu gì — nền tảng này không thể phục vụ host này qua HTTPS.",
     "nothingStoredHereTlsFor": "Không lưu gì ở đây — TLS của host này được xử lý trước khi tới nền tảng, nên chứng chỉ nằm ở đó.",
@@ -4706,36 +4680,26 @@
     "roles": "Vai trò",
     "permissions": "Quyền",
     "eventDetails": "Chi tiết sự kiện",
-    "context": "Ngữ cảnh",
     "resource": "Tài nguyên",
     "system": "Hệ thống",
     "timestamp": "Thời điểm",
-    "authority": "Thẩm quyền",
-    "actorId": "ID tác nhân",
-    "type": "Loại",
-    "systemLog": "Nhật ký hệ thống",
-    "audit": "Kiểm toán: {{status}}",
-    "activityMessage": "Nội dung hoạt động",
-    "actionTaken": "Thao tác đã thực hiện",
-    "resourcePool": "Nhóm tài nguyên",
-    "rawMetadata": "Siêu dữ liệu thô",
     "thisEntryIsPartOf": "Mục này thuộc nhật ký kiểm toán không thể thay đổi.",
     "exportJson": "Xuất JSON",
     "event": "Sự kiện",
     "actor": "Tác nhân",
+    "plugin": "Tiện ích",
     "activity": "Hoạt động",
     "status": "Trạng thái",
     "action": "Thao tác",
     "time": "Thời gian",
-    "logSignature": "Chữ ký nhật ký: {{id}}",
     "internal": "NỘI BỘ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Mục #{{id}}",
+    "recordedData": "Dữ liệu đã ghi"
   },
   "mediaPicker": {
     "showingOnly": "Chỉ hiển thị: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Tác vụ",
       "schedule": "Lịch chạy",
       "lastRun": "Lần chạy gần nhất",
-      "nextRun": "Lần chạy tiếp theo"
+      "nextRun": "Lần chạy tiếp theo",
+      "duration": "Thời lượng"
     },
     "ownedBy": "{{owner}}",
     "platform": "Nền tảng",

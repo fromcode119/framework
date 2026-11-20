@@ -38,9 +38,9 @@ export class DateTimePickerTrigger extends PureReactor {
       >
         <div className="flex min-w-0 items-center gap-2">
            {this.granularity.isTimeOfDay
-             ? <FrameworkIcons.Clock size={15} className="text-[color:var(--fc-text-muted)]" />
-             : <FrameworkIcons.Calendar size={15} className="text-[color:var(--fc-text-muted)]" />}
-           <span className={`truncate ${!value ? 'text-[color:var(--fc-text-muted)]' : ''}`}>
+             ? <FrameworkIcons.Clock size={15} className="fc-tone-muted" />
+             : <FrameworkIcons.Calendar size={15} className="fc-tone-muted" />}
+           <span className={`truncate ${!value ? 'fc-tone-muted' : ''}`}>
              {value && !this.granularity.usesCalendar
                ? this.granularity.formatValue(value)
                : value && utcDate

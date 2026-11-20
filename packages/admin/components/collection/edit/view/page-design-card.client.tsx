@@ -52,7 +52,7 @@ export class PageDesignCard extends Reactor {
     const blank = PageDesignCard.isBlank(this.content);
     return (
       <Card title={AdminI18n.t('collection.pageDesign.title')}>
-        <p className="text-sm text-slate-500 leading-relaxed">
+        <p className="text-sm fc-tone-muted leading-relaxed">
           {AdminI18n.t('collection.pageDesign.defaultOf', { page, plugin: design.pluginName })}{' '}
           {blank
             ? AdminI18n.t('collection.pageDesign.blank', { plugin: design.pluginName })
@@ -60,7 +60,7 @@ export class PageDesignCard extends Reactor {
         </p>
         <AdminLink
           href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.PLUGINS.DETAIL(design.pluginSlug))}
-          className="mt-3 inline-block text-[12px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+          className="mt-3 inline-block fc-size-xs font-medium fc-tone-brand fc-tone-hover-brand"
         >
           {AdminI18n.t('collection.pageDesign.open', { plugin: design.pluginName })}
         </AdminLink>

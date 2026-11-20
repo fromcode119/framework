@@ -114,7 +114,7 @@ export class NewUserPage extends AdminComponent {
           onSubmit={this.handleSubmit}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
            <form onSubmit={this.handleSubmit} className="space-y-8">
               <NewUserAccountFields
                 formData={formData}
@@ -137,7 +137,7 @@ export class NewUserPage extends AdminComponent {
               />
 
               {errors.global && (
-                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-medium flex items-center gap-3 tracking-tight">
+                 <div className="p-4 rounded-xl fc-tone-danger-soft border fc-tone-danger-line fc-tone-danger fc-size-sm font-medium flex items-center gap-3">
                     <FrameworkIcons.Warning size={18} />
                     {errors.global}
                  </div>

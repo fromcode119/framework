@@ -62,14 +62,15 @@ export class RuntimeConstants {
   ]);
 
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
-    'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
-    'Card', 'EmptyState', 'Badge', 'MenuAction', 'StateBadge', 'CopyValue', 'ConfirmDialog', 'EditSheet', 'EditSheetUnsaved', 'FocusModal', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
+    'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Spinner', 'Switch', 'NumberStepper',
+    'Card', 'EmptyState', 'Badge', 'MenuAction', 'StateBadge', 'CopyValue', 'Kbd', 'Tabs', 'SearchField', 'Alert', 'StatePage', 'PageBar', 'CodeBlock', 'Columns', 'ProgressBar', 'ScreenshotGallery', 'Tile', 'Heading', 'Text', 'Label', 'Hint', 'IconBadge', 'InlineTip', 'Popover', 'AffixInput', 'OtpInput', 'ListShell', 'ListShellHead', 'ListCard', 'ListRow', 'DropArea', 'ProgressTabs', 'RadioGroup', 'Skeleton', 'Tooltip', 'Avatar', 'Divider', 'CommandPalette', 'CommandBar', 'CommandBarCommand', 'ConfirmDialog', 'EditSheet', 'EditSheetUnsaved', 'FocusModal', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
     // These are DOMAIN-AGNOSTIC controls only. Money/currency editors were removed rather than listed
     // here: the framework has no business domain, so it cannot know what a valid currency is, and the
     // pair that used to live here proved it by shipping a hardcoded currency list nothing configured.
     // A domain control belongs to the plugin that owns the domain, which registers its own component
     // and is selected by name through a field's `admin.component`.
-    'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
+    'CodeEditor', 'VisualMenuField', 'RepeatRow', 'RepeatRowGrip', 'RepeatRowAdd',
+    'Icon', 'ThemeContext', 'ThemeProvider',
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
     'AdminServices', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',

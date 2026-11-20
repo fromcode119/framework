@@ -1,9 +1,14 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import type { PointerEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { DashboardWidgetSize } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { IDashboardWidgetDefinition } from '@/lib/dashboard/interfaces/dashboard-widget-definition.interface';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * One widget on the dashboard grid. Outside Customize it is only the widget, at its width; a widget that
@@ -83,7 +88,7 @@ export class DashboardWidgetFrame extends PureReactor {
     for (let text = walker.nextNode(); text; text = walker.nextNode()) {
       if (!text.textContent?.trim()) continue;
       const parent = text.parentElement;
-      if (parent && !parent.closest('[data-empty-state], header, h1, h2, h3, h4, h5, h6')) return false;
+      if (parent && !parent.closest('[data-empty-state], header, .fc-record-card__head, h1, h2, h3, h4, h5, h6')) return false;
     }
     return true;
   }
@@ -103,17 +108,11 @@ export class DashboardWidgetFrame extends PureReactor {
     if (!this.editing) {
       return <div ref={this.watch} className={`min-w-0 empty:hidden ${this.span} ${this.quiet ? 'fc-dashboard__widget--quiet' : ''}`}>{this.definition.render()}</div>;
     }
-    const outline = this.dragging
-      ? 'opacity-40 outline-indigo-400'
-      : this.dropTarget ? 'outline-indigo-500 bg-indigo-50/60 dark:bg-indigo-500/10' : 'outline-slate-300 dark:outline-slate-700';
+    const state = this.dragging ? ' fc-widget-edit--dragging' : this.dropTarget ? ' fc-widget-edit--target' : '';
     return (
-      <div
-        data-widget-key={this.definition.key}
-        onPointerDown={this.onPointerDown}
-        className={`min-w-0 cursor-grab touch-none select-none rounded-2xl outline-dashed outline-2 outline-offset-4 transition-[opacity,background-color] active:cursor-grabbing ${outline} ${this.span}`}
-      >
+      <div data-widget-key={this.definition.key} onPointerDown={this.onPointerDown} className={`fc-widget-edit${state} ${this.span}`}>
         {this.renderBar()}
-        <div className="pointer-events-none" aria-hidden>
+        <div className="fc-widget-edit__content" aria-hidden>
           {this.definition.render() ?? null}
         </div>
       </div>
@@ -123,15 +122,10 @@ export class DashboardWidgetFrame extends PureReactor {
   private renderBar(): ReactNode {
     const label = this.definition.label;
     return (
-      <div
-        className="mb-2 flex items-center gap-2 rounded-xl bg-slate-100 px-2.5 py-1.5 dark:bg-slate-800"
-        title={AdminI18n.t('dashboard.widgets.dragHint')}
-      >
-        <FrameworkIcons.Grid size={14} className="shrink-0 text-slate-400" />
-        <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-slate-700 dark:text-slate-200">{label}</span>
-        {this.definition.source ? (
-          <span className="hidden shrink-0 text-[12px] text-slate-400 sm:inline">{this.definition.source}</span>
-        ) : null}
+      <div className="fc-widget-edit__bar" title={AdminI18n.t('dashboard.widgets.dragHint')}>
+        <FrameworkIcons.Grid size={14} />
+        <span className="fc-widget-edit__name">{label}</span>
+        {this.definition.source ? <Badge>{this.definition.source}</Badge> : null}
         {this.renderSizes()}
         {this.iconButton(<FrameworkIcons.ChevronUp size={14} />, AdminI18n.t('dashboard.widgets.moveEarlier', { label }), () => this.onShift(-1), this.isFirst)}
         {this.iconButton(<FrameworkIcons.ChevronDown size={14} />, AdminI18n.t('dashboard.widgets.moveLater', { label }), () => this.onShift(1), this.isLast)}
@@ -140,38 +134,21 @@ export class DashboardWidgetFrame extends PureReactor {
     );
   }
 
+  /** The three widths, as the console's own small tabs. */
   private renderSizes(): ReactNode {
     const sizes = [DashboardWidgetSize.SMALL, DashboardWidgetSize.MEDIUM, DashboardWidgetSize.LARGE];
     return (
-      <div className="flex shrink-0 rounded-lg bg-white p-0.5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700" role="group" aria-label={AdminI18n.t('dashboard.widgets.width')}>
-        {sizes.map((size) => (
-          <button
-            key={size.value}
-            type="button"
-            onClick={() => this.onResize(size)}
-            aria-pressed={size === this.size}
-            title={AdminI18n.t(`dashboard.widgets.size.${size.value}`)}
-            className={`rounded-md px-1.5 text-[12px] font-medium leading-5 ${size === this.size ? 'bg-indigo-500 text-white' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
-          >
-            {AdminI18n.t(`dashboard.widgets.sizeShort.${size.value}`)}
-          </button>
-        ))}
-      </div>
+      <Tabs label={AdminI18n.t('dashboard.widgets.width')} value={String(this.size.value)}
+        onChange={(key: string) => { const size = sizes.find((candidate) => String(candidate.value) === key); if (size) this.onResize(size); }}
+        tabs={sizes.map((size) => ({ id: String(size.value), label: AdminI18n.t(`dashboard.widgets.sizeShort.${size.value}`) }))} />
     );
   }
 
   private iconButton(icon: ReactNode, label: string, onClick: () => void, disabled: boolean): ReactNode {
     return (
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        title={label}
-        aria-label={label}
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent dark:hover:bg-slate-900 dark:hover:text-white"
-      >
+      <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={onClick} disabled={disabled} title={label} aria-label={label}>
         {icon}
-      </button>
+      </Button>
     );
   }
 }

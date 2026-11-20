@@ -1,71 +1,32 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
-import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { AdminClass } from '@/lib/admin-class';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** What changed, release by release: one row per change, its release and date beside it. */
 export class ThemeMarketplaceAbout extends PureReactor {
   @prop declare theme: IMarketplaceTheme;
-  @prop declare adminTheme: ThemeMode;
 
   render(): ReactNode {
-    const { theme, adminTheme } = this;
+    const releases = this.theme.changelog || [];
+    if (!releases.length) return null;
+    const count = releases.reduce((sum, release) => sum + release.changes.length, 0);
     return (
-      <>
-        <div className="space-y-3">
-          <h3 className={`text-[12px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
-            {AdminI18n.t('themes.aboutName', { name: theme.name })}
-          </h3>
-          <p className={`text-base font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
-            {theme.description}
-          </p>
+      <ListShell title={AdminI18n.t('themes.technicalChangelog')} count={count}>
+        <div>
+          {releases.map((release) => release.changes.map((change, index) => (
+            <ListRow
+              key={`${release.version}-${index}`}
+              icon={<FrameworkIcons.Check size={16} />}
+              title={<span className="fc-ext-row__plain">{change}</span>}
+              description={`v${release.version} · ${AdminI18n.t('themes.releasedOn', { date: release.date })}`}
+            />
+          )))}
         </div>
-
-        {theme.changelog && theme.changelog.length > 0 && (
-          <div className="space-y-4 mt-6">
-            <div className="flex items-center gap-3">
-              <div className={`h-6 w-1.5 rounded-full ${adminTheme === ThemeMode.DARK ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
-              <h3 className={`text-[12px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>{AdminI18n.t('themes.technicalChangelog')}</h3>
-              <div className={`h-px flex-1 ${adminTheme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
-            </div>
-
-            <div className="space-y-4">
-              {theme.changelog.map((log, idx) => (
-                <div key={idx} className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[12px] font-medium rounded-lg">v{log.version}</Badge>
-                    <span className={`text-[12px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.releasedOn', { date: log.date })}</span>
-                  </div>
-                  <div className={`${AdminClass.SURFACE} overflow-hidden`}>
-                    <ul className={`divide-y ${adminTheme === ThemeMode.DARK ? 'divide-slate-800/50' : 'divide-slate-50'}`}>
-                      {log.changes.map((change, cIdx) => (
-                        <li key={cIdx} className={`p-4 flex items-start gap-4 transition-all duration-300 group ${adminTheme === ThemeMode.DARK ? 'hover:bg-slate-800/30' : 'hover:bg-indigo-50/30'}`}>
-                          <div className={`mt-0.5 h-6 w-6 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                            adminTheme === ThemeMode.DARK
-                              ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white'
-                              : 'bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 group-hover:shadow-lg group-hover:shadow-indigo-600/20'
-                          }`}>
-                            <FrameworkIcons.Check size={14} strokeWidth={3} />
-                          </div>
-                          <div className="flex-1 space-y-1">
-                            <p className={`text-[13px] font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300 group-hover:text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>
-                              {change}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </>
+      </ListShell>
     );
   }
 }

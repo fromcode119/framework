@@ -162,6 +162,7 @@
       "reorderHandle": "Seret untuk menyusun semula — atau fokus dan gunakan kekunci anak panah",
       "reorderEnable": "Paparkan senarai mengikut susunannya sendiri untuk menyusunnya semula",
       "reorderFailed": "Susunan baharu tidak dapat disimpan",
+      "noMatch": "Tiada yang sepadan dengan carian atau penapis anda.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Import {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Edit",
       "notFilledIn": "Belum diisi",
       "statusSection": "Status",
-      "statusConfirm": "Tukar status kepada “{{status}}”?",
       "recordSection": "Rekod",
       "showJson": "Papar sebagai JSON",
       "showForm": "Papar sebagai borang",
@@ -245,7 +245,8 @@
       "copied": "Disalin",
       "more": "Lagi",
       "moreFields": "{{count}} medan",
-      "moreOneField": "{{count}} medan"
+      "moreOneField": "{{count}} medan",
+      "statusConfirm": "Tukar status kepada “{{status}}”?"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemui",
@@ -366,7 +367,8 @@
     "reset": "Set semula",
     "notScheduledYet": "belum dijadualkan",
     "more": "Lagi tindakan",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Alih keluar"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Pilih warna",
-      "colour": "Warna",
-      "pick": "Pilih warna",
       "hex": "Kod Hex",
-      "confirm": "Sahkan Warna",
       "notSet": "Tidak ditetapkan"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Kebergantungan Tidak Aktif Dikesan",
       "intro": "Untuk mendayakan {{plugin}}, perkara berikut perlu diselesaikan:",
       "notInstalled": "TIDAK DIPASANG",
+      "inactive": "dimatikan",
+      "incompatible": "versi berbeza",
       "requires": "Memerlukan versi {{version}}. Kami boleh memuat turunnya dari pasaran.",
       "needsActivation": "Sudah dipasang tetapi perlu diaktifkan (Versi {{version}}).",
       "mismatch": "Versi tidak sepadan: memerlukan {{expected}}, ditemui {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Pratonton Platform",
-      "image": "Pratonton {{number}}"
+      "image": "Pratonton {{number}}",
+      "previous": "Sebelumnya",
+      "next": "Seterusnya"
     },
     "menuField": {
       "newItem": "Item Menu Baharu",
-      "structure": "Struktur Menu",
-      "add": "Tambah Item Menu"
+      "add": "Tambah Item Menu",
+      "reorder": "Seret untuk alih; anak panah: atas dan bawah untuk alih, kanan untuk sarang, kiri untuk keluar"
     },
     "field": {
       "notSet": "Tidak ditetapkan",
@@ -461,8 +464,8 @@
       "record": "rekod"
     },
     "array": {
-      "addNew": "Tambah {{label}} Baharu",
-      "item": "Item"
+      "add": "Tambah",
+      "reorder": "Seret untuk alih, atau guna kekunci anak panah"
     },
     "stepper": {
       "increment": "Tambah",
@@ -528,9 +531,7 @@
       "noContact": "Tiada e-mel atau telefon dalam Orang",
       "hasLogin": "Mempunyai log masuk",
       "noLogin": "Tiada log masuk",
-      "source": "Nama, e-mel dan telefon diambil daripada Orang #{{id}}; ubahnya di sana.",
       "open": "Buka dalam Orang",
-      "choose": "Pilih orang lain",
       "searchFailed": "Orang tidak dapat dicari buat masa ini.",
       "noMatch": "Tiada sesiapa dalam Orang yang sepadan. Masukkan butirannya di bawah; menyimpan akan menambahnya ke Orang.",
       "ref": "Orang #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Buka Laman"
       }
     },
-    "relativeOverridesInheritTheCollection": "Penggantian relatif mewarisi awalan koleksi. Dayakan mod mutlak untuk memintas awalan seperti `/shop`.",
     "range": "Julat",
     "noDataForThisRange": "Tiada data untuk julat ini",
     "peak": "· puncak {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Penapis",
       "clearFilters": "Kosongkan semua",
       "removeFilter": "Alih keluar penapis {{label}}",
-      "showResults": "Tunjukkan {{count}} hasil"
+      "showResults": "Tunjukkan {{count}} hasil",
+      "showResultsOne": "Tunjukkan 1 hasil"
     },
     "personFieldPicker": {
       "none": "Tidak disimpan ke medan orang",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Had kotak pasir untuk {{name}} telah disimpan, tetapi prosesnya gagal dimulakan semula dengan had tersebut: {{value}}",
       "restartRequired": "Mula Semula Diperlukan",
       "sandboxSettingsForWereSaved": "Tetapan kotak pasir untuk {{name}} telah disimpan, tetapi API perlu dimulakan semula sebelum tetapan berkuat kuasa.",
-      "resourcesUpdated": "Sumber Dikemas Kini",
-      "sandboxLimitsForUpdated": "Had kotak pasir untuk {{name}} dikemas kini.",
       "sandboxDisabledFor": "Kotak pasir dilumpuhkan untuk {{name}}.",
       "saveFailed": "Simpan Gagal",
       "failedToUpdateSandboxLimits": "Gagal mengemas kini had kotak pasir.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Melahu. Tiada peristiwa terkini direkodkan.",
       "updating": "Mengemas kini...",
       "updateAvailable": "Kemas Kini Tersedia",
-      "updatePolicy": "Dasar Kemas Kini",
       "saveChanges": "Simpan Perubahan",
       "unsavedChanges": "Perubahan belum disimpan",
       "exportSettingsAsJson": "Eksport tetapan sebagai JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Baharu dalam v{{version}}",
       "installedVersion": "Dipasang {{version}}",
       "marketplaceVersion": "Pasaran {{version}}",
-      "saving": "Menyimpan...",
       "saveSettings": "Simpan Tetapan",
       "viewDefinition": "Lihat Definisi",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Penampilan",
       "failedToLoadAppearances": "Gagal memuatkan penampilan",
       "failedToSaveShadowSetting": "Gagal menyimpan tetapan bayang",
+      "failedToSaveMenuSetting": "Gagal menyimpan tetapan menu",
       "switchedToReloading": "Ditukar kepada \"{{slug}}\". Memuat semula…",
       "failedToSwitchAppearance": "Gagal menukar penampilan",
       "installFailed": "Pemasangan gagal",
@@ -1919,6 +1917,8 @@
       "install": "Pasang",
       "surfaceShadows": "Bayang permukaan",
       "depthOnPanelsDialogsAnd": "Kedalaman pada panel, dialog dan butang. Matikan untuk pentadbir rata — sempadan dan sudut kekal seperti sedia ada.",
+      "secondMenuColumn": "Lajur menu kedua",
+      "sectionPagesBesideTheMenu": "Halaman sesuatu bahagian berada dalam lajur di sebelah menu. Apabila dimatikan, ia dibuka di bawah barisnya dalam satu menu dan setiap skrin bertambah 220px.",
       "installFromAPackageUrl": "Pasang daripada URL pakej",
       "builtIn": "Terbina dalam",
       "installed": "Dipasang",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Lokasi IP tidak dikemas kini",
       "geoUnavailable": "Status lokasi IP tidak tersedia",
       "geoAttribution": "Geolokasi IP oleh {{name}} ({{license}}). Dikemas kini setiap bulan semasa dihidupkan.",
-      "geoSaved": "Disimpan",
-      "geoSavedOn": "Pangkalan data sedang dimuat turun; saiznya kira-kira 60 MB.",
-      "geoSavedOff": "Pangkalan data telah dialih keluar daripada pelayan.",
       "everyPluginRunsIsolated": "Terasing: setiap pemalam berjalan dalam prosesnya sendiri. Had memori dan tarikh akhir terpakai kepada setiap pemalam; bahagian CPU, jumlah memori, cakera dan proses hanya terpakai kepada pemalam yang dimuat naik oleh tapak.",
       "schemaOrphans": "Skema pangkalan data",
       "schemaOrphansHelp": "Lajur yang masih wujud dalam pangkalan data tetapi tidak lagi diisytiharkan oleh mana-mana pihak. Platform hanya menyenaraikannya; tiada yang digugurkan sehingga anda membuat keputusan, dan lajur yang digugurkan tidak dapat dipulihkan.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Dinyahdayakan — titik akhir membalas 403 kepada semua.",
       "mediaPayloadLimitMb": "Had muatan media (MB)",
       "maximumDecodedUploadOrRemote": "Saiz maksimum muat naik yang dinyahkod atau muat turun jauh yang diterima oleh alat media MCP.",
-      "saveLimit": "Simpan had",
       "allSites": "semua laman",
       "issuedBeforeSites": "dikeluarkan sebelum laman wujud",
       "noTokensYet": "Belum ada token.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Lalai platform",
       "thisSite": "Tapak ini",
       "inForceNow": "Berkuat kuasa sekarang",
-      "saving": "Menyimpan…",
-      "savePolicy": "Simpan dasar",
       "thePlatformDefaultIsSet": "Lalai platform ditetapkan oleh pentadbir platform.",
       "useTheLayerBelow": "Gunakan lapisan di bawah",
       "whyTheLawRequiresThese": "Sebab undang-undang memerlukan rekod ini disimpan",
-      "inheritsThePlatformDefault": "mewarisi: lalai platform"
+      "inheritsThePlatformDefault": "mewarisi: lalai platform",
+      "strategyDelete": "Padam",
+      "strategyAnonymise": "Tanpa nama",
+      "strategyRetain": "Simpan",
+      "declaredBy": "Lalai yang diisytiharkan oleh {{plugin}}",
+      "inheritsValue": "mewarisi: {{value}}",
+      "legalBasis": "Asas undang-undang",
+      "theSiteColumnIsSet": "Lajur \"Tapak ini\" ditetapkan di dalam tapak. Pilih tapak dalam penukar untuk mengubahnya."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Nama paparan",
     "thisPersonHasALogin": "Individu ini mempunyai akaun log masuk; e-melnya ditukar pada akaun tersebut.",
     "birthDate": "Tarikh lahir",
-    "saveChanges": "Simpan perubahan",
     "sendPasswordResetEmail": "Hantar e-mel tetapan semula kata laluan",
     "cancel": "Batal",
     "accountManagement": "Pengurusan akaun",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Sila salin kod pemulihan secara manual.",
     "nameRequired": "Nama Diperlukan",
     "enterATokenNameFirst": "Masukkan nama token terlebih dahulu.",
-    "tokenCreated": "Token Dicipta",
     "copyTheTokenNowIt": "Salin token sekarang. Token ini hanya dipaparkan sekali.",
     "failedToCreateApiToken": "Gagal mencipta token API",
     "areYouSureYouWant2": "Adakah anda pasti mahu melumpuhkan 2FA untuk pengguna ini? Tindakan ini akan mengurangkan keselamatan akaun.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesi Dibatalkan",
     "deviceSessionRevokedSuccessfully": "Sesi peranti berjaya dibatalkan.",
     "failedToRevokeSession": "Gagal membatalkan sesi",
-    "rolesUpdated": "Peranan dikemas kini",
-    "theUserSRolesWere": "Peranan pengguna telah disimpan.",
     "saveFailed": "Gagal menyimpan",
     "failedToSaveRoles": "Gagal menyimpan peranan.",
     "loadingRoles": "Memuatkan peranan",
@@ -3448,8 +3445,6 @@
     "remove": "Alih keluar",
     "loadFailed": "Gagal Memuatkan",
     "couldNotRetrieveRoleDetails": "Tidak dapat mendapatkan butiran peranan.",
-    "roleUpdated": "Peranan dikemas kini",
-    "wasSaved": "\"{{name}}\" telah disimpan.",
     "updateFailed": "Kemas Kini Gagal",
     "anErrorOccurredWhileSaving": "Ralat berlaku semasa menyimpan.",
     "loadingRole": "Memuatkan peranan...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Kembali ke Pengguna",
     "selfServiceSecurityControls": "Kawalan Keselamatan Layan Diri",
     "sessionDeviceControlsAndPersonal": "Kawalan sesi/peranti dan token API peribadi hanya tersedia semasa melihat akaun pengguna anda sendiri.",
-    "securityRecommendations": "Cadangan Keselamatan",
     "twoFactorAuthentication": "Pengesahan Dua Faktor",
-    "activeAndProtectingThisAccount": "Aktif dan melindungi akaun ini",
-    "notEnabledHighlyRecommendedFor": "Tidak didayakan - sangat disyorkan untuk akaun pentadbir",
-    "passwordProtected": "Dilindungi Kata Laluan",
-    "accountHasASecurePassword": "Akaun mempunyai kata laluan yang selamat",
-    "administratorAccess": "Akses Pentadbir",
     "fullSystemAccess2faStrongly": "Akses penuh sistem - 2FA sangat disyorkan",
     "personalApiTokens": "Token API Peribadi",
     "tokenNameEGCi": "Nama token (cth. CI deploy)",
     "days": "Hari",
     "createToken": "Cipta Token",
-    "copyNowShownOnce": "Salin Sekarang (dipaparkan sekali)",
     "loadingApiTokens": "Memuatkan token API...",
     "noApiTokensCreatedYet": "Belum ada token API dicipta.",
     "revoke": "Batalkan",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktiviti Log Masuk & Sesi",
     "loadingAuthActivity": "Memuatkan aktiviti pengesahan...",
     "noRecentLoginSessionEvents": "Tiada peristiwa log masuk/sesi terkini untuk pengguna ini.",
-    "unknownTime": "Masa Tidak Diketahui",
-    "activityEvent": "Peristiwa aktiviti",
     "openFullGlobalActivity": "Buka Aktiviti Global Penuh",
-    "2faStatus": "Status 2FA",
     "addAnExtraLayerOf": "Tambah lapisan keselamatan tambahan menggunakan pengesahan berasaskan aplikasi (TOTP)",
-    "recommended": "Disyorkan",
     "enableTwoFactorAuthenticationTo": "Dayakan pengesahan dua faktor untuk melindungi akaun ini dengan kata laluan sekali guna berasaskan masa (TOTP).",
     "enable2fa": "Dayakan 2FA",
     "step1ScanQrCode": "Langkah 1: Imbas Kod QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Langkah 2: Sahkan Kod",
     "enterThe6DigitCode": "Masukkan kod 6 digit daripada aplikasi pengesah anda untuk melengkapkan persediaan:",
     "verifyEnable": "Sahkan & Dayakan",
-    "protectionActive": "Perlindungan Aktif",
     "thisAccountRequiresA6": "Akaun ini memerlukan kod 6 digit daripada aplikasi pengesah semasa log masuk.",
     "regenerateRecoveryCodes": "Jana Semula Kod Pemulihan",
     "disable2fa": "Nyahdayakan 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Batalkan Sesi Lain",
     "loadingSessions": "Memuatkan sesi...",
     "noActiveSessions": "Tiada sesi aktif.",
-    "currentSession": "Sesi Semasa",
-    "deviceSession": "Sesi Peranti",
     "current": "Semasa",
     "unknownDevice": "Peranti tidak diketahui",
     "editAccount2": "Edit akaun",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Buka rekod pengguna",
     "token": "Token",
     "createdOn": "Dicipta {{date}}",
-    "notAvailable": "t/b",
     "revokedOn": "Dibatalkan {{date}}",
     "recoveryCodesRemaining": "Baki kod pemulihan:",
-    "unknownValue": "tidak diketahui",
     "expiresOn": "Tamat tempoh: {{date}}",
     "person2": "Individu",
     "added": "Ditambah",
@@ -3591,12 +3570,10 @@
       "loading": "Memuatkan medan individu…",
       "loadFailed": "Medan individu tidak dapat dimuatkan.",
       "saveFailed": "Medan tidak dapat disimpan.",
-      "saved": "Medan disimpan.",
       "empty": "Belum ada medan individu. Tambah satu untuk mula menyimpannya bagi setiap individu.",
       "noneDeclared": "Tapak ini belum mempunyai medan individu.",
       "declare": "Tambah medan individu",
       "manage": "Urus medan",
-      "save": "Simpan medan",
       "saveField": "Simpan medan",
       "delete": "Padam",
       "deleteTitle": "Padam medan ini?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Sah selama (hari)",
+    "revokeOtherSessionsConfirm": "Semua peranti lain dilog keluar serta-merta.",
+    "revokeSessionConfirm": "Peranti itu dilog keluar serta-merta.",
+    "revokeCurrentSessionConfirm": "Ini peranti yang anda gunakan sekarang. Anda dilog keluar serta-merta.",
+    "revokeTokenConfirm": "\"{{name}}\" berhenti berfungsi serta-merta.",
+    "twoFactorTurnedOff": "Log masuk dua faktor dimatikan untuk tapak ini, jadi ia tidak boleh disediakan di sini.",
+    "openSecuritySettings": "Buka tetapan keselamatan"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Tetapan tapak ({{what}}) ditetapkan dalam setiap tapak — pilih satu daripada menu tapak.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Tapak ini tidak dapat dibuka untuk pratonton.",
     "couldNotLoadTheSite": "Tidak dapat memuatkan tapak.",
     "couldNotReloadThePlugin": "Tidak dapat memuat semula senarai pemalam.",
-    "siteSaved": "Tapak disimpan",
-    "routingFollowsImmediatelyNoRestart": "Penghalaan berkuat kuasa serta-merta — tanpa mula semula.",
     "notSaved": "Tidak disimpan",
     "theSiteCouldNotBe2": "Tapak tidak dapat disimpan.",
     "couldNotOpenTheSite": "Tidak dapat membuka tapak",
@@ -3789,7 +3771,6 @@
     "visit": "Lawati",
     "openThisSite": "Buka tapak ini",
     "export": "Eksport",
-    "save": "Simpan",
     "couldNotLoadCertificates": "Tidak dapat memuatkan sijil.",
     "couldNotSwitchThisHost": "Tidak dapat menukar hos ini kepada automatik.",
     "couldNotSwitchThisHost2": "Tidak dapat menukar hos ini kepada automatik (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Kemas Kini Tersedia",
     "isNowActive": "{{name}} kini aktif.",
     "themeHasBeenUpdated2": "Tema {{name}} telah dikemas kini.",
-    "configurationSaved": "Konfigurasi Disimpan",
-    "visualProtocolsUpdatedSuccessfully": "Protokol visual berjaya dikemas kini.",
     "saveFailed": "Simpan Gagal",
     "hasBeenRemoved2": "{{name}} telah dialih keluar.",
     "seedsExecuted": "Benih Dijalankan",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Susun atur",
     "extensionsSection": "Sambungan",
     "versionReady": "Versi {{version}} sudah sedia",
-    "saveChanges": "Simpan perubahan",
     "runSeedsHint": "Memainkan semula data seed tema — halaman dan kandungan contohnya — ke dalam tapak ini.",
     "resetThemeHint": "Mengosongkan tetapan tema yang disimpan untuk tapak ini dan memainkan semula data seed.",
     "notActiveHint": "Tapak ini menggunakan tema lain.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Perubahan dalam v{{version}}",
     "whatChanged": "Perubahan",
-    "closeBuildSourceDialog": "Tutup dialog sumber binaan",
-    "close": "Tutup",
     "couldNotInstallThatVersion": "Versi tersebut tidak dapat dipasang.",
     "couldNotChangeAutomaticUpdating": "Kemas kini automatik tidak dapat diubah.",
     "failed": "Gagal",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Sijil automatik dimatikan. {{reason}}",
     "automaticCertificatesComeFrom": "Sijil automatik diperoleh daripada {{authority}}.",
     "noSecretKeyIsConfigured": "Tiada SECRET_KEY dikonfigurasikan pada pelayan ini, jadi kunci peribadi tidak dapat disimpan. Muat naik dilumpuhkan sehingga ia ditetapkan.",
-    "nothingToSavePasteA": "Tiada apa-apa untuk disimpan — tampal token, atau gunakan Kosongkan untuk mengalih keluar token yang disimpan.",
     "savedThisSiteNowUses": "Disimpan. Tapak ini kini menggunakan token Cloudflare sendiri.",
     "removedThisSiteFallsBack": "Dialih keluar. Tapak ini kembali menggunakan token platform.",
     "couldNotSaveTheToken": "Tidak dapat menyimpan token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token tapak ini",
     "savedLeaveBlankToKeep": "Disimpan — biarkan kosong untuk mengekalkan, atau gunakan Kosongkan untuk mengalih keluar",
     "pasteACloudflareApiToken": "Tampal token API Cloudflare",
-    "save": "Simpan",
     "clear": "Kosongkan",
     "nothingStoredThisHostCannot": "Tiada apa-apa disimpan — hos ini tidak boleh disajikan melalui HTTPS oleh platform ini.",
     "nothingStoredHereTlsFor": "Tiada apa-apa disimpan di sini — TLS untuk hos ini ditamatkan sebelum platform, jadi sijilnya berada di sana.",
@@ -4706,36 +4680,26 @@
     "roles": "Peranan",
     "permissions": "Kebenaran",
     "eventDetails": "Butiran Peristiwa",
-    "context": "Konteks",
     "resource": "Sumber",
     "system": "Sistem",
     "timestamp": "Cap Masa",
-    "authority": "Pihak Berkuasa",
-    "actorId": "ID Pelaku",
-    "type": "Jenis",
-    "systemLog": "Log Sistem",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mesej Aktiviti",
-    "actionTaken": "Tindakan Diambil",
-    "resourcePool": "Kumpulan Sumber",
-    "rawMetadata": "Metadata Mentah",
     "thisEntryIsPartOf": "Entri ini adalah sebahagian daripada jejak audit yang tidak boleh diubah.",
     "exportJson": "Eksport JSON",
     "event": "Peristiwa",
     "actor": "Pelaku",
+    "plugin": "Pemalam",
     "activity": "Aktiviti",
     "status": "Status",
     "action": "Tindakan",
     "time": "Masa",
-    "logSignature": "Tandatangan Log: {{id}}",
     "internal": "DALAMAN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AMARAN",
-      "ERROR": "RALAT",
-      "DEBUG": "NYAHPEPIJAT",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Amaran",
+      "ERROR": "Ralat",
+      "DEBUG": "Nyahpepijat",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entri #{{id}}",
+    "recordedData": "Data direkodkan"
   },
   "mediaPicker": {
     "showingOnly": "Hanya menunjukkan: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Tugas",
       "schedule": "Jadual",
       "lastRun": "Larian terakhir",
-      "nextRun": "Larian seterusnya"
+      "nextRun": "Larian seterusnya",
+      "duration": "Tempoh"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

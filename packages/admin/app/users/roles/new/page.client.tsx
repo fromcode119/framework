@@ -92,7 +92,7 @@ export class NewRolePage extends AdminComponent {
           subtitle={AdminI18n.t('users.defineASetOfPermissions')}
         />
 
-        <div className="w-full p-6">
+        <div className="w-full py-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
               <Card title={AdminI18n.t('users.roleDetails')}>
@@ -115,14 +115,11 @@ export class NewRolePage extends AdminComponent {
                       size={FieldSize.SM}
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
-                    <TextArea
+                  <TextArea label={AdminI18n.t('users.description')}
                       placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
                       onChange={(e) => this.patchForm({ description: e.target.value })}
                     />
-                  </div>
                 </div>
               </Card>
 

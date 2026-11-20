@@ -71,21 +71,26 @@ export class SystemTwoFactorService {
     } catch (e: any) { res.status(this.resolveErrorStatus(e)).json({ error: e.message }); }
   }
 
-  async getStatusForUser(userId: number): Promise<{ enabled: boolean; recoveryCodesRemaining: number }> {
+  async getStatusForUser(userId: number): Promise<{ enabled: boolean; recoveryCodesRemaining: number; enrollmentAllowed: boolean }> {
     const enabledRow = await this.db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
     const recoveryCodes = await this.readRecoveryCodeRecords(userId);
     return {
       enabled: enabledRow?.value === 'true',
       recoveryCodesRemaining: recoveryCodes.filter((entry) => !entry.usedAt).length,
+      // Said up front, so a screen does not offer a setup the next call refuses.
+      enrollmentAllowed: await this.isEnrollmentAllowed(),
     };
   }
 
-  async setupForUser(userId: number): Promise<{ secret: string; qrCode: string }> {
-    // Honor the platform `two_factor_enabled` toggle (admin Settings → Security). When it is explicitly
-    // off, new 2FA enrolment is refused — the global switch was previously persisted but never enforced.
-    // Existing 2FA users are unaffected (verify/disable still work); only NEW setup is gated.
+  /** New enrolment follows the platform `two_factor_enabled` toggle (admin Settings → Security); only an explicit "false" closes it. */
+  private async isEnrollmentAllowed(): Promise<boolean> {
     const globalToggle = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.TWO_FACTOR_ENABLED });
-    if (globalToggle && String(globalToggle.value).trim().toLowerCase() === 'false') {
+    return !(globalToggle && String(globalToggle.value).trim().toLowerCase() === 'false');
+  }
+
+  async setupForUser(userId: number): Promise<{ secret: string; qrCode: string }> {
+    // Existing 2FA users are unaffected (verify/disable still work); only NEW setup is gated.
+    if (!(await this.isEnrollmentAllowed())) {
       throw new Error('Two-factor authentication is disabled by the administrator.');
     }
 

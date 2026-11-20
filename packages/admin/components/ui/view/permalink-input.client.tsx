@@ -1,17 +1,24 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { prop, state, bound, watch } from '@fromcode119/react-class-components';
 import type { ICollection } from '@fromcode119/core/client';
 import { Button } from '@/components/ui/view/button.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { Switch } from '@/components/ui/view/switch.client';
+import { AffixInput } from '@/components/ui/view/affix-input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { UiFieldUtils } from '@/lib/ui';
 import { PermalinkInputUtils } from '@/components/ui/permalink-input-utils';
 import type { IPermalinkComputed } from '@/components/ui/interfaces/permalink-computed.interface';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The record's public address, read as one line and changed in place. Editing writes into the form
+ * like any field (the save bar saves it); Cancel puts back what the address was when editing began.
+ */
 export class PermalinkInput extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<PermalinkInput, 'value' | 'onChange' | 'placeholder' | 'disabled' | 'id' | 'slug' | 'collection' | 'pluginSettings'>;
@@ -29,6 +36,8 @@ export class PermalinkInput extends AdminComponent {
   @state private useAbsolutePath = String(this.props.value || '').startsWith('/');
   /** The bound site's own address, so the shown URL is where the page actually lives. */
   @state private siteStorefrontUrl = '';
+  /** The value when editing began — what Cancel restores. */
+  private valueBeforeEdit = '';
 
   private compute(): IPermalinkComputed {
     return PermalinkInputUtils.compute(this.props, this.runtime?.globalSettings ?? null, this.siteStorefrontUrl);
@@ -50,125 +59,95 @@ export class PermalinkInput extends AdminComponent {
     }
   }
 
-  @bound
-  private handleValueChange(nextValue: string): void {
+  @bound private startEditing(): void {
+    if (this.disabled) return;
+    this.valueBeforeEdit = String(this.value || '');
+    this.isEditing = true;
+  }
+
+  @bound private finish(): void {
+    this.isEditing = false;
+  }
+
+  @bound private cancel(): void {
+    if (String(this.value || '') !== this.valueBeforeEdit) this.onChange(this.valueBeforeEdit);
+    this.isEditing = false;
+  }
+
+  @bound private revert(): void {
+    this.onChange('');
+    this.isEditing = false;
+  }
+
+  @bound private handleValueChange(nextValue: string): void {
     const normalizedNext = String(nextValue || '').replace(/^\/+/, '');
     this.onChange(this.useAbsolutePath ? `/${normalizedNext}` : normalizedNext);
   }
 
-  render(): ReactNode {
-    const { onChange, disabled } = this;
-    const { isEditing, useAbsolutePath } = this;
-    const { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, pathValue, suffix, isCustomMode, isAbsoluteOverride } = this.compute();
+  @bound private setAbsolute(nextAbsolute: boolean): void {
+    this.useAbsolutePath = nextAbsolute;
+    const normalizedCurrent = String(this.compute().pathValue || '').replace(/^\/+/, '');
+    // No path yet: only the mode changes — the "…" placeholder is never saved as an address.
+    if (normalizedCurrent) this.onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
+  }
 
-    if (!isEditing) {
-      return (
-        <div
-          onClick={() => !disabled && (this.isEditing = true)}
-          title={`${fullDisplayPrefix}${displayValue}${suffix}`}
-          className={`group relative min-h-[56px] px-3.5 py-2 rounded-lg border transition-all overflow-hidden ${
-            disabled
-              ? 'opacity-50 cursor-not-allowed'
-              : 'cursor-pointer hover:shadow-[var(--fc-control-shadow)] bg-slate-50/50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800'
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3 w-full">
-             <div className="flex min-w-0 flex-1 flex-col">
-                <span className="text-[12px] text-slate-400 font-medium break-all opacity-70">{fullDisplayPrefix}</span>
-                <span className={`text-[13px] font-medium break-all ${isCustomMode ? 'text-[color:var(--primary)]' : 'text-slate-900 dark:text-white'}`}>
-                  {displayValue}{suffix}
-                </span>
-             </div>
-             <div className="flex items-start gap-2 shrink-0 pt-0.5">
-                {isCustomMode && (
-                   <div className="fc-chip flex items-center">
-                      {AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}
-                   </div>
-                )}
-                <div className="text-slate-400 group-hover:text-[color:var(--primary)] transition-colors">
-                   <FrameworkIcons.Edit size={12} />
-                </div>
-             </div>
-          </div>
-        </div>
-      );
-    }
+  @bound private handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
+    if (event.key === 'Enter') { event.preventDefault(); this.finish(); }
+    if (event.key === 'Escape') this.cancel();
+  }
 
+  private renderView(computed: IPermalinkComputed): ReactNode {
+    const { fullDisplayPrefix, displayValue, suffix, isCustomMode, isAbsoluteOverride } = computed;
+    const address = `${fullDisplayPrefix}${displayValue}${suffix}`;
     return (
-      <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-end px-1">
-          <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('ui.permalink.edit')}</label>
-          {isCustomMode && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onChange(''); this.isEditing = false; }}
-              className="text-[12px] font-medium text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
-            >
-              <FrameworkIcons.Refresh size={8} />
+      <button type="button" className="fc-permalink" onClick={this.startEditing} disabled={this.disabled} title={address} aria-label={`${AdminI18n.t('ui.permalink.edit')}: ${address}`}>
+        <span className="fc-permalink__text">
+          <span className="fc-permalink__prefix">{fullDisplayPrefix}</span>
+          <span className={`fc-permalink__path${isCustomMode ? ' fc-permalink__path--custom' : ''}`}>{displayValue}{suffix}</span>
+        </span>
+        {isCustomMode ? (
+          <Badge variant={BadgeVariant.INFO}>{AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}</Badge>
+        ) : null}
+        <span className="fc-permalink__edit" aria-hidden="true"><FrameworkIcons.Edit size={14} /></span>
+      </button>
+    );
+  }
+
+  render(): ReactNode {
+    const computed = this.compute();
+    if (!this.isEditing) return this.renderView(computed);
+
+    const { baseUrl, finalPrefix, pathValue, suffix, isCustomMode } = computed;
+    const prefix = this.useAbsolutePath ? '/' : finalPrefix;
+    return (
+      <div className="fc-permalink-edit">
+        <Switch
+          checked={this.useAbsolutePath}
+          onChange={this.setAbsolute}
+          disabled={this.disabled}
+          label={AdminI18n.t('ui.permalink.absolute')}
+          description={AdminI18n.t(this.useAbsolutePath ? 'ui.permalink.absoluteHint' : 'ui.permalink.relativeHint')}
+        />
+        <AffixInput
+          autoFocus
+          label={AdminI18n.t('ui.permalink.edit')}
+          leading={prefix}
+          value={pathValue}
+          onChange={this.handleValueChange}
+          onKeyDown={this.handleKeyDown}
+          placeholder={this.placeholder}
+          disabled={this.disabled}
+        />
+        <p className="fc-permalink-edit__address">{baseUrl}{prefix}{pathValue || '…'}{suffix}</p>
+        <div className="fc-permalink-edit__actions">
+          <Button size={FieldSize.SM} onClick={this.finish}>{AdminI18n.t('ui.permalink.save')}</Button>
+          <Button size={FieldSize.SM} variant={ButtonVariant.SECONDARY} onClick={this.cancel}>{AdminI18n.t('common.cancel')}</Button>
+          {isCustomMode ? (
+            <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Refresh size={14} />} onClick={this.revert} className="fc-permalink-edit__revert">
               {AdminI18n.t('ui.permalink.revert')}
-            </button>
-          )}
+            </Button>
+          ) : null}
         </div>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            const nextAbsolute = !useAbsolutePath;
-            this.useAbsolutePath = nextAbsolute;
-            const normalizedCurrent = String(pathValue || '').replace(/^\/+/, '');
-            // No path yet: only the mode changes — the "…" placeholder is never saved as an address.
-            if (normalizedCurrent) onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
-          }}
-          className={`w-full rounded-lg border px-3 py-2 text-start text-[12px] font-medium transition-colors ${
-            useAbsolutePath
-              ? 'bg-[color-mix(in_srgb,var(--primary)_10%,transparent)] text-[color:var(--primary)]'
-              : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
-          }`}
-        >
-          {useAbsolutePath
-            ? AdminI18n.t('ui.permalink.absoluteHint')
-            : AdminI18n.t('ui.permalink.relativeHint')}
-        </button>
-
-        <div className="flex flex-col gap-2">
-          <div className={`${UiFieldUtils.getFieldClasses(FieldSize.MD, 'ring-2 ring-[color:var(--primary)] bg-white dark:bg-slate-950 px-3.5 py-0 flex flex-col justify-center', false)}`}>
-             <div className="flex items-center gap-1 text-[12px] font-medium text-slate-400 opacity-60 leading-none mb-1">
-                <FrameworkIcons.Layout size={10} />
-                <span className="truncate">{baseUrl}{useAbsolutePath ? '/' : finalPrefix}</span>
-             </div>
-             <input
-                autoFocus
-                value={pathValue}
-                onChange={(e) => this.handleValueChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') this.isEditing = false;
-                  if (e.key === 'Escape') this.isEditing = false;
-                }}
-                className="w-full bg-transparent text-[12px] font-medium text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 leading-none"
-                placeholder="my-secret-path"
-             />
-          </div>
-
-          <div className="flex gap-2">
-             <Button
-                className="flex-1 font-medium text-[12px]"
-                onClick={() => this.isEditing = false}
-             >
-                {AdminI18n.t('ui.permalink.save')}
-             </Button>
-             <Button
-                variant={ButtonVariant.GHOST}
-                className="px-4 text-[12px] font-medium"
-                onClick={() => this.isEditing = false}
-             >
-                {AdminI18n.t('common.cancel')}
-             </Button>
-          </div>
-        </div>
-        <p className={UiFieldUtils.TEXT.SUBTEXT}>
-          {AdminI18n.t('ui.relativeOverridesInheritTheCollection')}
-        </p>
       </div>
     );
   }

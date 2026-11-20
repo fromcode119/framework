@@ -23,9 +23,6 @@ export class SiteExportsCard extends PureReactor {
   @prop declare site: SiteRecord;
   @prop declare theme: ThemeMode;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   /** A size an operator reads, rather than a byte count. */
   private static megabytes(bytes: number): string {
@@ -44,20 +41,20 @@ export class SiteExportsCard extends PureReactor {
         ) : (
           /* A row per archive, with the download as a real button rather than the filename being the
              only clickable thing. It was one naked line of monospace text under a paragraph. */
-          <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
+          <div className={`overflow-hidden divide-y mt-3 fc-tone-divide`}>
             {exports.map((entry) => (
-              <div key={entry.id} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+              <div key={entry.id} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors fc-tone-hover`}>
+                <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center fc-tone-brand-soft fc-tone-brand`}>
                   <FrameworkIcons.Package size={18} strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className={`text-sm font-medium tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <span className={`text-sm font-medium tracking-tight truncate fc-tone-text`}>
                     {new Date(entry.modifiedAt).toLocaleString()}
                   </span>
-                  <p className={`text-xs leading-snug truncate font-mono ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{entry.filename}</p>
+                  <p className={`text-xs leading-snug truncate font-mono fc-tone-muted`}>{entry.filename}</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
-                  <span className={`text-[12px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <span className={`fc-size-xs tabular-nums fc-tone-muted`}>
                     {SiteExportsCard.megabytes(entry.sizeBytes)}
                   </span>
                   <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download className="no-underline">

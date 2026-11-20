@@ -1,3 +1,4 @@
+import { Text } from '@/components/ui/view/text.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
 import type { ReactNode } from 'react';
@@ -128,7 +129,7 @@ export class MediaPageView extends PureReactor {
           handleDrop={this.handleDrop}
         />
 
-        <div className="w-full p-6 fc-page-stack">
+        <div className="w-full py-6 fc-page-stack">
           <MediaControls
             theme={this.theme}
             uploading={this.uploading}
@@ -185,13 +186,13 @@ export class MediaPageView extends PureReactor {
             That is a brand line and a marketing sentence: it told the operator nothing about their
             library and cost more vertical space than the row of files above it. A footer here earns
             its place only by stating what is actually on screen. */}
-        <div className={`px-6 py-3 border-t mt-auto text-[12px] ${
-          this.theme === ThemeMode.DARK ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
-        }`}>
-          {(this.items || []).length === 1 ? AdminI18n.t('media.fileOne') : AdminI18n.t('media.fileMany', { count: (this.items || []).length })}
-          {(this.themeAssets || []).length ? (this.themeAssets.length === 1 ? AdminI18n.t('media.themeAssetOne') : AdminI18n.t('media.themeAssetMany', { count: this.themeAssets.length })) : ''}
-          {(this.folders || []).length ? ` · ${this.folders.length === 1 ? AdminI18n.t('media.folderOne') : AdminI18n.t('media.folderMany', { count: this.folders.length })}` : ''}
-        </div>
+        {this.activeView === 'files' ? (
+          <Text size="small" muted as="p">
+            {(this.items || []).length === 1 ? AdminI18n.t('media.fileOne') : AdminI18n.t('media.fileMany', { count: (this.items || []).length })}
+            {(this.themeAssets || []).length ? (this.themeAssets.length === 1 ? AdminI18n.t('media.themeAssetOne') : AdminI18n.t('media.themeAssetMany', { count: this.themeAssets.length })) : ''}
+            {(this.folders || []).length ? ` · ${this.folders.length === 1 ? AdminI18n.t('media.folderOne') : AdminI18n.t('media.folderMany', { count: this.folders.length })}` : ''}
+          </Text>
+        ) : null}
 
         <MediaDialogs
           theme={this.theme}

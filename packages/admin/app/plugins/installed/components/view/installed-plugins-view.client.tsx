@@ -1,3 +1,8 @@
+import { Alert } from '@/components/ui/view/alert.client';
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { SearchField } from '@/components/ui/view/search-field.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
 import { Reactor, prop, state, bound, Ref } from '@fromcode119/react-class-components';
@@ -76,6 +81,10 @@ export class InstalledPluginsView extends Reactor {
   /** Which tab of the list is open. */
   @state private filter: PluginListFilter = PluginListFilter.ALL;
 
+  @bound private onFilter(id: string): void {
+    this.filter = PluginListFilter.ORDER.find((filter) => filter.value === id) ?? PluginListFilter.ALL;
+  }
+
   private count(filter: PluginListFilter): number {
     return this.filteredPlugins.filter((plugin) => filter.matches(plugin, this.hasPluginUpdate(plugin))).length;
   }
@@ -90,20 +99,12 @@ export class InstalledPluginsView extends Reactor {
   /** Every tab with its count, a zero included: the row says at a glance that nothing failed or waits for an update. */
   private renderTabs(): ReactNode {
     return (
-      <div className={AdminClass.of('ext-tabbar')}>
-      <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('plugins.list.searchInstalledPlugins')}>
-        {PluginListFilter.ORDER.map((filter) => {
-          const count = this.count(filter);
-          return (
-            <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
-              aria-current={filter === this.filter ? 'page' : undefined} onClick={() => { this.filter = filter; }}>
-              {AdminI18n.t(filter.labelKey)}<span className={AdminClass.of('ext-tabs__count')}>{count}</span>
-            </button>
-          );
-        })}
-      </nav>
-      {this.renderToolbar()}
-      </div>
+      <PageBar lead={(
+        <Tabs label={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.filter.value} onChange={this.onFilter}
+          tabs={PluginListFilter.ORDER.map((filter) => ({ id: filter.value, label: AdminI18n.t(filter.labelKey), count: this.count(filter) }))} />
+      )}>
+        {this.renderToolbar()}
+      </PageBar>
     );
   }
 
@@ -112,26 +113,15 @@ export class InstalledPluginsView extends Reactor {
     const held = this.heldPluginsCount;
     return (
       <>
-        {failed > 0 ? (
-          <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')}`} role="alert">
-            <FrameworkIcons.Alert size={16} />
-            <span className={AdminClass.of('ext-alert__text')}>
-              {AdminI18n.t(failed === 1 ? 'plugins.list.failedOne' : 'plugins.list.failedMany', { count: failed })}
-            </span>
-          </div>
-        ) : null}
+        {failed > 0 ? <Alert tone="danger" className="mb-3">{AdminI18n.t(failed === 1 ? 'plugins.list.failedOne' : 'plugins.list.failedMany', { count: failed })}</Alert> : null}
         {held > 0 ? (
-          <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--warn')}`} role="alert">
-            <FrameworkIcons.Alert size={16} />
-            <span className={AdminClass.of('ext-alert__text')}>
-              {AdminI18n.t(held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: held })}
-            </span>
-            {/* Approval changes what the plugin may do on every site, so the server only takes it in
-                Platform scope; inside a site the dialog could only end in a refusal. */}
-            {this.siteScope
-              ? <PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate>
-              : <Button variant={ButtonVariant.OUTLINE} onClick={this.onReapproveAll} isLoading={this.isActivating}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}
-          </div>
+          // Approval changes what the plugin may do on every site, so the server only takes it in
+          // Platform scope; inside a site the dialog could only end in a refusal.
+          <Alert tone="warning" className="mb-3" action={this.siteScope
+            ? <PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate>
+            : <Button variant={ButtonVariant.SECONDARY} onClick={this.onReapproveAll} isLoading={this.isActivating}>{AdminI18n.t('plugins.list.reApproveAllHeld')}</Button>}>
+            {AdminI18n.t(held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: held })}
+          </Alert>
         ) : null}
       </>
     );
@@ -140,20 +130,17 @@ export class InstalledPluginsView extends Reactor {
   private renderToolbar(): ReactNode {
     const busy = this.isUploading || this.isInspectingUpload;
     return (
-      <div className={AdminClass.of('ext-toolbar')}>
-        <div className={AdminClass.of('ext-toolbar__search')}>
-          <FrameworkIcons.Search size={16} />
-          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="fc-field--icon" />
-        </div>
+      <>
+        <SearchField placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={this.setSearchQuery} />
         {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
             and an upload that can only ever 403 is a bug, not a hint. */}
         {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
         {this.canManage ? (
-          <Button onClick={this.handleUploadClick} isLoading={busy}>
+          <Button onClick={this.handleUploadClick} isLoading={busy} icon={<FrameworkIcons.Upload size={15} />}>
             {this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}
           </Button>
         ) : null}
-      </div>
+      </>
     );
   }
 

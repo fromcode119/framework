@@ -1,3 +1,6 @@
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -12,18 +15,16 @@ export class MarketplaceEmptyState extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="col-span-full">
+      <ListCard>
         <EmptyState
           icon={<FrameworkIcons.Plugins size={22} />}
           title={AdminI18n.t(this.configured ? 'plugins.list.noPluginsFound' : 'plugins.list.noMarketplaceSet')}
           hint={AdminI18n.t(this.configured ? 'plugins.list.tryADifferentSearchTerm' : 'plugins.list.noMarketplaceSetHelp')}
           action={this.configured ? null : (
-            <AdminLink href={AdminConstants.ROUTES.SETTINGS.GENERAL} className="fc-empty__link">
-              {AdminI18n.t('plugins.list.openGeneralSettings')}
-            </AdminLink>
+            <Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.SETTINGS.GENERAL}>{AdminI18n.t('plugins.list.openGeneralSettings')}</Button>
           )}
         />
-      </div>
+      </ListCard>
     );
   }
 }

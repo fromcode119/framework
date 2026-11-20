@@ -1,3 +1,6 @@
+import { Text } from '@/components/ui/view/text.client';
+import { Label } from '@/components/ui/view/label.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
@@ -23,33 +26,16 @@ export class DashboardScheduleList extends PureReactor {
     if (!this.schedule) return null;
 
     const total = Number(this.schedule.total || 0);
-    if (!total) {
-      return (
-        <div className="px-3 py-2">
-          <p className="text-[12px] text-slate-500">{AdminI18n.t('dashboard.noSchedules')}</p>
-        </div>
-      );
-    }
+    if (!total) return <Text size="small" muted as="p">{AdminI18n.t('dashboard.noSchedules')}</Text>;
 
     return (
-      <div className="px-3 py-2">
-        <div className="flex items-baseline justify-between gap-3 mb-1.5">
-          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">{AdminI18n.t('dashboard.nextScheduled')}</span>
-          <span className="text-[12px] text-slate-400">{AdminI18n.t('dashboard.tasksCount', { count: total })}</span>
-        </div>
-        <div className="space-y-1">
-          {this.upcoming.map((task) => (
-            <div key={String(task.name)} className="flex items-baseline justify-between gap-3">
-              <span className="text-[12px] text-slate-600 dark:text-slate-300 truncate">
-                {String(task.name)}
-                {task.pluginSlug ? <span className="text-slate-400"> · {String(task.pluginSlug)}</span> : null}
-              </span>
-              <span className="text-[12px] text-slate-400 whitespace-nowrap tabular-nums">
-                {task.isActive === false ? AdminI18n.t('dashboard.paused') : RelativeTimeFormatter.fromNow(task.nextRun)}
-              </span>
-            </div>
-          ))}
-        </div>
+      <div className="fc-field-stack">
+        <Label optional={AdminI18n.t('dashboard.tasksCount', { count: total })}>{AdminI18n.t('dashboard.nextScheduled')}</Label>
+        <AdminFactGrid facts={this.upcoming.map((task) => ({
+          key: String(task.name),
+          label: `${String(task.name)}${task.pluginSlug ? ` · ${String(task.pluginSlug)}` : ''}`,
+          value: task.isActive === false ? AdminI18n.t('dashboard.paused') : RelativeTimeFormatter.fromNow(task.nextRun),
+        })) as any} />
       </div>
     );
   }

@@ -22,7 +22,7 @@ export class EditStickyColumn extends Reactor {
   @bound private measure(): void {
     const root = this.rootRef.current;
     if (!root) return;
-    const footer = (document.querySelector('[data-edit-footer]') as HTMLElement | null)?.offsetHeight ?? 0;
+    const footer = (document.querySelector('.fc-edit-footer') as HTMLElement | null)?.offsetHeight ?? 0;
     const pinned = EditStickyColumn.GAP;
     const tallest = window.innerHeight - footer - EditStickyColumn.GAP - root.offsetHeight;
     const next = Math.min(pinned, tallest);

@@ -1,3 +1,8 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -35,43 +40,22 @@ export class DashboardMissingConfig extends AdminComponent {
     if (this.items.length === 0) return null;
 
     return (
-      <div className="space-y-2">
-        <DashboardSectionHeading
-          label={AdminI18n.t('dashboard.configuration')}
-          count={this.outstanding > 0 ? AdminI18n.t('dashboard.toDo', { count: this.outstanding }) : AdminI18n.t('dashboard.allSet')}
-        />
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
+      <ListShell title={AdminI18n.t('dashboard.configuration')}
+        actions={<StateBadge tone={this.outstanding > 0 ? 'warning' : 'success'}>{this.outstanding > 0 ? AdminI18n.t('dashboard.toDo', { count: this.outstanding }) : AdminI18n.t('dashboard.allSet')}</StateBadge>}>
+        <div>
           {this.items.map((item) => (
-            <button
+            <ListRow
               key={String(item.key)}
-              type="button"
-              onClick={() => this.go(String(item.actionPath))}
-              className="group/row flex w-full items-center gap-2.5 px-3 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            >
-              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.done ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-              <span className="shrink-0 text-[12px] text-slate-700 dark:text-slate-200">{String(item.title)}</span>
-              <span
-                className={`min-w-0 flex-1 truncate text-end text-[12px] ${
-                  item.done ? 'text-slate-500' : 'text-amber-600 dark:text-amber-500'
-                }`}
-              >
-                {String(item.detail)}
-              </span>
-              {/*
-                * The action sizes to its content, not to a fixed 80px: "How to set it" wrapped onto
-                * a second line inside a single-line row, which is the one thing this list exists to
-                * avoid. `whitespace-nowrap` keeps every action on one line whatever it says.
-                */}
-              {item.actionLabel ? (
-                <span className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[12px] font-medium text-slate-400 transition-colors group-hover/row:text-indigo-600 dark:group-hover/row:text-indigo-400">
-                  {String(item.actionLabel)}
-                  <FrameworkIcons.ChevronRight size={13} />
-                </span>
-              ) : null}
-            </button>
+              title={<button type="button" className="fc-ext-row__link" onClick={() => this.go(String(item.actionPath))}>{String(item.title)}</button>}
+              meta={String(item.detail)}
+              actions={<>
+                {item.done ? null : <StateBadge tone="warning">{AdminI18n.t('dashboard.toDo', { count: 1 })}</StateBadge>}
+                {item.actionLabel ? <Button variant={ButtonVariant.GHOST} onClick={() => this.go(String(item.actionPath))}>{String(item.actionLabel)}</Button> : null}
+              </>}
+            />
           ))}
         </div>
-      </div>
+      </ListShell>
     );
   }
 }

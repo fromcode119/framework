@@ -11,10 +11,6 @@ export class PermalinkField extends PureReactor {
   @prop declare theme?: ThemeMode;
   @prop declare disabled?: boolean;
 
-  private get resolvedTheme(): ThemeMode {
-    return this.theme ?? ThemeMode.LIGHT;
-  }
-
   private get isFieldDisabled(): boolean {
     return this.disabled ?? false;
   }
@@ -40,7 +36,6 @@ export class PermalinkField extends PureReactor {
   }
 
   render(): ReactNode {
-    const theme = this.resolvedTheme;
     const disabled = this.isFieldDisabled;
     const custom = this.custom;
     const isDisabled = this.isDisabled;
@@ -60,21 +55,19 @@ export class PermalinkField extends PureReactor {
         aria-checked={isDisabled}
         onClick={this.onToggle}
         disabled={disabled}
-        className={`flex items-center gap-2.5 w-full text-start select-none text-[12px] font-medium transition-colors ${
+        className={`flex items-center gap-2.5 w-full text-start select-none fc-size-xs font-medium transition-colors ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-        } ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
+        } fc-tone-muted`}
       >
         <div
           className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${
             isDisabled
-              ? 'bg-rose-500'
-              : theme === ThemeMode.DARK
-                ? 'bg-slate-700'
-                : 'bg-slate-200'
+              ? 'fc-tone-danger-solid'
+              : 'fc-tone-raised'
           }`}
         >
           <span
-            className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${
+            className={`absolute top-0.5 w-3.5 h-3.5 rounded-full fc-tone-surface shadow transition-transform ${
               isDisabled ? 'left-[calc(100%-14px-2px)]' : 'left-0.5'
             }`}
           />

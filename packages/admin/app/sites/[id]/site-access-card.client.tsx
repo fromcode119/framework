@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Icon } from '@/components/view/icon.client';
-import { PluginToggleScopeConstants, ThemeMode } from '@fromcode119/core/client';
+import { PluginToggleScopeConstants } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
@@ -42,9 +42,6 @@ export class SiteAccessCard extends AdminComponent {
   /** The slug being activated platform-wide, so its row can show progress. */
   @state activating = '';
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   @bound private onSearch(e: ChangeEvent<HTMLInputElement>): void {
     this.search = e.target.value;
@@ -176,29 +173,29 @@ export class SiteAccessCard extends AdminComponent {
               right-hand group of metadata, state and the switch. The earlier version put the switch
               immediately after the name, so it landed at a different x on every row depending on how
               long the name was, and the list read as broken. */}
-          <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
+          <div className={`overflow-hidden divide-y mt-3 fc-tone-divide`}>
             {this.visiblePlugins.map((plugin) => {
               const enabled = this.values.plugins.includes(plugin.slug);
               // Held or errored: a judgement or a fix is needed, so the switch cannot help.
               const blocked = Boolean(plugin.heldReason) || plugin.state === 'error';
               const dormant = plugin.runnable === false && !blocked;
               return (
-                <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+                <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors fc-tone-hover`}>
+                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center fc-tone-brand-soft fc-tone-brand`}>
                     <Icon name={plugin.icon || 'Box'} size={18} strokeWidth={1.5} />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <span className={`text-sm font-medium tracking-tight ${this.isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.name}</span>
-                    <p className={`text-xs leading-snug truncate ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <span className={`text-sm font-medium tracking-tight fc-tone-text`}>{plugin.name}</span>
+                    <p className={`text-xs leading-snug truncate fc-tone-muted`}>
                       {blocked
-                        ? <AdminLink className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
+                        ? <AdminLink className="fc-tone-warning no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
                         : (plugin.description || AdminI18n.t('sites.runsOnThisSiteWhen'))}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-5 shrink-0">
-                    <span className={`hidden lg:inline text-[12px] tabular-nums ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{plugin.version}</span>
+                    <span className={`hidden lg:inline fc-size-xs tabular-nums fc-tone-muted`}>v{plugin.version}</span>
                     <Badge
                       variant={blocked ? BadgeVariant.AMBER : (enabled ? BadgeVariant.SUCCESS : BadgeVariant.GRAY)}
                       className="shrink-0 justify-center w-[68px]"

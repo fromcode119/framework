@@ -29,20 +29,20 @@ export class FilterChips extends PureReactor {
         {active.map((filter) => (
           <span
             key={filter.key}
-            className="shrink-0 inline-flex items-center gap-1.5 h-7 ps-3 pe-1.5 rounded-full whitespace-nowrap text-[12px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+            className="shrink-0 inline-flex items-center gap-1.5 h-7 ps-3 pe-1.5 rounded-full whitespace-nowrap fc-size-xs font-medium fc-tone-brand-soft fc-tone-brand"
           >
             {filter.label}: {filter.valueLabel}
             <button
               type="button"
               onClick={() => filter.reset()}
               aria-label={AdminI18n.t('ui.listToolbar.removeFilter', { label: filter.label })}
-              className="w-5 h-5 rounded-full inline-flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-500/25"
+              className="w-5 h-5 rounded-full inline-flex items-center justify-center fc-tone-hover-brand-soft"
             >
               <FrameworkIcons.X size={12} />
             </button>
           </span>
         ))}
-        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap text-[12px] font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
+        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap fc-size-xs font-medium fc-tone-muted fc-tone-hover-brand">
           {AdminI18n.t('ui.listToolbar.clearFilters')}
         </button>
       </div>

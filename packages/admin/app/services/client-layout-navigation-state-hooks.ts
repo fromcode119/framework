@@ -6,6 +6,7 @@ import { SecondarySidebarStateService } from '@/app/services/secondary-sidebar-s
 import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
 import { SecondarySidebarContextResolver } from '@/app/services/secondary-sidebar-context-resolver';
 import { ClientLayoutSidebarStateHooks } from '@/app/services/client-layout-sidebar-state-hooks';
+import { ClientLayoutSectionPages } from '@/app/services/client-layout-section-pages';
 
 export class ClientLayoutNavigationStateHooks {
   private static readonly secondarySidebarStateService = new SecondarySidebarStateService();
@@ -40,17 +41,8 @@ export class ClientLayoutNavigationStateHooks {
 
     // Settings opens its pages in the column beside the menu from any page, not only from a settings
     // route, so its own list is resolved whatever the current route is.
-    const settingsPages = React.useMemo(() => {
-      return ClientLayoutNavigationStateHooks.secondarySidebarContextResolver.resolve({
-        pathname: NavUtils.normalizePath(AdminConstants.ROUTES.SETTINGS.ROOT),
-        primaryContextId: '',
-        menuItems: sidebarState.menuItems,
-        secondaryPanel: sidebarState.effectiveSecondaryPanel,
-        plugins: sidebarState.plugins,
-        userRoles: args.user?.roles || [],
-        userCapabilities: args.user?.permissions || [],
-      }).items;
-    }, [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
+    const settingsPages = React.useMemo(() => ClientLayoutSectionPages.of(NavUtils.normalizePath(AdminConstants.ROUTES.SETTINGS.ROOT), sidebarState, args.user), [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
+    const searchPages = React.useMemo(() => ClientLayoutSectionPages.everySection(sidebarState, args.user), [sidebarState.menuItems, sidebarState.effectiveSecondaryPanel, sidebarState.plugins, args.user]);
 
     const routePrimaryItem = React.useMemo(() => NavUtils.resolveBestMatchEntry(args.normalizedPathname, sidebarState.menuItems), [sidebarState.menuItems, args.normalizedPathname]);
     const activePrimaryItem = React.useMemo(() => {
@@ -266,6 +258,7 @@ export class ClientLayoutNavigationStateHooks {
       setActivePrimaryContextId,
       secondaryResolved,
       settingsPages,
+      searchPages,
       secondaryMode,
       secondarySourceLabel,
       activePrimaryItem,

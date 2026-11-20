@@ -1,3 +1,4 @@
+import { PendingSave } from '@/lib/settings/pending-save';
 import { state, bound } from '@fromcode119/react-class-components';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -35,6 +36,23 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   @state ssrRenderTimeoutMs = '';
   @state isSavingRetention = false;
   @state isSavingSsrCap = false;
+
+  /** The three groups this page itself owns, as the page's one save bar sees them; made on mount. */
+  protected pendingSsr: PendingSave | null = null;
+  protected pendingLogs: PendingSave | null = null;
+  protected pendingAudit: PendingSave | null = null;
+  protected pendingMaintenance: PendingSave | null = null;
+
+  protected startPending(): void {
+    this.pendingMaintenance = new PendingSave(() => this.maintenance, () => (this as any).saveMaintenance(), (value) => { this.maintenance = value; });
+    this.pendingSsr = new PendingSave(
+      () => ({ ssrGenerationCap: this.ssrGenerationCap, ssrRenderMemoryMb: this.ssrRenderMemoryMb, ssrRenderTimeoutMs: this.ssrRenderTimeoutMs }),
+      () => (this as any).saveSsrCap(),
+      (values) => { this.ssrGenerationCap = values.ssrGenerationCap; this.ssrRenderMemoryMb = values.ssrRenderMemoryMb; this.ssrRenderTimeoutMs = values.ssrRenderTimeoutMs; },
+    );
+    this.pendingLogs = new PendingSave(() => ({ logRetentionDays: this.logRetentionDays }), () => (this as any).saveRetention(), (values) => { this.logRetentionDays = values.logRetentionDays; });
+    this.pendingAudit = new PendingSave(() => ({ auditRetentionDays: this.auditRetentionDays }), () => (this as any).saveAuditRetention(), (values) => { this.auditRetentionDays = values.auditRetentionDays; });
+  }
 
   /**
    * Every control on this screen writes a PLATFORM setting — maintenance mode, the render worlds the

@@ -37,7 +37,6 @@ export interface IThemeSettingsPageHost {
   tempSettings: Record<string, unknown>;
 
   isUpdating: boolean;
-  isSaving: boolean;
   isReseeding: boolean;
   isResettingTheme: boolean;
   isDeleting: boolean;

@@ -46,7 +46,7 @@ function routeRequests(statsResponse: () => Promise<unknown>): void {
   });
 }
 
-const headerTab = (label: string): HTMLElement => screen.getByRole('button', { name: label });
+const headerTab = (label: string): HTMLElement => screen.getByRole('tab', { name: label });
 const settingsViewShown = (): boolean => screen.queryByText('Password Policy') !== null;
 const dashboardViewShown = (): boolean => screen.queryByText('Threat Alerts') !== null;
 

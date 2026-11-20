@@ -2,32 +2,54 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { IconBadge } from '@/components/ui/view/icon-badge.client';
 import { Button } from '@/components/ui/view/button.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { UserSecurityPageService } from '@/app/users/[id]/security/user-security-page-service';
 import type { IAuthActivityEntry } from '@/app/users/[id]/security/interfaces/auth-activity-entry.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** The account's latest sign-in and session events, read from the system log; the whole log is one link away. */
 export class AuthActivityCard extends PureReactor {
   @prop declare activity: IAuthActivityEntry[];
   @prop declare activityLoading: boolean;
   @prop declare email: string;
-  @prop declare isDark: boolean;
+
+  private tone(level: string): IconBadge['tone'] {
+    if (level === 'ERROR') return 'danger';
+    if (level === 'WARN') return 'warning';
+    return 'neutral';
+  }
+
+  private renderRows(): ReactNode {
+    if (this.activityLoading) return <Loader label={AdminI18n.t('users.loadingAuthActivity')} />;
+    if (this.activity.length === 0) return <EmptyState inline icon={<FrameworkIcons.Activity size={16} />} title={AdminI18n.t('users.noRecentLoginSessionEvents')} />;
+    return this.activity.slice(0, 12).map((entry, index) => {
+      const timestamp = entry.timestamp || entry.createdAt;
+      return (
+        <ListRow
+          key={entry.id || `${index}-${timestamp || ''}`}
+          icon={<IconBadge tone={this.tone(String(entry.level || '').toUpperCase())}><FrameworkIcons.Activity size={14} /></IconBadge>}
+          title={<span className="fc-ext-row__plain">{entry.message || ''}</span>}
+          meta={timestamp ? new Date(timestamp).toLocaleString(AdminI18n.locale) : undefined}
+        />
+      );
+    });
+  }
 
   render(): ReactNode {
-    const { activity, activityLoading, email, isDark } = this;
     return (
       <div id="auth-activity">
-        <Card title={AdminI18n.t('users.loginSessionActivity')} icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
-          <div className="space-y-3">
-            {activityLoading ? <div className="py-4"><Loader label={AdminI18n.t('users.loadingAuthActivity')} /></div> : activity.length === 0 ? <div className="text-xs font-medium tracking-tight text-slate-400 py-4">{AdminI18n.t('users.noRecentLoginSessionEvents')}</div> : activity.slice(0, 12).map((entry, index) => { const timestamp = entry.timestamp || entry.createdAt; const level = String(entry.level || '').toUpperCase(); return <div key={entry.id || `${index}-${timestamp || ''}`} className={`p-3 ${AdminClass.SURFACE} ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}><div className="flex items-start justify-between gap-3"><span className={`px-2 py-1 rounded-lg border text-[12px] font-medium tracking-tight ${UserSecurityPageService.buildActivityLevelClass(level)}`}>{level || 'INFO'}</span><span className="text-[12px] font-medium text-slate-400 tracking-tight">{timestamp ? new Date(timestamp).toLocaleString() : AdminI18n.t('users.unknownTime')}</span></div><p className="text-xs font-medium text-slate-600 dark:text-slate-200 mt-2">{entry.message || AdminI18n.t('users.activityEvent')}</p></div>; })}
-            <div className="pt-2"><AdminLink href={AdminConstants.ROUTES.ACTIVITY_FILTER({ mode: 'system', user: email })}><Button variant={ButtonVariant.GHOST} className="font-medium text-xs tracking-tight">{AdminI18n.t('users.openFullGlobalActivity')}</Button></AdminLink></div>
-          </div>
-        </Card>
+        <ListShell
+          title={AdminI18n.t('users.loginSessionActivity')}
+          actions={<AdminLink href={AdminConstants.ROUTES.ACTIVITY_FILTER({ mode: 'system', user: this.email })}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.openFullGlobalActivity')} <FrameworkIcons.ArrowRight size={13} /></Button></AdminLink>}
+        >
+          <div>{this.renderRows()}</div>
+        </ListShell>
       </div>
     );
   }

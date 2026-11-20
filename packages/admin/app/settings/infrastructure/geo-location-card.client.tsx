@@ -1,3 +1,6 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
@@ -13,12 +16,14 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SiteClock } from '@/lib/site-clock';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 
 /**
  * The platform's IP-location database: the switch, what is actually on disk, and the credit DB-IP's
  * licence requires.
  *
- * The switch is the `geo_ip_lookup` platform setting. Saving it asks the server to bring the file in
+ * The switch is the `geo_ip_lookup` platform setting, written by the page's one save bar. Saving it asks the server to bring the file in
  * line straight away (install on, remove off), and the card then shows the server's answer — never a
  * state it assumed.
  */
@@ -28,25 +33,48 @@ export class GeoLocationCard extends AdminComponent {
   @state loaded = false;
   @state busy = false;
 
+  /** What the page's one save bar reads and writes for this card. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(() => this.enabled, () => this.save(), (value) => { this.enabled = value; });
     try {
       this.status = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.GEO);
       this.enabled = Boolean(this.status?.enabled);
       this.loaded = true;
+      this.pending.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.geoUnavailable'), err?.message || '');
     }
   }
 
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
+  }
+
   @bound
-  async onToggle(value: boolean): Promise<void> {
+  onToggle(value: boolean): void {
+    this.enabled = value;
+  }
+
+  /** The setting first; then the file is brought in line, and a failure there is said but leaves the setting saved. */
+  private async save(): Promise<void> {
+    const value = this.enabled;
     this.busy = true;
     try {
       await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.GEO_IP_LOOKUP]: value ? 'true' : 'false' });
-      this.enabled = value;
-      this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.geoSaved'), AdminI18n.t(value ? 'settings.infrastructure.geoSavedOn' : 'settings.infrastructure.geoSavedOff'));
+    } catch (err: any) {
+      this.pending?.failed();
+      this.busy = false;
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.geoUpdateFailed'), err?.message || '');
+      return;
+    }
+    try {
       this.status = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.GEO_UPDATE, {});
-      this.enabled = Boolean(this.status?.enabled);
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.geoUpdateFailed'), err?.message || '');
     } finally {
@@ -94,22 +122,22 @@ export class GeoLocationCard extends AdminComponent {
     const source = status?.source;
     return (
       <Card title={AdminI18n.t('settings.infrastructure.geoLocation')}>
-        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoLookupTitle')} stacked description={AdminI18n.t('settings.infrastructure.geoLookupDescription')}>
-          <Switch checked={this.enabled} onChange={this.onToggle} disabled={!this.loaded || this.busy} label={this.enabled ? AdminI18n.t('settings.infrastructure.on') : AdminI18n.t('settings.infrastructure.off')} />
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoLookupTitle')} description={AdminI18n.t('settings.infrastructure.geoLookupDescription')} width={SettingRowWidth.AUTO}>
+          <Switch checked={this.enabled} onChange={this.onToggle} disabled={!this.loaded || this.busy} />
         </SettingRow>
-        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} stacked description={this.databaseLine()}>
-          <div className="flex flex-col gap-2">
-            {status?.lastCheckedAt ? <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</span> : null}
-            {status?.lastError ? <span className="text-xs text-rose-500">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</span> : null}
-            <Button onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.enabled} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight self-start">
+        <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.geoDatabaseTitle')} description={this.databaseLine()} width={SettingRowWidth.AUTO}>
+          <div className="fc-settings-group">
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.status?.enabled} icon={<FrameworkIcons.Refresh size={13} />}>
               {AdminI18n.t('settings.infrastructure.geoUpdateNow')}
             </Button>
           </div>
         </SettingRow>
-        {source ? (
-          <p className="px-1 pt-2 text-xs text-slate-500">
-            <a href={source.url} target="_blank" rel="noreferrer" className="underline">{AdminI18n.t('settings.infrastructure.geoAttribution', { name: source.name, license: source.license })}</a>
-          </p>
+        {status?.lastCheckedAt || status?.lastError || source ? (
+          <div className="fc-settings-note">
+            {status?.lastCheckedAt ? <Hint>{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</Hint> : null}
+            {status?.lastError ? <Hint variant="error">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</Hint> : null}
+            {source ? <Hint><a href={source.url} target="_blank" rel="noreferrer" className="fc-link">{AdminI18n.t('settings.infrastructure.geoAttribution', { name: source.name, license: source.license })}</a></Hint> : null}
+          </div>
         ) : null}
       </Card>
     );

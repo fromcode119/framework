@@ -1,12 +1,11 @@
 import type { CollectionAccess } from '@/lib/collection-access';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
+import { CommandBar } from '@/components/ui/view/command-bar.client';
+import { CommandBarCommand } from '@/components/ui/view/command-bar-command.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Archive, ArchiveRestore } from 'lucide-react';
 
@@ -32,7 +31,6 @@ export class BulkActions extends PureReactor {
 
   render(): ReactNode {
     const {
-      theme,
       selectedIds,
       statusOptions,
       handleBulkStatusChange,
@@ -49,76 +47,42 @@ export class BulkActions extends PureReactor {
     } = this;
     if (selectedIds.length === 0) return null;
 
+    const slotProps = { selectedIds, collection, resolvedSlug, setSelectedIds };
     return (
-      <div className={`flex items-center flex-wrap gap-1 p-1 rounded-xl animate-in slide-in-from-top-2 duration-300 border shadow-sm ${
-        theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
-      }`}>
-        <div className="px-3 py-2 text-xs font-medium tracking-tight text-indigo-500 border-e border-slate-200 dark:border-slate-800 me-1">
-          {AdminI18n.t('collection.list.selected', { count: selectedIds.length })}
-        </div>
-
-        {access.canUpdate && statusOptions.length > 0 && (
-          <>
-            <div className="flex items-center gap-1 group/bulk">
-              {statusOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleBulkStatusChange(option.value)}
-                  className={`h-11 px-3 text-[12px] font-medium tracking-tight rounded-xl transition-all ${
-                    theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-500 hover:text-indigo-600'
-                  }`}
-                >
-                  {AdminI18n.t('collection.list.setStatus', { status: option.label || option.value })}
-                </button>
-              ))}
-            </div>
-
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-          </>
-        )}
-
-        <Button
-          variant={ButtonVariant.SECONDARY}
-          size={FieldSize.SM}
-          className="rounded-xl h-11 px-4 text-[12px] font-medium tracking-tight"
-          icon={<FrameworkIcons.Download size={14} />}
+      <CommandBar open value={AdminI18n.t('collection.list.selected', { count: selectedIds.length })}>
+        {access.canUpdate
+          ? statusOptions.map((option) => (
+              <CommandBarCommand
+                key={option.value}
+                label={AdminI18n.t('collection.list.setStatus', { status: option.label || option.value })}
+                onClick={() => handleBulkStatusChange(option.value)}
+              />
+            ))
+          : null}
+        <CommandBarCommand
+          label={AdminI18n.t('common.export')}
+          icon={<FrameworkIcons.Download size={15} />}
           onClick={() => handleExport(ExportFormat.JSON, selectedIds)}
-        >
-          {AdminI18n.t('common.export')}
-        </Button>
+        />
         {archivable && access.canUpdate && handleBulkArchive ? (
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            size={FieldSize.SM}
-            className="rounded-xl h-11 px-4 text-[12px] font-medium tracking-tight"
-            icon={showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+          <CommandBarCommand
+            label={AdminI18n.t(showArchived ? 'collection.list.restore' : 'collection.list.archive')}
+            icon={showArchived ? <ArchiveRestore size={15} /> : <Archive size={15} />}
             onClick={handleBulkArchive}
-          >
-            {AdminI18n.t(showArchived ? 'collection.list.restore' : 'collection.list.archive')}
-          </Button>
+          />
         ) : null}
         {access.canDelete ? (
-          <Button
-            variant={ButtonVariant.SECONDARY}
-            size={FieldSize.SM}
-            className="rounded-xl h-11 px-4 text-[12px] font-medium tracking-tight text-rose-500 hover:text-rose-600"
-            icon={<FrameworkIcons.Trash size={14} />}
-            onClick={handleBulkDelete}
-          >
-            {AdminI18n.t('common.delete')}
-          </Button>
+          <CommandBarCommand label={AdminI18n.t('common.delete')} icon={<FrameworkIcons.Trash size={15} />} onClick={handleBulkDelete} />
         ) : null}
         {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
-        <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} include={access.allowsPluginAction} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
-        <Slot name="admin.collection.list.bulk.actions" include={access.allowsPluginAction} props={{ selectedIds, collection, resolvedSlug, setSelectedIds }} />
-        <button
-          onClick={() => setSelectedIds([])}
-          className="h-11 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+        <Slot name={`admin.collection.${slotSlug}.list.bulk.actions`} include={access.allowsPluginAction} props={slotProps} />
+        <Slot name="admin.collection.list.bulk.actions" include={access.allowsPluginAction} props={slotProps} />
+        <CommandBarCommand
+          label={<FrameworkIcons.Close size={15} />}
           title={AdminI18n.t('collection.list.clearSelection')}
-        >
-          <FrameworkIcons.Close size={16} />
-        </button>
-      </div>
+          onClick={() => setSelectedIds([])}
+        />
+      </CommandBar>
     );
   }
 }

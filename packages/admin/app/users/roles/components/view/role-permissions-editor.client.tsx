@@ -1,6 +1,9 @@
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Text } from '@/components/ui/view/text.client';
 import { Button } from '@/components/ui/view/button.client';
 import { RolePermissionGroup } from '@/app/users/roles/components/view/role-permission-group.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
@@ -28,18 +31,9 @@ export class RolePermissionsEditor extends PureReactor {
     const unknown = RolePermissionSelection.unrecognised(this.selected, this.groups);
     if (unknown.length === 0) return null;
     return (
-      <div className="fc-scope-notice">
-        <span className="fc-scope-notice__text">
-          <AdminRichText k={unknown.length === 1 ? 'users.unknownPermissionOne' : 'users.unknownPermissionMany'} vars={{ names: unknown.map((name) => `<code>${name}</code>`).join(', ') }} />
-        </span>
-        <Button
-          type="button"
-          onClick={() => this.onChange(this.selected.filter((name) => !unknown.includes(name)))}
-          className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
-        >
-          {AdminI18n.t('users.remove')}
-        </Button>
-      </div>
+      <Alert tone="warning" action={<Button type="button" variant={ButtonVariant.SECONDARY} onClick={() => this.onChange(this.selected.filter((name) => !unknown.includes(name)))}>{AdminI18n.t('users.remove')}</Button>}>
+        <AdminRichText k={unknown.length === 1 ? 'users.unknownPermissionOne' : 'users.unknownPermissionMany'} vars={{ names: unknown.map((name) => `<code>${name}</code>`).join(', ') }} />
+      </Alert>
     );
   }
 
@@ -47,23 +41,20 @@ export class RolePermissionsEditor extends PureReactor {
     const { groups, selected, loadError } = this;
     const everything = selected.includes('*');
     return (
-      <Card title={AdminI18n.t('users.permissions')}>
-        <div className="flex flex-col gap-3">
-          <p className="text-[12px] text-slate-500">
-            <AdminRichText k="users.permissionsExplained" />
-          </p>
-          {loadError ? <div className="fc-scope-notice"><span className="fc-scope-notice__text">{loadError}</span></div> : null}
-          {everything ? (
-            <div className="fc-scope-notice">
-              <span className="fc-scope-notice__text"><AdminRichText k="users.roleHoldsEverything" /></span>
-            </div>
-          ) : null}
-          {this.renderUnrecognised()}
-          {groups.map((group) => (
-            <RolePermissionGroup key={group.key} group={group} selected={selected} onChange={this.onChange} readOnly={this.readOnly} />
-          ))}
-        </div>
-      </Card>
+      // The explanation in a card of its own, then one list card an area — never a card of cards.
+      <div className="fc-columns__stack">
+        <RecordCard title={AdminI18n.t('users.permissions')}>
+          <div className="fc-stack">
+            <Text muted><AdminRichText k="users.permissionsExplained" /></Text>
+            {loadError ? <Alert tone="danger">{loadError}</Alert> : null}
+            {everything ? <Alert tone="info"><AdminRichText k="users.roleHoldsEverything" /></Alert> : null}
+            {this.renderUnrecognised()}
+          </div>
+        </RecordCard>
+        {groups.map((group) => (
+          <RolePermissionGroup key={group.key} group={group} selected={selected} onChange={this.onChange} readOnly={this.readOnly} />
+        ))}
+      </div>
     );
   }
 }

@@ -61,7 +61,7 @@ export class DateTimePickerJumpView extends PureReactor {
               className="fc-btn fc-btn--ghost mt-0.5 gap-1.5"
             >
               <span>{isYearGridOpen ? `${pageStart} – ${pageStart + 11}` : currentVisibleYear}</span>
-              <FrameworkIcons.Down size={15} className={`transition-transform duration-150 ${isYearGridOpen ? 'rotate-180' : ''}`} />
+              <FrameworkIcons.ChevronDown size={15} className={`transition-transform duration-150 ${isYearGridOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
           <button

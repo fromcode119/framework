@@ -1,13 +1,17 @@
+import { Card } from '@/components/ui/view/card.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ChangeEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { AcmeDirectory, ThemeMode } from '@fromcode119/core/client';
+import { AcmeDirectory } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { Card } from '@/components/ui/view/card.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { PlatformAddressSuggestion } from '@/app/settings/infrastructure/platform-address-suggestion.client';
 import { Select } from '@/components/ui/view/select.client';
@@ -36,12 +40,38 @@ export class CertificatesSettingsCard extends AdminComponent {
   @state private isSavingCloudflareToken = false;
   @state private cloudflareTokenMessage = '';
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+  /** A token typed now: nothing typed is nothing to save, so a blank field keeps the stored one. */
+  private pendingToken: PendingSave | null = null;
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
+    this.pendingToken?.dispose();
+  }
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ directory: this.directory, contactEmail: this.contactEmail, addresses: this.addresses }),
+      () => this.save(),
+      (values) => { this.directory = values.directory; this.contactEmail = values.contactEmail; this.addresses = values.addresses; },
+    );
+    this.pendingToken = new PendingSave(
+      () => this.cloudflareTokenInput.trim(),
+      () => this.saveCloudflareToken(),
+      (value) => { this.cloudflareTokenInput = value; },
+    );
+    this.pendingToken.mark();
     const settings = await AdminSystemSettingsClient.getAll().catch(() => ({} as Record<string, any>));
     this.directory = String(settings?.certificate_acme_directory ?? '');
     this.contactEmail = String(settings?.certificate_acme_contact_email ?? '');
     this.addresses = String(settings?.certificate_platform_addresses ?? '');
     this.isLoaded = true;
+    this.pending?.mark();
     this.candidates = await CertificatesClient.detectPlatformAddresses();
     const automation = (await CertificatesClient.list().catch(() => null))?.automation;
     this.isCloudflareConfigured = automation?.isCloudflareConfigured === true;
@@ -72,6 +102,7 @@ export class CertificatesSettingsCard extends AdminComponent {
       this.cloudflareTokenInput = '';
       this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.savedDns01WildcardCertificates');
     } catch (err: any) {
+      this.pendingToken?.failed();
       this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
@@ -115,6 +146,7 @@ export class CertificatesSettingsCard extends AdminComponent {
         type: 'info' as any,
       });
     } catch (err: any) {
+      this.pending?.failed();
       addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCertificate'), type: 'error' as any });
     } finally {
       this.isSaving = false;
@@ -123,78 +155,39 @@ export class CertificatesSettingsCard extends AdminComponent {
 
   render(): ReactNode {
     if (!this.isLoaded) return null;
-    const dark = this.theme === ThemeMode.DARK;
-    const label = `block text-xs font-medium mb-1.5 ${dark ? 'text-slate-300' : 'text-slate-600'}`;
-    const help = `mt-1.5 text-[12px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`;
-
+    const tokenSaved = this.isCloudflareConfigured && !this.cloudflareTokenMessage;
     return (
-      <Card title={AdminI18n.t('settings.infrastructure.certificates')}>
-        <p className={`text-sm mb-5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          {AdminI18n.t('settings.infrastructure.leaveTheseBlankAndThe')}
-        </p>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div>
-            <label className={label}>{AdminI18n.t('settings.infrastructure.certificateAuthority')}</label>
-            <Select value={this.directory} onChange={this.onDirectory} options={this.options} theme={this.theme} />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.pickTheStagingAuthorityTo')}
-            </p>
-
-            <label className={`${label} mt-5`}>{AdminI18n.t('settings.infrastructure.contactEmailForTheAuthority')}</label>
-            <Input value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.optionalUsedForAccountNotices')}
-            </p>
-          </div>
-
-          <div>
-            <label className={label}>{AdminI18n.t('settings.infrastructure.publicAddressesOfThisPlatform')}</label>
+      <Card title={AdminI18n.t('settings.infrastructure.certificates')} description={AdminI18n.t('settings.infrastructure.leaveTheseBlankAndThe')}>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.certificateAuthority')} description={AdminI18n.t('settings.infrastructure.pickTheStagingAuthorityTo')}>
+          <Select value={this.directory} onChange={this.onDirectory} options={this.options} theme={this.theme} />
+        </SettingRow>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.contactEmailForTheAuthority')} description={AdminI18n.t('settings.infrastructure.optionalUsedForAccountNotices')}>
+          <Input value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
+        </SettingRow>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.publicAddressesOfThisPlatform')} description={AdminI18n.t('settings.infrastructure.onePerLineTheseAre')} stacked>
+          <div className="fc-field-stack">
             <PlatformAddressSuggestion candidates={this.candidates} onUse={this.applyDetected} />
-            <TextArea
-              value={this.addresses}
-              onChange={this.onAddresses}
-              placeholder={'203.0.113.10'}
-              inputClassName="h-24 font-mono text-[12px] resize-y"
-            />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.onePerLineTheseAre')}
-            </p>
+            <TextArea value={this.addresses} onChange={this.onAddresses} placeholder={'203.0.113.10'} />
           </div>
-        </div>
-
-        <div className="mt-5 flex justify-end">
-          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('settings.infrastructure.save')}</Button>
-        </div>
-
-        <div className={`mt-6 pt-5 border-t ${dark ? 'border-white/10' : 'border-slate-200'}`}>
-          <label className={label}>{AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')}</label>
-          <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            <AdminRichText k="settings.infrastructure.dnsTokenHint" />
-          </p>
-          <div className="flex items-center gap-2 max-w-md">
+        </SettingRow>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')} description={<AdminRichText k="settings.infrastructure.dnsTokenHint" />}>
+          <div className="fc-settings-group">
             <Input
               value={this.cloudflareTokenInput}
               onChange={this.onCloudflareToken}
               type="password"
+              autoComplete="off"
               placeholder={this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.savedLeaveBlankToKeep') : AdminI18n.t('settings.infrastructure.pasteACloudflareApiToken')}
             />
-            <Button onClick={this.saveCloudflareToken} isLoading={this.isSavingCloudflareToken} icon={<FrameworkIcons.Save size={14} />}>
-              {AdminI18n.t('settings.infrastructure.save')}
-            </Button>
             {this.isCloudflareConfigured ? (
-              <Button variant={ButtonVariant.GHOST} onClick={this.clearCloudflareToken} isLoading={this.isSavingCloudflareToken}>
-                {AdminI18n.t('settings.infrastructure.clear')}
-              </Button>
+              <Button variant={ButtonVariant.SECONDARY} onClick={this.clearCloudflareToken} isLoading={this.isSavingCloudflareToken}>{AdminI18n.t('settings.infrastructure.clear')}</Button>
             ) : null}
           </div>
-          {this.cloudflareTokenMessage ? (
-            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.cloudflareTokenMessage}</p>
-          ) : (
-            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              {this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard')}
-            </p>
-          )}
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row">
+          <Hint variant={tokenSaved ? 'success' : 'info'}>
+            {this.cloudflareTokenMessage || (this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard'))}
+          </Hint>
         </div>
       </Card>
     );

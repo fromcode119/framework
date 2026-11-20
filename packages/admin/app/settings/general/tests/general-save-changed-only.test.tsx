@@ -80,7 +80,7 @@ describe('General settings: Save sends only what changed', () => {
     fireEvent.click(await screen.findByText('Discard'));
 
     await waitFor(() => expect(screen.getByDisplayValue('Shop')).not.toBeNull());
-    expect(screen.queryByText('Save')).toBeNull();
+    await waitFor(() => expect(screen.queryByText('Save')).toBeNull());
     expect(settingsUpdate).not.toHaveBeenCalled();
   });
 

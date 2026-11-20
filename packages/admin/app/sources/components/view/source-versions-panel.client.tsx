@@ -6,6 +6,8 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { SourceVersionsActions } from '@/app/sources/components/view/source-versions-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * The version panel inside an opened Sources row: installed against built, automatic updating, and
@@ -22,22 +24,22 @@ export class SourceVersionsPanel extends SourceVersionsActions {
   private renderFacts(): ReactNode {
     return (
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="text-slate-500 dark:text-slate-400">
+        <span className="fc-tone-muted">
           {AdminI18n.t('sources.installedLabel')}{' '}
-          <strong className="font-medium text-slate-900 dark:text-white">
+          <strong className="font-medium fc-tone-text">
             {this.versions?.installed ? `v${this.versions.installed}` : AdminI18n.t('sources.notInstalled')}
           </strong>
         </span>
-        <span className="text-slate-500 dark:text-slate-400">
+        <span className="fc-tone-muted">
           {AdminI18n.t('sources.lastBuiltLabel')}{' '}
-          <strong className="font-medium text-slate-900 dark:text-white">
+          <strong className="font-medium fc-tone-text">
             {this.versions?.built ? `v${this.versions.built}` : AdminI18n.t('sources.never')}
           </strong>
         </span>
         {this.versionsDiffer ? (
-          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600">
+          <Badge variant={BadgeVariant.WARNING}>
             {AdminI18n.t('sources.builtVersionIsNotThe')}
-          </span>
+          </Badge>
         ) : null}
       </div>
     );
@@ -49,24 +51,24 @@ export class SourceVersionsPanel extends SourceVersionsActions {
    */
   private renderInstall(): ReactNode {
     if (!this.versions?.available.length) {
-      return <span className="text-slate-600 dark:text-slate-400">{AdminI18n.t('sources.noPackagesAreStagedFor')}</span>;
+      return <span className="fc-tone-muted">{AdminI18n.t('sources.noPackagesAreStagedFor')}</span>;
     }
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <label className="text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.installVersion')}</label>
+        <label className="fc-tone-muted">{AdminI18n.t('sources.installVersion')}</label>
         <Select value={this.chosenVersion} options={this.versionOptions} onChange={this.chooseVersion} size={FieldSize.SM} className="w-44" />
         <Button onClick={this.installChosen} disabled={Boolean(this.installing) || !this.chosenVersion} variant={ButtonVariant.OUTLINE}>
           {this.installing ? AdminI18n.t('sources.installingV', { installing: this.installing }) : AdminI18n.t('sources.install')}
         </Button>
-        <span className="text-slate-600 dark:text-slate-400">{AdminI18n.t('sources.everyVersionThisInstallationStill')}</span>
+        <span className="fc-tone-muted">{AdminI18n.t('sources.everyVersionThisInstallationStill')}</span>
       </div>
     );
   }
 
   render(): ReactNode {
-    if (this.loadingVersions) return <span className="text-[12px] text-slate-500">{AdminI18n.t('sources.readingVersions')}</span>;
+    if (this.loadingVersions) return <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('sources.readingVersions')}</span>;
     return (
-      <div className="flex flex-col gap-2 text-[12px]">
+      <div className="flex flex-col gap-2 fc-size-xs">
         {this.renderFacts()}
         {/* The same setting as Edit's "Update if already installed", offered where an operator asks
             "keep this current". Turning it ON also sets "Install after build", which it depends on. */}
@@ -78,7 +80,7 @@ export class SourceVersionsPanel extends SourceVersionsActions {
           description={AdminI18n.t('sources.replaceTheRunningVersionWhenever')}
         />
         {this.renderInstall()}
-        {this.versionError ? <span className="text-rose-600 dark:text-rose-400">{this.versionError}</span> : null}
+        {this.versionError ? <span className="fc-tone-danger">{this.versionError}</span> : null}
       </div>
     );
   }

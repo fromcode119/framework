@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
@@ -8,6 +7,7 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * This site's addresses and what each one serves HTTPS with.
@@ -102,20 +102,19 @@ export class SiteDomainsCard extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
 
     return (
       <Card title={AdminI18n.t('sites.domains')}>
-        <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`text-sm mb-3 fc-tone-muted`}>
           {AdminI18n.t('sites.theDomainsThisSiteAnswers')}
         </p>
 
         {this.loadError ? (
-          <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>{this.loadError}</p>
+          <Alert tone="danger" className="mb-3">{this.loadError}</Alert>
         ) : null}
 
         {this.isLoading ? (
-          <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('sites.loading')}</p>
+          <p className={`text-sm fc-tone-muted`}>{AdminI18n.t('sites.loading')}</p>
         ) : (
           <CertificateHostTable
             entries={this.entries}

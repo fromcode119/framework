@@ -39,7 +39,7 @@ export class DashboardNeedsYou extends AdminComponent {
 
     return (
       <SectionCard title={`${AdminI18n.t('dashboard.needsYou')} · ${this.items.length}`} noPadding>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/70">
+        <div className="divide-y fc-tone-divide">
           {this.items.map((item) => (
             <DashboardAttentionRow key={String(item.key)} item={item} />
           ))}

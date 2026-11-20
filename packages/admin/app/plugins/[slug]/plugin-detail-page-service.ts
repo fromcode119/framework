@@ -162,14 +162,14 @@ export class PluginDetailPageService {
    * What saving the sandbox limits tells the operator. A failed restart is NOT a failed save — the row is
    * saved, but the live reload killed the process and it did not come back; the reason is shown, no retry.
    */
-  static sandboxSaveNotice(result: { restartRequired: boolean; restartFailed?: boolean; reason?: string }, name: string): { type: NotificationType; title: string; message: string } {
+  static sandboxSaveNotice(result: { restartRequired: boolean; restartFailed?: boolean; reason?: string }, name: string): { type: NotificationType; title: string; message: string } | null {
     if (result.restartFailed) {
       return { type: NotificationType.ERROR, title: AdminI18n.t('plugins.detail.restartFailed'), message: AdminI18n.t('plugins.detail.sandboxLimitsForWereSaved', { name, value: result.reason || AdminI18n.t('common.unknownError') }) };
     }
     if (result.restartRequired) {
       return { type: NotificationType.INFO, title: AdminI18n.t('plugins.detail.restartRequired'), message: AdminI18n.t('plugins.detail.sandboxSettingsForWereSaved', { name }) };
     }
-    return { type: NotificationType.SUCCESS, title: AdminI18n.t('plugins.detail.resourcesUpdated'), message: AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name }) };
+    return null;
   }
 
   static async fetchIsolationDefaults(): Promise<{ memoryMb: number; timeoutMs: number } | null> {

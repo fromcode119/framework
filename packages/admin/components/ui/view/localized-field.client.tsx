@@ -58,12 +58,12 @@ export class LocalizedField extends AdminComponent {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">{this.label}</label>
+          <label className="text-sm font-medium fc-tone-text">{this.label}</label>
           {localeRegistry.length ? (
             <select
               value={activeLocale}
               onChange={this.onSelect}
-              className="h-8 rounded-lg border border-slate-300 bg-white px-2.5 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+              className="h-8 rounded-lg border fc-tone-line fc-tone-surface px-2.5 text-xs font-medium fc-tone-text"
             >
               {localeRegistry.map((locale) => (
                 <option key={locale.code} value={locale.code}>

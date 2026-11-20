@@ -64,7 +64,7 @@ export class GeneralSourcesRows extends PureReactor {
             title={AdminI18n.t('settings.general.sourcesCheckInterval')}
             description={AdminI18n.t('settings.general.sourcesCheckIntervalDescription')}
           >
-            <div className="w-full md:w-40"><NumberStepper min={0} step={1} value={settings.sources_check_interval_minutes} onChange={this.onCheckIntervalChange} /></div>
+            <div className="fc-settings-short fc-settings-short--narrow"><NumberStepper min={0} step={1} value={settings.sources_check_interval_minutes} onChange={this.onCheckIntervalChange} /></div>
           </SettingRow>
         )}
 
@@ -74,7 +74,7 @@ export class GeneralSourcesRows extends PureReactor {
             title={AdminI18n.t('settings.general.sourcesKeepBuilds')}
             description={AdminI18n.t('settings.general.sourcesKeepBuildsDescription')}
           >
-            <div className="w-full md:w-40"><NumberStepper min={0} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} /></div>
+            <div className="fc-settings-short fc-settings-short--narrow"><NumberStepper min={0} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} /></div>
           </SettingRow>
         )}
 

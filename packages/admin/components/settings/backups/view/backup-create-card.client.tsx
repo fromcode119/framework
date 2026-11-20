@@ -1,12 +1,17 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
 import { BackupSectionKey } from '@fromcode119/core';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { state, ref } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { DropArea } from '@/components/ui/view/drop-area.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { InlineTip } from '@/components/ui/view/inline-tip.client';
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
+import { Text } from '@/components/ui/view/text.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
 import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
@@ -19,226 +24,72 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * The top of the chain: the markup. Taking the file lives in `BackupCreateCardDropZone`.
  */
 export class BackupCreateCard extends BackupCreateCardDropZone {
+  private static icon(key: BackupSectionKey): ReactNode {
+    if (key === BackupSectionKey.DATABASE) return <FrameworkIcons.Database size={16} />;
+    if (key === BackupSectionKey.PLUGINS) return <FrameworkIcons.Package size={16} />;
+    if (key === BackupSectionKey.THEMES) return <FrameworkIcons.Layers size={16} />;
+    return <FrameworkIcons.Shield size={16} />;
+  }
+
   render(): ReactNode {
-    const {
-      capabilities,
-      createSections,
-      isCreating,
-      isImporting,
-      createProgress,
-      importProgress,
-      onToggleSection,
-      onApplyPreset,
-      onCreate,
-    } = this;
-    const theme = this.theme;
-    const { isDropActive, importError } = this;
-
+    const { capabilities, createSections, isCreating, isImporting, createProgress, importProgress, onToggleSection, onApplyPreset, onCreate } = this;
+    const busy = !capabilities.canManage || isCreating || isImporting;
+    const presets: Array<[BackupPreset, string]> = [
+      [BackupPreset.FULL, AdminI18n.t('settings.components.fullBackup')],
+      [BackupPreset.CORE_DB, AdminI18n.t('settings.components.coreDb')],
+      [BackupPreset.PLUGINS_ONLY, AdminI18n.t('settings.components.pluginsOnly')],
+      [BackupPreset.THEMES_ONLY, AdminI18n.t('settings.components.themesOnly')],
+    ];
     return (
-    <Card noPadding className="overflow-hidden">
-      <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.createBackup')}</h2>
-            <p className="text-sm text-slate-500">
-              {AdminI18n.t('settings.components.pickExactlyWhatGoesInto')}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <input
-              ref={this.fileInputRef}
-              type="file"
-              className="hidden"
-              accept={BackupCreateCardDropZone.BACKUP_IMPORT_ACCEPT}
-              onChange={this.handleFileChange}
-            />
-            <Button
-              variant={ButtonVariant.SECONDARY}
-              className="rounded-xl px-5"
-              icon={<FrameworkIcons.Upload size={14} />}
-              isLoading={isImporting}
-              onClick={this.handleUploadClick}
-              disabled={!capabilities.canManage || isCreating || isImporting}
-            >
+      <RecordCard
+        title={AdminI18n.t('settings.components.createBackup')}
+        aside={(
+          <div className="fc-record-card__table-tools">
+            <input ref={this.fileInputRef} type="file" className="hidden" accept={BackupCreateCardDropZone.BACKUP_IMPORT_ACCEPT} onChange={this.handleFileChange} />
+            <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Upload size={15} />} isLoading={isImporting} onClick={this.handleUploadClick} disabled={busy}>
               {isImporting ? AdminI18n.t('settings.components.importingBackup') : AdminI18n.t('settings.components.importBackup')}
             </Button>
-            <Button
-              className="rounded-xl px-5"
-              icon={<FrameworkIcons.Plus size={14} />}
-              onClick={() => void onCreate()}
-              disabled={!capabilities.canManage || !createSections.length || isCreating || isImporting}
-            >
+            <Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Plus size={15} />} isLoading={isCreating} onClick={() => void onCreate()} disabled={busy || !createSections.length}>
               {isCreating ? AdminI18n.t('settings.components.creatingBackup') : AdminI18n.t('settings.components.createBackup')}
             </Button>
           </div>
-        </div>
-      </div>
+        )}
+      >
+        <div className="fc-stack">
+          <Text muted>{AdminI18n.t('settings.components.pickExactlyWhatGoesInto')}</Text>
 
-      <div className="space-y-6 px-8 py-8">
-        <div className="flex flex-wrap gap-3">
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.FULL)}>
-            {AdminI18n.t('settings.components.fullBackup')}
-          </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.CORE_DB)}>
-            {AdminI18n.t('settings.components.coreDb')}
-          </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.PLUGINS_ONLY)}>
-            {AdminI18n.t('settings.components.pluginsOnly')}
-          </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.THEMES_ONLY)}>
-            {AdminI18n.t('settings.components.themesOnly')}
-          </Button>
-        </div>
-
-        <div
-          onClick={this.handleUploadClick}
-          onDrop={this.handleDrop}
-          onDragOver={this.handleDragOver}
-          onDragLeave={this.handleDragLeave}
-          className={`cursor-pointer rounded-lg border-2 border-dashed px-6 py-5 transition-all ${!capabilities.canManage || isCreating || isImporting
-            ? theme === ThemeMode.DARK
-              ? 'cursor-not-allowed border-slate-800 bg-slate-950/20 opacity-70'
-              : 'cursor-not-allowed border-slate-200 bg-slate-50/50 opacity-70'
-            : isDropActive
-              ? theme === ThemeMode.DARK
-                ? 'border-indigo-400 bg-indigo-500/10'
-                : 'border-indigo-500 bg-indigo-50'
-              : theme === ThemeMode.DARK
-                ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500'
-                : 'border-slate-200 bg-white hover:border-slate-300'}`}
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-3">
-              <FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} />
-              <div>
-                <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>
-                  {AdminI18n.t('settings.components.dragAndDropABackup')}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  {AdminI18n.t('settings.components.importedArchivesAreIndexedInto')}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                this.handleUploadClick();
-              }}
-              disabled={!capabilities.canManage || isCreating || isImporting}
-              className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[12px] font-medium text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
-            >
-              {isImporting ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Upload size={16} />}
-              <span>{isImporting ? AdminI18n.t('settings.components.importing') : AdminI18n.t('settings.components.chooseBackup')}</span>
-            </button>
+          <div className="fc-chip-row fc-chip-row--cell">
+            {presets.map(([preset, label]) => <Button key={preset.value} variant={ButtonVariant.SECONDARY} disabled={isCreating} onClick={() => onApplyPreset(preset)}>{label}</Button>)}
           </div>
+
+          {/* What goes into the archive: several of four, so each is a tick. */}
+          <ListCard>
+            {BackupSectionOptions.getSectionOptions().map((option) => (
+              <ListRow key={option.key.value} icon={BackupCreateCard.icon(option.key)} title={option.label} description={option.description} descriptionTitle={option.helper}
+                actions={<Checkbox checked={createSections.includes(option.key)} disabled={isCreating} onChange={() => onToggleSection(option.key)} label={createSections.includes(option.key) ? AdminI18n.t('settings.components.included') : AdminI18n.t('settings.components.optional')} />} />
+            ))}
+          </ListCard>
+
+          <InlineTip label={AdminI18n.t('settings.components.selectedScope')}>
+            {BackupSectionOptions.describeSections(createSections)}. {AdminI18n.t('settings.components.systemBackupIsTheArchive')}
+          </InlineTip>
+
+          {createProgress ? <ProgressBar value={createProgress.percent} label={createProgress.label} detail={SystemBackupPageUtils.formatProgressPercent(createProgress.percent)} /> : null}
+
+          <DropArea
+            title={AdminI18n.t('settings.components.dragAndDropABackup')}
+            hint={AdminI18n.t('settings.components.importedArchivesAreIndexedInto')}
+            over={this.isDropActive}
+            onDragOver={this.handleDragOver}
+            onDragLeave={this.handleDragLeave}
+            onDrop={this.handleDrop}
+            action={<Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Upload size={15} />} isLoading={isImporting} disabled={busy} onClick={this.handleUploadClick}>{isImporting ? AdminI18n.t('settings.components.importing') : AdminI18n.t('settings.components.chooseBackup')}</Button>}
+          />
+          {this.importError ? <Alert tone="danger">{this.importError}</Alert> : null}
+          {importProgress ? <ProgressBar value={importProgress.percent} label={importProgress.label} detail={SystemBackupPageUtils.formatProgressPercent(importProgress.percent)} /> : null}
+          <Text size="xsmall" muted>{AdminI18n.t('settings.components.importAcceptsExportedTarGz')}</Text>
         </div>
-
-        {importError ? (
-          <div className={`rounded-lg border px-4 py-3 text-sm ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50/80 text-rose-700'}`}>
-            {importError}
-          </div>
-        ) : null}
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          {BackupSectionOptions.getSectionOptions().map((option) => {
-            const isSelected = createSections.includes(option.key);
-            const icon = option.key === BackupSectionKey.DATABASE
-              ? <FrameworkIcons.Database size={18} />
-              : option.key === BackupSectionKey.PLUGINS
-                ? <FrameworkIcons.Package size={18} />
-                : option.key === BackupSectionKey.THEMES
-                  ? <FrameworkIcons.Layers size={18} />
-                  : <FrameworkIcons.Shield size={18} />;
-
-            return (
-              <button
-                key={option.key.value}
-                type="button"
-                disabled={isCreating}
-                onClick={() => onToggleSection(option.key)}
-                className={`rounded-lg border p-5 text-start transition-all ${isSelected
-                  ? theme === ThemeMode.DARK
-                    ? 'border-indigo-500/40 bg-indigo-500/10 shadow-[0_16px_40px_-24px_rgba(99,102,241,0.55)]'
-                    : 'border-indigo-200 bg-indigo-50/80 shadow-[0_16px_40px_-24px_rgba(79,70,229,0.35)]'
-                  : theme === ThemeMode.DARK
-                    ? 'border-slate-800 bg-slate-950/30 hover:border-slate-700'
-                    : 'border-slate-100 bg-slate-50/60 hover:border-slate-200 hover:bg-white'}`}
-              >
-                <div className="flex items-start gap-4">
-                  {/*
-                    * No `AdminClass.SURFACE` here. It is a PANEL class and it is authoritative — its
-                    * white background beat `bg-indigo-600`, so a selected scope rendered a white
-                    * icon on a white chip and the four cards looked like they had no icons at all.
-                    */}
-                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
-                    {icon}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className={`text-sm font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{option.label}</h3>
-                      <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
-                        {isSelected ? AdminI18n.t('settings.components.included') : AdminI18n.t('settings.components.optional')}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-500">{option.description}</p>
-                    <p className="mt-2 text-xs font-medium text-slate-400">{option.helper}</p>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className={`rounded-lg border px-5 py-4 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.selectedScope')}</p>
-              <p className={`mt-2 text-sm font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {BackupSectionOptions.describeSections(createSections)}
-              </p>
-            </div>
-            <p className="max-w-xl text-sm text-slate-500">
-              {AdminI18n.t('settings.components.systemBackupIsTheArchive')}
-            </p>
-          </div>
-          <p className="mt-4 text-xs text-slate-500">
-            {AdminI18n.t('settings.components.importAcceptsExportedTarGz')}
-          </p>
-
-          {importProgress ? (
-            <div className="mt-5 space-y-2">
-              <div className="flex items-center justify-between gap-3 text-[12px] font-medium text-slate-500">
-                <span>{importProgress.label}</span>
-                <span>{SystemBackupPageUtils.formatProgressPercent(importProgress.percent)}</span>
-              </div>
-              <div className={`h-2 overflow-hidden rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-[width] duration-300"
-                  style={{ width: `${importProgress.percent}%` }}
-                />
-              </div>
-            </div>
-          ) : null}
-
-          {createProgress ? (
-            <div className="mt-5 space-y-2">
-              <div className="flex items-center justify-between gap-3 text-[12px] font-medium text-slate-500">
-                <span>{createProgress.label}</span>
-                <span>{SystemBackupPageUtils.formatProgressPercent(createProgress.percent)}</span>
-              </div>
-              <div className={`h-2 overflow-hidden rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                <div
-                  className="h-full rounded-full bg-indigo-600 transition-[width] duration-300"
-                  style={{ width: `${createProgress.percent}%` }}
-                />
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </Card>
+      </RecordCard>
     );
   }
 }

@@ -1,4 +1,5 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 import type { ReactNode } from 'react';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
@@ -26,7 +27,19 @@ import { FrameworkIcons } from '@fromcode119/react';
  * saves and the state live in the links below — see `InfrastructureSettingsPageState`.
  */
 export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards {
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pendingSsr?.dispose();
+    this.pendingLogs?.dispose();
+    this.pendingAudit?.dispose();
+    this.pendingMaintenance?.dispose();
+  }
+
   async componentDidMount() {
+    this.startPending();
     if (!this.canManagePlatform) {
       this.isLoading = false;
       return;
@@ -49,7 +62,6 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
   }
 
   protected body(): ReactNode {
-    const theme = this.theme;
 
     if (this.isLoading) return <div className="p-12"><Loader label={AdminI18n.t('settings.infrastructure.loadingInfrastructureSettings')} /></div>;
 
@@ -62,7 +74,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <CompactPageHeader icon={<FrameworkIcons.Activity size={18} strokeWidth={2} />} title={AdminI18n.t('settings.infrastructure.infrastructureHealth')} subtitle={AdminI18n.t('settings.infrastructure.administrativeMaintenanceForThisInstance')} />
-        <div className="w-full p-6">
+        <div className="w-full py-6">
 
         {this.loadError && (
           <LoadErrorPanel
@@ -109,6 +121,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
         </div>
+        <PendingSavesBar />
         </div>
       </div>
     );

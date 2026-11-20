@@ -14,6 +14,10 @@ import { AdminNotificationEndpoints } from '@/lib/constants/admin-notification-e
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * The console's notifications — what plugins and the framework tell the signed-in person
@@ -106,13 +110,13 @@ export class SidebarNotifications extends AdminComponent {
     return (
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.notifications.title')}</h3>
-          {this.unread ? <span className="text-[12px] text-slate-400 dark:text-slate-500">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
+          <h3 className="fc-size-sm font-medium fc-tone-text">{AdminI18n.t('shell.notifications.title')}</h3>
+          {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="text-[12px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <Button type="button" variant={ButtonVariant.GHOST} className="fc-btn--mini" onClick={this.readAll}>
             {AdminI18n.t('shell.notifications.markAllRead')}
-          </button>
+          </Button>
         ) : null}
       </div>
     );
@@ -134,18 +138,18 @@ export class SidebarNotifications extends AdminComponent {
         </span>
       );
     }
-    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[12px] font-medium leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
+    const badge = this.unread ? <Badge variant={BadgeVariant.INFO}>{this.unread > 99 ? '99+' : this.unread}</Badge> : null;
     if (this.isMini) {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>
-          <FrameworkIcons.Bell size={18} className="text-slate-500 dark:text-slate-400" />
-          {this.unread ? <span className="absolute end-2 top-0.5 h-2 w-2 rounded-full bg-indigo-600" /> : null}
+          <FrameworkIcons.Bell size={18} className="fc-tone-muted" />
+          {this.unread ? <span className="absolute end-2 top-0.5 h-2 w-2 rounded-full fc-tone-brand-solid" /> : null}
         </span>
       );
     }
     return (
-      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70">
-        <FrameworkIcons.Bell size={16} className="shrink-0 text-slate-400" />
+      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start fc-size-sm font-medium fc-tone-muted transition-colors fc-tone-hover">
+        <FrameworkIcons.Bell size={16} className="shrink-0 fc-tone-muted" />
         <span className="flex-1 truncate">{AdminI18n.t('shell.notifications.title')}</span>
         {badge}
       </span>
@@ -157,7 +161,7 @@ export class SidebarNotifications extends AdminComponent {
       return <Dropdown ref={this.dropdown} placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />;
     }
     return (
-      <div className="border-t border-slate-200/80 p-2 dark:border-slate-800/80">
+      <div className="border-t fc-tone-line p-2">
         <Dropdown ref={this.dropdown} block placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />
       </div>
     );

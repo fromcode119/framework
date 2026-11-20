@@ -1,11 +1,15 @@
 import type { ReactNode } from 'react';
-import { AdminClass } from '@/lib/admin-class';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { StatCard } from '@/components/ui/view/stat-card.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Select } from '@/components/ui/view/select.client';
 import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { MediaActivityLabels } from '@/app/media/media-activity-labels';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { MediaActivityPanelActions } from '@/app/media/components/view/media-activity-panel-actions.client';
@@ -25,16 +29,15 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
    * window. Native browser inputs sat here briefly and looked like a different product — the framework
    * has these controls precisely so every screen offers the same ones.
    */
-  protected renderRange(dark: boolean): ReactNode {
+  protected renderRange(): ReactNode {
     const custom = this.rangeMode === MediaActivityRangeMode.CUSTOM;
 
     return (
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="w-40 flex-shrink-0">
+      <div className="fc-chip-row">
+        <div className="fc-page-bar__pick">
           <Select
             value={custom ? 'custom' : String(this.days)}
             onChange={(value: string) => void this.handleRangeMode(value)}
-            size={FieldSize.SM}
             options={[
               { value: '7', label: AdminI18n.t('media.last7Days') },
               { value: '30', label: AdminI18n.t('media.last30Days') },
@@ -45,33 +48,13 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
         </div>
         {custom ? (
           <>
-            <div className="w-36 flex-shrink-0">
-              <DateTimePicker
-                value={this.fromIso || undefined}
-                showTime={false}
-                size={FieldSize.SM}
-                placeholder={AdminI18n.t('media.from')}
-                onChange={(value: string | null) => this.patch({ fromIso: value || '' })}
-              />
+            <div className="fc-page-bar__pick">
+              <DateTimePicker value={this.fromIso || undefined} showTime={false} placeholder={AdminI18n.t('media.from')} onChange={(value: string | null) => this.patch({ fromIso: value || '' })} />
             </div>
-            <span className="text-[12px] opacity-50">–</span>
-            <div className="w-36 flex-shrink-0">
-              <DateTimePicker
-                value={this.toIso || undefined}
-                showTime={false}
-                size={FieldSize.SM}
-                placeholder={AdminI18n.t('media.to')}
-                onChange={(value: string | null) => this.patch({ toIso: value || '' })}
-              />
+            <div className="fc-page-bar__pick">
+              <DateTimePicker value={this.toIso || undefined} showTime={false} placeholder={AdminI18n.t('media.to')} onChange={(value: string | null) => this.patch({ toIso: value || '' })} />
             </div>
-            <button
-              type="button"
-              disabled={!this.customWindow()}
-              onClick={() => void this.load()}
-              className="rounded-lg px-3 py-1.5 text-[12px] font-medium transition-all disabled:opacity-40 bg-indigo-600 text-white"
-            >
-              {AdminI18n.t('media.apply')}
-            </button>
+            <Button variant={ButtonVariant.SECONDARY} disabled={!this.customWindow()} onClick={() => void this.load()}>{AdminI18n.t('media.apply')}</Button>
           </>
         ) : null}
       </div>
@@ -87,26 +70,14 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
       [AdminI18n.t('media.downloads'), Number(totals.downloads || 0)],
       [AdminI18n.t('media.refused'), Number(totals.refused || 0)],
     ];
-
-    return (
-      <Card className={`px-4 py-3 ${AdminClass.SURFACE}`}>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {cells.map(([label, value]) => (
-            <div key={label} className="min-w-0">
-              <p className="text-[17px] font-medium tabular-nums leading-none">{value}</p>
-              <p className="mt-1 text-[12px] opacity-50 truncate">{label}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-    );
+    return <div className="fc-stat-strip">{cells.map(([label, value]) => <StatCard key={label} title={label} value={String(value)} />)}</div>;
   }
 
   /**
    * Opens and downloads per day. This is what makes the screen statistics rather than a list: the
    * shape of a week is visible at a glance, and a spike points at the day worth reading below.
    */
-  protected renderTrend(dark: boolean): ReactNode {
+  protected renderTrend(): ReactNode {
     const series = this.data?.series;
     const labels: string[] = Array.isArray(series?.labels) ? series.labels : [];
     if (labels.length < 2) return null;
@@ -115,126 +86,88 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     const ticks = labels.map((day: string, i: number) => (labels.length > 14 && i % Math.ceil(labels.length / 14) !== 0 ? '' : day.slice(8)));
 
     return (
-      <Card className={`px-4 py-3 ${AdminClass.SURFACE}`}>
-        <div className="mb-2 flex items-center gap-4">
-          <p className="text-[13px] font-medium flex-1">{AdminI18n.t('media.opensAndDownloadsPerDay')}</p>
-          <span className="inline-flex items-center gap-1.5 text-[12px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> {AdminI18n.t('media.opens')}</span>
-          <span className="inline-flex items-center gap-1.5 text-[12px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> {AdminI18n.t('media.downloads')}</span>
+      <RecordCard title={AdminI18n.t('media.opensAndDownloadsPerDay')}>
+        <div className="fc-stack">
+          <PluginTrendChart
+            xLabels={ticks}
+            height={150}
+            series={[
+              { label: AdminI18n.t('media.opens'), data: series.views },
+              { label: AdminI18n.t('media.downloads'), data: series.downloads },
+            ]}
+          />
         </div>
-        <PluginTrendChart
-          xLabels={ticks}
-          height={150}
-          series={[
-            { label: AdminI18n.t('media.opens'), data: series.views, color: '#6366f1' },
-            { label: AdminI18n.t('media.downloads'), data: series.downloads, color: '#10b981' },
-          ]}
-        />
-      </Card>
+      </RecordCard>
     );
   }
 
   /** The actionable block, and the reason this screen exists. */
-  protected renderNotOpened(dark: boolean): ReactNode {
+  protected renderNotOpened(): ReactNode {
     const rows: any[] = Array.isArray(this.data?.notOpened) ? this.data.notOpened : [];
 
     return (
-      <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
-        <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-medium">{AdminI18n.t('media.notOpenedYet')}</p>
-          <p className="mt-0.5 text-[12px] opacity-55">{AdminI18n.t('media.liveLinksNobodyHasOpened')}</p>
-        </div>
-        {!rows.length ? (
-          <p className="px-4 py-4 text-[12px] opacity-55">{AdminI18n.t('media.everyoneHasOpenedWhatYou')}</p>
-        ) : rows.map((row: any, index: number) => (
-          <div key={`${row.email}-${row.shareId}-${index}`} className={`flex items-center justify-between gap-3 px-4 py-2.5 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
-            <div className="min-w-0">
-              <p className="text-[12px] font-medium truncate">{row.email}</p>
-              <p className="text-[12px] opacity-55 truncate">
-                {this.shareLink(row.shareId, row.shareTitle)}
-                {this.formatWhen(row.sentAt) ? ` · ${AdminI18n.t('media.sentAt', { when: this.formatWhen(row.sentAt) })}` : ''}
-              </p>
-            </div>
-            {row.expiresAt ? (
-              <Badge variant={BadgeVariant.WARNING} className="text-[12px] flex-shrink-0">
-                {AdminI18n.t('media.expiresAt', { when: this.formatWhen(row.expiresAt) })}
-              </Badge>
-            ) : null}
+      <ListShell title={AdminI18n.t('media.notOpenedYet')} count={rows.length} subtitle={AdminI18n.t('media.liveLinksNobodyHasOpened')}>
+        {!rows.length ? <EmptyState inline title={AdminI18n.t('media.everyoneHasOpenedWhatYou')} /> : (
+          <div>
+            {rows.map((row: any, index: number) => (
+              <ListRow
+                key={`${row.email}-${row.shareId}-${index}`}
+                title={<span className="fc-ext-row__plain">{row.email}</span>}
+                description={<>{this.shareLink(row.shareId, row.shareTitle)}{this.formatWhen(row.sentAt) ? ` · ${AdminI18n.t('media.sentAt', { when: this.formatWhen(row.sentAt) })}` : ''}</>}
+                actions={row.expiresAt ? <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('media.expiresAt', { when: this.formatWhen(row.expiresAt) })}</Badge> : undefined}
+              />
+            ))}
           </div>
-        ))}
-      </Card>
+        )}
+      </ListShell>
     );
   }
 
-  protected renderTopFiles(dark: boolean): ReactNode {
+  protected renderTopFiles(): ReactNode {
     const rows: any[] = Array.isArray(this.data?.topFiles) ? this.data.topFiles : [];
     if (!rows.length) return null;
 
     return (
-      <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
-        <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-medium">{AdminI18n.t('media.mostDownloaded')}</p>
+      <ListShell title={AdminI18n.t('media.mostDownloaded')} count={rows.length}>
+        <div>
+          {rows.map((row: any) => <ListRow key={row.mediaId} title={<span className="fc-ext-row__plain">{row.name || `#${row.mediaId}`}</span>} actions={<Badge>{String(row.downloads)}</Badge>} />)}
         </div>
-        {rows.map((row: any) => (
-          <div key={row.mediaId} className="flex items-center justify-between gap-3 px-4 py-2">
-            <span className="text-[12px] truncate">{row.name || `#${row.mediaId}`}</span>
-            <span className="text-[12px] font-medium tabular-nums flex-shrink-0">{row.downloads}</span>
-          </div>
-        ))}
-      </Card>
+      </ListShell>
     );
   }
 
-  protected renderRefusals(dark: boolean): ReactNode {
+  protected renderRefusals(): ReactNode {
     const rows: any[] = Array.isArray(this.data?.refusals) ? this.data.refusals : [];
     if (!rows.length) return null;
 
     return (
-      <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
-        <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-medium">{AdminI18n.t('media.refused')}</p>
-          <p className="mt-0.5 text-[12px] opacity-55">{MediaActivityLabels.REFUSAL_NOTE}</p>
+      <ListShell title={AdminI18n.t('media.refused')} subtitle={MediaActivityLabels.REFUSAL_NOTE}>
+        <div>
+          {rows.map((row: any) => <ListRow key={row.outcome} title={<span className="fc-ext-row__plain">{MediaActivityLabels.outcome(row.outcome)}</span>} actions={<Badge>{String(row.count)}</Badge>} />)}
         </div>
-        {rows.map((row: any) => (
-          <div key={row.outcome} className="flex items-center justify-between gap-3 px-4 py-2">
-            <span className="text-[12px]">{MediaActivityLabels.outcome(row.outcome)}</span>
-            <span className="text-[12px] font-medium tabular-nums">{row.count}</span>
-          </div>
-        ))}
-      </Card>
+      </ListShell>
     );
   }
 
-  protected renderEvents(dark: boolean): ReactNode {
+  protected renderEvents(): ReactNode {
     const rows: any[] = Array.isArray(this.data?.events) ? this.data.events : [];
 
     return (
-      <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
-        <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-medium">{AdminI18n.t('media.recentActivity')}</p>
-        </div>
-        {!rows.length ? (
-          <p className="px-4 py-4 text-[12px] opacity-55">{AdminI18n.t('media.nothingRecordedInThisRange')}</p>
-        ) : rows.map((row: any) => (
-          <div key={row.id} className={`flex items-center justify-between gap-3 px-4 py-2 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <div className="min-w-0">
-              <p className="text-[12px] truncate">
-                <span className="opacity-80">{row.email || AdminI18n.t('media.unknownRecipient')}</span>
-                <span className="opacity-50"> · {MediaActivityLabels.action(row)}</span>
-              </p>
-              <p className="text-[12px] opacity-45 truncate">{row.shareId ? this.shareLink(row.shareId, row.shareTitle) : null}</p>
-            </div>
-            <span className="text-[12px] opacity-45 flex-shrink-0">{this.formatWhen(row.at)}</span>
+      <ListShell title={AdminI18n.t('media.recentActivity')}
+        foot={this.data?.eventsHasMore ? <Button variant={ButtonVariant.SECONDARY} isLoading={this.loadingMore} onClick={this.handleMoreEvents}>{AdminI18n.t('media.loadMore')}</Button> : undefined}>
+        {!rows.length ? <EmptyState inline title={AdminI18n.t('media.nothingRecordedInThisRange')} /> : (
+          <div>
+            {rows.map((row: any) => (
+              <ListRow
+                key={row.id}
+                title={<span className="fc-ext-row__plain">{row.email || AdminI18n.t('media.unknownRecipient')} · {MediaActivityLabels.action(row)}</span>}
+                description={row.shareId ? this.shareLink(row.shareId, row.shareTitle) : undefined}
+                meta={this.formatWhen(row.at)}
+              />
+            ))}
           </div>
-        ))}
-        {this.data?.eventsHasMore ? (
-          <div className={`flex justify-center px-4 py-2.5 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <button type="button" disabled={this.loadingMore} onClick={this.handleMoreEvents}
-              className="text-[12px] font-medium text-indigo-500 hover:underline disabled:opacity-50">
-              {this.loadingMore ? AdminI18n.t('media.loading') : AdminI18n.t('media.loadMore')}
-            </button>
-          </div>
-        ) : null}
-      </Card>
+        )}
+      </ListShell>
     );
   }
 }

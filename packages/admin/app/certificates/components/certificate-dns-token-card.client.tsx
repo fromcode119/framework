@@ -1,11 +1,13 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import { Input } from '@/components/ui/view/input.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -24,6 +26,9 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  * platform's, and that is said out loud rather than shown as a blank field that looks unconfigured
  * — an inherited value the operator cannot see the source of is the one thing this admin may never
  * do. The token itself is never shown again once saved; only whether one exists, and whose.
+ *
+ * A typed token is saved by the page's one save bar; Clear stays a button, because it is an action
+ * on what is stored, not a value being edited.
  */
 export class CertificateDnsTokenCard extends AdminComponent<{
   /** `automation` from the certificates read — carries the scope and whether a token resolved. */
@@ -34,6 +39,26 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   @state private tokenInput = '';
   @state private isSaving = false;
   @state private message = '';
+
+  /** A token typed now: nothing typed is nothing to save, so a blank field keeps the stored one. */
+  private pending: PendingSave | null = null;
+
+  componentDidMount(): void {
+    this.pending = new PendingSave(
+      () => this.tokenInput.trim(),
+      () => this.save(),
+      (value) => { this.tokenInput = value; },
+    );
+    this.pending.mark();
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
+  }
 
   private get isConfigured(): boolean {
     return this.props.automation?.isCloudflareConfigured === true;
@@ -54,17 +79,15 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   }
 
   /**
-   * Saves whatever is typed. A BLANK FIELD IS A NO-OP — leaving it empty and pressing Save must
-   * keep the currently saved token, never clear it as a side effect. Clearing is what the explicit
+   * Saves whatever is typed. A BLANK FIELD IS NEVER SAVED — the bar only appears once something is
+   * typed, so it can never clear the stored token as a side effect. Clearing is what the explicit
    * Clear button is for, and the two must not be reachable by the same gesture.
    */
-  @bound private async save(): Promise<void> {
+  private async save(): Promise<void> {
     const token = this.tokenInput.trim();
-    if (!token) {
-      this.message = AdminI18n.t('certificates.nothingToSavePasteA');
-      return;
-    }
-    await this.write(token, AdminI18n.t('certificates.savedThisSiteNowUses'));
+    if (!token) return;
+    const saved = await this.write(token, AdminI18n.t('certificates.savedThisSiteNowUses'));
+    if (!saved) this.pending?.failed();
   }
 
   @bound private async clear(): Promise<void> {
@@ -76,7 +99,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
    * almost the same before and after a save, so on its own a save looked like nothing happened. The
    * hosts that had failed on the old token are named, because they are what the operator is fixing.
    */
-  private async write(token: string, success: string): Promise<void> {
+  private async write(token: string, success: string): Promise<boolean> {
     this.isSaving = true;
     try {
       const result = await CertificatesClient.setCloudflareToken(token);
@@ -87,9 +110,11 @@ export class CertificateDnsTokenCard extends AdminComponent<{
       this.message = success + retrying;
       this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: AdminI18n.t('certificates.cloudflareTokenTitle'), message: this.message });
       await this.props.onChanged();
+      return true;
     } catch (error: any) {
       this.message = String(error?.message || AdminI18n.t('certificates.couldNotSaveTheToken'));
       this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: AdminI18n.t('certificates.cloudflareTokenTitle'), message: this.message });
+      return false;
     } finally {
       this.isSaving = false;
     }
@@ -105,32 +130,25 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const label = `block text-xs font-medium mb-1 ${dark ? 'text-slate-300' : 'text-slate-700'}`;
-
     return (
       <Card title={AdminI18n.t('certificates.cloudflareApiToken')}>
-        <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          <AdminRichText k="certificates.dnsTokenHint" />
-        </p>
-
-        <label className={label}>{AdminI18n.t('certificates.thisSiteSToken')}</label>
-        <div className="flex items-center gap-2 max-w-md">
-          <Input
-            value={this.tokenInput}
-            onChange={this.onToken}
-            type="password"
-            placeholder={this.hasOwnToken ? AdminI18n.t('certificates.savedLeaveBlankToKeep') : AdminI18n.t('certificates.pasteACloudflareApiToken')}
-          />
-          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('certificates.save')}</Button>
-          {this.hasOwnToken ? (
-            <Button variant={ButtonVariant.GHOST} onClick={this.clear} isLoading={this.isSaving}>{AdminI18n.t('certificates.clear')}</Button>
-          ) : null}
+        <SettingRow theme={this.theme} title={AdminI18n.t('certificates.thisSiteSToken')} description={<AdminRichText k="certificates.dnsTokenHint" />}>
+          <div className="fc-settings-group">
+            <Input
+              value={this.tokenInput}
+              onChange={this.onToken}
+              type="password"
+              autoComplete="off"
+              placeholder={this.hasOwnToken ? AdminI18n.t('certificates.savedLeaveBlankToKeep') : AdminI18n.t('certificates.pasteACloudflareApiToken')}
+            />
+            {this.hasOwnToken ? (
+              <Button variant={ButtonVariant.SECONDARY} onClick={this.clear} isLoading={this.isSaving}>{AdminI18n.t('certificates.clear')}</Button>
+            ) : null}
+          </div>
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row">
+          <Hint variant={this.hasOwnToken && !this.message ? 'success' : 'info'}>{this.message || this.provenance}</Hint>
         </div>
-
-        <p className={`mt-2 text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          {this.message || this.provenance}
-        </p>
       </Card>
     );
   }

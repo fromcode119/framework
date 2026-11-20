@@ -162,6 +162,7 @@
       "reorderHandle": "Повлечете за да го смените редоследот — или фокусирајте и користете ги стрелките",
       "reorderEnable": "Прикажете ја листата според нејзиниот редослед за да го менувате",
       "reorderFailed": "Новиот редослед не може да се зачува",
+      "noMatch": "Ништо не одговара на пребарувањето или филтрите.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Да се увезе ли {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Уреди",
       "notFilledIn": "Не е пополнето",
       "statusSection": "Статус",
-      "statusConfirm": "Да се промени статусот во „{{status}}“?",
       "recordSection": "Запис",
       "showJson": "Прикажи како JSON",
       "showForm": "Прикажи како формулар",
@@ -245,7 +245,8 @@
       "copied": "Копирано",
       "more": "Повеќе",
       "moreFields": "{{count}} полиња",
-      "moreOneField": "{{count}} поле"
+      "moreOneField": "{{count}} поле",
+      "statusConfirm": "Да се промени статусот во „{{status}}“?"
     },
     "notFound": {
       "title": "Колекцијата не е пронајдена",
@@ -366,7 +367,8 @@
     "reset": "Ресетирај",
     "notScheduledYet": "сè уште не е закажано",
     "more": "Повеќе дејства",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Отстрани"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Изберете боја",
-      "colour": "Боја",
-      "pick": "Изберете боја",
       "hex": "Hex код",
-      "confirm": "Потврди боја",
       "notSet": "Не е поставено"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Откриени се неактивни зависности",
       "intro": "За да се овозможи {{plugin}}, потребно е да се реши следново:",
       "notInstalled": "НЕ Е ИНСТАЛИРАНО",
+      "inactive": "исклучен",
+      "incompatible": "друга верзија",
       "requires": "Потребна е верзија {{version}}. Може да се преземе од маркетот.",
       "needsActivation": "Веќе е инсталирано, но треба да се активира (верзија {{version}}).",
       "mismatch": "Несовпаѓање на верзии: потребна е {{expected}}, пронајдена е {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Преглед на платформата",
-      "image": "Преглед {{number}}"
+      "image": "Преглед {{number}}",
+      "previous": "Претходно",
+      "next": "Следно"
     },
     "menuField": {
       "newItem": "Нова ставка во менито",
-      "structure": "Структура на менито",
-      "add": "Додај ставка во менито"
+      "add": "Додај ставка во менито",
+      "reorder": "Повлечете за да преместите; стрелки: горе и долу преместува, десно вгнездува, лево извлекува"
     },
     "field": {
       "notSet": "Не е поставено",
@@ -461,8 +464,8 @@
       "record": "запис"
     },
     "array": {
-      "addNew": "Додај {{label}}",
-      "item": "Ставка"
+      "add": "Додај",
+      "reorder": "Повлечете за да преместите или користете стрелки"
     },
     "stepper": {
       "increment": "Зголеми",
@@ -528,9 +531,7 @@
       "noContact": "Нема е-пошта или телефон во Луѓе",
       "hasLogin": "Има најава",
       "noLogin": "Нема најава",
-      "source": "Името, е-поштата и телефонот доаѓаат од Луѓе #{{id}}; изменете ги таму.",
       "open": "Отвори во Луѓе",
-      "choose": "Изберете друго лице",
       "searchFailed": "Пребарувањето во Луѓе моментално не е можно.",
       "noMatch": "Никој во Луѓе не одговара. Внесете ги податоците подолу; со зачувување ќе се додаде во Луѓе.",
       "ref": "Луѓе #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Отвори Сајтови"
       }
     },
-    "relativeOverridesInheritTheCollection": "Релативните замени го наследуваат префиксот на колекцијата. Овозможете апсолутен режим за да ги заобиколите префиксите како `/shop`.",
     "range": "Опсег",
     "noDataForThisRange": "Нема податоци за овој опсег",
     "peak": "· врв {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Филтри",
       "clearFilters": "Исчисти сè",
       "removeFilter": "Отстрани го филтерот {{label}}",
-      "showResults": "Прикажи {{count}} резултати"
+      "showResults": "Прикажи {{count}} резултати",
+      "showResultsOne": "Прикажи 1 резултат"
     },
     "personFieldPicker": {
       "none": "Не се зачувува во поле на лице",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Ограничувањата на sandbox за {{name}} се зачувани, но процесот не успеа да се рестартира со нив: {{value}}",
       "restartRequired": "Потребно е рестартирање",
       "sandboxSettingsForWereSaved": "Поставките на sandbox за {{name}} се зачувани, но потребно е рестартирање на API за да стапат на сила.",
-      "resourcesUpdated": "Ресурсите се ажурирани",
-      "sandboxLimitsForUpdated": "Ограничувањата на sandbox за {{name}} се ажурирани.",
       "sandboxDisabledFor": "Sandbox е оневозможен за {{name}}.",
       "saveFailed": "Зачувувањето не успеа",
       "failedToUpdateSandboxLimits": "Не успеа ажурирањето на ограничувањата на sandbox.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Неактивно. Нема евидентирани неодамнешни настани.",
       "updating": "Се ажурира...",
       "updateAvailable": "Достапно е ажурирање",
-      "updatePolicy": "Политика за ажурирање",
       "saveChanges": "Зачувај промени",
       "unsavedChanges": "Незачувани промени",
       "exportSettingsAsJson": "Извези поставки како JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Ново во v{{version}}",
       "installedVersion": "Инсталирана {{version}}",
       "marketplaceVersion": "Во продавницата {{version}}",
-      "saving": "Се зачувува...",
       "saveSettings": "Зачувај поставки",
       "viewDefinition": "Прикажи дефиниција",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Изглед",
       "failedToLoadAppearances": "Изгледите не можеа да се вчитаат",
       "failedToSaveShadowSetting": "Поставката за сенки не можеше да се зачува",
+      "failedToSaveMenuSetting": "Поставката на менито не се зачува",
       "switchedToReloading": "Префрлено на „{{slug}}“. Се вчитува повторно…",
       "failedToSwitchAppearance": "Изгледот не можеше да се промени",
       "installFailed": "Инсталацијата не успеа",
@@ -1919,6 +1917,8 @@
       "install": "Инсталирај",
       "surfaceShadows": "Сенки на површините",
       "depthOnPanelsDialogsAnd": "Длабочина на панелите, дијалозите и копчињата. Исклучете го ова за рамна администрација — рабовите и аглите остануваат исти.",
+      "secondMenuColumn": "Втора колона на менито",
+      "sectionPagesBesideTheMenu": "Страниците на делот стојат во колона до менито. Кога е исклучена, се отвораат под својот ред во едното мени, а секој екран добива 220px.",
       "installFromAPackageUrl": "Инсталирај од URL на пакет",
       "builtIn": "Вградено",
       "installed": "Инсталирано",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP локацијата не е ажурирана",
       "geoUnavailable": "Статусот на IP локацијата не е достапен",
       "geoAttribution": "IP геолокација од {{name}} ({{license}}). Се ажурира месечно додека е вклучена.",
-      "geoSaved": "Зачувано",
-      "geoSavedOn": "Базата се презема; голема е околу 60 MB.",
-      "geoSavedOff": "Базата е отстранета од серверот.",
       "everyPluginRunsIsolated": "Изолирано: секој приклучок работи во сопствен процес. Ограничувањето на меморија и рокот важат за секој приклучок; уделот во CPU, вкупната меморија, дискот и процесите важат само за приклучоци што ги прикачила некоја страница.",
       "schemaOrphans": "Шема на базата",
       "schemaOrphansHelp": "Колони што базата сè уште ги содржи, а веќе ништо не ги декларира. Платформата само ги прикажува; ништо не се брише додека вие не одлучите, а избришана колона не може да се врати.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Оневозможено — крајната точка одговара со 403 на сите.",
       "mediaPayloadLimitMb": "Ограничување за медиумски содржини (MB)",
       "maximumDecodedUploadOrRemote": "Максимална големина на декодирано прикачување или далечинско преземање што го прифаќаат MCP алатките за медиуми.",
-      "saveLimit": "Зачувај ограничување",
       "allSites": "сите сајтови",
       "issuedBeforeSites": "издаден пред сајтовите",
       "noTokensYet": "Сè уште нема токени.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Стандард на платформата",
       "thisSite": "Овој сајт",
       "inForceNow": "Моментално важи",
-      "saving": "Се зачувува…",
-      "savePolicy": "Зачувај политика",
       "thePlatformDefaultIsSet": "Стандардот на платформата го поставува администратор на платформата.",
       "useTheLayerBelow": "Користи го долниот слој",
       "whyTheLawRequiresThese": "Зошто законот бара овие записи да се чуваат",
-      "inheritsThePlatformDefault": "наследува: стандардот на платформата"
+      "inheritsThePlatformDefault": "наследува: стандардот на платформата",
+      "strategyDelete": "Избриши",
+      "strategyAnonymise": "Анонимизирај",
+      "strategyRetain": "Задржи",
+      "declaredBy": "Стандардно, објавено од {{plugin}}",
+      "inheritsValue": "наследува: {{value}}",
+      "legalBasis": "Правна основа",
+      "theSiteColumnIsSet": "Колоната „Оваа страница“ се поставува внатре во страница. Изберете страница во менувачот за да ја промените."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Име за прикажување",
     "thisPersonHasALogin": "Ова лице има сметка за најава; е-поштата се менува во сметката.",
     "birthDate": "Датум на раѓање",
-    "saveChanges": "Зачувај промени",
     "sendPasswordResetEmail": "Испрати е-пошта за ресетирање лозинка",
     "cancel": "Откажи",
     "accountManagement": "Управување со сметка",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Копирајте ги кодовите за обновување рачно.",
     "nameRequired": "Потребно е име",
     "enterATokenNameFirst": "Прво внесете име на токенот.",
-    "tokenCreated": "Токенот е креиран",
     "copyTheTokenNowIt": "Копирајте го токенот сега. Се прикажува само еднаш.",
     "failedToCreateApiToken": "Не успеа креирањето на API токен",
     "areYouSureYouWant2": "Дали сте сигурни дека сакате да ја оневозможите 2FA за овој корисник? Ова ќе ја намали безбедноста на сметката.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Сесијата е отповикана",
     "deviceSessionRevokedSuccessfully": "Сесијата на уредот е успешно отповикана.",
     "failedToRevokeSession": "Не успеа отповикувањето на сесијата",
-    "rolesUpdated": "Улогите се ажурирани",
-    "theUserSRolesWere": "Улогите на корисникот се зачувани.",
     "saveFailed": "Зачувувањето не успеа",
     "failedToSaveRoles": "Не успеа зачувувањето на улогите.",
     "loadingRoles": "Се вчитуваат улогите",
@@ -3448,8 +3445,6 @@
     "remove": "Отстрани",
     "loadFailed": "Вчитувањето не успеа",
     "couldNotRetrieveRoleDetails": "Не може да се преземат деталите за улогата.",
-    "roleUpdated": "Улогата е ажурирана",
-    "wasSaved": "„{{name}}“ е зачувана.",
     "updateFailed": "Ажурирањето не успеа",
     "anErrorOccurredWhileSaving": "Настана грешка при зачувувањето.",
     "loadingRole": "Се вчитува улогата...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Назад кон корисници",
     "selfServiceSecurityControls": "Безбедносни контроли за самоуслуга",
     "sessionDeviceControlsAndPersonal": "Контролите за сесии/уреди и личните API-токени се достапни само кога ја прегледувате сопствената корисничка сметка.",
-    "securityRecommendations": "Безбедносни препораки",
     "twoFactorAuthentication": "Автентикација во два чекора",
-    "activeAndProtectingThisAccount": "Активна и ја заштитува оваа сметка",
-    "notEnabledHighlyRecommendedFor": "Не е овозможена - силно се препорачува за администраторски сметки",
-    "passwordProtected": "Заштитено со лозинка",
-    "accountHasASecurePassword": "Сметката има безбедна лозинка",
-    "administratorAccess": "Администраторски пристап",
     "fullSystemAccess2faStrongly": "Целосен пристап до системот - 2FA силно се препорачува",
     "personalApiTokens": "Лични API-токени",
     "tokenNameEGCi": "Име на токенот (на пр. CI deploy)",
     "days": "Денови",
     "createToken": "Креирај токен",
-    "copyNowShownOnce": "Копирајте сега (се прикажува еднаш)",
     "loadingApiTokens": "Се вчитуваат API-токените...",
     "noApiTokensCreatedYet": "Сè уште нема креирани API-токени.",
     "revoke": "Отповикај",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Активност на најави и сесии",
     "loadingAuthActivity": "Се вчитува активноста на автентикација...",
     "noRecentLoginSessionEvents": "Нема неодамнешни настани за најава/сесија за овој корисник.",
-    "unknownTime": "Непознато време",
-    "activityEvent": "Настан на активност",
     "openFullGlobalActivity": "Отвори целосна глобална активност",
-    "2faStatus": "Статус на 2FA",
     "addAnExtraLayerOf": "Додајте дополнително ниво на безбедност со автентикација преку апликација (TOTP)",
-    "recommended": "Препорачано",
     "enableTwoFactorAuthenticationTo": "Овозможете автентикација во два чекора за да ја заштитите оваа сметка со временски еднократни лозинки (TOTP).",
     "enable2fa": "Овозможи 2FA",
     "step1ScanQrCode": "Чекор 1: Скенирајте го QR-кодот",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Чекор 2: Потврдете го кодот",
     "enterThe6DigitCode": "Внесете го 6-цифрениот код од апликацијата за автентикација за да го завршите поставувањето:",
     "verifyEnable": "Потврди и овозможи",
-    "protectionActive": "Заштитата е активна",
     "thisAccountRequiresA6": "Оваа сметка при најава бара 6-цифрен код од апликација за автентикација.",
     "regenerateRecoveryCodes": "Генерирај нови кодови за враќање",
     "disable2fa": "Оневозможи 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Отповикај ги другите сесии",
     "loadingSessions": "Се вчитуваат сесиите...",
     "noActiveSessions": "Нема активни сесии.",
-    "currentSession": "Тековна сесија",
-    "deviceSession": "Сесија на уред",
     "current": "Тековна",
     "unknownDevice": "Непознат уред",
     "editAccount2": "Уреди сметка",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Отвори запис на корисникот",
     "token": "Токен",
     "createdOn": "Креиран на {{date}}",
-    "notAvailable": "н/д",
     "revokedOn": "Отповикан на {{date}}",
     "recoveryCodesRemaining": "Преостанати кодови за враќање:",
-    "unknownValue": "непознато",
     "expiresOn": "Истекува: {{date}}",
     "person2": "Лице",
     "added": "Додадено",
@@ -3591,12 +3570,10 @@
       "loading": "Се вчитуваат полињата за лица…",
       "loadFailed": "Полињата за лица не можеа да се вчитаат.",
       "saveFailed": "Полињата не можеа да се зачуваат.",
-      "saved": "Полињата се зачувани.",
       "empty": "Сè уште нема полиња за лица. Додајте едно за да почне да се чува за секое лице.",
       "noneDeclared": "Овој сајт сè уште нема полиња за лица.",
       "declare": "Додај полиња за лица",
       "manage": "Управувај со полиња",
-      "save": "Зачувај полиња",
       "saveField": "Зачувај поле",
       "delete": "Избриши",
       "deleteTitle": "Да се избрише ова поле?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Важи (денови)",
+    "revokeOtherSessionsConfirm": "Сите други уреди веднаш се одјавуваат.",
+    "revokeSessionConfirm": "Тој уред веднаш се одјавува.",
+    "revokeCurrentSessionConfirm": "Ова е уредот што го користите сега. Веднаш ќе бидете одјавени.",
+    "revokeTokenConfirm": "„{{name}}“ веднаш престанува да работи.",
+    "twoFactorTurnedOff": "Најавата во два чекора е исклучена за оваа страница, па не може да се постави тука.",
+    "openSecuritySettings": "Отвори безбедносни поставки"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Поставките на сајтот ({{what}}) се поставуваат во секој сајт посебно — изберете еден од менито за сајтови.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Овој сајт не можеше да се отвори за преглед.",
     "couldNotLoadTheSite": "Сајтот не можеше да се вчита.",
     "couldNotReloadThePlugin": "Листата на приклучоци не можеше повторно да се вчита.",
-    "siteSaved": "Сајтот е зачуван",
-    "routingFollowsImmediatelyNoRestart": "Рутирањето се применува веднаш — без рестартирање.",
     "notSaved": "Не е зачувано",
     "theSiteCouldNotBe2": "Сајтот не можеше да се зачува.",
     "couldNotOpenTheSite": "Сајтот не можеше да се отвори",
@@ -3789,7 +3771,6 @@
     "visit": "Посети",
     "openThisSite": "Отвори го овој сајт",
     "export": "Извези",
-    "save": "Зачувај",
     "couldNotLoadCertificates": "Сертификатите не можеа да се вчитаат.",
     "couldNotSwitchThisHost": "Овој хост не можеше да се префрли на автоматски.",
     "couldNotSwitchThisHost2": "Овој хост не можеше да се префрли на автоматски (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Достапно е ажурирање",
     "isNowActive": "{{name}} сега е активна.",
     "themeHasBeenUpdated2": "Темата {{name}} е ажурирана.",
-    "configurationSaved": "Конфигурацијата е зачувана",
-    "visualProtocolsUpdatedSuccessfully": "Визуелните протоколи се успешно ажурирани.",
     "saveFailed": "Зачувувањето не успеа",
     "hasBeenRemoved2": "{{name}} е отстранета.",
     "seedsExecuted": "Почетните податоци се извршени",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Распоред",
     "extensionsSection": "Проширувања",
     "versionReady": "Верзијата {{version}} е подготвена",
-    "saveChanges": "Зачувај ги промените",
     "runSeedsHint": "Повторно ги внесува почетните податоци на темата — нејзините примерни страници и содржина — во ова мрежно место.",
     "resetThemeHint": "Ги брише зачуваните поставки на темата за ова мрежно место и повторно ги внесува почетните податоци.",
     "notActiveHint": "Ова мрежно место користи друга тема.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Што е ново во v{{version}}",
     "whatChanged": "Што е ново",
-    "closeBuildSourceDialog": "Затвори го дијалогот за извор на градба",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Таа верзија не може да се инсталира.",
     "couldNotChangeAutomaticUpdating": "Автоматското ажурирање не може да се промени.",
     "failed": "Неуспешно",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Автоматските сертификати се исклучени. {{reason}}",
     "automaticCertificatesComeFrom": "Автоматските сертификати доаѓаат од {{authority}}.",
     "noSecretKeyIsConfigured": "На овој сервер не е конфигуриран SECRET_KEY, па приватен клуч не може да се зачува. Прикачувањето е оневозможено додека не се постави.",
-    "nothingToSavePasteA": "Нема што да се зачува — залепете токен или користете „Исчисти“ за да го отстраните зачуваниот.",
     "savedThisSiteNowUses": "Зачувано. Оваа страница сега користи сопствен Cloudflare токен.",
     "removedThisSiteFallsBack": "Отстрането. Оваа страница сега го користи токенот на платформата.",
     "couldNotSaveTheToken": "Токенот не може да се зачува.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Токен на оваа страница",
     "savedLeaveBlankToKeep": "Зачувано — оставете празно за да се задржи или користете „Исчисти“ за отстранување",
     "pasteACloudflareApiToken": "Залепете Cloudflare API токен",
-    "save": "Зачувај",
     "clear": "Исчисти",
     "nothingStoredThisHostCannot": "Ништо не е зачувано — овој хост не може да се служи преку HTTPS од оваа платформа.",
     "nothingStoredHereTlsFor": "Ништо не е зачувано овде — TLS за овој хост се терминира пред платформата, па неговиот сертификат е таму.",
@@ -4706,36 +4680,26 @@
     "roles": "Улоги",
     "permissions": "Дозволи",
     "eventDetails": "Детали за настанот",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Систем",
     "timestamp": "Време",
-    "authority": "Овластување",
-    "actorId": "ID на извршител",
-    "type": "Тип",
-    "systemLog": "Системски дневник",
-    "audit": "Ревизија: {{status}}",
-    "activityMessage": "Порака за активноста",
-    "actionTaken": "Преземено дејство",
-    "resourcePool": "Збир на ресурси",
-    "rawMetadata": "Необработени метаподатоци",
     "thisEntryIsPartOf": "Овој запис е дел од непроменлива ревизорска трага.",
     "exportJson": "Извези JSON",
     "event": "Настан",
     "actor": "Извршител",
+    "plugin": "Приклучок",
     "activity": "Активност",
     "status": "Статус",
     "action": "Дејство",
     "time": "Време",
-    "logSignature": "Потпис на записот: {{id}}",
     "internal": "ВНАТРЕШНО",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запис бр. {{id}}",
+    "recordedData": "Запишани податоци"
   },
   "mediaPicker": {
     "showingOnly": "Се прикажуваат само: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Задача",
       "schedule": "Се извршува",
       "lastRun": "Последно извршување",
-      "nextRun": "Следно извршување"
+      "nextRun": "Следно извршување",
+      "duration": "Времетраење"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

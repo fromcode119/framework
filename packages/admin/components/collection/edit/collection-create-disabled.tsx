@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { StatePage } from '@/components/ui/view/state-page.client';
 
 /**
  * Shown instead of the create form when a collection declares `admin.disableCreate`.
@@ -22,22 +23,13 @@ export class CollectionCreateDisabled extends PureReactor {
   @prop declare listHref: string;
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 animate-in fade-in duration-500">
-        <div className={`p-6 rounded-xl mb-6 ${dark ? 'bg-slate-900' : 'bg-white shadow-lg shadow-slate-200'}`}>
-          <FrameworkIcons.Lock size={40} className="text-indigo-500" strokeWidth={1.25} />
-        </div>
-        <h2 className={`text-xl font-medium mb-3 ${dark ? 'text-white' : 'text-slate-900'}`}>
-          {AdminI18n.t('collection.notCreatedByHand', { title: this.title })}
-        </h2>
-        <p className="text-slate-500 text-center max-w-md leading-relaxed mb-8">
-          {this.description || AdminI18n.t('collection.recordsInThisCollectionAre')}
-        </p>
-        <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href={this.listHref} icon={<FrameworkIcons.Layout size={16} />}>
-          {AdminI18n.t('collection.backTo', { title: this.title })}
-        </Button>
-      </div>
+      <StatePage
+        icon={<FrameworkIcons.Lock size={18} />}
+        title={AdminI18n.t('collection.notCreatedByHand', { title: this.title })}
+        hint={this.description || AdminI18n.t('collection.recordsInThisCollectionAre')}
+        actions={<Button variant={ButtonVariant.PRIMARY} as={AdminLink} href={this.listHref}>{AdminI18n.t('collection.backTo', { title: this.title })}</Button>}
+      />
     );
   }
 }

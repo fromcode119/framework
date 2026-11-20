@@ -79,6 +79,10 @@ export class EditHeaderMenu extends Reactor {
   /** What plugins add to the record's menu (`edit.header.menu`), drawn as rows under the record's own. */
   @prop declare actions?: ReactNode;
 
+  /** Opens the edit sheet of the first section, when this menu heads the record's first card. The
+      reference keeps one ⋯ there — Edit the general section, then the record's own actions. */
+  @prop declare onEditDetails?: () => void;
+
   private get items(): IDropdownItem[] {
     const items: IDropdownItem[] = this.statusOptions.map((option, index) => ({
       label: option.label,
@@ -88,6 +92,9 @@ export class EditHeaderMenu extends Reactor {
       selected: option.value === this.currentStatusValue,
       onClick: () => this.onStatusChange(option.value),
     }));
+    if (this.onEditDetails) {
+      items.unshift({ label: AdminI18n.t('collection.edit.editSection'), icon: <FrameworkIcons.Edit size={15} />, onClick: this.onEditDetails });
+    }
     items.push(...this.pageItems());
     items.push({
       label: AdminI18n.t(this.advancedView ? 'collection.edit.showForm' : 'collection.edit.showJson'),

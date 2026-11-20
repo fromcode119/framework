@@ -162,6 +162,7 @@
       "reorderHandle": "ドラッグして並べ替え、またはフォーカスして矢印キーを使用",
       "reorderEnable": "並べ替えるには、リストを独自の順序で表示してください",
       "reorderFailed": "新しい順序を保存できませんでした",
+      "noMatch": "検索またはフィルターに一致するものはありません。",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "{{file}} をインポートしますか？",
@@ -234,7 +235,6 @@
       "editSection": "編集",
       "notFilledIn": "未入力",
       "statusSection": "ステータス",
-      "statusConfirm": "ステータスを「{{status}}」に変更しますか？",
       "recordSection": "レコード",
       "showJson": "JSON で表示",
       "showForm": "フォームで表示",
@@ -245,7 +245,8 @@
       "copied": "コピーしました",
       "more": "その他",
       "moreFields": "{{count}} 件の項目",
-      "moreOneField": "{{count}} 件の項目"
+      "moreOneField": "{{count}} 件の項目",
+      "statusConfirm": "ステータスを「{{status}}」に変更しますか？"
     },
     "notFound": {
       "title": "コレクションが見つかりません",
@@ -366,7 +367,8 @@
     "reset": "リセット",
     "notScheduledYet": "未スケジュール",
     "more": "その他の操作",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "削除"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "色を選択",
-      "colour": "色",
-      "pick": "色を選択",
       "hex": "16進コード",
-      "confirm": "色を確定",
       "notSet": "未設定"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "無効な依存関係が検出されました",
       "intro": "{{plugin}} を有効にするには、次の対応が必要です:",
       "notInstalled": "未インストール",
+      "inactive": "無効",
+      "incompatible": "別のバージョン",
       "requires": "バージョン {{version}} が必要です。マーケットプレイスからダウンロードできます。",
       "needsActivation": "インストール済みですが、有効化が必要です(バージョン {{version}})。",
       "mismatch": "バージョンが一致しません: {{expected}} が必要ですが、{{actual}} が見つかりました。",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "プラットフォームのプレビュー",
-      "image": "プレビュー {{number}}"
+      "image": "プレビュー {{number}}",
+      "previous": "前へ",
+      "next": "次へ"
     },
     "menuField": {
       "newItem": "新しいメニュー項目",
-      "structure": "メニュー構造",
-      "add": "メニュー項目を追加"
+      "add": "メニュー項目を追加",
+      "reorder": "ドラッグで移動。矢印キー：上下で移動、右で入れ子、左で階層を上げる"
     },
     "field": {
       "notSet": "未設定",
@@ -461,8 +464,8 @@
       "record": "レコード"
     },
     "array": {
-      "addNew": "{{label}}を追加",
-      "item": "項目"
+      "add": "追加",
+      "reorder": "ドラッグするか矢印キーで移動"
     },
     "stepper": {
       "increment": "増やす",
@@ -528,9 +531,7 @@
       "noContact": "連絡先にメールアドレスや電話番号がありません",
       "hasLogin": "ログインあり",
       "noLogin": "ログインなし",
-      "source": "名前、メールアドレス、電話番号は連絡先 #{{id}} から取得しています。変更は連絡先で行ってください。",
       "open": "連絡先で開く",
-      "choose": "別の人を選択",
       "searchFailed": "現在、連絡先を検索できません。",
       "noMatch": "一致する連絡先がありません。下に詳細を入力してください。保存すると連絡先に追加されます。",
       "ref": "連絡先 #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "サイトを開く"
       }
     },
-    "relativeOverridesInheritTheCollection": "相対パスの上書きはコレクションのプレフィックスを継承します。`/shop` などのプレフィックスを無視するには絶対モードを有効にしてください。",
     "range": "期間",
     "noDataForThisRange": "この期間のデータはありません",
     "peak": "· ピーク {{value}}",
@@ -626,7 +626,8 @@
       "filters": "フィルター",
       "clearFilters": "すべてクリア",
       "removeFilter": "{{label}}フィルターを削除",
-      "showResults": "{{count}}件の結果を表示"
+      "showResults": "{{count}}件の結果を表示",
+      "showResultsOne": "1件の結果を表示"
     },
     "personFieldPicker": {
       "none": "連絡先フィールドに保存しない",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} のサンドボックス制限は保存されましたが、新しい制限でのプロセス再起動に失敗しました: {{value}}",
       "restartRequired": "再起動が必要です",
       "sandboxSettingsForWereSaved": "{{name}} のサンドボックス設定は保存されましたが、反映するには API の再起動が必要です。",
-      "resourcesUpdated": "リソースを更新しました",
-      "sandboxLimitsForUpdated": "{{name}} のサンドボックス制限を更新しました。",
       "sandboxDisabledFor": "{{name}} のサンドボックスを無効にしました。",
       "saveFailed": "保存に失敗しました",
       "failedToUpdateSandboxLimits": "サンドボックス制限を更新できませんでした。",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "アイドル状態です。最近のイベントはありません。",
       "updating": "更新しています...",
       "updateAvailable": "アップデートがあります",
-      "updatePolicy": "更新ポリシー",
       "saveChanges": "変更を保存",
       "unsavedChanges": "未保存の変更",
       "exportSettingsAsJson": "設定を JSON でエクスポート",
@@ -1185,7 +1183,6 @@
       "newIn": "v{{version}} の新機能",
       "installedVersion": "インストール済み {{version}}",
       "marketplaceVersion": "マーケットプレイス {{version}}",
-      "saving": "保存中...",
       "saveSettings": "設定を保存",
       "viewDefinition": "定義を表示",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "外観",
       "failedToLoadAppearances": "外観を読み込めませんでした",
       "failedToSaveShadowSetting": "影の設定を保存できませんでした",
+      "failedToSaveMenuSetting": "メニュー設定を保存できませんでした",
       "switchedToReloading": "「{{slug}}」に切り替えました。再読み込みしています…",
       "failedToSwitchAppearance": "外観を切り替えられませんでした",
       "installFailed": "インストールに失敗しました",
@@ -1919,6 +1917,8 @@
       "install": "インストール",
       "surfaceShadows": "サーフェスの影",
       "depthOnPanelsDialogsAnd": "パネル、ダイアログ、ボタンに奥行きを付けます。オフにするとフラットな管理画面になります。枠線や角はそのまま変わりません。",
+      "secondMenuColumn": "メニューの第2カラム",
+      "sectionPagesBesideTheMenu": "セクションのページがメニューの横の列に並びます。オフにすると、1つのメニュー内の自分の行の下に開き、どの画面も220px広くなります。",
       "installFromAPackageUrl": "パッケージ URL からインストール",
       "builtIn": "組み込み",
       "installed": "インストール済み",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP 位置情報を更新できませんでした",
       "geoUnavailable": "IP 位置情報の状態を取得できません",
       "geoAttribution": "IP 位置情報の提供: {{name}}（{{license}}）。オンの間は毎月更新されます。",
-      "geoSaved": "保存しました",
-      "geoSavedOn": "データベースをダウンロードしています（約 60 MB）。",
-      "geoSavedOff": "データベースをサーバーから削除しました。",
       "everyPluginRunsIsolated": "分離: 各プラグインは個別のプロセスで実行されます。メモリ上限と実行期限はすべてのプラグインに適用され、CPU 割り当て、合計メモリ、ディスク、プロセス数はサイトがアップロードしたプラグインにのみ適用されます。",
       "schemaOrphans": "データベーススキーマ",
       "schemaOrphansHelp": "データベースに残っているものの、どこからも宣言されなくなった列です。プラットフォームは一覧表示するだけで、指示があるまで削除しません。削除した列は復元できません。",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "無効 — エンドポイントはすべてのリクエストに 403 を返します。",
       "mediaPayloadLimitMb": "メディアペイロード上限 (MB)",
       "maximumDecodedUploadOrRemote": "MCP メディアツールが受け付けるデコード後のアップロードまたはリモートダウンロードの最大サイズです。",
-      "saveLimit": "上限を保存",
       "allSites": "すべてのサイト",
       "issuedBeforeSites": "サイト機能導入前に発行",
       "noTokensYet": "トークンはまだありません。",
@@ -3210,12 +3206,17 @@
       "platformDefault": "プラットフォームの既定値",
       "thisSite": "このサイト",
       "inForceNow": "現在の適用内容",
-      "saving": "保存中…",
-      "savePolicy": "ポリシーを保存",
       "thePlatformDefaultIsSet": "プラットフォームの既定値はプラットフォーム管理者が設定します。",
       "useTheLayerBelow": "下位の設定を使用",
       "whyTheLawRequiresThese": "法律でこれらの記録の保管が求められる理由",
-      "inheritsThePlatformDefault": "継承: プラットフォームの既定値"
+      "inheritsThePlatformDefault": "継承: プラットフォームの既定値",
+      "strategyDelete": "削除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保持",
+      "declaredBy": "{{plugin}} が宣言した既定値",
+      "inheritsValue": "継承: {{value}}",
+      "legalBasis": "法的根拠",
+      "theSiteColumnIsSet": "「このサイト」列はサイト内で設定します。変更するには切り替えでサイトを選択してください。"
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "表示名",
     "thisPersonHasALogin": "この人物にはログインアカウントがあります。メールアドレスはアカウント側で変更されます。",
     "birthDate": "生年月日",
-    "saveChanges": "変更を保存",
     "sendPasswordResetEmail": "パスワードリセットメールを送信",
     "cancel": "キャンセル",
     "accountManagement": "アカウント管理",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "リカバリーコードを手動でコピーしてください。",
     "nameRequired": "名前が必要です",
     "enterATokenNameFirst": "先にトークン名を入力してください。",
-    "tokenCreated": "トークンを作成しました",
     "copyTheTokenNowIt": "今すぐトークンをコピーしてください。表示されるのは一度だけです。",
     "failedToCreateApiToken": "API トークンを作成できませんでした",
     "areYouSureYouWant2": "このユーザーの 2FA を無効にしてもよろしいですか？アカウントのセキュリティが低下します。",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "セッションを取り消しました",
     "deviceSessionRevokedSuccessfully": "デバイスのセッションを取り消しました。",
     "failedToRevokeSession": "セッションを取り消せませんでした",
-    "rolesUpdated": "ロールを更新しました",
-    "theUserSRolesWere": "ユーザーのロールを保存しました。",
     "saveFailed": "保存に失敗しました",
     "failedToSaveRoles": "ロールを保存できませんでした。",
     "loadingRoles": "ロールを読み込み中",
@@ -3448,8 +3445,6 @@
     "remove": "削除",
     "loadFailed": "読み込みに失敗しました",
     "couldNotRetrieveRoleDetails": "ロールの詳細を取得できませんでした。",
-    "roleUpdated": "ロールを更新しました",
-    "wasSaved": "「{{name}}」を保存しました。",
     "updateFailed": "更新に失敗しました",
     "anErrorOccurredWhileSaving": "保存中にエラーが発生しました。",
     "loadingRole": "ロールを読み込み中...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "ユーザー一覧に戻る",
     "selfServiceSecurityControls": "セルフサービスのセキュリティ管理",
     "sessionDeviceControlsAndPersonal": "セッション/デバイスの管理と個人用 API トークンは、自分のユーザーアカウントを表示している場合にのみ利用できます。",
-    "securityRecommendations": "セキュリティに関する推奨事項",
     "twoFactorAuthentication": "二要素認証",
-    "activeAndProtectingThisAccount": "有効化済み。このアカウントを保護しています",
-    "notEnabledHighlyRecommendedFor": "無効 - 管理者アカウントでは有効化を強く推奨します",
-    "passwordProtected": "パスワード保護",
-    "accountHasASecurePassword": "アカウントに安全なパスワードが設定されています",
-    "administratorAccess": "管理者アクセス",
     "fullSystemAccess2faStrongly": "システム全体へのアクセス - 2FA を強く推奨します",
     "personalApiTokens": "個人用 API トークン",
     "tokenNameEGCi": "トークン名(例: CI デプロイ)",
     "days": "日数",
     "createToken": "トークンを作成",
-    "copyNowShownOnce": "今すぐコピー(一度だけ表示されます)",
     "loadingApiTokens": "API トークンを読み込み中...",
     "noApiTokensCreatedYet": "API トークンはまだ作成されていません。",
     "revoke": "取り消す",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "ログインとセッションのアクティビティ",
     "loadingAuthActivity": "認証アクティビティを読み込み中...",
     "noRecentLoginSessionEvents": "このユーザーの最近のログイン/セッションイベントはありません。",
-    "unknownTime": "不明な時刻",
-    "activityEvent": "アクティビティイベント",
     "openFullGlobalActivity": "全体のアクティビティをすべて表示",
-    "2faStatus": "2FA の状態",
     "addAnExtraLayerOf": "アプリによる認証(TOTP)でセキュリティを強化します",
-    "recommended": "推奨",
     "enableTwoFactorAuthenticationTo": "二要素認証を有効にすると、時間ベースのワンタイムパスワード(TOTP)でこのアカウントを保護できます。",
     "enable2fa": "2FA を有効化",
     "step1ScanQrCode": "ステップ 1: QR コードをスキャン",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "ステップ 2: コードを確認",
     "enterThe6DigitCode": "設定を完了するには、認証アプリに表示される 6 桁のコードを入力してください:",
     "verifyEnable": "確認して有効化",
-    "protectionActive": "保護は有効です",
     "thisAccountRequiresA6": "このアカウントでは、ログイン時に認証アプリの 6 桁のコードが必要です。",
     "regenerateRecoveryCodes": "リカバリーコードを再生成",
     "disable2fa": "2FA を無効化",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "他のセッションを取り消す",
     "loadingSessions": "セッションを読み込み中...",
     "noActiveSessions": "アクティブなセッションはありません。",
-    "currentSession": "現在のセッション",
-    "deviceSession": "デバイスセッション",
     "current": "現在",
     "unknownDevice": "不明なデバイス",
     "editAccount2": "アカウントを編集",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "ユーザーレコードを開く",
     "token": "トークン",
     "createdOn": "作成日: {{date}}",
-    "notAvailable": "なし",
     "revokedOn": "取り消し日: {{date}}",
     "recoveryCodesRemaining": "残りのリカバリーコード:",
-    "unknownValue": "不明",
     "expiresOn": "有効期限: {{date}}",
     "person2": "人物",
     "added": "追加日",
@@ -3591,12 +3570,10 @@
       "loading": "ユーザーフィールドを読み込み中…",
       "loadFailed": "ユーザーフィールドを読み込めませんでした。",
       "saveFailed": "フィールドを保存できませんでした。",
-      "saved": "フィールドを保存しました。",
       "empty": "ユーザーフィールドはまだありません。追加すると、すべてのユーザーについて保持できるようになります。",
       "noneDeclared": "このサイトにはまだユーザーフィールドがありません。",
       "declare": "ユーザーフィールドを追加",
       "manage": "フィールドを管理",
-      "save": "フィールドを保存",
       "saveField": "フィールドを保存",
       "delete": "削除",
       "deleteTitle": "このフィールドを削除しますか？",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "有効期間（日）",
+    "revokeOtherSessionsConfirm": "他のすべてのデバイスはすぐにサインアウトされます。",
+    "revokeSessionConfirm": "そのデバイスはすぐにサインアウトされます。",
+    "revokeCurrentSessionConfirm": "今お使いのデバイスです。すぐにサインアウトされます。",
+    "revokeTokenConfirm": "「{{name}}」はすぐに使えなくなります。",
+    "twoFactorTurnedOff": "このサイトでは2要素サインインがオフになっているため、ここでは設定できません。",
+    "openSecuritySettings": "セキュリティ設定を開く"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "サイト設定（{{what}}）は各サイト内で設定します。サイトメニューからサイトを選択してください。",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "このサイトをプレビューで開けませんでした。",
     "couldNotLoadTheSite": "サイトを読み込めませんでした。",
     "couldNotReloadThePlugin": "プラグイン一覧を再読み込みできませんでした。",
-    "siteSaved": "サイトを保存しました",
-    "routingFollowsImmediatelyNoRestart": "ルーティングは即座に反映されます。再起動は不要です。",
     "notSaved": "保存されませんでした",
     "theSiteCouldNotBe2": "サイトを保存できませんでした。",
     "couldNotOpenTheSite": "サイトを開けませんでした",
@@ -3789,7 +3771,6 @@
     "visit": "表示",
     "openThisSite": "このサイトを開く",
     "export": "エクスポート",
-    "save": "保存",
     "couldNotLoadCertificates": "証明書を読み込めませんでした。",
     "couldNotSwitchThisHost": "このホストを自動に切り替えられませんでした。",
     "couldNotSwitchThisHost2": "このホストを自動(ワイルドカード)に切り替えられませんでした。",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "アップデートあり",
     "isNowActive": "{{name}} が有効になりました。",
     "themeHasBeenUpdated2": "テーマ {{name}} を更新しました。",
-    "configurationSaved": "設定を保存しました",
-    "visualProtocolsUpdatedSuccessfully": "ビジュアル設定を更新しました。",
     "saveFailed": "保存に失敗しました",
     "hasBeenRemoved2": "{{name}} を削除しました。",
     "seedsExecuted": "シードを実行しました",
@@ -4300,7 +4279,6 @@
     "layoutSection": "レイアウト",
     "extensionsSection": "拡張",
     "versionReady": "バージョン {{version}} を利用できます",
-    "saveChanges": "変更を保存",
     "runSeedsHint": "テーマのシードデータ（サンプルページやコンテンツ）をこのサイトに再投入します。",
     "resetThemeHint": "このサイトに保存されたテーマ設定を消去し、シードデータを再投入します。",
     "notActiveHint": "このサイトは別のテーマを使用しています。",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} の変更点",
     "whatChanged": "変更点",
-    "closeBuildSourceDialog": "ビルドソースのダイアログを閉じる",
-    "close": "閉じる",
     "couldNotInstallThatVersion": "このバージョンをインストールできませんでした。",
     "couldNotChangeAutomaticUpdating": "自動更新の設定を変更できませんでした。",
     "failed": "失敗",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "自動証明書はオフです。{{reason}}",
     "automaticCertificatesComeFrom": "自動証明書は {{authority}} から発行されます。",
     "noSecretKeyIsConfigured": "このサーバーには SECRET_KEY が設定されていないため、秘密鍵を保存できません。設定されるまでアップロードは無効です。",
-    "nothingToSavePasteA": "保存する内容がありません。トークンを貼り付けるか、保存済みのトークンを削除するには「クリア」を使用してください。",
     "savedThisSiteNowUses": "保存しました。このサイトは専用の Cloudflare トークンを使用するようになりました。",
     "removedThisSiteFallsBack": "削除しました。このサイトはプラットフォームのトークンを使用します。",
     "couldNotSaveTheToken": "トークンを保存できませんでした。",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "このサイトのトークン",
     "savedLeaveBlankToKeep": "保存済み — 維持する場合は空欄のまま、削除する場合は「クリア」を使用",
     "pasteACloudflareApiToken": "Cloudflare API トークンを貼り付け",
-    "save": "保存",
     "clear": "クリア",
     "nothingStoredThisHostCannot": "保存なし — このホストはこのプラットフォームから HTTPS で提供できません。",
     "nothingStoredHereTlsFor": "ここには保存されていません — このホストの TLS はプラットフォームの手前で終端されるため、証明書はそちらにあります。",
@@ -4706,36 +4680,26 @@
     "roles": "ロール",
     "permissions": "権限",
     "eventDetails": "イベントの詳細",
-    "context": "コンテキスト",
     "resource": "リソース",
     "system": "システム",
     "timestamp": "タイムスタンプ",
-    "authority": "権限主体",
-    "actorId": "実行者 ID",
-    "type": "種類",
-    "systemLog": "システムログ",
-    "audit": "監査: {{status}}",
-    "activityMessage": "アクティビティメッセージ",
-    "actionTaken": "実行された操作",
-    "resourcePool": "リソースプール",
-    "rawMetadata": "生のメタデータ",
     "thisEntryIsPartOf": "このエントリは改ざん不可能な監査証跡の一部です。",
     "exportJson": "JSON をエクスポート",
     "event": "イベント",
     "actor": "実行者",
+    "plugin": "プラグイン",
     "activity": "アクティビティ",
     "status": "ステータス",
     "action": "操作",
     "time": "時刻",
-    "logSignature": "ログ署名: {{id}}",
     "internal": "内部",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "エントリ #{{id}}",
+    "recordedData": "記録されたデータ"
   },
   "mediaPicker": {
     "showingOnly": "表示中: {{types}} のみ",
@@ -4782,7 +4748,8 @@
       "task": "タスク",
       "schedule": "実行間隔",
       "lastRun": "前回の実行",
-      "nextRun": "次回の実行"
+      "nextRun": "次回の実行",
+      "duration": "所要時間"
     },
     "ownedBy": "{{owner}}",
     "platform": "プラットフォーム",

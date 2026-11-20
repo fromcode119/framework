@@ -162,6 +162,7 @@
       "reorderHandle": "Перетягніть, щоб змінити порядок, або виберіть і скористайтеся клавішами зі стрілками",
       "reorderEnable": "Покажіть список у власному порядку, щоб змінити його",
       "reorderFailed": "Не вдалося зберегти новий порядок",
+      "noMatch": "Ніщо не відповідає пошуку чи фільтрам.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Імпортувати {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Редагувати",
       "notFilledIn": "Не заповнено",
       "statusSection": "Статус",
-      "statusConfirm": "Змінити статус на «{{status}}»?",
       "recordSection": "Запис",
       "showJson": "Показати як JSON",
       "showForm": "Показати як форму",
@@ -245,7 +245,8 @@
       "copied": "Скопійовано",
       "more": "Ще",
       "moreFields": "Полів: {{count}}",
-      "moreOneField": "Поле: {{count}}"
+      "moreOneField": "Поле: {{count}}",
+      "statusConfirm": "Змінити статус на «{{status}}»?"
     },
     "notFound": {
       "title": "Колекцію не знайдено",
@@ -366,7 +367,8 @@
     "reset": "Скинути",
     "notScheduledYet": "ще не заплановано",
     "more": "Інші дії",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Видалити"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Вибрати колір",
-      "colour": "Колір",
-      "pick": "Виберіть колір",
       "hex": "HEX-код",
-      "confirm": "Підтвердити колір",
       "notSet": "Не задано"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Виявлено неактивні залежності",
       "intro": "Щоб увімкнути {{plugin}}, потрібно виконати таке:",
       "notInstalled": "НЕ ВСТАНОВЛЕНО",
+      "inactive": "вимкнений",
+      "incompatible": "інша версія",
       "requires": "Потрібна версія {{version}}. Її можна завантажити з маркетплейсу.",
       "needsActivation": "Уже встановлено, але потрібно активувати (версія {{version}}).",
       "mismatch": "Невідповідність версії: потрібна {{expected}}, знайдено {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Попередній перегляд платформи",
-      "image": "Попередній перегляд {{number}}"
+      "image": "Попередній перегляд {{number}}",
+      "previous": "Назад",
+      "next": "Далі"
     },
     "menuField": {
       "newItem": "Новий пункт меню",
-      "structure": "Структура меню",
-      "add": "Додати пункт меню"
+      "add": "Додати пункт меню",
+      "reorder": "Перетягніть, щоб перемістити; стрілки: вгору й вниз переміщують, вправо вкладають, вліво виносять"
     },
     "field": {
       "notSet": "Не задано",
@@ -461,8 +464,8 @@
       "record": "запис"
     },
     "array": {
-      "addNew": "Додати {{label}}",
-      "item": "Елемент"
+      "add": "Додати",
+      "reorder": "Перетягніть, щоб перемістити, або використовуйте стрілки"
     },
     "stepper": {
       "increment": "Збільшити",
@@ -528,9 +531,7 @@
       "noContact": "У розділі «Люди» немає email чи телефону",
       "hasLogin": "Має обліковий запис",
       "noLogin": "Немає облікового запису",
-      "source": "Ім’я, email і телефон беруться із запису Люди #{{id}}; змінюйте їх там.",
       "open": "Відкрити в «Люди»",
-      "choose": "Вибрати іншу людину",
       "searchFailed": "Зараз не вдалося виконати пошук у розділі «Люди».",
       "noMatch": "У розділі «Люди» нікого не знайдено. Введіть дані нижче — після збереження людину буде додано до розділу «Люди».",
       "ref": "Люди #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Відкрити «Сайти»"
       }
     },
-    "relativeOverridesInheritTheCollection": "Відносні перевизначення успадковують префікс колекції. Увімкніть абсолютний режим, щоб обійти префікси на кшталт `/shop`.",
     "range": "Діапазон",
     "noDataForThisRange": "Немає даних за цей діапазон",
     "peak": "· пік {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Фільтри",
       "clearFilters": "Очистити все",
       "removeFilter": "Видалити фільтр «{{label}}»",
-      "showResults": "Показати результати ({{count}})"
+      "showResults": "Показати результати ({{count}})",
+      "showResultsOne": "Показати 1 результат"
     },
     "personFieldPicker": {
       "none": "Не зберігається в поле людини",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Обмеження пісочниці для {{name}} збережено, але не вдалося перезапустити його процес із ними: {{value}}",
       "restartRequired": "Потрібен перезапуск",
       "sandboxSettingsForWereSaved": "Налаштування пісочниці для {{name}} збережено, але щоб вони набули чинності, потрібно перезапустити API.",
-      "resourcesUpdated": "Ресурси оновлено",
-      "sandboxLimitsForUpdated": "Обмеження пісочниці для {{name}} оновлено.",
       "sandboxDisabledFor": "Пісочницю для {{name}} вимкнено.",
       "saveFailed": "Помилка збереження",
       "failedToUpdateSandboxLimits": "Не вдалося оновити обмеження пісочниці.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Неактивний. Останніх подій не зафіксовано.",
       "updating": "Оновлення...",
       "updateAvailable": "Доступне оновлення",
-      "updatePolicy": "Політика оновлень",
       "saveChanges": "Зберегти зміни",
       "unsavedChanges": "Незбережені зміни",
       "exportSettingsAsJson": "Експортувати налаштування в JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Нове у v{{version}}",
       "installedVersion": "Встановлено {{version}}",
       "marketplaceVersion": "У маркетплейсі {{version}}",
-      "saving": "Збереження...",
       "saveSettings": "Зберегти налаштування",
       "viewDefinition": "Переглянути визначення",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Оформлення",
       "failedToLoadAppearances": "Не вдалося завантажити оформлення",
       "failedToSaveShadowSetting": "Не вдалося зберегти налаштування тіней",
+      "failedToSaveMenuSetting": "Не вдалося зберегти налаштування меню",
       "switchedToReloading": "Перемкнено на «{{slug}}». Перезавантаження…",
       "failedToSwitchAppearance": "Не вдалося змінити оформлення",
       "installFailed": "Помилка встановлення",
@@ -1919,6 +1917,8 @@
       "install": "Встановити",
       "surfaceShadows": "Тіні поверхонь",
       "depthOnPanelsDialogsAnd": "Глибина панелей, діалогів і кнопок. Вимкніть для пласкої адмін-панелі — рамки й кути залишаться без змін.",
+      "secondMenuColumn": "Друга колонка меню",
+      "sectionPagesBesideTheMenu": "Сторінки розділу стоять у колонці поряд із меню. Якщо вимкнути, вони відкриваються під своїм рядком в одному меню, і кожен екран стає ширшим на 220px.",
       "installFromAPackageUrl": "Встановити з URL пакета",
       "builtIn": "Вбудоване",
       "installed": "Встановлено",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Геолокацію за IP не оновлено",
       "geoUnavailable": "Стан геолокації за IP недоступний",
       "geoAttribution": "Геолокація за IP від {{name}} ({{license}}). Оновлюється щомісяця, поки ввімкнено.",
-      "geoSaved": "Збережено",
-      "geoSavedOn": "Базу даних завантажується; її розмір близько 60 МБ.",
-      "geoSavedOff": "Базу даних видалено із сервера.",
       "everyPluginRunsIsolated": "Ізольовано: кожен плагін працює у власному процесі. Ліміт пам’яті та граничний час застосовуються до всіх плагінів; частка CPU, загальна пам’ять, диск і процеси — лише до плагінів, завантажених сайтом.",
       "schemaOrphans": "Схема бази даних",
       "schemaOrphansHelp": "Стовпці, які ще є в базі даних, але більше ніде не оголошені. Платформа лише показує їх; нічого не видаляється, доки ви не вирішите, а видалений стовпець відновити неможливо.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Вимкнено — кінцева точка відповідає 403 усім.",
       "mediaPayloadLimitMb": "Ліміт обсягу медіа (МБ)",
       "maximumDecodedUploadOrRemote": "Максимальний розмір декодованого завантаження або віддаленого файлу, який приймають медіаінструменти MCP.",
-      "saveLimit": "Зберегти ліміт",
       "allSites": "усі сайти",
       "issuedBeforeSites": "видано до появи сайтів",
       "noTokensYet": "Токенів поки немає.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Типово для платформи",
       "thisSite": "Цей сайт",
       "inForceNow": "Діє зараз",
-      "saving": "Збереження…",
-      "savePolicy": "Зберегти політику",
       "thePlatformDefaultIsSet": "Типове значення платформи встановлює адміністратор платформи.",
       "useTheLayerBelow": "Використовувати нижчий рівень",
       "whyTheLawRequiresThese": "Чому закон вимагає зберігати ці записи",
-      "inheritsThePlatformDefault": "успадковує: типове значення платформи"
+      "inheritsThePlatformDefault": "успадковує: типове значення платформи",
+      "strategyDelete": "Видалити",
+      "strategyAnonymise": "Знеособити",
+      "strategyRetain": "Зберігати",
+      "declaredBy": "Типове значення, задане {{plugin}}",
+      "inheritsValue": "успадковує: {{value}}",
+      "legalBasis": "Правова підстава",
+      "theSiteColumnIsSet": "Стовпець «Цей сайт» налаштовується всередині сайту. Щоб змінити його, виберіть сайт у перемикачі."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Відображуване ім’я",
     "thisPersonHasALogin": "Ця особа має обліковий запис для входу; email змінюється в обліковому записі.",
     "birthDate": "Дата народження",
-    "saveChanges": "Зберегти зміни",
     "sendPasswordResetEmail": "Надіслати лист для скидання пароля",
     "cancel": "Скасувати",
     "accountManagement": "Керування обліковим записом",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Скопіюйте коди відновлення вручну.",
     "nameRequired": "Потрібна назва",
     "enterATokenNameFirst": "Спочатку введіть назву токена.",
-    "tokenCreated": "Токен створено",
     "copyTheTokenNowIt": "Скопіюйте токен зараз. Він показується лише один раз.",
     "failedToCreateApiToken": "Не вдалося створити API-токен",
     "areYouSureYouWant2": "Вимкнути 2FA для цього користувача? Це знизить захищеність облікового запису.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Сеанс завершено",
     "deviceSessionRevokedSuccessfully": "Сеанс пристрою успішно завершено.",
     "failedToRevokeSession": "Не вдалося завершити сеанс",
-    "rolesUpdated": "Ролі оновлено",
-    "theUserSRolesWere": "Ролі користувача збережено.",
     "saveFailed": "Не вдалося зберегти",
     "failedToSaveRoles": "Не вдалося зберегти ролі.",
     "loadingRoles": "Завантаження ролей",
@@ -3448,8 +3445,6 @@
     "remove": "Вилучити",
     "loadFailed": "Помилка завантаження",
     "couldNotRetrieveRoleDetails": "Не вдалося отримати дані ролі.",
-    "roleUpdated": "Роль оновлено",
-    "wasSaved": "«{{name}}» збережено.",
     "updateFailed": "Не вдалося оновити",
     "anErrorOccurredWhileSaving": "Під час збереження сталася помилка.",
     "loadingRole": "Завантаження ролі...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Повернутися до користувачів",
     "selfServiceSecurityControls": "Самостійне керування безпекою",
     "sessionDeviceControlsAndPersonal": "Керування сеансами й пристроями та особисті API-токени доступні лише під час перегляду власного облікового запису.",
-    "securityRecommendations": "Рекомендації з безпеки",
     "twoFactorAuthentication": "Двофакторна автентифікація",
-    "activeAndProtectingThisAccount": "Увімкнено, захищає цей обліковий запис",
-    "notEnabledHighlyRecommendedFor": "Не ввімкнено — наполегливо рекомендовано для облікових записів адміністраторів",
-    "passwordProtected": "Захищено паролем",
-    "accountHasASecurePassword": "Обліковий запис має надійний пароль",
-    "administratorAccess": "Доступ адміністратора",
     "fullSystemAccess2faStrongly": "Повний доступ до системи — наполегливо рекомендовано 2FA",
     "personalApiTokens": "Особисті API-токени",
     "tokenNameEGCi": "Назва токена (напр. CI deploy)",
     "days": "Днів",
     "createToken": "Створити токен",
-    "copyNowShownOnce": "Скопіюйте зараз (показується один раз)",
     "loadingApiTokens": "Завантаження API-токенів...",
     "noApiTokensCreatedYet": "API-токенів ще не створено.",
     "revoke": "Відкликати",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Входи та активність сеансів",
     "loadingAuthActivity": "Завантаження активності автентифікації...",
     "noRecentLoginSessionEvents": "Для цього користувача немає нещодавніх подій входу чи сеансів.",
-    "unknownTime": "Невідомий час",
-    "activityEvent": "Подія активності",
     "openFullGlobalActivity": "Відкрити всю загальну активність",
-    "2faStatus": "Стан 2FA",
     "addAnExtraLayerOf": "Додайте ще один рівень захисту за допомогою автентифікації через застосунок (TOTP)",
-    "recommended": "Рекомендовано",
     "enableTwoFactorAuthenticationTo": "Увімкніть двофакторну автентифікацію, щоб захистити цей обліковий запис одноразовими паролями на основі часу (TOTP).",
     "enable2fa": "Увімкнути 2FA",
     "step1ScanQrCode": "Крок 1: Відскануйте QR-код",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Крок 2: Підтвердьте код",
     "enterThe6DigitCode": "Щоб завершити налаштування, введіть 6-значний код із застосунку автентифікації:",
     "verifyEnable": "Підтвердити й увімкнути",
-    "protectionActive": "Захист увімкнено",
     "thisAccountRequiresA6": "Для входу в цей обліковий запис потрібен 6-значний код із застосунку автентифікації.",
     "regenerateRecoveryCodes": "Створити нові коди відновлення",
     "disable2fa": "Вимкнути 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Завершити інші сеанси",
     "loadingSessions": "Завантаження сеансів...",
     "noActiveSessions": "Немає активних сеансів.",
-    "currentSession": "Поточний сеанс",
-    "deviceSession": "Сеанс пристрою",
     "current": "Поточний",
     "unknownDevice": "Невідомий пристрій",
     "editAccount2": "Редагувати обліковий запис",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Відкрити запис користувача",
     "token": "Токен",
     "createdOn": "Створено {{date}}",
-    "notAvailable": "н/д",
     "revokedOn": "Відкликано {{date}}",
     "recoveryCodesRemaining": "Залишилось кодів відновлення:",
-    "unknownValue": "невідомо",
     "expiresOn": "Дійсний до: {{date}}",
     "person2": "Особа",
     "added": "Додано",
@@ -3591,12 +3570,10 @@
       "loading": "Завантаження полів людей…",
       "loadFailed": "Не вдалося завантажити поля людей.",
       "saveFailed": "Не вдалося зберегти поля.",
-      "saved": "Поля збережено.",
       "empty": "Полів людей ще немає. Додайте поле, щоб зберігати його для кожної людини.",
       "noneDeclared": "На цьому сайті ще немає полів людей.",
       "declare": "Додати поля людей",
       "manage": "Керувати полями",
-      "save": "Зберегти поля",
       "saveField": "Зберегти поле",
       "delete": "Видалити",
       "deleteTitle": "Видалити це поле?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Дійсний (днів)",
+    "revokeOtherSessionsConfirm": "Усі інші пристрої одразу виходять із системи.",
+    "revokeSessionConfirm": "Цей пристрій одразу виходить із системи.",
+    "revokeCurrentSessionConfirm": "Це пристрій, яким ви зараз користуєтеся. Ви одразу вийдете із системи.",
+    "revokeTokenConfirm": "«{{name}}» одразу перестає працювати.",
+    "twoFactorTurnedOff": "Двофакторний вхід вимкнено для цього сайту, тому його не можна налаштувати тут.",
+    "openSecuritySettings": "Відкрити налаштування безпеки"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Налаштування сайту ({{what}}) задаються всередині кожного сайту — виберіть сайт у меню сайтів.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Не вдалося відкрити цей сайт для попереднього перегляду.",
     "couldNotLoadTheSite": "Не вдалося завантажити сайт.",
     "couldNotReloadThePlugin": "Не вдалося оновити список плагінів.",
-    "siteSaved": "Сайт збережено",
-    "routingFollowsImmediatelyNoRestart": "Маршрутизація оновлюється одразу — без перезапуску.",
     "notSaved": "Не збережено",
     "theSiteCouldNotBe2": "Не вдалося зберегти сайт.",
     "couldNotOpenTheSite": "Не вдалося відкрити сайт",
@@ -3789,7 +3771,6 @@
     "visit": "Відкрити",
     "openThisSite": "Відкрити цей сайт",
     "export": "Експорт",
-    "save": "Зберегти",
     "couldNotLoadCertificates": "Не вдалося завантажити сертифікати.",
     "couldNotSwitchThisHost": "Не вдалося перевести цей хост в автоматичний режим.",
     "couldNotSwitchThisHost2": "Не вдалося перевести цей хост в автоматичний режим (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Доступне оновлення",
     "isNowActive": "{{name}} тепер активна.",
     "themeHasBeenUpdated2": "Тему {{name}} оновлено.",
-    "configurationSaved": "Конфігурацію збережено",
-    "visualProtocolsUpdatedSuccessfully": "Візуальні протоколи успішно оновлено.",
     "saveFailed": "Не вдалося зберегти",
     "hasBeenRemoved2": "{{name}} видалено.",
     "seedsExecuted": "Початкові дані застосовано",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Макет",
     "extensionsSection": "Розширення",
     "versionReady": "Версія {{version}} готова",
-    "saveChanges": "Зберегти зміни",
     "runSeedsHint": "Повторно завантажує початкові дані теми — зразки сторінок і вміст — на цей сайт.",
     "resetThemeHint": "Очищає збережені налаштування теми цього сайту й повторно завантажує початкові дані.",
     "notActiveHint": "Цей сайт використовує іншу тему.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Що змінилося у v{{version}}",
     "whatChanged": "Що змінилося",
-    "closeBuildSourceDialog": "Закрити діалог джерела збірки",
-    "close": "Закрити",
     "couldNotInstallThatVersion": "Не вдалося встановити цю версію.",
     "couldNotChangeAutomaticUpdating": "Не вдалося змінити автоматичне оновлення.",
     "failed": "Помилка",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Автоматичні сертифікати вимкнено. {{reason}}",
     "automaticCertificatesComeFrom": "Автоматичні сертифікати видає {{authority}}.",
     "noSecretKeyIsConfigured": "На цьому сервері не налаштовано SECRET_KEY, тому приватний ключ неможливо зберегти. Завантаження вимкнено, доки його не буде задано.",
-    "nothingToSavePasteA": "Немає чого зберігати — вставте токен або натисніть «Очистити», щоб видалити збережений.",
     "savedThisSiteNowUses": "Збережено. Тепер цей сайт використовує власний токен Cloudflare.",
     "removedThisSiteFallsBack": "Видалено. Цей сайт повертається до токена платформи.",
     "couldNotSaveTheToken": "Не вдалося зберегти токен.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Токен цього сайту",
     "savedLeaveBlankToKeep": "Збережено — залиште порожнім, щоб зберегти, або натисніть «Очистити», щоб видалити",
     "pasteACloudflareApiToken": "Вставте токен API Cloudflare",
-    "save": "Зберегти",
     "clear": "Очистити",
     "nothingStoredThisHostCannot": "Нічого не збережено — ця платформа не може обслуговувати цей хост через HTTPS.",
     "nothingStoredHereTlsFor": "Тут нічого не збережено — TLS для цього хоста термінується до платформи, тож його сертифікат зберігається там.",
@@ -4706,36 +4680,26 @@
     "roles": "Ролі",
     "permissions": "Дозволи",
     "eventDetails": "Відомості про подію",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Час",
-    "authority": "Повноваження",
-    "actorId": "ID виконавця",
-    "type": "Тип",
-    "systemLog": "Системний журнал",
-    "audit": "Аудит: {{status}}",
-    "activityMessage": "Повідомлення",
-    "actionTaken": "Виконана дія",
-    "resourcePool": "Пул ресурсів",
-    "rawMetadata": "Необроблені метадані",
     "thisEntryIsPartOf": "Цей запис є частиною незмінного журналу аудиту.",
     "exportJson": "Експортувати JSON",
     "event": "Подія",
     "actor": "Виконавець",
+    "plugin": "Плагін",
     "activity": "Активність",
     "status": "Статус",
     "action": "Дія",
     "time": "Час",
-    "logSignature": "Підпис запису: {{id}}",
     "internal": "ВНУТРІШНЄ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запис № {{id}}",
+    "recordedData": "Записані дані"
   },
   "mediaPicker": {
     "showingOnly": "Показано лише: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Завдання",
       "schedule": "Розклад",
       "lastRun": "Останній запуск",
-      "nextRun": "Наступний запуск"
+      "nextRun": "Наступний запуск",
+      "duration": "Тривалість"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

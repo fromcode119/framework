@@ -1,3 +1,4 @@
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { UsageReportDefaults } from '@fromcode119/core/client';
 import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { prop, state, bound } from '@fromcode119/react-class-components';
@@ -75,7 +76,7 @@ export class GeneralUsageReportCard extends AdminComponent {
     if (!status) return <p className="text-xs opacity-70">{AdminI18n.t('settings.general.usageReportNeverSent')}</p>;
     const when = new Date(status.at).toLocaleString();
     return (
-      <p className={`text-xs font-medium ${status.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+      <p className={`text-xs font-medium ${status.ok ? 'fc-tone-success' : 'fc-tone-danger'}`}>
         {AdminI18n.t(status.ok ? 'settings.general.usageReportLastOk' : 'settings.general.usageReportLastFailed', { when, message: status.message })}
       </p>
     );
@@ -97,13 +98,13 @@ export class GeneralUsageReportCard extends AdminComponent {
             </Explanation>
           )}
         >
-          <div className="flex items-center gap-3">
+          <div className="fc-settings-group">
             <Switch checked={settings.usage_report_enabled === true} onChange={this.changeEnabled} />
             <Button
+              variant={ButtonVariant.SECONDARY}
               onClick={this.sendNow}
               isLoading={this.isSending}
               icon={<FrameworkIcons.Send size={13} />}
-              className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
             >
               {AdminI18n.t('settings.general.usageReportSendNow')}
             </Button>
@@ -116,7 +117,7 @@ export class GeneralUsageReportCard extends AdminComponent {
             title={AdminI18n.t('settings.general.usageReportAddress')}
             description={<AdminRichText k="settings.general.usageReportAddressDescription" vars={{ address: UsageReportDefaults.ADDRESS }} />}
           >
-            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="w-full md:w-80 font-medium" placeholder={UsageReportDefaults.ADDRESS} />
+            <Input value={settings.usage_report_url} onChange={this.changeAddress} className="fc-settings-short" placeholder={UsageReportDefaults.ADDRESS} />
           </SettingRow>
         )}
 
@@ -130,7 +131,7 @@ export class GeneralUsageReportCard extends AdminComponent {
         >
           <div className="flex flex-col gap-2 w-full min-w-0">
             {this.preview && (
-              <pre className="text-[12px] leading-relaxed font-mono rounded-xl p-3 overflow-x-auto bg-black/5 dark:bg-white/5 max-h-72">
+              <pre className="fc-size-xs leading-relaxed font-mono rounded-xl p-3 overflow-x-auto bg-black/5 dark:bg-white/5 max-h-72">
                 {JSON.stringify(this.preview.report, null, 2)}
               </pre>
             )}

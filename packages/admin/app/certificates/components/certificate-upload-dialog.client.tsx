@@ -1,12 +1,10 @@
-import type { ChangeEvent, FormEvent, ReactNode } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Button } from '@/components/ui/view/button.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { TextArea } from '@/components/ui/view/text-area.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Hint } from '@/components/ui/view/hint.client';
 
 /**
  * Paste a certificate and its key for one host.
@@ -17,6 +15,9 @@ import { TextArea } from '@/components/ui/view/text-area.client';
  *
  * The key box is a plain textarea and its content is never echoed back by the server afterwards —
  * once this dialog closes, nothing in the admin can show that key again.
+ *
+ * A form, so it is the console's side drawer (`EditSheet`): the host under the title, the two boxes,
+ * the server's one complaint above the buttons.
  */
 export class CertificateUploadDialog extends AdminComponent {
   declare props: Pick<CertificateUploadDialog, 'host' | 'isOpen' | 'isSaving' | 'error' | 'onClose' | 'onConfirm'>;
@@ -47,74 +48,48 @@ export class CertificateUploadDialog extends AdminComponent {
     this.privateKeyPem = e.target.value;
   }
 
-  @bound private submit(e?: FormEvent): void {
-    e?.preventDefault();
+  @bound private submit(): void {
     if (this.certificatePem.trim() && this.privateKeyPem.trim()) {
       this.onConfirm(this.certificatePem.trim(), this.privateKeyPem.trim());
     }
   }
 
   render(): ReactNode {
-    if (!this.isOpen) return null;
-    const dark = this.theme === ThemeMode.DARK;
-
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" onClick={this.onClose} />
-          <form
-            onSubmit={this.submit}
-            className={`relative w-full max-w-lg my-auto rounded-xl border shadow-2xl p-6 animate-in zoom-in-95 duration-300 ${
-              dark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className={`p-2.5 rounded-lg flex-shrink-0 ${dark ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'}`}>
-                <FrameworkIcons.Lock size={15} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-base font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('certificates.uploadCertificate')}</h3>
-                <p className={`mt-0.5 text-xs leading-relaxed font-mono truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.host}</p>
-              </div>
-            </div>
-
-            <label className={`block text-[12px] font-medium mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {AdminI18n.t('certificates.certificateChainPem')}
-            </label>
+      <EditSheet
+        isOpen={this.isOpen}
+        onClose={this.onClose}
+        onSave={this.submit}
+        saving={this.isSaving}
+        error={this.error}
+        title={AdminI18n.t('certificates.uploadCertificate')}
+        subtitle={<span className="fc-mono">{this.host}</span>}
+        saveLabel={AdminI18n.t('certificates.storeCertificate')}
+        cancelLabel={AdminI18n.t('certificates.cancel')}
+      >
+        <div className="fc-form-stack">
+          <TextArea
+            label={AdminI18n.t('certificates.certificateChainPem')}
+            value={this.certificatePem}
+            onChange={this.onCertificate}
+            spellCheck={false}
+            autoFocus
+            placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
+            inputClassName="fc-pem-input"
+          />
+          <div className="fc-field-stack">
             <TextArea
-              value={this.certificatePem}
-              onChange={this.onCertificate}
-              spellCheck={false}
-              placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
-              inputClassName="h-28 font-mono text-[12px] leading-snug"
-            />
-
-            <label className={`block text-[12px] font-medium mt-3 mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-              {AdminI18n.t('certificates.privateKeyPem')}
-            </label>
-            <TextArea
+              label={AdminI18n.t('certificates.privateKeyPem')}
               value={this.privateKeyPem}
               onChange={this.onKey}
               spellCheck={false}
               placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
-              inputClassName="h-28 font-mono text-[12px] leading-snug"
+              inputClassName="fc-pem-input"
             />
-            <p className={`mt-1.5 text-[12px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              {AdminI18n.t('certificates.storedEncryptedItIsNever')}
-            </p>
-
-            {this.error ? (
-              <p className={`mt-3 text-xs leading-snug rounded-lg px-3 py-2 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>
-                {this.error}
-              </p>
-            ) : null}
-
-            <div className="mt-5 flex items-center justify-end gap-2">
-              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">{AdminI18n.t('certificates.cancel')}</Button>
-              <Button type="submit" isLoading={this.isSaving} icon={<FrameworkIcons.Lock size={14} />}>{AdminI18n.t('certificates.storeCertificate')}</Button>
-            </div>
-          </form>
+            <Hint>{AdminI18n.t('certificates.storedEncryptedItIsNever')}</Hint>
+          </div>
         </div>
-      </RootFramework>
+      </EditSheet>
     );
   }
 }

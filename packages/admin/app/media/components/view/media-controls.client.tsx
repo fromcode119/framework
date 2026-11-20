@@ -1,3 +1,9 @@
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { DropArea } from '@/components/ui/view/drop-area.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { SearchField } from '@/components/ui/view/search-field.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { ViewMode } from '@/app/media/enums/view-mode.enum';
@@ -61,113 +67,53 @@ export class MediaControls extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, uploading, isDragOver, error, searchQuery, viewMode } = this;
+    const { uploading, isDragOver, error, searchQuery, viewMode } = this;
 
     return (
       <>
-        <div
+        <DropArea
+          over={isDragOver}
           onDragEnter={this.handleDragEnter}
           onDragOver={this.handleDragOver}
           onDragLeave={this.handleDragLeave}
           onDrop={this.handleDrop}
-          className={`rounded-xl border-2 border-dashed transition-all p-6 flex flex-col sm:flex-row items-center justify-between gap-4 ${
-            isDragOver
-              ? 'border-indigo-500 bg-indigo-500/10'
-              : theme === ThemeMode.DARK
-                ? 'border-slate-700 bg-slate-900/30'
-                : 'border-slate-300 bg-slate-50/80'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl ${isDragOver ? 'bg-indigo-500 text-white' : 'bg-indigo-500/10 text-indigo-500'}`}>
-              <FrameworkIcons.Upload size={18} />
-            </div>
-            <div className="text-sm">
-              <div className={`font-medium ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {isDragOver ? AdminI18n.t('media.dropFilesToUpload') : AdminI18n.t('media.dragFilesHere')}
-              </div>
-              <div className="text-xs text-slate-500">{AdminI18n.t('media.uploadImagesVideosOrDocuments')}</div>
-            </div>
-          </div>
-          <Button size={FieldSize.SM} onClick={this.browseFiles} disabled={uploading}>
-            {uploading ? AdminI18n.t('media.uploading') : AdminI18n.t('media.browseFiles')}
-          </Button>
-        </div>
+          title={isDragOver ? AdminI18n.t('media.dropFilesToUpload') : AdminI18n.t('media.dragFilesHere')}
+          hint={AdminI18n.t('media.uploadImagesVideosOrDocuments')}
+          // Secondary: the page's one main action is "Upload" in its head. This, the head's and the
+          // empty state's were three dark buttons for the same thing.
+          action={<Button variant={ButtonVariant.SECONDARY} onClick={this.browseFiles} disabled={uploading}>{uploading ? AdminI18n.t('media.uploading') : AdminI18n.t('media.browseFiles')}</Button>}
+        />
 
-        {error && (
-          <div className={`p-4 rounded-xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${theme === ThemeMode.DARK ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}>
-            <FrameworkIcons.Alert size={18} />
-            <span className="text-sm font-medium">{error}</span>
-            <button onClick={this.dismissError} className="ms-auto hover:opacity-70">
-              <FrameworkIcons.Close size={16} />
-            </button>
-          </div>
-        )}
+        {error ? (
+          <Alert tone="danger" action={<Button variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={this.dismissError}><FrameworkIcons.Close size={15} /></Button>}>
+            {error}
+          </Alert>
+        ) : null}
 
-        <div className="flex flex-col md:flex-row gap-3 items-center">
-          <div className={`flex items-center border rounded-xl p-0.5 flex-shrink-0 ${
-            theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200/60'
-          }`}>
-            {[{ key: 'files', label: AdminI18n.t('media.files') }, { key: 'shares', label: AdminI18n.t('media.shared') }, { key: 'activity', label: AdminI18n.t('media.activity') }].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => this.setActiveView(tab.key)}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all ${this.activeView === tab.key
-                  ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
-                  : 'text-slate-500 hover:text-slate-700'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative flex-1 min-w-0 group">
-            <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
-            <Input
-              type="text"
-              placeholder={AdminI18n.t('media.searchMedia')}
-              value={searchQuery}
-              onChange={this.onSearchChange}
-              inputClassName="fc-field--icon"
-            />
-          </div>
+        <PageBar lead={
+          <Tabs value={this.activeView} onChange={(key: string) => this.setActiveView(key)}
+            tabs={[{ id: 'files', label: AdminI18n.t('media.files') }, { id: 'shares', label: AdminI18n.t('media.shared') }, { id: 'activity', label: AdminI18n.t('media.activity') }]} />
+        }>
+          {/* Search, the source and the two shapes all act on the list of files; the other views have none of them. */}
           {this.activeView === 'files' ? (
-            <div className="w-36 flex-shrink-0">
-              <Select
-                value={this.source}
-                onChange={this.setSource}
-                options={[
-                  { value: '', label: AdminI18n.t('media.allFiles') },
-                  { value: 'uploads', label: AdminI18n.t('media.uploads') },
-                  { value: 'theme', label: AdminI18n.t('media.themeAssets') },
-                ]}
-              />
-            </div>
+            <>
+              <SearchField placeholder={AdminI18n.t('media.searchMedia')} value={searchQuery} onChange={this.setSearchQuery} />
+              <div className="fc-page-bar__pick">
+                <Select
+                  value={this.source}
+                  onChange={this.setSource}
+                  options={[
+                    { value: '', label: AdminI18n.t('media.allFiles') },
+                    { value: 'uploads', label: AdminI18n.t('media.uploads') },
+                    { value: 'theme', label: AdminI18n.t('media.themeAssets') },
+                  ]}
+                />
+              </div>
+              <Tabs value={viewMode === ViewMode.GRID ? 'grid' : 'list'} onChange={(mode: string) => (mode === 'grid' ? this.selectGridView() : this.selectListView())}
+                tabs={[{ id: 'grid', label: <FrameworkIcons.Grid size={15} /> }, { id: 'list', label: <FrameworkIcons.List size={15} /> }]} />
+            </>
           ) : null}
-
-          <div className={`flex items-center border rounded-xl p-0.5 transition-all duration-300 shadow-sm ${
-            theme === ThemeMode.DARK
-              ? 'bg-slate-900 border-slate-800'
-              : 'bg-slate-100/80 border-slate-200/60'
-          }`}>
-            <button
-              onClick={this.selectGridView}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === ViewMode.GRID
-                ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
-                : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              <FrameworkIcons.Grid size={16} />
-            </button>
-            <button
-              onClick={this.selectListView}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === ViewMode.LIST
-                ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
-                : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              <FrameworkIcons.List size={16} />
-            </button>
-          </div>
-        </div>
+        </PageBar>
       </>
     );
   }

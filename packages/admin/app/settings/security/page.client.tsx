@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { SecurityTab } from '@/app/settings/security/enums/security-tab.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode, SetStateAction } from 'react';
@@ -57,7 +58,9 @@ export class SecuritySettingsPage extends AdminComponent {
   }
 
   async componentDidMount(): Promise<void> {
-    if (!this.canManagePlatform) this.activeTab = SecurityTab.SETTINGS;
+    // A link may open the Settings tab directly (`?tab=settings`), e.g. from an account's 2FA card.
+    const askedTab = new URLSearchParams(window.location.search).get('tab');
+    if (!this.canManagePlatform || askedTab === SecurityTab.SETTINGS.value) this.activeTab = SecurityTab.SETTINGS;
     await this.loadPageData();
     this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), SecuritySettingsKeys.ALL);
   }
@@ -176,22 +179,8 @@ export class SecuritySettingsPage extends AdminComponent {
           title={AdminI18n.t('settings.security.securityDefense')}
           subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
-            <>
-              <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                {this.canManagePlatform && <button
-                  onClick={this.showDashboardTab}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {AdminI18n.t('settings.security.dashboard')}
-                </button>}
-                <button
-                  onClick={this.showSettingsTab}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-medium tracking-wide transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  {AdminI18n.t('settings.security.settings')}
-                </button>
-              </div>
-            </>
+            <Tabs value={activeTab === SecurityTab.DASHBOARD ? 'dashboard' : 'settings'} onChange={(id: string) => (id === 'dashboard' ? this.showDashboardTab() : this.showSettingsTab())}
+              tabs={[...(this.canManagePlatform ? [{ id: 'dashboard', label: AdminI18n.t('settings.security.dashboard') }] : []), { id: 'settings', label: AdminI18n.t('settings.security.settings') }]} />
           }
         />
 
@@ -204,7 +193,7 @@ export class SecuritySettingsPage extends AdminComponent {
           />
         )}
 
-        <div className="p-6 w-full pb-24 fc-page-stack">
+        <div className="py-6 w-full pb-24 fc-page-stack">
           {activeTab === SecurityTab.DASHBOARD && this.statsError && !this.loadError && (
             <LoadErrorPanel
               title={AdminI18n.t('settings.security.securityStatisticsCouldNotBe')}

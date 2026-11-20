@@ -162,6 +162,7 @@
       "reorderHandle": "드래그하여 순서 변경 — 또는 포커스한 후 화살표 키 사용",
       "reorderEnable": "순서를 변경하려면 목록을 기본 순서로 표시하세요",
       "reorderFailed": "새 순서를 저장할 수 없습니다",
+      "noMatch": "검색 또는 필터와 일치하는 항목이 없습니다.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "{{file}}을(를) 가져올까요?",
@@ -234,7 +235,6 @@
       "editSection": "편집",
       "notFilledIn": "입력되지 않음",
       "statusSection": "상태",
-      "statusConfirm": "상태를 “{{status}}”(으)로 변경할까요?",
       "recordSection": "레코드",
       "showJson": "JSON으로 보기",
       "showForm": "양식으로 보기",
@@ -245,7 +245,8 @@
       "copied": "복사됨",
       "more": "더 보기",
       "moreFields": "필드 {{count}}개",
-      "moreOneField": "필드 {{count}}개"
+      "moreOneField": "필드 {{count}}개",
+      "statusConfirm": "상태를 “{{status}}”(으)로 변경할까요?"
     },
     "notFound": {
       "title": "컬렉션을 찾을 수 없음",
@@ -366,7 +367,8 @@
     "reset": "초기화",
     "notScheduledYet": "아직 예약되지 않음",
     "more": "추가 작업",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "제거"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "색상 선택",
-      "colour": "색상",
-      "pick": "색상 선택",
       "hex": "Hex 코드",
-      "confirm": "색상 확인",
       "notSet": "설정되지 않음"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "비활성 종속성이 감지되었습니다",
       "intro": "{{plugin}}을(를) 활성화하려면 다음 항목을 처리해야 합니다:",
       "notInstalled": "설치되지 않음",
+      "inactive": "꺼짐",
+      "incompatible": "다른 버전",
       "requires": "버전 {{version}}이(가) 필요합니다. 마켓플레이스에서 다운로드할 수 있습니다.",
       "needsActivation": "이미 설치되어 있지만 활성화가 필요합니다(버전 {{version}}).",
       "mismatch": "버전 불일치: {{expected}} 필요, {{actual}} 발견.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "플랫폼 미리보기",
-      "image": "미리보기 {{number}}"
+      "image": "미리보기 {{number}}",
+      "previous": "이전",
+      "next": "다음"
     },
     "menuField": {
       "newItem": "새 메뉴 항목",
-      "structure": "메뉴 구조",
-      "add": "메뉴 항목 추가"
+      "add": "메뉴 항목 추가",
+      "reorder": "드래그하여 이동. 화살표: 위아래로 이동, 오른쪽으로 하위 항목, 왼쪽으로 상위 항목"
     },
     "field": {
       "notSet": "설정되지 않음",
@@ -461,8 +464,8 @@
       "record": "레코드"
     },
     "array": {
-      "addNew": "새 {{label}} 추가",
-      "item": "항목"
+      "add": "추가",
+      "reorder": "드래그하거나 화살표 키로 이동"
     },
     "stepper": {
       "increment": "증가",
@@ -528,9 +531,7 @@
       "noContact": "사람 항목에 이메일 또는 전화번호가 없습니다",
       "hasLogin": "로그인 계정 있음",
       "noLogin": "로그인 계정 없음",
-      "source": "이름, 이메일, 전화번호는 사람 #{{id}}에서 가져옵니다. 변경은 해당 항목에서 하세요.",
       "open": "사람에서 열기",
-      "choose": "다른 사람 선택",
       "searchFailed": "지금은 사람을 검색할 수 없습니다.",
       "noMatch": "일치하는 사람이 없습니다. 아래에 정보를 입력하면 저장 시 사람에 추가됩니다.",
       "ref": "사람 #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "사이트 열기"
       }
     },
-    "relativeOverridesInheritTheCollection": "상대 경로 재정의는 컬렉션 접두사를 상속합니다. `/shop` 같은 접두사를 무시하려면 절대 모드를 사용하세요.",
     "range": "기간",
     "noDataForThisRange": "이 기간에 대한 데이터가 없습니다",
     "peak": "· 최고 {{value}}",
@@ -626,7 +626,8 @@
       "filters": "필터",
       "clearFilters": "모두 지우기",
       "removeFilter": "{{label}} 필터 제거",
-      "showResults": "결과 {{count}}개 보기"
+      "showResults": "결과 {{count}}개 보기",
+      "showResultsOne": "결과 1개 보기"
     },
     "personFieldPicker": {
       "none": "사람 필드에 저장하지 않음",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}}의 샌드박스 제한이 저장되었지만 해당 설정으로 프로세스를 재시작하지 못했습니다: {{value}}",
       "restartRequired": "재시작 필요",
       "sandboxSettingsForWereSaved": "{{name}}의 샌드박스 설정이 저장되었지만 적용하려면 API를 재시작해야 합니다.",
-      "resourcesUpdated": "리소스 업데이트됨",
-      "sandboxLimitsForUpdated": "{{name}}의 샌드박스 제한이 업데이트되었습니다.",
       "sandboxDisabledFor": "{{name}}의 샌드박스가 비활성화되었습니다.",
       "saveFailed": "저장 실패",
       "failedToUpdateSandboxLimits": "샌드박스 제한을 업데이트하지 못했습니다.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "대기 중. 최근 기록된 이벤트가 없습니다.",
       "updating": "업데이트 중...",
       "updateAvailable": "업데이트 가능",
-      "updatePolicy": "업데이트 정책",
       "saveChanges": "변경 사항 저장",
       "unsavedChanges": "저장되지 않은 변경 사항",
       "exportSettingsAsJson": "설정을 JSON으로 내보내기",
@@ -1185,7 +1183,6 @@
       "newIn": "v{{version}}의 새로운 기능",
       "installedVersion": "설치됨 {{version}}",
       "marketplaceVersion": "마켓플레이스 {{version}}",
-      "saving": "저장 중...",
       "saveSettings": "설정 저장",
       "viewDefinition": "정의 보기",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "모양",
       "failedToLoadAppearances": "모양을 불러오지 못했습니다",
       "failedToSaveShadowSetting": "그림자 설정을 저장하지 못했습니다",
+      "failedToSaveMenuSetting": "메뉴 설정을 저장하지 못했습니다",
       "switchedToReloading": "\"{{slug}}\"(으)로 전환했습니다. 새로 고치는 중…",
       "failedToSwitchAppearance": "모양을 전환하지 못했습니다",
       "installFailed": "설치 실패",
@@ -1919,6 +1917,8 @@
       "install": "설치",
       "surfaceShadows": "표면 그림자",
       "depthOnPanelsDialogsAnd": "패널, 대화 상자, 버튼에 입체감을 줍니다. 끄면 평면적인 관리자 화면이 되며, 테두리와 모서리는 그대로 유지됩니다.",
+      "secondMenuColumn": "두 번째 메뉴 열",
+      "sectionPagesBesideTheMenu": "섹션의 페이지가 메뉴 옆 열에 표시됩니다. 끄면 하나의 메뉴 안에서 자기 줄 아래에 열리고 모든 화면이 220px 넓어집니다.",
       "installFromAPackageUrl": "패키지 URL로 설치",
       "builtIn": "기본 제공",
       "installed": "설치됨",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP 위치를 업데이트하지 못했습니다",
       "geoUnavailable": "IP 위치 상태를 확인할 수 없습니다",
       "geoAttribution": "IP 위치 정보 제공: {{name}}({{license}}). 켜져 있는 동안 매월 업데이트됩니다.",
-      "geoSaved": "저장됨",
-      "geoSavedOn": "데이터베이스를 다운로드하는 중입니다. 약 60MB입니다.",
-      "geoSavedOff": "서버에서 데이터베이스를 삭제했습니다.",
       "everyPluginRunsIsolated": "격리됨: 각 플러그인이 별도 프로세스에서 실행됩니다. 메모리 상한과 제한 시간은 모든 플러그인에 적용되며, CPU 할당량, 총 메모리, 디스크, 프로세스 제한은 사이트에서 업로드한 플러그인에만 적용됩니다.",
       "schemaOrphans": "데이터베이스 스키마",
       "schemaOrphansHelp": "데이터베이스에 남아 있지만 더 이상 아무 곳에서도 선언하지 않는 열입니다. 플랫폼은 목록만 표시하며, 직접 결정하기 전에는 아무것도 삭제하지 않습니다. 삭제한 열은 복원할 수 없습니다.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "사용 안 함 — 엔드포인트가 모든 요청에 403으로 응답합니다.",
       "mediaPayloadLimitMb": "미디어 페이로드 한도(MB)",
       "maximumDecodedUploadOrRemote": "MCP 미디어 도구가 허용하는 디코딩된 업로드 또는 원격 다운로드의 최대 크기입니다.",
-      "saveLimit": "한도 저장",
       "allSites": "모든 사이트",
       "issuedBeforeSites": "사이트 도입 이전 발급",
       "noTokensYet": "아직 토큰이 없습니다.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "플랫폼 기본값",
       "thisSite": "이 사이트",
       "inForceNow": "현재 적용 중",
-      "saving": "저장 중…",
-      "savePolicy": "정책 저장",
       "thePlatformDefaultIsSet": "플랫폼 기본값은 플랫폼 관리자가 설정합니다.",
       "useTheLayerBelow": "하위 계층 설정 사용",
       "whyTheLawRequiresThese": "법률상 이 기록을 보관해야 하는 이유",
-      "inheritsThePlatformDefault": "상속: 플랫폼 기본값"
+      "inheritsThePlatformDefault": "상속: 플랫폼 기본값",
+      "strategyDelete": "삭제",
+      "strategyAnonymise": "익명화",
+      "strategyRetain": "보존",
+      "declaredBy": "{{plugin}}에서 선언한 기본값",
+      "inheritsValue": "상속: {{value}}",
+      "legalBasis": "법적 근거",
+      "theSiteColumnIsSet": "\"이 사이트\" 열은 사이트 안에서 설정합니다. 변경하려면 전환기에서 사이트를 선택하세요."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "표시 이름",
     "thisPersonHasALogin": "이 사람은 로그인 계정이 있으므로 이메일은 계정에서 변경됩니다.",
     "birthDate": "생년월일",
-    "saveChanges": "변경 사항 저장",
     "sendPasswordResetEmail": "비밀번호 재설정 이메일 보내기",
     "cancel": "취소",
     "accountManagement": "계정 관리",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "복구 코드를 직접 복사해 주세요.",
     "nameRequired": "이름 필요",
     "enterATokenNameFirst": "먼저 토큰 이름을 입력하세요.",
-    "tokenCreated": "토큰 생성됨",
     "copyTheTokenNowIt": "지금 토큰을 복사하세요. 한 번만 표시됩니다.",
     "failedToCreateApiToken": "API 토큰을 생성하지 못했습니다",
     "areYouSureYouWant2": "이 사용자의 2FA를 비활성화하시겠습니까? 계정 보안이 약해집니다.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "세션 종료됨",
     "deviceSessionRevokedSuccessfully": "기기 세션이 종료되었습니다.",
     "failedToRevokeSession": "세션을 종료하지 못했습니다",
-    "rolesUpdated": "역할 업데이트됨",
-    "theUserSRolesWere": "사용자의 역할이 저장되었습니다.",
     "saveFailed": "저장 실패",
     "failedToSaveRoles": "역할을 저장하지 못했습니다.",
     "loadingRoles": "역할 불러오는 중",
@@ -3448,8 +3445,6 @@
     "remove": "제거",
     "loadFailed": "불러오기 실패",
     "couldNotRetrieveRoleDetails": "역할 정보를 가져올 수 없습니다.",
-    "roleUpdated": "역할 업데이트됨",
-    "wasSaved": "\"{{name}}\"이(가) 저장되었습니다.",
     "updateFailed": "업데이트 실패",
     "anErrorOccurredWhileSaving": "저장 중 오류가 발생했습니다.",
     "loadingRole": "역할 불러오는 중...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "사용자 목록으로 돌아가기",
     "selfServiceSecurityControls": "셀프 서비스 보안 제어",
     "sessionDeviceControlsAndPersonal": "세션/기기 제어 및 개인 API 토큰은 본인 계정을 볼 때만 사용할 수 있습니다.",
-    "securityRecommendations": "보안 권장 사항",
     "twoFactorAuthentication": "2단계 인증",
-    "activeAndProtectingThisAccount": "활성화되어 이 계정을 보호하고 있습니다",
-    "notEnabledHighlyRecommendedFor": "사용 안 함 - 관리자 계정에는 사용을 적극 권장합니다",
-    "passwordProtected": "비밀번호 보호됨",
-    "accountHasASecurePassword": "계정에 안전한 비밀번호가 설정되어 있습니다",
-    "administratorAccess": "관리자 권한",
     "fullSystemAccess2faStrongly": "시스템 전체 접근 권한 - 2FA 사용을 적극 권장합니다",
     "personalApiTokens": "개인 API 토큰",
     "tokenNameEGCi": "토큰 이름(예: CI 배포)",
     "days": "일",
     "createToken": "토큰 만들기",
-    "copyNowShownOnce": "지금 복사하세요(한 번만 표시됨)",
     "loadingApiTokens": "API 토큰을 불러오는 중...",
     "noApiTokensCreatedYet": "아직 만든 API 토큰이 없습니다.",
     "revoke": "취소",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "로그인 및 세션 활동",
     "loadingAuthActivity": "인증 활동을 불러오는 중...",
     "noRecentLoginSessionEvents": "이 사용자의 최근 로그인/세션 이벤트가 없습니다.",
-    "unknownTime": "알 수 없는 시간",
-    "activityEvent": "활동 이벤트",
     "openFullGlobalActivity": "전체 활동 열기",
-    "2faStatus": "2FA 상태",
     "addAnExtraLayerOf": "앱 기반 인증(TOTP)으로 보안을 한층 강화하세요",
-    "recommended": "권장",
     "enableTwoFactorAuthenticationTo": "2단계 인증을 사용하여 시간 기반 일회용 비밀번호(TOTP)로 이 계정을 보호하세요.",
     "enable2fa": "2FA 사용",
     "step1ScanQrCode": "1단계: QR 코드 스캔",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "2단계: 코드 확인",
     "enterThe6DigitCode": "설정을 완료하려면 인증 앱에 표시된 6자리 코드를 입력하세요:",
     "verifyEnable": "확인 및 사용",
-    "protectionActive": "보호 활성화됨",
     "thisAccountRequiresA6": "이 계정은 로그인 시 인증 앱의 6자리 코드가 필요합니다.",
     "regenerateRecoveryCodes": "복구 코드 다시 생성",
     "disable2fa": "2FA 사용 중지",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "다른 세션 종료",
     "loadingSessions": "세션을 불러오는 중...",
     "noActiveSessions": "활성 세션이 없습니다.",
-    "currentSession": "현재 세션",
-    "deviceSession": "기기 세션",
     "current": "현재",
     "unknownDevice": "알 수 없는 기기",
     "editAccount2": "계정 편집",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "사용자 레코드 열기",
     "token": "토큰",
     "createdOn": "{{date}} 생성",
-    "notAvailable": "해당 없음",
     "revokedOn": "{{date}} 취소됨",
     "recoveryCodesRemaining": "남은 복구 코드:",
-    "unknownValue": "알 수 없음",
     "expiresOn": "만료: {{date}}",
     "person2": "사람",
     "added": "추가됨",
@@ -3591,12 +3570,10 @@
       "loading": "사용자 필드를 불러오는 중…",
       "loadFailed": "사용자 필드를 불러올 수 없습니다.",
       "saveFailed": "필드를 저장할 수 없습니다.",
-      "saved": "필드가 저장되었습니다.",
       "empty": "아직 사용자 필드가 없습니다. 필드를 추가하면 모든 사용자에 대해 해당 정보를 저장할 수 있습니다.",
       "noneDeclared": "이 사이트에는 아직 사용자 필드가 없습니다.",
       "declare": "사용자 필드 추가",
       "manage": "필드 관리",
-      "save": "필드 저장",
       "saveField": "필드 저장",
       "delete": "삭제",
       "deleteTitle": "이 필드를 삭제하시겠습니까?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "유효 기간(일)",
+    "revokeOtherSessionsConfirm": "다른 모든 기기에서 즉시 로그아웃됩니다.",
+    "revokeSessionConfirm": "해당 기기에서 즉시 로그아웃됩니다.",
+    "revokeCurrentSessionConfirm": "지금 사용 중인 기기입니다. 즉시 로그아웃됩니다.",
+    "revokeTokenConfirm": "\"{{name}}\"은(는) 즉시 작동을 멈춥니다.",
+    "twoFactorTurnedOff": "이 사이트에서는 2단계 로그인이 꺼져 있어 여기서 설정할 수 없습니다.",
+    "openSecuritySettings": "보안 설정 열기"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "사이트 설정({{what}})은 각 사이트 안에서 설정합니다. 사이트 메뉴에서 사이트를 선택하세요.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "이 사이트의 미리보기를 열 수 없습니다.",
     "couldNotLoadTheSite": "사이트를 불러올 수 없습니다.",
     "couldNotReloadThePlugin": "플러그인 목록을 다시 불러올 수 없습니다.",
-    "siteSaved": "사이트가 저장되었습니다",
-    "routingFollowsImmediatelyNoRestart": "라우팅이 즉시 적용됩니다. 다시 시작할 필요가 없습니다.",
     "notSaved": "저장되지 않음",
     "theSiteCouldNotBe2": "사이트를 저장할 수 없습니다.",
     "couldNotOpenTheSite": "사이트를 열 수 없습니다",
@@ -3789,7 +3771,6 @@
     "visit": "방문",
     "openThisSite": "이 사이트 열기",
     "export": "내보내기",
-    "save": "저장",
     "couldNotLoadCertificates": "인증서를 불러올 수 없습니다.",
     "couldNotSwitchThisHost": "이 호스트를 자동으로 전환할 수 없습니다.",
     "couldNotSwitchThisHost2": "이 호스트를 자동(와일드카드)으로 전환할 수 없습니다.",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "업데이트 가능",
     "isNowActive": "{{name}}이(가) 활성화되었습니다.",
     "themeHasBeenUpdated2": "테마 {{name}}이(가) 업데이트되었습니다.",
-    "configurationSaved": "구성 저장됨",
-    "visualProtocolsUpdatedSuccessfully": "시각 프로토콜이 업데이트되었습니다.",
     "saveFailed": "저장 실패",
     "hasBeenRemoved2": "{{name}}이(가) 제거되었습니다.",
     "seedsExecuted": "시드 실행됨",
@@ -4300,7 +4279,6 @@
     "layoutSection": "레이아웃",
     "extensionsSection": "확장",
     "versionReady": "버전 {{version}} 사용 가능",
-    "saveChanges": "변경 사항 저장",
     "runSeedsHint": "테마의 시드 데이터(샘플 페이지 및 콘텐츠)를 이 사이트에 다시 적용합니다.",
     "resetThemeHint": "이 사이트에 저장된 테마 설정을 지우고 시드 데이터를 다시 적용합니다.",
     "notActiveHint": "이 사이트는 다른 테마를 사용 중입니다.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "v{{version}}의 변경 사항",
     "whatChanged": "변경 사항",
-    "closeBuildSourceDialog": "빌드 소스 대화 상자 닫기",
-    "close": "닫기",
     "couldNotInstallThatVersion": "해당 버전을 설치할 수 없습니다.",
     "couldNotChangeAutomaticUpdating": "자동 업데이트 설정을 변경할 수 없습니다.",
     "failed": "실패",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "자동 인증서가 꺼져 있습니다. {{reason}}",
     "automaticCertificatesComeFrom": "자동 인증서는 {{authority}}에서 발급됩니다.",
     "noSecretKeyIsConfigured": "이 서버에 SECRET_KEY가 구성되지 않아 개인 키를 저장할 수 없습니다. 설정될 때까지 업로드가 비활성화됩니다.",
-    "nothingToSavePasteA": "저장할 내용이 없습니다. 토큰을 붙여넣거나 지우기를 눌러 저장된 토큰을 제거하세요.",
     "savedThisSiteNowUses": "저장되었습니다. 이제 이 사이트는 자체 Cloudflare 토큰을 사용합니다.",
     "removedThisSiteFallsBack": "제거되었습니다. 이 사이트는 플랫폼 토큰을 사용합니다.",
     "couldNotSaveTheToken": "토큰을 저장할 수 없습니다.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "이 사이트의 토큰",
     "savedLeaveBlankToKeep": "저장됨 — 유지하려면 비워 두고, 제거하려면 지우기를 누르세요",
     "pasteACloudflareApiToken": "Cloudflare API 토큰을 붙여넣으세요",
-    "save": "저장",
     "clear": "지우기",
     "nothingStoredThisHostCannot": "저장된 항목 없음 — 이 플랫폼은 이 호스트를 HTTPS로 제공할 수 없습니다.",
     "nothingStoredHereTlsFor": "저장된 항목 없음 — 이 호스트의 TLS는 플랫폼 앞단에서 종료되므로 인증서도 그곳에 있습니다.",
@@ -4706,36 +4680,26 @@
     "roles": "역할",
     "permissions": "권한",
     "eventDetails": "이벤트 세부 정보",
-    "context": "컨텍스트",
     "resource": "리소스",
     "system": "시스템",
     "timestamp": "타임스탬프",
-    "authority": "권한 주체",
-    "actorId": "행위자 ID",
-    "type": "유형",
-    "systemLog": "시스템 로그",
-    "audit": "감사: {{status}}",
-    "activityMessage": "활동 메시지",
-    "actionTaken": "수행된 작업",
-    "resourcePool": "리소스 풀",
-    "rawMetadata": "원시 메타데이터",
     "thisEntryIsPartOf": "이 항목은 변경할 수 없는 감사 추적의 일부입니다.",
     "exportJson": "JSON 내보내기",
     "event": "이벤트",
     "actor": "행위자",
+    "plugin": "플러그인",
     "activity": "활동",
     "status": "상태",
     "action": "작업",
     "time": "시간",
-    "logSignature": "로그 서명: {{id}}",
     "internal": "내부",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "항목 #{{id}}",
+    "recordedData": "기록된 데이터"
   },
   "mediaPicker": {
     "showingOnly": "표시 중: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "작업",
       "schedule": "실행 주기",
       "lastRun": "마지막 실행",
-      "nextRun": "다음 실행"
+      "nextRun": "다음 실행",
+      "duration": "소요 시간"
     },
     "ownedBy": "{{owner}}",
     "platform": "플랫폼",

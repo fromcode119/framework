@@ -71,13 +71,13 @@ export class SetupPage extends SetupPageSteps {
           {this.currentStep}
           <div className="flex items-center gap-3">
             {this.phase !== SetupPhase.DATABASE && !this.step.isFirst && (
-              <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.handleBack} className="py-3">
+              <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.handleBack}>
                 {this.text('setup.actions.back')}
               </Button>
             )}
             <Button
               type="submit"
-              className="flex-1 py-4 text-base font-medium rounded-xl"
+              className="flex-1"
               isLoading={this.isLoading}
               disabled={this.phase === SetupPhase.DATABASE && !this.databaseDriver}
             >

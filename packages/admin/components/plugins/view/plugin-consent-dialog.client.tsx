@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { prop, state, bound, Platform } from '@fromcode119/react-class-components';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { Dialog } from '@/components/ui/view/dialog.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -85,64 +85,43 @@ export class PluginConsentDialog extends AdminComponent {
     for (const entry of summary.entries) counts[entry.risk] = (counts[entry.risk] ?? 0) + 1;
     const added = summary.entries.filter((entry) => entry.isNew).length;
 
+    // The console's dialog, not a window of its own: this one had its own backdrop blur, an indigo
+    // shield tile, a close cross and two buttons stretched across its foot.
+    const consent = AdminClass.of('consent');
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="plugin-consent-title">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" onClick={this.busy ? undefined : this.onClose} />
-          <div className={`relative w-full max-w-2xl my-auto ${AdminClass.SURFACE} p-5 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300`}>
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-lg flex-shrink-0 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                <FrameworkIcons.ShieldCheck size={24} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 id="plugin-consent-title" className="text-lg font-medium tracking-tight text-slate-900 dark:text-white break-words">
-                  {AdminI18n.t('plugins.consent.title', { name: summary.name, version: summary.version })}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                  {AdminI18n.t('plugins.consent.description')}
-                </p>
-              </div>
-              <button type="button" onClick={this.onClose} disabled={this.busy} aria-label={AdminI18n.t('common.close')}
-                className="p-1 rounded-lg transition-colors hover:bg-slate-50 text-slate-400 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-white">
-                <FrameworkIcons.Close size={20} />
-              </button>
-            </div>
-
-            <p className="mt-4 text-sm text-slate-700 dark:text-slate-300">
-              {AdminI18n.t('plugins.consent.overview', { total: summary.entries.length, high: counts.high, medium: counts.medium, low: counts.low })}
-              {added ? ` ${AdminI18n.t(added === 1 ? 'plugins.consent.overviewNewOne' : 'plugins.consent.overviewNewMany', { count: added })}` : ''}
-            </p>
-
-            <div className="mt-4 space-y-6 max-h-[52vh] overflow-auto pe-1">
-              {summary.entries.length
-                ? <PluginConsentEntries entries={summary.entries} anyHostReason={summary.anyHostReason} />
-                : <p className="text-sm text-slate-600 dark:text-slate-400">{AdminI18n.t('plugins.consent.nothing')}</p>}
-              <PluginConsentFacts summary={summary} />
-            </div>
-
-            {this.error ? (
-              <p role="alert" className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-                {this.error}
-              </p>
-            ) : null}
-
-            {/* The same toggle the page itself uses for "Approve & enable": a yes/no is a switch in this admin. */}
-            <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <Switch checked={this.acknowledged} onChange={this.acknowledge} disabled={this.busy}
-                label={AdminI18n.t('plugins.consent.acknowledge', { name: summary.name })} />
-            </div>
-
-            <div className="mt-5 flex flex-col-reverse sm:flex-row gap-3">
-              <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} disabled={this.busy}>
-                {AdminI18n.t('common.cancel')}
-              </Button>
-              <Button variant={ButtonVariant.PRIMARY} className="flex-1" onClick={this.approve} isLoading={this.busy} disabled={!this.acknowledged}>
-                {AdminI18n.t('plugins.consent.approve')}
-              </Button>
-            </div>
+      <Dialog
+        wide
+        isOpen
+        onClose={this.onClose}
+        busy={this.busy}
+        title={AdminI18n.t('plugins.consent.title', { name: summary.name, version: summary.version })}
+        description={AdminI18n.t('plugins.consent.description')}
+        foot={(
+          <>
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.onClose} disabled={this.busy}>{AdminI18n.t('common.cancel')}</Button>
+            <Button variant={ButtonVariant.PRIMARY} onClick={this.approve} isLoading={this.busy} disabled={!this.acknowledged}>{AdminI18n.t('plugins.consent.approve')}</Button>
+          </>
+        )}
+      >
+        <div className={consent}>
+          <p className={`${consent}__overview`}>
+            {AdminI18n.t('plugins.consent.overview', { total: summary.entries.length, high: counts.high, medium: counts.medium, low: counts.low })}
+            {added ? ` ${AdminI18n.t(added === 1 ? 'plugins.consent.overviewNewOne' : 'plugins.consent.overviewNewMany', { count: added })}` : ''}
+          </p>
+          <div className={`${consent}__list`}>
+            {summary.entries.length
+              ? <PluginConsentEntries entries={summary.entries} anyHostReason={summary.anyHostReason} />
+              : <p className={`${consent}__text`}>{AdminI18n.t('plugins.consent.nothing')}</p>}
+            <PluginConsentFacts summary={summary} />
+          </div>
+          {this.error ? <p role="alert" className={`${consent}__error`}>{this.error}</p> : null}
+          {/* The same toggle the page itself uses for "Approve & enable": a yes/no is a switch in this admin. */}
+          <div className={`${consent}__ack`}>
+            <Switch checked={this.acknowledged} onChange={this.acknowledge} disabled={this.busy}
+              label={AdminI18n.t('plugins.consent.acknowledge', { name: summary.name })} />
           </div>
         </div>
-      </RootFramework>
+      </Dialog>
     );
   }
 }

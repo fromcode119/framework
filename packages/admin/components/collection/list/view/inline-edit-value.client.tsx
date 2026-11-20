@@ -5,8 +5,10 @@ import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { MenuAction } from '@/components/ui/view/menu-action.client';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
 
 /**
@@ -125,8 +127,7 @@ export class InlineEditValue extends PureReactor {
     }));
   }
 
-  @bound private pick(event: MouseEvent): void {
-    const value = (event.currentTarget as HTMLButtonElement).value;
+  @bound private pick(value: string): void {
     const choice = this.choices.find((candidate) => candidate.value === value);
     if (choice?.confirm && value !== String(this.initial ?? '')) {
       this.asked = choice;
@@ -178,10 +179,10 @@ export class InlineEditValue extends PureReactor {
           onClick={this.stop}
           onKeyDown={this.handleKey}
           style={{ position: 'fixed', top: this.coords.top, left: this.coords.left, width: this.choices.length ? 240 : 300 }}
-          className="z-[9998] rounded-xl border p-3 shadow-xl bg-white border-slate-200 shadow-slate-900/10 dark:bg-slate-900 dark:border-slate-700"
+          className="fc-menu-sheet z-[9998] rounded-xl p-3"
         >
           {this.loading ? (
-            <p className="py-3 text-center text-[12px] font-medium text-slate-400">{AdminI18n.t('collection.quickEdit.loading')}</p>
+            <p className="py-3 text-center fc-size-xs font-medium fc-tone-muted">{AdminI18n.t('collection.quickEdit.loading')}</p>
           ) : this.choices.length ? this.renderChoices() : (
             <FieldRenderer
               field={this.field}
@@ -194,15 +195,14 @@ export class InlineEditValue extends PureReactor {
               record={this.record}
             />
           )}
-          {this.error ? <p className="mt-2 text-[12px] font-medium text-rose-600">{this.error}</p> : null}
+          {this.error ? <p className="mt-2 fc-size-xs font-medium fc-tone-danger">{this.error}</p> : null}
           {this.choices.length && !this.loading ? null : <div className="mt-3 flex items-center justify-end gap-2">
-            <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border text-[12px] font-medium border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+            <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.close}>
               {AdminI18n.t('common.cancel')}
-            </button>
-            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg text-[12px] font-medium inline-flex items-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
-              <FrameworkIcons.Check size={13} />
-              {AdminI18n.t(this.saving ? 'collection.quickEdit.saving' : 'common.save')}
-            </button>
+            </Button>
+            <Button type="button" variant={ButtonVariant.PRIMARY} isLoading={this.saving} disabled={this.loading} onClick={this.save}>
+              {AdminI18n.t('common.save')}
+            </Button>
           </div>}
         </div>
       </RootFramework>
@@ -213,25 +213,17 @@ export class InlineEditValue extends PureReactor {
     const current = String(this.value ?? '');
     return (
       <div>
-        <p className="mb-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">{this.field.label || this.field.name}</p>
-        <div className="flex flex-col gap-1">
+        <p className="mb-2 fc-size-xs font-medium fc-tone-muted">{this.field.label || this.field.name}</p>
+        <div className="flex flex-col">
           {this.choices.map((choice) => (
-            <button
+            <MenuAction
               key={choice.value}
-              type="button"
-              value={choice.value}
-              onClick={this.pick}
-              disabled={this.saving}
-              aria-pressed={choice.value === current}
-              className={`h-9 px-3 rounded-lg text-start text-[13px] font-medium inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
-                choice.value === current
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
-                  : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
-            >
-              {choice.label}
-              {choice.value === current ? <FrameworkIcons.Check size={14} /> : null}
-            </button>
+              label={String(choice.label)}
+              current={choice.value === current}
+              isLoading={this.saving && choice.value === this.value}
+              end={choice.value === current ? <FrameworkIcons.Check size={14} /> : null}
+              onClick={() => this.pick(choice.value)}
+            />
           ))}
         </div>
       </div>
@@ -248,8 +240,8 @@ export class InlineEditValue extends PureReactor {
           title={AdminI18n.t('collection.list.inlineEditHint', { label: this.field.label || this.field.name })}
           className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
             this.open
-              ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-500/10'
-              : 'border-transparent hover:border-indigo-300 hover:bg-indigo-50/60 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10'
+              ? 'fc-tone-brand-edge fc-tone-brand-soft'
+              : 'border-transparent fc-tone-hover-brand-line fc-tone-hover-brand-soft'
           }`}
         >
           {this.children}

@@ -22,7 +22,7 @@ export class PluginSettingsRedirectPage extends AdminComponent {
   render(): ReactElement {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
       </div>
     );
   }

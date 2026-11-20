@@ -6,6 +6,7 @@ import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
 import { CustomerAccountMetaKeys } from '@core/constants/customer-account-meta-keys.constants';
 import { LocalizationMetaKeys } from '@core/constants/localization-meta-keys.constants';
+import { AdminLookMetaKeys } from '@core/constants/admin-look-meta-keys.constants';
 
 /**
  * Well-known keys in the system meta table.
@@ -67,9 +68,7 @@ export class SystemMetaKeys {
   TIMEZONE: 'timezone',
   /** 12- or 24-hour clock for the site's times; `locale` follows the site's language. See TimeFormat. */
   TIME_FORMAT: 'time_format',
-  ADMIN_APPEARANCE: 'admin_appearance',
-  /** Whether admin surfaces render elevated (shadows) or flat. Absent = elevated. */
-  ADMIN_SHADOWS: 'admin_shadows',
+  ...AdminLookMetaKeys.ALL,
   /**
    * How much a SITE may store in themes it uploaded itself, and how many it may keep.
    *

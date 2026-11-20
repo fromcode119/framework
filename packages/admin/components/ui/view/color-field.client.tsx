@@ -1,175 +1,94 @@
-import { UiFieldUtils } from '@/lib/ui';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
-import type React from 'react';
-import { prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
+import type { ReactNode } from 'react';
+import { prop, ref, bound } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { HexColorPicker } from 'react-colorful';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { AdminClass } from '@/lib/admin-class';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { Input } from '@/components/ui/view/input.client';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
+import { ColorPickerUtils } from '@/components/ui/color-picker-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
-// A compact palette of real colours (hex) — shown INSIDE the popover, never sprawled across the form.
-
-// Legacy values were Tailwind colour NAMES ("indigo", "sky"…) — map to a hex so old records still show right.
-
 /**
- * The platform colour control: a single compact swatch button that opens a popover with a preset palette + a
- * real visual picker (react-colorful) + a hex input. Stores/emits a HEX (legacy colour names are mapped to a
- * hex for display). The popover renders through a portal at fixed coords so it never clips inside a drawer.
+ * The console's one colour control: a field showing the colour and its value, opening the kit dropdown
+ * with a palette, a visual picker and the value as text. Stores what is typed or picked (a hex from the
+ * picker); any other colour CSS accepts is shown as it is, and an empty value reads "Not set".
  */
 export class ColorField extends AdminComponent {
-  private static readonly PRESETS = [
-  '#0f172a', '#475569', '#64748b', '#ef4444', '#f97316', '#f59e0b',
-  '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4',
-  '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899',
-];
-  private static readonly NAME_HEX: Record<string, string> = {
-  slate: '#64748b', gray: '#6b7280', red: '#ef4444', orange: '#f97316', amber: '#f59e0b', yellow: '#eab308',
-  lime: '#84cc16', green: '#22c55e', emerald: '#10b981', teal: '#14b8a6', cyan: '#06b6d4', sky: '#0ea5e9',
-  blue: '#3b82f6', indigo: '#6366f1', violet: '#8b5cf6', purple: '#a855f7', fuchsia: '#d946ef', pink: '#ec4899',
-  rose: '#f43f5e',
-};
+  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
+  declare props: Pick<ColorField, 'value' | 'onChange' | 'disabled' | 'className'> & { field?: unknown };
 
-  @prop declare value?: string;
+  private static readonly PRESETS = [
+    '#0f172a', '#475569', '#64748b', '#ef4444', '#f97316', '#f59e0b',
+    '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4',
+    '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899',
+  ];
+  /** Legacy values were colour-utility NAMES ("indigo", "sky"…); each is shown as the hex it stood for. */
+  private static readonly NAME_HEX: Record<string, string> = {
+    slate: '#64748b', gray: '#6b7280', red: '#ef4444', orange: '#f97316', amber: '#f59e0b', yellow: '#eab308',
+    lime: '#84cc16', green: '#22c55e', emerald: '#10b981', teal: '#14b8a6', cyan: '#06b6d4', sky: '#0ea5e9',
+    blue: '#3b82f6', indigo: '#6366f1', violet: '#8b5cf6', purple: '#a855f7', fuchsia: '#d946ef', pink: '#ec4899',
+    rose: '#f43f5e',
+  };
+
+  @prop declare value?: unknown;
   @prop declare onChange: (value: string) => void;
   @prop declare disabled?: boolean;
+  @prop declare className?: string;
 
-  @state private customOpen = false;
-  @state private coords: { top: number; left: number } = { top: 0, left: 0 };
-  private measuredHeight = 0;
-  private static readonly GAP = 8;
-  /** `w-60` below. */
-  private static readonly POPOVER_WIDTH = 240;
-  private static readonly POPOVER_HEIGHT_ESTIMATE = 270;
+  @ref declare private dropdown: Ref<Dropdown>;
 
-  @ref declare triggerRef: Ref<HTMLButtonElement>;
-  @ref declare popoverRef: Ref<HTMLDivElement>;
+  private raw(): string { return ColorPickerUtils.coerceColorValue(this.value); }
 
-  componentDidMount(): void { document.addEventListener('mousedown', this.onOutside); }
-
-  componentWillUnmount(): void {
-    document.removeEventListener('mousedown', this.onOutside);
-    this.detachViewportListeners();
+  /** The colour actually painted for the stored value; '' when it is not a colour. */
+  private paint(raw: string): string {
+    return ColorField.NAME_HEX[raw.toLowerCase()] || ColorPickerUtils.swatchColor(raw);
   }
 
-  // `@state` mutates `this.state` in place, so React's `prevState` is unreliable for detecting the
-  // open→close edge — use `@watch` (which snapshots the previous value) to attach/detach viewport listeners.
-  @watch('customOpen')
-  private onOpenChanged(open: boolean): void {
-    if (open) {
-      this.reposition();
-      window.addEventListener('scroll', this.reposition, true);
-      window.addEventListener('resize', this.reposition);
-    } else {
-      this.detachViewportListeners();
-      this.measuredHeight = 0;
-    }
+  @bound private pick(hex: string): void { this.onChange(hex); }
+
+  @bound private choosePreset(hex: string): void {
+    this.onChange(hex);
+    if (this.dropdown.current) this.dropdown.current.isOpen = false;
   }
 
-  private detachViewportListeners(): void {
-    window.removeEventListener('scroll', this.reposition, true);
-    window.removeEventListener('resize', this.reposition);
-  }
+  @bound private type(value: string): void { this.onChange(value); }
 
-  /**
-   * Below the trigger when it fits, otherwise ABOVE it — a trigger near the bottom of the window used to
-   * open the picker off-screen, where its hex box could not be reached — and never past either side.
-   * Before the popover has mounted its height is unknown, so the declared estimate stands in; the popover
-   * re-measures once it exists.
-   */
-  @bound
-  private reposition(): void {
-    const el = this.triggerRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const height = this.popoverRef.current?.offsetHeight || ColorField.POPOVER_HEIGHT_ESTIMATE;
-    const width = this.popoverRef.current?.offsetWidth || ColorField.POPOVER_WIDTH;
-    const fitsBelow = r.bottom + ColorField.GAP + height <= window.innerHeight;
-    const top = fitsBelow ? r.bottom + ColorField.GAP : Math.max(ColorField.GAP, r.top - ColorField.GAP - height);
-    const left = Math.max(ColorField.GAP, Math.min(r.left, window.innerWidth - width - ColorField.GAP));
-    this.coords = { top, left };
-  }
-
-  componentDidUpdate(): void {
-    // The first placement used the estimate; place again with the real size once, when it differs.
-    const popover = this.popoverRef.current;
-    if (this.customOpen && popover && popover.offsetHeight && popover.offsetHeight !== this.measuredHeight) {
-      this.measuredHeight = popover.offsetHeight;
-      this.reposition();
-    }
-  }
-
-  @bound
-  private onOutside(e: MouseEvent): void {
-    if (this.triggerRef.current && !this.triggerRef.current.contains(e.target as Node) &&
-        this.popoverRef.current && !this.popoverRef.current.contains(e.target as Node)) {
-      this.customOpen = false;
-    }
-  }
-
-  @bound
-  private toggle(): void { this.customOpen = !this.customOpen; }
-
-  private val(): string { return String(this.value ?? ''); }
-  private isHex(v: string): boolean { return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v); }
-  private toHex(v: string): string { if (!v) return ''; if (this.isHex(v)) return v.toLowerCase(); return ColorField.NAME_HEX[v.toLowerCase()] || ''; }
-  private emit(hex: string): void { this.onChange(hex); }
-
-  render(): React.ReactNode {
-    const disabled = this.disabled;
-    const current = this.toHex(this.val());
-    const open = this.customOpen;
+  private renderTrigger(raw: string, paint: string, disabled?: boolean): ReactNode {
     return (
-      <>
-        <button
-          ref={this.triggerRef}
-          type="button"
-          disabled={disabled}
-          onClick={this.toggle}
-          aria-label={AdminI18n.t('ui.color.choose')}
-          className={`inline-flex items-center gap-2.5 h-[var(--fc-field-h)] ps-1.5 pe-3 rounded-lg border bg-white dark:bg-slate-900 transition-colors disabled:opacity-50 ${open ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
-        >
-          <span
-            className="h-7 w-7 rounded-lg ring-1 ring-black/10 dark:ring-white/15 shrink-0"
-            style={current ? { backgroundColor: current } : { background: 'conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)' }}
-          />
-          <span className="text-[13px] font-medium text-slate-500 dark:text-slate-400">{AdminI18n.t(current ? 'ui.color.colour' : 'ui.color.pick')}</span>
-          <FrameworkIcons.ChevronDown size={14} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
-        </button>
+      <button type="button" disabled={disabled} className="fc-field fc-color-trigger" aria-label={`${AdminI18n.t('ui.color.choose')}: ${raw || AdminI18n.t('ui.color.notSet')}`}>
+        <span className={`fc-color-trigger__swatch${paint ? '' : ' fc-color-trigger__swatch--empty'}`} style={paint ? { backgroundColor: paint } : undefined} />
+        <span className={raw ? 'fc-color-trigger__value' : 'fc-color-trigger__value fc-color-trigger__value--empty'}>{raw || AdminI18n.t('ui.color.notSet')}</span>
+        <FrameworkIcons.ChevronDown size={15} className="fc-color-trigger__caret" />
+      </button>
+    );
+  }
 
-        {open && (
-          <RootFramework>
-            <div
-              ref={this.popoverRef}
-              style={{ position: 'fixed', top: this.coords.top, left: this.coords.left, zIndex: 9999 }}
-              className={`w-60 p-3 ${AdminClass.SURFACE} animate-in zoom-in-95 slide-in-from-top-2 duration-150 ${this.theme === ThemeMode.DARK ? 'bg-slate-950 border-white/10' : 'bg-white border-slate-200'}`}
-            >
-              <div className="grid grid-cols-9 gap-1.5 mb-3">
-                {ColorField.PRESETS.map((hex) => (
-                  <button
-                    key={hex}
-                    type="button"
-                    aria-label={hex}
-                    onClick={() => this.emit(hex)}
-                    className={`h-5 w-5 rounded-lg transition-transform hover:scale-110 ${current === hex ? 'ring-2 ring-slate-900 dark:ring-white scale-110' : 'ring-1 ring-black/10 dark:ring-white/15'}`}
-                    style={{ backgroundColor: hex }}
-                  />
-                ))}
-              </div>
-              <HexColorPicker color={current || '#6366f1'} onChange={(hex) => this.emit(hex)} className="!w-full !h-32 mb-2.5" />
-              <input
-                type="text"
-                value={this.val()}
-                placeholder="#6366f1"
-                onChange={(e) => this.onChange(e.target.value)}
-                className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'text-center font-mono')}
-              />
-            </div>
-          </RootFramework>
-        )}
-      </>
+  private renderPanel(raw: string, paint: string): ReactNode {
+    const hex = ColorPickerUtils.normalizeHexColor(paint).toLowerCase();
+    return (
+      <div className="fc-color-panel">
+        <div className="fc-color-panel__presets">
+          {ColorField.PRESETS.map((preset) => (
+            <button key={preset} type="button" aria-label={preset} aria-pressed={hex === preset} className="fc-color-panel__preset" style={{ backgroundColor: preset }} onClick={() => this.choosePreset(preset)} />
+          ))}
+        </div>
+        <HexColorPicker color={hex || '#000000'} onChange={this.pick} className="fc-color-panel__picker" />
+        <Input value={raw} onChange={(event) => this.type(event.target.value)} aria-label={AdminI18n.t('ui.color.hex')} className="fc-color-panel__value" />
+      </div>
+    );
+  }
+
+  render(): ReactNode {
+    const raw = this.raw();
+    const paint = this.paint(raw);
+    const className = `fc-color-field ${this.className ?? ''}`;
+    if (this.disabled) return <div className={className}>{this.renderTrigger(raw, paint, true)}</div>;
+    return (
+      <div className={className}>
+        <Dropdown ref={this.dropdown} block align={HorizontalAlign.LEFT} items={[]} trigger={this.renderTrigger(raw, paint)} panel={this.renderPanel(raw, paint)} />
+      </div>
     );
   }
 }

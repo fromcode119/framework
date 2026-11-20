@@ -42,7 +42,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
   render(): ReactElement {
     const name = this.workspaceName;
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
+      <div className="flex min-h-screen items-center justify-center fc-canvas p-6 ">
         <div className="w-full max-w-md space-y-6 text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 shadow-xl shadow-amber-500/10">
             <FrameworkIcons.Lock size={40} />

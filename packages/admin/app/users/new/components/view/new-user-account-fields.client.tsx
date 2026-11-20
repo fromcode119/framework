@@ -14,73 +14,49 @@ export class NewUserAccountFields extends PureReactor {
     return (
       <>
         <Card title={AdminI18n.t('users.accountDetails')}>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.eMailAddress')}</label>
-                 <Input
+           <div className="fc-form-grid">
+              <Input label={AdminI18n.t('users.eMailAddress')}
                     placeholder="name@company.com"
                     value={formData.email}
                     onChange={(e) => onPatch({ email: e.target.value })}
                     required
-                    className="h-11 rounded-xl"
                  />
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.username')}</label>
-                 <Input
+              <Input label={AdminI18n.t('users.username')}
                     placeholder={AdminI18n.t('users.usernamePlaceholder')}
                     value={formData.username}
                     onChange={(e) => onPatch({ username: e.target.value })}
-                    className="h-11 rounded-xl"
                  />
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.firstName')}</label>
-                 <Input
+              <Input label={AdminI18n.t('users.firstName')}
                     placeholder={AdminI18n.t('users.firstName2')}
                     value={formData.firstName}
                     onChange={(e) => onPatch({ firstName: e.target.value })}
-                    className="h-11 rounded-xl"
                  />
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.lastName')}</label>
-                 <Input
+              <Input label={AdminI18n.t('users.lastName')}
                     placeholder={AdminI18n.t('users.lastName2')}
                     value={formData.lastName}
                     onChange={(e) => onPatch({ lastName: e.target.value })}
-                    className="h-11 rounded-xl"
                  />
-              </div>
            </div>
         </Card>
 
         <Card title={AdminI18n.t('users.securitySetup')}>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.initialPassword')}</label>
-                 <Input
+           <div className="fc-form-grid">
+              <Input label={AdminI18n.t('users.initialPassword')}
                     type="password"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={(e) => onPatch({ password: e.target.value })}
                     error={errors.password}
                     required
-                    className="h-11 rounded-xl"
                  />
-              </div>
-              <div className="space-y-2">
-                 <label className="text-[12px] font-medium tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.confirmPassword')}</label>
-                 <Input
+              <Input label={AdminI18n.t('users.confirmPassword')}
                     type="password"
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={(e) => onPatch({ confirmPassword: e.target.value })}
                     error={errors.confirmPassword}
                     required
-                    className="h-11 rounded-xl"
                  />
-              </div>
            </div>
         </Card>
       </>

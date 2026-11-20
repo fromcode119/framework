@@ -162,6 +162,7 @@
       "reorderHandle": "Velciet, lai mainītu secību, vai fokusējiet un izmantojiet bulttaustiņus",
       "reorderEnable": "Lai mainītu secību, rādiet sarakstu tā paša secībā",
       "reorderFailed": "Jauno secību neizdevās saglabāt",
+      "noMatch": "Meklēšanai vai filtriem nekas neatbilst.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importēt {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Rediģēt",
       "notFilledIn": "Nav aizpildīts",
       "statusSection": "Statuss",
-      "statusConfirm": "Mainīt statusu uz “{{status}}”?",
       "recordSection": "Ieraksts",
       "showJson": "Rādīt kā JSON",
       "showForm": "Rādīt kā veidlapu",
@@ -245,7 +245,8 @@
       "copied": "Nokopēts",
       "more": "Vairāk",
       "moreFields": "{{count}} lauki",
-      "moreOneField": "{{count}} lauks"
+      "moreOneField": "{{count}} lauks",
+      "statusConfirm": "Mainīt statusu uz “{{status}}”?"
     },
     "notFound": {
       "title": "Kolekcija nav atrasta",
@@ -366,7 +367,8 @@
     "reset": "Atiestatīt",
     "notScheduledYet": "vēl nav ieplānots",
     "more": "Citas darbības",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Noņemt"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Izvēlēties krāsu",
-      "colour": "Krāsa",
-      "pick": "Izvēlieties krāsu",
       "hex": "Hex kods",
-      "confirm": "Apstiprināt krāsu",
       "notSet": "Nav iestatīts"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Konstatētas neaktīvas atkarības",
       "intro": "Lai iespējotu {{plugin}}, jāveic šādas darbības:",
       "notInstalled": "NAV INSTALĒTS",
+      "inactive": "izslēgts",
+      "incompatible": "cita versija",
       "requires": "Nepieciešama versija {{version}}. To var lejupielādēt no tirgus.",
       "needsActivation": "Jau instalēts, bet jāaktivizē (versija {{version}}).",
       "mismatch": "Versiju neatbilstība: nepieciešama {{expected}}, atrasta {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Platformas priekšskatījums",
-      "image": "Priekšskatījums {{number}}"
+      "image": "Priekšskatījums {{number}}",
+      "previous": "Iepriekšējais",
+      "next": "Nākamais"
     },
     "menuField": {
       "newItem": "Jauns izvēlnes vienums",
-      "structure": "Izvēlnes struktūra",
-      "add": "Pievienot izvēlnes vienumu"
+      "add": "Pievienot izvēlnes vienumu",
+      "reorder": "Velciet, lai pārvietotu; bultiņas: augšup un lejup pārvieto, pa labi ievieto, pa kreisi izceļ"
     },
     "field": {
       "notSet": "Nav iestatīts",
@@ -461,8 +464,8 @@
       "record": "ieraksts"
     },
     "array": {
-      "addNew": "Pievienot jaunu: {{label}}",
-      "item": "Vienums"
+      "add": "Pievienot",
+      "reorder": "Velciet, lai pārvietotu, vai izmantojiet bultiņas"
     },
     "stepper": {
       "increment": "Palielināt",
@@ -528,9 +531,7 @@
       "noContact": "Sadaļā Personas nav e-pasta vai tālruņa",
       "hasLogin": "Ir pieteikšanās konts",
       "noLogin": "Nav pieteikšanās konta",
-      "source": "Vārds, e-pasts un tālrunis tiek ņemti no Personas #{{id}}; mainiet tos tur.",
       "open": "Atvērt sadaļā Personas",
-      "choose": "Izvēlēties citu personu",
       "searchFailed": "Pašlaik neizdevās meklēt sadaļā Personas.",
       "noMatch": "Sadaļā Personas neviens neatbilst. Ievadiet datus zemāk; saglabājot persona tiks pievienota sadaļai Personas.",
       "ref": "Personas #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Atvērt vietnes"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relatīvās pārrakstīšanas manto kolekcijas prefiksu. Iespējojiet absolūto režīmu, lai apietu tādus prefiksus kā `/shop`.",
     "range": "Diapazons",
     "noDataForThisRange": "Šim diapazonam nav datu",
     "peak": "· maksimums {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtri",
       "clearFilters": "Notīrīt visus",
       "removeFilter": "Noņemt filtru {{label}}",
-      "showResults": "Rādīt rezultātus: {{count}}"
+      "showResults": "Rādīt rezultātus: {{count}}",
+      "showResultsOne": "Rādīt 1 rezultātu"
     },
     "personFieldPicker": {
       "none": "Netiek saglabāts personas laukā",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} smilškastes ierobežojumi tika saglabāti, taču procesu neizdevās restartēt ar tiem: {{value}}",
       "restartRequired": "Nepieciešama restartēšana",
       "sandboxSettingsForWereSaved": "{{name}} smilškastes iestatījumi tika saglabāti, taču, lai tie stātos spēkā, jārestartē API.",
-      "resourcesUpdated": "Resursi atjaunināti",
-      "sandboxLimitsForUpdated": "{{name}} smilškastes ierobežojumi atjaunināti.",
       "sandboxDisabledFor": "Smilškaste atspējota spraudnim {{name}}.",
       "saveFailed": "Saglabāšana neizdevās",
       "failedToUpdateSandboxLimits": "Neizdevās atjaunināt smilškastes ierobežojumus.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Dīkstāve. Nav reģistrēts neviens nesens notikums.",
       "updating": "Atjaunina...",
       "updateAvailable": "Pieejams atjauninājums",
-      "updatePolicy": "Atjaunināšanas politika",
       "saveChanges": "Saglabāt izmaiņas",
       "unsavedChanges": "Nesaglabātas izmaiņas",
       "exportSettingsAsJson": "Eksportēt iestatījumus kā JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Jaunumi v{{version}}",
       "installedVersion": "Instalēta {{version}}",
       "marketplaceVersion": "Tirgū {{version}}",
-      "saving": "Saglabā...",
       "saveSettings": "Saglabāt iestatījumus",
       "viewDefinition": "Skatīt definīciju",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Izskats",
       "failedToLoadAppearances": "Neizdevās ielādēt izskatus",
       "failedToSaveShadowSetting": "Neizdevās saglabāt ēnu iestatījumu",
+      "failedToSaveMenuSetting": "Neizdevās saglabāt izvēlnes iestatījumu",
       "switchedToReloading": "Pārslēgts uz \"{{slug}}\". Pārlādē…",
       "failedToSwitchAppearance": "Neizdevās pārslēgt izskatu",
       "installFailed": "Instalēšana neizdevās",
@@ -1919,6 +1917,8 @@
       "install": "Instalēt",
       "surfaceShadows": "Virsmu ēnas",
       "depthOnPanelsDialogsAnd": "Dziļums paneļiem, dialogiem un pogām. Izslēdziet, lai administrācija būtu plakana — apmales un stūri paliek nemainīgi.",
+      "secondMenuColumn": "Otrā izvēlnes kolonna",
+      "sectionPagesBesideTheMenu": "Sadaļas lapas atrodas kolonnā blakus izvēlnei. Izslēgtas tās atveras zem savas rindas vienā izvēlnē, un katrs ekrāns kļūst par 220px platāks.",
       "installFromAPackageUrl": "Instalēt no pakotnes URL",
       "builtIn": "Iebūvēts",
       "installed": "Instalēts",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP atrašanās vieta netika atjaunināta",
       "geoUnavailable": "IP atrašanās vietas statuss nav pieejams",
       "geoAttribution": "IP ģeolokāciju nodrošina {{name}} ({{license}}). Kamēr ieslēgts, atjaunina reizi mēnesī.",
-      "geoSaved": "Saglabāts",
-      "geoSavedOn": "Datubāze tiek lejupielādēta; tās apjoms ir aptuveni 60 MB.",
-      "geoSavedOff": "Datubāze tika dzēsta no servera.",
       "everyPluginRunsIsolated": "Izolēti: katrs spraudnis darbojas savā procesā. Atmiņas ierobežojums un izpildes termiņš attiecas uz visiem spraudņiem; CPU daļa, kopējā atmiņa, disks un procesi attiecas tikai uz vietnes augšupielādētiem spraudņiem.",
       "schemaOrphans": "Datubāzes shēma",
       "schemaOrphansHelp": "Kolonnas, kas joprojām ir datubāzē, bet ko vairs nekas nedeklarē. Platforma tās tikai parāda; nekas netiek dzēsts, kamēr neizlemsiet, un dzēstu kolonnu nevar atjaunot.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Atspējots — galapunkts visiem atbild ar 403.",
       "mediaPayloadLimitMb": "Multivides datu ierobežojums (MB)",
       "maximumDecodedUploadOrRemote": "Maksimālais dekodētas augšupielādes vai attālinātas lejupielādes apjoms, ko pieņem MCP multivides rīki.",
-      "saveLimit": "Saglabāt ierobežojumu",
       "allSites": "visas vietnes",
       "issuedBeforeSites": "izsniegts pirms vietņu ieviešanas",
       "noTokensYet": "Vēl nav neviena marķiera.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platformas noklusējums",
       "thisSite": "Šī vietne",
       "inForceNow": "Pašlaik spēkā",
-      "saving": "Saglabā…",
-      "savePolicy": "Saglabāt politiku",
       "thePlatformDefaultIsSet": "Platformas noklusējumu iestata platformas administrators.",
       "useTheLayerBelow": "Izmantot zemāko līmeni",
       "whyTheLawRequiresThese": "Kāpēc likums pieprasa šos ierakstus saglabāt",
-      "inheritsThePlatformDefault": "manto: platformas noklusējumu"
+      "inheritsThePlatformDefault": "manto: platformas noklusējumu",
+      "strategyDelete": "Dzēst",
+      "strategyAnonymise": "Anonimizēt",
+      "strategyRetain": "Saglabāt",
+      "declaredBy": "Noklusējums, ko nosaka {{plugin}}",
+      "inheritsValue": "manto: {{value}}",
+      "legalBasis": "Juridiskais pamats",
+      "theSiteColumnIsSet": "Kolonnu “Šī vietne” iestata vietnē. Lai to mainītu, pārslēdzējā izvēlieties vietni."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Attēlojamais vārds",
     "thisPersonHasALogin": "Šai personai ir pieteikšanās konts; tās e-pasts tiek mainīts kontā.",
     "birthDate": "Dzimšanas datums",
-    "saveChanges": "Saglabāt izmaiņas",
     "sendPasswordResetEmail": "Nosūtīt paroles atiestatīšanas e-pastu",
     "cancel": "Atcelt",
     "accountManagement": "Konta pārvaldība",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Lūdzu, nokopējiet atkopšanas kodus manuāli.",
     "nameRequired": "Nepieciešams nosaukums",
     "enterATokenNameFirst": "Vispirms ievadiet žetona nosaukumu.",
-    "tokenCreated": "Žetons izveidots",
     "copyTheTokenNowIt": "Nokopējiet žetonu tagad. Tas tiek parādīts tikai vienreiz.",
     "failedToCreateApiToken": "Neizdevās izveidot API žetonu",
     "areYouSureYouWant2": "Vai tiešām vēlaties atspējot 2FA šim lietotājam? Tas samazinās konta drošību.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesija atsaukta",
     "deviceSessionRevokedSuccessfully": "Ierīces sesija veiksmīgi atsaukta.",
     "failedToRevokeSession": "Neizdevās atsaukt sesiju",
-    "rolesUpdated": "Lomas atjauninātas",
-    "theUserSRolesWere": "Lietotāja lomas saglabātas.",
     "saveFailed": "Saglabāšana neizdevās",
     "failedToSaveRoles": "Neizdevās saglabāt lomas.",
     "loadingRoles": "Ielādē lomas",
@@ -3448,8 +3445,6 @@
     "remove": "Noņemt",
     "loadFailed": "Ielāde neizdevās",
     "couldNotRetrieveRoleDetails": "Neizdevās iegūt lomas informāciju.",
-    "roleUpdated": "Loma atjaunināta",
-    "wasSaved": "\"{{name}}\" ir saglabāta.",
     "updateFailed": "Atjaunināšana neizdevās",
     "anErrorOccurredWhileSaving": "Saglabājot radās kļūda.",
     "loadingRole": "Ielādē lomu...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Atpakaļ uz lietotājiem",
     "selfServiceSecurityControls": "Pašapkalpošanās drošības iestatījumi",
     "sessionDeviceControlsAndPersonal": "Sesiju un ierīču pārvaldība un personiskie API marķieri ir pieejami tikai, skatot savu lietotāja kontu.",
-    "securityRecommendations": "Drošības ieteikumi",
     "twoFactorAuthentication": "Divfaktoru autentifikācija",
-    "activeAndProtectingThisAccount": "Aktīva un aizsargā šo kontu",
-    "notEnabledHighlyRecommendedFor": "Nav ieslēgta — administratoru kontiem ļoti ieteicama",
-    "passwordProtected": "Aizsargāts ar paroli",
-    "accountHasASecurePassword": "Kontam ir droša parole",
-    "administratorAccess": "Administratora piekļuve",
     "fullSystemAccess2faStrongly": "Pilna piekļuve sistēmai — 2FA ļoti ieteicama",
     "personalApiTokens": "Personiskie API marķieri",
     "tokenNameEGCi": "Marķiera nosaukums (piem., CI izvietošana)",
     "days": "Dienas",
     "createToken": "Izveidot marķieri",
-    "copyNowShownOnce": "Kopējiet tagad (tiek parādīts vienreiz)",
     "loadingApiTokens": "Ielādē API marķierus...",
     "noApiTokensCreatedYet": "API marķieri vēl nav izveidoti.",
     "revoke": "Atsaukt",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Pieteikšanās un sesiju darbības",
     "loadingAuthActivity": "Ielādē autentifikācijas darbības...",
     "noRecentLoginSessionEvents": "Šim lietotājam nav nesenu pieteikšanās vai sesiju notikumu.",
-    "unknownTime": "Nezināms laiks",
-    "activityEvent": "Darbības notikums",
     "openFullGlobalActivity": "Atvērt visu globālo darbību žurnālu",
-    "2faStatus": "2FA statuss",
     "addAnExtraLayerOf": "Pievienojiet papildu drošības līmeni ar lietotnes autentifikāciju (TOTP)",
-    "recommended": "Ieteicams",
     "enableTwoFactorAuthenticationTo": "Ieslēdziet divfaktoru autentifikāciju, lai aizsargātu šo kontu ar laikā balstītām vienreizējām parolēm (TOTP).",
     "enable2fa": "Ieslēgt 2FA",
     "step1ScanQrCode": "1. solis: noskenējiet QR kodu",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "2. solis: verificējiet kodu",
     "enterThe6DigitCode": "Ievadiet 6 ciparu kodu no autentifikatora lietotnes, lai pabeigtu iestatīšanu:",
     "verifyEnable": "Verificēt un ieslēgt",
-    "protectionActive": "Aizsardzība aktīva",
     "thisAccountRequiresA6": "Piesakoties šajā kontā, nepieciešams 6 ciparu kods no autentifikatora lietotnes.",
     "regenerateRecoveryCodes": "Ģenerēt jaunus atkopšanas kodus",
     "disable2fa": "Izslēgt 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Atsaukt citas sesijas",
     "loadingSessions": "Ielādē sesijas...",
     "noActiveSessions": "Nav aktīvu sesiju.",
-    "currentSession": "Pašreizējā sesija",
-    "deviceSession": "Ierīces sesija",
     "current": "Pašreizējā",
     "unknownDevice": "Nezināma ierīce",
     "editAccount2": "Rediģēt kontu",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Atvērt lietotāja ierakstu",
     "token": "Marķieris",
     "createdOn": "Izveidots {{date}}",
-    "notAvailable": "nav",
     "revokedOn": "Atsaukts {{date}}",
     "recoveryCodesRemaining": "Atlikušie atkopšanas kodi:",
-    "unknownValue": "nezināms",
     "expiresOn": "Derīgs līdz: {{date}}",
     "person2": "Persona",
     "added": "Pievienots",
@@ -3591,12 +3570,10 @@
       "loading": "Ielādē personu laukus…",
       "loadFailed": "Neizdevās ielādēt personu laukus.",
       "saveFailed": "Neizdevās saglabāt laukus.",
-      "saved": "Lauki saglabāti.",
       "empty": "Personu lauku vēl nav. Pievienojiet lauku, lai to glabātu katrai personai.",
       "noneDeclared": "Šai vietnei vēl nav personu lauku.",
       "declare": "Pievienot personu laukus",
       "manage": "Pārvaldīt laukus",
-      "save": "Saglabāt laukus",
       "saveField": "Saglabāt lauku",
       "delete": "Dzēst",
       "deleteTitle": "Dzēst šo lauku?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Derīgs (dienas)",
+    "revokeOtherSessionsConfirm": "Visas pārējās ierīces tiek uzreiz izrakstītas.",
+    "revokeSessionConfirm": "Šī ierīce tiek uzreiz izrakstīta.",
+    "revokeCurrentSessionConfirm": "Šī ir ierīce, kuru izmantojat tagad. Jūs tiksiet uzreiz izrakstīts.",
+    "revokeTokenConfirm": "“{{name}}” uzreiz pārstāj darboties.",
+    "twoFactorTurnedOff": "Divfaktoru pieteikšanās šai vietnei ir izslēgta, tāpēc to šeit nevar iestatīt.",
+    "openSecuritySettings": "Atvērt drošības iestatījumus"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Vietnes iestatījumi ({{what}}) tiek iestatīti katrā vietnē atsevišķi — izvēlieties vietni vietņu izvēlnē.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Šo vietni neizdevās atvērt priekšskatīšanai.",
     "couldNotLoadTheSite": "Neizdevās ielādēt vietni.",
     "couldNotReloadThePlugin": "Neizdevās atkārtoti ielādēt spraudņu sarakstu.",
-    "siteSaved": "Vietne saglabāta",
-    "routingFollowsImmediatelyNoRestart": "Maršrutēšana stājas spēkā nekavējoties — restartēšana nav nepieciešama.",
     "notSaved": "Nav saglabāts",
     "theSiteCouldNotBe2": "Vietni neizdevās saglabāt.",
     "couldNotOpenTheSite": "Neizdevās atvērt vietni",
@@ -3789,7 +3771,6 @@
     "visit": "Apmeklēt",
     "openThisSite": "Atvērt šo vietni",
     "export": "Eksportēt",
-    "save": "Saglabāt",
     "couldNotLoadCertificates": "Neizdevās ielādēt sertifikātus.",
     "couldNotSwitchThisHost": "Neizdevās pārslēgt šo resursdatoru uz automātisko režīmu.",
     "couldNotSwitchThisHost2": "Neizdevās pārslēgt šo resursdatoru uz automātisko režīmu (aizstājējzīme).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Pieejams atjauninājums",
     "isNowActive": "{{name}} tagad ir aktīvs.",
     "themeHasBeenUpdated2": "Motīvs {{name}} ir atjaunināts.",
-    "configurationSaved": "Konfigurācija saglabāta",
-    "visualProtocolsUpdatedSuccessfully": "Vizuālie protokoli veiksmīgi atjaunināti.",
     "saveFailed": "Saglabāšana neizdevās",
     "hasBeenRemoved2": "{{name}} ir noņemts.",
     "seedsExecuted": "Sākumdati izpildīti",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Izkārtojums",
     "extensionsSection": "Paplašinājumi",
     "versionReady": "Versija {{version}} ir gatava",
-    "saveChanges": "Saglabāt izmaiņas",
     "runSeedsHint": "Atkārtoti ielādē šajā vietnē motīva sākumdatus — tā paraugu lapas un saturu.",
     "resetThemeHint": "Notīra šīs vietnes saglabātos motīva iestatījumus un atkārtoti ielādē sākumdatus.",
     "notActiveHint": "Šī vietne izmanto citu motīvu.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Izmaiņas versijā v{{version}}",
     "whatChanged": "Izmaiņas",
-    "closeBuildSourceDialog": "Aizvērt būvēšanas avota dialogu",
-    "close": "Aizvērt",
     "couldNotInstallThatVersion": "Neizdevās instalēt šo versiju.",
     "couldNotChangeAutomaticUpdating": "Neizdevās mainīt automātisko atjaunināšanu.",
     "failed": "Neizdevās",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automātiskie sertifikāti ir izslēgti. {{reason}}",
     "automaticCertificatesComeFrom": "Automātiskos sertifikātus izsniedz {{authority}}.",
     "noSecretKeyIsConfigured": "Šajā serverī nav konfigurēta SECRET_KEY, tāpēc privāto atslēgu nevar saglabāt. Augšupielāde ir atspējota, līdz tā tiek iestatīta.",
-    "nothingToSavePasteA": "Nav ko saglabāt — ielīmējiet marķieri vai izmantojiet “Notīrīt”, lai noņemtu saglabāto.",
     "savedThisSiteNowUses": "Saglabāts. Šī vietne tagad izmanto savu Cloudflare marķieri.",
     "removedThisSiteFallsBack": "Noņemts. Šī vietne atkal izmanto platformas marķieri.",
     "couldNotSaveTheToken": "Neizdevās saglabāt marķieri.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Šīs vietnes marķieris",
     "savedLeaveBlankToKeep": "Saglabāts — atstājiet tukšu, lai paturētu, vai izmantojiet “Notīrīt”, lai noņemtu",
     "pasteACloudflareApiToken": "Ielīmējiet Cloudflare API marķieri",
-    "save": "Saglabāt",
     "clear": "Notīrīt",
     "nothingStoredThisHostCannot": "Nekas nav saglabāts — šī platforma nevar nodrošināt šo resursdatoru caur HTTPS.",
     "nothingStoredHereTlsFor": "Šeit nekas nav saglabāts — šī resursdatora TLS tiek terminēts pirms platformas, tāpēc tā sertifikāts atrodas tur.",
@@ -4706,36 +4680,26 @@
     "roles": "Lomas",
     "permissions": "Atļaujas",
     "eventDetails": "Notikuma informācija",
-    "context": "Konteksts",
     "resource": "Resurss",
     "system": "Sistēma",
     "timestamp": "Laikspiedols",
-    "authority": "Pilnvaras",
-    "actorId": "Izpildītāja ID",
-    "type": "Tips",
-    "systemLog": "Sistēmas žurnāls",
-    "audit": "Audits: {{status}}",
-    "activityMessage": "Darbības ziņojums",
-    "actionTaken": "Veiktā darbība",
-    "resourcePool": "Resursu kopa",
-    "rawMetadata": "Neapstrādātie metadati",
     "thisEntryIsPartOf": "Šis ieraksts ir daļa no nemaināmas audita takas.",
     "exportJson": "Eksportēt JSON",
     "event": "Notikums",
     "actor": "Izpildītājs",
+    "plugin": "Spraudnis",
     "activity": "Darbība",
     "status": "Statuss",
     "action": "Darbība",
     "time": "Laiks",
-    "logSignature": "Žurnāla paraksts: {{id}}",
     "internal": "IEKŠĒJS",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Ieraksts #{{id}}",
+    "recordedData": "Reģistrētie dati"
   },
   "mediaPicker": {
     "showingOnly": "Rāda tikai: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Uzdevums",
       "schedule": "Izpilde",
       "lastRun": "Pēdējā izpilde",
-      "nextRun": "Nākamā izpilde"
+      "nextRun": "Nākamā izpilde",
+      "duration": "Ilgums"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

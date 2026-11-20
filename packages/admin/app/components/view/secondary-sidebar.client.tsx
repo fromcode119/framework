@@ -30,7 +30,7 @@ export class SecondarySidebar extends AdminComponent {
   @prop declare overlayLeftClass?: string;
 
   @ref declare dialogRef: Ref<HTMLDivElement>;
-  @ref declare triggerRef: Ref<HTMLButtonElement>;
+  @ref declare triggerRef: Ref<HTMLElement>;
 
   private previousFocus: HTMLElement | null = null;
   private focusTrapped = false;

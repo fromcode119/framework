@@ -19,36 +19,34 @@ export class SiteStatStrip extends PureReactor {
   @prop declare theme: ThemeMode;
 
   private get stats(): Array<{ label: string; value: string | number; tone: string }> {
-    const dark = this.theme === ThemeMode.DARK;
-    const muted = dark ? 'text-slate-400' : 'text-slate-500';
-    const strong = dark ? 'text-white' : 'text-slate-900';
+    const muted = 'fc-tone-muted';
+    const strong = 'fc-tone-text';
     const site = this.site;
 
     const stats: Array<{ label: string; value: string | number; tone: string }> = [
-      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
+      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'fc-tone-success' : 'fc-tone-warning' },
       { label: AdminI18n.t('sites.members'), value: site.memberCount, tone: strong },
       { label: AdminI18n.t('sites.plugins'), value: site.plugins.length, tone: strong },
     ];
     if (site.isWorkspace) {
       stats.push({ label: AdminI18n.t('sites.appearance'), value: site.appearance || 'none', tone: site.appearance ? strong : muted });
     } else {
-      stats.push({ label: AdminI18n.t('sites.theme'), value: site.theme ?? 'none', tone: site.theme ? strong : 'text-amber-500' });
-      stats.push({ label: AdminI18n.t('sites.pages'), value: site.pageCount, tone: site.pageCount ? strong : 'text-amber-500' });
+      stats.push({ label: AdminI18n.t('sites.theme'), value: site.theme ?? 'none', tone: site.theme ? strong : 'fc-tone-warning' });
+      stats.push({ label: AdminI18n.t('sites.pages'), value: site.pageCount, tone: site.pageCount ? strong : 'fc-tone-warning' });
     }
     return stats;
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex flex-wrap items-center gap-2">
         {this.stats.map((stat) => (
           <div
             key={stat.label}
-            className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${dark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}
+            className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 fc-tone-line fc-tone-surface`}
           >
             <span className={`text-sm font-medium tabular-nums ${stat.tone}`}>{stat.value}</span>
-            <span className={`text-[12px] font-medium ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{stat.label}</span>
+            <span className={`fc-size-xs font-medium fc-tone-muted`}>{stat.label}</span>
           </div>
         ))}
       </div>

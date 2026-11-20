@@ -1,13 +1,16 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
-import { Card } from '@/components/ui/view/card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { DataTable } from '@/components/ui/view/data-table.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IBackupCatalogGroupView } from '@/components/settings/backups/interfaces/backup-catalog-group-view.interface';
 import type { IBackupCatalogItemView } from '@/components/settings/backups/interfaces/backup-catalog-item-view.interface';
@@ -28,164 +31,62 @@ export class BackupListCard extends AdminComponent {
   @prop declare onRequestDelete: (item: IBackupCatalogItemView) => void;
   @prop declare onRequestRestore: (item: IBackupCatalogItemView) => void;
 
+  private columns(): any[] {
+    return [
+      { header: AdminI18n.t('settings.components.backup'), id: 'backup', accessor: (item: IBackupCatalogItemView) => (
+        <span className="fc-dt-inline"><span className="fc-dt-strong">{item.displayName}</span><span className="fc-dt-quiet">{item.filename}</span></span>
+      ) },
+      // `item.group` is a plain string on the wire; the utils hydrate it before choosing the tone.
+      { header: AdminI18n.t('settings.components.scope'), id: 'scope', accessor: (item: IBackupCatalogItemView) => <Badge variant={SystemBackupPageUtils.getGroupBadgeVariant(item)}>{SystemBackupPageUtils.getScopeLabel(item)}</Badge> },
+      { header: AdminI18n.t('settings.components.modified'), id: 'modified', accessor: (item: IBackupCatalogItemView) => SystemBackupPageUtils.formatTimestamp(item.modifiedAt) },
+      { header: AdminI18n.t('settings.components.size'), id: 'size', accessor: (item: IBackupCatalogItemView) => SystemBackupPageUtils.formatBytes(item.sizeBytes) },
+      { header: AdminI18n.t('settings.components.storage'), id: 'storage', accessor: (item: IBackupCatalogItemView) => SystemBackupPageUtils.getStorageLabel(item) },
+    ];
+  }
+
+  /** What can be done with one archive: taken, put back, removed — the last two only where allowed. */
+  private actions(item: IBackupCatalogItemView): ReactNode {
+    const { capabilities, downloadProgress } = this;
+    const items: any[] = [
+      { label: AdminI18n.t('settings.components.download'), icon: <FrameworkIcons.Download size={15} />, onClick: () => { if (downloadProgress?.activeId !== item.id) void this.onDownload(item.id); } },
+    ];
+    if (capabilities.canRestore && SystemBackupPageUtils.canRestore(item)) {
+      items.push({ label: AdminI18n.t('settings.components.restore'), icon: <FrameworkIcons.Refresh size={15} />, onClick: () => { if (this.activePreviewId !== item.id) this.onRequestRestore(item); } });
+    }
+    if (capabilities.canManage && SystemBackupPageUtils.canDelete(item)) {
+      items.push({ label: AdminI18n.t('settings.components.delete'), icon: <FrameworkIcons.Trash size={15} />, variant: DropdownItemVariant.DANGER, onClick: () => { if (this.activeDeleteId !== item.id) this.onRequestDelete(item); } });
+    }
+    return <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={<span className="fc-record-card__menu" aria-label={AdminI18n.t('settings.components.actions')}><FrameworkIcons.More size={15} /></span>} />;
+  }
+
   render(): ReactNode {
-    const {
-      groups,
-      capabilities,
-      isRefreshing,
-      downloadProgress,
-      activeDeleteId,
-      activePreviewId,
-      onRefresh,
-      onDownload,
-      onRequestDelete,
-      onRequestRestore,
-    } = this;
-    const theme = this.theme;
-
-    return (
-    <Card noPadding className="overflow-hidden">
-      <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className={`text-lg font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.managedArchives')}</h2>
-            <p className="text-sm text-slate-500">
-              {AdminI18n.t('settings.components.systemRestoreAlwaysRequiresA')}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant={ButtonVariant.SECONDARY}
-              className="rounded-xl px-5"
-              isLoading={isRefreshing}
-              onClick={() => void onRefresh()}
-            >
-              {AdminI18n.t('settings.components.refreshInventory')}
-            </Button>
-          </div>
-        </div>
+    const { groups, downloadProgress } = this;
+    const refresh = <Button variant={ButtonVariant.SECONDARY} isLoading={this.isRefreshing} onClick={() => void this.onRefresh()}>{AdminI18n.t('settings.components.refreshInventory')}</Button>;
+    const progress = downloadProgress ? (
+      <div className="fc-list-band">
+        <ProgressBar value={downloadProgress.percent ?? null} label={SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress)} detail={SystemBackupPageUtils.getDownloadProgressDetail(downloadProgress)} />
       </div>
-
-      {downloadProgress ? (
-        <div className="px-8 pt-6">
-          <div className={`rounded-lg border px-5 py-4 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
-            <div className="flex items-center justify-between gap-4 text-[12px] font-medium text-slate-500">
-              <span>{SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress)}</span>
-              <span>{SystemBackupPageUtils.getDownloadProgressDetail(downloadProgress)}</span>
-            </div>
-            <div className={`mt-3 h-2 overflow-hidden rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-100'}`}>
-              <div
-                className="h-full rounded-full bg-indigo-600 transition-[width] duration-200"
-                style={{ width: `${downloadProgress.percent ?? 12}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {!groups.length ? (
-        <div className="px-8 py-16 text-center">
-          <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
-            <FrameworkIcons.Database size={28} />
-          </div>
-          <h3 className={`mt-5 text-xl font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.noBackupsIndexedYet')}</h3>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-            {AdminI18n.t('settings.components.createASystemBackupTo2')}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-8 px-8 py-8">
-          {groups.map((group) => (
-            <section key={group.key.value} className="space-y-4">
-              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className={`text-base font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group.label}</h3>
-                    <Badge variant={BadgeVariant.GRAY}>{group.items.length}</Badge>
-                  </div>
-                  <p className="text-sm text-slate-500">{SystemBackupPageUtils.getGroupDescription(group.key)}</p>
-                </div>
-              </div>
-
-              <div className={`overflow-x-auto rounded-lg border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
-                <table className="min-w-full divide-y divide-slate-200/80 text-start dark:divide-slate-800">
-                  <thead>
-                    <tr className="text-[12px] text-slate-500">
-                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.backup')}</th>
-                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.scope')}</th>
-                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.modified')}</th>
-                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.size')}</th>
-                      <th className="px-5 py-4 font-medium">{AdminI18n.t('settings.components.storage')}</th>
-                      <th className="px-5 py-4 font-medium text-end">{AdminI18n.t('settings.components.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800">
-                    {group.items.map((item) => (
-                      <tr key={item.id}>
-                        <td className="px-5 py-4 align-top">
-                          <div className={`font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{item.displayName}</div>
-                          <div className="mt-1 text-xs text-slate-500">{item.filename}</div>
-                        </td>
-                        <td className="px-5 py-4 align-top">
-                          {/* `item.group` is a plain string on the wire, so comparing it to an Enum
-                              member was always false and every badge rendered GRAY. Hydrate, and pass
-                              a BadgeVariant member rather than a bare string. */}
-                          <Badge variant={SystemBackupPageUtils.getGroupBadgeVariant(item)}>
-                            {SystemBackupPageUtils.getScopeLabel(item)}
-                          </Badge>
-                        </td>
-                        <td className="px-5 py-4 align-top text-sm text-slate-500">{SystemBackupPageUtils.formatTimestamp(item.modifiedAt)}</td>
-                        <td className="px-5 py-4 align-top text-sm text-slate-500">{SystemBackupPageUtils.formatBytes(item.sizeBytes)}</td>
-                        <td className="px-5 py-4 align-top text-sm text-slate-500">{SystemBackupPageUtils.getStorageLabel(item)}</td>
-                        <td className="px-5 py-4 align-top">
-                          <div className="flex flex-wrap justify-end gap-2">
-                            <Button
-                              size={FieldSize.SM}
-                              variant={ButtonVariant.OUTLINE}
-                              className="rounded-lg"
-                              icon={<FrameworkIcons.Download size={12} />}
-                              disabled={downloadProgress?.activeId === item.id}
-                              onClick={() => onDownload(item.id)}
-                            >
-                              {downloadProgress?.activeId === item.id ? SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress) : AdminI18n.t('settings.components.download')}
-                            </Button>
-                            {capabilities.canRestore && SystemBackupPageUtils.canRestore(item) ? (
-                              <Button
-                                size={FieldSize.SM}
-                                variant={ButtonVariant.SECONDARY}
-                                className="rounded-lg"
-                                icon={<FrameworkIcons.Refresh size={12} />}
-                                isLoading={activePreviewId === item.id}
-                                onClick={() => onRequestRestore(item)}
-                              >
-                                {AdminI18n.t('settings.components.restore')}
-                              </Button>
-                            ) : null}
-                            {capabilities.canManage && SystemBackupPageUtils.canDelete(item) ? (
-                              <Button
-                                size={FieldSize.SM}
-                                variant={ButtonVariant.DANGER}
-                                className="rounded-lg"
-                                icon={<FrameworkIcons.Trash size={12} />}
-                                isLoading={activeDeleteId === item.id}
-                                onClick={() => onRequestDelete(item)}
-                              >
-                                {AdminI18n.t('settings.components.delete')}
-                              </Button>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-    </Card>
+    ) : null;
+    if (!groups.length) {
+      return (
+        <ListShell title={AdminI18n.t('settings.components.managedArchives')} subtitle={AdminI18n.t('settings.components.systemRestoreAlwaysRequiresA')} actions={refresh}>
+          {progress}
+          <EmptyState icon={<FrameworkIcons.Database size={18} />} title={AdminI18n.t('settings.components.noBackupsIndexedYet')} hint={AdminI18n.t('settings.components.createASystemBackupTo2')} />
+        </ListShell>
+      );
+    }
+    // One list card a kind of archive, the first carrying the page's own name and the refresh.
+    return (
+      <div className="fc-columns__stack">
+        <ListShell title={AdminI18n.t('settings.components.managedArchives')} subtitle={AdminI18n.t('settings.components.systemRestoreAlwaysRequiresA')} actions={refresh}>
+          {progress}
+        </ListShell>
+        {groups.map((group) => (
+          <ListShell key={group.key.value} title={group.label} count={group.items.length} subtitle={SystemBackupPageUtils.getGroupDescription(group.key)}>
+            <DataTable columns={this.columns()} data={group.items} actions={(item: IBackupCatalogItemView) => this.actions(item)} />
+          </ListShell>
+        ))}
+      </div>
     );
   }
 }

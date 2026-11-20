@@ -41,17 +41,17 @@ export class NotificationRow extends PureReactor {
     const { notification } = this;
     const source = CoercionUtils.toString(notification.source);
     return (
-      <div className="pb-3.5 ps-9 pe-4">
-        <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
+      <div className="fc-notice__detail">
+        <p className="fc-notice__body">
           {CoercionUtils.toString(notification.body)}
         </p>
-        <div className="mt-2.5 flex items-center justify-between gap-3">
-          <p className="min-w-0 truncate text-[12px] text-slate-400 dark:text-slate-500">
+        <div className="fc-notice__meta">
+          <p className="fc-notice__when">
             {[NotificationTime.absolute(notification.createdAt), source].filter(Boolean).join(', ')}
           </p>
           {this.link ? (
             <button type="button" onClick={this.follow}
-              className="inline-flex shrink-0 items-center gap-1 text-[length:var(--fc-control-text)] font-medium text-[color:var(--primary)] transition-[filter] hover:brightness-90">
+              className="fc-notice__open">
               {AdminI18n.t('shell.notifications.open')}
               <FrameworkIcons.ArrowRight size={12} />
             </button>
@@ -64,17 +64,17 @@ export class NotificationRow extends PureReactor {
   render(): ReactNode {
     const { notification, unread } = this;
     return (
-      <div className="border-b border-slate-100 last:border-b-0 dark:border-slate-800/70">
+      <div className="fc-notice">
         <button type="button" onClick={this.toggle}
-          className="flex w-full items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
-          <span aria-hidden="true" className={`mt-[7px] h-2 w-2 shrink-0 rounded-full ${unread ? 'bg-[color:var(--primary)]' : 'bg-transparent'}`} />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-baseline justify-between gap-3">
-              <span className={`text-[13px] leading-snug ${unread ? 'font-medium text-slate-900 dark:text-white' : 'font-medium text-slate-600 dark:text-slate-300'}`}>
+          className="fc-notice__head">
+          <span aria-hidden="true" className="fc-notice__dot" data-unread={unread ? 'true' : 'false'} />
+          <span className="fc-notice__main">
+            <span className="fc-notice__line">
+              <span className="fc-notice__title" data-unread={unread ? 'true' : 'false'}>
                 {CoercionUtils.toString(notification.title)}
               </span>
               <time dateTime={CoercionUtils.toString(notification.createdAt)} title={NotificationTime.absolute(notification.createdAt)}
-                className="shrink-0 text-[12px] tabular-nums text-slate-400 dark:text-slate-500">
+                className="fc-notice__ago">
                 {NotificationTime.relative(notification.createdAt)}
               </time>
             </span>

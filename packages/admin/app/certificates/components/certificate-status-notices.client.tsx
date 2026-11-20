@@ -1,6 +1,6 @@
+import { Alert } from '@/components/ui/view/alert.client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CertificateNoticeTone } from '@/app/certificates/enums/certificate-notice-tone.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -20,19 +20,11 @@ export class CertificateStatusNotices extends AdminComponent {
   @prop declare automation: Record<string, unknown> | null;
   @prop declare encryptionAvailable: boolean;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
+  /** A note in the kit's tones: good, warn and bad are its own; a plain fact is the quiet one. */
   private notice(tone: CertificateNoticeTone, body: ReactNode): ReactNode {
-    const dark = this.isDark;
-    const tones: Record<string, string> = {
-      good: dark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700',
-      warn: dark ? 'bg-amber-500/10 text-amber-300' : 'bg-amber-50 text-amber-700',
-      bad: dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700',
-      muted: dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500',
-    };
-    return <p className={`text-xs leading-snug rounded-lg px-3 py-2 mb-3 ${tones[String(tone.value)]}`}>{body}</p>;
+    const tones: Record<string, 'success' | 'warning' | 'danger' | 'info'> = { good: 'success', warn: 'warning', bad: 'danger', muted: 'info' };
+    return <Alert tone={tones[String(tone.value)]}>{body}</Alert>;
   }
 
   /** What the platform's own edge reports — never inferred from a row existing. */
@@ -64,13 +56,13 @@ export class CertificateStatusNotices extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <>
+      <div className="fc-stack">
         {this.renderEdge()}
         {this.renderAutomation()}
         {!this.encryptionAvailable
           ? this.notice(CertificateNoticeTone.BAD, AdminI18n.t('certificates.noSecretKeyIsConfigured'))
           : null}
-      </>
+      </div>
     );
   }
 }

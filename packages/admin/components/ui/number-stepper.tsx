@@ -80,8 +80,10 @@ export class NumberStepper extends PureReactor {
     if (this.disabled) return;
     const current = this.current();
     const min = Number(this.min);
-    const base = current ?? (this.min !== undefined && Number.isFinite(min) ? min : 0);
-    const next = this.clamp(base + direction * this.stepSize());
+    const hasMin = this.min !== undefined && this.min !== null && Number.isFinite(min);
+    // An empty field's first press lands ON the minimum: stepping from it skipped it, so a field whose
+    // minimum is 64 went blank → 65 and 64 could only be typed.
+    const next = current === null && hasMin ? min : this.clamp((current ?? 0) + direction * this.stepSize());
     if (this.draft !== null) this.draft = NumberStepper.format(next);
     this.onChange(next);
   }

@@ -1,6 +1,8 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { Text } from '@/components/ui/view/text.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
 
 export class SectionCard extends PureReactor {
   @prop declare title: string;
@@ -13,30 +15,25 @@ export class SectionCard extends PureReactor {
   /** Show the subtitle as the title's hint instead of a second line (dense surfaces such as the dashboard). */
   @prop declare subtitleAsHint?: boolean;
 
+  /**
+   * The console's own cards, not a card of its own: a list that draws its rows edge to edge is the
+   * list card, anything else is the record card — so a plugin's dashboard has the same head, the same
+   * insets and the same corner as every other screen. `icon` is accepted and not drawn: the console's
+   * card heads carry a name and what stands beside it, never a tile.
+   */
   render(): ReactNode {
-    const { title, subtitle, icon, actions, children } = this;
-    const noPadding = this.noPadding ?? false;
-    const className = this.className ?? '';
+    const { title, subtitle, actions, children } = this;
+    const line = subtitle && !this.subtitleAsHint ? subtitle : undefined;
+    if (this.noPadding) {
+      return <ListShell title={title} subtitle={line} actions={actions} className={this.className}>{children}</ListShell>;
+    }
     return (
-      <section className={`fc-section-card ${AdminClass.SURFACE} overflow-hidden bg-white border-slate-200/70 shadow-sm dark:bg-slate-900/40 dark:border-slate-800 dark:shadow-none ${className}`}>
-        <header className="fc-section-card__head px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            {icon && (
-              <div className="fc-section-card__icon h-8 w-8 rounded-lg flex items-center justify-center shrink-0 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                {icon}
-              </div>
-            )}
-            <div className="min-w-0">
-              <h2 title={this.subtitleAsHint ? subtitle : undefined} className="text-[13px] font-medium tracking-tight text-slate-800 dark:text-white truncate">{title}</h2>
-              {subtitle && !this.subtitleAsHint && (
-                <p className="text-[12px] font-normal text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-          </div>
-          {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-        </header>
-        {noPadding ? children : <div className="p-4">{children}</div>}
-      </section>
+      <RecordCard title={title} aside={actions} className={this.className}>
+        <div className="fc-stack">
+          {line ? <Text size="small" muted as="p">{line}</Text> : null}
+          {children}
+        </div>
+      </RecordCard>
     );
   }
 }

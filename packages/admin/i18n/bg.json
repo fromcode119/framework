@@ -199,6 +199,7 @@
       "reorderHandle": "Плъзнете, за да пренаредите — или изберете и ползвайте стрелките",
       "reorderEnable": "Покажете списъка в неговия ред, за да го пренаредите",
       "reorderFailed": "Новият ред не можа да бъде запазен",
+      "noMatch": "Нищо не отговаря на търсенето или филтрите.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Да се внесе ли {{file}}?",
@@ -271,7 +272,6 @@
       "editSection": "Редактирай",
       "notFilledIn": "Не е попълнено",
       "statusSection": "Статус",
-      "statusConfirm": "Да се смени ли статусът на „{{status}}“?",
       "recordSection": "Запис",
       "showJson": "Покажи като JSON",
       "showForm": "Покажи като форма",
@@ -282,7 +282,8 @@
       "copied": "Копирано",
       "more": "Още",
       "moreFields": "още {{count}} полета",
-      "moreOneField": "още {{count}} поле"
+      "moreOneField": "още {{count}} поле",
+      "statusConfirm": "Да се смени ли статусът на „{{status}}“?"
     },
     "notFound": {
       "title": "Колекцията не е намерена",
@@ -403,7 +404,8 @@
     "reset": "Нулиране",
     "notScheduledYet": "още не е насрочено",
     "more": "Още действия",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Премахни"
   },
   "ui": {
     "table": {
@@ -413,10 +415,7 @@
     },
     "color": {
       "choose": "Избор на цвят",
-      "colour": "Цвят",
-      "pick": "Изберете цвят",
       "hex": "Hex код",
-      "confirm": "Потвърди цвета",
       "notSet": "Не е зададен"
     },
     "dependencies": {
@@ -427,6 +426,8 @@
       "inactiveTitle": "Има неактивни зависимости",
       "intro": "За да се включи {{plugin}}, трябва да се уреди следното:",
       "notInstalled": "НЕ Е ИНСТАЛИРАН",
+      "inactive": "изключен",
+      "incompatible": "друга версия",
       "requires": "Нужна е версия {{version}}. Може да се изтегли от магазина за разширения.",
       "needsActivation": "Инсталиран е, но трябва да се активира (версия {{version}}).",
       "mismatch": "Несъвместима версия: нужна е {{expected}}, налична е {{actual}}.",
@@ -473,12 +474,14 @@
     },
     "lightbox": {
       "title": "Преглед",
-      "image": "Изображение {{number}}"
+      "image": "Изображение {{number}}",
+      "previous": "Назад",
+      "next": "Напред"
     },
     "menuField": {
       "newItem": "Нов елемент",
-      "structure": "Структура на менюто",
-      "add": "Добави елемент"
+      "add": "Добави елемент",
+      "reorder": "Плъзнете, за да преместите; стрелки: нагоре и надолу премества, надясно вгнездва, наляво изважда"
     },
     "field": {
       "notSet": "Не е зададено",
@@ -498,8 +501,8 @@
       "record": "запис"
     },
     "array": {
-      "addNew": "Добави: {{label}}",
-      "item": "Елемент"
+      "add": "Добави",
+      "reorder": "Плъзнете, за да преместите, или използвайте стрелките"
     },
     "stepper": {
       "increment": "Увеличи",
@@ -565,9 +568,7 @@
       "noContact": "Няма имейл или телефон в „Хора“",
       "hasLogin": "Има вход",
       "noLogin": "Няма вход",
-      "source": "Името, имейлът и телефонът идват от лице №{{id}} в „Хора“; променяйте ги там.",
       "open": "Отвори в „Хора“",
-      "choose": "Избери друг",
       "searchFailed": "Търсенето в „Хора“ не е възможно в момента.",
       "noMatch": "Няма съвпадение в „Хора“. Въведете данните по-долу; при запазване лицето се добавя в „Хора“.",
       "ref": "Лице №{{id}}",
@@ -649,7 +650,6 @@
         "openSites": "Отвори „Сайтове“"
       }
     },
-    "relativeOverridesInheritTheCollection": "Относителните адреси наследяват префикса на колекцията. Включете абсолютен режим, за да заобиколите префикси като `/shop`.",
     "range": "Период",
     "noDataForThisRange": "Няма данни за този период",
     "peak": "· връх {{value}}",
@@ -663,7 +663,8 @@
       "filters": "Филтри",
       "clearFilters": "Изчисти всички",
       "removeFilter": "Премахни филтъра „{{label}}“",
-      "showResults": "Покажи {{count}} резултата"
+      "showResults": "Покажи {{count}} резултата",
+      "showResultsOne": "Покажи 1 резултат"
     },
     "personFieldPicker": {
       "none": "Не се записва в поле на човека",
@@ -1138,8 +1139,6 @@
       "sandboxLimitsForWereSaved": "Ограниченията за {{name}} са запазени, но процесът не се рестартира с тях: {{value}}",
       "restartRequired": "Нужен е рестарт",
       "sandboxSettingsForWereSaved": "Настройките на изолацията за {{name}} са запазени, но влизат в сила след рестарт на API.",
-      "resourcesUpdated": "Ресурсите са обновени",
-      "sandboxLimitsForUpdated": "Ограниченията за {{name}} са обновени.",
       "sandboxDisabledFor": "Изолацията за {{name}} е изключена.",
       "saveFailed": "Записът не успя",
       "failedToUpdateSandboxLimits": "Ограниченията не бяха обновени.",
@@ -1172,7 +1171,6 @@
       "idleNoRecentEventsRecorded": "Няма скорошни събития.",
       "updating": "Обновяване…",
       "updateAvailable": "Има обновление",
-      "updatePolicy": "Правила за обновяване",
       "saveChanges": "Запазване",
       "unsavedChanges": "Незапазени промени",
       "exportSettingsAsJson": "Експорт на настройките в JSON",
@@ -1222,7 +1220,6 @@
       "newIn": "Ново във v{{version}}",
       "installedVersion": "Инсталирана {{version}}",
       "marketplaceVersion": "В магазина {{version}}",
-      "saving": "Запазване…",
       "saveSettings": "Запази настройките",
       "viewDefinition": "Виж дефиницията",
       "definition": {
@@ -2115,9 +2112,6 @@
       "geoUpdateFailed": "Местоположението по IP не е обновено",
       "geoUnavailable": "Състоянието на местоположението по IP не е достъпно",
       "geoAttribution": "Геолокация по IP от {{name}} ({{license}}). Обновява се всеки месец, докато е включено.",
-      "geoSaved": "Запазено",
-      "geoSavedOn": "Базата се изтегля сега; тя е около 60 MB.",
-      "geoSavedOff": "Базата е премахната от сървъра.",
       "everyPluginRunsIsolated": "Изолирано: всеки плъгин работи в собствен процес. Горната граница на паметта и крайният срок важат за всеки плъгин; делът от процесора, общата памет, дискът и процесите — само за плъгини, качени от сайт.",
       "schemaOrphans": "Схема на базата данни",
       "schemaOrphansHelp": "Колони, които базата още пази, но които вече нищо не декларира. Платформата само ги изброява; нищо не се изтрива, докато не решите, а изтрита колона не може да се възстанови.",
@@ -2371,7 +2365,6 @@
       "disabledTheEndpointAnswers403": "Изключено — точката отговаря с 403 на всички.",
       "mediaPayloadLimitMb": "Ограничение за медия (MB)",
       "maximumDecodedUploadOrRemote": "Максималният размер на качване или отдалечено изтегляне, който MCP инструментите за медия приемат.",
-      "saveLimit": "Запази ограничението",
       "allSites": "всички сайтове",
       "issuedBeforeSites": "издаден преди сайтовете",
       "noTokensYet": "Още няма токени.",
@@ -3043,6 +3036,7 @@
       "appearance": "Облик",
       "failedToLoadAppearances": "Обликите не можаха да бъдат заредени",
       "failedToSaveShadowSetting": "Настройката за сенки не можа да бъде запазена",
+      "failedToSaveMenuSetting": "Настройката на менюто не се запази",
       "switchedToReloading": "Превключено към „{{slug}}“. Презареждане…",
       "failedToSwitchAppearance": "Обликът не можа да бъде сменен",
       "installFailed": "Неуспешно инсталиране",
@@ -3056,6 +3050,8 @@
       "install": "Инсталирай",
       "surfaceShadows": "Сенки на повърхностите",
       "depthOnPanelsDialogsAnd": "Дълбочина на панелите, прозорците и бутоните. Изключете за плоска администрация — рамките и ъглите остават точно същите.",
+      "secondMenuColumn": "Втора колона на менюто",
+      "sectionPagesBesideTheMenu": "Страниците на раздела стоят в колона до менюто. Изключете я и те се отварят под своя ред в едното меню, а всеки екран става с 220px по-широк.",
       "installFromAPackageUrl": "Инсталиране от адрес на пакет",
       "builtIn": "Вграден",
       "installed": "Инсталиран",
@@ -3247,12 +3243,17 @@
       "platformDefault": "По подразбиране за платформата",
       "thisSite": "Този сайт",
       "inForceNow": "В сила сега",
-      "saving": "Запазване…",
-      "savePolicy": "Запази правилата",
       "thePlatformDefaultIsSet": "Правилото на платформата се задава от администратор на платформата.",
       "useTheLayerBelow": "Използвай нивото отдолу",
       "whyTheLawRequiresThese": "Защо законът изисква тези записи да се пазят",
-      "inheritsThePlatformDefault": "наследява: правилото на платформата"
+      "inheritsThePlatformDefault": "наследява: правилото на платформата",
+      "strategyDelete": "Изтриване",
+      "strategyAnonymise": "Анонимизиране",
+      "strategyRetain": "Запазване",
+      "declaredBy": "По подразбиране, обявено от {{plugin}}",
+      "inheritsValue": "наследява: {{value}}",
+      "legalBasis": "Правно основание",
+      "theSiteColumnIsSet": "Колоната „Този сайт“ се настройва вътре в сайт. Изберете сайт от превключвателя, за да я промените."
     }
   },
   "scope": {
@@ -3382,7 +3383,6 @@
     "displayName": "Показвано име",
     "thisPersonHasALogin": "Лицето има акаунт за вход; имейлът се сменя в акаунта.",
     "birthDate": "Дата на раждане",
-    "saveChanges": "Запази промените",
     "sendPasswordResetEmail": "Изпрати имейл за нова парола",
     "cancel": "Отказ",
     "accountManagement": "Управление на акаунта",
@@ -3404,7 +3404,6 @@
     "pleaseCopyTheRecoveryCodes": "Моля, копирайте кодовете за възстановяване ръчно.",
     "nameRequired": "Нужно е име",
     "enterATokenNameFirst": "Първо въведете име на токена.",
-    "tokenCreated": "Токенът е създаден",
     "copyTheTokenNowIt": "Копирайте токена сега. Показва се само веднъж.",
     "failedToCreateApiToken": "API токенът не можа да бъде създаден",
     "areYouSureYouWant2": "Сигурни ли сте, че искате да изключите 2FA за този потребител? Това намалява сигурността на акаунта.",
@@ -3435,8 +3434,6 @@
     "sessionRevoked": "Сесията е прекратена",
     "deviceSessionRevokedSuccessfully": "Сесията на устройството е прекратена успешно.",
     "failedToRevokeSession": "Сесията не можа да бъде прекратена",
-    "rolesUpdated": "Ролите са обновени",
-    "theUserSRolesWere": "Ролите на потребителя са запазени.",
     "saveFailed": "Неуспешно запазване",
     "failedToSaveRoles": "Ролите не можаха да бъдат запазени.",
     "loadingRoles": "Зареждане на ролите",
@@ -3497,8 +3494,6 @@
     "remove": "Премахни",
     "loadFailed": "Неуспешно зареждане",
     "couldNotRetrieveRoleDetails": "Данните за ролята не можаха да бъдат заредени.",
-    "roleUpdated": "Ролята е обновена",
-    "wasSaved": "„{{name}}“ е запазена.",
     "updateFailed": "Неуспешно обновяване",
     "anErrorOccurredWhileSaving": "Възникна грешка при запазването.",
     "loadingRole": "Зареждане на ролята...",
@@ -3524,19 +3519,12 @@
     "returnToUsers": "Назад към потребителите",
     "selfServiceSecurityControls": "Лични настройки за сигурност",
     "sessionDeviceControlsAndPersonal": "Управлението на сесиите и устройствата и личните API токени са достъпни само във вашия собствен акаунт.",
-    "securityRecommendations": "Препоръки за сигурността",
     "twoFactorAuthentication": "Двуфакторно удостоверяване",
-    "activeAndProtectingThisAccount": "Активно и пази този акаунт",
-    "notEnabledHighlyRecommendedFor": "Не е включено — силно препоръчително за административни акаунти",
-    "passwordProtected": "Защитен с парола",
-    "accountHasASecurePassword": "Акаунтът има сигурна парола",
-    "administratorAccess": "Администраторски достъп",
     "fullSystemAccess2faStrongly": "Пълен достъп до системата — 2FA е силно препоръчително",
     "personalApiTokens": "Лични API токени",
     "tokenNameEGCi": "Име на токена (напр. CI внедряване)",
     "days": "Дни",
     "createToken": "Създай токен",
-    "copyNowShownOnce": "Копирайте сега (показва се веднъж)",
     "loadingApiTokens": "Зареждане на API токените...",
     "noApiTokensCreatedYet": "Още няма създадени API токени.",
     "revoke": "Отнеми",
@@ -3544,12 +3532,8 @@
     "loginSessionActivity": "Входове и сесии",
     "loadingAuthActivity": "Зареждане на активността...",
     "noRecentLoginSessionEvents": "Няма скорошни входове или сесии за този потребител.",
-    "unknownTime": "Неизвестно време",
-    "activityEvent": "Събитие",
     "openFullGlobalActivity": "Отвори цялата активност",
-    "2faStatus": "Статус на 2FA",
     "addAnExtraLayerOf": "Допълнителна защита чрез приложение за удостоверяване (TOTP)",
-    "recommended": "Препоръчително",
     "enableTwoFactorAuthenticationTo": "Включете двуфакторно удостоверяване, за да пазите акаунта с еднократни пароли, базирани на времето (TOTP).",
     "enable2fa": "Включи 2FA",
     "step1ScanQrCode": "Стъпка 1: Сканирайте QR кода",
@@ -3559,7 +3543,6 @@
     "step2VerifyCode": "Стъпка 2: Потвърдете кода",
     "enterThe6DigitCode": "Въведете 6-цифрения код от приложението, за да завършите настройката:",
     "verifyEnable": "Потвърди и включи",
-    "protectionActive": "Защитата е активна",
     "thisAccountRequiresA6": "Този акаунт изисква 6-цифрен код от приложение за удостоверяване при вход.",
     "regenerateRecoveryCodes": "Нови кодове за възстановяване",
     "disable2fa": "Изключи 2FA",
@@ -3570,8 +3553,6 @@
     "revokeOtherSessions": "Прекрати другите сесии",
     "loadingSessions": "Зареждане на сесиите...",
     "noActiveSessions": "Няма активни сесии.",
-    "currentSession": "Текуща сесия",
-    "deviceSession": "Сесия на устройство",
     "current": "Текуща",
     "unknownDevice": "Неизвестно устройство",
     "editAccount2": "Редактиране на акаунта",
@@ -3604,10 +3585,8 @@
     "openUserRecord": "Отвори потребителя",
     "token": "Токен",
     "createdOn": "Създаден {{date}}",
-    "notAvailable": "няма",
     "revokedOn": "Отнет {{date}}",
     "recoveryCodesRemaining": "Оставащи кодове за възстановяване:",
-    "unknownValue": "неизвестно",
     "expiresOn": "Изтича: {{date}}",
     "person2": "Лице",
     "added": "Добавено",
@@ -3639,12 +3618,10 @@
       "loading": "Зареждане на полетата…",
       "loadFailed": "Полетата не можаха да се заредят.",
       "saveFailed": "Полетата не можаха да се запазят.",
-      "saved": "Полетата са запазени.",
       "empty": "Още няма полета. Добавете едно, за да го пазите за всеки човек.",
       "noneDeclared": "Сайтът още няма полета за хора.",
       "declare": "Добавете полета",
       "manage": "Управление на полетата",
-      "save": "Запази полетата",
       "saveField": "Запази полето",
       "delete": "Изтрий",
       "deleteTitle": "Да се изтрие ли полето?",
@@ -3697,7 +3674,14 @@
       "partner": "Партньор",
       "user": "Потребител"
     },
-    "hasAccount": "Може да влиза"
+    "hasAccount": "Може да влиза",
+    "validForDays": "Валиден (дни)",
+    "revokeOtherSessionsConfirm": "Всички други устройства излизат веднага.",
+    "revokeSessionConfirm": "Това устройство излиза веднага.",
+    "revokeCurrentSessionConfirm": "Това е устройството, на което сте сега. Излизате веднага.",
+    "revokeTokenConfirm": "„{{name}}“ спира да работи веднага.",
+    "twoFactorTurnedOff": "Двуфакторното влизане е изключено за този сайт, затова не може да се настрои тук.",
+    "openSecuritySettings": "Към настройките за сигурност"
   },
   "lib": {
     "httpErrorStatus": "HTTP грешка! Статус: {{status}}",
@@ -3910,8 +3894,6 @@
   "sources": {
     "whatChangedInV": "Какво е променено във v{{version}}",
     "whatChanged": "Какво е променено",
-    "closeBuildSourceDialog": "Затвори прозореца на източника",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Тази версия не можа да бъде инсталирана.",
     "couldNotChangeAutomaticUpdating": "Автоматичното обновяване не можа да бъде променено.",
     "failed": "Неуспешни",
@@ -4061,7 +4043,6 @@
     "stagingAuthorityWarning": "Автоматичните сертификати идват от {{authority}}. Сертификатите от тестов удостоверител НЕ се приемат от браузърите — използвайте го, за да изпробвате процеса, не за да обслужвате сайт.",
     "automaticCertificatesComeFrom": "Автоматичните сертификати идват от {{authority}}.",
     "noSecretKeyIsConfigured": "На сървъра не е зададен SECRET_KEY, така че частен ключ не може да бъде съхранен. Качването е изключено, докато не се зададе.",
-    "nothingToSavePasteA": "Няма какво да се запази — поставете токен или използвайте „Изчисти“, за да премахнете запазения.",
     "savedThisSiteNowUses": "Запазено. Сайтът вече използва собствен токен за Cloudflare.",
     "removedThisSiteFallsBack": "Премахнато. Сайтът използва токена на платформата.",
     "couldNotSaveTheToken": "Токенът не можа да бъде запазен.",
@@ -4072,7 +4053,6 @@
     "thisSiteSToken": "Токен на сайта",
     "savedLeaveBlankToKeep": "Запазен — оставете празно, за да го запазите, или изтрийте с „Изчисти“",
     "pasteACloudflareApiToken": "Поставете Cloudflare API токен",
-    "save": "Запази",
     "clear": "Изчисти",
     "nothingStoredThisHostCannot": "Няма запазен — този хост не може да се обслужва през HTTPS от платформата.",
     "nothingStoredHereTlsFor": "Тук няма запазен — TLS за този хост се обработва преди платформата, така че сертификатът му е там.",
@@ -4124,36 +4104,26 @@
     "roles": "Роли",
     "permissions": "Права",
     "eventDetails": "Подробности за събитието",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Време",
-    "authority": "Извършител",
-    "actorId": "Номер на извършителя",
-    "type": "Вид",
-    "systemLog": "Системен запис",
-    "audit": "Одит: {{status}}",
-    "activityMessage": "Съобщение",
-    "actionTaken": "Действие",
-    "resourcePool": "Група ресурси",
-    "rawMetadata": "Необработени метаданни",
     "thisEntryIsPartOf": "Този запис е част от неизменима одитна следа.",
     "exportJson": "Експорт в JSON",
     "event": "Събитие",
     "actor": "Извършител",
+    "plugin": "Плъгин",
     "activity": "Активност",
     "status": "Статус",
     "action": "Действие",
     "time": "Време",
-    "logSignature": "Подпис на записа: {{id}}",
     "internal": "ВЪТРЕШНО",
     "level": {
-      "INFO": "ИНФО",
-      "WARN": "ВНИМАНИЕ",
-      "ERROR": "ГРЕШКА",
-      "DEBUG": "ОТСТРАНЯВАНЕ",
-      "SYSTEM": "СИСТЕМА",
-      "AUDIT": "ОДИТ"
+      "INFO": "Инфо",
+      "WARN": "Внимание",
+      "ERROR": "Грешка",
+      "DEBUG": "Отстраняване",
+      "SYSTEM": "Система",
+      "AUDIT": "Одит"
     },
     "events": {
       "auth": {
@@ -4166,7 +4136,9 @@
         },
         "registered": "Създаден акаунт"
       }
-    }
+    },
+    "entryNumber": "Запис №{{id}}",
+    "recordedData": "Записани данни"
   },
   "sites": {
     "couldNotLoadTheSites": "Сайтовете не можаха да бъдат заредени.",
@@ -4241,8 +4213,6 @@
     "thisSiteCouldNotBe": "Този сайт не можа да бъде отворен за преглед.",
     "couldNotLoadTheSite": "Сайтът не можа да бъде зареден.",
     "couldNotReloadThePlugin": "Списъкът с плъгини не можа да бъде презареден.",
-    "siteSaved": "Сайтът е запазен",
-    "routingFollowsImmediatelyNoRestart": "Маршрутите се обновяват веднага — без рестарт.",
     "notSaved": "Не е запазен",
     "theSiteCouldNotBe2": "Сайтът не можа да бъде запазен.",
     "couldNotOpenTheSite": "Сайтът не можа да бъде отворен",
@@ -4257,7 +4227,6 @@
     "visit": "Посети",
     "openThisSite": "Отвори този сайт",
     "export": "Експорт",
-    "save": "Запази",
     "couldNotLoadCertificates": "Сертификатите не можаха да бъдат заредени.",
     "couldNotSwitchThisHost": "Хостът не можа да бъде превключен на автоматичен.",
     "couldNotSwitchThisHost2": "Хостът не можа да бъде превключен на автоматичен (wildcard).",
@@ -4667,8 +4636,6 @@
     "updateAvailable": "Има обновление",
     "isNowActive": "{{name}} вече е активна.",
     "themeHasBeenUpdated2": "Темата {{name}} е обновена.",
-    "configurationSaved": "Настройките са запазени",
-    "visualProtocolsUpdatedSuccessfully": "Визуалните променливи са обновени успешно.",
     "saveFailed": "Неуспешно запазване",
     "hasBeenRemoved2": "{{name}} е премахната.",
     "seedsExecuted": "Началните данни са заредени",
@@ -4768,7 +4735,6 @@
     "layoutSection": "Оформление",
     "extensionsSection": "Разширения",
     "versionReady": "Версия {{version}} е готова",
-    "saveChanges": "Запази промените",
     "runSeedsHint": "Зарежда отново примерните данни на темата — страници и съдържание — в този сайт.",
     "resetThemeHint": "Изчиства запазените настройки на темата за този сайт и зарежда отново примерните данни.",
     "notActiveHint": "Този сайт използва друга тема.",
@@ -4819,7 +4785,8 @@
       "task": "Задача",
       "schedule": "Изпълнява се",
       "lastRun": "Последно",
-      "nextRun": "Следващо"
+      "nextRun": "Следващо",
+      "duration": "Продължителност"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

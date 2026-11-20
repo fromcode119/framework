@@ -1,13 +1,18 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import {PureReactor, prop, Platform} from '@fromcode119/react-class-components';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { RootFramework } from '@fromcode119/react';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * What an upload is about to install, listed by section, before it is installed.
+ *
+ * The dialog itself is the console's: scrim, panel, head and foot come from {@link Dialog}. This one
+ * supplies the lists.
+ */
 export class UploadPreviewDialog extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare title: string;
@@ -19,107 +24,46 @@ export class UploadPreviewDialog extends PureReactor {
   @prop declare onClose: () => void;
   @prop declare onConfirm: () => void;
 
-  private applyBodyOverflow(): void {
-    if (!Platform.isBrowser) return;
-    document.body.style.overflow = this.isOpen ? 'hidden' : 'unset';
-  }
-
-  componentDidMount(): void {
-    this.applyBodyOverflow();
-  }
-
-  componentDidUpdate(prevProps: { isOpen: boolean }): void {
-    if (prevProps.isOpen !== this.isOpen) this.applyBodyOverflow();
-  }
-
-  componentWillUnmount(): void {
-    if (Platform.isBrowser) document.body.style.overflow = 'unset';
+  private get foot(): ReactNode {
+    const confirmLabel = this.confirmLabel ?? AdminI18n.t('ui.upload.install');
+    const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
+    return (
+      <>
+        <Button variant={ButtonVariant.GHOST} onClick={this.onClose} disabled={this.isLoading ?? false}>
+          {cancelLabel}
+        </Button>
+        <Button variant={ButtonVariant.PRIMARY} onClick={this.onConfirm} isLoading={this.isLoading ?? false}>
+          {confirmLabel}
+        </Button>
+      </>
+    );
   }
 
   render(): ReactNode {
-    const { title, description, sections, onClose, onConfirm } = this;
-    const confirmLabel = this.confirmLabel ?? AdminI18n.t('ui.upload.install');
-    const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
-    const isLoading = this.isLoading ?? false;
-
-    if (!this.isOpen) return null;
-
     return (
-    <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300"
-          onClick={onClose}
-        />
-
-        <div className={`relative w-full max-w-2xl my-auto ${AdminClass.SURFACE} p-5 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8 duration-300`}>
-          <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-lg flex-shrink-0 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-              <FrameworkIcons.Warning size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white">
-                {title}
-              </h3>
-              {description ? (
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                  {description}
-                </p>
-              ) : null}
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1 rounded-lg transition-colors hover:bg-slate-50 text-slate-400 hover:text-slate-900 dark:hover:bg-slate-800 dark:text-slate-500 dark:hover:text-white"
-            >
-              <FrameworkIcons.Close size={20} />
-            </button>
-          </div>
-
-          <div className="mt-6 space-y-4 max-h-[45vh] overflow-auto pe-1">
-            {sections.map((section) => (
-              <div
-                key={section.title}
-                className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4"
-              >
-                <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {section.title}
-                </h4>
-                <ul className="mt-2 space-y-1.5">
-                  {section.items.length === 0 ? (
-                    <li className="text-sm text-slate-500 dark:text-slate-400">{AdminI18n.t('common.none')}</li>
-                  ) : (
-                    section.items.map((item, index) => (
-                      <li key={`${section.title}-${index}`} className="text-sm text-slate-700 dark:text-slate-200">
-                        {item}
-                      </li>
-                    ))
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="flex-1"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              {cancelLabel}
-            </Button>
-            <Button
-              variant={ButtonVariant.PRIMARY}
-              className="flex-1"
-              onClick={onConfirm}
-              isLoading={isLoading}
-            >
-              {confirmLabel}
-            </Button>
-          </div>
+      <EditSheet
+        isOpen={this.isOpen}
+        onClose={this.onClose}
+        title={this.title}
+        subtitle={this.description}
+        saving={this.isLoading ?? false}
+        foot={this.foot}
+      >
+        <div className="fc-upload-preview">
+          {this.sections.map((section) => (
+            <section key={section.title} className="fc-upload-preview__section">
+              <h4 className="fc-upload-preview__heading">{section.title}</h4>
+              <ul className="fc-upload-preview__list">
+                {section.items.length === 0
+                  ? <li className="fc-upload-preview__none">{AdminI18n.t('common.none')}</li>
+                  : section.items.map((item, index) => (
+                    <li key={`${section.title}-${index}`} className="fc-upload-preview__item">{item}</li>
+                  ))}
+              </ul>
+            </section>
+          ))}
         </div>
-      </div>
-    </RootFramework>
+      </EditSheet>
     );
   }
 }

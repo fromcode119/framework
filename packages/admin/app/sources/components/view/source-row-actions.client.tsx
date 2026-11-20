@@ -89,17 +89,17 @@ export class SourceRowActions extends PureReactor {
         <Button
           size={FieldSize.SM}
           variant={ButtonVariant.OUTLINE}
-          disabled={this.building}
+          isLoading={this.building}
           onClick={this.build}
-          icon={<Play size={12} className={this.building ? 'animate-spin' : ''} />}
+          icon={<Play size={12} />}
         >
           {this.building ? AdminI18n.t('sources.building') : AdminI18n.t('sources.build')}
         </Button>
         <Dropdown
           trigger={(
-            <button type="button" aria-label={AdminI18n.t('sources.moreActions')} className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-white">
+            <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('sources.moreActions')}>
               <FrameworkIcons.MoreVertical size={16} />
-            </button>
+            </Button>
           )}
           items={this.items}
         />

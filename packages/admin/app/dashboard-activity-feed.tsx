@@ -1,3 +1,6 @@
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { IconBadge } from '@/components/ui/view/icon-badge.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode } from 'react';
@@ -18,57 +21,24 @@ export class DashboardActivityFeed extends PureReactor {
   render(): ReactNode {
     const { activity, loadingActivity, hasMainContent, onViewAll } = this;
     return (
-      <Card noPadding className="overflow-hidden border-0 bg-white shadow-sm ring-1 ring-slate-100 dark:bg-transparent dark:shadow-none dark:ring-0">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
-           <div>
-            <h3 className="font-medium text-sm tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('dashboard.systemEvents')}</h3>
-            {/* Not "Real-time lifecycle telemetry": this list is a slice of one system-logs fetch made
-                on dashboard load, with no stream and no polling. */}
-            <p className="text-[12px] text-slate-400 mt-0.5">{AdminI18n.t('dashboard.systemEventsHint')}</p>
-           </div>
-           <Button
-             variant={ButtonVariant.GHOST}
-             size={FieldSize.SM}
-             onClick={onViewAll}
-             className="text-[12px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
-           >
-              {AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} className="ms-1.5 group-hover:translate-x-0.5 transition-transform" />
-           </Button>
-        </div>
-
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+      // Not "real-time telemetry": this list is a slice of one system-logs fetch made on dashboard
+      // load, with no stream and no polling — the subtitle says so.
+      <ListShell title={AdminI18n.t('dashboard.systemEvents')} subtitle={AdminI18n.t('dashboard.systemEventsHint')}
+        actions={<Button variant={ButtonVariant.GHOST} onClick={onViewAll}>{AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} /></Button>}>
+        <div>
           <Slot name="admin.dashboard.main" />
-
-          {!hasMainContent && activity.length > 0 && (
-            activity.slice(0, 7).map((item) => (
-              <div key={item.id} className="px-5 py-2.5 flex items-center gap-3 group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                <div className={`shrink-0 h-7 w-7 flex items-center justify-center rounded-lg ${
-                  item.level === 'ERROR' ? 'bg-rose-500 text-white' :
-                  item.level === 'WARN' ? 'bg-amber-500 text-white' :
-                  'bg-slate-100 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white dark:bg-slate-800 dark:text-indigo-400'
-                }`}>
-                  <FrameworkIcons.Terminal size={13} strokeWidth={2.5} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate text-slate-700 dark:text-slate-200">
-                    {item.title}
-                  </p>
-                  <span className="text-[12px] text-indigo-500 dark:text-indigo-400">
-                    {item.plugin && item.plugin !== 'system' ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
-                  </span>
-                </div>
-                <span className="shrink-0 text-[12px] tabular-nums text-slate-400">
-                  {new Date(item.timestamp).toLocaleTimeString(AdminI18n.locale, { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
-            )
-          ))}
-
-          {!hasMainContent && activity.length === 0 && !loadingActivity && (
-            <EmptyState icon={<FrameworkIcons.Search size={22} />} title={AdminI18n.t('dashboard.noTelemetry')} />
-          )}
+          {!hasMainContent && activity.length > 0 ? activity.slice(0, 7).map((item) => (
+            <ListRow
+              key={item.id}
+              icon={<IconBadge tone={item.level === 'ERROR' ? 'danger' : item.level === 'WARN' ? 'warning' : 'neutral'}><FrameworkIcons.Terminal size={14} /></IconBadge>}
+              title={<span className="fc-ext-row__plain">{item.title}</span>}
+              description={item.plugin && item.plugin !== 'system' ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
+              meta={new Date(item.timestamp).toLocaleTimeString(AdminI18n.locale, { hour: '2-digit', minute: '2-digit' })}
+            />
+          )) : null}
+          {!hasMainContent && activity.length === 0 && !loadingActivity ? <EmptyState inline icon={<FrameworkIcons.Search size={16} />} title={AdminI18n.t('dashboard.noTelemetry')} /> : null}
         </div>
-      </Card>
+      </ListShell>
     );
   }
 }

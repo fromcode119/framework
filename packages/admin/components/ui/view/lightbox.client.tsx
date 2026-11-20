@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import {Reactor, prop, state, bound, Platform} from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 export class Lightbox extends Reactor {
   @prop declare images: string[];
@@ -52,71 +55,41 @@ export class Lightbox extends Reactor {
     if (Platform.isBrowser) document.body.style.overflow = '';
   }
 
+  /**
+   * A picture over the whole console: a bar on top with what it is, where it is in the set and ✕, the
+   * picture in the middle, and ‹ › at the sides only when there is more than one. Every colour and size
+   * is a `fc-lightbox` rule in `admin.css`; the buttons are the console's own.
+   */
   render(): ReactNode {
     const { images, currentIndex, isOpen, onClose, title } = this;
-    const handlePrev = this.handlePrev;
-    const handleNext = this.handleNext;
-
     if (!isOpen || !this.mounted) return null;
+    const many = images.length > 1;
+    const stop = (e: { stopPropagation(): void }) => e.stopPropagation();
 
     return this.portal(
-    <div
-      className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/98 backdrop-blur-3xl animate-in fade-in duration-300"
-      onClick={onClose}
-    >
-      <div className="absolute inset-0 bg-slate-950/40" />
-
-      {/* Close Button */}
-      <button
-        className="absolute top-6 end-6 lg:top-10 lg:end-10 h-14 w-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all z-[110] border border-white/10 active:scale-90"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-      >
-        <FrameworkIcons.Close size={28} strokeWidth={2.5} />
-      </button>
-
-      {/* Navigation - Left */}
-      {images.length > 1 && (
-        <button
-          className="absolute start-6 lg:start-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
-          onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-        >
-          <FrameworkIcons.Left size={40} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" />
-        </button>
-      )}
-
-      {/* Navigation - Right */}
-      {images.length > 1 && (
-        <button
-          className="absolute end-6 lg:end-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
-          onClick={(e) => { e.stopPropagation(); handleNext(); }}
-        >
-          <FrameworkIcons.Right size={40} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
-        </button>
-      )}
-
-      {/* Main Image Container */}
-      <div className="relative w-full h-full flex flex-col items-center justify-center p-4 lg:p-10" onClick={(e) => e.stopPropagation()}>
-        <div className="relative flex flex-col items-center w-full max-w-7xl">
-          <img
-            src={images[currentIndex]}
-            alt={AdminI18n.t('ui.lightbox.image', { number: currentIndex + 1 })}
-            className="max-w-full max-h-[85vh] lg:max-h-[90vh] object-contain rounded-xl shadow-[0_80px_160px_-30px_rgba(0,0,0,0.7)] animate-in zoom-in-95 duration-700 ring-1 ring-white/20"
-          />
-
-          <div className="absolute -bottom-16 start-0 end-0 text-center space-y-1">
-             <p className="text-white text-[12px] font-medium tracking-widest drop-shadow-xl opacity-80">
-                {title || AdminI18n.t('ui.lightbox.title')}
-             </p>
-             {images.length > 1 && (
-               <p className="text-white/30 text-[12px] font-medium tracking-widest">
-                  {currentIndex + 1} / {images.length}
-               </p>
-             )}
-          </div>
+      <div className="fc-lightbox" role="dialog" aria-modal="true" aria-label={title || AdminI18n.t('ui.lightbox.title')} onClick={onClose}>
+        <div className="fc-lightbox__bar" onClick={stop}>
+          <span className="fc-lightbox__title">{title || AdminI18n.t('ui.lightbox.title')}</span>
+          {many ? <span className="fc-lightbox__count">{AdminI18n.t('ui.lightbox.image', { number: currentIndex + 1 })} / {images.length}</span> : null}
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={onClose}>
+            <FrameworkIcons.Close size={15} />
+          </Button>
         </div>
-      </div>
-    </div>,
-    document.body
+        <div className="fc-lightbox__stage">
+          {many ? (
+            <Button className="fc-lightbox__nav" variant={ButtonVariant.SECONDARY} size={FieldSize.ICON} aria-label={AdminI18n.t('ui.lightbox.previous')} onClick={(e: { stopPropagation(): void }) => { stop(e); this.handlePrev(); }}>
+              <FrameworkIcons.Left size={15} />
+            </Button>
+          ) : null}
+          <img className="fc-lightbox__image" src={images[currentIndex]} alt={AdminI18n.t('ui.lightbox.image', { number: currentIndex + 1 })} onClick={stop} />
+          {many ? (
+            <Button className="fc-lightbox__nav" variant={ButtonVariant.SECONDARY} size={FieldSize.ICON} aria-label={AdminI18n.t('ui.lightbox.next')} onClick={(e: { stopPropagation(): void }) => { stop(e); this.handleNext(); }}>
+              <FrameworkIcons.Right size={15} />
+            </Button>
+          ) : null}
+        </div>
+      </div>,
+      document.body,
     );
   }
 }

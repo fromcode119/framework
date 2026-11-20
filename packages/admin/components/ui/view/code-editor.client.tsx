@@ -23,7 +23,7 @@ export class CodeEditor extends AdminComponent {
 
     return (
     <div className={`rounded-lg border overflow-hidden transition-all ${
-      theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white shadow-sm'
+      'fc-tone-line fc-tone-surface'
     } ${className}`}>
       <Editor
         height={height}

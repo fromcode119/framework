@@ -162,6 +162,7 @@
       "reorderHandle": "Σύρετε για αλλαγή σειράς — ή εστιάστε και χρησιμοποιήστε τα βελάκια",
       "reorderEnable": "Εμφανίστε τη λίστα με τη δική της σειρά για να την αναδιατάξετε",
       "reorderFailed": "Δεν ήταν δυνατή η αποθήκευση της νέας σειράς",
+      "noMatch": "Τίποτα δεν ταιριάζει με την αναζήτηση ή τα φίλτρα.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Εισαγωγή του {{file}};",
@@ -234,7 +235,6 @@
       "editSection": "Επεξεργασία",
       "notFilledIn": "Δεν έχει συμπληρωθεί",
       "statusSection": "Κατάσταση",
-      "statusConfirm": "Αλλαγή κατάστασης σε «{{status}}»;",
       "recordSection": "Εγγραφή",
       "showJson": "Εμφάνιση ως JSON",
       "showForm": "Εμφάνιση ως φόρμα",
@@ -245,7 +245,8 @@
       "copied": "Αντιγράφηκε",
       "more": "Περισσότερα",
       "moreFields": "{{count}} πεδία",
-      "moreOneField": "{{count}} πεδίο"
+      "moreOneField": "{{count}} πεδίο",
+      "statusConfirm": "Αλλαγή κατάστασης σε «{{status}}»;"
     },
     "notFound": {
       "title": "Η συλλογή δεν βρέθηκε",
@@ -366,7 +367,8 @@
     "reset": "Επαναφορά",
     "notScheduledYet": "δεν έχει προγραμματιστεί ακόμη",
     "more": "Περισσότερες ενέργειες",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Κατάργηση"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Επιλογή χρώματος",
-      "colour": "Χρώμα",
-      "pick": "Επιλέξτε χρώμα",
       "hex": "Κωδικός Hex",
-      "confirm": "Επιβεβαίωση χρώματος",
       "notSet": "Δεν έχει οριστεί"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Εντοπίστηκαν ανενεργές εξαρτήσεις",
       "intro": "Για να ενεργοποιηθεί το {{plugin}}, πρέπει να γίνουν τα εξής:",
       "notInstalled": "ΔΕΝ ΕΧΕΙ ΕΓΚΑΤΑΣΤΑΘΕΙ",
+      "inactive": "ανενεργό",
+      "incompatible": "άλλη έκδοση",
       "requires": "Απαιτείται η έκδοση {{version}}. Μπορεί να ληφθεί από το marketplace.",
       "needsActivation": "Είναι ήδη εγκατεστημένο, αλλά πρέπει να ενεργοποιηθεί (Έκδοση {{version}}).",
       "mismatch": "Ασυμφωνία έκδοσης: απαιτείται {{expected}}, βρέθηκε {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Προεπισκόπηση πλατφόρμας",
-      "image": "Προεπισκόπηση {{number}}"
+      "image": "Προεπισκόπηση {{number}}",
+      "previous": "Προηγούμενο",
+      "next": "Επόμενο"
     },
     "menuField": {
       "newItem": "Νέο στοιχείο μενού",
-      "structure": "Δομή μενού",
-      "add": "Προσθήκη στοιχείου μενού"
+      "add": "Προσθήκη στοιχείου μενού",
+      "reorder": "Σύρετε για μετακίνηση· βέλη: πάνω και κάτω μετακίνηση, δεξιά ένθεση, αριστερά έξοδος"
     },
     "field": {
       "notSet": "Δεν έχει οριστεί",
@@ -461,8 +464,8 @@
       "record": "εγγραφή"
     },
     "array": {
-      "addNew": "Προσθήκη: {{label}}",
-      "item": "Στοιχείο"
+      "add": "Προσθήκη",
+      "reorder": "Σύρετε για μετακίνηση ή χρησιμοποιήστε τα βέλη"
     },
     "stepper": {
       "increment": "Αύξηση",
@@ -528,9 +531,7 @@
       "noContact": "Δεν υπάρχει email ή τηλέφωνο στα Άτομα",
       "hasLogin": "Διαθέτει σύνδεση",
       "noLogin": "Χωρίς σύνδεση",
-      "source": "Το όνομα, το email και το τηλέφωνο προέρχονται από το άτομο #{{id}} στα Άτομα· αλλάξτε τα εκεί.",
       "open": "Άνοιγμα στα Άτομα",
-      "choose": "Επιλογή άλλου ατόμου",
       "searchFailed": "Δεν ήταν δυνατή η αναζήτηση στα Άτομα αυτή τη στιγμή.",
       "noMatch": "Κανένα άτομο δεν ταιριάζει. Εισαγάγετε τα στοιχεία του παρακάτω· με την αποθήκευση θα προστεθεί στα Άτομα.",
       "ref": "Άτομα #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Άνοιγμα Ιστότοπων"
       }
     },
-    "relativeOverridesInheritTheCollection": "Οι σχετικές παρακάμψεις κληρονομούν το πρόθεμα της συλλογής. Ενεργοποιήστε την απόλυτη λειτουργία για να παρακάμψετε προθέματα όπως `/shop`.",
     "range": "Εύρος",
     "noDataForThisRange": "Δεν υπάρχουν δεδομένα για αυτό το εύρος",
     "peak": "· μέγιστο {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Φίλτρα",
       "clearFilters": "Εκκαθάριση όλων",
       "removeFilter": "Αφαίρεση του φίλτρου {{label}}",
-      "showResults": "Εμφάνιση {{count}} αποτελεσμάτων"
+      "showResults": "Εμφάνιση {{count}} αποτελεσμάτων",
+      "showResultsOne": "Εμφάνιση 1 αποτελέσματος"
     },
     "personFieldPicker": {
       "none": "Δεν αποθηκεύεται σε πεδίο ατόμου",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Τα όρια sandbox για το {{name}} αποθηκεύτηκαν, αλλά η διεργασία του απέτυχε να επανεκκινήσει με αυτά: {{value}}",
       "restartRequired": "Απαιτείται επανεκκίνηση",
       "sandboxSettingsForWereSaved": "Οι ρυθμίσεις sandbox για το {{name}} αποθηκεύτηκαν, αλλά απαιτείται επανεκκίνηση του API για να τεθούν σε ισχύ.",
-      "resourcesUpdated": "Οι πόροι ενημερώθηκαν",
-      "sandboxLimitsForUpdated": "Τα όρια sandbox για το {{name}} ενημερώθηκαν.",
       "sandboxDisabledFor": "Το sandbox απενεργοποιήθηκε για το {{name}}.",
       "saveFailed": "Η αποθήκευση απέτυχε",
       "failedToUpdateSandboxLimits": "Αποτυχία ενημέρωσης των ορίων sandbox.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Αδρανές. Δεν έχουν καταγραφεί πρόσφατα συμβάντα.",
       "updating": "Ενημέρωση...",
       "updateAvailable": "Διαθέσιμη ενημέρωση",
-      "updatePolicy": "Πολιτική ενημερώσεων",
       "saveChanges": "Αποθήκευση αλλαγών",
       "unsavedChanges": "Μη αποθηκευμένες αλλαγές",
       "exportSettingsAsJson": "Εξαγωγή ρυθμίσεων ως JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Νέα στην v{{version}}",
       "installedVersion": "Εγκατεστημένη {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "Αποθήκευση...",
       "saveSettings": "Αποθήκευση ρυθμίσεων",
       "viewDefinition": "Προβολή ορισμού",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Εμφάνιση",
       "failedToLoadAppearances": "Αποτυχία φόρτωσης εμφανίσεων",
       "failedToSaveShadowSetting": "Αποτυχία αποθήκευσης ρύθμισης σκιών",
+      "failedToSaveMenuSetting": "Η ρύθμιση του μενού δεν αποθηκεύτηκε",
       "switchedToReloading": "Έγινε αλλαγή σε \"{{slug}}\". Επαναφόρτωση…",
       "failedToSwitchAppearance": "Αποτυχία αλλαγής εμφάνισης",
       "installFailed": "Η εγκατάσταση απέτυχε",
@@ -1919,6 +1917,8 @@
       "install": "Εγκατάσταση",
       "surfaceShadows": "Σκιές επιφανειών",
       "depthOnPanelsDialogsAnd": "Βάθος σε πάνελ, παράθυρα διαλόγου και κουμπιά. Απενεργοποιήστε το για επίπεδη διαχείριση — τα περιγράμματα και οι γωνίες μένουν ακριβώς ως έχουν.",
+      "secondMenuColumn": "Δεύτερη στήλη μενού",
+      "sectionPagesBesideTheMenu": "Οι σελίδες μιας ενότητας στέκονται σε στήλη δίπλα στο μενού. Απενεργοποιημένη, ανοίγουν κάτω από τη γραμμή τους στο ένα μενού και κάθε οθόνη κερδίζει 220px.",
       "installFromAPackageUrl": "Εγκατάσταση από URL πακέτου",
       "builtIn": "Ενσωματωμένο",
       "installed": "Εγκατεστημένο",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Η τοποθεσία IP δεν ενημερώθηκε",
       "geoUnavailable": "Η κατάσταση της τοποθεσίας IP δεν είναι διαθέσιμη",
       "geoAttribution": "Γεωεντοπισμός IP από {{name}} ({{license}}). Ενημερώνεται μηνιαίως όσο είναι ενεργός.",
-      "geoSaved": "Αποθηκεύτηκε",
-      "geoSavedOn": "Γίνεται λήψη της βάσης δεδομένων· έχει μέγεθος περίπου 60 MB.",
-      "geoSavedOff": "Η βάση δεδομένων αφαιρέθηκε από τον διακομιστή.",
       "everyPluginRunsIsolated": "Απομονωμένα: κάθε πρόσθετο εκτελείται στη δική του διεργασία. Το όριο μνήμης και η προθεσμία ισχύουν για όλα τα πρόσθετα· το μερίδιο CPU, η συνολική μνήμη, ο δίσκος και οι διεργασίες ισχύουν μόνο για πρόσθετα που ανέβασε κάποιος ιστότοπος.",
       "schemaOrphans": "Σχήμα βάσης δεδομένων",
       "schemaOrphansHelp": "Στήλες που υπάρχουν ακόμη στη βάση δεδομένων αλλά δεν δηλώνονται πλέον από κανένα στοιχείο. Η πλατφόρμα απλώς τις εμφανίζει· τίποτα δεν διαγράφεται χωρίς τη δική σας απόφαση, και μια στήλη που διαγράφεται δεν μπορεί να επανέλθει.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Απενεργοποιημένο — το endpoint απαντά 403 σε όλους.",
       "mediaPayloadLimitMb": "Όριο μεγέθους πολυμέσων (MB)",
       "maximumDecodedUploadOrRemote": "Μέγιστο μέγεθος αποκωδικοποιημένης μεταφόρτωσης ή απομακρυσμένης λήψης που δέχονται τα εργαλεία πολυμέσων του MCP.",
-      "saveLimit": "Αποθήκευση ορίου",
       "allSites": "όλοι οι ιστότοποι",
       "issuedBeforeSites": "εκδόθηκε πριν από τους ιστοτόπους",
       "noTokensYet": "Δεν υπάρχουν ακόμη tokens.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Προεπιλογή πλατφόρμας",
       "thisSite": "Αυτός ο ιστότοπος",
       "inForceNow": "Σε ισχύ τώρα",
-      "saving": "Αποθήκευση…",
-      "savePolicy": "Αποθήκευση πολιτικής",
       "thePlatformDefaultIsSet": "Η προεπιλογή της πλατφόρμας ορίζεται από διαχειριστή πλατφόρμας.",
       "useTheLayerBelow": "Χρήση του κατώτερου επιπέδου",
       "whyTheLawRequiresThese": "Γιατί ο νόμος απαιτεί τη διατήρηση αυτών των εγγραφών",
-      "inheritsThePlatformDefault": "κληρονομεί: την προεπιλογή της πλατφόρμας"
+      "inheritsThePlatformDefault": "κληρονομεί: την προεπιλογή της πλατφόρμας",
+      "strategyDelete": "Διαγραφή",
+      "strategyAnonymise": "Ανωνυμοποίηση",
+      "strategyRetain": "Διατήρηση",
+      "declaredBy": "Προεπιλογή που δηλώνει το {{plugin}}",
+      "inheritsValue": "κληρονομεί: {{value}}",
+      "legalBasis": "Νομική βάση",
+      "theSiteColumnIsSet": "Η στήλη «Αυτός ο ιστότοπος» ορίζεται μέσα σε έναν ιστότοπο. Επιλέξτε ιστότοπο από τον επιλογέα για να την αλλάξετε."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Εμφανιζόμενο όνομα",
     "thisPersonHasALogin": "Αυτό το άτομο έχει λογαριασμό σύνδεσης· το email του αλλάζει από τον λογαριασμό.",
     "birthDate": "Ημερομηνία γέννησης",
-    "saveChanges": "Αποθήκευση αλλαγών",
     "sendPasswordResetEmail": "Αποστολή email επαναφοράς κωδικού",
     "cancel": "Άκυρο",
     "accountManagement": "Διαχείριση λογαριασμού",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Αντιγράψτε τους κωδικούς ανάκτησης χειροκίνητα.",
     "nameRequired": "Απαιτείται όνομα",
     "enterATokenNameFirst": "Εισαγάγετε πρώτα ένα όνομα token.",
-    "tokenCreated": "Το token δημιουργήθηκε",
     "copyTheTokenNowIt": "Αντιγράψτε το token τώρα. Εμφανίζεται μόνο μία φορά.",
     "failedToCreateApiToken": "Αποτυχία δημιουργίας API token",
     "areYouSureYouWant2": "Θέλετε σίγουρα να απενεργοποιήσετε το 2FA για αυτόν τον χρήστη; Αυτό θα μειώσει την ασφάλεια του λογαριασμού.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Η συνεδρία ανακλήθηκε",
     "deviceSessionRevokedSuccessfully": "Η συνεδρία της συσκευής ανακλήθηκε με επιτυχία.",
     "failedToRevokeSession": "Αποτυχία ανάκλησης συνεδρίας",
-    "rolesUpdated": "Οι ρόλοι ενημερώθηκαν",
-    "theUserSRolesWere": "Οι ρόλοι του χρήστη αποθηκεύτηκαν.",
     "saveFailed": "Αποτυχία αποθήκευσης",
     "failedToSaveRoles": "Αποτυχία αποθήκευσης ρόλων.",
     "loadingRoles": "Φόρτωση ρόλων",
@@ -3448,8 +3445,6 @@
     "remove": "Αφαίρεση",
     "loadFailed": "Αποτυχία φόρτωσης",
     "couldNotRetrieveRoleDetails": "Δεν ήταν δυνατή η ανάκτηση των στοιχείων του ρόλου.",
-    "roleUpdated": "Ο ρόλος ενημερώθηκε",
-    "wasSaved": "Το «{{name}}» αποθηκεύτηκε.",
     "updateFailed": "Αποτυχία ενημέρωσης",
     "anErrorOccurredWhileSaving": "Παρουσιάστηκε σφάλμα κατά την αποθήκευση.",
     "loadingRole": "Φόρτωση ρόλου...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Επιστροφή στους χρήστες",
     "selfServiceSecurityControls": "Έλεγχοι ασφαλείας αυτοεξυπηρέτησης",
     "sessionDeviceControlsAndPersonal": "Οι έλεγχοι περιόδων σύνδεσης/συσκευών και τα προσωπικά API tokens είναι διαθέσιμα μόνο όταν βλέπετε τον δικό σας λογαριασμό χρήστη.",
-    "securityRecommendations": "Συστάσεις ασφαλείας",
     "twoFactorAuthentication": "Έλεγχος ταυτότητας δύο παραγόντων",
-    "activeAndProtectingThisAccount": "Ενεργός και προστατεύει αυτόν τον λογαριασμό",
-    "notEnabledHighlyRecommendedFor": "Μη ενεργός - συνιστάται ιδιαίτερα για λογαριασμούς διαχειριστή",
-    "passwordProtected": "Προστασία με κωδικό πρόσβασης",
-    "accountHasASecurePassword": "Ο λογαριασμός έχει ασφαλή κωδικό πρόσβασης",
-    "administratorAccess": "Πρόσβαση διαχειριστή",
     "fullSystemAccess2faStrongly": "Πλήρης πρόσβαση στο σύστημα - συνιστάται ανεπιφύλακτα το 2FA",
     "personalApiTokens": "Προσωπικά API tokens",
     "tokenNameEGCi": "Όνομα token (π.χ. CI deploy)",
     "days": "Ημέρες",
     "createToken": "Δημιουργία token",
-    "copyNowShownOnce": "Αντιγράψτε τώρα (εμφανίζεται μία φορά)",
     "loadingApiTokens": "Φόρτωση API tokens...",
     "noApiTokensCreatedYet": "Δεν έχουν δημιουργηθεί ακόμη API tokens.",
     "revoke": "Ανάκληση",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Δραστηριότητα σύνδεσης και περιόδων σύνδεσης",
     "loadingAuthActivity": "Φόρτωση δραστηριότητας ελέγχου ταυτότητας...",
     "noRecentLoginSessionEvents": "Δεν υπάρχουν πρόσφατα συμβάντα σύνδεσης/περιόδων σύνδεσης για αυτόν τον χρήστη.",
-    "unknownTime": "Άγνωστη ώρα",
-    "activityEvent": "Συμβάν δραστηριότητας",
     "openFullGlobalActivity": "Άνοιγμα πλήρους γενικής δραστηριότητας",
-    "2faStatus": "Κατάσταση 2FA",
     "addAnExtraLayerOf": "Προσθέστε ένα επιπλέον επίπεδο ασφαλείας με έλεγχο ταυτότητας μέσω εφαρμογής (TOTP)",
-    "recommended": "Συνιστάται",
     "enableTwoFactorAuthenticationTo": "Ενεργοποιήστε τον έλεγχο ταυτότητας δύο παραγόντων για να προστατεύσετε αυτόν τον λογαριασμό με χρονικά βασισμένους κωδικούς μίας χρήσης (TOTP).",
     "enable2fa": "Ενεργοποίηση 2FA",
     "step1ScanQrCode": "Βήμα 1: Σαρώστε τον κωδικό QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Βήμα 2: Επαλήθευση κωδικού",
     "enterThe6DigitCode": "Εισαγάγετε τον 6ψήφιο κωδικό από την εφαρμογή ελέγχου ταυτότητας για να ολοκληρώσετε τη ρύθμιση:",
     "verifyEnable": "Επαλήθευση και ενεργοποίηση",
-    "protectionActive": "Η προστασία είναι ενεργή",
     "thisAccountRequiresA6": "Αυτός ο λογαριασμός απαιτεί 6ψήφιο κωδικό από εφαρμογή ελέγχου ταυτότητας κατά τη σύνδεση.",
     "regenerateRecoveryCodes": "Αναδημιουργία κωδικών ανάκτησης",
     "disable2fa": "Απενεργοποίηση 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Ανάκληση άλλων περιόδων σύνδεσης",
     "loadingSessions": "Φόρτωση περιόδων σύνδεσης...",
     "noActiveSessions": "Δεν υπάρχουν ενεργές περίοδοι σύνδεσης.",
-    "currentSession": "Τρέχουσα περίοδος σύνδεσης",
-    "deviceSession": "Περίοδος σύνδεσης συσκευής",
     "current": "Τρέχουσα",
     "unknownDevice": "Άγνωστη συσκευή",
     "editAccount2": "Επεξεργασία λογαριασμού",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Άνοιγμα εγγραφής χρήστη",
     "token": "Token",
     "createdOn": "Δημιουργήθηκε {{date}}",
-    "notAvailable": "μ/δ",
     "revokedOn": "Ανακλήθηκε {{date}}",
     "recoveryCodesRemaining": "Κωδικοί ανάκτησης που απομένουν:",
-    "unknownValue": "άγνωστο",
     "expiresOn": "Λήγει: {{date}}",
     "person2": "Άτομο",
     "added": "Προστέθηκε",
@@ -3591,12 +3570,10 @@
       "loading": "Φόρτωση πεδίων ατόμων…",
       "loadFailed": "Δεν ήταν δυνατή η φόρτωση των πεδίων ατόμων.",
       "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των πεδίων.",
-      "saved": "Τα πεδία αποθηκεύτηκαν.",
       "empty": "Δεν υπάρχουν ακόμη πεδία ατόμων. Προσθέστε ένα για να αρχίσει να καταγράφεται για κάθε άτομο.",
       "noneDeclared": "Αυτός ο ιστότοπος δεν έχει ακόμη πεδία ατόμων.",
       "declare": "Προσθήκη πεδίων ατόμων",
       "manage": "Διαχείριση πεδίων",
-      "save": "Αποθήκευση πεδίων",
       "saveField": "Αποθήκευση πεδίου",
       "delete": "Διαγραφή",
       "deleteTitle": "Διαγραφή αυτού του πεδίου;",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Ισχύει για (ημέρες)",
+    "revokeOtherSessionsConfirm": "Όλες οι άλλες συσκευές αποσυνδέονται αμέσως.",
+    "revokeSessionConfirm": "Αυτή η συσκευή αποσυνδέεται αμέσως.",
+    "revokeCurrentSessionConfirm": "Αυτή είναι η συσκευή που χρησιμοποιείτε τώρα. Αποσυνδέεστε αμέσως.",
+    "revokeTokenConfirm": "Το «{{name}}» σταματά να λειτουργεί αμέσως.",
+    "twoFactorTurnedOff": "Η σύνδεση δύο παραγόντων είναι απενεργοποιημένη για αυτόν τον ιστότοπο, οπότε δεν μπορεί να ρυθμιστεί εδώ.",
+    "openSecuritySettings": "Άνοιγμα ρυθμίσεων ασφαλείας"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Οι ρυθμίσεις ιστοτόπου ({{what}}) ορίζονται μέσα σε κάθε ιστότοπο — επιλέξτε έναν από το μενού ιστοτόπων.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Δεν ήταν δυνατό το άνοιγμα αυτού του ιστότοπου για προεπισκόπηση.",
     "couldNotLoadTheSite": "Δεν ήταν δυνατή η φόρτωση του ιστότοπου.",
     "couldNotReloadThePlugin": "Δεν ήταν δυνατή η επαναφόρτωση της λίστας πρόσθετων.",
-    "siteSaved": "Ο ιστότοπος αποθηκεύτηκε",
-    "routingFollowsImmediatelyNoRestart": "Η δρομολόγηση ενημερώνεται αμέσως — χωρίς επανεκκίνηση.",
     "notSaved": "Δεν αποθηκεύτηκε",
     "theSiteCouldNotBe2": "Δεν ήταν δυνατή η αποθήκευση του ιστότοπου.",
     "couldNotOpenTheSite": "Δεν ήταν δυνατό το άνοιγμα του ιστότοπου",
@@ -3789,7 +3771,6 @@
     "visit": "Επίσκεψη",
     "openThisSite": "Άνοιγμα αυτού του ιστότοπου",
     "export": "Εξαγωγή",
-    "save": "Αποθήκευση",
     "couldNotLoadCertificates": "Δεν ήταν δυνατή η φόρτωση των πιστοποιητικών.",
     "couldNotSwitchThisHost": "Δεν ήταν δυνατή η μετάβαση αυτού του host σε αυτόματη λειτουργία.",
     "couldNotSwitchThisHost2": "Δεν ήταν δυνατή η μετάβαση αυτού του host σε αυτόματη λειτουργία (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Διαθέσιμη ενημέρωση",
     "isNowActive": "Το {{name}} είναι πλέον ενεργό.",
     "themeHasBeenUpdated2": "Το θέμα {{name}} ενημερώθηκε.",
-    "configurationSaved": "Οι ρυθμίσεις αποθηκεύτηκαν",
-    "visualProtocolsUpdatedSuccessfully": "Οι οπτικές ρυθμίσεις ενημερώθηκαν επιτυχώς.",
     "saveFailed": "Αποτυχία αποθήκευσης",
     "hasBeenRemoved2": "Το {{name}} αφαιρέθηκε.",
     "seedsExecuted": "Τα δεδομένα αρχικοποίησης εκτελέστηκαν",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Διάταξη",
     "extensionsSection": "Επεκτάσεις",
     "versionReady": "Η έκδοση {{version}} είναι έτοιμη",
-    "saveChanges": "Αποθήκευση αλλαγών",
     "runSeedsHint": "Εισάγει ξανά τα αρχικά δεδομένα του θέματος —τα δείγματα σελίδων και το περιεχόμενό του— σε αυτόν τον ιστότοπο.",
     "resetThemeHint": "Διαγράφει τις αποθηκευμένες ρυθμίσεις θέματος αυτού του ιστότοπου και εισάγει ξανά τα αρχικά δεδομένα.",
     "notActiveHint": "Αυτός ο ιστότοπος χρησιμοποιεί άλλο θέμα.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Τι άλλαξε στην v{{version}}",
     "whatChanged": "Τι άλλαξε",
-    "closeBuildSourceDialog": "Κλείσιμο παραθύρου πηγής build",
-    "close": "Κλείσιμο",
     "couldNotInstallThatVersion": "Δεν ήταν δυνατή η εγκατάσταση αυτής της έκδοσης.",
     "couldNotChangeAutomaticUpdating": "Δεν ήταν δυνατή η αλλαγή της αυτόματης ενημέρωσης.",
     "failed": "Απέτυχε",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Τα αυτόματα πιστοποιητικά είναι απενεργοποιημένα. {{reason}}",
     "automaticCertificatesComeFrom": "Τα αυτόματα πιστοποιητικά εκδίδονται από {{authority}}.",
     "noSecretKeyIsConfigured": "Δεν έχει ρυθμιστεί SECRET_KEY σε αυτόν τον διακομιστή, επομένως δεν μπορεί να αποθηκευτεί ιδιωτικό κλειδί. Η αποστολή είναι απενεργοποιημένη μέχρι να οριστεί.",
-    "nothingToSavePasteA": "Δεν υπάρχει τίποτα για αποθήκευση — επικολλήστε ένα token ή χρησιμοποιήστε την Εκκαθάριση για να αφαιρέσετε το αποθηκευμένο.",
     "savedThisSiteNowUses": "Αποθηκεύτηκε. Αυτός ο ιστότοπος χρησιμοποιεί πλέον δικό του token Cloudflare.",
     "removedThisSiteFallsBack": "Αφαιρέθηκε. Αυτός ο ιστότοπος επιστρέφει στο token της πλατφόρμας.",
     "couldNotSaveTheToken": "Δεν ήταν δυνατή η αποθήκευση του token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token αυτού του ιστότοπου",
     "savedLeaveBlankToKeep": "Αποθηκευμένο — αφήστε κενό για διατήρηση ή χρησιμοποιήστε την Εκκαθάριση για αφαίρεση",
     "pasteACloudflareApiToken": "Επικολλήστε ένα token API Cloudflare",
-    "save": "Αποθήκευση",
     "clear": "Εκκαθάριση",
     "nothingStoredThisHostCannot": "Δεν υπάρχει αποθηκευμένο — αυτός ο host δεν μπορεί να εξυπηρετηθεί μέσω HTTPS από αυτή την πλατφόρμα.",
     "nothingStoredHereTlsFor": "Δεν υπάρχει αποθηκευμένο εδώ — το TLS για αυτόν τον host τερματίζεται πριν από την πλατφόρμα, οπότε το πιστοποιητικό του βρίσκεται εκεί.",
@@ -4706,36 +4680,26 @@
     "roles": "Ρόλοι",
     "permissions": "Δικαιώματα",
     "eventDetails": "Λεπτομέρειες συμβάντος",
-    "context": "Πλαίσιο",
     "resource": "Πόρος",
     "system": "Σύστημα",
     "timestamp": "Χρονική σήμανση",
-    "authority": "Αρχή",
-    "actorId": "ID ενεργούντος",
-    "type": "Τύπος",
-    "systemLog": "Αρχείο συστήματος",
-    "audit": "Έλεγχος: {{status}}",
-    "activityMessage": "Μήνυμα δραστηριότητας",
-    "actionTaken": "Ενέργεια που εκτελέστηκε",
-    "resourcePool": "Ομάδα πόρων",
-    "rawMetadata": "Ακατέργαστα μεταδεδομένα",
     "thisEntryIsPartOf": "Αυτή η εγγραφή αποτελεί μέρος ενός αμετάβλητου ίχνους ελέγχου.",
     "exportJson": "Εξαγωγή JSON",
     "event": "Συμβάν",
     "actor": "Ενεργών",
+    "plugin": "Πρόσθετο",
     "activity": "Δραστηριότητα",
     "status": "Κατάσταση",
     "action": "Ενέργεια",
     "time": "Ώρα",
-    "logSignature": "Υπογραφή καταγραφής: {{id}}",
     "internal": "ΕΣΩΤΕΡΙΚΟ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Εγγραφή #{{id}}",
+    "recordedData": "Καταγεγραμμένα δεδομένα"
   },
   "mediaPicker": {
     "showingOnly": "Εμφάνιση μόνο: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Εργασία",
       "schedule": "Εκτελείται",
       "lastRun": "Τελευταία εκτέλεση",
-      "nextRun": "Επόμενη εκτέλεση"
+      "nextRun": "Επόμενη εκτέλεση",
+      "duration": "Διάρκεια"
     },
     "ownedBy": "{{owner}}",
     "platform": "Πλατφόρμα",

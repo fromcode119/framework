@@ -27,7 +27,7 @@ vi.mock('@fromcode119/react', async () => {
     Slot: ({ children }: any) => <div>{children}</div>,
     FrameworkIcons: {
       Alert: MockIcon, Refresh: MockIcon, Lock: MockIcon, Check: MockIcon,
-      Globe: MockIcon, Down: MockIcon, Close: MockIcon,
+      Globe: MockIcon, ChevronDown: MockIcon, Close: MockIcon,
     },
   };
 });

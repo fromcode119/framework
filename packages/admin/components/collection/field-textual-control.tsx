@@ -79,7 +79,7 @@ export class FieldTextualControl extends PureReactor {
               }
             }}
             disabled={isFieldReadOnly}
-            inputClassName={`font-mono text-[12px] ${switcher ? 'pr-16' : ''}`}
+            inputClassName={`font-mono fc-size-xs ${switcher ? 'pr-16' : ''}`}
           />
           {switcher && (
             <div className="absolute end-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>

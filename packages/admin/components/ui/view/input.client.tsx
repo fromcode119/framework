@@ -3,6 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react';
 import { PureReactor, prop, ref } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { UiFieldUtils } from '@/lib/ui';
+import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
 
 export class Input extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -42,35 +43,29 @@ export class Input extends PureReactor {
     const inputClassName = this.inputClassName ?? '';
     const size = this.size ?? FieldSize.MD;
     const error = this.error;
+    const id = this.rest.id;
 
-    const input = (
-      <input
-        ref={this.elementRef}
-        {...this.rest}
-        value={this.normalizedValue}
-        className={`${UiFieldUtils.getFieldClasses(size, inputClassName)}
-          ${error ? '!border-rose-500 focus:!border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
-      />
-    );
-
-    // The label wraps the field, so clicking it focuses the field and a screen reader names the field by it.
-    // Beside it, with no id between them, the label belonged to nothing.
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {this.label ? (
-          <label className="fc-field-stack">
-            <span className={UiFieldUtils.TEXT.LABEL}>{this.label}</span>
-            {input}
+        {/* The label names the field for a screen reader and focuses it on a click: by `htmlFor` when the
+            caller gave the field an id, otherwise by naming the field itself (no generated id, so the
+            server and the browser render the same markup). */}
+        {this.label && (
+          <label className={UiFieldUtils.TEXT.LABEL} htmlFor={id} onClick={id ? undefined : () => this.focus()}>
+            {this.label}
           </label>
-        ) : input}
-        {error && (
-          <div className="flex items-center gap-2 px-1 animate-fade-in-up">
-            <span className={UiFieldUtils.TEXT.ERROR}>
-              {error}
-            </span>
-            <div className="h-px flex-1 bg-gradient-to-r from-rose-500/20 to-transparent" />
-          </div>
         )}
+        <div className="fc-field-wrap">
+          <input
+            ref={this.elementRef}
+            {...this.rest}
+            value={this.normalizedValue}
+            aria-label={!id && this.label && !this.rest['aria-label'] ? this.label : this.rest['aria-label']}
+            aria-invalid={error ? true : undefined}
+            className={`${UiFieldUtils.getFieldClasses(size, inputClassName)} ${error ? 'fc-field--error' : ''}`}
+          />
+          {error ? <FieldErrorMark message={error} /> : null}
+        </div>
       </div>
     );
   }

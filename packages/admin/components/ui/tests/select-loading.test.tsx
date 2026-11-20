@@ -26,7 +26,7 @@ describe('Select isLoading', () => {
     render(<Select value="" onChange={() => {}} options={[{ label: 'One', value: '1' }]} placeholder="Pick" />);
     expect(screen.getByTestId('chevron')).toBeTruthy();
     expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false);
-    expect(document.querySelector('.animate-spin')).toBeNull();
+    expect(document.querySelector('.fc-spinner')).toBeNull();
   });
 
   it('replaces the chevron and refuses to open while the options are loading', () => {
@@ -36,6 +36,6 @@ describe('Select isLoading', () => {
     expect((trigger as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(trigger);
     expect(screen.queryByText('Pick')).toBeTruthy();
-    expect(document.querySelector('.animate-spin')).toBeTruthy();
+    expect(document.querySelector('.fc-spinner')).toBeTruthy();
   });
 });

@@ -162,6 +162,7 @@
       "reorderHandle": "Kaxkar biex tirranġa mill-ġdid — jew iffoka u uża l-vleġeġ tat-tastiera",
       "reorderEnable": "Uri l-lista fl-ordni tagħha stess biex tirranġaha mill-ġdid",
       "reorderFailed": "L-ordni l-ġdida ma setgħetx tiġi ssejvjata",
+      "noMatch": "Xejn ma jaqbel mat-tfittxija jew mal-filtri tiegħek.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Timporta {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Editja",
       "notFilledIn": "Mhux mimli",
       "statusSection": "Status",
-      "statusConfirm": "Tibdel l-istatus għal “{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Uri bħala JSON",
       "showForm": "Uri bħala formola",
@@ -245,7 +245,8 @@
       "copied": "Ikkopjat",
       "more": "Aktar",
       "moreFields": "{{count}} oqsma",
-      "moreOneField": "{{count}} qasam"
+      "moreOneField": "{{count}} qasam",
+      "statusConfirm": "Tibdel l-istatus għal “{{status}}”?"
     },
     "notFound": {
       "title": "Il-Kollezzjoni Ma Nstabitx",
@@ -366,7 +367,8 @@
     "reset": "Irrisettja",
     "notScheduledYet": "għadu mhux skedat",
     "more": "Aktar azzjonijiet",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Neħħi"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Agħżel kulur",
-      "colour": "Kulur",
-      "pick": "Agħżel kulur",
       "hex": "Kodiċi Hex",
-      "confirm": "Ikkonferma l-Kulur",
       "notSet": "Mhux issettjat"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Instabu Dipendenzi Inattivi",
       "intro": "Biex tixgħel {{plugin}}, irridu nieħdu ħsieb dan li ġej:",
       "notInstalled": "MHUX INSTALLAT",
+      "inactive": "mitfi",
+      "incompatible": "verżjoni oħra",
       "requires": "Jeħtieġ il-verżjoni {{version}}. Nistgħu nniżżluh mill-marketplace.",
       "needsActivation": "Diġà installat iżda jeħtieġ li jiġi attivat (Verżjoni {{version}}).",
       "mismatch": "Il-verżjoni ma taqbilx: jeħtieġ {{expected}}, instab {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Previżjoni tal-Pjattaforma",
-      "image": "Previżjoni {{number}}"
+      "image": "Previżjoni {{number}}",
+      "previous": "Ta' qabel",
+      "next": "Li jmiss"
     },
     "menuField": {
       "newItem": "Element Ġdid tal-Menu",
-      "structure": "Struttura tal-Menu",
-      "add": "Żid Element tal-Menu"
+      "add": "Żid Element tal-Menu",
+      "reorder": "Kaxkar biex iċċaqlaq; vleġeġ: fuq u isfel biex iċċaqlaq, lemin biex idaħħal taħt, xellug biex toħroġ"
     },
     "field": {
       "notSet": "Mhux issettjat",
@@ -461,8 +464,8 @@
       "record": "rekord"
     },
     "array": {
-      "addNew": "Żid {{label}} Ġdid",
-      "item": "Element"
+      "add": "Żid",
+      "reorder": "Kaxkar biex iċċaqlaq, jew uża l-vleġeġ"
     },
     "stepper": {
       "increment": "Żid",
@@ -528,9 +531,7 @@
       "noContact": "L-ebda email jew telefon f'People",
       "hasLogin": "Għandu login",
       "noLogin": "L-ebda login",
-      "source": "L-isem, l-email u t-telefon ġejjin minn People #{{id}}; ibdilhom hemmhekk.",
       "open": "Iftaħ f'People",
-      "choose": "Agħżel persuna oħra",
       "searchFailed": "Ma setax isir tfittxija f'People bħalissa.",
       "noMatch": "Ħadd f'People ma jaqbel. Daħħal id-dettalji hawn taħt; meta tissejvja, il-persuna tiżdied ma' People.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Iftaħ is-Siti"
       }
     },
-    "relativeOverridesInheritTheCollection": "L-overrides relattivi jirtu l-prefiss tal-kollezzjoni. Ixgħel il-modalità assoluta biex taqbeż prefissi bħal `/shop`.",
     "range": "Medda",
     "noDataForThisRange": "L-ebda data għal din il-medda",
     "peak": "· quċċata {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtri",
       "clearFilters": "Ħassar kollox",
       "removeFilter": "Neħħi l-filtru {{label}}",
-      "showResults": "Uri {{count}} riżultat"
+      "showResults": "Uri {{count}} riżultat",
+      "showResultsOne": "Uri riżultat wieħed"
     },
     "personFieldPicker": {
       "none": "Mhux issejvjat f'qasam ta' persuna",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Il-limiti tas-sandbox għal {{name}} ġew issejvjati, iżda l-proċess tiegħu ma rnexxilux jerġa' jibda bihom: {{value}}",
       "restartRequired": "Meħtieġ Startjar mill-Ġdid",
       "sandboxSettingsForWereSaved": "Is-settings tas-sandbox għal {{name}} ġew issejvjati, iżda l-API trid terġa' tibda qabel ma jidħlu fis-seħħ.",
-      "resourcesUpdated": "Ir-Riżorsi Ġew Aġġornati",
-      "sandboxLimitsForUpdated": "Il-limiti tas-sandbox għal {{name}} ġew aġġornati.",
       "sandboxDisabledFor": "Is-sandbox ġiet diżattivata għal {{name}}.",
       "saveFailed": "Is-Salvataġġ Falla",
       "failedToUpdateSandboxLimits": "Il-limiti tas-sandbox ma setgħux jiġu aġġornati.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inattiv. L-ebda avveniment riċenti ma ġie rreġistrat.",
       "updating": "Qed jiġi aġġornat...",
       "updateAvailable": "Aġġornament Disponibbli",
-      "updatePolicy": "Politika tal-Aġġornamenti",
       "saveChanges": "Issejvja l-Bidliet",
       "unsavedChanges": "Bidliet mhux issejvjati",
       "exportSettingsAsJson": "Esporta s-settings bħala JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Ġdid f'v{{version}}",
       "installedVersion": "Installat {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "Qed jissejvja...",
       "saveSettings": "Issejvja s-Settings",
       "viewDefinition": "Ara d-Definizzjoni",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Dehra",
       "failedToLoadAppearances": "Id-dehriet ma setgħux jitgħabbew",
       "failedToSaveShadowSetting": "L-issettjar tad-dellijiet ma setax jiġi ssejvjat",
+      "failedToSaveMenuSetting": "L-issettjar tal-menu ma ġiex issejvjat",
       "switchedToReloading": "Inbidel għal \"{{slug}}\". Qed jerġa' jitgħabba…",
       "failedToSwitchAppearance": "Id-dehra ma setgħetx tinbidel",
       "installFailed": "L-installazzjoni falliet",
@@ -1919,6 +1917,8 @@
       "install": "Installa",
       "surfaceShadows": "Dellijiet tal-uċuħ",
       "depthOnPanelsDialogsAnd": "Fond fuq il-pannelli, id-djalogi u l-buttuni. Itfi dan għal amministrazzjoni ċatta — il-bordi u l-kantunieri jibqgħu eżattament kif inhuma.",
+      "secondMenuColumn": "It-tieni kolonna tal-menu",
+      "sectionPagesBesideTheMenu": "Il-paġni ta' taqsima joqogħdu f'kolonna ħdejn il-menu. Mitfija, jinfetħu taħt il-linja tagħhom fil-menu wieħed, u kull skrin isir 220px usa'.",
       "installFromAPackageUrl": "Installa minn URL ta' pakkett",
       "builtIn": "Inkorporat",
       "installed": "Installat",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Il-post tal-IP ma ġiex aġġornat",
       "geoUnavailable": "L-istatus tal-post tal-IP mhuwiex disponibbli",
       "geoAttribution": "Ġeolokalizzazzjoni tal-IP minn {{name}} ({{license}}). Tiġi aġġornata kull xahar sakemm tkun mixgħula.",
-      "geoSaved": "Salvat",
-      "geoSavedOn": "Id-database qed titniżżel issa; hija madwar 60 MB.",
-      "geoSavedOff": "Id-database tneħħiet mis-server.",
       "everyPluginRunsIsolated": "Iżolat: kull plugin jaħdem fil-proċess tiegħu. Il-limitu tal-memorja u l-iskadenza japplikaw għal kull plugin; is-sehem tas-CPU, il-memorja totali, id-diska u l-proċessi japplikaw biss għall-plugins li tella' sit.",
       "schemaOrphans": "Skema tad-database",
       "schemaOrphansHelp": "Kolonni li d-database għad għandha iżda li xejn ma għadu jiddikjarahom. Il-pjattaforma telenkahom biss; xejn ma jitneħħa sakemm tiddeċiedi int, u kolonna mneħħija ma tistax terġa' tiġi rkuprata.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Diżattivat — l-endpoint iwieġeb 403 lil kulħadd.",
       "mediaPayloadLimitMb": "Limitu tal-payload tal-midja (MB)",
       "maximumDecodedUploadOrRemote": "L-akbar daqs ta' upload dekodifikat jew download remot li jaċċettaw l-għodod tal-midja MCP.",
-      "saveLimit": "Issejvja l-limitu",
       "allSites": "is-siti kollha",
       "issuedBeforeSites": "maħruġ qabel is-siti",
       "noTokensYet": "Għad m'hemmx tokens.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Awtomatiku tal-pjattaforma",
       "thisSite": "Dan is-sit",
       "inForceNow": "Fis-seħħ issa",
-      "saving": "Qed jiġi ssejvjat…",
-      "savePolicy": "Issejvja l-politika",
       "thePlatformDefaultIsSet": "Is-setting awtomatiku tal-pjattaforma jiġi stabbilit minn amministratur tal-pjattaforma.",
       "useTheLayerBelow": "Uża s-saff ta' taħt",
       "whyTheLawRequiresThese": "Għaliex il-liġi teħtieġ li dawn ir-rekords jinżammu",
-      "inheritsThePlatformDefault": "jiret: is-setting awtomatiku tal-pjattaforma"
+      "inheritsThePlatformDefault": "jiret: is-setting awtomatiku tal-pjattaforma",
+      "strategyDelete": "Ħassar",
+      "strategyAnonymise": "Agħmel anonimu",
+      "strategyRetain": "Żomm",
+      "declaredBy": "Default iddikjarat minn {{plugin}}",
+      "inheritsValue": "jiret: {{value}}",
+      "legalBasis": "Bażi legali",
+      "theSiteColumnIsSet": "Il-kolonna \"Dan is-sit\" tiġi ssettjata ġewwa sit. Agħżel sit fis-swiċċ biex tibdilha."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Isem li jidher",
     "thisPersonHasALogin": "Din il-persuna għandha kont tal-login; l-email tagħha tinbidel fil-kont.",
     "birthDate": "Data tat-twelid",
-    "saveChanges": "Issejvja l-bidliet",
     "sendPasswordResetEmail": "Ibgħat email tar-reset tal-password",
     "cancel": "Ikkanċella",
     "accountManagement": "Ġestjoni tal-kont",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Jekk jogħġbok ikkopja l-kodiċi ta' rkupru manwalment.",
     "nameRequired": "L-isem huwa meħtieġ",
     "enterATokenNameFirst": "L-ewwel daħħal isem għat-token.",
-    "tokenCreated": "It-token inħoloq",
     "copyTheTokenNowIt": "Ikkopja t-token issa. Jintwera darba biss.",
     "failedToCreateApiToken": "It-token tal-API ma setax jinħoloq",
     "areYouSureYouWant2": "Żgur li trid tiddiżattiva l-2FA għal dan l-utent? Dan inaqqas is-sigurtà tal-kont.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Is-sessjoni ġiet revokata",
     "deviceSessionRevokedSuccessfully": "Is-sessjoni tal-apparat ġiet revokata b'suċċess.",
     "failedToRevokeSession": "Is-sessjoni ma setgħetx tiġi revokata",
-    "rolesUpdated": "Ir-rwoli ġew aġġornati",
-    "theUserSRolesWere": "Ir-rwoli tal-utent ġew issejvjati.",
     "saveFailed": "Is-salvataġġ falla",
     "failedToSaveRoles": "Ir-rwoli ma setgħux jiġu ssejvjati.",
     "loadingRoles": "Qed jitgħabbew ir-rwoli",
@@ -3448,8 +3445,6 @@
     "remove": "Neħħi",
     "loadFailed": "It-tagħbija falliet",
     "couldNotRetrieveRoleDetails": "Id-dettalji tar-rwol ma setgħux jinġiebu.",
-    "roleUpdated": "Ir-rwol ġie aġġornat",
-    "wasSaved": "\"{{name}}\" ġie ssejvjat.",
     "updateFailed": "L-aġġornament falla",
     "anErrorOccurredWhileSaving": "Seħħ żball waqt is-salvataġġ.",
     "loadingRole": "Qed jitgħabba r-rwol...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Lura għall-Utenti",
     "selfServiceSecurityControls": "Kontrolli tas-Sigurtà Personali",
     "sessionDeviceControlsAndPersonal": "Il-kontrolli tas-sessjonijiet/apparati u t-tokens personali tal-API huma disponibbli biss meta tkun qed tara l-kont tal-utent tiegħek stess.",
-    "securityRecommendations": "Rakkomandazzjonijiet tas-Sigurtà",
     "twoFactorAuthentication": "Awtentikazzjoni b'Żewġ Fatturi",
-    "activeAndProtectingThisAccount": "Attiva u qed tipproteġi dan il-kont",
-    "notEnabledHighlyRecommendedFor": "Mhix attivata - rakkomandata ħafna għall-kontijiet tal-amministraturi",
-    "passwordProtected": "Protett b'Password",
-    "accountHasASecurePassword": "Il-kont għandu password sigura",
-    "administratorAccess": "Aċċess ta' Amministratur",
     "fullSystemAccess2faStrongly": "Aċċess sħiħ għas-sistema - il-2FA rakkomandata ħafna",
     "personalApiTokens": "Tokens Personali tal-API",
     "tokenNameEGCi": "Isem it-token (eż. CI deploy)",
     "days": "Jiem",
     "createToken": "Oħloq Token",
-    "copyNowShownOnce": "Ikkopja Issa (jintwera darba biss)",
     "loadingApiTokens": "Qed jitgħabbew it-tokens tal-API...",
     "noApiTokensCreatedYet": "Għadu ma nħoloq l-ebda token tal-API.",
     "revoke": "Irrevoka",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Attività tad-Dħul u tas-Sessjonijiet",
     "loadingAuthActivity": "Qed titgħabba l-attività tal-awtentikazzjoni...",
     "noRecentLoginSessionEvents": "L-ebda avveniment riċenti ta' dħul/sessjoni għal dan l-utent.",
-    "unknownTime": "Ħin Mhux Magħruf",
-    "activityEvent": "Avveniment tal-attività",
     "openFullGlobalActivity": "Iftaħ l-Attività Globali Kollha",
-    "2faStatus": "Status tal-2FA",
     "addAnExtraLayerOf": "Żid saff ieħor ta' sigurtà permezz ta' awtentikazzjoni b'app (TOTP)",
-    "recommended": "Rakkomandat",
     "enableTwoFactorAuthenticationTo": "Attiva l-awtentikazzjoni b'żewġ fatturi biex tipproteġi dan il-kont b'passwords ta' darba bbażati fuq il-ħin (TOTP).",
     "enable2fa": "Attiva l-2FA",
     "step1ScanQrCode": "Pass 1: Skennja l-Kodiċi QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Pass 2: Ivverifika l-Kodiċi",
     "enterThe6DigitCode": "Daħħal il-kodiċi ta' 6 ċifri mill-app tal-awtentikazzjoni biex tlesti l-konfigurazzjoni:",
     "verifyEnable": "Ivverifika u Attiva",
-    "protectionActive": "Protezzjoni Attiva",
     "thisAccountRequiresA6": "Dan il-kont jeħtieġ kodiċi ta' 6 ċifri minn app tal-awtentikazzjoni meta tidħol.",
     "regenerateRecoveryCodes": "Iġġenera Mill-Ġdid il-Kodiċijiet tal-Irkupru",
     "disable2fa": "Itfi l-2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Irrevoka s-Sessjonijiet l-Oħra",
     "loadingSessions": "Qed jitgħabbew is-sessjonijiet...",
     "noActiveSessions": "L-ebda sessjoni attiva.",
-    "currentSession": "Sessjoni Kurrenti",
-    "deviceSession": "Sessjoni tal-Apparat",
     "current": "Kurrenti",
     "unknownDevice": "Apparat mhux magħruf",
     "editAccount2": "Editja l-kont",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Iftaħ ir-rekord tal-utent",
     "token": "Token",
     "createdOn": "Maħluq {{date}}",
-    "notAvailable": "m/d",
     "revokedOn": "Irrevokat {{date}}",
     "recoveryCodesRemaining": "Kodiċijiet tal-irkupru li fadal:",
-    "unknownValue": "mhux magħruf",
     "expiresOn": "Jiskadi: {{date}}",
     "person2": "Persuna",
     "added": "Miżjud",
@@ -3591,12 +3570,10 @@
       "loading": "Qed jitgħabbew il-oqsma tal-persuni…",
       "loadFailed": "Il-oqsma tal-persuni ma setgħux jitgħabbew.",
       "saveFailed": "Il-oqsma ma setgħux jiġu ssejvjati.",
-      "saved": "Il-oqsma ġew issejvjati.",
       "empty": "Għad m'hemm l-ebda qasam tal-persuni. Żid wieħed biex tibda żżommu għal kull persuna.",
       "noneDeclared": "Dan is-sit għad m'għandu l-ebda qasam tal-persuni.",
       "declare": "Żid oqsma tal-persuni",
       "manage": "Immaniġġja l-oqsma",
-      "save": "Issejvja l-oqsma",
       "saveField": "Issejvja l-qasam",
       "delete": "Ħassar",
       "deleteTitle": "Tħassar dan il-qasam?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Validu għal (jiem)",
+    "revokeOtherSessionsConfirm": "L-apparati l-oħra kollha joħorġu minnufih.",
+    "revokeSessionConfirm": "Dak l-apparat joħroġ minnufih.",
+    "revokeCurrentSessionConfirm": "Dan huwa l-apparat li qed tuża issa. Toħroġ minnufih.",
+    "revokeTokenConfirm": "\"{{name}}\" jieqaf jaħdem minnufih.",
+    "twoFactorTurnedOff": "Id-dħul b'żewġ fatturi huwa mitfi għal dan is-sit, għalhekk ma jistax jitwaqqaf hawn.",
+    "openSecuritySettings": "Iftaħ is-settings tas-sigurtà"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Is-settings tas-sit ({{what}}) jiġu ssettjati f'kull sit — agħżel wieħed mill-menu tas-siti.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Dan is-sit ma setax jinfetaħ għad-dehra minn qabel.",
     "couldNotLoadTheSite": "Is-sit ma setax jitgħabba.",
     "couldNotReloadThePlugin": "Il-lista tal-plugins ma setgħetx titgħabba mill-ġdid.",
-    "siteSaved": "Is-sit ġie ssejvjat",
-    "routingFollowsImmediatelyNoRestart": "Ir-routing jinbidel minnufih — mingħajr restart.",
     "notSaved": "Ma ġiex issejvjat",
     "theSiteCouldNotBe2": "Is-sit ma setax jiġi ssejvjat.",
     "couldNotOpenTheSite": "Is-sit ma setax jinfetaħ",
@@ -3789,7 +3771,6 @@
     "visit": "Żur",
     "openThisSite": "Iftaħ dan is-sit",
     "export": "Esporta",
-    "save": "Issejvja",
     "couldNotLoadCertificates": "Iċ-ċertifikati ma setgħux jitgħabbew.",
     "couldNotSwitchThisHost": "Dan il-host ma setax jinqaleb għal awtomatiku.",
     "couldNotSwitchThisHost2": "Dan il-host ma setax jinqaleb għal awtomatiku (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Aġġornament Disponibbli",
     "isNowActive": "{{name}} issa hija attiva.",
     "themeHasBeenUpdated2": "It-tema {{name}} ġiet aġġornata.",
-    "configurationSaved": "Il-Konfigurazzjoni Ġiet Salvata",
-    "visualProtocolsUpdatedSuccessfully": "Il-protokolli viżivi ġew aġġornati b'suċċess.",
     "saveFailed": "Is-Salvataġġ Falla",
     "hasBeenRemoved2": "{{name}} tneħħiet.",
     "seedsExecuted": "Is-Seeds Ġew Eżegwiti",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Tqassim",
     "extensionsSection": "Estensjonijiet",
     "versionReady": "Il-verżjoni {{version}} hija lesta",
-    "saveChanges": "Issejvja l-bidliet",
     "runSeedsHint": "Jerġa' jdaħħal id-data tas-seeds tat-tema — il-paġni u l-kontenut tal-eżempju — f'dan is-sit.",
     "resetThemeHint": "Iħassar is-settings tat-tema ssejvjati ta' dan is-sit u jerġa' jdaħħal id-data tas-seeds.",
     "notActiveHint": "Dan is-sit juża tema oħra.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "X'inbidel f'v{{version}}",
     "whatChanged": "X'inbidel",
-    "closeBuildSourceDialog": "Agħlaq id-djalogu tas-sors tal-bini",
-    "close": "Agħlaq",
     "couldNotInstallThatVersion": "Ma setgħetx tiġi installata dik il-verżjoni.",
     "couldNotChangeAutomaticUpdating": "L-aġġornament awtomatiku ma setax jinbidel.",
     "failed": "Falla",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Iċ-ċertifikati awtomatiċi huma mitfija. {{reason}}",
     "automaticCertificatesComeFrom": "Iċ-ċertifikati awtomatiċi jiġu minn {{authority}}.",
     "noSecretKeyIsConfigured": "Ebda SECRET_KEY mhu kkonfigurat fuq dan is-server, għalhekk ċavetta privata ma tistax tinħażen. It-tlugħ huwa diżattivat sakemm jiġi ssettjat wieħed.",
-    "nothingToSavePasteA": "M'hemm xejn x'jinħażen — waħħal token, jew uża Ħassar biex tneħħi dak maħżun.",
     "savedThisSiteNowUses": "Maħżun. Dan is-sit issa juża t-token Cloudflare tiegħu.",
     "removedThisSiteFallsBack": "Imneħħi. Dan is-sit jerġa' juża t-token tal-pjattaforma.",
     "couldNotSaveTheToken": "It-token ma setax jinħażen.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "It-token ta' dan is-sit",
     "savedLeaveBlankToKeep": "Maħżun — ħalli vojt biex iżżommu, jew uża Ħassar biex tneħħih",
     "pasteACloudflareApiToken": "Waħħal token tal-API ta' Cloudflare",
-    "save": "Issejvja",
     "clear": "Ħassar",
     "nothingStoredThisHostCannot": "Xejn maħżun — dan il-host ma jistax jiġi servut fuq HTTPS minn din il-pjattaforma.",
     "nothingStoredHereTlsFor": "Xejn maħżun hawn — it-TLS għal dan il-host jiġi tterminat qabel il-pjattaforma, għalhekk iċ-ċertifikat tiegħu jinsab hemmhekk.",
@@ -4706,36 +4680,26 @@
     "roles": "Rwoli",
     "permissions": "Permessi",
     "eventDetails": "Dettalji tal-Avveniment",
-    "context": "Kuntest",
     "resource": "Riżorsa",
     "system": "Sistema",
     "timestamp": "Timbru tal-ħin",
-    "authority": "Awtorità",
-    "actorId": "ID tal-Attur",
-    "type": "Tip",
-    "systemLog": "Log tas-Sistema",
-    "audit": "Verifika: {{status}}",
-    "activityMessage": "Messaġġ tal-Attività",
-    "actionTaken": "Azzjoni Meħuda",
-    "resourcePool": "Ġabra ta' Riżorsi",
-    "rawMetadata": "Metadata Mhux Ipproċessata",
     "thisEntryIsPartOf": "Din l-entrata hija parti minn traċċa ta' verifika li ma tistax tinbidel.",
     "exportJson": "Esporta JSON",
     "event": "Avveniment",
     "actor": "Attur",
+    "plugin": "Plugin",
     "activity": "Attività",
     "status": "Status",
     "action": "Azzjoni",
     "time": "Ħin",
-    "logSignature": "Firma tal-Log: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "TWISSIJA",
-      "ERROR": "ŻBALL",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEMA",
-      "AUDIT": "VERIFIKA"
+      "INFO": "Info",
+      "WARN": "Twissija",
+      "ERROR": "Żball",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistema",
+      "AUDIT": "Verifika"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Daħla #{{id}}",
+    "recordedData": "Data rreġistrata"
   },
   "mediaPicker": {
     "showingOnly": "Qed jintwerew biss: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Kompitu",
       "schedule": "Jaħdem",
       "lastRun": "L-aħħar tħaddim",
-      "nextRun": "It-tħaddim li jmiss"
+      "nextRun": "It-tħaddim li jmiss",
+      "duration": "Tul"
     },
     "ownedBy": "{{owner}}",
     "platform": "Pjattaforma",

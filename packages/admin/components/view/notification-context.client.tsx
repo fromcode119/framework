@@ -16,7 +16,12 @@ export class NotificationProvider extends Reactor {
 
   @prop declare children: ReactNode;
 
+  /** As long as --fc-dur-exit: a toast is marked as leaving, and removed when its exit has run. */
+  private static readonly EXIT_MS = 150;
+
   @state private notifications: INotification[] = [];
+  /** The toasts on their way out. */
+  @state private leaving: string[] = [];
 
   @bound
   notify(type: INotificationPayload['type'], title: string, message: string): void {
@@ -32,7 +37,12 @@ export class NotificationProvider extends Reactor {
 
   @bound
   remove(id: string): void {
-    this.notifications = this.notifications.filter((notification) => notification.id !== id);
+    if (this.leaving.includes(id) || !this.notifications.some((notification) => notification.id === id)) return;
+    this.leaving = [...this.leaving, id];
+    setTimeout(() => {
+      this.notifications = this.notifications.filter((notification) => notification.id !== id);
+      this.leaving = this.leaving.filter((gone) => gone !== id);
+    }, NotificationProvider.EXIT_MS);
   }
 
   private get value(): { notify: NotificationProvider['notify']; addNotification: NotificationProvider['addNotification']; remove: NotificationProvider['remove'] } {
@@ -41,9 +51,9 @@ export class NotificationProvider extends Reactor {
 
   private icon(type: INotificationPayload['type']): ReactNode {
     const { Check, Alert, Info } = NotificationProvider.icons;
-    if (type === NotificationType.SUCCESS) return Check ? <Check size={20} /> : null;
-    if (type === NotificationType.ERROR) return Alert ? <Alert size={20} /> : null;
-    if (type === NotificationType.INFO) return Info ? <Info size={20} /> : null;
+    if (type === NotificationType.SUCCESS) return Check ? <Check size={16} /> : null;
+    if (type === NotificationType.ERROR) return Alert ? <Alert size={16} /> : null;
+    if (type === NotificationType.INFO) return Info ? <Info size={16} /> : null;
     return null;
   }
 
@@ -51,29 +61,19 @@ export class NotificationProvider extends Reactor {
     return (
       <NotificationContextStore.context.Provider value={this.value}>
         {this.children}
-        <div className="fixed bottom-6 end-6 z-[9999] flex min-w-[320px] max-w-[420px] flex-col gap-3">
+        {/* The console's toast: the component surface with a flyout shadow, the kind said by the colour
+            of its mark, the title in the ink and the message under it in the quiet ink. It was a solid
+            emerald or rose brick with white text, which no other surface in the console looks like. */}
+        <div className="fc-toasts">
           {this.notifications.map((notification) => (
-            <div
-              key={notification.id}
-              className={`animate-in slide-in-from-right-10 flex items-start gap-4 rounded-xl border p-4 shadow-2xl duration-300 ${
-                notification.type === NotificationType.SUCCESS
-                  ? 'border-emerald-400 bg-emerald-500 text-white'
-                  : notification.type === NotificationType.ERROR
-                    ? 'border-rose-400 bg-rose-500 text-white'
-                    : 'border-slate-700 bg-slate-900 text-white'
-              }`}
-            >
-              <div className="mt-0.5">{this.icon(notification.type)}</div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium tracking-tight">{notification.title}</h4>
-                <p className="mt-1 text-xs font-medium leading-relaxed text-white/80">{notification.message}</p>
+            <div key={notification.id} className="fc-toast fc-enter" data-state={this.leaving.includes(notification.id) ? 'closed' : 'open'} data-type={String((notification.type as any)?.value ?? notification.type)} role="status">
+              <span className="fc-toast__mark">{this.icon(notification.type)}</span>
+              <div className="fc-toast__text">
+                <span className="fc-toast__title">{notification.title}</span>
+                {notification.message ? <span className="fc-toast__message">{notification.message}</span> : null}
               </div>
-              <button
-                type="button"
-                onClick={() => this.remove(notification.id)}
-                className="rounded-lg p-1 transition-colors hover:bg-white/10"
-              >
-                {NotificationProvider.icons.Close ? <NotificationProvider.icons.Close size={16} /> : null}
+              <button type="button" onClick={() => this.remove(notification.id)} className="fc-toast__close">
+                {NotificationProvider.icons.Close ? <NotificationProvider.icons.Close size={15} /> : null}
               </button>
             </div>
           ))}

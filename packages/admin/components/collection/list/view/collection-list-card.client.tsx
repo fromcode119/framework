@@ -14,7 +14,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * collection made editable in place is editable here too.
  */
 export class CollectionListCard extends PureReactor {
-  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'expanded' | 'onOpen' | 'selected' | 'onToggle' | 'handle' | 'className'>;
+  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'onOpen' | 'selected' | 'onToggle' | 'handle' | 'className'>;
 
   @prop declare row: any;
   @prop declare layout: CollectionListLayout;
@@ -22,7 +22,6 @@ export class CollectionListCard extends PureReactor {
   @prop declare cells: ReadonlyMap<string, (row: any) => ReactNode>;
   @prop declare actions: ReactNode;
   /** The quick edit form, when it is open on this record. */
-  @prop declare expanded: ReactNode;
   @prop declare onOpen: (row: any) => void;
   @prop declare selected: boolean;
   /** Adds the record to, or takes it out of, the selection the bulk actions work on. */
@@ -53,8 +52,8 @@ export class CollectionListCard extends PureReactor {
       // Only the first part gives way when the line is too long — typically a name, which still reads
       // shortened. A badge cut to "Pai…" says nothing, so the parts after it keep their full width.
       .map(({ name }, index) => (
-        <span key={name} className={index === 0 ? 'min-w-0 truncate' : 'shrink-0'}>
-          {this.layout.valueLabels[name] ? <span className="text-slate-400 dark:text-slate-500">{this.layout.valueLabels[name]} </span> : null}
+        <span key={name} className={index === 0 ? 'fc-list-card__meta-part fc-list-card__meta-part--first' : 'fc-list-card__meta-part'}>
+          {this.layout.valueLabels[name] ? <span className="fc-list-card__meta-label">{this.layout.valueLabels[name]} </span> : null}
           {this.cell(name)}
         </span>
       ));
@@ -64,8 +63,8 @@ export class CollectionListCard extends PureReactor {
     const meta = this.meta;
     if (!meta.length) return null;
     return (
-      <div className="mt-1 flex items-center gap-1.5 min-w-0 text-[12px] font-medium text-slate-500 dark:text-slate-400 overflow-hidden whitespace-nowrap">
-        {meta.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="text-slate-300 dark:text-slate-600">·</span>, part] : [part]))}
+      <div className="fc-list-card__meta">
+        {meta.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="fc-list-card__dot" aria-hidden="true">·</span>, part] : [part]))}
       </div>
     );
   }
@@ -74,28 +73,28 @@ export class CollectionListCard extends PureReactor {
     const { layout, row } = this;
     const hasMedia = Boolean(layout.mediaField) && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length > 0;
     return (
-      <div data-row-id={String(row.id)} className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.expanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${this.className || ''}`}>
-        <div className={`flex gap-3 ps-3 pe-4 py-3 cursor-pointer ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`} onClick={this.open}>
-          <button type="button" onClick={this.toggle} aria-pressed={this.selected} aria-label={AdminI18n.t('collection.list.selectRecord')} className="shrink-0 self-start p-1 -m-0.5">
+      <div data-row-id={String(row.id)} className={`fc-list-card ${this.className || ''}`}>
+        <div className={`fc-list-card__row${this.selected ? ' fc-list-card__row--selected' : ''}`} onClick={this.open}>
+          <button type="button" onClick={this.toggle} aria-pressed={this.selected} aria-label={AdminI18n.t('collection.list.selectRecord')} className="fc-list-card__check">
             <Checkbox checked={this.selected} presentational />
           </button>
-          {this.handle ? <div className="shrink-0 self-start">{this.handle}</div> : null}
-          {hasMedia ? <div className="shrink-0"><CollectionListMediaCellValue raw={row[layout.mediaField]} thumbnail /></div> : layout.mediaField ? <span title={AdminI18n.t('ui.structured.noImage')} className="w-14 h-14 rounded-lg shrink-0 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400"><FrameworkIcons.Image size={16} /></span> : null}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
-                <div className="min-w-0 line-clamp-2 text-[13px] font-medium leading-snug text-slate-900 dark:text-slate-100">
+          {this.handle ? <div className="fc-list-card__handle">{this.handle}</div> : null}
+          {hasMedia ? <div className="fc-list-card__media"><CollectionListMediaCellValue raw={row[layout.mediaField]} thumbnail /></div> : layout.mediaField ? <span title={AdminI18n.t('ui.structured.noImage')} className="fc-list-card__media fc-list-card__media--empty"><FrameworkIcons.Image size={16} /></span> : null}
+          <div className="fc-list-card__body">
+            <div className="fc-list-card__head">
+              <div className="fc-list-card__name">
+                <div className="fc-list-card__title">
                   {this.cell(layout.titleField) ?? `#${row.id}`}
                 </div>
                 {/* Beside the title where the list is wide enough; under it, with the actions, where it is not. */}
-                <div className="fc-list-card__badge--inline min-w-0 whitespace-nowrap">{this.cell(layout.badgeField)}</div>
+                <div className="fc-list-card__badge--inline">{this.cell(layout.badgeField)}</div>
               </div>
               {layout.trailingField ? (
                 // The label sits ABOVE the value: beside it, a long one ("Lifetime Value (LTV)") left the
                 // title a sliver of the card.
-                <div className="shrink-0 max-w-[45%] flex flex-col items-end text-end leading-tight">
-                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label max-w-full truncate text-[12px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
-                  <span className="text-[13px] font-medium text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
+                <div className="fc-list-card__trailing">
+                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label">{layout.valueLabels[layout.trailingField]}</span> : null}
+                  <span className="fc-list-card__value">{this.cell(layout.trailingField)}</span>
                 </div>
               ) : null}
             </div>
@@ -106,13 +105,12 @@ export class CollectionListCard extends PureReactor {
               {/* The actions stay one group: when they do not fit beside the badge the whole group moves under it,
                   rather than its last button wrapping onto a line of its own. */}
               <div className="fc-list-card__actions">
-                <div className="fc-list-card__badge--row min-w-0 whitespace-nowrap">{this.cell(layout.badgeField)}</div>
+                <div className="fc-list-card__badge--row">{this.cell(layout.badgeField)}</div>
                 {this.actions}
               </div>
             </div>
           </div>
         </div>
-        {this.expanded ? <div className="px-4 pb-4">{this.expanded}</div> : null}
       </div>
     );
   }

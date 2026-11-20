@@ -162,6 +162,7 @@
       "reorderHandle": "Tërhiqeni për ta rirenditur — ose fokusojeni dhe përdorni tastet me shigjeta",
       "reorderEnable": "Shfaqeni listën në renditjen e saj për ta rirenditur",
       "reorderFailed": "Renditja e re nuk u ruajt dot",
+      "noMatch": "Asgjë nuk përputhet me kërkimin ose filtrat.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Të importohet {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Redakto",
       "notFilledIn": "I paplotësuar",
       "statusSection": "Statusi",
-      "statusConfirm": "Të ndryshohet statusi në “{{status}}”?",
       "recordSection": "Regjistrimi",
       "showJson": "Shfaq si JSON",
       "showForm": "Shfaq si formular",
@@ -245,7 +245,8 @@
       "copied": "U kopjua",
       "more": "Më shumë",
       "moreFields": "{{count}} fusha",
-      "moreOneField": "{{count}} fushë"
+      "moreOneField": "{{count}} fushë",
+      "statusConfirm": "Të ndryshohet statusi në “{{status}}”?"
     },
     "notFound": {
       "title": "Koleksioni nuk u gjet",
@@ -366,7 +367,8 @@
     "reset": "Rivendos",
     "notScheduledYet": "ende i paplanifikuar",
     "more": "Më shumë veprime",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Hiq"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Zgjidhni ngjyrën",
-      "colour": "Ngjyra",
-      "pick": "Zgjidhni një ngjyrë",
       "hex": "Kodi hex",
-      "confirm": "Konfirmo ngjyrën",
       "notSet": "E pacaktuar"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "U zbuluan varësi joaktive",
       "intro": "Për të aktivizuar {{plugin}}, duhet të trajtojmë sa vijon:",
       "notInstalled": "NUK ËSHTË INSTALUAR",
+      "inactive": "i fikur",
+      "incompatible": "version tjetër",
       "requires": "Kërkon versionin {{version}}. Mund ta shkarkojmë nga tregu.",
       "needsActivation": "Është instaluar, por duhet aktivizuar (Versioni {{version}}).",
       "mismatch": "Mospërputhje versioni: kërkohet {{expected}}, u gjet {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Pamje paraprake e platformës",
-      "image": "Pamja paraprake {{number}}"
+      "image": "Pamja paraprake {{number}}",
+      "previous": "E mëparshmja",
+      "next": "Tjetra"
     },
     "menuField": {
       "newItem": "Element i ri menuje",
-      "structure": "Struktura e menysë",
-      "add": "Shto element menuje"
+      "add": "Shto element menuje",
+      "reorder": "Tërhiqni për ta lëvizur; shigjetat: lart e poshtë lëvizin, djathtas fut brenda, majtas nxjerr jashtë"
     },
     "field": {
       "notSet": "E pacaktuar",
@@ -461,8 +464,8 @@
       "record": "regjistrim"
     },
     "array": {
-      "addNew": "Shto {{label}} të ri",
-      "item": "Element"
+      "add": "Shto",
+      "reorder": "Tërhiqni për ta lëvizur, ose përdorni shigjetat"
     },
     "stepper": {
       "increment": "Rrit",
@@ -528,9 +531,7 @@
       "noContact": "Nuk ka email ose telefon te Personat",
       "hasLogin": "Ka llogari hyrjeje",
       "noLogin": "Pa llogari hyrjeje",
-      "source": "Emri, emaili dhe telefoni vijnë nga Personat #{{id}}; ndryshojini atje.",
       "open": "Hape te Personat",
-      "choose": "Zgjidhni dikë tjetër",
       "searchFailed": "Kërkimi te Personat nuk mund të kryhej tani.",
       "noMatch": "Askush te Personat nuk përputhet. Futni të dhënat më poshtë; ruajtja e shton te Personat.",
       "ref": "Personat #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Hap Sajtet"
       }
     },
-    "relativeOverridesInheritTheCollection": "Mbishkrimet relative trashëgojnë prefiksin e koleksionit. Aktivizoni modalitetin absolut për të anashkaluar prefikse si `/shop`.",
     "range": "Intervali",
     "noDataForThisRange": "Nuk ka të dhëna për këtë interval",
     "peak": "· kulmi {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtrat",
       "clearFilters": "Pastro të gjitha",
       "removeFilter": "Hiq filtrin {{label}}",
-      "showResults": "Shfaq {{count}} rezultate"
+      "showResults": "Shfaq {{count}} rezultate",
+      "showResultsOne": "Shfaq 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Nuk ruhet në një fushë personi",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Kufijtë e sandbox-it për {{name}} u ruajtën, por procesi i saj nuk u rinis me to: {{value}}",
       "restartRequired": "Kërkohet rinisje",
       "sandboxSettingsForWereSaved": "Cilësimet e sandbox-it për {{name}} u ruajtën, por duhet rinisur API-ja që të hyjnë në fuqi.",
-      "resourcesUpdated": "Burimet u përditësuan",
-      "sandboxLimitsForUpdated": "Kufijtë e sandbox-it për {{name}} u përditësuan.",
       "sandboxDisabledFor": "Sandbox-i u çaktivizua për {{name}}.",
       "saveFailed": "Ruajtja dështoi",
       "failedToUpdateSandboxLimits": "Kufijtë e sandbox-it nuk u përditësuan.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Joaktive. Nuk ka ngjarje të fundit të regjistruara.",
       "updating": "Po përditësohet...",
       "updateAvailable": "Përditësim i disponueshëm",
-      "updatePolicy": "Politika e përditësimit",
       "saveChanges": "Ruaj ndryshimet",
       "unsavedChanges": "Ndryshime të paruajtura",
       "exportSettingsAsJson": "Eksporto cilësimet si JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "E re në v{{version}}",
       "installedVersion": "Instaluar {{version}}",
       "marketplaceVersion": "Tregu {{version}}",
-      "saving": "Po ruhet...",
       "saveSettings": "Ruaj cilësimet",
       "viewDefinition": "Shiko përkufizimin",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Pamja",
       "failedToLoadAppearances": "Ngarkimi i pamjeve dështoi",
       "failedToSaveShadowSetting": "Ruajtja e cilësimit të hijeve dështoi",
+      "failedToSaveMenuSetting": "Ruajtja e cilësimit të menysë dështoi",
       "switchedToReloading": "U kalua te \"{{slug}}\". Po rifreskohet…",
       "failedToSwitchAppearance": "Ndërrimi i pamjes dështoi",
       "installFailed": "Instalimi dështoi",
@@ -1919,6 +1917,8 @@
       "install": "Instalo",
       "surfaceShadows": "Hijet e sipërfaqeve",
       "depthOnPanelsDialogsAnd": "Thellësi në panele, dialogë dhe butona. Çaktivizojeni për një administrim të sheshtë — kufijtë dhe qoshet mbeten saktësisht siç janë.",
+      "secondMenuColumn": "Kolona e dytë e menysë",
+      "sectionPagesBesideTheMenu": "Faqet e një seksioni qëndrojnë në një kolonë pranë menysë. E fikur, ato hapen nën rreshtin e tyre në menynë e vetme dhe çdo ekran fiton 220px.",
       "installFromAPackageUrl": "Instalo nga një URL pakete",
       "builtIn": "E integruar",
       "installed": "E instaluar",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Vendndodhja sipas IP-së nuk u përditësua",
       "geoUnavailable": "Gjendja e vendndodhjes sipas IP-së nuk është e disponueshme",
       "geoAttribution": "Gjeolokalizimi i IP-së nga {{name}} ({{license}}). Përditësohet çdo muaj kur është aktiv.",
-      "geoSaved": "U ruajt",
-      "geoSavedOn": "Baza e të dhënave po shkarkohet tani; është rreth 60 MB.",
-      "geoSavedOff": "Baza e të dhënave u hoq nga serveri.",
       "everyPluginRunsIsolated": "E izoluar: çdo shtojcë ekzekutohet në procesin e vet. Kufiri i memories dhe afati kohor vlejnë për çdo shtojcë; pjesa e CPU-së, memoria totale, disku dhe proceset vlejnë vetëm për shtojcat e ngarkuara nga një sajt.",
       "schemaOrphans": "Skema e bazës së të dhënave",
       "schemaOrphansHelp": "Kolona që baza e të dhënave i mban ende, por që nuk i deklaron më asgjë. Platforma vetëm i liston; asgjë nuk fshihet derisa të vendosni ju, dhe një kolonë e fshirë nuk mund të rikthehet.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Çaktivizuar — pika fundore u përgjigjet të gjithëve me 403.",
       "mediaPayloadLimitMb": "Kufiri i ngarkesës së medias (MB)",
       "maximumDecodedUploadOrRemote": "Madhësia maksimale e ngarkimit të dekoduar ose e shkarkimit në distancë që pranojnë mjetet e medias MCP.",
-      "saveLimit": "Ruaj kufirin",
       "allSites": "të gjitha sajtet",
       "issuedBeforeSites": "lëshuar para sajteve",
       "noTokensYet": "Ende nuk ka tokenë.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Parazgjedhja e platformës",
       "thisSite": "Ky sajt",
       "inForceNow": "Në fuqi tani",
-      "saving": "Po ruhet…",
-      "savePolicy": "Ruaj politikën",
       "thePlatformDefaultIsSet": "Parazgjedhja e platformës caktohet nga një administrator i platformës.",
       "useTheLayerBelow": "Përdor shtresën më poshtë",
       "whyTheLawRequiresThese": "Pse ligji kërkon që këto të dhëna të ruhen",
-      "inheritsThePlatformDefault": "trashëgon: parazgjedhjen e platformës"
+      "inheritsThePlatformDefault": "trashëgon: parazgjedhjen e platformës",
+      "strategyDelete": "Fshi",
+      "strategyAnonymise": "Anonimizo",
+      "strategyRetain": "Ruaj",
+      "declaredBy": "Parazgjedhje e deklaruar nga {{plugin}}",
+      "inheritsValue": "trashëgon: {{value}}",
+      "legalBasis": "Baza ligjore",
+      "theSiteColumnIsSet": "Kolona \"Ky sajt\" caktohet brenda një sajti. Zgjidhni një sajt te ndërruesi për ta ndryshuar."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Emri i shfaqur",
     "thisPersonHasALogin": "Ky person ka llogari hyrjeje; email-i ndryshohet te llogaria.",
     "birthDate": "Data e lindjes",
-    "saveChanges": "Ruaj ndryshimet",
     "sendPasswordResetEmail": "Dërgo email për rivendosjen e fjalëkalimit",
     "cancel": "Anulo",
     "accountManagement": "Menaxhimi i llogarisë",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Ju lutemi, kopjoni manualisht kodet e rikuperimit.",
     "nameRequired": "Emri është i detyrueshëm",
     "enterATokenNameFirst": "Fillimisht vendosni një emër për token-in.",
-    "tokenCreated": "Token-i u krijua",
     "copyTheTokenNowIt": "Kopjojeni token-in tani. Ai shfaqet vetëm një herë.",
     "failedToCreateApiToken": "Krijimi i token-it API dështoi",
     "areYouSureYouWant2": "Jeni i sigurt që dëshironi të çaktivizoni 2FA për këtë përdorues? Kjo do të ulë sigurinë e llogarisë.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesioni u revokua",
     "deviceSessionRevokedSuccessfully": "Sesioni i pajisjes u revokua me sukses.",
     "failedToRevokeSession": "Revokimi i sesionit dështoi",
-    "rolesUpdated": "Rolet u përditësuan",
-    "theUserSRolesWere": "Rolet e përdoruesit u ruajtën.",
     "saveFailed": "Ruajtja dështoi",
     "failedToSaveRoles": "Ruajtja e roleve dështoi.",
     "loadingRoles": "Po ngarkohen rolet",
@@ -3448,8 +3445,6 @@
     "remove": "Hiq",
     "loadFailed": "Ngarkimi dështoi",
     "couldNotRetrieveRoleDetails": "Detajet e rolit nuk mund të merreshin.",
-    "roleUpdated": "Roli u përditësua",
-    "wasSaved": "\"{{name}}\" u ruajt.",
     "updateFailed": "Përditësimi dështoi",
     "anErrorOccurredWhileSaving": "Ndodhi një gabim gjatë ruajtjes.",
     "loadingRole": "Po ngarkohet roli...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Kthehu te Përdoruesit",
     "selfServiceSecurityControls": "Kontrollet e sigurisë për vetëshërbim",
     "sessionDeviceControlsAndPersonal": "Kontrollet e seancave/pajisjeve dhe tokenët personalë API janë të disponueshëm vetëm kur shikoni llogarinë tuaj të përdoruesit.",
-    "securityRecommendations": "Rekomandime sigurie",
     "twoFactorAuthentication": "Vërtetimi me dy faktorë",
-    "activeAndProtectingThisAccount": "Aktiv dhe po e mbron këtë llogari",
-    "notEnabledHighlyRecommendedFor": "Jo aktiv - rekomandohet fuqimisht për llogaritë e administratorëve",
-    "passwordProtected": "I mbrojtur me fjalëkalim",
-    "accountHasASecurePassword": "Llogaria ka një fjalëkalim të sigurt",
-    "administratorAccess": "Qasje administratori",
     "fullSystemAccess2faStrongly": "Qasje e plotë në sistem - 2FA rekomandohet fuqimisht",
     "personalApiTokens": "Tokenë personalë API",
     "tokenNameEGCi": "Emri i tokenit (p.sh. CI deploy)",
     "days": "Ditë",
     "createToken": "Krijo token",
-    "copyNowShownOnce": "Kopjoje tani (shfaqet vetëm një herë)",
     "loadingApiTokens": "Po ngarkohen tokenët API...",
     "noApiTokensCreatedYet": "Ende nuk është krijuar asnjë token API.",
     "revoke": "Revoko",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktiviteti i hyrjeve dhe seancave",
     "loadingAuthActivity": "Po ngarkohet aktiviteti i vërtetimit...",
     "noRecentLoginSessionEvents": "Nuk ka ngjarje të fundit hyrjeje/seance për këtë përdorues.",
-    "unknownTime": "Kohë e panjohur",
-    "activityEvent": "Ngjarje aktiviteti",
     "openFullGlobalActivity": "Hap aktivitetin e plotë global",
-    "2faStatus": "Statusi i 2FA",
     "addAnExtraLayerOf": "Shtoni një shtresë shtesë sigurie me vërtetim përmes aplikacionit (TOTP)",
-    "recommended": "E rekomanduar",
     "enableTwoFactorAuthenticationTo": "Aktivizoni vërtetimin me dy faktorë për ta mbrojtur këtë llogari me fjalëkalime njëpërdorimshe të bazuara në kohë (TOTP).",
     "enable2fa": "Aktivizo 2FA",
     "step1ScanQrCode": "Hapi 1: Skanoni kodin QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Hapi 2: Verifikoni kodin",
     "enterThe6DigitCode": "Futni kodin 6-shifror nga aplikacioni i vërtetimit për të përfunduar konfigurimin:",
     "verifyEnable": "Verifiko dhe aktivizo",
-    "protectionActive": "Mbrojtja aktive",
     "thisAccountRequiresA6": "Kjo llogari kërkon një kod 6-shifror nga një aplikacion vërtetimi gjatë hyrjes.",
     "regenerateRecoveryCodes": "Rigjenero kodet e rikuperimit",
     "disable2fa": "Çaktivizo 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Revoko seancat e tjera",
     "loadingSessions": "Po ngarkohen seancat...",
     "noActiveSessions": "Nuk ka seanca aktive.",
-    "currentSession": "Seanca aktuale",
-    "deviceSession": "Seancë pajisjeje",
     "current": "Aktuale",
     "unknownDevice": "Pajisje e panjohur",
     "editAccount2": "Modifiko llogarinë",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Hap regjistrimin e përdoruesit",
     "token": "Token",
     "createdOn": "Krijuar më {{date}}",
-    "notAvailable": "n/a",
     "revokedOn": "Revokuar më {{date}}",
     "recoveryCodesRemaining": "Kodet e rikuperimit të mbetura:",
-    "unknownValue": "i panjohur",
     "expiresOn": "Skadon: {{date}}",
     "person2": "Personi",
     "added": "Shtuar",
@@ -3591,12 +3570,10 @@
       "loading": "Po ngarkohen fushat e personave…",
       "loadFailed": "Fushat e personave nuk mund të ngarkoheshin.",
       "saveFailed": "Fushat nuk mund të ruheshin.",
-      "saved": "Fushat u ruajtën.",
       "empty": "Ende nuk ka fusha personash. Shtoni një për të filluar ta ruani për çdo person.",
       "noneDeclared": "Ky sajt ende nuk ka fusha personash.",
       "declare": "Shto fusha personash",
       "manage": "Menaxho fushat",
-      "save": "Ruaj fushat",
       "saveField": "Ruaj fushën",
       "delete": "Fshi",
       "deleteTitle": "Të fshihet kjo fushë?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "E vlefshme për (ditë)",
+    "revokeOtherSessionsConfirm": "Të gjitha pajisjet e tjera dalin menjëherë.",
+    "revokeSessionConfirm": "Ajo pajisje del menjëherë.",
+    "revokeCurrentSessionConfirm": "Kjo është pajisja që po përdorni tani. Dilni menjëherë.",
+    "revokeTokenConfirm": "\"{{name}}\" ndalon së punuari menjëherë.",
+    "twoFactorTurnedOff": "Hyrja me dy faktorë është e çaktivizuar për këtë sajt, ndaj nuk mund të konfigurohet këtu.",
+    "openSecuritySettings": "Hap cilësimet e sigurisë"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Cilësimet e sajtit ({{what}}) caktohen brenda çdo sajti — zgjidhni një nga menyja e sajteve.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Ky sajt nuk mund të hapej për pamje paraprake.",
     "couldNotLoadTheSite": "Sajti nuk mund të ngarkohej.",
     "couldNotReloadThePlugin": "Lista e shtojcave nuk mund të ringarkohej.",
-    "siteSaved": "Sajti u ruajt",
-    "routingFollowsImmediatelyNoRestart": "Drejtimi zbatohet menjëherë — pa rinisje.",
     "notSaved": "Nuk u ruajt",
     "theSiteCouldNotBe2": "Sajti nuk mund të ruhej.",
     "couldNotOpenTheSite": "Sajti nuk mund të hapej",
@@ -3789,7 +3771,6 @@
     "visit": "Vizito",
     "openThisSite": "Hap këtë sajt",
     "export": "Eksporto",
-    "save": "Ruaj",
     "couldNotLoadCertificates": "Certifikatat nuk mund të ngarkoheshin.",
     "couldNotSwitchThisHost": "Ky host nuk mund të kalohej në automatik.",
     "couldNotSwitchThisHost2": "Ky host nuk mund të kalohej në automatik (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Ka përditësim",
     "isNowActive": "{{name}} tani është aktive.",
     "themeHasBeenUpdated2": "Tema {{name}} u përditësua.",
-    "configurationSaved": "Konfigurimi u ruajt",
-    "visualProtocolsUpdatedSuccessfully": "Protokollet vizuale u përditësuan me sukses.",
     "saveFailed": "Ruajtja dështoi",
     "hasBeenRemoved2": "{{name}} u hoq.",
     "seedsExecuted": "Të dhënat fillestare u ekzekutuan",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Paraqitja",
     "extensionsSection": "Zgjerimet",
     "versionReady": "Versioni {{version}} është gati",
-    "saveChanges": "Ruaj ndryshimet",
     "runSeedsHint": "Riluan të dhënat fillestare të temës — faqet dhe përmbajtjen shembull — në këtë sajt.",
     "resetThemeHint": "Pastron cilësimet e ruajtura të temës për këtë sajt dhe riluan të dhënat fillestare.",
     "notActiveHint": "Ky sajt përdor një temë tjetër.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Çfarë ndryshoi në v{{version}}",
     "whatChanged": "Çfarë ndryshoi",
-    "closeBuildSourceDialog": "Mbyll dialogun e burimit të ndërtimit",
-    "close": "Mbyll",
     "couldNotInstallThatVersion": "Ai version nuk u instalua dot.",
     "couldNotChangeAutomaticUpdating": "Përditësimi automatik nuk u ndryshua dot.",
     "failed": "Dështoi",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Certifikatat automatike janë çaktivizuar. {{reason}}",
     "automaticCertificatesComeFrom": "Certifikatat automatike vijnë nga {{authority}}.",
     "noSecretKeyIsConfigured": "Në këtë server nuk është konfiguruar SECRET_KEY, ndaj çelësi privat nuk mund të ruhet. Ngarkimi është i çaktivizuar derisa të vendoset një i tillë.",
-    "nothingToSavePasteA": "Asgjë për të ruajtur — ngjitni një token ose përdorni Pastro për të hequr atë të ruajtur.",
     "savedThisSiteNowUses": "U ruajt. Kjo sajt tani përdor tokenin e vet Cloudflare.",
     "removedThisSiteFallsBack": "U hoq. Kjo sajt kthehet te tokeni i platformës.",
     "couldNotSaveTheToken": "Tokeni nuk u ruajt.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Tokeni i kësaj sajti",
     "savedLeaveBlankToKeep": "I ruajtur — lëreni bosh për ta mbajtur ose përdorni Pastro për ta hequr",
     "pasteACloudflareApiToken": "Ngjitni një token API të Cloudflare",
-    "save": "Ruaj",
     "clear": "Pastro",
     "nothingStoredThisHostCannot": "Asgjë e ruajtur — ky host nuk mund të shërbehet me HTTPS nga kjo platformë.",
     "nothingStoredHereTlsFor": "Asgjë e ruajtur këtu — TLS për këtë host përfundon para platformës, ndaj certifikata e tij ndodhet atje.",
@@ -4706,36 +4680,26 @@
     "roles": "Rolet",
     "permissions": "Lejet",
     "eventDetails": "Detajet e ngjarjes",
-    "context": "Konteksti",
     "resource": "Burimi",
     "system": "Sistemi",
     "timestamp": "Vula kohore",
-    "authority": "Autoriteti",
-    "actorId": "ID e aktorit",
-    "type": "Lloji",
-    "systemLog": "Regjistri i sistemit",
-    "audit": "Auditi: {{status}}",
-    "activityMessage": "Mesazhi i aktivitetit",
-    "actionTaken": "Veprimi i kryer",
-    "resourcePool": "Grupi i burimeve",
-    "rawMetadata": "Metadata të papërpunuara",
     "thisEntryIsPartOf": "Ky regjistrim është pjesë e një gjurme auditi të pandryshueshme.",
     "exportJson": "Eksporto JSON",
     "event": "Ngjarja",
     "actor": "Aktori",
+    "plugin": "Shtojcë",
     "activity": "Aktiviteti",
     "status": "Statusi",
     "action": "Veprimi",
     "time": "Koha",
-    "logSignature": "Nënshkrimi i regjistrit: {{id}}",
     "internal": "I BRENDSHËM",
     "level": {
-      "INFO": "INFO",
-      "WARN": "PARALAJMËRIM",
-      "ERROR": "GABIM",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDITIM"
+      "INFO": "Info",
+      "WARN": "Paralajmërim",
+      "ERROR": "Gabim",
+      "DEBUG": "Debug",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Auditim"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Hyrja #{{id}}",
+    "recordedData": "Të dhënat e regjistruara"
   },
   "mediaPicker": {
     "showingOnly": "Shfaqen vetëm: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Detyra",
       "schedule": "Ekzekutohet",
       "lastRun": "Ekzekutimi i fundit",
-      "nextRun": "Ekzekutimi i radhës"
+      "nextRun": "Ekzekutimi i radhës",
+      "duration": "Kohëzgjatja"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

@@ -73,31 +73,16 @@ export class ReadOnlyFieldValue extends PureReactor {
 
   render(): ReactNode {
     const text = this.text.trim();
-    const empty = !text;
     const provenance = (this.provenance || '').trim();
-
-    // The same text as an editable field (the `fc-field` token): a locked value is not a smaller kind of field.
-    const valueClass = `fc-field leading-snug ${
-      empty ? 'text-slate-400 dark:text-slate-500' : 'text-slate-600 dark:text-slate-300'
-    }`;
-
-    if (!provenance) {
-      return (
-        <div className="min-h-[34px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/40">
-          <span className={valueClass}>{empty ? (this.emptyLabel || AdminI18n.t('ui.field.notSet')) : text}</span>
-        </div>
-      );
-    }
-
+    // The same box as a locked row (`FieldLockedRow`): field height, recessed fill, the lock where the
+    // cursor would be. Who writes the value is a quiet line under it, not a second box above it.
     return (
-      <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
-          <FrameworkIcons.Lock size={11} className="shrink-0 text-slate-400 dark:text-slate-500" />
-          <p className="text-[12px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">{provenance}</p>
+      <div className="fc-locked-value-stack">
+        <div className="fc-locked-value">
+          <span className={`fc-locked-value__text${text ? '' : ' fc-locked-value__text--empty'}`}>{text || this.emptyLabel || AdminI18n.t('ui.field.notSet')}</span>
+          <FrameworkIcons.Lock size={14} className="fc-locked-value__lock" aria-hidden="true" />
         </div>
-        <div className="min-h-[34px] bg-slate-50 px-3 py-2 dark:bg-slate-950/40">
-          <span className={valueClass}>{empty ? (this.emptyLabel || AdminI18n.t('ui.field.notSet')) : text}</span>
-        </div>
+        {provenance ? <p className="fc-locked-value__note">{provenance}</p> : null}
       </div>
     );
   }

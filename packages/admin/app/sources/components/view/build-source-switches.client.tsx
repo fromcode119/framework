@@ -20,7 +20,7 @@ export class BuildSourceSwitches extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="space-y-3 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+      <div className="space-y-3 rounded-xl border fc-tone-line px-4 py-3">
         <Switch checked={this.autoBuild} onChange={this.onAutoBuild} label={AdminI18n.t('sources.buildAutomatically')} description={AdminI18n.t('sources.buildThisSourceWheneverNew')} />
         <Switch checked={this.installAfterBuild} onChange={this.onInstallAfterBuild} label={AdminI18n.t('sources.installAfterBuild')} description={AdminI18n.t('sources.putEachSuccessfulBuildIn')} />
         {/* DEPENDENT on the switch above, because the code is: the installer is only reached inside the

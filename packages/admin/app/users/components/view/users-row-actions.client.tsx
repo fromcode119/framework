@@ -20,7 +20,7 @@ export class UsersRowActions extends PureReactor {
   @prop declare onRequestDelete: (user: IUser) => void;
 
   render(): React.ReactNode {
-    const { user, theme, onNavigate, onRequestDelete } = this;
+    const { user, onNavigate, onRequestDelete } = this;
     return (
       <>
         <Slot name="admin.users.list.table.actions" props={{ user }} />

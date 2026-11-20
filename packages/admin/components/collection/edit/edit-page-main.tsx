@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { RecordSectionRepeatedLabel } from '@/components/collection/edit/record-section-repeated-label';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
@@ -37,6 +37,11 @@ export class EditPageMain extends PureReactor {
   @prop declare saveError?: string;
   @prop declare clearSaveError?: () => void;
   @prop declare recordTitle?: string;
+  /** The record's header (a render fn), made the head of the FIRST section's card so the header and
+      the first section's values are one card, like the reference. */
+  @prop declare recordHeader?: (opts?: { bare?: boolean; onEditDetails?: () => void }) => ReactNode;
+  /** The title field — the first card's head shows it, so the first section does not repeat it as a row. */
+  @prop declare titleFieldName?: string;
   /** Names each section's slots (`<base>.<section>.head|body|menu`); see RecordSectionCard. */
   @prop declare sectionSlotBase?: string;
   @prop declare slotProps?: Record<string, any>;
@@ -79,13 +84,15 @@ export class EditPageMain extends PureReactor {
    * ("Pricing", "Shipping"). The title is a size above the field labels, so the two never compete; it
    * replaced a 9px capitalised caption with a rule, which read as a divider rather than a heading.
    */
-  private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = ''): ReactNode {
+  private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = '', isFirst = false): ReactNode {
     // A saved record is read, and changed a section at a time; a new one is still filled in as one form.
     if (!this.isNew && this.handleSubmit) {
       return (
         <RecordSectionCard
           key={`${prefix}${section.key}`}
           section={section}
+          recordHeader={isFirst ? this.recordHeader : undefined}
+          titleFieldName={this.titleFieldName}
           formData={this.formData}
           renderField={this.renderField}
           handlePatch={this.handlePatch}
@@ -102,12 +109,7 @@ export class EditPageMain extends PureReactor {
       );
     }
     return (
-      <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
-        {section.title ? (
-          /* A group's name reads the same on the form as on the record: 16/24. At 14 it sat between
-             a label and a title and read as neither. */
-          <h2 className="mb-4 text-[16px] font-medium leading-6 text-[var(--card-foreground)]">{section.title}</h2>
-        ) : null}
+      <RecordCard key={`${prefix}${section.key}`} id={`section-${section.key}`} title={section.title || undefined}>
         {/* Every group is open. A section that folded in place made the form a stack of shut drawers:
             the operator had to guess which one held the field they wanted, opening each in turn, and a
             field nobody opened was a field nobody filled. A card is as long as what it holds. */}
@@ -118,14 +120,14 @@ export class EditPageMain extends PureReactor {
           </div>
         </div>
         {this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
-      </Card>
+      </RecordCard>
     );
   }
 
   render(): ReactNode {
     return (
       <>
-        {this.standardMainFieldSections.map((section) => this.renderSection(section))}
+        {this.standardMainFieldSections.map((section, index) => this.renderSection(section, '', index === 0))}
         {this.fullWidthMainFieldSections.map((section) => this.renderSection(section, 'full-width-'))}
       </>
     );

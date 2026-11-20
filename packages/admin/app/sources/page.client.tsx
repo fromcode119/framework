@@ -8,16 +8,21 @@ import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.clie
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SourcesPageActions } from '@/app/sources/sources-page-actions.client';
 import { SourcesTable } from '@/app/sources/components/view/sources-table.client';
-import { BuildSourceDialog } from '@/app/sources/components/view/build-source-dialog.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { BuildSourceForm } from '@/app/sources/components/view/build-source-form.client';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * The Sources screen: the repositories this platform builds from, as one searchable, filterable
  * table. The top of the chain — what it holds and does is in `SourcesPageState` and its actions.
  */
 export class BuildOverview extends SourcesPageActions {
+  /** The open form, so the drawer's Save can send what it holds. */
+  private sourceForm: BuildSourceForm | null = null;
+
   static slots = ['admin.plugin.sources.content', 'admin.plugin.sources.overview', 'admin.plugin.sources.page.sources'];
 
   private get emptyMessage(): string {
@@ -33,7 +38,7 @@ export class BuildOverview extends SourcesPageActions {
     const buildLabel = this.triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll');
     return (
       <div className="flex items-center gap-2">
-        <Button disabled={this.checking} icon={<RefreshCw size={14} className={this.checking ? 'animate-spin' : ''} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE} title={checkLabel} aria-label={checkLabel} className="whitespace-nowrap">
+        <Button isLoading={this.checking} icon={<RefreshCw size={14} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE} title={checkLabel} aria-label={checkLabel} className="whitespace-nowrap">
           <span className="hidden sm:inline">{checkLabel}</span>
         </Button>
         <Button disabled={this.triggering} icon={<Play size={14} />} onClick={this.buildAll} variant={ButtonVariant.SECONDARY} title={buildLabel} aria-label={buildLabel} className="whitespace-nowrap">
@@ -50,18 +55,21 @@ export class BuildOverview extends SourcesPageActions {
     if (!this.editorMode) return null;
     const editing = this.editorMode === SourceEditorMode.EDIT;
     return (
-      <BuildSourceDialog
+      <EditSheet
+        isOpen
         title={editing ? AdminI18n.t('sources.edit2', { name: this.editingBuild?.slug || AdminI18n.t('sources.source') }) : AdminI18n.t('sources.addSource')}
-        description={editing ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave') : AdminI18n.t('sources.pasteARepositoryUrl')}
         onClose={this.closeEditor}
+        onSave={() => this.sourceForm?.submit()}
+        saving={this.savingSource}
+        error={this.editorError || undefined}
+        saveLabel={editing ? AdminI18n.t('sources.saveSource') : AdminI18n.t('sources.createSource')}
+        cancelLabel={AdminI18n.t('sources.cancel')}
       >
-        <BuildSourceForm build={this.editingBuild} busy={this.savingSource} mode={this.editorMode} onCancel={this.closeEditor} onSubmit={this.saveSource} />
-        {this.editorError ? (
-          <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
-            {this.editorError}
-          </div>
-        ) : null}
-      </BuildSourceDialog>
+        <div className="fc-form-stack">
+          <Hint>{editing ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave') : AdminI18n.t('sources.pasteARepositoryUrl')}</Hint>
+          <BuildSourceForm ref={(form) => { this.sourceForm = form; }} build={this.editingBuild} mode={this.editorMode} onSubmit={this.saveSource} />
+        </div>
+      </EditSheet>
     );
   }
 
@@ -88,9 +96,9 @@ export class BuildOverview extends SourcesPageActions {
         {/* No padding on the root: the sticky header spans the content column like every other screen's. */}
         <div className="w-full">
           <CompactPageHeader title={AdminI18n.t('sources.sources')} subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')} icon={<Hammer size={20} />} actions={this.renderHeaderActions()} />
-          <div className="p-4 lg:p-6 fc-page-stack">
+          <div className="py-6 fc-page-stack">
             {this.error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{this.error}</div>
+              <Alert tone="danger">{this.error}</Alert>
             ) : null}
             <ListToolbar search={this.search} onSearch={this.setSearch} placeholder={AdminI18n.t('sources.searchSources')} theme={this.theme} filters={this.filters} total={matching.length} />
             <SourcesTable

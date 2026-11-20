@@ -35,7 +35,6 @@ export interface IThemeSettingsPageView {
   readonly dbConfig: Record<string, unknown>;
 
   readonly isUpdating: boolean;
-  readonly isSaving: boolean;
   readonly isReseeding: boolean;
   readonly isResettingTheme: boolean;
   readonly isDeleting: boolean;
@@ -45,7 +44,6 @@ export interface IThemeSettingsPageView {
 
   handleActivate(): Promise<void>;
   handleUpdate(): Promise<void>;
-  handleSaveConfig(): Promise<void>;
   handleDelete(): Promise<void>;
   handleRunSeeds(): Promise<void>;
   handleResetTheme(): Promise<void>;

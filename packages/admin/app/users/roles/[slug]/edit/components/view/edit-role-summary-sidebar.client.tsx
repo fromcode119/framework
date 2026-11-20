@@ -1,61 +1,45 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
+import { InlineTip } from '@/components/ui/view/inline-tip.client';
 import { Button } from '@/components/ui/view/button.client';
-import { Badge } from '@/components/ui/view/badge.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditRoleSummarySidebar extends PureReactor {
   @prop declare type: string;
   @prop declare permissionCount: number;
-  @prop declare loading: boolean;
-  @prop declare onCancel: () => void;
+  @prop declare loading?: boolean;
+  /** Given only while a role is being CREATED: an existing role is saved from the page's save bar, so
+      its summary carries no buttons. */
+  @prop declare onCancel?: () => void;
   /** No Save: this editor may not change the role here (see the notice on the page). */
   @prop declare readOnly?: boolean;
+  /** The words on the save button and the tip under it, when they are not the editor's own. */
+  @prop declare saveLabel?: string;
+  @prop declare tipLabel?: string;
+  @prop declare tip?: string;
 
   render(): ReactNode {
     const { type, permissionCount, loading, onCancel } = this;
     return (
-      <div className="lg:col-span-4 space-y-8">
-        <Card title={AdminI18n.t('users.summary')}>
-          <div className="space-y-6">
-            <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 fc-page-stack">
-               <div className="flex flex-col gap-1">
-                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
-                  <Badge variant={BadgeVariant.AMBER}>{type}</Badge>
-               </div>
-               <div className="flex flex-col gap-1">
-                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.selectedScope')}</span>
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                    {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.actionsSelected', { permissionCount: permissionCount })}
-                  </span>
-               </div>
-            </div>
-
-            {this.readOnly ? null : <Button
-              type="submit"
-              className="w-full h-11 text-[12px] font-medium tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
-              isLoading={loading}
-            >
-              {AdminI18n.t('users.save')}
-            </Button>}
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="w-full h-11 font-medium text-slate-400"
-              onClick={onCancel}
-            >
-              {AdminI18n.t('users.cancel')}
-            </Button>
+      <div className="lg:col-span-4 fc-columns__stack">
+        <RecordCard title={AdminI18n.t('users.summary')}>
+          <div className="fc-stack">
+            <AdminFactGrid facts={[
+              { key: 'type', label: AdminI18n.t('users.roleType'), value: type },
+              { key: 'scope', label: AdminI18n.t('users.selectedScope'), value: permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.actionsSelected', { permissionCount }) },
+            ]} />
+            {onCancel ? (
+              <div className="fc-record-card__table-tools">
+                <Button variant={ButtonVariant.SECONDARY} onClick={onCancel}>{AdminI18n.t('users.cancel')}</Button>
+                {this.readOnly ? null : <Button type="submit" variant={ButtonVariant.PRIMARY} isLoading={loading}>{this.saveLabel ?? AdminI18n.t('users.save')}</Button>}
+              </div>
+            ) : null}
+            <InlineTip label={this.tipLabel ?? AdminI18n.t('users.securityNote')}>{this.tip ?? AdminI18n.t('users.changesToRolePermissionsAre')}</InlineTip>
           </div>
-        </Card>
-
-        <Card title={AdminI18n.t('users.securityNote')}>
-           <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-             {AdminI18n.t('users.changesToRolePermissionsAre')}
-           </p>
-        </Card>
+        </RecordCard>
       </div>
     );
   }

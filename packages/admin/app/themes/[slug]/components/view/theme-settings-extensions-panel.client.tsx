@@ -1,4 +1,4 @@
-import { ThemeConfigFieldType, ThemeMode } from '@fromcode119/core/client';
+import { ThemeConfigFieldType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -37,7 +37,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
         <div className="space-y-5">
           {Object.entries(groupedThemeSettings).map(([group, keys]) => (
             <div key={group} className="space-y-4">
-              <h3 className={`text-[13px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{group === 'General' ? AdminI18n.t('themes.general') : group}</h3>
+              <h3 className={`fc-size-sm font-medium fc-tone-text`}>{group === 'General' ? AdminI18n.t('themes.general') : group}</h3>
               {keys.map((key) => {
                 const schema = themeSettingsSchema[key];
                 const rawValue = tempSettings[key];
@@ -59,11 +59,11 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                       <div className="min-w-0">
                         <label className={UiFieldUtils.TEXT.LABEL}>{schema?.label || key}</label>
                         {schema?.description && (
-                          <p className="text-[12px] text-slate-500 mt-1">{schema.description}</p>
+                          <p className="fc-size-xs fc-tone-muted mt-1">{schema.description}</p>
                         )}
                       </div>
                       {schema?.integrationType && (
-                        <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[12px] font-medium text-indigo-500 hover:text-indigo-600">
+                        <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="fc-size-xs font-medium fc-tone-brand fc-tone-hover-brand">
                           {AdminI18n.t('themes.openIntegration')}
                         </AdminLink>
                       )}
@@ -72,7 +72,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                     {isStructured ? (
                       <>
                         <StructuredReadOnlyField value={rawValue} theme={adminTheme} />
-                        <p className="text-[12px] text-slate-500 mt-2">{ThemeSettingsExtensionsPanel.provenanceOf(key, model)}</p>
+                        <p className="fc-size-xs fc-tone-muted mt-2">{ThemeSettingsExtensionsPanel.provenanceOf(key, model)}</p>
                       </>
                     ) : type === ThemeConfigFieldType.BOOLEAN ? (
                       <Switch checked={Boolean(rawValue)} onChange={(checked) => page.handleSettingChange(key, checked)} />

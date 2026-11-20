@@ -57,7 +57,7 @@ export class ThemeProvider extends Reactor {
 
   render(): ReactNode {
     if (!this.mounted) {
-      return <div className="bg-slate-50 dark:bg-[#020617] min-h-screen" />;
+      return <div className="fc-canvas  min-h-screen" />;
     }
     return (
       <ThemeContext.context.Provider value={this.value}>

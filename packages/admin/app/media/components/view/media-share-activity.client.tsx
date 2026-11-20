@@ -1,5 +1,8 @@
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { StatCard } from '@/components/ui/view/stat-card.client';
+import { Loader } from '@/components/ui/view/loader.client';
 import type { ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
 import { prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
@@ -47,57 +50,36 @@ export class MediaShareActivity extends AdminComponent {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
   }
 
-  private renderStat(label: string, value: number): ReactNode {
-    return (
-      <div key={label} className="min-w-0">
-        <p className="text-[15px] font-medium tabular-nums leading-none">{value}</p>
-        <p className="mt-1 text-[12px] opacity-50 truncate">{label}</p>
-      </div>
-    );
-  }
-
   /** One recipient's whole story on one line: opens, downloads, when they were last there. */
-  private renderRecipient(row: any, dark: boolean, index: number): ReactNode {
+  private renderRecipient(row: any): ReactNode {
     const parts: string[] = [];
-    if (row.views > 0) parts.push(`${row.views} open${row.views === 1 ? '' : 's'}`);
-    if (row.downloads > 0) parts.push(`${row.downloads} download${row.downloads === 1 ? '' : 's'}`);
-    if (row.refused > 0) parts.push(`${row.refused} refused`);
+    if (row.views > 0) parts.push(`${AdminI18n.t('media.pageOpens')}: ${row.views}`);
+    if (row.downloads > 0) parts.push(`${AdminI18n.t('media.downloads')}: ${row.downloads}`);
+    if (row.refused > 0) parts.push(`${AdminI18n.t('media.refused')}: ${row.refused}`);
     const summary = parts.length ? parts.join(' · ') : AdminI18n.t('media.notOpenedYet');
 
     return (
-      <div key={row.grantId} className={`flex items-center justify-between gap-3 px-4 py-2 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
-        <div className="min-w-0">
-          <p className="text-[12px] font-medium truncate">{row.email}</p>
-          <p className="text-[12px] opacity-55">{summary}</p>
-        </div>
-        {row.lastAt ? (
-          <span className="text-[12px] opacity-45 flex-shrink-0">{AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) })}</span>
-        ) : (
-          <Badge variant={BadgeVariant.GRAY} className="text-[12px] flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
-        )}
-      </div>
+      <ListRow key={row.grantId} title={<span className="fc-ext-row__plain">{row.email}</span>} description={summary}
+        actions={row.lastAt ? undefined : <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('media.noActivity')}</Badge>}
+        meta={row.lastAt ? AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) }) : undefined} />
     );
   }
 
   render(): ReactNode {
-    if (this.loading) return <p className="px-4 py-3 text-[12px] opacity-60">{AdminI18n.t('media.loadingActivity')}</p>;
+    if (this.loading) return <Loader label={AdminI18n.t('media.loadingActivity')} />;
 
-    const dark = this.theme === ThemeMode.DARK;
     const recipients: any[] = Array.isArray(this.data?.recipients) ? this.data.recipients : [];
+    const stats: Array<[string, number]> = [
+      [AdminI18n.t('media.recipients'), Number(this.data?.recipientCount || 0)],
+      [AdminI18n.t('media.pageOpens'), Number(this.data?.viewCount || 0)],
+      [AdminI18n.t('media.downloads'), Number(this.data?.downloadCount || 0)],
+      [AdminI18n.t('media.refused'), Number(this.data?.refusedCount || 0)],
+    ];
 
     return (
-      <div className="px-4 py-3 space-y-3">
-        <div className="grid grid-cols-4 gap-3">
-          {this.renderStat(AdminI18n.t('media.recipients'), Number(this.data?.recipientCount || 0))}
-          {this.renderStat(AdminI18n.t('media.pageOpens'), Number(this.data?.viewCount || 0))}
-          {this.renderStat(AdminI18n.t('media.downloads'), Number(this.data?.downloadCount || 0))}
-          {this.renderStat(AdminI18n.t('media.refused'), Number(this.data?.refusedCount || 0))}
-        </div>
-        {recipients.length ? (
-          <div className={`rounded-xl border ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            {recipients.map((row, index) => this.renderRecipient(row, dark, index))}
-          </div>
-        ) : null}
+      <div className="fc-form-stack">
+        <div className="fc-stat-strip fc-stat-strip--tight">{stats.map(([label, value]) => <StatCard key={label} title={label} value={String(value)} />)}</div>
+        {recipients.length ? <ListCard>{recipients.map((row) => this.renderRecipient(row))}</ListCard> : null}
       </div>
     );
   }

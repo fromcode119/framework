@@ -1,3 +1,7 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { Label } from '@/components/ui/view/label.client';
+import { CopyValue } from '@/components/ui/view/copy-value.client';
+import { Heading } from '@/components/ui/view/heading.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -13,7 +17,6 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class IntegrationSetupAddresses extends PureReactor {
   @prop declare addresses: IIntegrationSetupAddress[];
   @state private storefrontUrl = '';
-  @state private copiedPath = '';
 
   componentDidMount(): void {
     void SiteStorefrontClient.current().then((url) => { this.storefrontUrl = url.replace(/\/+$/, ''); });
@@ -24,34 +27,12 @@ export class IntegrationSetupAddresses extends PureReactor {
     return `${this.storefrontUrl}${address.path}`;
   }
 
-  @bound
-  private async copy(address: IIntegrationSetupAddress): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(this.fullAddress(address));
-      this.copiedPath = address.path;
-    } catch {
-      this.copiedPath = '';
-    }
-  }
-
   private renderAddress(address: IIntegrationSetupAddress): ReactNode {
     return (
-      <div key={address.path} className="space-y-1">
-        <p className="text-xs font-medium text-slate-700 dark:text-slate-300">{address.label}</p>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 min-w-0 truncate rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs text-slate-800 dark:text-slate-200">
-            {this.fullAddress(address)}
-          </code>
-          <button
-            type="button"
-            onClick={() => void this.copy(address)}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 px-2.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-          >
-            {this.copiedPath === address.path ? <FrameworkIcons.Check size={12} /> : <FrameworkIcons.Copy size={12} />}
-            {this.copiedPath === address.path ? AdminI18n.t('settings.integrations.setupAddressCopied') : AdminI18n.t('settings.integrations.setupAddressCopy')}
-          </button>
-        </div>
-        {address.description ? <p className="text-xs text-slate-500">{address.description}</p> : null}
+      <div key={address.path} className="fc-field-stack">
+        <Label>{address.label}</Label>
+        <CopyValue value={this.fullAddress(address)} />
+        {address.description ? <Hint>{address.description}</Hint> : null}
       </div>
     );
   }
@@ -59,14 +40,10 @@ export class IntegrationSetupAddresses extends PureReactor {
   render(): ReactNode {
     if (!this.addresses?.length) return null;
     return (
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 space-y-3">
-        <div>
-          <p className="text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.setupAddresses')}</p>
-          <p className="text-xs text-slate-500 mt-0.5">
-            {this.storefrontUrl
-              ? AdminI18n.t('settings.integrations.setupAddressesHint')
-              : AdminI18n.t('settings.integrations.setupAddressesNoSite')}
-          </p>
+      <div className="fc-form-stack">
+        <div className="fc-field-stack">
+          <Heading level="h3">{AdminI18n.t('settings.integrations.setupAddresses')}</Heading>
+          <Hint>{this.storefrontUrl ? AdminI18n.t('settings.integrations.setupAddressesHint') : AdminI18n.t('settings.integrations.setupAddressesNoSite')}</Hint>
         </div>
         {this.addresses.map((address) => this.renderAddress(address))}
       </div>

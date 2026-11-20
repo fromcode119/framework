@@ -45,7 +45,7 @@ export class PersonFieldPicker extends Reactor {
       <div className="space-y-1.5">
         <Select value={value || ''} onChange={(next: string) => this.onChange?.(next)} options={options} theme={theme}
           disabled={readOnly || !loaded} placeholder={AdminI18n.t('ui.personFieldPicker.none')} />
-        <AdminLink href={AdminConstants.ROUTES.PEOPLE.FIELDS} className="text-[12px] font-medium text-indigo-600">{AdminI18n.t('ui.personFieldPicker.manage')}</AdminLink>
+        <AdminLink href={AdminConstants.ROUTES.PEOPLE.FIELDS} className="fc-size-xs font-medium fc-tone-brand">{AdminI18n.t('ui.personFieldPicker.manage')}</AdminLink>
       </div>
     );
   }

@@ -162,6 +162,7 @@
       "reorderHandle": "Træk for at ændre rækkefølgen — eller fokusér og brug piletasterne",
       "reorderEnable": "Vis listen i dens egen rækkefølge for at ændre rækkefølgen",
       "reorderFailed": "Den nye rækkefølge kunne ikke gemmes",
+      "noMatch": "Intet matcher din søgning eller dine filtre.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importér {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Rediger",
       "notFilledIn": "Ikke udfyldt",
       "statusSection": "Status",
-      "statusConfirm": "Skift status til “{{status}}”?",
       "recordSection": "Post",
       "showJson": "Vis som JSON",
       "showForm": "Vis som formular",
@@ -245,7 +245,8 @@
       "copied": "Kopieret",
       "more": "Mere",
       "moreFields": "{{count}} felter",
-      "moreOneField": "{{count}} felt"
+      "moreOneField": "{{count}} felt",
+      "statusConfirm": "Skift status til “{{status}}”?"
     },
     "notFound": {
       "title": "Samlingen blev ikke fundet",
@@ -366,7 +367,8 @@
     "reset": "Nulstil",
     "notScheduledYet": "ikke planlagt endnu",
     "more": "Flere handlinger",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Fjern"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Vælg farve",
-      "colour": "Farve",
-      "pick": "Vælg en farve",
       "hex": "Hex-kode",
-      "confirm": "Bekræft farve",
       "notSet": "Ikke angivet"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Inaktive afhængigheder fundet",
       "intro": "For at aktivere {{plugin}} skal følgende håndteres:",
       "notInstalled": "IKKE INSTALLERET",
+      "inactive": "fra",
+      "incompatible": "anden version",
       "requires": "Kræver version {{version}}. Den kan hentes fra markedspladsen.",
       "needsActivation": "Allerede installeret, men skal aktiveres (version {{version}}).",
       "mismatch": "Versionskonflikt: kræver {{expected}}, fandt {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Forhåndsvisning af platform",
-      "image": "Forhåndsvisning {{number}}"
+      "image": "Forhåndsvisning {{number}}",
+      "previous": "Forrige",
+      "next": "Næste"
     },
     "menuField": {
       "newItem": "Nyt menupunkt",
-      "structure": "Menustruktur",
-      "add": "Tilføj menupunkt"
+      "add": "Tilføj menupunkt",
+      "reorder": "Træk for at flytte; piletaster: op og ned flytter, højre indrykker, venstre rykker ud"
     },
     "field": {
       "notSet": "Ikke angivet",
@@ -461,8 +464,8 @@
       "record": "post"
     },
     "array": {
-      "addNew": "Tilføj ny {{label}}",
-      "item": "Element"
+      "add": "Tilføj",
+      "reorder": "Træk for at flytte, eller brug piletasterne"
     },
     "stepper": {
       "increment": "Forøg",
@@ -528,9 +531,7 @@
       "noContact": "Ingen e-mail eller telefon i Personer",
       "hasLogin": "Har et login",
       "noLogin": "Intet login",
-      "source": "Navn, e-mail og telefon kommer fra Personer #{{id}}; ret dem dér.",
       "open": "Åbn i Personer",
-      "choose": "Vælg en anden",
       "searchFailed": "Der kunne ikke søges i Personer lige nu.",
       "noMatch": "Ingen i Personer matcher. Indtast oplysningerne nedenfor; når du gemmer, føjes personen til Personer.",
       "ref": "Personer #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Åbn Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relative tilsidesættelser arver samlingens præfiks. Aktivér absolut tilstand for at omgå præfikser som `/shop`.",
     "range": "Periode",
     "noDataForThisRange": "Ingen data for denne periode",
     "peak": "· top {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtre",
       "clearFilters": "Ryd alle",
       "removeFilter": "Fjern filteret {{label}}",
-      "showResults": "Vis {{count}} resultater"
+      "showResults": "Vis {{count}} resultater",
+      "showResultsOne": "Vis 1 resultat"
     },
     "personFieldPicker": {
       "none": "Gemmes ikke i et personfelt",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Sandkassegrænserne for {{name}} blev gemt, men processen kunne ikke genstartes med dem: {{value}}",
       "restartRequired": "Genstart påkrævet",
       "sandboxSettingsForWereSaved": "Sandkasseindstillingerne for {{name}} blev gemt, men API'et skal genstartes, før de træder i kraft.",
-      "resourcesUpdated": "Ressourcer opdateret",
-      "sandboxLimitsForUpdated": "Sandkassegrænserne for {{name}} er opdateret.",
       "sandboxDisabledFor": "Sandkasse deaktiveret for {{name}}.",
       "saveFailed": "Lagring mislykkedes",
       "failedToUpdateSandboxLimits": "Kunne ikke opdatere sandkassegrænserne.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inaktiv. Ingen nylige hændelser registreret.",
       "updating": "Opdaterer...",
       "updateAvailable": "Opdatering tilgængelig",
-      "updatePolicy": "Opdateringspolitik",
       "saveChanges": "Gem ændringer",
       "unsavedChanges": "Ikke-gemte ændringer",
       "exportSettingsAsJson": "Eksportér indstillinger som JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nyt i v{{version}}",
       "installedVersion": "Installeret {{version}}",
       "marketplaceVersion": "Markedsplads {{version}}",
-      "saving": "Gemmer...",
       "saveSettings": "Gem indstillinger",
       "viewDefinition": "Vis definition",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Udseende",
       "failedToLoadAppearances": "Kunne ikke indlæse udseender",
       "failedToSaveShadowSetting": "Kunne ikke gemme skyggeindstilling",
+      "failedToSaveMenuSetting": "Menuindstillingen kunne ikke gemmes",
       "switchedToReloading": "Skiftet til \"{{slug}}\". Genindlæser…",
       "failedToSwitchAppearance": "Kunne ikke skifte udseende",
       "installFailed": "Installation mislykkedes",
@@ -1919,6 +1917,8 @@
       "install": "Installer",
       "surfaceShadows": "Skygger på flader",
       "depthOnPanelsDialogsAnd": "Dybde på paneler, dialogbokse og knapper. Slå dette fra for en flad administration — kanter og hjørner forbliver præcis som de er.",
+      "secondMenuColumn": "Anden menukolonne",
+      "sectionPagesBesideTheMenu": "En sektions sider står i en kolonne ved siden af menuen. Slået fra åbnes de under deres linje i den ene menu, og hver skærm bliver 220px bredere.",
       "installFromAPackageUrl": "Installer fra en pakke-URL",
       "builtIn": "Indbygget",
       "installed": "Installeret",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP-placering blev ikke opdateret",
       "geoUnavailable": "Status for IP-placering er ikke tilgængelig",
       "geoAttribution": "IP-geolokation fra {{name}} ({{license}}). Opdateres månedligt, mens funktionen er slået til.",
-      "geoSaved": "Gemt",
-      "geoSavedOn": "Databasen downloades nu; den fylder ca. 60 MB.",
-      "geoSavedOff": "Databasen blev fjernet fra serveren.",
       "everyPluginRunsIsolated": "Isoleret: hvert plugin kører i sin egen proces. Hukommelsesloftet og tidsfristen gælder for alle plugins; CPU-andel, samlet hukommelse, disk og processer gælder kun for plugins, som et site har uploadet.",
       "schemaOrphans": "Databaseskema",
       "schemaOrphansHelp": "Kolonner, som databasen stadig indeholder, men som intet længere erklærer. Platformen viser dem kun; intet slettes, før du beslutter det, og en slettet kolonne kan ikke gendannes.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Deaktiveret — endpointet svarer 403 til alle.",
       "mediaPayloadLimitMb": "Grænse for mediedata (MB)",
       "maximumDecodedUploadOrRemote": "Den største afkodede upload eller fjerndownload, som MCP-medieværktøjerne accepterer.",
-      "saveLimit": "Gem grænse",
       "allSites": "alle websteder",
       "issuedBeforeSites": "udstedt før websteder",
       "noTokensYet": "Ingen tokens endnu.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platformens standard",
       "thisSite": "Dette websted",
       "inForceNow": "Gældende nu",
-      "saving": "Gemmer…",
-      "savePolicy": "Gem politik",
       "thePlatformDefaultIsSet": "Platformens standard fastsættes af en platformadministrator.",
       "useTheLayerBelow": "Brug laget nedenunder",
       "whyTheLawRequiresThese": "Hvorfor loven kræver, at disse oplysninger opbevares",
-      "inheritsThePlatformDefault": "arver: platformens standard"
+      "inheritsThePlatformDefault": "arver: platformens standard",
+      "strategyDelete": "Slet",
+      "strategyAnonymise": "Anonymiser",
+      "strategyRetain": "Behold",
+      "declaredBy": "Standard angivet af {{plugin}}",
+      "inheritsValue": "arver: {{value}}",
+      "legalBasis": "Retsgrundlag",
+      "theSiteColumnIsSet": "Kolonnen \"Dette websted\" angives inde i et websted. Vælg et websted i skifteren for at ændre den."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Visningsnavn",
     "thisPersonHasALogin": "Denne person har en loginkonto; e-mailen ændres på kontoen.",
     "birthDate": "Fødselsdato",
-    "saveChanges": "Gem ændringer",
     "sendPasswordResetEmail": "Send e-mail til nulstilling af adgangskode",
     "cancel": "Annuller",
     "accountManagement": "Kontoadministration",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Kopiér gendannelseskoderne manuelt.",
     "nameRequired": "Navn påkrævet",
     "enterATokenNameFirst": "Angiv først et navn til tokenet.",
-    "tokenCreated": "Token oprettet",
     "copyTheTokenNowIt": "Kopiér tokenet nu. Det vises kun én gang.",
     "failedToCreateApiToken": "API-tokenet kunne ikke oprettes",
     "areYouSureYouWant2": "Er du sikker på, at du vil deaktivere 2FA for denne bruger? Det vil reducere kontoens sikkerhed.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Session tilbagekaldt",
     "deviceSessionRevokedSuccessfully": "Enhedssessionen er tilbagekaldt.",
     "failedToRevokeSession": "Sessionen kunne ikke tilbagekaldes",
-    "rolesUpdated": "Roller opdateret",
-    "theUserSRolesWere": "Brugerens roller blev gemt.",
     "saveFailed": "Gemning mislykkedes",
     "failedToSaveRoles": "Rollerne kunne ikke gemmes.",
     "loadingRoles": "Indlæser roller",
@@ -3448,8 +3445,6 @@
     "remove": "Fjern",
     "loadFailed": "Indlæsning mislykkedes",
     "couldNotRetrieveRoleDetails": "Rolleoplysningerne kunne ikke hentes.",
-    "roleUpdated": "Rolle opdateret",
-    "wasSaved": "\"{{name}}\" blev gemt.",
     "updateFailed": "Opdatering mislykkedes",
     "anErrorOccurredWhileSaving": "Der opstod en fejl under gemning.",
     "loadingRole": "Indlæser rolle...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Tilbage til brugere",
     "selfServiceSecurityControls": "Selvbetjente sikkerhedsindstillinger",
     "sessionDeviceControlsAndPersonal": "Styring af sessioner/enheder og personlige API-tokens er kun tilgængelige, når du ser din egen brugerkonto.",
-    "securityRecommendations": "Sikkerhedsanbefalinger",
     "twoFactorAuthentication": "Totrinsgodkendelse",
-    "activeAndProtectingThisAccount": "Aktiv og beskytter denne konto",
-    "notEnabledHighlyRecommendedFor": "Ikke aktiveret – anbefales stærkt til administratorkonti",
-    "passwordProtected": "Adgangskodebeskyttet",
-    "accountHasASecurePassword": "Kontoen har en sikker adgangskode",
-    "administratorAccess": "Administratoradgang",
     "fullSystemAccess2faStrongly": "Fuld systemadgang – 2FA anbefales stærkt",
     "personalApiTokens": "Personlige API-tokens",
     "tokenNameEGCi": "Tokennavn (f.eks. CI-deploy)",
     "days": "Dage",
     "createToken": "Opret token",
-    "copyNowShownOnce": "Kopiér nu (vises kun én gang)",
     "loadingApiTokens": "Indlæser API-tokens...",
     "noApiTokensCreatedYet": "Der er endnu ikke oprettet nogen API-tokens.",
     "revoke": "Tilbagekald",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Login- og sessionsaktivitet",
     "loadingAuthActivity": "Indlæser godkendelsesaktivitet...",
     "noRecentLoginSessionEvents": "Ingen nylige login-/sessionshændelser for denne bruger.",
-    "unknownTime": "Ukendt tidspunkt",
-    "activityEvent": "Aktivitetshændelse",
     "openFullGlobalActivity": "Åbn al global aktivitet",
-    "2faStatus": "2FA-status",
     "addAnExtraLayerOf": "Tilføj et ekstra sikkerhedslag med app-baseret godkendelse (TOTP)",
-    "recommended": "Anbefalet",
     "enableTwoFactorAuthenticationTo": "Aktivér totrinsgodkendelse for at beskytte denne konto med tidsbaserede engangskoder (TOTP).",
     "enable2fa": "Aktivér 2FA",
     "step1ScanQrCode": "Trin 1: Scan QR-kode",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Trin 2: Bekræft kode",
     "enterThe6DigitCode": "Indtast den 6-cifrede kode fra din godkendelsesapp for at fuldføre opsætningen:",
     "verifyEnable": "Bekræft og aktivér",
-    "protectionActive": "Beskyttelse aktiv",
     "thisAccountRequiresA6": "Denne konto kræver en 6-cifret kode fra en godkendelsesapp ved login.",
     "regenerateRecoveryCodes": "Generér nye gendannelseskoder",
     "disable2fa": "Deaktiver 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Tilbagekald andre sessioner",
     "loadingSessions": "Indlæser sessioner...",
     "noActiveSessions": "Ingen aktive sessioner.",
-    "currentSession": "Aktuel session",
-    "deviceSession": "Enhedssession",
     "current": "Aktuel",
     "unknownDevice": "Ukendt enhed",
     "editAccount2": "Rediger konto",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Åbn brugerpost",
     "token": "Token",
     "createdOn": "Oprettet {{date}}",
-    "notAvailable": "–",
     "revokedOn": "Tilbagekaldt {{date}}",
     "recoveryCodesRemaining": "Resterende gendannelseskoder:",
-    "unknownValue": "ukendt",
     "expiresOn": "Udløber: {{date}}",
     "person2": "Person",
     "added": "Tilføjet",
@@ -3591,12 +3570,10 @@
       "loading": "Indlæser personfelter…",
       "loadFailed": "Personfelterne kunne ikke indlæses.",
       "saveFailed": "Felterne kunne ikke gemmes.",
-      "saved": "Felterne er gemt.",
       "empty": "Der er endnu ingen personfelter. Tilføj et for at begynde at gemme det for hver person.",
       "noneDeclared": "Dette websted har endnu ingen personfelter.",
       "declare": "Tilføj personfelter",
       "manage": "Administrer felter",
-      "save": "Gem felter",
       "saveField": "Gem felt",
       "delete": "Slet",
       "deleteTitle": "Vil du slette dette felt?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Gyldig i (dage)",
+    "revokeOtherSessionsConfirm": "Alle andre enheder logges ud med det samme.",
+    "revokeSessionConfirm": "Den enhed logges ud med det samme.",
+    "revokeCurrentSessionConfirm": "Det er den enhed, du bruger nu. Du logges ud med det samme.",
+    "revokeTokenConfirm": "\"{{name}}\" holder op med at virke med det samme.",
+    "twoFactorTurnedOff": "Totrinsbekræftelse er slået fra for dette websted, så den kan ikke sættes op her.",
+    "openSecuritySettings": "Åbn sikkerhedsindstillinger"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Webstedsindstillinger ({{what}}) angives i hvert enkelt websted – vælg et i webstedsmenuen.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Dette websted kunne ikke åbnes til forhåndsvisning.",
     "couldNotLoadTheSite": "Webstedet kunne ikke indlæses.",
     "couldNotReloadThePlugin": "Pluginlisten kunne ikke genindlæses.",
-    "siteSaved": "Websted gemt",
-    "routingFollowsImmediatelyNoRestart": "Routingen opdateres med det samme — ingen genstart.",
     "notSaved": "Ikke gemt",
     "theSiteCouldNotBe2": "Webstedet kunne ikke gemmes.",
     "couldNotOpenTheSite": "Kunne ikke åbne webstedet",
@@ -3789,7 +3771,6 @@
     "visit": "Besøg",
     "openThisSite": "Åbn dette websted",
     "export": "Eksportér",
-    "save": "Gem",
     "couldNotLoadCertificates": "Certifikaterne kunne ikke indlæses.",
     "couldNotSwitchThisHost": "Denne vært kunne ikke skiftes til automatisk.",
     "couldNotSwitchThisHost2": "Denne vært kunne ikke skiftes til automatisk (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Opdatering tilgængelig",
     "isNowActive": "{{name}} er nu aktivt.",
     "themeHasBeenUpdated2": "Temaet {{name}} er opdateret.",
-    "configurationSaved": "Konfiguration gemt",
-    "visualProtocolsUpdatedSuccessfully": "De visuelle protokoller er opdateret.",
     "saveFailed": "Gemning mislykkedes",
     "hasBeenRemoved2": "{{name}} er fjernet.",
     "seedsExecuted": "Seeds kørt",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Udvidelser",
     "versionReady": "Version {{version}} er klar",
-    "saveChanges": "Gem ændringer",
     "runSeedsHint": "Afspiller temaets seed-data – eksempelsider og indhold – i dette websted igen.",
     "resetThemeHint": "Rydder dette websteds gemte temaindstillinger og afspiller seed-data igen.",
     "notActiveHint": "Dette websted bruger et andet tema.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Hvad er ændret i v{{version}}",
     "whatChanged": "Hvad er ændret",
-    "closeBuildSourceDialog": "Luk dialogen for byggekilde",
-    "close": "Luk",
     "couldNotInstallThatVersion": "Versionen kunne ikke installeres.",
     "couldNotChangeAutomaticUpdating": "Automatisk opdatering kunne ikke ændres.",
     "failed": "Mislykkedes",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatiske certifikater er slået fra. {{reason}}",
     "automaticCertificatesComeFrom": "Automatiske certifikater kommer fra {{authority}}.",
     "noSecretKeyIsConfigured": "Der er ikke konfigureret nogen SECRET_KEY på denne server, så en privat nøgle kan ikke gemmes. Upload er deaktiveret, indtil en er angivet.",
-    "nothingToSavePasteA": "Intet at gemme — indsæt et token, eller brug Ryd for at fjerne det gemte.",
     "savedThisSiteNowUses": "Gemt. Dette site bruger nu sit eget Cloudflare-token.",
     "removedThisSiteFallsBack": "Fjernet. Dette site bruger nu platformens token.",
     "couldNotSaveTheToken": "Tokenet kunne ikke gemmes.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Dette sites token",
     "savedLeaveBlankToKeep": "Gemt — lad feltet være tomt for at beholde det, eller brug Ryd for at fjerne det",
     "pasteACloudflareApiToken": "Indsæt et Cloudflare API-token",
-    "save": "Gem",
     "clear": "Ryd",
     "nothingStoredThisHostCannot": "Intet gemt — denne vært kan ikke leveres over HTTPS af denne platform.",
     "nothingStoredHereTlsFor": "Intet gemt her — TLS for denne vært afsluttes før platformen, så certifikatet ligger dér.",
@@ -4706,36 +4680,26 @@
     "roles": "Roller",
     "permissions": "Tilladelser",
     "eventDetails": "Hændelsesdetaljer",
-    "context": "Kontekst",
     "resource": "Ressource",
     "system": "System",
     "timestamp": "Tidsstempel",
-    "authority": "Myndighed",
-    "actorId": "Aktør-ID",
-    "type": "Type",
-    "systemLog": "Systemlog",
-    "audit": "Revision: {{status}}",
-    "activityMessage": "Aktivitetsmeddelelse",
-    "actionTaken": "Udført handling",
-    "resourcePool": "Ressourcepulje",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Denne post er en del af et uforanderligt revisionsspor.",
     "exportJson": "Eksportér JSON",
     "event": "Hændelse",
     "actor": "Aktør",
+    "plugin": "Udvidelse",
     "activity": "Aktivitet",
     "status": "Status",
     "action": "Handling",
     "time": "Tid",
-    "logSignature": "Logsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "ADVARSEL",
-      "ERROR": "FEJL",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "REVISION"
+      "INFO": "Info",
+      "WARN": "Advarsel",
+      "ERROR": "Fejl",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Revision"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Post #{{id}}",
+    "recordedData": "Registrerede data"
   },
   "mediaPicker": {
     "showingOnly": "Viser kun: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Opgave",
       "schedule": "Kører",
       "lastRun": "Seneste kørsel",
-      "nextRun": "Næste kørsel"
+      "nextRun": "Næste kørsel",
+      "duration": "Varighed"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

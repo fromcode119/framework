@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IRecordsHubItem } from '@fromcode119/react';
@@ -23,6 +22,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       if (!this.mounted) return;
       this.person = person;
       this.fields = PersonEditPageState.toFields(person);
+      this.pending?.mark();
       this.loading = false;
       this.notFound = !person;
       void AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS)
@@ -45,15 +45,17 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
     await this.fetchPerson();
   }
 
-  protected async save(e?: FormEvent): Promise<void> {
-    e?.preventDefault();
+  /** Written by the page's save bar; the page stays open and shows what was stored. */
+  protected async save(): Promise<void> {
     this.saving = true;
     this.error = '';
     try {
       await AdminApi.patch(AdminConstants.ENDPOINTS.SYSTEM.PERSON_SAVE(this.routeId), this.fields);
-      this.router?.push(AdminConstants.ROUTES.PEOPLE.ROOT);
+      await this.fetchPerson();
     } catch (err: any) {
+      this.pending?.failed();
       this.error = String(err?.message || AdminI18n.t('users.failedToSavePerson'));
+    } finally {
       this.saving = false;
     }
   }

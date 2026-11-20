@@ -162,6 +162,7 @@
       "reorderHandle": "Dra for å endre rekkefølgen – eller sett fokus og bruk piltastene",
       "reorderEnable": "Vis listen i egen rekkefølge for å endre rekkefølgen",
       "reorderFailed": "Den nye rekkefølgen kunne ikke lagres",
+      "noMatch": "Ingenting samsvarer med søket eller filtrene.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importere {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Rediger",
       "notFilledIn": "Ikke utfylt",
       "statusSection": "Status",
-      "statusConfirm": "Endre status til «{{status}}»?",
       "recordSection": "Post",
       "showJson": "Vis som JSON",
       "showForm": "Vis som skjema",
@@ -245,7 +245,8 @@
       "copied": "Kopiert",
       "more": "Mer",
       "moreFields": "{{count}} felt",
-      "moreOneField": "{{count}} felt"
+      "moreOneField": "{{count}} felt",
+      "statusConfirm": "Endre status til «{{status}}»?"
     },
     "notFound": {
       "title": "Fant ikke samlingen",
@@ -366,7 +367,8 @@
     "reset": "Tilbakestill",
     "notScheduledYet": "ikke planlagt ennå",
     "more": "Flere handlinger",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Fjern"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Velg farge",
-      "colour": "Farge",
-      "pick": "Velg en farge",
       "hex": "Hex-kode",
-      "confirm": "Bekreft farge",
       "notSet": "Ikke angitt"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Inaktive avhengigheter oppdaget",
       "intro": "For å aktivere {{plugin}} må følgende ordnes:",
       "notInstalled": "IKKE INSTALLERT",
+      "inactive": "av",
+      "incompatible": "annen versjon",
       "requires": "Krever versjon {{version}}. Denne kan lastes ned fra markedsplassen.",
       "needsActivation": "Allerede installert, men må aktiveres (versjon {{version}}).",
       "mismatch": "Versjonskonflikt: krever {{expected}}, fant {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Forhåndsvisning av plattformen",
-      "image": "Forhåndsvisning {{number}}"
+      "image": "Forhåndsvisning {{number}}",
+      "previous": "Forrige",
+      "next": "Neste"
     },
     "menuField": {
       "newItem": "Nytt menyelement",
-      "structure": "Menystruktur",
-      "add": "Legg til menyelement"
+      "add": "Legg til menyelement",
+      "reorder": "Dra for å flytte; piltaster: opp og ned flytter, høyre rykker inn, venstre rykker ut"
     },
     "field": {
       "notSet": "Ikke angitt",
@@ -461,8 +464,8 @@
       "record": "oppføring"
     },
     "array": {
-      "addNew": "Legg til {{label}}",
-      "item": "Element"
+      "add": "Legg til",
+      "reorder": "Dra for å flytte, eller bruk piltastene"
     },
     "stepper": {
       "increment": "Øk",
@@ -528,9 +531,7 @@
       "noContact": "Ingen e-post eller telefon i Personer",
       "hasLogin": "Har pålogging",
       "noLogin": "Ingen pålogging",
-      "source": "Navn, e-post og telefon hentes fra Personer #{{id}}. Endre dem der.",
       "open": "Åpne i Personer",
-      "choose": "Velg en annen",
       "searchFailed": "Det var ikke mulig å søke i Personer akkurat nå.",
       "noMatch": "Ingen i Personer samsvarer. Skriv inn opplysningene nedenfor. Når du lagrer, legges personen til i Personer.",
       "ref": "Personer #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Åpne Nettsteder"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relative overstyringer arver samlingens prefiks. Slå på absolutt modus for å omgå prefikser som `/shop`.",
     "range": "Periode",
     "noDataForThisRange": "Ingen data for denne perioden",
     "peak": "· topp {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtre",
       "clearFilters": "Fjern alle",
       "removeFilter": "Fjern filteret {{label}}",
-      "showResults": "Vis {{count}} resultater"
+      "showResults": "Vis {{count}} resultater",
+      "showResultsOne": "Vis 1 resultat"
     },
     "personFieldPicker": {
       "none": "Lagres ikke i et personfelt",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Sandkassegrensene for {{name}} ble lagret, men prosessen kunne ikke startes på nytt med dem: {{value}}",
       "restartRequired": "Omstart kreves",
       "sandboxSettingsForWereSaved": "Sandkasseinnstillingene for {{name}} ble lagret, men API-et må startes på nytt før de trer i kraft.",
-      "resourcesUpdated": "Ressurser oppdatert",
-      "sandboxLimitsForUpdated": "Sandkassegrensene for {{name}} er oppdatert.",
       "sandboxDisabledFor": "Sandkassen er deaktivert for {{name}}.",
       "saveFailed": "Lagring mislyktes",
       "failedToUpdateSandboxLimits": "Kunne ikke oppdatere sandkassegrensene.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inaktiv. Ingen nylige hendelser registrert.",
       "updating": "Oppdaterer ...",
       "updateAvailable": "Oppdatering tilgjengelig",
-      "updatePolicy": "Oppdateringspolicy",
       "saveChanges": "Lagre endringer",
       "unsavedChanges": "Ulagrede endringer",
       "exportSettingsAsJson": "Eksporter innstillinger som JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nytt i v{{version}}",
       "installedVersion": "Installert {{version}}",
       "marketplaceVersion": "Markedsplass {{version}}",
-      "saving": "Lagrer...",
       "saveSettings": "Lagre innstillinger",
       "viewDefinition": "Vis definisjon",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Utseende",
       "failedToLoadAppearances": "Kunne ikke laste utseender",
       "failedToSaveShadowSetting": "Kunne ikke lagre skygginnstillingen",
+      "failedToSaveMenuSetting": "Menyinnstillingen kunne ikke lagres",
       "switchedToReloading": "Byttet til «{{slug}}». Laster inn på nytt …",
       "failedToSwitchAppearance": "Kunne ikke bytte utseende",
       "installFailed": "Installasjonen mislyktes",
@@ -1919,6 +1917,8 @@
       "install": "Installer",
       "surfaceShadows": "Skygger på flater",
       "depthOnPanelsDialogsAnd": "Dybde på paneler, dialogbokser og knapper. Slå av for en flat administrasjon – kanter og hjørner forblir nøyaktig som de er.",
+      "secondMenuColumn": "Andre menykolonne",
+      "sectionPagesBesideTheMenu": "Sidene i en seksjon står i en kolonne ved siden av menyen. Slått av åpnes de under sin linje i den ene menyen, og hver skjerm blir 220px bredere.",
       "installFromAPackageUrl": "Installer fra en pakke-URL",
       "builtIn": "Innebygd",
       "installed": "Installert",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP-plassering ble ikke oppdatert",
       "geoUnavailable": "Status for IP-plassering er utilgjengelig",
       "geoAttribution": "IP-geolokalisering fra {{name}} ({{license}}). Oppdateres månedlig mens den er på.",
-      "geoSaved": "Lagret",
-      "geoSavedOn": "Laster ned databasen nå; den er omtrent 60 MB.",
-      "geoSavedOff": "Databasen ble fjernet fra serveren.",
       "everyPluginRunsIsolated": "Isolert: hver utvidelse kjører i sin egen prosess. Minnetaket og tidsfristen gjelder alle utvidelser; CPU-andel, totalt minne, disk og prosesser gjelder bare utvidelser som et nettsted har lastet opp.",
       "schemaOrphans": "Databaseskjema",
       "schemaOrphansHelp": "Kolonner som fortsatt finnes i databasen, men som ingenting lenger deklarerer. Plattformen bare viser dem; ingenting slettes før du bestemmer deg, og en slettet kolonne kan ikke gjenopprettes.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Deaktivert – endepunktet svarer 403 til alle.",
       "mediaPayloadLimitMb": "Grense for mediedata (MB)",
       "maximumDecodedUploadOrRemote": "Maksimal dekodet opplasting eller ekstern nedlasting som MCP-medieverktøyene godtar.",
-      "saveLimit": "Lagre grense",
       "allSites": "alle nettsteder",
       "issuedBeforeSites": "utstedt før nettsteder",
       "noTokensYet": "Ingen tokener ennå.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Plattformstandard",
       "thisSite": "Dette nettstedet",
       "inForceNow": "Gjelder nå",
-      "saving": "Lagrer …",
-      "savePolicy": "Lagre retningslinjer",
       "thePlatformDefaultIsSet": "Plattformstandarden angis av en plattformadministrator.",
       "useTheLayerBelow": "Bruk nivået under",
       "whyTheLawRequiresThese": "Hvorfor loven krever at disse opplysningene oppbevares",
-      "inheritsThePlatformDefault": "arver: plattformstandarden"
+      "inheritsThePlatformDefault": "arver: plattformstandarden",
+      "strategyDelete": "Slett",
+      "strategyAnonymise": "Anonymiser",
+      "strategyRetain": "Behold",
+      "declaredBy": "Standard angitt av {{plugin}}",
+      "inheritsValue": "arver: {{value}}",
+      "legalBasis": "Rettslig grunnlag",
+      "theSiteColumnIsSet": "Kolonnen «Dette nettstedet» angis inne i et nettsted. Velg et nettsted i bryteren for å endre den."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Visningsnavn",
     "thisPersonHasALogin": "Denne personen har en påloggingskonto; e-postadressen endres på kontoen.",
     "birthDate": "Fødselsdato",
-    "saveChanges": "Lagre endringer",
     "sendPasswordResetEmail": "Send e-post for tilbakestilling av passord",
     "cancel": "Avbryt",
     "accountManagement": "Kontoadministrasjon",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Kopier gjenopprettingskodene manuelt.",
     "nameRequired": "Navn kreves",
     "enterATokenNameFirst": "Skriv inn et tokennavn først.",
-    "tokenCreated": "Token opprettet",
     "copyTheTokenNowIt": "Kopier tokenet nå. Det vises bare én gang.",
     "failedToCreateApiToken": "Kunne ikke opprette API-token",
     "areYouSureYouWant2": "Er du sikker på at du vil deaktivere 2FA for denne brukeren? Dette reduserer kontosikkerheten.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Økt avsluttet",
     "deviceSessionRevokedSuccessfully": "Enhetsøkten ble avsluttet.",
     "failedToRevokeSession": "Kunne ikke avslutte økten",
-    "rolesUpdated": "Roller oppdatert",
-    "theUserSRolesWere": "Brukerens roller ble lagret.",
     "saveFailed": "Lagring mislyktes",
     "failedToSaveRoles": "Kunne ikke lagre roller.",
     "loadingRoles": "Laster roller",
@@ -3448,8 +3445,6 @@
     "remove": "Fjern",
     "loadFailed": "Lasting mislyktes",
     "couldNotRetrieveRoleDetails": "Kunne ikke hente rolledetaljer.",
-    "roleUpdated": "Rolle oppdatert",
-    "wasSaved": "«{{name}}» ble lagret.",
     "updateFailed": "Oppdatering mislyktes",
     "anErrorOccurredWhileSaving": "Det oppstod en feil under lagring.",
     "loadingRole": "Laster rolle …",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Tilbake til brukere",
     "selfServiceSecurityControls": "Selvbetjente sikkerhetskontroller",
     "sessionDeviceControlsAndPersonal": "Kontroller for økter og enheter samt personlige API-tokener er bare tilgjengelige når du ser på din egen brukerkonto.",
-    "securityRecommendations": "Sikkerhetsanbefalinger",
     "twoFactorAuthentication": "Tofaktorautentisering",
-    "activeAndProtectingThisAccount": "Aktiv og beskytter denne kontoen",
-    "notEnabledHighlyRecommendedFor": "Ikke aktivert – sterkt anbefalt for administratorkontoer",
-    "passwordProtected": "Passordbeskyttet",
-    "accountHasASecurePassword": "Kontoen har et sikkert passord",
-    "administratorAccess": "Administratortilgang",
     "fullSystemAccess2faStrongly": "Full systemtilgang – 2FA anbefales sterkt",
     "personalApiTokens": "Personlige API-tokener",
     "tokenNameEGCi": "Tokennavn (f.eks. CI-utrulling)",
     "days": "Dager",
     "createToken": "Opprett token",
-    "copyNowShownOnce": "Kopier nå (vises bare én gang)",
     "loadingApiTokens": "Laster API-tokener …",
     "noApiTokensCreatedYet": "Ingen API-tokener er opprettet ennå.",
     "revoke": "Tilbakekall",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Pålogginger og øktaktivitet",
     "loadingAuthActivity": "Laster autentiseringsaktivitet …",
     "noRecentLoginSessionEvents": "Ingen nylige pålogginger eller økthendelser for denne brukeren.",
-    "unknownTime": "Ukjent tidspunkt",
-    "activityEvent": "Aktivitetshendelse",
     "openFullGlobalActivity": "Åpne all global aktivitet",
-    "2faStatus": "2FA-status",
     "addAnExtraLayerOf": "Legg til et ekstra sikkerhetslag med appbasert autentisering (TOTP)",
-    "recommended": "Anbefalt",
     "enableTwoFactorAuthenticationTo": "Aktiver tofaktorautentisering for å beskytte denne kontoen med tidsbaserte engangspassord (TOTP).",
     "enable2fa": "Aktiver 2FA",
     "step1ScanQrCode": "Trinn 1: Skann QR-koden",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Trinn 2: Bekreft koden",
     "enterThe6DigitCode": "Skriv inn den sekssifrede koden fra autentiseringsappen for å fullføre oppsettet:",
     "verifyEnable": "Bekreft og aktiver",
-    "protectionActive": "Beskyttelse aktiv",
     "thisAccountRequiresA6": "Denne kontoen krever en sekssifret kode fra en autentiseringsapp ved pålogging.",
     "regenerateRecoveryCodes": "Generer nye gjenopprettingskoder",
     "disable2fa": "Deaktiver 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Tilbakekall andre økter",
     "loadingSessions": "Laster økter …",
     "noActiveSessions": "Ingen aktive økter.",
-    "currentSession": "Gjeldende økt",
-    "deviceSession": "Enhetsøkt",
     "current": "Gjeldende",
     "unknownDevice": "Ukjent enhet",
     "editAccount2": "Rediger konto",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Åpne brukeroppføring",
     "token": "Token",
     "createdOn": "Opprettet {{date}}",
-    "notAvailable": "i.t.",
     "revokedOn": "Tilbakekalt {{date}}",
     "recoveryCodesRemaining": "Gjenværende gjenopprettingskoder:",
-    "unknownValue": "ukjent",
     "expiresOn": "Utløper: {{date}}",
     "person2": "Person",
     "added": "Lagt til",
@@ -3591,12 +3570,10 @@
       "loading": "Laster personfelt …",
       "loadFailed": "Kunne ikke laste personfelt.",
       "saveFailed": "Kunne ikke lagre feltene.",
-      "saved": "Feltene er lagret.",
       "empty": "Ingen personfelt ennå. Legg til et for å begynne å lagre det for hver person.",
       "noneDeclared": "Dette nettstedet har ingen personfelt ennå.",
       "declare": "Legg til personfelt",
       "manage": "Administrer felt",
-      "save": "Lagre felt",
       "saveField": "Lagre felt",
       "delete": "Slett",
       "deleteTitle": "Vil du slette dette feltet?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Gyldig i (dager)",
+    "revokeOtherSessionsConfirm": "Alle andre enheter logges ut med en gang.",
+    "revokeSessionConfirm": "Den enheten logges ut med en gang.",
+    "revokeCurrentSessionConfirm": "Dette er enheten du bruker nå. Du logges ut med en gang.",
+    "revokeTokenConfirm": "«{{name}}» slutter å virke med en gang.",
+    "twoFactorTurnedOff": "Tofaktorpålogging er slått av for dette nettstedet, så den kan ikke settes opp her.",
+    "openSecuritySettings": "Åpne sikkerhetsinnstillinger"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Nettstedsinnstillinger ({{what}}) angis i hvert enkelt nettsted – velg et fra nettstedsmenyen.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Dette nettstedet kunne ikke åpnes for forhåndsvisning.",
     "couldNotLoadTheSite": "Kunne ikke laste inn nettstedet.",
     "couldNotReloadThePlugin": "Kunne ikke laste inn listen over programtillegg på nytt.",
-    "siteSaved": "Nettstedet er lagret",
-    "routingFollowsImmediatelyNoRestart": "Rutingen oppdateres umiddelbart – ingen omstart.",
     "notSaved": "Ikke lagret",
     "theSiteCouldNotBe2": "Nettstedet kunne ikke lagres.",
     "couldNotOpenTheSite": "Kunne ikke åpne nettstedet",
@@ -3789,7 +3771,6 @@
     "visit": "Besøk",
     "openThisSite": "Åpne dette nettstedet",
     "export": "Eksporter",
-    "save": "Lagre",
     "couldNotLoadCertificates": "Kunne ikke laste inn sertifikater.",
     "couldNotSwitchThisHost": "Kunne ikke bytte denne verten til automatisk.",
     "couldNotSwitchThisHost2": "Kunne ikke bytte denne verten til automatisk (jokertegn).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Oppdatering tilgjengelig",
     "isNowActive": "{{name}} er nå aktivt.",
     "themeHasBeenUpdated2": "Temaet {{name}} er oppdatert.",
-    "configurationSaved": "Konfigurasjon lagret",
-    "visualProtocolsUpdatedSuccessfully": "De visuelle protokollene er oppdatert.",
     "saveFailed": "Lagring mislyktes",
     "hasBeenRemoved2": "{{name}} er fjernet.",
     "seedsExecuted": "Startdata kjørt",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Utvidelser",
     "versionReady": "Versjon {{version}} er klar",
-    "saveChanges": "Lagre endringer",
     "runSeedsHint": "Kjører temaets startdata – eksempelsider og innhold – inn i dette nettstedet på nytt.",
     "resetThemeHint": "Fjerner nettstedets lagrede temainnstillinger og kjører startdataene på nytt.",
     "notActiveHint": "Dette nettstedet bruker et annet tema.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Endringer i v{{version}}",
     "whatChanged": "Endringer",
-    "closeBuildSourceDialog": "Lukk dialogen for byggekilde",
-    "close": "Lukk",
     "couldNotInstallThatVersion": "Kunne ikke installere den versjonen.",
     "couldNotChangeAutomaticUpdating": "Kunne ikke endre automatisk oppdatering.",
     "failed": "Mislyktes",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatiske sertifikater er slått av. {{reason}}",
     "automaticCertificatesComeFrom": "Automatiske sertifikater kommer fra {{authority}}.",
     "noSecretKeyIsConfigured": "Ingen SECRET_KEY er konfigurert på denne serveren, så en privat nøkkel kan ikke lagres. Opplasting er deaktivert til en er angitt.",
-    "nothingToSavePasteA": "Ingenting å lagre – lim inn et token, eller bruk Tøm for å fjerne det lagrede.",
     "savedThisSiteNowUses": "Lagret. Dette nettstedet bruker nå sitt eget Cloudflare-token.",
     "removedThisSiteFallsBack": "Fjernet. Dette nettstedet bruker nå plattformens token.",
     "couldNotSaveTheToken": "Kunne ikke lagre tokenet.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Nettstedets token",
     "savedLeaveBlankToKeep": "Lagret – la stå tomt for å beholde, eller bruk Tøm for å fjerne",
     "pasteACloudflareApiToken": "Lim inn et Cloudflare API-token",
-    "save": "Lagre",
     "clear": "Tøm",
     "nothingStoredThisHostCannot": "Ingenting lagret – denne verten kan ikke leveres over HTTPS av denne plattformen.",
     "nothingStoredHereTlsFor": "Ingenting lagret her – TLS for denne verten termineres før plattformen, så sertifikatet ligger der.",
@@ -4706,36 +4680,26 @@
     "roles": "Roller",
     "permissions": "Tillatelser",
     "eventDetails": "Hendelsesdetaljer",
-    "context": "Kontekst",
     "resource": "Ressurs",
     "system": "System",
     "timestamp": "Tidsstempel",
-    "authority": "Myndighet",
-    "actorId": "Aktør-ID",
-    "type": "Type",
-    "systemLog": "Systemlogg",
-    "audit": "Revisjon: {{status}}",
-    "activityMessage": "Aktivitetsmelding",
-    "actionTaken": "Utført handling",
-    "resourcePool": "Ressursgruppe",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Denne oppføringen er en del av et uforanderlig revisjonsspor.",
     "exportJson": "Eksporter JSON",
     "event": "Hendelse",
     "actor": "Aktør",
+    "plugin": "Utvidelse",
     "activity": "Aktivitet",
     "status": "Status",
     "action": "Handling",
     "time": "Tid",
-    "logSignature": "Loggsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "ADVARSEL",
-      "ERROR": "FEIL",
-      "DEBUG": "FEILSØKING",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "REVISJON"
+      "INFO": "Info",
+      "WARN": "Advarsel",
+      "ERROR": "Feil",
+      "DEBUG": "Feilsøking",
+      "SYSTEM": "System",
+      "AUDIT": "Revisjon"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Oppføring #{{id}}",
+    "recordedData": "Registrerte data"
   },
   "mediaPicker": {
     "showingOnly": "Viser bare: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Oppgave",
       "schedule": "Kjører",
       "lastRun": "Siste kjøring",
-      "nextRun": "Neste kjøring"
+      "nextRun": "Neste kjøring",
+      "duration": "Varighet"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plattform",

@@ -56,7 +56,7 @@ export class MeasurementSystemCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectCountry')}
             searchable
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
         <SettingRow
@@ -74,7 +74,7 @@ export class MeasurementSystemCard extends PureReactor {
             placeholder={AdminI18n.t('settings.localization.selectMeasurementSystem')}
             searchable={false}
             theme={this.theme}
-            className="w-full md:w-64"
+            className="fc-settings-short"
           />
         </SettingRow>
       </Card>

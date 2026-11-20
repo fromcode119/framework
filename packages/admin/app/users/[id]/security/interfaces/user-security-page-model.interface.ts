@@ -9,7 +9,8 @@ export interface IUserSecurityPageModel {
   authActivity: IAuthActivityEntry[];
   authActivityLoading: boolean;
   copyRecoveryCodes: () => Promise<void>;
-  createApiToken: () => Promise<void>;
+  createApiToken: () => Promise<boolean>;
+  dismissCreatedToken: () => void;
   createdToken: string;
   generatedRecoveryCodes: string[];
   handleDisable2FA: () => Promise<void>;
@@ -42,6 +43,7 @@ export interface IUserSecurityPageModel {
   tokenName: string;
   tokensLoading: boolean;
   twoFactorEnabled: boolean;
+  twoFactorAvailable: boolean;
   user: ISecurityUserRecord | null;
   verificationCode: string;
 }

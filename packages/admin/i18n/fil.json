@@ -162,6 +162,7 @@
       "reorderHandle": "I-drag para ayusin ang pagkakasunod — o i-focus at gamitin ang mga arrow key",
       "reorderEnable": "Ipakita ang listahan sa sarili nitong pagkakasunod para maayos ito",
       "reorderFailed": "Hindi ma-save ang bagong pagkakasunod",
+      "noMatch": "Walang tumutugma sa iyong paghahanap o mga filter.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "I-import ang {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "I-edit",
       "notFilledIn": "Hindi pa napupunan",
       "statusSection": "Status",
-      "statusConfirm": "Palitan ang status sa “{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Ipakita bilang JSON",
       "showForm": "Ipakita bilang form",
@@ -245,7 +245,8 @@
       "copied": "Nakopya",
       "more": "Higit pa",
       "moreFields": "{{count}} field",
-      "moreOneField": "{{count}} field"
+      "moreOneField": "{{count}} field",
+      "statusConfirm": "Palitan ang status sa “{{status}}”?"
     },
     "notFound": {
       "title": "Hindi Nahanap ang Collection",
@@ -366,7 +367,8 @@
     "reset": "I-reset",
     "notScheduledYet": "hindi pa naka-iskedyul",
     "more": "Iba pang aksyon",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Alisin"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Pumili ng kulay",
-      "colour": "Kulay",
-      "pick": "Pumili ng kulay",
       "hex": "Hex Code",
-      "confirm": "Kumpirmahin ang Kulay",
       "notSet": "Hindi nakatakda"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "May mga Hindi Aktibong Dependency",
       "intro": "Para ma-enable ang {{plugin}}, kailangang asikasuhin ang mga sumusunod:",
       "notInstalled": "HINDI NAKA-INSTALL",
+      "inactive": "naka-off",
+      "incompatible": "ibang bersyon",
       "requires": "Kailangan ang bersyon {{version}}. Maaari itong i-download mula sa marketplace.",
       "needsActivation": "Naka-install na pero kailangang i-activate (Bersyon {{version}}).",
       "mismatch": "Hindi tugma ang bersyon: kailangan ang {{expected}}, nakita ang {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Preview ng Platform",
-      "image": "Preview {{number}}"
+      "image": "Preview {{number}}",
+      "previous": "Nakaraan",
+      "next": "Susunod"
     },
     "menuField": {
       "newItem": "Bagong Menu Item",
-      "structure": "Istruktura ng Menu",
-      "add": "Magdagdag ng Menu Item"
+      "add": "Magdagdag ng Menu Item",
+      "reorder": "I-drag para ilipat; arrow keys: taas at baba para ilipat, kanan para isailalim, kaliwa para ilabas"
     },
     "field": {
       "notSet": "Hindi nakatakda",
@@ -461,8 +464,8 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Magdagdag ng Bagong {{label}}",
-      "item": "Item"
+      "add": "Idagdag",
+      "reorder": "I-drag para ilipat, o gamitin ang arrow keys"
     },
     "stepper": {
       "increment": "Dagdagan",
@@ -528,9 +531,7 @@
       "noContact": "Walang email o telepono sa People",
       "hasLogin": "May login",
       "noLogin": "Walang login",
-      "source": "Galing sa People #{{id}} ang pangalan, email at telepono; doon ito baguhin.",
       "open": "Buksan sa People",
-      "choose": "Pumili ng iba",
       "searchFailed": "Hindi makapaghanap sa People sa ngayon.",
       "noMatch": "Walang tumutugma sa People. Ilagay ang kanilang detalye sa ibaba; idaragdag sila sa People kapag nag-save.",
       "ref": "People #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Buksan ang Sites"
       }
     },
-    "relativeOverridesInheritTheCollection": "Minamana ng mga relative override ang prefix ng collection. I-enable ang absolute mode para lampasan ang mga prefix gaya ng `/shop`.",
     "range": "Saklaw",
     "noDataForThisRange": "Walang data para sa saklaw na ito",
     "peak": "· pinakamataas {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Mga Filter",
       "clearFilters": "I-clear lahat",
       "removeFilter": "Alisin ang filter na {{label}}",
-      "showResults": "Ipakita ang {{count}} resulta"
+      "showResults": "Ipakita ang {{count}} resulta",
+      "showResultsOne": "Ipakita ang 1 resulta"
     },
     "personFieldPicker": {
       "none": "Hindi naka-save sa person field",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Na-save ang mga sandbox limit para sa {{name}}, pero hindi nag-restart ang process nito gamit ang mga ito: {{value}}",
       "restartRequired": "Kailangang I-restart",
       "sandboxSettingsForWereSaved": "Na-save ang mga sandbox setting para sa {{name}}, pero kailangang i-restart ang API bago ito magkabisa.",
-      "resourcesUpdated": "Na-update ang mga Resource",
-      "sandboxLimitsForUpdated": "Na-update ang mga sandbox limit para sa {{name}}.",
       "sandboxDisabledFor": "Na-disable ang sandbox para sa {{name}}.",
       "saveFailed": "Nabigo ang Pag-save",
       "failedToUpdateSandboxLimits": "Hindi na-update ang mga sandbox limit.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Idle. Walang naitalang kamakailang event.",
       "updating": "Nag-a-update...",
       "updateAvailable": "May Available na Update",
-      "updatePolicy": "Patakaran sa Update",
       "saveChanges": "I-save ang mga Pagbabago",
       "unsavedChanges": "May mga hindi na-save na pagbabago",
       "exportSettingsAsJson": "I-export ang settings bilang JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Bago sa v{{version}}",
       "installedVersion": "Naka-install: {{version}}",
       "marketplaceVersion": "Marketplace: {{version}}",
-      "saving": "Sine-save...",
       "saveSettings": "I-save ang Mga Setting",
       "viewDefinition": "Tingnan ang Definition",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Hitsura",
       "failedToLoadAppearances": "Hindi ma-load ang mga hitsura",
       "failedToSaveShadowSetting": "Hindi ma-save ang setting ng anino",
+      "failedToSaveMenuSetting": "Hindi na-save ang setting ng menu",
       "switchedToReloading": "Lumipat sa \"{{slug}}\". Nire-reload…",
       "failedToSwitchAppearance": "Hindi mapalitan ang hitsura",
       "installFailed": "Nabigo ang pag-install",
@@ -1919,6 +1917,8 @@
       "install": "I-install",
       "surfaceShadows": "Mga anino ng surface",
       "depthOnPanelsDialogsAnd": "Lalim sa mga panel, dialog at button. I-off ito para sa patag na admin — mananatiling pareho ang mga border at sulok.",
+      "secondMenuColumn": "Pangalawang hanay ng menu",
+      "sectionPagesBesideTheMenu": "Ang mga pahina ng isang seksyon ay nasa hanay katabi ng menu. Kapag naka-off, bumubukas ang mga ito sa ilalim ng kanilang linya sa iisang menu at lumalapad ang bawat screen ng 220px.",
       "installFromAPackageUrl": "I-install mula sa URL ng package",
       "builtIn": "Built-in",
       "installed": "Naka-install",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Hindi na-update ang lokasyon ng IP",
       "geoUnavailable": "Hindi available ang status ng lokasyon ng IP",
       "geoAttribution": "IP geolocation mula sa {{name}} ({{license}}). Ina-update buwan-buwan habang naka-on.",
-      "geoSaved": "Na-save",
-      "geoSavedOn": "Dina-download na ang database; humigit-kumulang 60 MB ito.",
-      "geoSavedOff": "Inalis na ang database sa server.",
       "everyPluginRunsIsolated": "Nakahiwalay: bawat plugin ay tumatakbo sa sarili nitong proseso. Ang limitasyon ng memory at ang deadline ay para sa bawat plugin; ang bahagi ng CPU, kabuuang memory, disk at mga proseso ay para lamang sa mga plugin na in-upload ng isang site.",
       "schemaOrphans": "Schema ng database",
       "schemaOrphansHelp": "Mga column na nasa database pa pero wala nang nagdedeklara. Inililista lang ito ng platform; walang buburahin hangga't hindi kayo nagpapasya, at hindi na maibabalik ang column na binura.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Naka-disable — sumasagot ang endpoint ng 403 sa lahat.",
       "mediaPayloadLimitMb": "Limitasyon ng media payload (MB)",
       "maximumDecodedUploadOrRemote": "Pinakamalaking na-decode na upload o remote download na tinatanggap ng mga MCP media tool.",
-      "saveLimit": "I-save ang limitasyon",
       "allSites": "lahat ng site",
       "issuedBeforeSites": "inisyu bago nagkaroon ng mga site",
       "noTokensYet": "Wala pang token.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Default ng platform",
       "thisSite": "Ang site na ito",
       "inForceNow": "Ipinapatupad ngayon",
-      "saving": "Sine-save…",
-      "savePolicy": "I-save ang patakaran",
       "thePlatformDefaultIsSet": "Ang default ng platform ay itinatakda ng platform administrator.",
       "useTheLayerBelow": "Gamitin ang nasa ibabang layer",
       "whyTheLawRequiresThese": "Bakit hinihingi ng batas na itago ang mga rekord na ito",
-      "inheritsThePlatformDefault": "minamana: ang default ng platform"
+      "inheritsThePlatformDefault": "minamana: ang default ng platform",
+      "strategyDelete": "Burahin",
+      "strategyAnonymise": "Gawing anonimo",
+      "strategyRetain": "Panatilihin",
+      "declaredBy": "Default na itinakda ng {{plugin}}",
+      "inheritsValue": "minamana: {{value}}",
+      "legalBasis": "Legal na batayan",
+      "theSiteColumnIsSet": "Ang column na \"Ang site na ito\" ay itinatakda sa loob ng isang site. Pumili ng site sa switcher para baguhin ito."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Display name",
     "thisPersonHasALogin": "May login account ang taong ito; sa account binabago ang email nito.",
     "birthDate": "Petsa ng kapanganakan",
-    "saveChanges": "I-save ang mga pagbabago",
     "sendPasswordResetEmail": "Ipadala ang password reset email",
     "cancel": "Kanselahin",
     "accountManagement": "Pamamahala ng account",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Pakikopya nang mano-mano ang mga recovery code.",
     "nameRequired": "Kailangan ang Pangalan",
     "enterATokenNameFirst": "Maglagay muna ng pangalan ng token.",
-    "tokenCreated": "Nagawa ang Token",
     "copyTheTokenNowIt": "Kopyahin na ngayon ang token. Isang beses lang itong ipapakita.",
     "failedToCreateApiToken": "Hindi nagawa ang API token",
     "areYouSureYouWant2": "Sigurado ka bang gusto mong i-disable ang 2FA para sa user na ito? Bababa ang seguridad ng account.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Binawi ang Session",
     "deviceSessionRevokedSuccessfully": "Matagumpay na binawi ang session ng device.",
     "failedToRevokeSession": "Hindi nabawi ang session",
-    "rolesUpdated": "Na-update ang mga role",
-    "theUserSRolesWere": "Na-save ang mga role ng user.",
     "saveFailed": "Hindi na-save",
     "failedToSaveRoles": "Hindi na-save ang mga role.",
     "loadingRoles": "Nilo-load ang mga role",
@@ -3448,8 +3445,6 @@
     "remove": "Alisin",
     "loadFailed": "Hindi Na-load",
     "couldNotRetrieveRoleDetails": "Hindi makuha ang mga detalye ng role.",
-    "roleUpdated": "Na-update ang role",
-    "wasSaved": "Na-save ang \"{{name}}\".",
     "updateFailed": "Nabigo ang Pag-update",
     "anErrorOccurredWhileSaving": "Nagkaroon ng error habang nagse-save.",
     "loadingRole": "Nilo-load ang role...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Bumalik sa Mga User",
     "selfServiceSecurityControls": "Mga Sariling Kontrol sa Seguridad",
     "sessionDeviceControlsAndPersonal": "Available lang ang mga kontrol sa session/device at mga personal na API token kapag tinitingnan mo ang sarili mong user account.",
-    "securityRecommendations": "Mga Rekomendasyon sa Seguridad",
     "twoFactorAuthentication": "Two-Factor Authentication",
-    "activeAndProtectingThisAccount": "Aktibo at pinoprotektahan ang account na ito",
-    "notEnabledHighlyRecommendedFor": "Hindi naka-enable - lubos na inirerekomenda para sa mga admin account",
-    "passwordProtected": "Protektado ng Password",
-    "accountHasASecurePassword": "May secure na password ang account",
-    "administratorAccess": "Access ng Administrator",
     "fullSystemAccess2faStrongly": "Buong access sa system - lubos na inirerekomenda ang 2FA",
     "personalApiTokens": "Mga Personal na API Token",
     "tokenNameEGCi": "Pangalan ng token (hal. CI deploy)",
     "days": "Araw",
     "createToken": "Gumawa ng Token",
-    "copyNowShownOnce": "Kopyahin Ngayon (isang beses lang ipapakita)",
     "loadingApiTokens": "Nilo-load ang mga API token...",
     "noApiTokensCreatedYet": "Wala pang nagawang API token.",
     "revoke": "Bawiin",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Aktibidad sa Login at Session",
     "loadingAuthActivity": "Nilo-load ang aktibidad sa pag-authenticate...",
     "noRecentLoginSessionEvents": "Walang kamakailang login/session event para sa user na ito.",
-    "unknownTime": "Hindi Alam na Oras",
-    "activityEvent": "Event ng aktibidad",
     "openFullGlobalActivity": "Buksan ang Buong Global na Aktibidad",
-    "2faStatus": "Status ng 2FA",
     "addAnExtraLayerOf": "Magdagdag ng karagdagang seguridad gamit ang app-based authentication (TOTP)",
-    "recommended": "Inirerekomenda",
     "enableTwoFactorAuthenticationTo": "I-enable ang two-factor authentication para protektahan ang account na ito gamit ang time-based one-time password (TOTP).",
     "enable2fa": "I-enable ang 2FA",
     "step1ScanQrCode": "Hakbang 1: I-scan ang QR Code",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Hakbang 2: I-verify ang Code",
     "enterThe6DigitCode": "Ilagay ang 6-digit na code mula sa iyong authenticator app para makumpleto ang setup:",
     "verifyEnable": "I-verify at I-enable",
-    "protectionActive": "Aktibo ang Proteksyon",
     "thisAccountRequiresA6": "Nangangailangan ang account na ito ng 6-digit na code mula sa authenticator app sa pag-login.",
     "regenerateRecoveryCodes": "Gumawa Muli ng Mga Recovery Code",
     "disable2fa": "I-disable ang 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Bawiin ang Ibang Session",
     "loadingSessions": "Nilo-load ang mga session...",
     "noActiveSessions": "Walang aktibong session.",
-    "currentSession": "Kasalukuyang Session",
-    "deviceSession": "Session ng Device",
     "current": "Kasalukuyan",
     "unknownDevice": "Hindi kilalang device",
     "editAccount2": "I-edit ang account",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Buksan ang record ng user",
     "token": "Token",
     "createdOn": "Ginawa noong {{date}}",
-    "notAvailable": "n/a",
     "revokedOn": "Binawi noong {{date}}",
     "recoveryCodesRemaining": "Natitirang recovery code:",
-    "unknownValue": "hindi alam",
     "expiresOn": "Mag-e-expire: {{date}}",
     "person2": "Tao",
     "added": "Idinagdag",
@@ -3591,12 +3570,10 @@
       "loading": "Nilo-load ang mga field ng tao…",
       "loadFailed": "Hindi ma-load ang mga field ng tao.",
       "saveFailed": "Hindi ma-save ang mga field.",
-      "saved": "Na-save ang mga field.",
       "empty": "Wala pang field ng tao. Magdagdag ng isa para simulan itong itago para sa bawat tao.",
       "noneDeclared": "Wala pang field ng tao ang site na ito.",
       "declare": "Magdagdag ng mga field ng tao",
       "manage": "Pamahalaan ang mga field",
-      "save": "I-save ang mga field",
       "saveField": "I-save ang field",
       "delete": "Burahin",
       "deleteTitle": "Burahin ang field na ito?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "May bisa nang (araw)",
+    "revokeOtherSessionsConfirm": "Agad na mala-log out ang lahat ng ibang device.",
+    "revokeSessionConfirm": "Agad na mala-log out ang device na iyon.",
+    "revokeCurrentSessionConfirm": "Ito ang device na ginagamit mo ngayon. Agad kang mala-log out.",
+    "revokeTokenConfirm": "Agad na titigil sa paggana ang \"{{name}}\".",
+    "twoFactorTurnedOff": "Naka-off ang two-factor sign-in para sa site na ito, kaya hindi ito mase-set up dito.",
+    "openSecuritySettings": "Buksan ang mga setting ng seguridad"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Ang mga setting ng site ({{what}}) ay itinatakda sa loob ng bawat site — pumili ng isa mula sa menu ng site.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Hindi mabuksan ang site na ito para sa preview.",
     "couldNotLoadTheSite": "Hindi ma-load ang site.",
     "couldNotReloadThePlugin": "Hindi ma-reload ang listahan ng plugin.",
-    "siteSaved": "Na-save ang site",
-    "routingFollowsImmediatelyNoRestart": "Agad na susunod ang routing — walang restart.",
     "notSaved": "Hindi na-save",
     "theSiteCouldNotBe2": "Hindi ma-save ang site.",
     "couldNotOpenTheSite": "Hindi mabuksan ang site",
@@ -3789,7 +3771,6 @@
     "visit": "Bisitahin",
     "openThisSite": "Buksan ang site na ito",
     "export": "I-export",
-    "save": "I-save",
     "couldNotLoadCertificates": "Hindi ma-load ang mga certificate.",
     "couldNotSwitchThisHost": "Hindi mailipat sa awtomatiko ang host na ito.",
     "couldNotSwitchThisHost2": "Hindi mailipat sa awtomatiko (wildcard) ang host na ito.",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "May Available na Update",
     "isNowActive": "Aktibo na ang {{name}}.",
     "themeHasBeenUpdated2": "Na-update na ang temang {{name}}.",
-    "configurationSaved": "Na-save ang Configuration",
-    "visualProtocolsUpdatedSuccessfully": "Matagumpay na na-update ang mga visual protocol.",
     "saveFailed": "Nabigo ang Pag-save",
     "hasBeenRemoved2": "Inalis na ang {{name}}.",
     "seedsExecuted": "Naisagawa ang mga Seed",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Mga Extension",
     "versionReady": "Handa na ang bersyon {{version}}",
-    "saveChanges": "I-save ang mga pagbabago",
     "runSeedsHint": "Inuulit ang seed data ng theme — ang mga sample page at content nito — sa site na ito.",
     "resetThemeHint": "Binubura ang naka-save na theme settings ng site na ito at inuulit ang seed data.",
     "notActiveHint": "Ibang theme ang ginagamit ng site na ito.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Ano ang nagbago sa v{{version}}",
     "whatChanged": "Ano ang nagbago",
-    "closeBuildSourceDialog": "Isara ang dialog ng build source",
-    "close": "Isara",
     "couldNotInstallThatVersion": "Hindi ma-install ang bersyong iyon.",
     "couldNotChangeAutomaticUpdating": "Hindi mabago ang awtomatikong pag-update.",
     "failed": "Nabigo",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Naka-off ang mga awtomatikong certificate. {{reason}}",
     "automaticCertificatesComeFrom": "Ang mga awtomatikong certificate ay mula sa {{authority}}.",
     "noSecretKeyIsConfigured": "Walang naka-configure na SECRET_KEY sa server na ito, kaya hindi maiimbak ang private key. Naka-disable ang pag-upload hangga't hindi ito naitatakda.",
-    "nothingToSavePasteA": "Walang ise-save — mag-paste ng token, o gamitin ang I-clear para alisin ang naka-save.",
     "savedThisSiteNowUses": "Na-save. Ginagamit na ng site na ito ang sarili nitong Cloudflare token.",
     "removedThisSiteFallsBack": "Inalis. Babalik ang site na ito sa token ng platform.",
     "couldNotSaveTheToken": "Hindi ma-save ang token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Token ng site na ito",
     "savedLeaveBlankToKeep": "Naka-save — iwanang blangko para panatilihin, o gamitin ang I-clear para alisin",
     "pasteACloudflareApiToken": "Mag-paste ng Cloudflare API token",
-    "save": "I-save",
     "clear": "I-clear",
     "nothingStoredThisHostCannot": "Walang naka-imbak — hindi maise-serve ng platform na ito ang host na ito sa HTTPS.",
     "nothingStoredHereTlsFor": "Walang naka-imbak dito — tine-terminate ang TLS ng host na ito bago umabot sa platform, kaya doon nakalagay ang certificate nito.",
@@ -4706,36 +4680,26 @@
     "roles": "Mga Role",
     "permissions": "Mga Pahintulot",
     "eventDetails": "Mga Detalye ng Event",
-    "context": "Konteksto",
     "resource": "Resource",
     "system": "System",
     "timestamp": "Timestamp",
-    "authority": "Awtoridad",
-    "actorId": "Actor ID",
-    "type": "Uri",
-    "systemLog": "System Log",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mensahe ng Aktibidad",
-    "actionTaken": "Ginawang Aksyon",
-    "resourcePool": "Resource Pool",
-    "rawMetadata": "Raw Metadata",
     "thisEntryIsPartOf": "Bahagi ang entry na ito ng hindi nababagong audit trail.",
     "exportJson": "I-export ang JSON",
     "event": "Event",
     "actor": "Actor",
+    "plugin": "Plugin",
     "activity": "Aktibidad",
     "status": "Status",
     "action": "Aksyon",
     "time": "Oras",
-    "logSignature": "Log Signature: {{id}}",
     "internal": "INTERNAL",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Entry #{{id}}",
+    "recordedData": "Naitalang data"
   },
   "mediaPicker": {
     "showingOnly": "Ipinapakita lamang: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Gawain",
       "schedule": "Iskedyul",
       "lastRun": "Huling takbo",
-      "nextRun": "Susunod na takbo"
+      "nextRun": "Susunod na takbo",
+      "duration": "Tagal"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platform",

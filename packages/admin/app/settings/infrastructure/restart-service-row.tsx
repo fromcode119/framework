@@ -39,7 +39,7 @@ export class RestartServiceRow extends PureReactor {
       <>
         {this.blockedReason ? `${copy.description} ${this.blockedReason}` : copy.description}
         {this.entry.url && (
-          <span className="mt-1 block font-mono text-[12px] text-[var(--muted-foreground)]">
+          <span className="mt-1 block font-mono fc-size-xs text-[var(--muted-foreground)]">
             {this.entry.url}
           </span>
         )}

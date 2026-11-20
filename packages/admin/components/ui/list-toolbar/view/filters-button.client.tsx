@@ -1,13 +1,17 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
 import { FilterPanel } from '@/components/ui/list-toolbar/view/filter-panel.client';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One Filters button instead of a dropdown per filter. It counts the filters in force, so a narrowed
- * list says so even with the panel closed.
+ * list says so even with the panel closed. The panel is a Dropdown like the column chooser and the
+ * order beside it: drawn above the list, so the list's card cannot clip it.
  */
 export class FiltersButton extends PureReactor {
   declare props: Pick<FiltersButton, 'filters' | 'total' | 'compact'>;
@@ -17,45 +21,39 @@ export class FiltersButton extends PureReactor {
   @prop declare total: number;
   @prop declare compact?: boolean;
 
-  @state open = false;
-
-  @bound private toggle(): void {
-    this.open = !this.open;
-  }
+  @ref declare private dropdown: Ref<Dropdown>;
 
   @bound private close(): void {
-    this.open = false;
+    if (this.dropdown.current) this.dropdown.current.isOpen = false;
   }
 
   private get activeCount(): number {
     return this.filters.filter((filter) => filter.isActive).length;
   }
 
-  private get buttonClass(): string {
-    return this.open || this.activeCount
-      ? 'bg-white border-indigo-400 text-slate-800 dark:bg-slate-900 dark:border-indigo-500/60 dark:text-slate-100'
-      : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-200 dark:hover:border-indigo-500/60';
-  }
-
   render(): ReactNode {
     const activeCount = this.activeCount;
     return (
-      <div className="relative shrink-0">
-        <button
-          type="button"
-          onClick={this.toggle}
-          aria-expanded={this.open}
-          title={AdminI18n.t('ui.listToolbar.filters')}
-          // Below 640px the word is dropped and only the funnel is left, so the button has to say what
-          // it is some other way — otherwise a phone shows an unlabelled square beside the search box.
-          aria-label={AdminI18n.t('ui.listToolbar.filters')}
-          className={this.compact ? 'fc-sro-table__tool' : `h-[var(--fc-control-h)] px-3 rounded-[var(--fc-control-radius)] border text-[length:var(--fc-control-text)] font-medium inline-flex items-center gap-2 leading-none transition-all ${this.buttonClass}`}
-        >
-          <FrameworkIcons.Filter size={15} />
-          {this.compact ? null : <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>}
-          {activeCount ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-indigo-600 text-white text-[length:var(--fc-label-text)] inline-flex items-center justify-center">{activeCount}</span> : null}
-        </button>
-        {this.open ? <FilterPanel filters={this.filters} total={this.total} onClose={this.close} /> : null}
+      <div className="shrink-0">
+        <Dropdown
+          ref={this.dropdown}
+          align={HorizontalAlign.LEFT}
+          items={[]}
+          trigger={
+            // The console's one quiet toolbar control, like the column chooser and the order beside it.
+            // Below 640px the word is dropped and the funnel carries it (the label still names it).
+            <span
+              title={AdminI18n.t('ui.listToolbar.filters')}
+              aria-label={AdminI18n.t('ui.listToolbar.filters')}
+              className={this.compact ? 'fc-sro-table__tool' : `fc-toolbar-btn${activeCount > 0 ? ' fc-toolbar-btn--active' : ''}`}
+            >
+              <FrameworkIcons.Filter size={15} />
+              {this.compact ? null : <span className="hidden sm:inline">{AdminI18n.t('ui.listToolbar.filters')}</span>}
+              {activeCount ? <span className="fc-toolbar-btn__count">{activeCount}</span> : null}
+            </span>
+          }
+          panel={<FilterPanel filters={this.filters} total={this.total} onClose={this.close} />}
+        />
       </div>
     );
   }

@@ -1,3 +1,5 @@
+import { OverlayPresence } from '@/components/ui/overlay-presence';
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state, bound, Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -24,12 +26,18 @@ export class EditSheet extends PureReactor {
   /** One quiet line under the title naming the record, e.g. its number. */
   @prop declare subtitle?: ReactNode;
   @prop declare onClose: () => void;
-  @prop declare onSave: () => void;
+  @prop declare onSave?: () => void;
   @prop declare saving?: boolean;
   /** A save that failed, in words; shown above the buttons. */
   @prop declare error?: string;
   @prop declare saveLabel?: string;
   @prop declare cancelLabel?: string;
+  /**
+   * The buttons, when the drawer is not editing a piece of a record: a preview and a restore, an
+   * install and a cancel. Given one, `onSave`, `saveLabel` and `cancelLabel` are not read — the
+   * caller owns the foot. Without one the drawer keeps its own Cancel / Save.
+   */
+  @prop declare foot?: ReactNode;
   @prop declare children: ReactNode;
   /** What a field's pending change asks for, when Save was pressed while it was still on screen. */
   @state private held = '';
@@ -41,6 +49,7 @@ export class EditSheet extends PureReactor {
   }
 
   componentWillUnmount(): void {
+    this.presence.dispose();
     if (Platform.isBrowser) document.removeEventListener('keydown', this.onKeyDown);
   }
 
@@ -57,15 +66,19 @@ export class EditSheet extends PureReactor {
   /** A field that applies its change by its own action holds Save while that change is pending (`EditSheetUnsaved`). */
   @bound private save(): void {
     this.held = EditSheetUnsaved.message(this.panel);
-    if (!this.held) this.onSave();
+    if (!this.held) this.onSave?.();
   }
 
   @bound private keepPanel(node: HTMLDivElement | null): void {
     this.panel = node;
   }
 
+  /** Keeps it drawn while it leaves — see OverlayPresence. */
+  private presence = new OverlayPresence(() => this.forceUpdate());
+
   render(): ReactNode {
-    if (!this.isOpen || !Platform.isBrowser) return null;
+    const shown = Platform.isBrowser ? this.presence.state(this.isOpen) : null;
+    if (!shown) return null;
     const sheet = AdminClass.of('sheet');
     /*
      * Through a portal, onto `body`.
@@ -77,7 +90,7 @@ export class EditSheet extends PureReactor {
      * lose to.
      */
     return this.portal(
-      <div className={sheet} role="dialog" aria-label={this.title}>
+      <div className={sheet} data-state={shown} aria-hidden={shown === 'closed' || undefined} role={shown === 'open' ? 'dialog' : undefined} aria-label={this.title}>
         <div className={`${sheet}__backdrop`} onClick={this.close} />
         <div className={`${sheet}__panel`} ref={this.keepPanel}>
           <div className={`${sheet}__head`}>
@@ -85,6 +98,9 @@ export class EditSheet extends PureReactor {
               <h2 className={`${sheet}__title`}>{this.title}</h2>
               {this.subtitle ? <div className={`${sheet}__subtitle`}>{this.subtitle}</div> : null}
             </div>
+            {/* The key that closes it, said out loud beside the ✕ — the reference puts `esc` there,
+                and a drawer that can be dismissed from the keyboard should say so. */}
+            <Kbd className={`${sheet}__esc`}>esc</Kbd>
             <button type="button" className={`${sheet}__close`} onClick={this.close} aria-label={AdminI18n.t('common.close')}>
               <FrameworkIcons.Close size={18} />
             </button>
@@ -92,12 +108,16 @@ export class EditSheet extends PureReactor {
           <div className={`${sheet}__body`}>{this.children}</div>
           {this.held || this.error ? <div className={`${sheet}__error`} role="alert">{this.held || this.error}</div> : null}
           <div className={`${sheet}__foot`}>
-            <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
-              {this.cancelLabel ?? AdminI18n.t('common.cancel')}
-            </Button>
-            <Button type="button" variant={ButtonVariant.PRIMARY} onClick={this.save} isLoading={this.saving}>
-              {this.saveLabel ?? AdminI18n.t('common.save')}
-            </Button>
+            {this.foot ?? (
+              <>
+                <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
+                  {this.cancelLabel ?? AdminI18n.t('common.cancel')}
+                </Button>
+                <Button type="button" variant={ButtonVariant.PRIMARY} onClick={this.save} isLoading={this.saving}>
+                  {this.saveLabel ?? AdminI18n.t('common.save')}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

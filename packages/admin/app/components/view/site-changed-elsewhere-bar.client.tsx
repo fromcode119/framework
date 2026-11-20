@@ -9,6 +9,8 @@ import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { SidebarSiteItems } from '@/app/components/view/sidebar-site-items';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * Says so when ANOTHER tab moved the console to a different site, or opened the same site in the other
@@ -98,22 +100,19 @@ export class SiteChangedElsewhereBar extends AdminComponent {
     const now = this.now;
     const opened = this.opened;
     if (!now || !opened) return null;
-    const button = 'inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-white px-2.5 py-1 font-medium text-amber-900 transition-colors hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200 dark:hover:bg-amber-500/20';
     return (
-      <div role="alert" className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-amber-200 bg-amber-50 px-6 py-2 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 lg:px-8">
+      <div role="alert" className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b fc-tone-warning-line fc-tone-warning-soft px-6 py-2 text-xs fc-tone-warning lg:px-8">
         <span className="flex min-w-0 items-center gap-2 font-medium">
           <FrameworkIcons.Warning size={14} />
           <span>{AdminI18n.t('shell.siteChanged.text', { now: this.nameOf(now), opened: this.nameOf(opened) })}</span>
         </span>
         <span className="ms-auto flex items-center gap-2">
-          <button type="button" onClick={() => { void this.goBack(); }} className={button}>
-            <FrameworkIcons.ArrowLeft size={13} />
+          <Button type="button" variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.ArrowLeft size={13} />} onClick={() => { void this.goBack(); }}>
             {AdminI18n.t('shell.siteChanged.back', { opened: this.nameOf(opened) })}
-          </button>
-          <button type="button" onClick={() => window.location.reload()} className={button}>
-            <FrameworkIcons.Refresh size={13} />
+          </Button>
+          <Button type="button" variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Refresh size={13} />} onClick={() => window.location.reload()}>
             {AdminI18n.t('shell.siteChanged.continue', { now: this.nameOf(now) })}
-          </button>
+          </Button>
         </span>
       </div>
     );

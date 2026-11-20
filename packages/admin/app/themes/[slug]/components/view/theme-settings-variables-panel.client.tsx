@@ -66,7 +66,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                               ))}
                             </datalist>
                           </div>
-                          <div className={`text-[12px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 min-w-[40px] text-center`} style={{ fontFamily: value }}>
+                          <div className={`fc-size-xs font-medium px-2 py-0.5 rounded fc-tone-raised fc-tone-muted min-w-[40px] text-center`} style={{ fontFamily: value }}>
                             ABC
                           </div>
                         </div>
@@ -82,7 +82,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                             className="flex-1"
                           />
                           {value && (
-                            <img src={value} className="h-8 w-8 rounded-lg object-cover ring-2 ring-indigo-500/20" alt={AdminI18n.t('themes.preview')} />
+                            <img src={value} className="h-8 w-8 rounded-lg object-cover border fc-tone-line" alt={AdminI18n.t('themes.preview')} />
                           )}
                         </div>
                       ) : type === ThemeSettingType.NUMBER ? (
@@ -97,7 +97,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                           onChange={e => page.handleVariableChange(key, e.target.value)}
                         />
                       )}
-                      {schema?.description ? <p className="mt-1 text-xs text-slate-500">{schema.description}</p> : null}
+                      {schema?.description ? <p className="mt-1 text-xs fc-tone-muted">{schema.description}</p> : null}
                     </div>
                   </div>
                 );

@@ -73,7 +73,7 @@ export abstract class MediaActivityPanelState extends AdminComponent {
     if (!shareId) return <span>{title || AdminI18n.t('media.untitledShare')}</span>;
     return (
       <AdminLink
-        className="hover:underline text-indigo-500"
+        className="fc-link"
         href={AdminPathUtils.toAdminPath(`/media/shared?share=${Number(shareId)}`)}
       >
         {title || AdminI18n.t('media.untitledShare')}

@@ -4,6 +4,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import type { IPersonEditPageFields } from '@/app/users/people/[id]/interfaces/person-edit-page-fields.interface';
 import { prop, state } from '@fromcode119/react-class-components';
+import type { PendingSave } from '@/lib/settings/pending-save';
 
 /**
  * The person being edited, as a list of FIELDS rather than a fixed form.
@@ -37,6 +38,8 @@ export abstract class PersonEditPageState extends AdminComponent {
   @state reassigning = false;
 
   protected mounted = false;
+  /** The identity fields as the page's save bar sees them. */
+  protected pending: PendingSave | null = null;
 
   protected static toFields(person: IPerson | null): IPersonEditPageFields {
     return {
@@ -54,12 +57,6 @@ export abstract class PersonEditPageState extends AdminComponent {
   }
 
   protected field(label: string, key: keyof IPersonEditPageFields, type = 'text', locked = false): ReactNode {
-    return (
-      <label className="block">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{label}</span>
-        <Input type={type} value={this.fields[key]} disabled={this.saving || locked}
-          onChange={(e) => this.set(key, e.target.value)} className="w-full" />
-      </label>
-    );
+    return <Input label={label} type={type} value={this.fields[key]} disabled={this.saving || locked} onChange={(e) => this.set(key, e.target.value)} />;
   }
 }

@@ -55,7 +55,7 @@ export class PersonFieldEditor extends Reactor {
   private words(label: string, value: Record<string, string>, onChange: (next: Record<string, string>) => void): ReactNode {
     return (
       <div className="space-y-2">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500">{label}</span>
+        <span className="block fc-size-xs font-medium tracking-tight fc-tone-muted">{label}</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {this.locales.map((locale) => (
             <Input key={locale.value} label={locale.label} value={value[locale.value] ?? ''} disabled={this.saving}
@@ -72,7 +72,7 @@ export class PersonFieldEditor extends Reactor {
       this.change({ options: options.map((option, at) => (at === index ? { ...option, ...change } : option)) });
     return (
       <div className="space-y-3">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.fields.options')}</span>
+        <span className="block fc-size-xs font-medium tracking-tight fc-tone-muted">{AdminI18n.t('users.fields.options')}</span>
         {options.map((option, index) => (
           <div key={index} className="flex flex-wrap items-end gap-3">
             <Input label={AdminI18n.t('users.fields.optionKey')} value={option.key} onChange={(event) => set(index, { key: event.target.value })} />
@@ -80,11 +80,11 @@ export class PersonFieldEditor extends Reactor {
               <Input key={locale.value} label={locale.label} value={option.label[locale.value] ?? ''}
                 onChange={(event) => set(index, { label: { ...option.label, [locale.value]: event.target.value } })} />
             ))}
-            <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />} className="h-10 px-3 rounded-xl"
+            <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />}
               onClick={() => this.change({ options: options.filter((_, at) => at !== index) })}>{AdminI18n.t('users.fields.removeOption')}</Button>
           </div>
         ))}
-        <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Plus size={14} />} className="h-9 px-4 rounded-xl text-[12px] font-medium"
+        <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Plus size={14} />}
           onClick={() => this.change({ options: [...options, { key: '', label: {} }] })}>{AdminI18n.t('users.fields.addOption')}</Button>
       </div>
     );
@@ -92,11 +92,10 @@ export class PersonFieldEditor extends Reactor {
 
   render(): ReactNode {
     const { draft, theme, saving } = this;
-    const dark = theme === ThemeMode.DARK;
     const hasOptions = draft.type === 'choice' || draft.type === 'choices';
     return (
-      <div className={`${AdminClass.SURFACE} p-8 space-y-5 ${dark ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-        {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{this.error}</div> : null}
+      <div className={`${AdminClass.SURFACE} p-8 space-y-5`}>
+        {this.error ? <div className="rounded-xl fc-tone-danger-soft fc-tone-danger px-4 py-2.5 fc-size-xs font-medium">{this.error}</div> : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={AdminI18n.t('users.fields.key')} value={draft.key} disabled={saving || Boolean(this.field)}
             onChange={(event) => this.change({ key: event.target.value })} />
@@ -104,22 +103,20 @@ export class PersonFieldEditor extends Reactor {
             options={PersonFieldEditor.TYPES.map((type) => ({ value: type, label: AdminI18n.t(`users.fields.types.${type}`) }))}
             onChange={(type) => this.change({ type })} />
         </div>
-        <p className="-mt-3 text-[12px] text-slate-400">{AdminI18n.t('users.fields.keyHint')}</p>
+        <p className="-mt-3 fc-size-xs fc-tone-muted">{AdminI18n.t('users.fields.keyHint')}</p>
         {this.words(AdminI18n.t('users.fields.label'), draft.label, (label) => this.change({ label }))}
         {this.words(AdminI18n.t('users.fields.description'), draft.description, (description) => this.change({ description }))}
         {hasOptions ? this.options() : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <label className="block"><span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.selfEditable')}</span>
+          <label className="block"><span className="block fc-size-xs font-medium tracking-tight fc-tone-muted mb-1.5">{AdminI18n.t('users.fields.selfEditable')}</span>
             <BooleanToggleField checked={draft.selfEditable} theme={theme} disabled={saving} onChange={(selfEditable) => this.change({ selfEditable })} /></label>
-          <label className="block"><span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.sortOrder')}</span>
+          <label className="block"><span className="block fc-size-xs font-medium tracking-tight fc-tone-muted mb-1.5">{AdminI18n.t('users.fields.sortOrder')}</span>
             <NumberStepper step={1} value={draft.sortOrder} disabled={saving}
               onChange={(value) => this.change({ sortOrder: Number(value) || 0 })} /></label>
         </div>
         <div className="flex flex-wrap items-center gap-3 pt-2">
-          <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={saving} onClick={() => void this.save()}
-            className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.fields.saveField')}</Button>
-          <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => this.onCancel()}
-            className="h-10 px-6 rounded-xl font-medium tracking-tight text-[12px]">{AdminI18n.t('users.cancel')}</Button>
+          <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={saving} onClick={() => void this.save()}>{AdminI18n.t('users.fields.saveField')}</Button>
+          <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => this.onCancel()}>{AdminI18n.t('users.cancel')}</Button>
         </div>
       </div>
     );

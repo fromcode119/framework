@@ -33,19 +33,22 @@ export class FieldLockedRow extends PureReactor {
     const description = String(this.description || '').trim();
     return (
       <div className="fc-field-locked">
-        {!this.hideLabel || description ? (
+        {/* With no label (the section's title already names it) the help control goes into the box beside
+            the lock: on a row of its own it was a lone ⓘ over the field. */}
+        {!this.hideLabel ? (
           <div className="fc-field-head mb-1 min-h-[22px]">
             <div className="flex min-w-0 items-center gap-1">
-              {!this.hideLabel && <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>}
-              {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} />}
+              <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>
+              {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} text={description} />}
             </div>
             {this.summary}
           </div>
         ) : null}
-        <div className="flex min-h-10 items-center justify-between gap-2 rounded-[var(--fc-control-radius)] border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
-          <span className={`fc-field min-w-0 break-words leading-snug ${text ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>
+        <div className="fc-locked-value">
+          <span className={`fc-locked-value__text${text ? '' : ' fc-locked-value__text--empty'}`}>
             {text || AdminI18n.t('ui.field.notSet')}
           </span>
+          {this.hideLabel && description ? <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} text={description} /> : null}
           <FieldLockControl label={this.label} canUnlock={this.canUnlock} onUnlock={this.onUnlock} />
         </div>
         {this.helpOpen && description && !this.summary && <p className={UiFieldUtils.TEXT.SUBTEXT}>{description}</p>}

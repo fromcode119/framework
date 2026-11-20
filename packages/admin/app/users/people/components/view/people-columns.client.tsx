@@ -10,8 +10,8 @@ export class PeopleColumns {
       header: AdminI18n.t('users.person2'), id: 'person',
       accessor: (p: IPerson) => (
         <div>
-          <div className={`font-medium tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{displayName(p)}</div>
-          <div className="text-[12px] font-medium tracking-tight text-slate-500 flex items-center gap-1 opacity-70">
+          <div className={`font-medium tracking-tight fc-tone-text`}>{displayName(p)}</div>
+          <div className="fc-size-xs font-medium tracking-tight fc-tone-muted flex items-center gap-1 opacity-70">
             <FrameworkIcons.Mail size={12} /> {p.email || '—'}{p.phone ? ` · ${p.phone}` : ''}
           </div>
         </div>
@@ -20,13 +20,13 @@ export class PeopleColumns {
     {
       header: AdminI18n.t('users.loginAccount'), id: 'linked',
       accessor: (p: IPerson) => (p.userId != null && p.userId !== '')
-        ? <span className="font-medium text-emerald-500 text-[12px] tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
-        : <span className="font-medium text-slate-400 text-[12px] tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
+        ? <span className="font-medium fc-tone-success fc-size-xs tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
+        : <span className="font-medium fc-tone-muted fc-size-xs tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
     },
     {
       header: AdminI18n.t('users.added'), id: 'createdAt',
       accessor: (p: IPerson) => (
-        <div className="flex items-center gap-2 font-medium text-[12px] tracking-tight text-slate-500">
+        <div className="flex items-center gap-2 font-medium fc-size-xs tracking-tight fc-tone-muted">
           <FrameworkIcons.Calendar size={14} className="opacity-50" />
           {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
         </div>

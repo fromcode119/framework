@@ -13,6 +13,8 @@ import { SidebarNavGroups } from '@/app/sidebar-nav-groups';
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarNotifications } from '@/app/components/view/sidebar-notifications.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
+import { CommandPalette } from '@/components/ui/view/command-palette.client';
+import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 import { SidebarSearch } from '@/app/sidebar-search.client';
 import { NavShortcuts } from '@/lib/nav-shortcuts';
 
@@ -26,11 +28,40 @@ export class Sidebar extends AdminComponent {
   @prop declare sectionPages: any[];
   /** Settings' own pages, whatever page is open: they open in the column beside the menu. */
   @prop declare settingsPages: any[];
+  /** Every section's pages that are not rows of the menu, for the big search. */
+  @prop declare searchPages?: Array<{ page: any; section: any }>;
   @prop declare activePrimaryPathOverride: string;
   @prop declare activeChildPathOverride: string;
 
   /** What the menu's search holds. */
   @state query = '';
+  @state private paletteOpen = false;
+  @state private paletteQuery = '';
+
+  @bound private openPalette(): void { this.paletteQuery = ''; this.paletteOpen = true; }
+  @bound private closePalette(): void { this.paletteOpen = false; }
+  @bound private setPaletteQuery(query: string): void { this.paletteQuery = query; }
+
+  /** Every page of the menu, sections and their pages alike, narrowed by what is typed in the big search. */
+  private get palettePages(): Array<{ id: string; label: string; hint?: string; onSelect: () => void }> {
+    const needle = this.paletteQuery.trim().toLocaleLowerCase();
+    const seen = new Set<string>();
+    const rows: Array<{ id: string; label: string; hint?: string; onSelect: () => void }> = [];
+    const add = (item: any, parent?: any): void => {
+      const path = NavUtils.normalizePath(item?.path);
+      const label = AdminNavText.menuLabel(item);
+      if (!path || seen.has(path) || !label.toLocaleLowerCase().includes(needle)) return;
+      seen.add(path);
+      rows.push({ id: path, label, hint: parent ? AdminNavText.menuLabel(parent) : undefined, onSelect: () => { this.closePalette(); this.router.push(path); } });
+    };
+    for (const item of [...this.groupedMenuItems, this.footerSettingsItem].filter(Boolean)) {
+      add(item);
+      for (const child of item.children || []) add(child, item);
+    }
+    for (const entry of this.searchPages || []) add(entry.page, entry.section);
+    for (const page of this.settingsPages || []) add(page, this.footerSettingsItem);
+    return rows;
+  }
 
   @bound private setQuery(query: string): void {
     this.query = query;
@@ -189,9 +220,11 @@ export class Sidebar extends AdminComponent {
 
     return (
       <aside className={`fc-nav fixed inset-y-0 start-0 z-[200] ${isMini ? 'w-14' : 'w-60'} transform ${this.isOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 flex flex-col overflow-hidden`}>
-        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose}
+        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose} onCollapse={this.onMiniToggle}
           notifications={<SidebarNotifications isMini compact />} />
-        {!isMini && <SidebarSearch query={this.query} onQuery={this.setQuery} />}
+        {!isMini && <SidebarSearch query={this.query} onQuery={this.setQuery} onPalette={this.openPalette} />}
+        <CommandPalette open={this.paletteOpen} onClose={this.closePalette} query={this.paletteQuery} onQuery={this.setPaletteQuery} items={this.palettePages}
+          placeholder={AdminI18n.t('shell.nav.search')} empty={AdminI18n.t('shell.nav.noMatches', { query: this.paletteQuery })} />
 
         <nav className={`fc-nav__scroll flex-1 min-h-0 ${isMini ? 'px-2' : 'px-3'} overflow-y-auto overscroll-contain scrollbar-hide`}>
           {!isMini && !this.query && <Slot name="admin.layout.sidebar.top" />}
@@ -201,11 +234,6 @@ export class Sidebar extends AdminComponent {
         {/* The pinned foot of the sidebar: Settings, the account, and (collapsed) the way back out. */}
         <div className={`fc-nav__pinned mt-auto shrink-0 ${isMini ? 'px-2' : 'px-3'}`}>
           <SidebarNavGroups {...navProps} part={SidebarNavPart.FOOT} />
-          {isMini ? null : (
-            <button type="button" onClick={this.onMiniToggle} aria-label={AdminI18n.t('shell.nav.collapse')} title={AdminI18n.t('shell.nav.collapse')} className="fc-nav__collapse">
-              <FrameworkIcons.Left size={16} />
-            </button>
-          )}
         </div>
         <div className="shrink-0">
           {isMini ? <SidebarNotifications isMini /> : null}

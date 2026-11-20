@@ -14,8 +14,10 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { state, bound } from '@fromcode119/react-class-components';
 import { AppearanceActiveCard } from '@/app/settings/appearance/appearance-active-card';
+import { AppearanceNavColumnCard } from '@/app/settings/appearance/appearance-nav-column-card';
 import { AppearanceElevationCard } from '@/app/settings/appearance/appearance-elevation-card';
 import { SurfaceElevationService } from '@/lib/theme/surface-elevation-service';
+import { NavLayoutService } from '@/lib/theme/nav-layout-service';
 import { AppearanceMarketplaceCard } from '@/app/settings/appearance/appearance-marketplace-card';
 import { AppearanceInstallUrlCard } from '@/app/settings/appearance/appearance-install-url-card';
 import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
@@ -44,6 +46,8 @@ export class AppearanceSettingsPage extends AdminComponent {
   @state catalog: AppearanceCatalogItem[] = [];
   @state active = 'default';
   @state shadows = true;
+  /** Whether a section's pages stand in a second column beside the menu. Off is the console's shape. */
+  @state navColumn = false;
   @state loading = true;
   @state url = '';
   @state busy = false;
@@ -72,7 +76,7 @@ export class AppearanceSettingsPage extends AdminComponent {
   }
 
   private async loadScope(): Promise<void> {
-    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), ['admin_appearance', 'admin_shadows']);
+    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), ['admin_appearance', 'admin_shadows', 'admin_nav_column']);
   }
 
   /** Nothing per-site can be chosen here — no site is selected. */
@@ -96,6 +100,7 @@ export class AppearanceSettingsPage extends AdminComponent {
       this.catalog = (((cat as any)?.appearances || []) as any[]).map(AppearanceCatalogItem.from);
       this.active = String((settings as any)?.admin_appearance || 'default').trim() || 'default';
       this.shadows = SurfaceElevationService.isEnabled(settings as Record<string, unknown>);
+      this.navColumn = NavLayoutService.isColumnEnabled(settings as Record<string, unknown>);
     } catch (e: any) {
       this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToLoadAppearances'));
     } finally {
@@ -115,6 +120,23 @@ export class AppearanceSettingsPage extends AdminComponent {
       this.shadows = !next;
       SurfaceElevationService.apply(!next);
       this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToSaveShadowSetting'));
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  /** Applies immediately (so the menu changes under the pointer), then persists. */
+  @bound
+  async setNavColumn(next: boolean): Promise<void> {
+    this.navColumn = next;
+    NavLayoutService.apply(next);
+    this.busy = true;
+    try {
+      await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.ADMIN_NAV_COLUMN]: next });
+    } catch (e: any) {
+      this.navColumn = !next;
+      NavLayoutService.apply(!next);
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToSaveMenuSetting'));
     } finally {
       this.busy = false;
     }
@@ -192,8 +214,8 @@ export class AppearanceSettingsPage extends AdminComponent {
       return (
         <div className="p-12">
           <Card className="p-6 max-w-2xl">
-            <h2 className="text-base font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.lockedByThisWorkspaceS')}</h2>
-            <p className="text-sm text-slate-500 mt-2">
+            <h2 className="text-base font-medium tracking-tight fc-tone-text">{AdminI18n.t('settings.appearance.lockedByThisWorkspaceS')}</h2>
+            <p className="text-sm fc-tone-muted mt-2">
               <AdminRichText k="settings.appearance.workspaceLocked" vars={{ slug: WorkspaceAppearanceLock.slug, appearance: WorkspaceAppearanceLock.appearance }} />
             </p>
           </Card>
@@ -210,7 +232,7 @@ export class AppearanceSettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.appearance.adminLookFeelSeparateFrom')}
         />
 
-        <div className="p-6 w-full fc-page-stack">
+        <div className="py-6 w-full fc-page-stack">
           {this.outOfScope && (
             <p className="fc-scope-notice">
               <span className="fc-scope-notice__text">
@@ -221,6 +243,10 @@ export class AppearanceSettingsPage extends AdminComponent {
 
           {!this.outOfScope && (
             <AppearanceElevationCard enabled={this.shadows} busy={this.busy} onChange={this.setShadows} />
+          )}
+
+          {!this.outOfScope && (
+            <AppearanceNavColumnCard enabled={this.navColumn} busy={this.busy} onChange={this.setNavColumn} />
           )}
 
           <AppearanceActiveCard

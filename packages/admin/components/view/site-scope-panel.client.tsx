@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
+import { Card } from '@/components/ui/view/card.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -20,11 +21,10 @@ export class SiteScopePanel extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="p-6 w-full">
-        <div className={`${AdminClass.SURFACE} p-6`}>
-          <h1 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('ui.view.theseSettingsBelongToA')}</h1>
-          <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-slate-500">{this.detail}</p>
-        </div>
+      <div className="py-6 w-full">
+        <Card title={AdminI18n.t('ui.view.theseSettingsBelongToA')}>
+          <Hint>{this.detail}</Hint>
+        </Card>
       </div>
     );
   }

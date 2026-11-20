@@ -2,6 +2,9 @@ import type { KeyboardEvent, MouseEvent, PointerEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { GripVertical } from 'lucide-react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * The grip a record is dragged by in a list with an order field (`admin.list.order`). Press and drag
@@ -44,17 +47,19 @@ export class CollectionListReorderHandle extends PureReactor {
   render(): ReactNode {
     const label = this.enabled ? AdminI18n.t('collection.list.reorderHandle') : AdminI18n.t('collection.list.reorderEnable');
     return (
-      <button
+      <Button
         type="button"
+        variant={ButtonVariant.GHOST}
+        size={FieldSize.ICON}
         title={label}
         aria-label={label}
         onPointerDown={this.press}
         onClick={this.click}
         onKeyDown={this.key}
-        className={`fc-reorder-handle inline-flex items-center justify-center w-7 h-7 -my-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 ${this.enabled ? 'cursor-grab active:cursor-grabbing' : 'opacity-50 cursor-pointer'}`}
+        className={`fc-reorder-handle -my-1 ${this.enabled ? 'cursor-grab active:cursor-grabbing' : 'opacity-50 cursor-pointer'}`}
       >
         <GripVertical size={16} />
-      </button>
+      </Button>
     );
   }
 }

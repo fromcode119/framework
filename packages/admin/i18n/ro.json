@@ -162,6 +162,7 @@
       "reorderHandle": "Trageți pentru a reordona — sau focalizați și folosiți tastele săgeți",
       "reorderEnable": "Afișați lista în ordinea proprie pentru a o reordona",
       "reorderFailed": "Noua ordine nu a putut fi salvată",
+      "noMatch": "Nimic nu se potrivește căutării sau filtrelor.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importați {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Editează",
       "notFilledIn": "Necompletat",
       "statusSection": "Stare",
-      "statusConfirm": "Schimbați starea în „{{status}}”?",
       "recordSection": "Înregistrare",
       "showJson": "Afișează ca JSON",
       "showForm": "Afișează ca formular",
@@ -245,7 +245,8 @@
       "copied": "Copiat",
       "more": "Mai mult",
       "moreFields": "{{count}} câmpuri",
-      "moreOneField": "{{count}} câmp"
+      "moreOneField": "{{count}} câmp",
+      "statusConfirm": "Schimbați starea în „{{status}}”?"
     },
     "notFound": {
       "title": "Colecția nu a fost găsită",
@@ -366,7 +367,8 @@
     "reset": "Resetează",
     "notScheduledYet": "încă neprogramat",
     "more": "Mai multe acțiuni",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Elimină"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Alegeți culoarea",
-      "colour": "Culoare",
-      "pick": "Alegeți o culoare",
       "hex": "Cod hex",
-      "confirm": "Confirmă culoarea",
       "notSet": "Nesetat"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Dependențe inactive detectate",
       "intro": "Pentru a activa {{plugin}}, trebuie rezolvate următoarele:",
       "notInstalled": "NEINSTALAT",
+      "inactive": "dezactivat",
+      "incompatible": "altă versiune",
       "requires": "Necesită versiunea {{version}}. O putem descărca din marketplace.",
       "needsActivation": "Deja instalat, dar trebuie activat (versiunea {{version}}).",
       "mismatch": "Versiune incompatibilă: necesită {{expected}}, găsită {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Previzualizare platformă",
-      "image": "Previzualizare {{number}}"
+      "image": "Previzualizare {{number}}",
+      "previous": "Anterior",
+      "next": "Următor"
     },
     "menuField": {
       "newItem": "Element de meniu nou",
-      "structure": "Structura meniului",
-      "add": "Adaugă element de meniu"
+      "add": "Adaugă element de meniu",
+      "reorder": "Trageți pentru a muta; săgeți: sus și jos mută, dreapta imbrică, stânga scoate"
     },
     "field": {
       "notSet": "Nesetat",
@@ -461,8 +464,8 @@
       "record": "înregistrare"
     },
     "array": {
-      "addNew": "Adaugă {{label}}",
-      "item": "Element"
+      "add": "Adaugă",
+      "reorder": "Trageți pentru a muta sau folosiți săgețile"
     },
     "stepper": {
       "increment": "Crește",
@@ -528,9 +531,7 @@
       "noContact": "Niciun e-mail sau telefon în Persoane",
       "hasLogin": "Are cont de autentificare",
       "noLogin": "Fără cont de autentificare",
-      "source": "Numele, e-mailul și telefonul provin din Persoane #{{id}}; modificați-le acolo.",
       "open": "Deschide în Persoane",
-      "choose": "Alegeți altă persoană",
       "searchFailed": "Căutarea în Persoane nu a fost posibilă momentan.",
       "noMatch": "Nicio persoană din Persoane nu corespunde. Introduceți datele mai jos; la salvare va fi adăugată în Persoane.",
       "ref": "Persoane #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Deschide Site-uri"
       }
     },
-    "relativeOverridesInheritTheCollection": "Suprascrierile relative moștenesc prefixul colecției. Activați modul absolut pentru a ocoli prefixe precum `/shop`.",
     "range": "Interval",
     "noDataForThisRange": "Nu există date pentru acest interval",
     "peak": "· vârf {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtre",
       "clearFilters": "Golește tot",
       "removeFilter": "Elimină filtrul {{label}}",
-      "showResults": "Afișează {{count}} rezultate"
+      "showResults": "Afișează {{count}} rezultate",
+      "showResultsOne": "Afișează 1 rezultat"
     },
     "personFieldPicker": {
       "none": "Nu se salvează într-un câmp de persoană",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Limitele sandbox pentru {{name}} au fost salvate, dar procesul nu a putut reporni cu ele: {{value}}",
       "restartRequired": "Repornire necesară",
       "sandboxSettingsForWereSaved": "Setările sandbox pentru {{name}} au fost salvate, dar este necesară repornirea API-ului pentru a intra în vigoare.",
-      "resourcesUpdated": "Resurse actualizate",
-      "sandboxLimitsForUpdated": "Limitele sandbox pentru {{name}} au fost actualizate.",
       "sandboxDisabledFor": "Sandbox dezactivat pentru {{name}}.",
       "saveFailed": "Salvare eșuată",
       "failedToUpdateSandboxLimits": "Limitele sandbox nu au putut fi actualizate.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inactiv. Nu s-au înregistrat evenimente recente.",
       "updating": "Se actualizează...",
       "updateAvailable": "Actualizare disponibilă",
-      "updatePolicy": "Politică de actualizare",
       "saveChanges": "Salvați modificările",
       "unsavedChanges": "Modificări nesalvate",
       "exportSettingsAsJson": "Exportați setările ca JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nou în v{{version}}",
       "installedVersion": "Instalat {{version}}",
       "marketplaceVersion": "Marketplace {{version}}",
-      "saving": "Se salvează...",
       "saveSettings": "Salvează setările",
       "viewDefinition": "Vezi definiția",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Aspect",
       "failedToLoadAppearances": "Aspectele nu au putut fi încărcate",
       "failedToSaveShadowSetting": "Setarea pentru umbre nu a putut fi salvată",
+      "failedToSaveMenuSetting": "Setarea meniului nu a putut fi salvată",
       "switchedToReloading": "S-a trecut la „{{slug}}”. Se reîncarcă…",
       "failedToSwitchAppearance": "Aspectul nu a putut fi schimbat",
       "installFailed": "Instalarea a eșuat",
@@ -1919,6 +1917,8 @@
       "install": "Instalează",
       "surfaceShadows": "Umbrele suprafețelor",
       "depthOnPanelsDialogsAnd": "Adâncime pentru panouri, dialoguri și butoane. Dezactivați pentru o administrare plată — marginile și colțurile rămân exact la fel.",
+      "secondMenuColumn": "A doua coloană a meniului",
+      "sectionPagesBesideTheMenu": "Paginile unei secțiuni stau într-o coloană lângă meniu. Dezactivată, ele se deschid sub rândul lor în meniul unic, iar fiecare ecran câștigă 220px.",
       "installFromAPackageUrl": "Instalează dintr-un URL de pachet",
       "builtIn": "Integrat",
       "installed": "Instalat",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Localizarea IP nu a fost actualizată",
       "geoUnavailable": "Starea localizării IP nu este disponibilă",
       "geoAttribution": "Geolocalizare IP oferită de {{name}} ({{license}}). Actualizată lunar cât timp este activă.",
-      "geoSaved": "Salvat",
-      "geoSavedOn": "Baza de date se descarcă acum; are aproximativ 60 MB.",
-      "geoSavedOff": "Baza de date a fost eliminată de pe server.",
       "everyPluginRunsIsolated": "Izolat: fiecare plugin rulează în propriul proces. Limita de memorie și termenul limită se aplică tuturor pluginurilor; cota de CPU, memoria totală, discul și procesele se aplică doar pluginurilor încărcate de un site.",
       "schemaOrphans": "Schema bazei de date",
       "schemaOrphansHelp": "Coloane care încă există în baza de date, dar pe care nu le mai declară nimic. Platforma doar le afișează; nimic nu este șters până nu decideți, iar o coloană ștearsă nu poate fi restaurată.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Dezactivat — endpointul răspunde cu 403 tuturor.",
       "mediaPayloadLimitMb": "Limită pentru fișiere media (MB)",
       "maximumDecodedUploadOrRemote": "Dimensiunea maximă a unei încărcări decodate sau a unei descărcări la distanță acceptată de instrumentele media MCP.",
-      "saveLimit": "Salvează limita",
       "allSites": "toate site-urile",
       "issuedBeforeSites": "emis înainte de site-uri",
       "noTokensYet": "Încă nu există tokenuri.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Implicit platformă",
       "thisSite": "Acest site",
       "inForceNow": "În vigoare acum",
-      "saving": "Se salvează…",
-      "savePolicy": "Salvează politica",
       "thePlatformDefaultIsSet": "Valoarea implicită a platformei este setată de un administrator al platformei.",
       "useTheLayerBelow": "Folosește nivelul de dedesubt",
       "whyTheLawRequiresThese": "De ce legea impune păstrarea acestor înregistrări",
-      "inheritsThePlatformDefault": "moștenește: valoarea implicită a platformei"
+      "inheritsThePlatformDefault": "moștenește: valoarea implicită a platformei",
+      "strategyDelete": "Șterge",
+      "strategyAnonymise": "Anonimizează",
+      "strategyRetain": "Păstrează",
+      "declaredBy": "Implicit declarat de {{plugin}}",
+      "inheritsValue": "moștenește: {{value}}",
+      "legalBasis": "Temei legal",
+      "theSiteColumnIsSet": "Coloana „Acest site” se setează în interiorul unui site. Alegeți un site din comutator pentru a o modifica."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Nume afișat",
     "thisPersonHasALogin": "Această persoană are un cont de autentificare; adresa de e-mail se modifică în cont.",
     "birthDate": "Data nașterii",
-    "saveChanges": "Salvează modificările",
     "sendPasswordResetEmail": "Trimite e-mail de resetare a parolei",
     "cancel": "Anulează",
     "accountManagement": "Gestionarea contului",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Copiați manual codurile de recuperare.",
     "nameRequired": "Nume obligatoriu",
     "enterATokenNameFirst": "Introduceți mai întâi un nume pentru token.",
-    "tokenCreated": "Token creat",
     "copyTheTokenNowIt": "Copiați tokenul acum. Este afișat o singură dată.",
     "failedToCreateApiToken": "Tokenul API nu a putut fi creat",
     "areYouSureYouWant2": "Sigur doriți să dezactivați 2FA pentru acest utilizator? Securitatea contului va fi redusă.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesiune revocată",
     "deviceSessionRevokedSuccessfully": "Sesiunea dispozitivului a fost revocată.",
     "failedToRevokeSession": "Sesiunea nu a putut fi revocată",
-    "rolesUpdated": "Roluri actualizate",
-    "theUserSRolesWere": "Rolurile utilizatorului au fost salvate.",
     "saveFailed": "Salvare eșuată",
     "failedToSaveRoles": "Rolurile nu au putut fi salvate.",
     "loadingRoles": "Se încarcă rolurile",
@@ -3448,8 +3445,6 @@
     "remove": "Elimină",
     "loadFailed": "Încărcare eșuată",
     "couldNotRetrieveRoleDetails": "Detaliile rolului nu au putut fi preluate.",
-    "roleUpdated": "Rol actualizat",
-    "wasSaved": "„{{name}}” a fost salvat.",
     "updateFailed": "Actualizare eșuată",
     "anErrorOccurredWhileSaving": "A apărut o eroare la salvare.",
     "loadingRole": "Se încarcă rolul...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Înapoi la Utilizatori",
     "selfServiceSecurityControls": "Controale de securitate personale",
     "sessionDeviceControlsAndPersonal": "Controalele pentru sesiuni/dispozitive și tokenurile API personale sunt disponibile doar când vizualizați propriul cont de utilizator.",
-    "securityRecommendations": "Recomandări de securitate",
     "twoFactorAuthentication": "Autentificare în doi pași",
-    "activeAndProtectingThisAccount": "Activă și protejează acest cont",
-    "notEnabledHighlyRecommendedFor": "Neactivată - recomandată insistent pentru conturile de administrator",
-    "passwordProtected": "Protejat prin parolă",
-    "accountHasASecurePassword": "Contul are o parolă sigură",
-    "administratorAccess": "Acces de administrator",
     "fullSystemAccess2faStrongly": "Acces complet la sistem - 2FA recomandată insistent",
     "personalApiTokens": "Tokenuri API personale",
     "tokenNameEGCi": "Numele tokenului (ex. CI deploy)",
     "days": "Zile",
     "createToken": "Creează token",
-    "copyNowShownOnce": "Copiați acum (afișat o singură dată)",
     "loadingApiTokens": "Se încarcă tokenurile API...",
     "noApiTokensCreatedYet": "Nu a fost creat încă niciun token API.",
     "revoke": "Revocă",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Activitate de autentificare și sesiuni",
     "loadingAuthActivity": "Se încarcă activitatea de autentificare...",
     "noRecentLoginSessionEvents": "Nu există evenimente recente de autentificare/sesiune pentru acest utilizator.",
-    "unknownTime": "Oră necunoscută",
-    "activityEvent": "Eveniment de activitate",
     "openFullGlobalActivity": "Deschide activitatea globală completă",
-    "2faStatus": "Stare 2FA",
     "addAnExtraLayerOf": "Adăugați un nivel suplimentar de securitate folosind autentificarea prin aplicație (TOTP)",
-    "recommended": "Recomandat",
     "enableTwoFactorAuthenticationTo": "Activați autentificarea în doi pași pentru a proteja acest cont cu parole unice bazate pe timp (TOTP).",
     "enable2fa": "Activează 2FA",
     "step1ScanQrCode": "Pasul 1: Scanați codul QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Pasul 2: Verificați codul",
     "enterThe6DigitCode": "Introduceți codul de 6 cifre din aplicația de autentificare pentru a finaliza configurarea:",
     "verifyEnable": "Verifică și activează",
-    "protectionActive": "Protecție activă",
     "thisAccountRequiresA6": "La autentificare, acest cont necesită un cod de 6 cifre dintr-o aplicație de autentificare.",
     "regenerateRecoveryCodes": "Regenerează codurile de recuperare",
     "disable2fa": "Dezactivează 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Revocă celelalte sesiuni",
     "loadingSessions": "Se încarcă sesiunile...",
     "noActiveSessions": "Nicio sesiune activă.",
-    "currentSession": "Sesiunea curentă",
-    "deviceSession": "Sesiune pe dispozitiv",
     "current": "Curentă",
     "unknownDevice": "Dispozitiv necunoscut",
     "editAccount2": "Editează contul",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Deschide înregistrarea utilizatorului",
     "token": "Token",
     "createdOn": "Creat la {{date}}",
-    "notAvailable": "n/a",
     "revokedOn": "Revocat la {{date}}",
     "recoveryCodesRemaining": "Coduri de recuperare rămase:",
-    "unknownValue": "necunoscut",
     "expiresOn": "Expiră: {{date}}",
     "person2": "Persoană",
     "added": "Adăugat",
@@ -3591,12 +3570,10 @@
       "loading": "Se încarcă câmpurile persoanei…",
       "loadFailed": "Câmpurile persoanei nu au putut fi încărcate.",
       "saveFailed": "Câmpurile nu au putut fi salvate.",
-      "saved": "Câmpuri salvate.",
       "empty": "Încă nu există câmpuri pentru persoane. Adăugați unul pentru a-l reține pentru fiecare persoană.",
       "noneDeclared": "Acest site nu are încă câmpuri pentru persoane.",
       "declare": "Adăugați câmpuri pentru persoane",
       "manage": "Gestionați câmpurile",
-      "save": "Salvați câmpurile",
       "saveField": "Salvați câmpul",
       "delete": "Ștergeți",
       "deleteTitle": "Ștergeți acest câmp?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Valabil (zile)",
+    "revokeOtherSessionsConfirm": "Toate celelalte dispozitive sunt deconectate imediat.",
+    "revokeSessionConfirm": "Acel dispozitiv este deconectat imediat.",
+    "revokeCurrentSessionConfirm": "Acesta este dispozitivul pe care îl folosiți acum. Veți fi deconectat imediat.",
+    "revokeTokenConfirm": "„{{name}}” nu mai funcționează imediat.",
+    "twoFactorTurnedOff": "Autentificarea în doi pași este dezactivată pentru acest site, deci nu poate fi configurată aici.",
+    "openSecuritySettings": "Deschide setările de securitate"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Setările site-ului ({{what}}) se configurează în fiecare site — alegeți unul din meniul site-ului.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Acest site nu a putut fi deschis pentru previzualizare.",
     "couldNotLoadTheSite": "Site-ul nu a putut fi încărcat.",
     "couldNotReloadThePlugin": "Lista de pluginuri nu a putut fi reîncărcată.",
-    "siteSaved": "Site salvat",
-    "routingFollowsImmediatelyNoRestart": "Rutarea se aplică imediat — fără repornire.",
     "notSaved": "Nesalvat",
     "theSiteCouldNotBe2": "Site-ul nu a putut fi salvat.",
     "couldNotOpenTheSite": "Site-ul nu a putut fi deschis",
@@ -3789,7 +3771,6 @@
     "visit": "Vizitează",
     "openThisSite": "Deschide acest site",
     "export": "Exportă",
-    "save": "Salvează",
     "couldNotLoadCertificates": "Certificatele nu au putut fi încărcate.",
     "couldNotSwitchThisHost": "Această gazdă nu a putut fi trecută pe automat.",
     "couldNotSwitchThisHost2": "Această gazdă nu a putut fi trecută pe automat (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Actualizare disponibilă",
     "isNowActive": "{{name}} este acum activă.",
     "themeHasBeenUpdated2": "Tema {{name}} a fost actualizată.",
-    "configurationSaved": "Configurație salvată",
-    "visualProtocolsUpdatedSuccessfully": "Protocoalele vizuale au fost actualizate cu succes.",
     "saveFailed": "Salvarea a eșuat",
     "hasBeenRemoved2": "{{name}} a fost eliminată.",
     "seedsExecuted": "Seed-uri executate",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Aspect",
     "extensionsSection": "Extensii",
     "versionReady": "Versiunea {{version}} este pregătită",
-    "saveChanges": "Salvează modificările",
     "runSeedsHint": "Reaplică datele inițiale ale temei — paginile și conținutul exemplu — în acest site.",
     "resetThemeHint": "Șterge setările temei salvate pentru acest site și reaplică datele inițiale.",
     "notActiveHint": "Acest site folosește altă temă.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Ce s-a schimbat în v{{version}}",
     "whatChanged": "Ce s-a schimbat",
-    "closeBuildSourceDialog": "Închide dialogul sursei de build",
-    "close": "Închide",
     "couldNotInstallThatVersion": "Versiunea nu a putut fi instalată.",
     "couldNotChangeAutomaticUpdating": "Actualizarea automată nu a putut fi modificată.",
     "failed": "Eșuat",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Certificatele automate sunt dezactivate. {{reason}}",
     "automaticCertificatesComeFrom": "Certificatele automate provin de la {{authority}}.",
     "noSecretKeyIsConfigured": "Pe acest server nu este configurată nicio SECRET_KEY, deci nu poate fi stocată o cheie privată. Încărcarea este dezactivată până la setarea uneia.",
-    "nothingToSavePasteA": "Nimic de salvat — lipiți un token sau folosiți Ștergere pentru a-l elimina pe cel salvat.",
     "savedThisSiteNowUses": "Salvat. Acest site folosește acum propriul token Cloudflare.",
     "removedThisSiteFallsBack": "Eliminat. Acest site revine la tokenul platformei.",
     "couldNotSaveTheToken": "Tokenul nu a putut fi salvat.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Tokenul acestui site",
     "savedLeaveBlankToKeep": "Salvat — lăsați gol pentru a-l păstra sau folosiți Ștergere pentru a-l elimina",
     "pasteACloudflareApiToken": "Lipiți un token API Cloudflare",
-    "save": "Salvare",
     "clear": "Ștergere",
     "nothingStoredThisHostCannot": "Nimic stocat — acest host nu poate fi servit prin HTTPS de această platformă.",
     "nothingStoredHereTlsFor": "Nimic stocat aici — TLS pentru acest host este terminat înaintea platformei, deci certificatul se află acolo.",
@@ -4706,36 +4680,26 @@
     "roles": "Roluri",
     "permissions": "Permisiuni",
     "eventDetails": "Detalii eveniment",
-    "context": "Context",
     "resource": "Resursă",
     "system": "Sistem",
     "timestamp": "Marcaj temporal",
-    "authority": "Autoritate",
-    "actorId": "ID actor",
-    "type": "Tip",
-    "systemLog": "Jurnal sistem",
-    "audit": "Audit: {{status}}",
-    "activityMessage": "Mesaj activitate",
-    "actionTaken": "Acțiune efectuată",
-    "resourcePool": "Grup de resurse",
-    "rawMetadata": "Metadate brute",
     "thisEntryIsPartOf": "Această intrare face parte dintr-un jurnal de audit imuabil.",
     "exportJson": "Exportați JSON",
     "event": "Eveniment",
     "actor": "Actor",
+    "plugin": "Plugin",
     "activity": "Activitate",
     "status": "Stare",
     "action": "Acțiune",
     "time": "Oră",
-    "logSignature": "Semnătură jurnal: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "AVERTISMENT",
-      "ERROR": "EROARE",
-      "DEBUG": "DEPANARE",
-      "SYSTEM": "SISTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Avertisment",
+      "ERROR": "Eroare",
+      "DEBUG": "Depanare",
+      "SYSTEM": "Sistem",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Înregistrarea nr. {{id}}",
+    "recordedData": "Date înregistrate"
   },
   "mediaPicker": {
     "showingOnly": "Se afișează doar: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Sarcină",
       "schedule": "Rulează",
       "lastRun": "Ultima rulare",
-      "nextRun": "Următoarea rulare"
+      "nextRun": "Următoarea rulare",
+      "duration": "Durată"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platformă",

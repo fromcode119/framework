@@ -19,7 +19,6 @@ export class TagFieldSuggestions extends PureReactor {
 
   render(): ReactNode {
     const {
-      theme,
       inputValue,
       suggestions,
       showSuggestions,
@@ -35,76 +34,46 @@ export class TagFieldSuggestions extends PureReactor {
       return null;
     }
 
+    // The sheet and the rows every menu in this console uses. It was its own object: a blurred pane,
+    // indigo hover, and a "create" row drawn as a tinted card with a 32px indigo tile in it.
     return (
-        <div className={`absolute z-[100] w-full mt-2 rounded-lg border shadow-2xl p-1 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200 max-h-64 overflow-y-auto ${
-          theme === ThemeMode.DARK ? 'bg-[#0f172a] border-slate-800' : 'bg-white/90 border-slate-200/60 backdrop-blur-3xl shadow-slate-200/50'
-        }`}>
-          {sourceUnavailableMessage && (
-            <div className={`px-3.5 py-3 rounded-lg text-[12px] font-medium ${
-              theme === ThemeMode.DARK
-                ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
-                : 'bg-amber-50 text-amber-700 border border-amber-200'
-            }`}>
-              {sourceUnavailableMessage}
-            </div>
-          )}
+        <div className="fc-menu-sheet fc-tag-menu">
+          {sourceUnavailableMessage ? <div className="fc-tag-menu__note">{sourceUnavailableMessage}</div> : null}
 
-          {suggestions.length > 0 && (
+          {suggestions.length > 0 ? (
             <>
-                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1 flex items-center justify-between">
-                    <span className="text-[12px] font-medium text-slate-400">{suggestionsLabel}</span>
-                    <FrameworkIcons.Search size={10} className="text-slate-400" />
-                </div>
-                {suggestions.map((suggestion) => (
-                    <button
-                    key={suggestion.value}
-                    type="button"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      onAdd(suggestion.value);
-                    }}
-                    className={`w-full text-start px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group ${
-                        theme === ThemeMode.DARK
-                        ? 'hover:bg-slate-800 text-slate-300 hover:text-white'
-                        : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
-                    }`}
-                    >
-                    <div className="flex flex-col leading-tight">
-                        <span className="font-medium">{suggestion.label}</span>
-                        {!sourceCollection && suggestion.label !== suggestion.value && (
-                           <span className="text-[12px] opacity-50 font-medium tracking-wide">{suggestion.value}</span>
-                        )}
-                    </div>
-                    <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 opacity-0 group-hover:opacity-100 transition-all scale-0 group-hover:scale-100" />
-                    </button>
-                ))}
+              <div className="fc-tag-menu__caption">{suggestionsLabel}</div>
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.value}
+                  type="button"
+                  className="fc-menu-action"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    onAdd(suggestion.value);
+                  }}
+                >
+                  <span>{suggestion.label}</span>
+                  {!sourceCollection && suggestion.label !== suggestion.value ? <span className="fc-tag-menu__value">{suggestion.value}</span> : null}
+                </button>
+              ))}
             </>
-          )}
+          ) : null}
 
-          {inputValue.length > 0 && !sourceUnavailableMessage && !suggestions.some(s => s.value === inputValue || s.label === inputValue) && (
-              <button
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  onAdd(inputValue);
-                }}
-                className={`w-full text-start px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center gap-3 group mt-1 ${
-                    theme === ThemeMode.DARK
-                    ? 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400'
-                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'
-                }`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <FrameworkIcons.Plus size={16} strokeWidth={3} />
-                </div>
-                <div className="flex-1">
-                    <span className="font-medium text-[12px] block leading-none">
-                      {AdminI18n.t(allowCreate ? 'ui.tags.create' : 'ui.tags.useCustom', { label: createEntityLabel })}
-                    </span>
-                    <span className="font-medium text-[13px] block mt-1">"{inputValue}"</span>
-                </div>
-              </button>
-          )}
+          {inputValue.length > 0 && !sourceUnavailableMessage && !suggestions.some(s => s.value === inputValue || s.label === inputValue) ? (
+            <button
+              type="button"
+              className="fc-menu-action"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onAdd(inputValue);
+              }}
+            >
+              <FrameworkIcons.Plus size={15} />
+              <span>{AdminI18n.t(allowCreate ? 'ui.tags.create' : 'ui.tags.useCustom', { label: createEntityLabel })}</span>
+              <span className="fc-tag-menu__value">"{inputValue}"</span>
+            </button>
+          ) : null}
         </div>
     );
   }

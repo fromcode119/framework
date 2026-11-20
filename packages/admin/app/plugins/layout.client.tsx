@@ -94,7 +94,7 @@ export class PluginsLayout extends AdminComponent {
       // The marketplace is a gallery and keeps the full width; the lists read as the settings column.
       <div className={`w-full animate-in fade-in duration-700 ${isMarketplace ? '' : AdminClass.of('settings-page')}`}>
         <CompactPageHeader title={AdminI18n.t('nav.items.plugins')} subtitle={subtitle} actions={nav} />
-        <div className="w-full p-6">{this.children}</div>
+        <div className="w-full py-6">{this.children}</div>
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { BuildChangelog } from '@/app/sources/components/view/build-changelog.cl
 import { SourceVersionsPanel } from '@/app/sources/components/view/source-versions-panel.client';
 import type { SourceRow } from '@/app/sources/source-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * An opened Sources row: everything the one-line row leaves out. Where the source comes from and
@@ -38,8 +39,8 @@ export class SourceDetails extends PureReactor {
   private renderFact(label: string, value: ReactNode): ReactNode {
     return (
       <div className="min-w-0">
-        <dt className="text-[12px] text-slate-500 dark:text-slate-400">{label}</dt>
-        <dd className="truncate text-[12px] font-medium text-slate-800 dark:text-slate-200">{value}</dd>
+        <dt className="fc-size-xs fc-tone-muted">{label}</dt>
+        <dd className="truncate fc-size-xs font-medium fc-tone-text">{value}</dd>
       </div>
     );
   }
@@ -51,7 +52,7 @@ export class SourceDetails extends PureReactor {
     return (
       <>
         <span className="block truncate">{build.publishToSite}</span>
-        <span className="block whitespace-normal text-[12px] font-normal text-slate-500 dark:text-slate-400">{build.lastPublish || AdminI18n.t('sources.notPublishedYet')}</span>
+        <span className="block whitespace-normal fc-size-xs font-normal fc-tone-muted">{build.lastPublish || AdminI18n.t('sources.notPublishedYet')}</span>
       </>
     );
   }
@@ -68,9 +69,7 @@ export class SourceDetails extends PureReactor {
           {this.renderFact(AdminI18n.t('sources.publishToSite'), this.renderPublish())}
         </dl>
         {row.status === 'failed' && row.build.lastError ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
-            {row.build.lastError}
-          </div>
+          <Alert tone="danger">{row.build.lastError}</Alert>
         ) : null}
         <BuildChangelog changelog={row.build.changelog} version={row.version} />
         <SourceVersionsPanel build={row.build} />

@@ -1,3 +1,4 @@
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ByteSizeFormatter } from '@/lib/byte-size-formatter';
@@ -28,11 +29,11 @@ export class DashboardSystemMeter extends PureReactor {
     return Math.max(0, Math.min(Number(this.used || 0) / total, 1));
   }
 
-  private get barClass(): string {
+  private get tone(): ProgressBar['tone'] {
     const fraction = this.fraction ?? 0;
-    if (fraction >= DashboardSystemMeter.CRITICAL_AT) return 'bg-rose-500';
-    if (fraction >= DashboardSystemMeter.WARN_AT) return 'bg-amber-500';
-    return 'bg-indigo-500';
+    if (fraction >= DashboardSystemMeter.CRITICAL_AT) return 'danger';
+    if (fraction >= DashboardSystemMeter.WARN_AT) return 'warning';
+    return undefined;
   }
 
   private get readout(): string {
@@ -43,21 +44,9 @@ export class DashboardSystemMeter extends PureReactor {
 
   render(): ReactNode {
     const fraction = this.fraction;
-    return (
-      <div className="space-y-1">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-[12px] text-slate-500 dark:text-slate-400">{this.label}</span>
-          <span className="text-[12px] text-slate-400 tabular-nums">
-            {this.readout}
-            {fraction !== null ? ` · ${Math.round(fraction * 100)}%` : ''}
-          </span>
-        </div>
-        {fraction !== null ? (
-          <div className="h-1 w-full rounded-full bg-slate-200 dark:bg-slate-800">
-            <div className={`h-1 rounded-full ${this.barClass}`} style={{ width: `${Math.round(fraction * 100)}%` }} />
-          </div>
-        ) : null}
-      </div>
-    );
+    const detail = `${this.readout}${fraction !== null ? ` · ${Math.round(fraction * 100)}%` : ''}`;
+    // No bar when nothing was reported: an empty bar and a bar at zero read the same and only one is true.
+    if (fraction === null) return <div className="fc-progress"><div className="fc-progress__line"><span>{this.label}</span><span>{detail}</span></div></div>;
+    return <ProgressBar label={this.label} detail={detail} value={Math.round(fraction * 100)} tone={this.tone} />;
   }
 }

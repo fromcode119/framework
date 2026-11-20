@@ -1,3 +1,12 @@
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Card } from '@/components/ui/view/card.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { UpdateNoteTone } from '@/app/settings/updates/update-note-tone';
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -22,23 +31,31 @@ export class SelfUpdatePanel extends AdminComponent {
   /** A fresh update check taken while following an update, handed to the page without a spinner. */
   @prop declare onPolled: (check: any) => void;
 
-  @state saving = false;
+  @state automatic = false;
   @state confirmRestart = false;
   @state restarting = false;
 
   private static readonly POLL_MS = 5000;
   private poll: ReturnType<typeof setTimeout> | null = null;
 
+  /** What the page's one save bar reads and writes for this panel. */
+  private pending: PendingSave | null = null;
+
   componentDidMount(): void {
+    this.automatic = this.selfUpdate.plan?.automatic === true;
+    this.pending = new PendingSave(() => this.automatic, () => this.save(), (value) => { this.automatic = value; });
+    this.pending.mark();
     this.follow();
   }
 
   componentDidUpdate(): void {
+    PendingSaves.changed();
     this.follow();
   }
 
   componentWillUnmount(): void {
     if (this.poll) clearTimeout(this.poll);
+    this.pending?.dispose();
   }
 
   /** An update was asked for or is running: re-check every few seconds until it ends. A held one waits. */
@@ -91,32 +108,35 @@ export class SelfUpdatePanel extends AdminComponent {
   private static readonly OFF_STEP = 'turnedOffByDeployment';
 
   @bound
-  private async setAutomatic(on: boolean): Promise<void> {
-    this.saving = true;
+  private setAutomatic(on: boolean): void {
+    this.automatic = on;
+  }
+
+  /** Written by the page's save bar; the page then reads the updater's answer again. */
+  private async save(): Promise<void> {
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [SelfUpdatePanel.SETTING]: on ? 'true' : 'false' });
+      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [SelfUpdatePanel.SETTING]: this.automatic ? 'true' : 'false' });
       this.onChanged();
     } catch (error: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.selfUpdate.saveFailed'), error?.message || '');
-    } finally {
-      this.saving = false;
     }
   }
 
   /** One sentence for where the updater is, from its own report. */
   private get statusLine(): { text: string; tone: string } {
     const { status, updaterRunning, plan } = this.selfUpdate;
-    if (!updaterRunning) return { text: AdminI18n.t('settings.updates.selfUpdate.notRunning'), tone: 'text-rose-500' };
-    if (status?.step === SelfUpdatePanel.OFF_STEP) return { text: AdminI18n.t('settings.updates.selfUpdate.turnedOff'), tone: 'text-amber-600' };
-    if (status?.state === 'updating') return { text: AdminI18n.t('settings.updates.selfUpdate.updating', { to: status.to, step: status.step }), tone: 'text-indigo-500' };
-    if (this.held) return { text: AdminI18n.t('settings.updates.selfUpdate.heldRolling', { version: plan.heldBy, reason: status?.deployReason ?? '' }), tone: 'text-amber-600' };
-    if (plan?.reason === 'heldFailed') return { text: AdminI18n.t('settings.updates.selfUpdate.heldFailed', { version: plan.heldBy, error: status?.error ?? '' }), tone: 'text-rose-500' };
-    if (status?.state === 'failed') return { text: AdminI18n.t('settings.updates.selfUpdate.failed', { to: status.to, error: status.error }), tone: 'text-rose-500' };
-    if (status?.state === 'rolledBack') return { text: AdminI18n.t('settings.updates.selfUpdate.rolledBack', { to: status.to, error: status.error }), tone: 'text-rose-500' };
-    if (plan?.reason === 'unknown') return { text: AdminI18n.t('settings.updates.selfUpdate.unknown'), tone: 'text-amber-600' };
-    if (plan?.reason === 'heldBreaking') return { text: AdminI18n.t('settings.updates.selfUpdate.heldBreaking', { version: plan.heldBy }), tone: 'text-amber-600' };
-    if (status?.state === 'succeeded' && String(status.to).replace(/^v/, '') === String(plan?.current ?? '')) return { text: AdminI18n.t('settings.updates.selfUpdate.succeeded', { to: status.to }), tone: 'text-emerald-600' };
-    return { text: AdminI18n.t('settings.updates.selfUpdate.ready'), tone: 'text-slate-500' };
+    if (!updaterRunning) return { text: AdminI18n.t('settings.updates.selfUpdate.notRunning'), tone: 'danger' };
+    if (status?.step === SelfUpdatePanel.OFF_STEP) return { text: AdminI18n.t('settings.updates.selfUpdate.turnedOff'), tone: 'warning' };
+    if (status?.state === 'updating') return { text: AdminI18n.t('settings.updates.selfUpdate.updating', { to: status.to, step: status.step }), tone: 'info' };
+    if (this.held) return { text: AdminI18n.t('settings.updates.selfUpdate.heldRolling', { version: plan.heldBy, reason: status?.deployReason ?? '' }), tone: 'warning' };
+    if (plan?.reason === 'heldFailed') return { text: AdminI18n.t('settings.updates.selfUpdate.heldFailed', { version: plan.heldBy, error: status?.error ?? '' }), tone: 'danger' };
+    if (status?.state === 'failed') return { text: AdminI18n.t('settings.updates.selfUpdate.failed', { to: status.to, error: status.error }), tone: 'danger' };
+    if (status?.state === 'rolledBack') return { text: AdminI18n.t('settings.updates.selfUpdate.rolledBack', { to: status.to, error: status.error }), tone: 'danger' };
+    if (plan?.reason === 'unknown') return { text: AdminI18n.t('settings.updates.selfUpdate.unknown'), tone: 'warning' };
+    if (plan?.reason === 'heldBreaking') return { text: AdminI18n.t('settings.updates.selfUpdate.heldBreaking', { version: plan.heldBy }), tone: 'warning' };
+    if (status?.state === 'succeeded' && String(status.to).replace(/^v/, '') === String(plan?.current ?? '')) return { text: AdminI18n.t('settings.updates.selfUpdate.succeeded', { to: status.to }), tone: 'success' };
+    return { text: AdminI18n.t('settings.updates.selfUpdate.ready'), tone: '' };
   }
 
   /** How the last update replaced the apps and why — a restart takes every site down while it runs. */
@@ -129,25 +149,18 @@ export class SelfUpdatePanel extends AdminComponent {
   render(): ReactNode {
     const line = this.statusLine;
     return (
-      <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-white/5 dark:bg-slate-800/40 fc-page-stack">
-        <Switch
-          checked={this.selfUpdate.plan?.automatic === true}
-          onChange={this.setAutomatic}
-          disabled={this.saving}
-          label={AdminI18n.t('settings.updates.selfUpdate.automatic')}
-          description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
-        />
-        <p className={`text-[12px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
-        {this.deployLine && !this.held ? <p className="text-[12px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
+      <Card>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.updates.selfUpdate.automatic')} description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')} width={SettingRowWidth.AUTO}>
+          <Switch checked={this.automatic} onChange={this.setAutomatic} />
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row"><Hint variant={UpdateNoteTone.of(line.tone)}>{line.text}</Hint></div>
+        {this.deployLine && !this.held ? <div className="fc-settings-note fc-settings-note--of-row"><Hint>{this.deployLine}</Hint></div> : null}
         {this.held ? (
-          <button
-            type="button"
-            onClick={() => { this.confirmRestart = true; }}
-            disabled={this.restarting}
-            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
-          >
-            {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
-          </button>
+          <div className="fc-settings-note fc-settings-note--of-row">
+            <Button variant={ButtonVariant.PRIMARY} isLoading={this.restarting} onClick={() => { this.confirmRestart = true; }}>
+              {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
+            </Button>
+          </div>
         ) : null}
         <ConfirmDialog
           isOpen={this.confirmRestart}
@@ -157,7 +170,7 @@ export class SelfUpdatePanel extends AdminComponent {
           title={AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
           description={AdminI18n.t('settings.updates.selfUpdate.updateWithRestartExplained')}
         />
-      </div>
+      </Card>
     );
   }
 }

@@ -59,8 +59,8 @@ export class RedirectCreateCard extends PureReactor {
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.redirects.addRedirect')} icon={<FrameworkIcons.Plus size={16} />}>
-        <div className="flex flex-col md:flex-row gap-3 md:items-end pt-1">
-          <div className="flex-1">
+        <div className="fc-inline-fields">
+          <div className="fc-inline-fields__grow">
             <Input
               label={AdminI18n.t('settings.redirects.fromPath')}
               placeholder="/old-page"
@@ -68,7 +68,7 @@ export class RedirectCreateCard extends PureReactor {
               onChange={(event: any) => { this.fromPath = String(event?.target?.value ?? ''); }}
             />
           </div>
-          <div className="flex-1">
+          <div className="fc-inline-fields__grow">
             <Input
               label={AdminI18n.t('settings.redirects.toPathOrUrl')}
               placeholder={this.gone ? AdminI18n.t('settings.redirects.goneNoTarget') : AdminI18n.t('settings.redirects.toPathExample')}
@@ -77,7 +77,7 @@ export class RedirectCreateCard extends PureReactor {
               onChange={(event: any) => { this.toPath = String(event?.target?.value ?? ''); }}
             />
           </div>
-          <div className="w-full md:w-44">
+          <div className="fc-inline-fields__pick">
             <Select
               theme={this.theme}
               value={this.type}
@@ -90,7 +90,6 @@ export class RedirectCreateCard extends PureReactor {
             onClick={this.handleSubmit}
             isLoading={this.isSubmitting}
             disabled={!this.canSubmit}
-            className="h-9 px-4 rounded-lg font-medium text-xs text-white"
           >
             {AdminI18n.t('settings.redirects.add')}
           </Button>

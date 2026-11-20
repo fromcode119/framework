@@ -1,3 +1,5 @@
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -33,21 +35,18 @@ export class PluginOverviewStatus extends PureReactor {
 
   render(): ReactNode {
     const { plugin, theme, siteScope } = this;
-    const dark = theme === ThemeMode.DARK;
     const active = this.isActive;
+    const failed = PluginState.resolve(plugin.state) === PluginState.ERROR;
     const label = this.isHeld ? AdminI18n.t('plugins.detail.approveEnable') : active ? AdminI18n.t('plugins.detail.active') : AdminI18n.t('plugins.detail.disabled');
     return (
-      <DetailBox title={AdminI18n.t('plugins.detail.runtimeStatus')} theme={theme}>
-        <div className="flex items-center justify-between gap-4 py-1.5 text-[13px]">
-          <span className={`flex items-center gap-2 font-medium ${active ? 'text-emerald-500' : dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            <span className={`h-2 w-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-slate-500'}`} />
-            {PluginState.resolve(plugin.state) === PluginState.ERROR ? AdminI18n.t('plugins.detail.stateError') : label}
-          </span>
-          {!siteScope ? <Switch checked={active} onChange={(_: boolean) => this.onToggle()} /> : null}
+      <DetailBox title={AdminI18n.t('plugins.detail.runtimeStatus')} theme={theme}
+        action={<StateBadge tone={failed ? 'danger' : active ? 'success' : 'default'}>{failed ? AdminI18n.t('plugins.detail.stateError') : label}</StateBadge>}>
+        <div className="fc-stack">
+          {!siteScope ? <Switch checked={active} onChange={(_: boolean) => this.onToggle()} label={label} /> : null}
+          {siteScope ? <Hint>{AdminI18n.t('plugins.detail.switchInPlatformScope')}</Hint> : null}
+          {!siteScope && !this.ownerSite ? <PluginSiteOfferSwitch slug={plugin.manifest.slug} /> : null}
+          {!siteScope && this.ownerSite ? <Hint>{AdminI18n.t('plugins.detail.siteOwnNotOffered', { site: this.ownerSite })}</Hint> : null}
         </div>
-        {siteScope ? <p className={`mt-2 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.switchInPlatformScope')}</p> : null}
-        {!siteScope && !this.ownerSite ? <PluginSiteOfferSwitch slug={plugin.manifest.slug} /> : null}
-        {!siteScope && this.ownerSite ? <p className={`mt-2 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.siteOwnNotOffered', { site: this.ownerSite })}</p> : null}
       </DetailBox>
     );
   }

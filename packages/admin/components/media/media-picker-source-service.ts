@@ -76,7 +76,7 @@ export class MediaPickerSourceService {
       url,
       mimeType,
       relativePath,
-      ...(Number.isFinite(sizeBytes) && sizeBytes > 0 ? { filesize: sizeBytes } : {}),
+      ...(Number.isFinite(sizeBytes) && sizeBytes > 0 ? { fileSize: sizeBytes } : {}),
     };
   }
 

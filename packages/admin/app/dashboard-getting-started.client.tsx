@@ -3,7 +3,11 @@ import { prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminScope } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { AdminClass } from '@/lib/admin-class';
+import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { Alert } from '@/components/ui/view/alert.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -36,83 +40,57 @@ export class DashboardGettingStarted extends AdminComponent {
   }
 
   private marker(step: Record<string, any>, position: number): ReactNode {
-    if (step.done) {
-      return (
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-          <FrameworkIcons.Check size={13} />
-        </span>
-      );
-    }
-    const isNext = String(step.key) === this.firstUndoneKey;
     return (
-      <span
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[12px] font-medium ${
-          isNext ? 'border-indigo-500 text-indigo-500' : 'border-slate-300 text-slate-400 dark:border-slate-700'
-        }`}
-      >
-        {position}
+      <span className="fc-setup__marker" aria-hidden="true">
+        {step.done ? <FrameworkIcons.Check size={13} /> : position}
       </span>
     );
   }
 
-  render(): ReactNode {
+  /** Said plainly, because the alternative is an operator creating a site record they do not need:
+      tenancy switches on only when sites exist, and until then this deployment serves its own hosts. */
+  private renderServing(): ReactNode {
+    if (!this.storefront) return null;
+    const where = this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite');
     return (
-      <div className={`${AdminClass.SURFACE} p-5`}>
-        <h2 className="text-[15px] font-medium tracking-tight text-slate-900 dark:text-white">
-          {AdminI18n.t(this.inSite ? 'dashboard.setup.titleSite' : 'dashboard.setup.titlePlatform')}
-        </h2>
-        <p className="mt-1 mb-4 max-w-xl text-[12px] leading-relaxed text-slate-500">
-          {this.inSite
-            ? AdminI18n.t('dashboard.setup.textSite')
-            : AdminI18n.t('dashboard.setup.textPlatform')}
-        </p>
+      <Alert tone="info" title={AdminI18n.t(where)} className="fc-setup__note">
+        {this.inSite
+          ? <>{AdminI18n.t('dashboard.setup.servedAt')} <strong>{this.storefront}</strong></>
+          : this.mode === 'multi-site'
+          ? AdminI18n.t('dashboard.setup.multiHint')
+          : <>{AdminI18n.t('dashboard.setup.serving')} <strong>{this.storefront}</strong> — {AdminI18n.t('dashboard.setup.singleHint')}</>}
+      </Alert>
+    );
+  }
 
-        {/* Said plainly, because the alternative is an operator creating a site record they do not
-            need: tenancy switches on only when `_system_tenants` has rows, and until then this
-            deployment serves the hosts in its own environment. */}
-        {this.storefront ? (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[12px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
-            <span className="font-medium">{AdminI18n.t(this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite'))}</span>
-            <span className="text-slate-400">·</span>
-            <span className="truncate">
-              {this.inSite
-                ? <>{AdminI18n.t('dashboard.setup.servedAt')} <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span></>
-                : this.mode === 'multi-site'
-                ? AdminI18n.t('dashboard.setup.multiHint')
-                : <>{AdminI18n.t('dashboard.setup.serving')} <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span> — {AdminI18n.t('dashboard.setup.singleHint')}</>}
-            </span>
-          </div>
-        ) : null}
-
-        <div className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
-          {this.steps.map((step, position) => (
-            <div key={String(step.key)} className="flex items-center gap-3 py-3">
-              {this.marker(step, position + 1)}
-              <div className="min-w-0 flex-1">
-                <div className={`text-[13px] font-medium ${step.done ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'}`}>
-                  {String(step.title)}
+  render(): ReactNode {
+    const next = this.firstUndoneKey;
+    return (
+      <Card
+        title={AdminI18n.t(this.inSite ? 'dashboard.setup.titleSite' : 'dashboard.setup.titlePlatform')}
+        description={AdminI18n.t(this.inSite ? 'dashboard.setup.textSite' : 'dashboard.setup.textPlatform')}
+      >
+        {this.renderServing()}
+        <ol className="fc-setup__steps">
+          {this.steps.map((step, position) => {
+            const isNext = String(step.key) === next;
+            return (
+              <li key={String(step.key)} className="fc-setup__step" data-done={step.done ? 'true' : undefined} data-next={isNext ? 'true' : undefined}>
+                {this.marker(step, position + 1)}
+                <div className="fc-setup__text">
+                  <div className="fc-setup__title">{String(step.title)}</div>
+                  {step.done ? null : <div className="fc-setup__detail">{String(step.detail)}</div>}
                 </div>
-                {!step.done ? (
-                  <div className="text-[12px] leading-relaxed text-slate-500">{String(step.detail)}</div>
-                ) : null}
-              </div>
-              {!step.done ? (
-                <button
-                  type="button"
-                  onClick={() => this.go(String(step.actionPath))}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                    String(step.key) === this.firstUndoneKey
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500'
-                      : 'border border-slate-200 text-slate-600 hover:border-indigo-300 dark:border-slate-800 dark:text-slate-300'
-                  }`}
-                >
-                  {String(step.actionLabel)}
-                </button>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
+                {step.done ? null : (
+                  <Button size={FieldSize.SM} variant={isNext ? ButtonVariant.PRIMARY : ButtonVariant.SECONDARY} onClick={() => this.go(String(step.actionPath))}>
+                    {String(step.actionLabel)}
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </Card>
     );
   }
 }

@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { MouseEvent, ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
@@ -12,7 +11,13 @@ import { VersionComparisonService } from '@fromcode119/core/client';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { MarketplaceSearchBar } from '@/app/plugins/marketplace/components/view/marketplace-search-bar.client';
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { SearchField } from '@/components/ui/view/search-field.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
+import { ProgressBar } from '@/components/ui/view/progress-bar.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { MarketplacePluginCard } from '@/app/plugins/marketplace/components/view/marketplace-plugin-card.client';
 import { MarketplaceLoadingGrid } from '@/app/plugins/marketplace/components/view/marketplace-loading-grid.client';
 import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view/marketplace-empty-state.client';
@@ -35,6 +40,8 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   @state updatingAll = false;
   @state updateAllProgress = '';
   @state searchQuery = '';
+  /** Which part of the catalogue is listed: all of it, what is installed, or what has an update. */
+  @state part = 'all';
   @state imageErrors: Record<string, boolean> = {};
   @state consentSlugs: string[] = [];
 
@@ -211,65 +218,43 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
     const theme = this.theme;
     const { loading, installing, searchQuery, installedPlugins, imageErrors } = this;
-    const filtered = this.filtered;
-
-    const installedCount = filtered.filter((p) => installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug)).length;
-    const updateCount = filtered.filter((p) => this.hasPendingUpdateFor(p)).length;
-    const isDark = theme === ThemeMode.DARK;
-    const summary: Array<{ label: string; value: number; tone: string }> = [
-      { label: AdminI18n.t('plugins.list.available'), value: filtered.length, tone: isDark ? 'text-white' : 'text-slate-900' },
-      { label: AdminI18n.t('plugins.list.installed'), value: installedCount, tone: 'text-emerald-500' },
-      { label: AdminI18n.t('plugins.list.updates'), value: updateCount, tone: 'text-amber-500' },
-    ];
+    const all = this.filtered;
+    const isInstalled = (p: IPluginEntry): boolean => Boolean(installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug));
+    const installedCount = all.filter(isInstalled).length;
+    const updateCount = all.filter((p) => this.hasPendingUpdateFor(p)).length;
+    const shown = this.part === 'installed' ? all.filter(isInstalled) : this.part === 'updates' ? all.filter((p) => this.hasPendingUpdateFor(p)) : all;
 
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
+      <div className="fc-columns__stack">
         <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => { this.consentSlugs = []; void this.fetchData(true); }} />
-        <MarketplaceSearchBar
-          theme={theme}
-          searchQuery={searchQuery}
-          onChange={(value) => { this.searchQuery = value; }}
-        />
+        <PageBar lead={(
+          <Tabs label={AdminI18n.t('plugins.list.theMarketplace')} value={this.part} onChange={(id: string) => { this.part = id; }}
+            tabs={[
+              { id: 'all', label: AdminI18n.t('plugins.list.available'), count: all.length },
+              { id: 'installed', label: AdminI18n.t('plugins.list.installed'), count: installedCount },
+              { id: 'updates', label: AdminI18n.t('plugins.list.updates'), count: updateCount },
+            ]} />
+        )}>
+          <SearchField value={searchQuery} onChange={(value: string) => { this.searchQuery = value; }} placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')} />
+          {!this.updatingAll && updateCount > 0 ? (
+            <Button variant={ButtonVariant.PRIMARY} disabled={Boolean(installing)} onClick={() => this.handleUpdateAll(updateCount)}>{AdminI18n.t('plugins.list.updateAll', { count: updateCount })}</Button>
+          ) : null}
+        </PageBar>
 
-        {!loading && filtered.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {summary.map((s) => (
-              <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-                <span className={`text-sm font-medium tabular-nums ${s.tone}`}>{s.value}</span>
-                <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
-              </div>
-            ))}
-            {this.updatingAll ? (
-              /* The button is GONE while the batch runs — in its place, the server's own progress
-                 messages counting down to the restart. */
-              <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[12px] font-medium ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-                <span className="h-3 w-3 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                <span className="normal-case tracking-normal">{this.updateAllProgress || AdminI18n.t('plugins.list.updatingPlugins')}</span>
-              </div>
-            ) : updateCount > 0 ? (
-              <button
-                type="button"
-                disabled={!!installing}
-                onClick={() => this.handleUpdateAll(updateCount)}
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-medium text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700"
-              >
-                {AdminI18n.t('plugins.list.updateAll', { count: updateCount })}
-              </button>
-            ) : null}
-          </div>
-        ) : null}
+        {/* While the batch runs the button is gone — in its place, the server's own progress messages
+            counting down to the restart. */}
+        {this.updatingAll ? <ProgressBar label={this.updateAllProgress || AdminI18n.t('plugins.list.updatingPlugins')} /> : null}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
-          {loading ? (
-            <MarketplaceLoadingGrid theme={theme} />
-          ) : filtered.length === 0 ? (
-            <MarketplaceEmptyState configured={Boolean(this.catalogSource) || Boolean(this.searchQuery)} />
-          ) : (
-            filtered.map(plugin => {
-              const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);
+        {loading ? (
+          <ListCard><MarketplaceLoadingGrid theme={theme} /></ListCard>
+        ) : shown.length === 0 ? (
+          <MarketplaceEmptyState configured={Boolean(this.catalogSource) || Boolean(this.searchQuery) || all.length > 0} />
+        ) : (
+          <ListCard>
+            {shown.map((plugin) => {
+              const installed = installedPlugins.find((p) => (p.manifest?.slug || p.slug) === plugin.slug);
               const installedVersion = installed ? (installed.manifest?.version || installed.version) : null;
               const hasUpdate = Boolean(installed && VersionComparisonService.isGreater(plugin.version, installedVersion));
-
               return (
                 <MarketplacePluginCard
                   key={plugin.slug}
@@ -287,9 +272,9 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
                   onImageError={() => { this.imageErrors = { ...this.imageErrors, [plugin.slug]: true }; }}
                 />
               );
-            })
-          )}
-        </div>
+            })}
+          </ListCard>
+        )}
       </div>
     );
   }

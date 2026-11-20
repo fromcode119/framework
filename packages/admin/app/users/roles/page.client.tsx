@@ -113,14 +113,14 @@ export class RolesPage extends AdminComponent {
           subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
           actions={!this.canCreate ? null :
             <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
-              <Button className="px-4 h-9 rounded-lg font-medium text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
+              <Button icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
                 {AdminI18n.t('users.createRole')}
               </Button>
             </AdminLink>
           }
         />
 
-        <div className="w-full p-6 fc-page-stack">
+        <div className="w-full py-6 fc-page-stack">
           <RolesListCard roles={roles} onRequestDelete={this.requestDelete} onNavigate={(href: string) => this.router.push(href)} />
           <RolesAuditSidebar logs={logs} health={health} loading={loading} theme={theme} />
         </div>

@@ -1,3 +1,4 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ComponentType, ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
@@ -15,28 +16,17 @@ export class ThemeDetailTabs extends PureReactor {
   @bound private openSettings(): void { this.onTabChange(ThemeSettingsTab.SETTINGS); }
   @bound private openMaintenance(): void { this.onTabChange(ThemeSettingsTab.MAINTENANCE); }
 
-  private tab(tab: ThemeSettingsTab, label: string, Icon: ComponentType<{ size?: number }>, onClick: () => void, className = ''): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const active = this.activeTab === tab;
-    const tone = active
-      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
-      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
-    return (
-      <button type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone} ${className}`}>
-        <Icon size={15} />
-        {label}
-      </button>
-    );
-  }
-
   render(): ReactNode {
+    const rows = [
+      { tab: ThemeSettingsTab.OVERVIEW, label: AdminI18n.t('themes.overview'), icon: <FrameworkIcons.Info size={15} />, go: this.openOverview },
+      { tab: ThemeSettingsTab.SETTINGS, label: AdminI18n.t('themes.settings'), icon: <FrameworkIcons.Settings size={15} />, go: this.openSettings },
+      { tab: ThemeSettingsTab.MAINTENANCE, label: AdminI18n.t('themes.maintenance'), icon: <FrameworkIcons.Wrench size={15} />, go: this.openMaintenance, end: true },
+    ];
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 ${this.theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/80' : 'border-slate-200 bg-white'}`}>
-        {this.tab(ThemeSettingsTab.OVERVIEW, AdminI18n.t('themes.overview'), FrameworkIcons.Info, this.openOverview)}
-        {this.tab(ThemeSettingsTab.SETTINGS, AdminI18n.t('themes.settings'), FrameworkIcons.Settings, this.openSettings)}
-        {this.tab(ThemeSettingsTab.MAINTENANCE, AdminI18n.t('themes.maintenance'), FrameworkIcons.Wrench, this.openMaintenance, 'ml-auto')}
-      </nav>
+      <Tabs variant="bar" label={AdminI18n.t('themes.settings')}
+        value={String(rows.findIndex((row) => row.tab === this.activeTab))}
+        onChange={(index: string) => rows[Number(index)]?.go()}
+        tabs={rows.map((row, index) => ({ id: String(index), label: row.label, icon: row.icon, end: row.end }))} />
     );
   }
 }

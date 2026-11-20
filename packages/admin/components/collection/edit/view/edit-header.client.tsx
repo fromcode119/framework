@@ -67,6 +67,11 @@ export class EditHeader extends PureReactor {
   /** The record's own address, which those menu rows extend with the section they open. */
   @prop declare recordHref?: string;
   @prop declare navigate?: (href: string) => void;
+  /** Render the header's content WITHOUT its own card — for when it is the head of the first section's
+      card (the merged first card the reference draws). */
+  @prop declare bare?: boolean;
+  /** Edit the first section, offered as the first item of this header's ⋯ when it heads the first card. */
+  @prop declare onEditDetails?: () => void;
   @state private copied = false;
   /** The status chosen from the menu, waiting for the operator to confirm it. */
   @state private askedStatus: { label: string; value: string; tone?: string; confirm?: string } | null = null;
@@ -155,8 +160,8 @@ export class EditHeader extends PureReactor {
     const archived = !isNew && CollectionArchive.isArchived(formData);
     const slotProps = { collection, formData, setFormData, isNew, handleSubmit, saving };
 
-    return (
-      <Card noPadding className={head}>
+    const inner = (
+      <>
         <div className={`${head}__main`}>
           <div className={`${head}__title-row`}>
             <h1 className={`${head}__title`} title={this.title}>{this.title}</h1>
@@ -202,7 +207,7 @@ export class EditHeader extends PureReactor {
               statusOptions={this.statusOptions} currentStatusValue={this.currentStatusValue} onStatusChange={this.onStatusChange}
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
               canArchive={this.canSave && CollectionArchive.isArchivable(collection)}
-              canDelete={this.canDelete} onDelete={this.onDelete}
+              canDelete={this.canDelete} onDelete={this.onDelete} onEditDetails={this.onEditDetails}
               openedSections={this.openedSections || []} recordHref={this.recordHref || ''} navigate={this.navigate}
               actions={(
                 <>
@@ -219,7 +224,8 @@ export class EditHeader extends PureReactor {
             description={this.askedStatus.confirm || ''} isLoading={this.committing}
             variant={this.askedStatus.tone === 'danger' ? ButtonVariant.DANGER : ButtonVariant.PRIMARY} />
         ) : null}
-      </Card>
+      </>
     );
+    return this.bare ? inner : <Card noPadding className={head}>{inner}</Card>;
   }
 }

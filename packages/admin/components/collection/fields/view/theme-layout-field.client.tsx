@@ -99,7 +99,6 @@ export class ThemeLayoutField extends Reactor {
     const theme = this.theme ?? ThemeMode.LIGHT;
     const field = this.field;
     const { options, layoutInfoByValue, runtimeDefaultLayout, loading } = this;
-    const isDark = theme === ThemeMode.DARK;
     const readOnly = Boolean(field?.admin?.readOnly) || this.disabled;
 
     const explicitValue = String(value || '').trim();
@@ -125,14 +124,14 @@ export class ThemeLayoutField extends Reactor {
           theme={theme}
           placeholder={AdminI18n.t('ui.layout.auto')}
         />
-        <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <p className={`fc-size-xs font-medium fc-tone-muted`}>
           {AdminI18n.t('ui.layout.hint')}
         </p>
 
         {selectedLayoutMissing ? (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-500/40 dark:bg-amber-500/10">
-            <p className="text-[12px] font-medium text-amber-600 dark:text-amber-400">{AdminI18n.t('ui.layout.missingTitle')}</p>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-amber-700 dark:text-amber-300">
+          <div className="rounded-xl border fc-tone-warning-line fc-tone-warning-soft px-3 py-2.5">
+            <p className="fc-size-xs font-medium fc-tone-warning">{AdminI18n.t('ui.layout.missingTitle')}</p>
+            <p className="mt-1 fc-size-xs font-medium leading-relaxed fc-tone-warning">
               {AdminI18n.t('ui.layout.missingText', { layout: explicitValue, effective: `${effectiveLabel} (${effectiveValue})` })}
             </p>
             <div className="mt-2">
@@ -140,13 +139,13 @@ export class ThemeLayoutField extends Reactor {
             </div>
           </div>
         ) : (
-          <div className={`rounded-xl border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
-            <p className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('ui.layout.renders')}</p>
-            <p className={`mt-1 text-xs font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{effectiveLabel} ({effectiveValue})</p>
-            <p className={`mt-1 text-[12px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <div className={`rounded-xl border px-3 py-2 fc-tone-line fc-tone-raised`}>
+            <p className={`fc-size-xs font-medium fc-tone-muted`}>{AdminI18n.t('ui.layout.renders')}</p>
+            <p className={`mt-1 text-xs font-medium fc-tone-text`}>{effectiveLabel} ({effectiveValue})</p>
+            <p className={`mt-1 fc-size-xs leading-relaxed fc-tone-muted`}>
               {AdminI18n.t(isAutoMode ? 'ui.layout.autoMode' : 'ui.layout.explicitMode')}
             </p>
-            {effectiveDescription ? <p className="mt-1 text-[12px] leading-relaxed text-slate-500">{effectiveDescription}</p> : null}
+            {effectiveDescription ? <p className="mt-1 fc-size-xs leading-relaxed fc-tone-muted">{effectiveDescription}</p> : null}
           </div>
         )}
       </div>

@@ -10,6 +10,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminClass } from '@/lib/admin-class';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * A media field. One file: an image shows as a picture, anything else as a named file — a PDF handed to
@@ -52,24 +53,25 @@ export class MediaRelationFieldView extends PureReactor {
     return !this.hasMany && preview?.url && MediaRelationFieldUtils.mimeTypeOf(preview).startsWith('image/') ? preview : null;
   }
 
+  /** Nothing chosen: an empty square that opens the library. It was a line saying "No media selected"
+      above a button saying "Select media" — two things to read where one thing to press is enough. */
   private renderEmpty(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
+    const label = AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select');
     return (
-      <div className={`px-3.5 h-[var(--fc-field-h)] flex items-center rounded-[var(--fc-control-radius)] text-xs font-medium ${dark ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
-        {AdminI18n.t('ui.media.none')}
-      </div>
+      <button type="button" className={AdminClass.of('media-empty')} onClick={this.handleOpen} aria-label={label} title={label}>
+        {this.hasMany ? <FrameworkIcons.Plus size={15} /> : <FrameworkIcons.Image size={15} />}
+      </button>
     );
   }
 
   private renderSingleImage(preview: IMediaRelationPreview): ReactNode {
     const label = AdminI18n.t('ui.media.remove', { name: preview.filename || '' });
     return (
-      <div className="relative w-full aspect-video rounded-[var(--fc-control-radius)] overflow-hidden border border-slate-200 dark:border-slate-800">
+      <div className="relative w-full aspect-video rounded-[var(--fc-control-radius)] overflow-hidden border fc-tone-line">
         <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className={`w-full h-full ${this.wholeImage ? 'object-contain p-3' : 'object-cover'}`} />
-        <button type="button" onClick={this.handleRemoveSingle} aria-label={label} title={label}
-          className="absolute top-2 end-2 w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-600 shadow">
+        <Button type="button" variant={ButtonVariant.SECONDARY} size={FieldSize.ICON} className="fc-btn--raised absolute top-2 end-2" onClick={this.handleRemoveSingle} aria-label={label} title={label}>
           <FrameworkIcons.X size={14} />
-        </button>
+        </Button>
       </div>
     );
   }
@@ -84,7 +86,7 @@ export class MediaRelationFieldView extends PureReactor {
     // Selected, but no file could be resolved for it (deleted, or unreadable): say which id is stored.
     const many = this.hasMany && this.selectedIds.length > 1;
     return (
-      <div className="px-3.5 h-[var(--fc-field-h)] flex items-center rounded-[var(--fc-control-radius)] text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-800">
+      <div className="px-3.5 h-[var(--fc-field-h)] flex items-center rounded-[var(--fc-control-radius)] text-xs font-medium fc-tone-raised fc-tone-muted border fc-tone-line">
         {AdminI18n.t(many ? 'ui.media.selectedIds' : 'ui.media.selectedId', { ids: this.selectedIds.join(', ') })}
       </div>
     );
@@ -103,15 +105,22 @@ export class MediaRelationFieldView extends PureReactor {
     return (
       <div className={AdminClass.of('media-inline')}>
         {image ? <img className={AdminClass.of('media-inline__thumb')} src={image.url} alt="" /> : null}
-        <span className={`${AdminClass.of('media-inline__name')}${chosen ? '' : ` ${AdminClass.of('media-inline__name--none')}`}`} title={name || undefined}>
-          {chosen ? name : AdminI18n.t('ui.media.none')}
-        </span>
+        {chosen ? <span className={AdminClass.of('media-inline__name')} title={name || undefined}>{name}</span> : null}
         {chosen ? (
           <button type="button" className={AdminClass.of('media-inline__remove')} onClick={this.handleRemoveSingle} aria-label={removeLabel} title={removeLabel}>
             <FrameworkIcons.X size={14} />
           </button>
         ) : null}
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>{AdminI18n.t('ui.media.select')}</Button>
+        {/* Nothing chosen: the empty square alone, at a row's height. It read "No media selected" beside
+            a button that said "Select Media". */}
+        {chosen
+          ? <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>{AdminI18n.t('ui.media.select')}</Button>
+          : (
+            <button type="button" className={`${AdminClass.of('media-empty')} ${AdminClass.of('media-empty--row')}`} onClick={this.handleOpen}
+              aria-label={AdminI18n.t('ui.media.select')} title={AdminI18n.t('ui.media.select')}>
+              <FrameworkIcons.Image size={15} />
+            </button>
+          )}
         {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );
@@ -126,10 +135,12 @@ export class MediaRelationFieldView extends PureReactor {
             indigo at its own height and its own text size — the console's primary look, worn by a
             secondary action, which inside the edit dialog stood level with Save. The compact view beside
             it already used the shared control; both do now. */}
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>
-          {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
-          {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
-        </Button>
+        {this.selectedIds.length ? (
+          <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>
+            {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
+            {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
+          </Button>
+        ) : null}
         {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );

@@ -19,6 +19,8 @@ export class RecordsHub extends ShellBoundary {
   @prop declare load: () => Promise<IRecordsHubResult>;
   /** Host handler for opening/downloading an item (href nav or authed download). */
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
+  /** No longer read: the hub draws in the console's colours, which follow its light/dark mode by
+      themselves. Still accepted, because plugin pages pass it. */
   @prop declare theme?: ThemeMode | string;
   @prop declare title?: string;
   @prop declare emptyHint?: string;

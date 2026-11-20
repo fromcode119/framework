@@ -102,8 +102,8 @@ describe('./plugin-settings-form', () => {
     await waitFor(() => expect(screen.queryByText('Site Name')).toBeDefined());
 
     // Check tabs — the open one's label is also the section heading, so ask for the tab buttons.
-    expect(screen.getByRole('button', { name: 'General' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Advanced' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'General' })).toBeDefined();
+    expect(screen.getByRole('tab', { name: 'Advanced' })).toBeDefined();
   });
 
   it('switches tabs and shows correct fields', async () => {
@@ -245,14 +245,14 @@ describe('./plugin-settings-form', () => {
     fireEvent.change(input, { target: { value: 'New Name' } });
     expect(screen.getByRole('button', { name: 'Save' })).toBeDefined();
 
-    // Typed back to what was read: nothing to save.
+    // Typed back to what was read: nothing to save. The bar fades out, so it is gone a moment later.
     fireEvent.change(input, { target: { value: 'My Awesome Site' } });
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).toBeNull());
 
     fireEvent.change(input, { target: { value: 'New Name' } });
     fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
     expect((screen.getByTestId('input-siteName') as HTMLInputElement).value).toBe('My Awesome Site');
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).toBeNull());
 
     fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'Saved Name' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));

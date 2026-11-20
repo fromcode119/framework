@@ -1,5 +1,8 @@
+import { Heading } from '@/components/ui/view/heading.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { AdminClass } from '@/lib/admin-class';
 import type { ReactElement, ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
 import { Loader } from '@/components/ui/view/loader.client';
@@ -14,6 +17,8 @@ import { IntegrationsSettingsPageActions } from '@/app/settings/integrations/com
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { state, bound } from '@fromcode119/react-class-components';
 
 /**
  * The integrations settings screen.
@@ -22,8 +27,14 @@ import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
  * the links below — see `IntegrationsSettingsPageState`.
  */
 export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActions {
+  /** Whether a panel below the providers (its own switch, a limit) holds something unsaved. */
+  @state private panelsDirty = false;
+  @state private panelsSaving = false;
+  private stopPanels: (() => void) | null = null;
+
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.stopPanels = PendingSaves.subscribe(this.readPanels);
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;
     // The `searchParams` promise resolves EMPTY on this route because the page is statically
@@ -48,39 +59,47 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
 
   componentWillUnmount(): void {
     this.mounted = false;
+    this.stopPanels?.();
   }
 
-  private tab(key: string, label: string, icon: ReactNode, active: boolean, onClick: () => void): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const tone = active
-      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
-      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
-    return (
-      <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
-        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-medium' : 'font-medium'} ${tone}`}>
-        {icon}
-        {label}
-      </button>
-    );
+  @bound private readPanels(): void {
+    const dirty = PendingSaves.anyDirty();
+    if (dirty !== this.panelsDirty) this.panelsDirty = dirty;
+  }
+
+  /** The page's one bar saves the open provider and every panel below it that changed. */
+  @bound private async saveAll(): Promise<void> {
+    if (this.editorDirty) await this.handleSaveProvider();
+    if (!PendingSaves.anyDirty()) return;
+    this.panelsSaving = true;
+    try {
+      await PendingSaves.saveAll();
+    } finally {
+      this.panelsSaving = false;
+      this.readPanels();
+    }
+  }
+
+  @bound private discardAll(): void {
+    if (this.editorDirty) this.discardEditorChanges();
+    PendingSaves.discardAll();
   }
 
   /** Top row: who registered the types — the platform first, then each plugin. */
   private renderOwnerTabs(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    const activeOwner = this.activeOwner;
+    // One owner is not a choice: a row holding a single tab said nothing and cost a line.
+    if (this.ownerTabs.length < 2) return null;
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 ${this.ownerTypes.length > 1 ? `border-b ${dark ? 'border-slate-800' : 'border-slate-200'}` : ''}`}>
-        {this.ownerTabs.map((owner) => this.tab(
-          `owner-${owner.slug}`,
-          owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
-          owner.slug ? <FrameworkIcons.Plugins size={15} /> : <FrameworkIcons.Settings size={15} />,
-          owner.slug === activeOwner,
-          () => {
-            const first = IntegrationSelectors.typesOfOwner(this.integrations, owner.slug)[0];
-            if (first) this.activateType(first.key);
-          },
-        ))}
-      </nav>
+      <Tabs variant="bar" value={this.activeOwner} label={AdminI18n.t('settings.integrations.ownerPlatform')}
+        onChange={(slug: string) => {
+          const first = IntegrationSelectors.typesOfOwner(this.integrations, slug)[0];
+          if (first) this.activateType(first.key);
+        }}
+        tabs={this.ownerTabs.map((owner) => ({
+          id: owner.slug,
+          label: owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
+          icon: owner.slug ? <FrameworkIcons.Plugins size={15} /> : <FrameworkIcons.Settings size={15} />,
+        }))} />
     );
   }
 
@@ -88,18 +107,9 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
   private renderTypeTabs(): ReactNode {
     const types = this.ownerTypes;
     if (types.length < 2) return null;
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 text-[13px] ${dark ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
-        {types.map((type) => (
-          <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
-            className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${type.key === this.activeType
-              ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
-              : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
-            {type.label}
-          </button>
-        ))}
-      </div>
+      <Tabs variant={this.ownerTabs.length < 2 ? 'bar' : 'second'} value={this.activeType} onChange={(key: string) => this.activateType(key)}
+        tabs={types.map((type) => ({ id: type.key, label: type.label }))} />
     );
   }
 
@@ -137,9 +147,9 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     // A type that declares NO providers is configured entirely by its own panel below.
     if (!integration.providers.length) {
       return (
-        <div>
-          <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
-          {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
+        <div className="fc-field-stack">
+          <Heading level="h2">{integration.label}</Heading>
+          {integration.description ? <Text size="small" muted as="p">{integration.description}</Text> : null}
         </div>
       );
     }
@@ -172,7 +182,6 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
       return <IntegrationEmptyState />;
     }
 
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex h-full flex-col animate-in fade-in duration-500">
         <IntegrationHeader
@@ -180,13 +189,15 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
-        {/* The tabs belong to the header: one band under it, the full page width, so the page reads as one. */}
-        <div className={`border-b ${dark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+        {/* The tabs stand on the page, at the page's own inset, the way a plugin's settings do: the first
+            row with the line under it, the second under that. They were in a white band of their own
+            that stopped short of both edges of the page. */}
+        <div className="fc-tabstack">
           {this.renderOwnerTabs()}
           {this.renderTypeTabs()}
         </div>
-        <div className="w-full p-6">
-          <section className={`space-y-6 rounded-2xl border p-6 ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+        <div className="fc-tabstack__body">
+          <section className="fc-columns__stack">
             {this.renderBody()}
             {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
                 registry so this page never names a type. Hidden while one provider is open in place of
@@ -194,10 +205,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
             {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
           </section>
           <SettingsSaveBar
-            dirty={this.editorDirty}
-            saving={this.saving}
-            onSave={() => this.handleSaveProvider()}
-            onDiscard={() => this.discardEditorChanges()}
+            dirty={this.editorDirty || this.panelsDirty}
+            saving={this.saving || this.panelsSaving}
+            onSave={this.saveAll}
+            onDiscard={this.discardAll}
           />
         </div>
       </div>

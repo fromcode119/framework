@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { FileGrantRepository, SystemConstants } from '@fromcode119/core';
+import { BaseController, FileGrantRepository, SystemConstants } from '@fromcode119/core';
 
 /**
  * The operator's side: compose a send, see who has opened it, withdraw it.
@@ -13,15 +13,21 @@ import { FileGrantRepository, SystemConstants } from '@fromcode119/core';
  * Per-GRANT administration: who currently holds access to a file, patching one grant, and revoking.
  *
  * Split out of FileShareAdminController (421 lines) 2026-09-09. Needs only the repository (and the
- * activity service), never the mailer or the plugin manager, so it is a plain class routed by FilesRouter.
+ * activity service), never the mailer or the plugin manager.
  */
 import { FileShareRequestParsers } from '@api/controllers/file-sharing/file-share-request-parsers';
 
-export class FileGrantAdminController {
+export class FileGrantAdminController extends BaseController {
+  /**
+   * A BaseController so its methods keep their receiver: the router hands them to Express bare, and as
+   * a plain class every one of them read `this.db` off undefined — listing who holds a file answered 500.
+   */
   constructor(
     private readonly db: any,
     private readonly grants: FileGrantRepository,
-  ) {}
+  ) {
+    super();
+  }
 
 
 

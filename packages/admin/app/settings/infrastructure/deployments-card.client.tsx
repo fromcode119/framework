@@ -1,10 +1,10 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { DeployMode, SystemConstants } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
@@ -24,11 +24,19 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class DeploymentsCard extends AdminComponent {
   @state loading = true;
   @state saving = false;
+
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
   @state mode = DeployMode.RESTART.value;
   @state capacity: { fits: boolean; summary: string } | null = null;
   @state loadError = '';
 
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ mode: this.mode }),
+      () => this.save(),
+      (values) => { this.mode = values.mode; },
+    );
     await this.load();
   }
 
@@ -37,6 +45,7 @@ export class DeploymentsCard extends AdminComponent {
       const answer = await AdminDeployClient.capacity();
       this.mode = DeployMode.resolve(answer.mode).value;
       this.capacity = { fits: answer.fits, summary: answer.summary };
+      this.pending?.mark();
     } catch (err: any) {
       this.loadError = err?.message || AdminI18n.t('settings.infrastructure.theDeployCapacityCouldNot');
     } finally {
@@ -55,6 +64,7 @@ export class DeploymentsCard extends AdminComponent {
       await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.DEPLOY_MODE]: this.mode });
       this.runtime.notify.addNotification({ title: AdminI18n.t('settings.infrastructure.deployModeSaved'), message: AdminI18n.t('settings.infrastructure.theNextDeployUsesIt'), type: NotificationType.SUCCESS });
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.addNotification({ title: AdminI18n.t('settings.infrastructure.deployModeNotSaved'), message: err?.message || AdminI18n.t('settings.infrastructure.theSettingCouldNotBe'), type: NotificationType.ERROR });
     } finally {
       this.saving = false;
@@ -65,19 +75,27 @@ export class DeploymentsCard extends AdminComponent {
     if (this.loadError) return <p className="text-xs text-[var(--destructive)]">{this.loadError}</p>;
     if (!this.capacity) return null;
     const rolling = this.mode === DeployMode.ROLLING.value;
-    const tone = this.capacity.fits ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400';
+    const tone = this.capacity.fits ? 'fc-tone-success' : 'fc-tone-warning';
     const headline = this.capacity.fits
       ? AdminI18n.t('settings.infrastructure.rollingFits')
       : rolling ? AdminI18n.t('settings.infrastructure.rollingWillRestart') : AdminI18n.t('settings.infrastructure.rollingNoRoom');
     return (
       <div className="mt-3 space-y-1 text-xs">
         <p className={`font-medium ${tone}`}>{headline}</p>
-        <p className="text-slate-500">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
-        <p className="text-slate-500">
+        <p className="fc-tone-muted">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
+        <p className="fc-tone-muted">
           {AdminI18n.t('settings.infrastructure.eitherModeAReleaseWith')}
         </p>
       </div>
     );
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -89,8 +107,8 @@ export class DeploymentsCard extends AdminComponent {
           stacked
           description={AdminI18n.t('settings.infrastructure.restartEveryAppIsRecreated')}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-full md:w-72">
+          <div className="fc-settings-group">
+            <div className="fc-settings-short">
               <Select
                 theme={this.theme}
                 value={this.mode}
@@ -102,7 +120,6 @@ export class DeploymentsCard extends AdminComponent {
                 ]}
               />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={this.loading} icon={<FrameworkIcons.Save size={13} />}>{AdminI18n.t('settings.infrastructure.save')}</Button>
           </div>
           {this.verdict()}
         </SettingRow>

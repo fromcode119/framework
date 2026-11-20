@@ -1,3 +1,5 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { Label } from '@/components/ui/view/label.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 import type { ChangeEvent, ReactNode } from 'react';
@@ -70,18 +72,15 @@ export class IntegrationFieldInput extends PureReactor {
     // A saved secret stays until a new file replaces it; the drop zone only shows a file chosen now.
     const file = this.hasSavedSecret ? null : this.chosenFile;
     return (
-      <div className="md:col-span-2">
-        <span className="mb-1.5 block text-[12px] font-medium text-slate-700 dark:text-slate-300">{`${field.label}${field.required ? ' *' : ''}`}</span>
+      <div className="fc-form-grid__wide fc-field-stack">
+        <Label>{`${field.label}${field.required ? ' *' : ''}`}</Label>
         <FileDropzone accept={accept.join(',')} file={file} onSelect={this.handleFileChosen}
           hint={AdminI18n.t('settings.integrations.fileTypes', { types: accept.join(', ') })} />
-        {this.failedFileName ? <p className="mt-1 text-[12px] text-rose-600">{AdminI18n.t('settings.integrations.fileReadFailed', { name: this.failedFileName })}</p> : null}
+        {this.failedFileName ? <Hint variant="error">{AdminI18n.t('settings.integrations.fileReadFailed', { name: this.failedFileName })}</Hint> : null}
         {this.hasSavedSecret && (
-          <div className="mt-2 flex items-center gap-2 text-[12px] text-emerald-600 dark:text-emerald-400">
-            <FrameworkIcons.CheckCircle size={12} />
-            <span>{AdminI18n.t('settings.integrations.fileSavedChooseToReplace')}</span>
-          </div>
+          <Hint variant="success">{AdminI18n.t('settings.integrations.fileSavedChooseToReplace')}</Hint>
         )}
-        {field.description ? <p className="mt-1 text-[12px] text-slate-500">{field.description}</p> : null}
+        {field.description ? <Hint>{field.description}</Hint> : null}
       </div>
     );
   }
@@ -93,7 +92,7 @@ export class IntegrationFieldInput extends PureReactor {
 
   private renderBoolean(): ReactNode {
     return (
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 md:col-span-2">
+      <div className="fc-form-grid__wide fc-switch-row">
         <Switch
           checked={!!this.value}
           onChange={this.onChange}
@@ -107,7 +106,7 @@ export class IntegrationFieldInput extends PureReactor {
   private renderTextArea(): ReactNode {
     const field = this.field;
     return (
-      <div className="md:col-span-2">
+      <div className="fc-form-grid__wide fc-field-stack">
         <TextArea
           label={`${field.label}${field.required ? ' *' : ''}`}
           placeholder={field.placeholder}
@@ -116,7 +115,7 @@ export class IntegrationFieldInput extends PureReactor {
           size={FieldSize.MD}
         />
         {field.description && (
-          <p className="mt-1 text-[12px] text-slate-500">{field.description}</p>
+          <Hint>{field.description}</Hint>
         )}
       </div>
     );
@@ -148,7 +147,7 @@ export class IntegrationFieldInput extends PureReactor {
           ? AdminI18n.t('settings.integrations.saveThisProviderFirstTo')
           : field.description;
     return (
-      <div>
+      <div className="fc-field-stack">
         <Select
           value={String(value ?? '')}
           onChange={this.onChange}
@@ -160,7 +159,7 @@ export class IntegrationFieldInput extends PureReactor {
           placeholder={isDynamicFieldLoading ? AdminI18n.t('settings.integrations.loadingOptions') : undefined}
         />
         {helperText && (
-          <p className="mt-1 text-[12px] text-slate-500">{helperText}</p>
+          <Hint>{helperText}</Hint>
         )}
       </div>
     );
@@ -169,7 +168,7 @@ export class IntegrationFieldInput extends PureReactor {
   private renderInput(): ReactNode {
     const { field, editor } = this;
     return (
-      <div>
+      <div className="fc-field-stack">
         <Input
           label={`${field.label}${field.required ? ' *' : ''}`}
           placeholder={field.type === IntegrationFieldType.PASSWORD && !editor.isNew ? AdminI18n.t('settings.integrations.leaveBlankToKeepThe') : field.placeholder}
@@ -181,16 +180,11 @@ export class IntegrationFieldInput extends PureReactor {
           size={FieldSize.MD}
         />
         {field.type === IntegrationFieldType.PASSWORD && this.hasSavedSecret && (
-          <div className="mt-2 flex items-center gap-2 text-[12px] text-emerald-600 dark:text-emerald-400">
-            <FrameworkIcons.CheckCircle size={12} />
-            <span>{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</span>
-          </div>
+          <Hint variant="success">{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</Hint>
         )}
         {/* The saved-secret line above already says to leave it blank; repeating it under it was noise. */}
         {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew && !this.hasSavedSecret)) && (
-          <p className="mt-1 text-[12px] text-slate-500">
-            {field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}
-          </p>
+          <Hint>{field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}</Hint>
         )}
       </div>
     );

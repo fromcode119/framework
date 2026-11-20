@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/ui/view/empty-state.client';
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy' | 'stickyColumnIds' | 'stickyActions' | 'cards' | 'rowClassName' | 'sections' | 'sectionClassName'>;
+  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'groupBy' | 'stickyColumnIds' | 'stickyActions' | 'cards' | 'rowClassName' | 'sections' | 'sectionClassName'>;
 
   @prop declare columns: Column<T>[];
   @prop declare data: T[];
@@ -32,8 +32,6 @@ export class DataTable<T extends { id: any }> extends PureReactor {
   @prop declare selectable?: boolean;
   @prop declare selectedIds?: string[];
   @prop declare onSelectionChange?: (ids: string[]) => void;
-  @prop declare expandedRowId?: string | null;
-  @prop declare renderExpandedRow?: (row: T) => ReactNode;
   @prop declare groupBy?: (row: T) => string;
   /** Columns pinned to the left edge, in the order they were pinned. */
   @prop declare stickyColumnIds?: string[];
@@ -154,10 +152,10 @@ export class DataTable<T extends { id: any }> extends PureReactor {
 
   private renderHeading(key: string, id: string | undefined, label: string, count: number, totalColumns: number, className = ''): ReactNode {
     return (
-      <tr key={`heading:${key}`} data-row-id={id} className={`bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 ${className}`}>
-        <td colSpan={totalColumns} className="px-3 py-2">
-          <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
-          <span className="ms-2 text-[12px] font-medium text-slate-400">{count}</span>
+      <tr key={`heading:${key}`} data-row-id={id} className={`fc-list-group ${className}`}>
+        <td colSpan={totalColumns} className="fc-list-group__cell">
+          <span className="fc-list-group__label">{label}</span>
+          <span className="fc-list-group__count">{count}</span>
         </td>
       </tr>
     );
@@ -165,7 +163,6 @@ export class DataTable<T extends { id: any }> extends PureReactor {
 
   private renderRow(row: T, index: number, columns: Column<T>[], totalColumns: number, selectedIds: string[]): ReactNode {
     const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
-    const isExpanded = this.expandedRowId != null && String(this.expandedRowId) === String(row.id);
     return (
       <Fragment key={rowKey}>
         <DataTableRow
@@ -181,15 +178,6 @@ export class DataTable<T extends { id: any }> extends PureReactor {
           stickyActions={this.isActionsPinned}
           className={this.rowClassName?.(row)}
         />
-        {isExpanded && this.renderExpandedRow && (
-          <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
-            <td className="px-0 py-4" colSpan={totalColumns}>
-              <div className="sticky start-0 px-3" style={this.viewportWidth ? { width: this.viewportWidth } : undefined}>
-                {this.renderExpandedRow(row)}
-              </div>
-            </td>
-          </tr>
-        )}
       </Fragment>
     );
   }
@@ -242,8 +230,6 @@ export class DataTable<T extends { id: any }> extends PureReactor {
               onToggleOne={this.toggleOne}
               onRowClick={this.onRowClick}
               actions={this.actions}
-              expandedRowId={this.expandedRowId}
-              renderExpandedRow={this.renderExpandedRow}
               groupBy={this.groupBy}
             />
           </div>

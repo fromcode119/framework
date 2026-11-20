@@ -46,11 +46,11 @@ export class BuildSourceAdvancedFields extends PureReactor {
         <Select label={AdminI18n.t('sources.provider')} value={this.provider} options={this.providerOptions} placeholder={this.providerPlaceholder} disabled={this.providerDisabled} onChange={this.onProvider} />
         <div className="space-y-2">
           <Input label={AdminI18n.t('sources.githubToken')} type="password" autoComplete="new-password" value={this.secret} onChange={this.handleSecret} onBlur={this.onSecretBlur} placeholder={this.secretPlaceholder} />
-          <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">{this.secretHelp}</p>
+          <p className="text-xs leading-5 fc-tone-muted">{this.secretHelp}</p>
         </div>
         <div className="space-y-1">
           <Select label={AdminI18n.t('sources.publishToSite')} value={this.publishToSite} options={this.publishOptions} onChange={this.onPublish} />
-          <p className="text-xs text-slate-500">{AdminI18n.t('sources.publishToSiteHelp')}</p>
+          <p className="text-xs fc-tone-muted">{AdminI18n.t('sources.publishToSiteHelp')}</p>
         </div>
       </div>
     );
@@ -62,7 +62,7 @@ export class BuildSourceAdvancedFields extends PureReactor {
          summary standing in for them — a control nobody opens is a control nobody sets, and a summary
          of a setting is not the setting. A group with a name is enough. */
       <div className="fc-surface p-4">
-        <h3 className="mb-4 text-[16px] font-medium leading-6 text-[color:var(--fc-text)]">{AdminI18n.t('sources.advanced')}</h3>
+        <h3 className="mb-4 fc-size-lg font-medium leading-6 fc-tone-text">{AdminI18n.t('sources.advanced')}</h3>
         {this.renderFields()}
       </div>
     );

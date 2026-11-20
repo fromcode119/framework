@@ -7,6 +7,8 @@ import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 export class FieldTextInput extends PureReactor {
   @prop declare field: ICollectionField;
@@ -29,7 +31,7 @@ export class FieldTextInput extends PureReactor {
   render(): ReactNode {
     const {
       field, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, isNew, errors,
-      label, slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
+      slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
       localeSwitcher, wrapWithReadOnlyOverride, resolvedFieldDescription
     } = this;
     // A field the operator cannot edit is shown as a VALUE, not as a disabled input. A disabled input
@@ -84,22 +86,22 @@ export class FieldTextInput extends PureReactor {
           placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : field.placeholder}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
-          inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}
+          inputClassName={`${field.name === 'slug' && slugWarning ? 'fc-tone-warning-edge ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}
         />
         {isLocalizedField && shouldInlineLocaleSwitcher && (
           <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
         )}
         {field.name === 'slug' && slugWarning && (
-          <div className="absolute top-full start-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
+          <div className="absolute top-full start-0 mt-2 flex items-center gap-2 text-xs font-medium fc-tone-warning animate-in fade-in slide-in-from-top-1 px-1">
             <FrameworkIcons.Alert size={12} />
             <span>{slugWarning}</span>
           </div>
         )}
         {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
-          <div className="absolute top-1/2 -translate-y-1/2 end-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[12px] font-medium tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
-            <FrameworkIcons.Refresh size={8} />
+          <Badge variant={BadgeVariant.INFO} className="absolute top-1/2 -translate-y-1/2 end-2 pointer-events-none">
+            <FrameworkIcons.Refresh size={10} />
             {AdminI18n.t('ui.field.auto')}
-          </div>
+          </Badge>
         )}
       </div>
     );

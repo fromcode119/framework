@@ -75,10 +75,10 @@ export class ThemeSettingsController {
     }
   }
 
-  static async handleSaveConfig(page: IThemeSettingsPageHost): Promise<void> {
+  /** Writes the edited config; false when the write was refused, so the page's save bar keeps the values unsaved. */
+  static async handleSaveConfig(page: IThemeSettingsPageHost): Promise<boolean> {
     const { themeDetail, routeSlug, dbConfig, tempVariables, tempDefaultLayout, tempSettings } = page;
-    if (!themeDetail) return;
-    page.isSaving = true;
+    if (!themeDetail) return false;
     try {
       // `layouts` was a core-layout → theme-layout map nothing ever read; the API no longer accepts it,
       // so a row that still carries one drops it on its next save.
@@ -89,13 +89,12 @@ export class ThemeSettingsController {
         defaultLayout: tempDefaultLayout,
         settings: tempSettings,
       });
-      page.notify(NotificationType.SUCCESS, AdminI18n.t('themes.configurationSaved'), AdminI18n.t('themes.visualProtocolsUpdatedSuccessfully'));
       await ThemeSettingsController.fetchTheme(page);
       page.triggerRefresh();
+      return true;
     } catch (err: any) {
       page.notify(NotificationType.ERROR, AdminI18n.t('themes.saveFailed'), err.message);
-    } finally {
-      page.isSaving = false;
+      return false;
     }
   }
 

@@ -1,31 +1,60 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { IconBadge } from '@/components/ui/view/icon-badge.client';
+import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { UserSecurityPageService } from '@/app/users/[id]/security/user-security-page-service';
 import type { IUserSessionRecord } from '@/app/users/[id]/security/interfaces/user-session-record.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/** The devices this account is signed in on, one row each, each one revocable. */
 export class DeviceSessionsCard extends PureReactor {
-  @prop declare isDark: boolean;
-  @prop declare onRevokeOtherSessions: () => Promise<void>;
-  @prop declare onRevokeSession: (sessionId: string) => Promise<void>;
+  @prop declare onRevokeOtherSessions: () => void;
+  @prop declare onRevokeSession: (session: IUserSessionRecord) => void;
   @prop declare sessions: IUserSessionRecord[];
   @prop declare sessionsLoading: boolean;
 
+  private meta(session: IUserSessionRecord): string {
+    const parts = [
+      session.ipAddress ? AdminI18n.t('users.ipAddress', { ip: session.ipAddress }) : '',
+      session.expiresAt ? AdminI18n.t('users.expiresOn', { date: new Date(session.expiresAt).toLocaleString(AdminI18n.locale) }) : '',
+    ];
+    return parts.filter(Boolean).join(' · ');
+  }
+
+  private renderRows(): ReactNode {
+    if (this.sessionsLoading) return <Loader label={AdminI18n.t('users.loadingSessions')} />;
+    if (this.sessions.length === 0) return <EmptyState inline icon={<FrameworkIcons.Fingerprint size={16} />} title={AdminI18n.t('users.noActiveSessions')} />;
+    return this.sessions.map((session) => (
+      <ListRow
+        key={String(session.id)}
+        icon={<IconBadge tone={session.isCurrent ? 'success' : 'neutral'}><FrameworkIcons.Fingerprint size={14} /></IconBadge>}
+        title={<span className="fc-ext-row__plain">{UserSecurityPageService.describeDevice(session.userAgent) || AdminI18n.t('users.unknownDevice')}</span>}
+        badges={session.isCurrent ? <Badge variant={BadgeVariant.SUCCESS}>{AdminI18n.t('users.current')}</Badge> : null}
+        description={this.meta(session) || undefined}
+        descriptionTitle={session.userAgent}
+        actions={<Button variant={ButtonVariant.OUTLINE} onClick={() => this.onRevokeSession(session)}>{AdminI18n.t('users.revoke')}</Button>}
+      />
+    ));
+  }
+
   render(): ReactNode {
-    const { isDark, sessions, sessionsLoading, onRevokeOtherSessions, onRevokeSession } = this;
+    const others = this.sessions.filter((session) => !session.isCurrent).length;
     return (
-      <Card title={AdminI18n.t('users.deviceSessions')} icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
-        <div className="space-y-3">
-          <div className="flex items-center justify-end"><Button variant={ButtonVariant.OUTLINE} className="font-medium text-xs tracking-tight" onClick={() => void onRevokeOtherSessions()}>{AdminI18n.t('users.revokeOtherSessions')}</Button></div>
-          {sessionsLoading ? <Loader label={AdminI18n.t('users.loadingSessions')} /> : sessions.length === 0 ? <div className="text-xs font-medium tracking-tight text-slate-400 py-3">{AdminI18n.t('users.noActiveSessions')}</div> : sessions.map((session) => <div key={String(session.id)} className={`p-3 ${AdminClass.SURFACE} ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}><div className="flex items-start justify-between gap-3"><div className="space-y-1"><div className="flex items-center gap-2"><span className="text-xs font-medium text-slate-700 dark:text-slate-200">{session.isCurrent ? AdminI18n.t('users.currentSession') : AdminI18n.t('users.deviceSession')}</span>{session.isCurrent ? <span className="text-[12px] font-medium tracking-tight text-emerald-500">{AdminI18n.t('users.current')}</span> : null}</div><p className="text-[12px] font-medium text-slate-500 break-all">{String(session.userAgent || AdminI18n.t('users.unknownDevice'))}</p><p className="text-[12px] font-medium tracking-tight text-slate-400">{AdminI18n.t('users.ipAddress', { ip: String(session.ipAddress || AdminI18n.t('users.unknownValue')) })} • {AdminI18n.t('users.expiresOn', { date: session.expiresAt ? new Date(session.expiresAt).toLocaleString() : AdminI18n.t('users.notAvailable') })}</p></div><Button variant={ButtonVariant.OUTLINE} size={FieldSize.SM} className="text-[12px] font-medium tracking-tight" onClick={() => void onRevokeSession(String(session.id))}>{AdminI18n.t('users.revoke')}</Button></div></div>)}
-        </div>
-      </Card>
+      <ListShell
+        title={AdminI18n.t('users.deviceSessions')}
+        count={this.sessionsLoading ? null : this.sessions.length}
+        actions={others > 0 ? <Button variant={ButtonVariant.OUTLINE} onClick={this.onRevokeOtherSessions}>{AdminI18n.t('users.revokeOtherSessions')}</Button> : null}
+      >
+        <div>{this.renderRows()}</div>
+      </ListShell>
     );
   }
 }

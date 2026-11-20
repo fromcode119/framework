@@ -40,6 +40,7 @@ export class UserSecurityPageActions {
       this.host.patch({
         twoFactorEnabled: Boolean(twoFactorStatus.enabled),
         recoveryCodesRemaining: Number(twoFactorStatus.recoveryCodesRemaining || 0),
+        twoFactorAvailable: twoFactorStatus.enrollmentAllowed !== false,
       });
     } catch (error) {
       console.error('[UserSecurityPage] Failed to fetch user security:', error);
@@ -90,26 +91,27 @@ export class UserSecurityPageActions {
     addNotification({ title: AdminI18n.t('users.copyFailed'), message: AdminI18n.t('users.pleaseCopyTheRecoveryCodes'), type: NotificationType.ERROR });
   }
 
-  async createApiToken(): Promise<void> {
+  /** Makes the token; true when it was made, so the drawer it came from can close. */
+  async createApiToken(): Promise<boolean> {
     const { addNotification } = this.host.notify;
     const { tokenName, tokenDays } = this.host;
+    if (!tokenName.trim()) {
+      addNotification({ title: AdminI18n.t('users.nameRequired'), message: AdminI18n.t('users.enterATokenNameFirst'), type: NotificationType.ERROR });
+      return false;
+    }
     try {
-      if (!tokenName.trim()) {
-        addNotification({ title: AdminI18n.t('users.nameRequired'), message: AdminI18n.t('users.enterATokenNameFirst'), type: NotificationType.ERROR });
-        return;
-      }
       const createdToken = await UserSecurityPageController.createApiToken(tokenName, tokenDays);
       if (this.host.mounted) this.host.patch({ createdToken, tokenName: '' });
-      addNotification({ title: AdminI18n.t('users.tokenCreated'), message: AdminI18n.t('users.copyTheTokenNowIt'), type: NotificationType.SUCCESS });
       await this.fetchMyApiTokens();
+      return true;
     } catch (error: any) {
       addNotification({ title: AdminI18n.t('users.error'), message: error?.message || AdminI18n.t('users.failedToCreateApiToken'), type: NotificationType.ERROR });
+      return false;
     }
   }
 
   async disableTwoFactor(): Promise<void> {
     const { addNotification } = this.host.notify;
-    if (!confirm(AdminI18n.t('users.areYouSureYouWant2'))) return;
     try {
       await UserSecurityPageController.disableTwoFactor(this.host.id, this.host.isSelf);
       if (this.host.mounted) {
@@ -143,7 +145,6 @@ export class UserSecurityPageActions {
 
   async regenerateRecoveryCodes(): Promise<void> {
     const { addNotification } = this.host.notify;
-    if (!confirm(AdminI18n.t('users.regenerateRecoveryCodesExistingUnused'))) return;
     this.host.patch({ isRegeneratingCodes: true });
     try {
       const codes = await UserSecurityPageController.regenerateRecoveryCodes(this.host.id, this.host.isSelf);

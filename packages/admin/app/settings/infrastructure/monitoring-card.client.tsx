@@ -1,3 +1,5 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
@@ -7,6 +9,9 @@ import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Hint } from '@/components/ui/view/hint.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -40,14 +45,23 @@ export class MonitoringCard extends AdminComponent {
   @state status: { incidents: any[]; providers: string[]; alerting?: boolean; platformMail?: boolean; emailRecipients?: string[]; targets: Array<{ url: string }> } | null = null;
   @state loaded = false;
   @state saving = false;
+
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
   @state checking = false;
 
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ thresholds: this.thresholds }),
+      () => this.save(),
+      (values) => { this.thresholds = values.thresholds; },
+    );
     try {
       const [settings, status] = await Promise.all([AdminSystemSettingsClient.getAll(), AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.MONITORING)]);
       this.thresholds = Object.fromEntries(MonitoringCard.THRESHOLDS.map(({ key }) => [key, String(settings?.[key] ?? '')]));
       this.status = status;
       this.loaded = true;
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.monitoringUnavailable'), err?.message || '');
     }
@@ -62,6 +76,7 @@ export class MonitoringCard extends AdminComponent {
       await AdminSystemSettingsClient.update(this.thresholds);
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.monitoringSaved'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || '');
     } finally {
       this.saving = false;
@@ -86,65 +101,66 @@ export class MonitoringCard extends AdminComponent {
     return key ? AdminI18n.t(key, { subject: incident.subject ?? '', ...incident.values }) : String(incident?.kind ?? '');
   }
 
-  private renderIncidents(): ReactNode {
-    const incidents = this.status?.incidents ?? [];
-    if (!incidents.length) return <p className="text-sm text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringNoIncidents')}</p>;
-    return (
-      <ul className="space-y-2">
-        {incidents.map((incident) => (
-          <li key={incident.key} className="flex items-start gap-2 text-sm">
-            <FrameworkIcons.Warning size={14} className="mt-0.5 shrink-0 text-amber-500" />
-            <span>
-              <span className="font-medium">{this.incidentLine(incident)}</span>
-              {incident.values?.routes ? <span className="block text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringFailingRoutes', { routes: incident.values.routes })}</span> : null}
-              <span className="block text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringSince', { time: new Date(incident.openedAt).toLocaleString() })}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-    );
+  /** Each open problem as a warning line, with when it started and, for API errors, the routes. */
+  private renderIncidents(): ReactNode[] {
+    return (this.status?.incidents ?? []).map((incident) => (
+      <Hint key={incident.key} variant="warning">
+        {this.incidentLine(incident)}
+        {incident.values?.routes ? <span className="fc-hint__more">{AdminI18n.t('settings.infrastructure.monitoringFailingRoutes', { routes: incident.values.routes })}</span> : null}
+        <span className="fc-hint__more">{AdminI18n.t('settings.infrastructure.monitoringSince', { time: new Date(incident.openedAt).toLocaleString() })}</span>
+      </Hint>
+    ));
   }
 
-  private renderEmailRecipients(): ReactNode {
-    if (!this.status?.providers?.includes('email')) return null;
-    const addresses = (this.status.emailRecipients ?? []).join(', ');
-    return addresses
-      ? <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringEmailRecipients', { addresses })}</p>
-      : <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoEmailRecipients')}</p>;
+  /** Who gets the e-mail, and what stops an alert from leaving at all. */
+  private renderDelivery(): ReactNode[] {
+    const status = this.status;
+    const lines: ReactNode[] = [];
+    if (status?.providers?.includes('email')) {
+      const addresses = (status.emailRecipients ?? []).join(', ');
+      lines.push(addresses
+        ? <Hint key="to">{AdminI18n.t('settings.infrastructure.monitoringEmailRecipients', { addresses })}</Hint>
+        : <Hint key="to" variant="warning">{AdminI18n.t('settings.infrastructure.monitoringNoEmailRecipients')}</Hint>);
+      if (status.platformMail === false) lines.push(<Hint key="mail" variant="warning">{AdminI18n.t('settings.infrastructure.monitoringNoPlatformMail')}</Hint>);
+    }
+    if (status?.providers?.length && status.alerting === false) lines.push(<Hint key="off" variant="warning">{AdminI18n.t('settings.infrastructure.monitoringNoAlerting')}</Hint>);
+    const watched = (status?.targets ?? []).map((target) => target.url).join(', ');
+    lines.push(<Hint key="watched">{watched ? AdminI18n.t('settings.infrastructure.monitoringWatched', { addresses: watched }) : AdminI18n.t('settings.infrastructure.monitoringNothingWatched')}</Hint>);
+    return lines;
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
     const providers = (this.status?.providers ?? []).join(', ');
-    const watched = (this.status?.targets ?? []).map((target) => target.url).join(', ');
+    const incidents = this.renderIncidents();
     return (
       <Card title={AdminI18n.t('settings.infrastructure.monitoring')}>
-        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringOpenIncidents')} stacked description={AdminI18n.t('settings.infrastructure.monitoringHelp')}>
-          <div className="space-y-3">
-            {this.renderIncidents()}
-            <Button onClick={this.checkNow} isLoading={this.checking} disabled={!this.loaded} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringOpenIncidents')} description={AdminI18n.t('settings.infrastructure.monitoringHelp')} width={SettingRowWidth.AUTO}>
+          <div className="fc-settings-group">
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.checkNow} isLoading={this.checking} disabled={!this.loaded} icon={<FrameworkIcons.Refresh size={13} />}>
               {AdminI18n.t('settings.infrastructure.monitoringCheckNow')}
             </Button>
           </div>
         </SettingRow>
-        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringProviders')} stacked description={AdminI18n.t('settings.infrastructure.monitoringProvidersHelp')}>
-          <p className="text-sm">{providers || AdminI18n.t('settings.infrastructure.monitoringNoProviders')}</p>
-          {this.renderEmailRecipients()}
-          {this.status?.providers?.includes('email') && this.status?.platformMail === false ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoPlatformMail')}</p> : null}
-          {providers && this.status?.alerting === false ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoAlerting')}</p> : null}
-          <p className="mt-1 text-xs text-slate-500">{watched ? AdminI18n.t('settings.infrastructure.monitoringWatched', { addresses: watched }) : AdminI18n.t('settings.infrastructure.monitoringNothingWatched')}</p>
+        <div className="fc-settings-note">
+          {incidents.length ? incidents : <Hint variant="success">{AdminI18n.t('settings.infrastructure.monitoringNoIncidents')}</Hint>}
+        </div>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringProviders')} description={AdminI18n.t('settings.infrastructure.monitoringProvidersHelp')} width={SettingRowWidth.AUTO}>
+          <span className={`fc-settings-value${providers ? '' : ' fc-settings-value--empty'}`}>{providers || AdminI18n.t('settings.infrastructure.monitoringNoProviders')}</span>
         </SettingRow>
+        <div className="fc-settings-note">{this.renderDelivery()}</div>
         {MonitoringCard.THRESHOLDS.map(({ key, label }) => (
-          <SettingRow key={key} theme={this.theme} title={AdminI18n.t(label)} stacked description={AdminI18n.t('settings.infrastructure.monitoringThresholdHelp')}>
-            <div className="w-full md:w-40">
-              <NumberStepper min={0} max={100} step={1} value={this.thresholds[key] ?? ''} onChange={(value: number | string) => this.onThreshold(key, value)} disabled={!this.loaded} />
-            </div>
+          <SettingRow key={key} theme={this.theme} title={AdminI18n.t(label)} description={AdminI18n.t('settings.infrastructure.monitoringThresholdHelp')} width={SettingRowWidth.NARROW}>
+            <NumberStepper min={0} max={100} step={1} value={this.thresholds[key] ?? ''} onChange={(value: number | string) => this.onThreshold(key, value)} disabled={!this.loaded} />
           </SettingRow>
         ))}
-        <div className="flex justify-end pt-2">
-          <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
-            {AdminI18n.t('settings.infrastructure.save')}
-          </Button>
-        </div>
       </Card>
     );
   }

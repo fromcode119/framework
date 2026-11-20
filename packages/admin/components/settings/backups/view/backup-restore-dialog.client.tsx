@@ -1,23 +1,27 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { RestoreTargetScope } from '@/components/settings/backups/enums/restore-target-scope.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { RootFramework } from '@fromcode119/react';
-import { AdminComponent } from '@/components/view/admin-component.client';
-import { Badge } from '@/components/ui/view/badge.client';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Input } from '@/components/ui/view/input.client';
+import { Select } from '@/components/ui/view/select.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { prop } from '@fromcode119/react-class-components';
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
-export class BackupRestoreDialog extends AdminComponent {
+/**
+ * Restoring a backup: what is being restored, where to, and the words that have to be typed first.
+ *
+ * The dialog is the console's ({@link Dialog}) and its blocks are the console's panels. It used to
+ * draw its own scrim and panel, a 48px amber tile, and eight boxes whose border and background were
+ * written out per theme (`theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : …`) — 68
+ * colours in one file, none of which a brand or the dark scheme could reach.
+ */
+export class BackupRestoreDialog extends PureReactor {
   @prop declare isOpen: boolean;
   @prop declare isPreviewing: boolean;
   @prop declare isRestoring: boolean;
@@ -33,163 +37,152 @@ export class BackupRestoreDialog extends AdminComponent {
     return this.props.state as IRestoreDialogState;
   }
 
-  render(): ReactNode {
-    const {
-      isOpen,
-      isPreviewing,
-      isRestoring,
-      onClose,
-      onTargetScopeChange,
-      onTargetSlugChange,
-      onConfirmationTextChange,
-      onPreview,
-      onExecute,
-    } = this;
+  private scopeLabel(scope: RestoreTargetScope): string {
+    if (scope === RestoreTargetScope.SYSTEM) return AdminI18n.t('settings.components.systemRoot');
+    if (scope === RestoreTargetScope.PLUGIN) return AdminI18n.t('settings.components.pluginSlug');
+    return AdminI18n.t('settings.components.themeSlug');
+  }
+
+  private get foot(): ReactNode {
     const state = this.restoreState;
-    const theme = this.theme;
-
-    if (!isOpen || !state.backup) {
-      return null;
-    }
-
     return (
-    <RootFramework>
-      <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6">
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md" onClick={onClose} />
+      <>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.onClose} disabled={this.isPreviewing || this.isRestoring}>
+          {AdminI18n.t('settings.components.close')}
+        </Button>
+        <Button
+          variant={ButtonVariant.DANGER}
+          isLoading={this.isRestoring}
+          onClick={() => void this.onExecute()}
+          disabled={!state.preview}
+        >
+          {AdminI18n.t('settings.components.executeRestore')}
+        </Button>
+      </>
+    );
+  }
 
-        <div className={`relative z-[1] max-h-[90vh] w-full max-w-3xl overflow-y-auto ${AdminClass.SURFACE} p-5 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${theme === ThemeMode.DARK ? 'bg-amber-500/10 text-amber-400' : 'bg-amber-50 text-amber-600'}`}>
-                  <FrameworkIcons.Warning size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-medium tracking-tight">{AdminI18n.t('settings.components.previewRestore')}</h3>
-                  <p className="text-sm text-slate-500">{AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}</p>
-                </div>
-              </div>
-              <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</Badge>
-            </div>
+  /** Which backup is being restored. */
+  private get chosen(): ReactNode {
+    const backup = this.restoreState.backup!;
+    return (
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.selectedBackup')}</h4>
+        <p className="fc-block__value">{backup.displayName}</p>
+        <p className="fc-block__quiet">{backup.filename}</p>
+      </section>
+    );
+  }
 
-            <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white">
-              <FrameworkIcons.Close size={18} />
-            </button>
+  /** Where it goes: the whole system, one plugin or one theme. */
+  private get target(): ReactNode {
+    const state = this.restoreState;
+    return (
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.restoreTarget')}</h4>
+        <Select
+          value={state.targetScope.value}
+          options={(RestoreTargetScope.values() as RestoreTargetScope[]).map((scope) => ({ value: scope.value, label: this.scopeLabel(scope) }))}
+          onChange={(value: string) => this.onTargetScopeChange(RestoreTargetScope.fromValue(value) as RestoreTargetScope)}
+        />
+        {state.targetScope === RestoreTargetScope.SYSTEM ? null : (
+          <Input
+            label={state.targetScope === RestoreTargetScope.PLUGIN
+              ? AdminI18n.t('settings.components.pluginSlug2')
+              : AdminI18n.t('settings.components.themeSlug2')}
+            value={state.targetSlug}
+            onChange={(event) => this.onTargetSlugChange(event.target.value)}
+            placeholder={state.targetScope === RestoreTargetScope.PLUGIN ? 'example-plugin' : 'example-theme'}
+          />
+        )}
+        <p className="fc-block__quiet">{AdminI18n.t('settings.components.theBrowserSendsOnlyApproved')}</p>
+      </section>
+    );
+  }
+
+  /** The server's own check, and the words that unlock the restore once it passes. */
+  private get preview(): ReactNode {
+    const state = this.restoreState;
+    return (
+      <section className="fc-block">
+        <div className="fc-block__head">
+          <div>
+            <h4 className="fc-block__title">{AdminI18n.t('settings.components.serverPreview')}</h4>
+            <p className="fc-block__quiet">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
           </div>
-
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.selectedBackup')}</div>
-                <div className="mt-3 text-base font-medium tracking-tight">{state.backup.displayName}</div>
-                <div className="mt-1 text-sm text-slate-500">{state.backup.filename}</div>
-              </div>
-
-              <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.restoreTarget')}</div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  {(RestoreTargetScope.values() as RestoreTargetScope[]).map((scope) => (
-                    <button
-                      key={scope.value}
-                      type="button"
-                      onClick={() => onTargetScopeChange(scope)}
-                      className={`rounded-xl border px-4 py-3 text-sm font-medium tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
-                    >
-                      {scope === RestoreTargetScope.SYSTEM ? AdminI18n.t('settings.components.systemRoot') : scope === RestoreTargetScope.PLUGIN ? AdminI18n.t('settings.components.pluginSlug') : AdminI18n.t('settings.components.themeSlug')}
-                    </button>
-                  ))}
-                </div>
-                {state.targetScope !== RestoreTargetScope.SYSTEM ? (
-                  <div className="mt-4">
-                    <Input
-                      label={state.targetScope === RestoreTargetScope.PLUGIN ? AdminI18n.t('settings.components.pluginSlug2') : AdminI18n.t('settings.components.themeSlug2')}
-                      value={state.targetSlug}
-                      onChange={(event) => onTargetSlugChange(event.target.value)}
-                      placeholder={state.targetScope === RestoreTargetScope.PLUGIN ? 'example-plugin' : 'example-theme'}
-                    />
-                  </div>
-                ) : null}
-                <p className="mt-3 text-xs text-slate-500">{AdminI18n.t('settings.components.theBrowserSendsOnlyApproved')}</p>
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.serverPreview')}</div>
-                    <p className="mt-2 text-sm text-slate-500">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
-                  </div>
-                  <Button size={FieldSize.SM} className="rounded-lg" isLoading={isPreviewing} onClick={() => void onPreview()}>
-                    {AdminI18n.t('settings.components.runPreview')}
-                  </Button>
-                </div>
-
-                {state.preview ? (
-                  <div className="mt-5 space-y-4">
-                    <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
-                      <AdminRichText k="settings.components.targetValidated" vars={{ target: state.preview.targetLabel, snapshot: state.preview.snapshotType.value }} />
-                    </div>
-                    <div>
-                      <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.confirmationChallenge')}</div>
-                      <div className={`mt-2 ${AdminClass.SURFACE} px-4 py-3 font-mono text-xs ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-200' : 'border-slate-200 bg-white text-slate-700'}`}>
-                        {state.preview.requiredConfirmationText}
-                      </div>
-                    </div>
-                    <TextArea
-                      label={AdminI18n.t('settings.components.typeTheConfirmationTextExactly')}
-                      value={state.confirmationText}
-                      onChange={(event) => onConfirmationTextChange(event.target.value)}
-                      placeholder={AdminI18n.t('settings.components.pasteTheConfirmationChallengeHere')}
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-5 rounded-xl border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-500 dark:border-slate-800">
-                    {AdminI18n.t('settings.components.previewTheRestoreFirstTo')}
-                  </div>
-                )}
-              </div>
-
-              <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.warnings')}</div>
-                {state.preview?.warnings?.length ? (
-                  <ul className="mt-3 space-y-2 text-sm text-slate-500">
-                    {state.preview.warnings.map((warning) => (
-                      <li key={warning} className="flex gap-2">
-                        <FrameworkIcons.Warning size={14} className="mt-0.5 flex-shrink-0 text-amber-500" />
-                        <span>{warning}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 text-sm text-slate-500">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
-                )}
-                {state.formError ? (
-                  <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
-                    {state.formError}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <Button variant={ButtonVariant.GHOST} className="rounded-xl" onClick={onClose} disabled={isPreviewing || isRestoring}>
-              {AdminI18n.t('settings.components.close')}
-            </Button>
-            <Button
-              variant={ButtonVariant.DANGER}
-              className="rounded-xl"
-              isLoading={isRestoring}
-              onClick={() => void onExecute()}
-              disabled={!state.preview}
-            >
-              {AdminI18n.t('settings.components.executeRestore')}
-            </Button>
-          </div>
+          <Button variant={ButtonVariant.SECONDARY} isLoading={this.isPreviewing} onClick={() => void this.onPreview()}>
+            {AdminI18n.t('settings.components.runPreview')}
+          </Button>
         </div>
-      </div>
-    </RootFramework>
+        {state.preview ? (
+          <>
+            <p className="fc-block__value">
+              <AdminRichText k="settings.components.targetValidated" vars={{ target: state.preview.targetLabel, snapshot: state.preview.snapshotType.value }} />
+            </p>
+            <div>
+              <h5 className="fc-block__title">{AdminI18n.t('settings.components.confirmationChallenge')}</h5>
+              <p className="fc-block__code">{state.preview.requiredConfirmationText}</p>
+            </div>
+            <TextArea
+              label={AdminI18n.t('settings.components.typeTheConfirmationTextExactly')}
+              value={state.confirmationText}
+              onChange={(event) => this.onConfirmationTextChange(event.target.value)}
+              placeholder={AdminI18n.t('settings.components.pasteTheConfirmationChallengeHere')}
+            />
+          </>
+        ) : (
+          <p className="fc-block__quiet">{AdminI18n.t('settings.components.previewTheRestoreFirstTo')}</p>
+        )}
+      </section>
+    );
+  }
+
+  /** What the preview found worth saying, and anything the form itself refuses. */
+  private get warnings(): ReactNode {
+    const state = this.restoreState;
+    return (
+      <section className="fc-block">
+        <h4 className="fc-block__title">{AdminI18n.t('settings.components.warnings')}</h4>
+        {state.preview?.warnings?.length ? (
+          <ul className="fc-block__list">
+            {state.preview.warnings.map((warning) => (
+              <li key={warning} className="fc-block__warning">
+                <FrameworkIcons.Warning size={14} />
+                <span>{warning}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="fc-block__quiet">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
+        )}
+        
+      </section>
+    );
+  }
+
+  render(): ReactNode {
+    if (!this.isOpen || !this.restoreState.backup) return null;
+    return (
+      <EditSheet
+        isOpen={this.isOpen}
+        onClose={this.onClose}
+        title={AdminI18n.t('settings.components.previewRestore')}
+        subtitle={AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}
+        saving={this.isPreviewing || this.isRestoring}
+        error={this.restoreState.formError || undefined}
+        foot={this.foot}
+      >
+        {/* One column, in the order the work happens: what, where, the server's check, what it warns
+            about. Two columns inside a 720px dialog made four boxes of 300px and broke the reading
+            down the page (NN/g, web form design #3). */}
+        <div className="fc-restore">
+          <p className="fc-tip fc-tip--warning"><span>{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</span></p>
+          {this.chosen}
+          {this.target}
+          {this.preview}
+          {this.warnings}
+        </div>
+      </EditSheet>
     );
   }
 }

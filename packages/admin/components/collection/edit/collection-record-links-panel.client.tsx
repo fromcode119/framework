@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
 import { Reactor, bound, prop, state, watch } from '@fromcode119/react-class-components';
 import type { IRecordsHubItem } from '@fromcode119/react';
-import { Card } from '@/components/ui/view/card.client';
+import { RecordCard } from '@/components/ui/view/record-card.client';
 import { RecordPartRow } from '@/components/collection/edit/view/record-part-row.client';
 import { AdminApi } from '@/lib/api';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
@@ -93,7 +93,7 @@ export class CollectionRecordLinksPanel extends Reactor {
     if (!this.failed && this.placedTerms.length > 0 && !remaining.length && !errors.length && !actions.length) return null;
     const title = this.links.title || AdminI18n.t('collection.edit.relatedRecords');
     return (
-      <Card title={title}>
+      <RecordCard title={title}>
         <div className="fc-record-part">
           {this.failed || errors.length ? (
             <p className="fc-record-part__empty-text">{AdminI18n.t('collection.edit.relatedFailed')}</p>
@@ -113,7 +113,7 @@ export class CollectionRecordLinksPanel extends Reactor {
           ))}
         </div>
         <RecordPartActions actions={actions} onOpen={(href: string) => RecordsHubOpenItem.open({ href } as IRecordsHubItem, this.navigate)} />
-      </Card>
+      </RecordCard>
     );
   }
 }

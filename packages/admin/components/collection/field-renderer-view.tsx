@@ -106,7 +106,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
             description={resolvedFieldDescription}
             clamp={Boolean(this.inlineDescription) && this.isLongDescription(resolvedFieldDescription) && !this.helpOpen}
             help={this.inlineDescription && this.isLongDescription(resolvedFieldDescription)
-              ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} />
+              ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} text={resolvedFieldDescription} />
               : undefined}
             checked={FieldRendererUtils.toBooleanValue(currentValue, this.field.defaultValue)}
             onChange={this.updateValue}
@@ -151,7 +151,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
     return (
       <div className={FieldRendererUtils.wrapperClassName(this.field)}>
         <FieldRendererHeader
-          help={offersHelp ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} /> : undefined}
+          help={offersHelp ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} text={resolvedFieldDescription} /> : undefined}
           summary={summary}
           field={this.field}
           label={label}

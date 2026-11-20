@@ -162,6 +162,7 @@
       "reorderHandle": "Tarraing chun an t-ord a athrú — nó dírigh air agus úsáid na saigheadeochracha",
       "reorderEnable": "Taispeáin an liosta ina ord féin chun an t-ord a athrú",
       "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil",
+      "noMatch": "Níl aon rud ag teacht le do chuardach ná le do scagairí.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Iompórtáil {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Cuir in eagar",
       "notFilledIn": "Gan líonadh",
       "statusSection": "Stádas",
-      "statusConfirm": "An stádas a athrú go “{{status}}”?",
       "recordSection": "Taifead",
       "showJson": "Taispeáin mar JSON",
       "showForm": "Taispeáin mar fhoirm",
@@ -245,7 +245,8 @@
       "copied": "Cóipeáilte",
       "more": "Tuilleadh",
       "moreFields": "{{count}} réimse",
-      "moreOneField": "{{count}} réimse"
+      "moreOneField": "{{count}} réimse",
+      "statusConfirm": "An stádas a athrú go “{{status}}”?"
     },
     "notFound": {
       "title": "Bailiúchán Gan Aimsiú",
@@ -366,7 +367,8 @@
     "reset": "Athshocraigh",
     "notScheduledYet": "gan sceideal fós",
     "more": "Tuilleadh gníomhartha",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Bain"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Roghnaigh dath",
-      "colour": "Dath",
-      "pick": "Roghnaigh dath",
       "hex": "Cód Heics",
-      "confirm": "Deimhnigh an Dath",
       "notSet": "Gan socrú"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Spleáchais Neamhghníomhacha Aimsithe",
       "intro": "Chun {{plugin}} a chumasú, ní mór na nithe seo a leanas a láimhseáil:",
       "notInstalled": "GAN SUITEÁIL",
+      "inactive": "múchta",
+      "incompatible": "leagan mícheart",
       "requires": "Teastaíonn leagan {{version}}. Is féidir é seo a íoslódáil ón margadh.",
       "needsActivation": "Suiteáilte cheana ach ní mór é a ghníomhachtú (Leagan {{version}}).",
       "mismatch": "Leaganacha nach dtagann le chéile: teastaíonn {{expected}}, aimsíodh {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Réamhamharc ar an Ardán",
-      "image": "Réamhamharc {{number}}"
+      "image": "Réamhamharc {{number}}",
+      "previous": "Roimhe seo",
+      "next": "Ar aghaidh"
     },
     "menuField": {
       "newItem": "Mír Roghchláir Nua",
-      "structure": "Struchtúr an Roghchláir",
-      "add": "Cuir Mír Roghchláir Leis"
+      "add": "Cuir Mír Roghchláir Leis",
+      "reorder": "Tarraing chun bogadh; saigheada: suas agus síos chun bogadh, deas chun neadú, clé chun tabhairt amach"
     },
     "field": {
       "notSet": "Gan socrú",
@@ -461,8 +464,8 @@
       "record": "taifead"
     },
     "array": {
-      "addNew": "Cuir {{label}} Nua Leis",
-      "item": "Mír"
+      "add": "Cuir leis",
+      "reorder": "Tarraing chun bogadh, nó úsáid na saigheadeochracha"
     },
     "stepper": {
       "increment": "Méadaigh",
@@ -528,9 +531,7 @@
       "noContact": "Níl ríomhphost ná fón in Daoine",
       "hasLogin": "Tá logáil isteach aige",
       "noLogin": "Gan logáil isteach",
-      "source": "Tagann an t-ainm, an ríomhphost agus an fón ó Daoine #{{id}}; athraigh ansin iad.",
       "open": "Oscail in Daoine",
-      "choose": "Roghnaigh duine eile",
       "searchFailed": "Níorbh fhéidir Daoine a chuardach faoi láthair.",
       "noMatch": "Níl aon duine in Daoine a mheaitseálann. Cuir a sonraí isteach thíos; cuirfear le Daoine iad nuair a shábhálfar.",
       "ref": "Daoine #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Oscail Suíomhanna"
       }
     },
-    "relativeOverridesInheritTheCollection": "Faigheann sárúcháin choibhneasta réimír an bhailiúcháin le hoidhreacht. Cumasaigh an mód absalóideach chun réimíreanna mar `/shop` a sheachaint.",
     "range": "Raon",
     "noDataForThisRange": "Níl aon sonraí don raon seo",
     "peak": "· buaic {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Scagairí",
       "clearFilters": "Glan gach rud",
       "removeFilter": "Bain an scagaire {{label}}",
-      "showResults": "Taispeáin {{count}} toradh"
+      "showResults": "Taispeáin {{count}} toradh",
+      "showResultsOne": "Taispeáin 1 toradh"
     },
     "personFieldPicker": {
       "none": "Gan sábháil i réimse duine",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Sábháladh teorainneacha bosca gainimh do {{name}}, ach theip ar a phróiseas atosú leo: {{value}}",
       "restartRequired": "Atosú ag teastáil",
       "sandboxSettingsForWereSaved": "Sábháladh socruithe bosca gainimh do {{name}}, ach tá atosú API ag teastáil sula dtiocfaidh siad i bhfeidhm.",
-      "resourcesUpdated": "Acmhainní nuashonraithe",
-      "sandboxLimitsForUpdated": "Nuashonraíodh teorainneacha bosca gainimh do {{name}}.",
       "sandboxDisabledFor": "Díchumasaíodh an bosca gainimh do {{name}}.",
       "saveFailed": "Theip ar shábháil",
       "failedToUpdateSandboxLimits": "Theip ar theorainneacha an bhosca gainimh a nuashonrú.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Díomhaoin. Níor taifeadadh aon imeachtaí le déanaí.",
       "updating": "Á nuashonrú...",
       "updateAvailable": "Nuashonrú ar fáil",
-      "updatePolicy": "Polasaí nuashonraithe",
       "saveChanges": "Sábháil athruithe",
       "unsavedChanges": "Athruithe gan sábháil",
       "exportSettingsAsJson": "Easpórtáil socruithe mar JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nua i v{{version}}",
       "installedVersion": "Suiteáilte {{version}}",
       "marketplaceVersion": "Margadh {{version}}",
-      "saving": "Á shábháil...",
       "saveSettings": "Sábháil Socruithe",
       "viewDefinition": "Féach ar an Sainmhíniú",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Cuma",
       "failedToLoadAppearances": "Theip ar chumaí a lódáil",
       "failedToSaveShadowSetting": "Theip ar shocrú na scáthanna a shábháil",
+      "failedToSaveMenuSetting": "Theip ar shábháil socrú an roghchláir",
       "switchedToReloading": "Aistrithe go \"{{slug}}\". Á athlódáil…",
       "failedToSwitchAppearance": "Theip ar an gcuma a athrú",
       "installFailed": "Theip ar an tsuiteáil",
@@ -1919,6 +1917,8 @@
       "install": "Suiteáil",
       "surfaceShadows": "Scáthanna dromchla",
       "depthOnPanelsDialogsAnd": "Doimhneacht ar phainéil, dialóga agus cnaipí. Cuir as é seo le haghaidh riarachán cothrom — fanann imlínte agus coirnéil díreach mar atá siad.",
+      "secondMenuColumn": "An dara colún roghchláir",
+      "sectionPagesBesideTheMenu": "Seasann leathanaigh rannóige i gcolún in aice leis an roghchlár. Múchta, osclaíonn siad faoina líne san aon roghchlár amháin, agus bíonn gach scáileán 220px níos leithne.",
       "installFromAPackageUrl": "Suiteáil ó URL pacáiste",
       "builtIn": "Ionsuite",
       "installed": "Suiteáilte",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Níor nuashonraíodh suíomh IP",
       "geoUnavailable": "Níl stádas shuíomh IP ar fáil",
       "geoAttribution": "Geoshuíomh IP ó {{name}} ({{license}}). Nuashonraítear go míosúil fad atá sé ar siúl.",
-      "geoSaved": "Sábháilte",
-      "geoSavedOn": "Tá an bunachar sonraí á íoslódáil anois; tá sé thart ar 60 MB.",
-      "geoSavedOff": "Baineadh an bunachar sonraí den fhreastalaí.",
       "everyPluginRunsIsolated": "Scoite: ritheann gach breiseán ina phróiseas féin. Baineann an teorainn chuimhne agus an spriocam le gach breiseán; ní bhaineann an sciar LAP, an chuimhne iomlán, an diosca agus na próisis ach le breiseáin a d'uaslódáil suíomh.",
       "schemaOrphans": "Scéimre an bhunachair sonraí",
       "schemaOrphansHelp": "Colúin atá fós sa bhunachar sonraí nach bhfógraíonn aon rud a thuilleadh. Ní dhéanann an t-ardán ach iad a liostú; ní scriosfar aon rud go dtí go gcinnfidh tú, agus ní féidir colún scriosta a athchóiriú.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Díchumasaithe — freagraíonn an críochphointe 403 do chách.",
       "mediaPayloadLimitMb": "Teorainn ualaigh meán (MB)",
       "maximumDecodedUploadOrRemote": "An t-uaslódáil díchódaithe nó an íoslódáil chianda is mó a ghlacann uirlisí meán MCP.",
-      "saveLimit": "Sábháil an teorainn",
       "allSites": "gach suíomh",
       "issuedBeforeSites": "eisithe roimh shuíomhanna",
       "noTokensYet": "Níl aon chomhartha fós.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Réamhshocrú an ardáin",
       "thisSite": "An suíomh seo",
       "inForceNow": "I bhfeidhm anois",
-      "saving": "Á shábháil…",
-      "savePolicy": "Sábháil an polasaí",
       "thePlatformDefaultIsSet": "Socraíonn riarthóir ardáin réamhshocrú an ardáin.",
       "useTheLayerBelow": "Úsáid an ciseal thíos",
       "whyTheLawRequiresThese": "Cén fáth a n-éilíonn an dlí go gcoinneofaí na taifid seo",
-      "inheritsThePlatformDefault": "oidhreacht: réamhshocrú an ardáin"
+      "inheritsThePlatformDefault": "oidhreacht: réamhshocrú an ardáin",
+      "strategyDelete": "Scrios",
+      "strategyAnonymise": "Anaithnidigh",
+      "strategyRetain": "Coinnigh",
+      "declaredBy": "Réamhshocrú arna fhógairt ag {{plugin}}",
+      "inheritsValue": "faigheann le hoidhreacht: {{value}}",
+      "legalBasis": "Bunús dlí",
+      "theSiteColumnIsSet": "Socraítear an colún \"An suíomh seo\" laistigh de shuíomh. Roghnaigh suíomh sa lascóir chun é a athrú."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Ainm taispeána",
     "thisPersonHasALogin": "Tá cuntas logála isteach ag an duine seo; athraítear a ríomhphost ar an gcuntas.",
     "birthDate": "Dáta breithe",
-    "saveChanges": "Sábháil athruithe",
     "sendPasswordResetEmail": "Seol ríomhphost athshocraithe pasfhocail",
     "cancel": "Cealaigh",
     "accountManagement": "Bainistíocht cuntais",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Cóipeáil na cóid athshlánaithe de láimh.",
     "nameRequired": "Ainm riachtanach",
     "enterATokenNameFirst": "Cuir isteach ainm don chomhartha ar dtús.",
-    "tokenCreated": "Comhartha cruthaithe",
     "copyTheTokenNowIt": "Cóipeáil an comhartha anois. Ní thaispeántar é ach uair amháin.",
     "failedToCreateApiToken": "Theip ar chomhartha API a chruthú",
     "areYouSureYouWant2": "An bhfuil tú cinnte gur mian leat 2FA a dhíchumasú don úsáideoir seo? Laghdóidh sé seo slándáil an chuntais.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Seisiún cúlghairthe",
     "deviceSessionRevokedSuccessfully": "Cúlghaireadh seisiún an ghléis.",
     "failedToRevokeSession": "Theip ar an seisiún a chúlghairm",
-    "rolesUpdated": "Róil nuashonraithe",
-    "theUserSRolesWere": "Sábháladh róil an úsáideora.",
     "saveFailed": "Theip ar an sábháil",
     "failedToSaveRoles": "Theip ar róil a shábháil.",
     "loadingRoles": "Róil á lódáil",
@@ -3448,8 +3445,6 @@
     "remove": "Bain",
     "loadFailed": "Theip ar an lódáil",
     "couldNotRetrieveRoleDetails": "Níorbh fhéidir sonraí an róil a fháil.",
-    "roleUpdated": "Ról nuashonraithe",
-    "wasSaved": "Sábháladh \"{{name}}\".",
     "updateFailed": "Theip ar an nuashonrú",
     "anErrorOccurredWhileSaving": "Tharla earráid agus é á shábháil.",
     "loadingRole": "Ról á lódáil...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Fill ar Úsáideoirí",
     "selfServiceSecurityControls": "Rialuithe Slándála Féinseirbhíse",
     "sessionDeviceControlsAndPersonal": "Níl rialuithe seisiún/gléasanna ná comharthaí API pearsanta ar fáil ach nuair atá do chuntas úsáideora féin á fheiceáil agat.",
-    "securityRecommendations": "Moltaí Slándála",
     "twoFactorAuthentication": "Fíordheimhniú Dhá Fhachtóir",
-    "activeAndProtectingThisAccount": "Gníomhach agus ag cosaint an chuntais seo",
-    "notEnabledHighlyRecommendedFor": "Gan cumasú - moltar go láidir é do chuntais riarthóra",
-    "passwordProtected": "Cosanta le Pasfhocal",
-    "accountHasASecurePassword": "Tá pasfhocal slán ag an gcuntas",
-    "administratorAccess": "Rochtain Riarthóra",
     "fullSystemAccess2faStrongly": "Rochtain iomlán ar an gcóras - moltar 2FA go láidir",
     "personalApiTokens": "Comharthaí API Pearsanta",
     "tokenNameEGCi": "Ainm an chomhartha (m.sh. CI deploy)",
     "days": "Laethanta",
     "createToken": "Cruthaigh Comhartha",
-    "copyNowShownOnce": "Cóipeáil anois (taispeántar uair amháin é)",
     "loadingApiTokens": "Comharthaí API á lódáil...",
     "noApiTokensCreatedYet": "Níor cruthaíodh aon chomharthaí API fós.",
     "revoke": "Cúlghair",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Gníomhaíocht Logála Isteach agus Seisiún",
     "loadingAuthActivity": "Gníomhaíocht fíordheimhnithe á lódáil...",
     "noRecentLoginSessionEvents": "Níl aon imeachtaí logála isteach/seisiúin le déanaí don úsáideoir seo.",
-    "unknownTime": "Am Anaithnid",
-    "activityEvent": "Imeacht gníomhaíochta",
     "openFullGlobalActivity": "Oscail an Ghníomhaíocht Dhomhanda Iomlán",
-    "2faStatus": "Stádas 2FA",
     "addAnExtraLayerOf": "Cuir sraith bhreise slándála leis trí fhíordheimhniú bunaithe ar aip (TOTP)",
-    "recommended": "Molta",
     "enableTwoFactorAuthenticationTo": "Cumasaigh fíordheimhniú dhá fhachtóir chun an cuntas seo a chosaint le pasfhocail aonuaire bunaithe ar am (TOTP).",
     "enable2fa": "Cumasaigh 2FA",
     "step1ScanQrCode": "Céim 1: Scan an Cód QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Céim 2: Fíoraigh an Cód",
     "enterThe6DigitCode": "Cuir isteach an cód 6 dhigit ó d'aip fíordheimhnitheora chun an socrú a chríochnú:",
     "verifyEnable": "Fíoraigh agus Cumasaigh",
-    "protectionActive": "Cosaint Ghníomhach",
     "thisAccountRequiresA6": "Teastaíonn cód 6 dhigit ó aip fíordheimhnitheora ón gcuntas seo agus é ag logáil isteach.",
     "regenerateRecoveryCodes": "Athghin Cóid Athshlánaithe",
     "disable2fa": "Díchumasaigh 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Cúlghair Seisiúin Eile",
     "loadingSessions": "Seisiúin á lódáil...",
     "noActiveSessions": "Níl aon seisiúin ghníomhacha ann.",
-    "currentSession": "Seisiún Reatha",
-    "deviceSession": "Seisiún Gléis",
     "current": "Reatha",
     "unknownDevice": "Gléas anaithnid",
     "editAccount2": "Cuir an cuntas in eagar",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Oscail taifead an úsáideora",
     "token": "Comhartha",
     "createdOn": "Cruthaithe {{date}}",
-    "notAvailable": "n/b",
     "revokedOn": "Cúlghairthe {{date}}",
     "recoveryCodesRemaining": "Cóid athshlánaithe fágtha:",
-    "unknownValue": "anaithnid",
     "expiresOn": "In éag: {{date}}",
     "person2": "Duine",
     "added": "Curtha leis",
@@ -3591,12 +3570,10 @@
       "loading": "Réimsí daoine á lódáil…",
       "loadFailed": "Níorbh fhéidir na réimsí daoine a lódáil.",
       "saveFailed": "Níorbh fhéidir na réimsí a shábháil.",
-      "saved": "Sábháladh na réimsí.",
       "empty": "Níl aon réimsí daoine ann fós. Cuir ceann leis chun é a choinneáil do gach duine.",
       "noneDeclared": "Níl aon réimsí daoine ar an suíomh seo fós.",
       "declare": "Cuir réimsí daoine leis",
       "manage": "Bainistigh réimsí",
-      "save": "Sábháil réimsí",
       "saveField": "Sábháil réimse",
       "delete": "Scrios",
       "deleteTitle": "An réimse seo a scriosadh?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Bailí ar feadh (laethanta)",
+    "revokeOtherSessionsConfirm": "Logáiltear amach gach gléas eile láithreach.",
+    "revokeSessionConfirm": "Logáiltear amach an gléas sin láithreach.",
+    "revokeCurrentSessionConfirm": "Seo an gléas atá in úsáid agat anois. Logáiltear amach thú láithreach.",
+    "revokeTokenConfirm": "Stopann \"{{name}}\" ag obair láithreach.",
+    "twoFactorTurnedOff": "Tá síniú isteach dhá fhachtóir múchta don suíomh seo, mar sin ní féidir é a shocrú anseo.",
+    "openSecuritySettings": "Oscail socruithe slándála"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Socraítear socruithe suímh ({{what}}) laistigh de gach suíomh — roghnaigh ceann ó roghchlár an tsuímh.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Níorbh fhéidir an suíomh seo a oscailt le haghaidh réamhamhairc.",
     "couldNotLoadTheSite": "Níorbh fhéidir an suíomh a lódáil.",
     "couldNotReloadThePlugin": "Níorbh fhéidir liosta na mbreiseán a athlódáil.",
-    "siteSaved": "Sábháladh an suíomh",
-    "routingFollowsImmediatelyNoRestart": "Leanann an ródú láithreach — gan atosú.",
     "notSaved": "Níor sábháladh",
     "theSiteCouldNotBe2": "Níorbh fhéidir an suíomh a shábháil.",
     "couldNotOpenTheSite": "Níorbh fhéidir an suíomh a oscailt",
@@ -3789,7 +3771,6 @@
     "visit": "Tabhair cuairt",
     "openThisSite": "Oscail an suíomh seo",
     "export": "Easpórtáil",
-    "save": "Sábháil",
     "couldNotLoadCertificates": "Níorbh fhéidir na teastais a lódáil.",
     "couldNotSwitchThisHost": "Níorbh fhéidir an t-óstach seo a athrú go huathoibríoch.",
     "couldNotSwitchThisHost2": "Níorbh fhéidir an t-óstach seo a athrú go huathoibríoch (saoróg).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Nuashonrú ar Fáil",
     "isNowActive": "Tá {{name}} gníomhach anois.",
     "themeHasBeenUpdated2": "Nuashonraíodh an téama {{name}}.",
-    "configurationSaved": "Cumraíocht Sábháilte",
-    "visualProtocolsUpdatedSuccessfully": "Nuashonraíodh na prótacail amhairc go rathúil.",
     "saveFailed": "Theip ar an Sábháil",
     "hasBeenRemoved2": "Baineadh {{name}}.",
     "seedsExecuted": "Síolta Rite",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Leagan amach",
     "extensionsSection": "Eisínteachtaí",
     "versionReady": "Tá leagan {{version}} réidh",
-    "saveChanges": "Sábháil na hathruithe",
     "runSeedsHint": "Athritheann sé sonraí síl an téama — a leathanaigh agus a ábhar samplach — isteach sa suíomh seo.",
     "resetThemeHint": "Glanann sé socruithe téama sábháilte an tsuímh seo agus athritheann sé na sonraí síl.",
     "notActiveHint": "Úsáideann an suíomh seo téama eile.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Cad a d'athraigh i v{{version}}",
     "whatChanged": "Cad a d'athraigh",
-    "closeBuildSourceDialog": "Dún dialóg na foinse tógála",
-    "close": "Dún",
     "couldNotInstallThatVersion": "Níorbh fhéidir an leagan sin a shuiteáil.",
     "couldNotChangeAutomaticUpdating": "Níorbh fhéidir an nuashonrú uathoibríoch a athrú.",
     "failed": "Theip air",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Tá deimhnithe uathoibríocha múchta. {{reason}}",
     "automaticCertificatesComeFrom": "Tagann deimhnithe uathoibríocha ó {{authority}}.",
     "noSecretKeyIsConfigured": "Níl SECRET_KEY cumraithe ar an bhfreastalaí seo, mar sin ní féidir eochair phríobháideach a stóráil. Tá uaslódáil díchumasaithe go dtí go socraítear ceann.",
-    "nothingToSavePasteA": "Níl aon rud le sábháil — greamaigh comhartha, nó úsáid Glan chun an ceann sábháilte a bhaint.",
     "savedThisSiteNowUses": "Sábháilte. Úsáideann an suíomh seo a chomhartha Cloudflare féin anois.",
     "removedThisSiteFallsBack": "Bainte. Úsáideann an suíomh seo comhartha an ardáin anois.",
     "couldNotSaveTheToken": "Níorbh fhéidir an comhartha a shábháil.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Comhartha an tsuímh seo",
     "savedLeaveBlankToKeep": "Sábháilte — fág bán é chun é a choinneáil, nó úsáid Glan chun é a bhaint",
     "pasteACloudflareApiToken": "Greamaigh comhartha API Cloudflare",
-    "save": "Sábháil",
     "clear": "Glan",
     "nothingStoredThisHostCannot": "Níl aon rud stóráilte — ní féidir leis an ardán seo an t-óstach seo a fhreastal thar HTTPS.",
     "nothingStoredHereTlsFor": "Níl aon rud stóráilte anseo — foirceanntar TLS don óstach seo roimh an ardán, mar sin is ansin atá a dheimhniú.",
@@ -4706,36 +4680,26 @@
     "roles": "Róil",
     "permissions": "Ceadanna",
     "eventDetails": "Sonraí an Imeachta",
-    "context": "Comhthéacs",
     "resource": "Acmhainn",
     "system": "Córas",
     "timestamp": "Stampa ama",
-    "authority": "Údarás",
-    "actorId": "ID an Ghníomhaí",
-    "type": "Cineál",
-    "systemLog": "Logáil an Chórais",
-    "audit": "Iniúchadh: {{status}}",
-    "activityMessage": "Teachtaireacht Ghníomhaíochta",
-    "actionTaken": "Gníomh a Rinneadh",
-    "resourcePool": "Linn Acmhainní",
-    "rawMetadata": "Meiteashonraí Amha",
     "thisEntryIsPartOf": "Is cuid de rian iniúchta do-athraithe an iontráil seo.",
     "exportJson": "Easpórtáil JSON",
     "event": "Imeacht",
     "actor": "Gníomhaí",
+    "plugin": "Breiseán",
     "activity": "Gníomhaíocht",
     "status": "Stádas",
     "action": "Gníomh",
     "time": "Am",
-    "logSignature": "Síniú Logála: {{id}}",
     "internal": "INMHEÁNACH",
     "level": {
-      "INFO": "FAISNÉIS",
-      "WARN": "RABHADH",
-      "ERROR": "EARRÁID",
-      "DEBUG": "DÍFHABHTÚ",
-      "SYSTEM": "CÓRAS",
-      "AUDIT": "INIÚCHADH"
+      "INFO": "Faisnéis",
+      "WARN": "Rabhadh",
+      "ERROR": "Earráid",
+      "DEBUG": "Dífhabhtú",
+      "SYSTEM": "Córas",
+      "AUDIT": "Iniúchadh"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Iontráil #{{id}}",
+    "recordedData": "Sonraí taifeadta"
   },
   "mediaPicker": {
     "showingOnly": "Á dtaispeáint amháin: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Tasc",
       "schedule": "Ritheann",
       "lastRun": "Rith deireanach",
-      "nextRun": "An chéad rith eile"
+      "nextRun": "An chéad rith eile",
+      "duration": "Fad"
     },
     "ownedBy": "{{owner}}",
     "platform": "Ardán",

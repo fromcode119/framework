@@ -162,6 +162,7 @@
       "reorderHandle": "ลากเพื่อจัดลำดับใหม่ หรือโฟกัสแล้วใช้ปุ่มลูกศร",
       "reorderEnable": "แสดงรายการตามลำดับของรายการเองเพื่อจัดลำดับใหม่",
       "reorderFailed": "ไม่สามารถบันทึกลำดับใหม่ได้",
+      "noMatch": "ไม่มีรายการที่ตรงกับการค้นหาหรือตัวกรอง",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "นำเข้า {{file}} หรือไม่",
@@ -234,7 +235,6 @@
       "editSection": "แก้ไข",
       "notFilledIn": "ยังไม่ได้กรอก",
       "statusSection": "สถานะ",
-      "statusConfirm": "เปลี่ยนสถานะเป็น “{{status}}” หรือไม่?",
       "recordSection": "ระเบียน",
       "showJson": "แสดงเป็น JSON",
       "showForm": "แสดงเป็นฟอร์ม",
@@ -245,7 +245,8 @@
       "copied": "คัดลอกแล้ว",
       "more": "เพิ่มเติม",
       "moreFields": "{{count}} ช่อง",
-      "moreOneField": "{{count}} ช่อง"
+      "moreOneField": "{{count}} ช่อง",
+      "statusConfirm": "เปลี่ยนสถานะเป็น “{{status}}” หรือไม่?"
     },
     "notFound": {
       "title": "ไม่พบคอลเลกชัน",
@@ -366,7 +367,8 @@
     "reset": "รีเซ็ต",
     "notScheduledYet": "ยังไม่ได้กำหนดเวลา",
     "more": "การดำเนินการเพิ่มเติม",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "ลบ"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "เลือกสี",
-      "colour": "สี",
-      "pick": "เลือกสี",
       "hex": "รหัส Hex",
-      "confirm": "ยืนยันสี",
       "notSet": "ไม่ได้ตั้งค่า"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "ตรวจพบส่วนที่ต้องพึ่งพาที่ไม่ได้ใช้งาน",
       "intro": "หากต้องการเปิดใช้งาน {{plugin}} ต้องดำเนินการดังต่อไปนี้:",
       "notInstalled": "ยังไม่ได้ติดตั้ง",
+      "inactive": "ปิดอยู่",
+      "incompatible": "คนละรุ่น",
       "requires": "ต้องใช้เวอร์ชัน {{version}} สามารถดาวน์โหลดได้จากมาร์เก็ตเพลส",
       "needsActivation": "ติดตั้งแล้วแต่ต้องเปิดใช้งาน (เวอร์ชัน {{version}})",
       "mismatch": "เวอร์ชันไม่ตรงกัน: ต้องใช้ {{expected}} แต่พบ {{actual}}",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "ตัวอย่างแพลตฟอร์ม",
-      "image": "ตัวอย่าง {{number}}"
+      "image": "ตัวอย่าง {{number}}",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป"
     },
     "menuField": {
       "newItem": "รายการเมนูใหม่",
-      "structure": "โครงสร้างเมนู",
-      "add": "เพิ่มรายการเมนู"
+      "add": "เพิ่มรายการเมนู",
+      "reorder": "ลากเพื่อย้าย ลูกศร: ขึ้นลงเพื่อย้าย ขวาเพื่อซ้อน ซ้ายเพื่อนำออก"
     },
     "field": {
       "notSet": "ไม่ได้ตั้งค่า",
@@ -461,8 +464,8 @@
       "record": "ระเบียน"
     },
     "array": {
-      "addNew": "เพิ่ม {{label}} ใหม่",
-      "item": "รายการ"
+      "add": "เพิ่ม",
+      "reorder": "ลากเพื่อย้าย หรือใช้ปุ่มลูกศร"
     },
     "stepper": {
       "increment": "เพิ่ม",
@@ -528,9 +531,7 @@
       "noContact": "ไม่มีอีเมลหรือโทรศัพท์ในบุคคล",
       "hasLogin": "มีบัญชีเข้าสู่ระบบ",
       "noLogin": "ไม่มีบัญชีเข้าสู่ระบบ",
-      "source": "ชื่อ อีเมล และโทรศัพท์มาจากบุคคล #{{id}} โปรดแก้ไขที่นั่น",
       "open": "เปิดในบุคคล",
-      "choose": "เลือกคนอื่น",
       "searchFailed": "ไม่สามารถค้นหาบุคคลได้ในขณะนี้",
       "noMatch": "ไม่พบบุคคลที่ตรงกัน ป้อนรายละเอียดด้านล่าง เมื่อบันทึกจะเพิ่มลงในบุคคล",
       "ref": "บุคคล #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "เปิดไซต์"
       }
     },
-    "relativeOverridesInheritTheCollection": "การกำหนดแบบสัมพัทธ์จะรับคำนำหน้าของคอลเลกชัน เปิดโหมดสัมบูรณ์เพื่อข้ามคำนำหน้าอย่าง `/shop`",
     "range": "ช่วง",
     "noDataForThisRange": "ไม่มีข้อมูลในช่วงนี้",
     "peak": "· สูงสุด {{value}}",
@@ -626,7 +626,8 @@
       "filters": "ตัวกรอง",
       "clearFilters": "ล้างทั้งหมด",
       "removeFilter": "ลบตัวกรอง {{label}}",
-      "showResults": "แสดง {{count}} ผลลัพธ์"
+      "showResults": "แสดง {{count}} ผลลัพธ์",
+      "showResultsOne": "แสดง 1 ผลลัพธ์"
     },
     "personFieldPicker": {
       "none": "ไม่บันทึกลงในฟิลด์บุคคล",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "บันทึกขีดจำกัดแซนด์บ็อกซ์ของ {{name}} แล้ว แต่ไม่สามารถรีสตาร์ทโพรเซสด้วยค่าใหม่ได้: {{value}}",
       "restartRequired": "ต้องรีสตาร์ท",
       "sandboxSettingsForWereSaved": "บันทึกการตั้งค่าแซนด์บ็อกซ์ของ {{name}} แล้ว แต่ต้องรีสตาร์ท API ก่อนจึงจะมีผล",
-      "resourcesUpdated": "อัปเดตทรัพยากรแล้ว",
-      "sandboxLimitsForUpdated": "อัปเดตขีดจำกัดแซนด์บ็อกซ์ของ {{name}} แล้ว",
       "sandboxDisabledFor": "ปิดใช้งานแซนด์บ็อกซ์สำหรับ {{name}} แล้ว",
       "saveFailed": "บันทึกไม่สำเร็จ",
       "failedToUpdateSandboxLimits": "ไม่สามารถอัปเดตขีดจำกัดแซนด์บ็อกซ์ได้",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "ไม่มีการใช้งาน ไม่มีเหตุการณ์ล่าสุดที่บันทึกไว้",
       "updating": "กำลังอัปเดต...",
       "updateAvailable": "มีอัปเดตใหม่",
-      "updatePolicy": "นโยบายการอัปเดต",
       "saveChanges": "บันทึกการเปลี่ยนแปลง",
       "unsavedChanges": "มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก",
       "exportSettingsAsJson": "ส่งออกการตั้งค่าเป็น JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "ใหม่ใน v{{version}}",
       "installedVersion": "ติดตั้งแล้ว {{version}}",
       "marketplaceVersion": "มาร์เก็ตเพลส {{version}}",
-      "saving": "กำลังบันทึก...",
       "saveSettings": "บันทึกการตั้งค่า",
       "viewDefinition": "ดูคำจำกัดความ",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "รูปลักษณ์",
       "failedToLoadAppearances": "โหลดรูปลักษณ์ไม่สำเร็จ",
       "failedToSaveShadowSetting": "บันทึกการตั้งค่าเงาไม่สำเร็จ",
+      "failedToSaveMenuSetting": "บันทึกการตั้งค่าเมนูไม่สำเร็จ",
       "switchedToReloading": "เปลี่ยนเป็น \"{{slug}}\" แล้ว กำลังโหลดใหม่…",
       "failedToSwitchAppearance": "เปลี่ยนรูปลักษณ์ไม่สำเร็จ",
       "installFailed": "ติดตั้งไม่สำเร็จ",
@@ -1919,6 +1917,8 @@
       "install": "ติดตั้ง",
       "surfaceShadows": "เงาพื้นผิว",
       "depthOnPanelsDialogsAnd": "มิติความลึกบนแผง กล่องโต้ตอบ และปุ่ม ปิดเพื่อให้หน้าผู้ดูแลแบบแบนราบ — เส้นขอบและมุมยังคงเหมือนเดิม",
+      "secondMenuColumn": "คอลัมน์เมนูที่สอง",
+      "sectionPagesBesideTheMenu": "หน้าต่าง ๆ ของหมวดจะอยู่ในคอลัมน์ข้างเมนู ปิดแล้วหน้าเหล่านี้จะเปิดใต้บรรทัดของตนในเมนูเดียว และทุกหน้าจอกว้างขึ้น 220px",
       "installFromAPackageUrl": "ติดตั้งจาก URL ของแพ็กเกจ",
       "builtIn": "ในตัว",
       "installed": "ติดตั้งแล้ว",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "ไม่ได้อัปเดตตำแหน่งจาก IP",
       "geoUnavailable": "ไม่สามารถดูสถานะตำแหน่งจาก IP ได้",
       "geoAttribution": "ข้อมูลตำแหน่งจาก IP โดย {{name}} ({{license}}) อัปเดตทุกเดือนขณะเปิดใช้งาน",
-      "geoSaved": "บันทึกแล้ว",
-      "geoSavedOn": "กำลังดาวน์โหลดฐานข้อมูล ขนาดประมาณ 60 MB",
-      "geoSavedOff": "ลบฐานข้อมูลออกจากเซิร์ฟเวอร์แล้ว",
       "everyPluginRunsIsolated": "แยกการทำงาน: ปลั๊กอินแต่ละตัวทำงานในกระบวนการของตนเอง เพดานหน่วยความจำและกำหนดเวลาใช้กับปลั๊กอินทุกตัว ส่วนสัดส่วน CPU หน่วยความจำรวม ดิสก์ และจำนวนกระบวนการใช้เฉพาะกับปลั๊กอินที่ไซต์อัปโหลดเท่านั้น",
       "schemaOrphans": "สคีมาฐานข้อมูล",
       "schemaOrphansHelp": "คอลัมน์ที่ยังอยู่ในฐานข้อมูลแต่ไม่มีส่วนใดประกาศไว้แล้ว แพลตฟอร์มจะแสดงรายการเท่านั้น จะไม่มีการลบจนกว่าคุณจะตัดสินใจ และคอลัมน์ที่ลบแล้วจะกู้คืนไม่ได้",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "ปิดใช้งาน — endpoint จะตอบกลับ 403 กับทุกคน",
       "mediaPayloadLimitMb": "ขีดจำกัดขนาดสื่อ (MB)",
       "maximumDecodedUploadOrRemote": "ขนาดสูงสุดของไฟล์ที่อัปโหลด (หลังถอดรหัส) หรือดาวน์โหลดจากระยะไกลที่เครื่องมือสื่อของ MCP ยอมรับ",
-      "saveLimit": "บันทึกขีดจำกัด",
       "allSites": "ทุกไซต์",
       "issuedBeforeSites": "ออกก่อนมีระบบไซต์",
       "noTokensYet": "ยังไม่มีโทเค็น",
@@ -3210,12 +3206,17 @@
       "platformDefault": "ค่าเริ่มต้นของแพลตฟอร์ม",
       "thisSite": "ไซต์นี้",
       "inForceNow": "มีผลอยู่ขณะนี้",
-      "saving": "กำลังบันทึก…",
-      "savePolicy": "บันทึกนโยบาย",
       "thePlatformDefaultIsSet": "ค่าเริ่มต้นของแพลตฟอร์มกำหนดโดยผู้ดูแลแพลตฟอร์ม",
       "useTheLayerBelow": "ใช้ค่าจากระดับล่าง",
       "whyTheLawRequiresThese": "เหตุผลที่กฎหมายกำหนดให้ต้องเก็บบันทึกเหล่านี้",
-      "inheritsThePlatformDefault": "สืบทอด: ค่าเริ่มต้นของแพลตฟอร์ม"
+      "inheritsThePlatformDefault": "สืบทอด: ค่าเริ่มต้นของแพลตฟอร์ม",
+      "strategyDelete": "ลบ",
+      "strategyAnonymise": "ทำให้ไม่ระบุตัวตน",
+      "strategyRetain": "เก็บไว้",
+      "declaredBy": "ค่าเริ่มต้นที่ {{plugin}} กำหนด",
+      "inheritsValue": "สืบทอด: {{value}}",
+      "legalBasis": "ฐานทางกฎหมาย",
+      "theSiteColumnIsSet": "คอลัมน์ \"ไซต์นี้\" ตั้งค่าภายในไซต์ เลือกไซต์ในตัวสลับเพื่อเปลี่ยน"
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "ชื่อที่แสดง",
     "thisPersonHasALogin": "บุคคลนี้มีบัญชีเข้าสู่ระบบ ต้องเปลี่ยนอีเมลที่บัญชีนั้น",
     "birthDate": "วันเกิด",
-    "saveChanges": "บันทึกการเปลี่ยนแปลง",
     "sendPasswordResetEmail": "ส่งอีเมลรีเซ็ตรหัสผ่าน",
     "cancel": "ยกเลิก",
     "accountManagement": "การจัดการบัญชี",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "โปรดคัดลอกรหัสกู้คืนด้วยตนเอง",
     "nameRequired": "ต้องระบุชื่อ",
     "enterATokenNameFirst": "โปรดป้อนชื่อโทเค็นก่อน",
-    "tokenCreated": "สร้างโทเค็นแล้ว",
     "copyTheTokenNowIt": "โปรดคัดลอกโทเค็นตอนนี้ โทเค็นจะแสดงเพียงครั้งเดียว",
     "failedToCreateApiToken": "สร้างโทเค็น API ไม่สำเร็จ",
     "areYouSureYouWant2": "คุณแน่ใจหรือไม่ว่าต้องการปิด 2FA สำหรับผู้ใช้นี้ การดำเนินการนี้จะลดความปลอดภัยของบัญชี",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "เพิกถอนเซสชันแล้ว",
     "deviceSessionRevokedSuccessfully": "เพิกถอนเซสชันของอุปกรณ์เรียบร้อยแล้ว",
     "failedToRevokeSession": "เพิกถอนเซสชันไม่สำเร็จ",
-    "rolesUpdated": "อัปเดตบทบาทแล้ว",
-    "theUserSRolesWere": "บันทึกบทบาทของผู้ใช้แล้ว",
     "saveFailed": "บันทึกไม่สำเร็จ",
     "failedToSaveRoles": "บันทึกบทบาทไม่สำเร็จ",
     "loadingRoles": "กำลังโหลดบทบาท",
@@ -3448,8 +3445,6 @@
     "remove": "นำออก",
     "loadFailed": "โหลดไม่สำเร็จ",
     "couldNotRetrieveRoleDetails": "ไม่สามารถดึงรายละเอียดบทบาทได้",
-    "roleUpdated": "อัปเดตบทบาทแล้ว",
-    "wasSaved": "บันทึก \"{{name}}\" แล้ว",
     "updateFailed": "อัปเดตไม่สำเร็จ",
     "anErrorOccurredWhileSaving": "เกิดข้อผิดพลาดขณะบันทึก",
     "loadingRole": "กำลังโหลดบทบาท...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "กลับไปที่ผู้ใช้",
     "selfServiceSecurityControls": "การควบคุมความปลอดภัยด้วยตนเอง",
     "sessionDeviceControlsAndPersonal": "การควบคุมเซสชัน/อุปกรณ์และโทเค็น API ส่วนตัวจะใช้ได้เฉพาะเมื่อดูบัญชีผู้ใช้ของคุณเองเท่านั้น",
-    "securityRecommendations": "คำแนะนำด้านความปลอดภัย",
     "twoFactorAuthentication": "การยืนยันตัวตนแบบสองขั้นตอน",
-    "activeAndProtectingThisAccount": "เปิดใช้งานและกำลังปกป้องบัญชีนี้",
-    "notEnabledHighlyRecommendedFor": "ยังไม่เปิดใช้งาน - แนะนำอย่างยิ่งสำหรับบัญชีผู้ดูแลระบบ",
-    "passwordProtected": "ป้องกันด้วยรหัสผ่าน",
-    "accountHasASecurePassword": "บัญชีมีรหัสผ่านที่ปลอดภัย",
-    "administratorAccess": "สิทธิ์ผู้ดูแลระบบ",
     "fullSystemAccess2faStrongly": "เข้าถึงระบบได้ทั้งหมด - แนะนำอย่างยิ่งให้ใช้ 2FA",
     "personalApiTokens": "โทเค็น API ส่วนตัว",
     "tokenNameEGCi": "ชื่อโทเค็น (เช่น CI deploy)",
     "days": "วัน",
     "createToken": "สร้างโทเค็น",
-    "copyNowShownOnce": "คัดลอกตอนนี้ (แสดงเพียงครั้งเดียว)",
     "loadingApiTokens": "กำลังโหลดโทเค็น API...",
     "noApiTokensCreatedYet": "ยังไม่มีการสร้างโทเค็น API",
     "revoke": "เพิกถอน",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "กิจกรรมการเข้าสู่ระบบและเซสชัน",
     "loadingAuthActivity": "กำลังโหลดกิจกรรมการยืนยันตัวตน...",
     "noRecentLoginSessionEvents": "ไม่มีเหตุการณ์การเข้าสู่ระบบ/เซสชันล่าสุดของผู้ใช้นี้",
-    "unknownTime": "ไม่ทราบเวลา",
-    "activityEvent": "เหตุการณ์กิจกรรม",
     "openFullGlobalActivity": "เปิดกิจกรรมทั้งหมดของระบบ",
-    "2faStatus": "สถานะ 2FA",
     "addAnExtraLayerOf": "เพิ่มความปลอดภัยอีกชั้นด้วยการยืนยันตัวตนผ่านแอป (TOTP)",
-    "recommended": "แนะนำ",
     "enableTwoFactorAuthenticationTo": "เปิดใช้การยืนยันตัวตนแบบสองขั้นตอนเพื่อปกป้องบัญชีนี้ด้วยรหัสผ่านใช้ครั้งเดียวตามเวลา (TOTP)",
     "enable2fa": "เปิดใช้ 2FA",
     "step1ScanQrCode": "ขั้นตอนที่ 1: สแกนคิวอาร์โค้ด",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "ขั้นตอนที่ 2: ยืนยันรหัส",
     "enterThe6DigitCode": "ป้อนรหัส 6 หลักจากแอปยืนยันตัวตนของคุณเพื่อตั้งค่าให้เสร็จสมบูรณ์:",
     "verifyEnable": "ยืนยันและเปิดใช้งาน",
-    "protectionActive": "การป้องกันทำงานอยู่",
     "thisAccountRequiresA6": "บัญชีนี้ต้องใช้รหัส 6 หลักจากแอปยืนยันตัวตนเมื่อเข้าสู่ระบบ",
     "regenerateRecoveryCodes": "สร้างรหัสกู้คืนใหม่",
     "disable2fa": "ปิดใช้ 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "เพิกถอนเซสชันอื่น",
     "loadingSessions": "กำลังโหลดเซสชัน...",
     "noActiveSessions": "ไม่มีเซสชันที่ใช้งานอยู่",
-    "currentSession": "เซสชันปัจจุบัน",
-    "deviceSession": "เซสชันอุปกรณ์",
     "current": "ปัจจุบัน",
     "unknownDevice": "อุปกรณ์ที่ไม่รู้จัก",
     "editAccount2": "แก้ไขบัญชี",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "เปิดระเบียนผู้ใช้",
     "token": "โทเค็น",
     "createdOn": "สร้างเมื่อ {{date}}",
-    "notAvailable": "ไม่มี",
     "revokedOn": "เพิกถอนเมื่อ {{date}}",
     "recoveryCodesRemaining": "รหัสกู้คืนที่เหลือ:",
-    "unknownValue": "ไม่ทราบ",
     "expiresOn": "หมดอายุ: {{date}}",
     "person2": "บุคคล",
     "added": "เพิ่มเมื่อ",
@@ -3591,12 +3570,10 @@
       "loading": "กำลังโหลดฟิลด์ข้อมูลบุคคล…",
       "loadFailed": "ไม่สามารถโหลดฟิลด์ข้อมูลบุคคลได้",
       "saveFailed": "ไม่สามารถบันทึกฟิลด์ได้",
-      "saved": "บันทึกฟิลด์แล้ว",
       "empty": "ยังไม่มีฟิลด์ข้อมูลบุคคล เพิ่มฟิลด์เพื่อเริ่มเก็บข้อมูลนั้นสำหรับทุกคน",
       "noneDeclared": "เว็บไซต์นี้ยังไม่มีฟิลด์ข้อมูลบุคคล",
       "declare": "เพิ่มฟิลด์ข้อมูลบุคคล",
       "manage": "จัดการฟิลด์",
-      "save": "บันทึกฟิลด์",
       "saveField": "บันทึกฟิลด์",
       "delete": "ลบ",
       "deleteTitle": "ลบฟิลด์นี้หรือไม่?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "ใช้ได้ (วัน)",
+    "revokeOtherSessionsConfirm": "อุปกรณ์อื่นทั้งหมดจะออกจากระบบทันที",
+    "revokeSessionConfirm": "อุปกรณ์นั้นจะออกจากระบบทันที",
+    "revokeCurrentSessionConfirm": "นี่คืออุปกรณ์ที่คุณใช้อยู่ตอนนี้ คุณจะออกจากระบบทันที",
+    "revokeTokenConfirm": "\"{{name}}\" จะหยุดทำงานทันที",
+    "twoFactorTurnedOff": "การลงชื่อเข้าใช้แบบสองขั้นตอนปิดอยู่สำหรับเว็บไซต์นี้ จึงตั้งค่าที่นี่ไม่ได้",
+    "openSecuritySettings": "เปิดการตั้งค่าความปลอดภัย"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "การตั้งค่าเว็บไซต์ ({{what}}) ตั้งค่าภายในแต่ละเว็บไซต์ — เลือกเว็บไซต์จากเมนูเว็บไซต์",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "ไม่สามารถเปิดไซต์นี้เพื่อแสดงตัวอย่างได้",
     "couldNotLoadTheSite": "ไม่สามารถโหลดไซต์ได้",
     "couldNotReloadThePlugin": "ไม่สามารถโหลดรายการปลั๊กอินใหม่ได้",
-    "siteSaved": "บันทึกไซต์แล้ว",
-    "routingFollowsImmediatelyNoRestart": "การกำหนดเส้นทางมีผลทันที — ไม่ต้องรีสตาร์ท",
     "notSaved": "ไม่ได้บันทึก",
     "theSiteCouldNotBe2": "ไม่สามารถบันทึกไซต์ได้",
     "couldNotOpenTheSite": "ไม่สามารถเปิดไซต์ได้",
@@ -3789,7 +3771,6 @@
     "visit": "เยี่ยมชม",
     "openThisSite": "เปิดไซต์นี้",
     "export": "ส่งออก",
-    "save": "บันทึก",
     "couldNotLoadCertificates": "ไม่สามารถโหลดใบรับรองได้",
     "couldNotSwitchThisHost": "ไม่สามารถเปลี่ยนโฮสต์นี้เป็นแบบอัตโนมัติได้",
     "couldNotSwitchThisHost2": "ไม่สามารถเปลี่ยนโฮสต์นี้เป็นแบบอัตโนมัติ (ไวลด์การ์ด) ได้",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "มีอัปเดต",
     "isNowActive": "{{name}} ใช้งานอยู่ในขณะนี้",
     "themeHasBeenUpdated2": "อัปเดตธีม {{name}} แล้ว",
-    "configurationSaved": "บันทึกการกำหนดค่าแล้ว",
-    "visualProtocolsUpdatedSuccessfully": "อัปเดตโปรโตคอลการแสดงผลเรียบร้อยแล้ว",
     "saveFailed": "บันทึกไม่สำเร็จ",
     "hasBeenRemoved2": "นำ {{name}} ออกแล้ว",
     "seedsExecuted": "เรียกใช้ Seed แล้ว",
@@ -4300,7 +4279,6 @@
     "layoutSection": "เลย์เอาต์",
     "extensionsSection": "ส่วนขยาย",
     "versionReady": "เวอร์ชัน {{version}} พร้อมแล้ว",
-    "saveChanges": "บันทึกการเปลี่ยนแปลง",
     "runSeedsHint": "นำเข้าข้อมูลตั้งต้นของธีม ได้แก่หน้าและเนื้อหาตัวอย่าง ลงในไซต์นี้อีกครั้ง",
     "resetThemeHint": "ล้างการตั้งค่าธีมที่บันทึกไว้ของไซต์นี้ และนำเข้าข้อมูลตั้งต้นอีกครั้ง",
     "notActiveHint": "ไซต์นี้ใช้ธีมอื่นอยู่",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "มีอะไรเปลี่ยนแปลงใน v{{version}}",
     "whatChanged": "มีอะไรเปลี่ยนแปลง",
-    "closeBuildSourceDialog": "ปิดกล่องโต้ตอบแหล่งที่มาของบิลด์",
-    "close": "ปิด",
     "couldNotInstallThatVersion": "ไม่สามารถติดตั้งเวอร์ชันนั้นได้",
     "couldNotChangeAutomaticUpdating": "ไม่สามารถเปลี่ยนการอัปเดตอัตโนมัติได้",
     "failed": "ล้มเหลว",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "ใบรับรองอัตโนมัติปิดอยู่ {{reason}}",
     "automaticCertificatesComeFrom": "ใบรับรองอัตโนมัติออกโดย {{authority}}",
     "noSecretKeyIsConfigured": "ยังไม่ได้กำหนดค่า SECRET_KEY บนเซิร์ฟเวอร์นี้ จึงไม่สามารถจัดเก็บคีย์ส่วนตัวได้ การอัปโหลดจะปิดใช้งานจนกว่าจะตั้งค่า",
-    "nothingToSavePasteA": "ไม่มีข้อมูลให้บันทึก — วางโทเค็น หรือใช้ ล้าง เพื่อลบโทเค็นที่บันทึกไว้",
     "savedThisSiteNowUses": "บันทึกแล้ว ไซต์นี้ใช้โทเค็น Cloudflare ของตัวเองแล้ว",
     "removedThisSiteFallsBack": "ลบแล้ว ไซต์นี้จะกลับไปใช้โทเค็นของแพลตฟอร์ม",
     "couldNotSaveTheToken": "ไม่สามารถบันทึกโทเค็นได้",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "โทเค็นของไซต์นี้",
     "savedLeaveBlankToKeep": "บันทึกแล้ว — เว้นว่างไว้เพื่อคงค่าเดิม หรือใช้ ล้าง เพื่อลบ",
     "pasteACloudflareApiToken": "วางโทเค็น API ของ Cloudflare",
-    "save": "บันทึก",
     "clear": "ล้าง",
     "nothingStoredThisHostCannot": "ไม่มีข้อมูลที่จัดเก็บ — แพลตฟอร์มนี้ไม่สามารถให้บริการโฮสต์นี้ผ่าน HTTPS ได้",
     "nothingStoredHereTlsFor": "ไม่มีข้อมูลที่จัดเก็บที่นี่ — TLS ของโฮสต์นี้สิ้นสุดก่อนถึงแพลตฟอร์ม ใบรับรองจึงอยู่ที่นั่น",
@@ -4706,28 +4680,18 @@
     "roles": "บทบาท",
     "permissions": "สิทธิ์",
     "eventDetails": "รายละเอียดเหตุการณ์",
-    "context": "บริบท",
     "resource": "ทรัพยากร",
     "system": "ระบบ",
     "timestamp": "เวลาที่บันทึก",
-    "authority": "ผู้มีอำนาจ",
-    "actorId": "ID ผู้ดำเนินการ",
-    "type": "ประเภท",
-    "systemLog": "บันทึกระบบ",
-    "audit": "การตรวจสอบ: {{status}}",
-    "activityMessage": "ข้อความกิจกรรม",
-    "actionTaken": "การดำเนินการที่ทำ",
-    "resourcePool": "กลุ่มทรัพยากร",
-    "rawMetadata": "เมทาดาทาดิบ",
     "thisEntryIsPartOf": "รายการนี้เป็นส่วนหนึ่งของบันทึกการตรวจสอบที่ไม่สามารถแก้ไขได้",
     "exportJson": "ส่งออก JSON",
     "event": "เหตุการณ์",
     "actor": "ผู้ดำเนินการ",
+    "plugin": "ปลั๊กอิน",
     "activity": "กิจกรรม",
     "status": "สถานะ",
     "action": "การดำเนินการ",
     "time": "เวลา",
-    "logSignature": "ลายเซ็นบันทึก: {{id}}",
     "internal": "ภายใน",
     "level": {
       "INFO": "ข้อมูล",
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "รายการ #{{id}}",
+    "recordedData": "ข้อมูลที่บันทึก"
   },
   "mediaPicker": {
     "showingOnly": "แสดงเฉพาะ: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "งาน",
       "schedule": "รอบการทำงาน",
       "lastRun": "ทำงานล่าสุด",
-      "nextRun": "ทำงานครั้งถัดไป"
+      "nextRun": "ทำงานครั้งถัดไป",
+      "duration": "ระยะเวลา"
     },
     "ownedBy": "{{owner}}",
     "platform": "แพลตฟอร์ม",

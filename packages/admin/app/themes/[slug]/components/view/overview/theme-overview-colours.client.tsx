@@ -1,3 +1,5 @@
+import { Text } from '@/components/ui/view/text.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -11,21 +13,20 @@ export class ThemeOverviewColours extends PureReactor {
   @prop declare theme: ThemeMode;
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <DetailBox title={AdminI18n.t('themes.themeColors')} theme={this.theme}>
         {this.swatches.length ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="fc-swatches">
             {this.swatches.map((swatch) => (
-              <div key={swatch.key} className="min-w-0">
-                <div className={`h-14 rounded-lg border ${dark ? 'border-white/10' : 'border-black/5'}`} style={{ backgroundColor: swatch.value }} />
-                <div className={`mt-1.5 truncate text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`} title={swatch.label}>{swatch.label}</div>
-                <div className={`font-mono text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{swatch.value}</div>
+              <div key={swatch.key} className="fc-swatch">
+                <div className="fc-swatch__chip" style={{ backgroundColor: swatch.value }} />
+                <Text size="xsmall" weight="plus" as="div" className="fc-swatch__name">{swatch.label}</Text>
+                <Text size="xsmall" muted as="div"><code className="fc-dt-code">{swatch.value}</code></Text>
               </div>
             ))}
           </div>
         ) : (
-          <p className={`py-1.5 text-[13px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.thisThemeDeclaresNoColor')}</p>
+          <EmptyState inline title={AdminI18n.t('themes.thisThemeDeclaresNoColor')} />
         )}
       </DetailBox>
     );

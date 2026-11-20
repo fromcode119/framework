@@ -24,6 +24,6 @@ export class Icon extends PureReactor {
     const Fallback = FrameworkIcons.Package;
     if (Fallback) return <Fallback {...props} />;
 
-    return <span className="w-4 h-4 bg-slate-200 rounded-lg animate-pulse inline-block" />;
+    return <span className="w-4 h-4 fc-tone-raised rounded-lg animate-pulse inline-block" />;
   }
 }

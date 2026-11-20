@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { RepeatRowAdd } from '@/components/ui/view/repeat-row-add.client';
 import { ArrayFieldRow } from '@/components/ui/view/array-field-row.client';
 import { ArrayFieldRowRenderer } from '@/components/ui/view/array-field-row-renderer.client';
 import { ArrayFieldTable } from '@/components/ui/view/array-field-table.client';
@@ -102,7 +102,7 @@ export class ArrayField extends Reactor {
   }
 
   render(): React.ReactNode {
-    const { field, theme } = this;
+    const { field } = this;
     const items = this.items;
     const { draggedIndex, isHandleHovered } = this;
 
@@ -119,34 +119,31 @@ export class ArrayField extends Reactor {
     }
 
     return (
-    <div className="space-y-4">
-      {items.map((item, index) => (
-         <ArrayFieldRow
-            key={index}
-            field={field}
-            item={item}
-            index={index}
-            theme={theme}
-            itemsLength={items.length}
-            draggedIndex={draggedIndex}
-            isHandleHovered={isHandleHovered}
-            renderField={this.renderField}
-            onSetDragged={this.handleSetDragged}
-            onSetHandleHovered={this.handleSetHandleHovered}
-            onReorder={this.handleReorder}
-            onMoveUp={this.handleMoveUp}
-            onMoveDown={this.handleMoveDown}
-            onRemove={this.handleRemoveItem}
-         />
-      ))}
-
-      {/* The console's button. It used to be a 126px dashed drop-zone with a boxed plus inside it
-          that turned indigo on hover — the tallest thing in a drawer, for "add one more row". */}
-      <button type="button" onClick={this.handleAddItem} className="fc-btn">
-        <FrameworkIcons.Plus size={15} />
-        <span>{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
-      </button>
-    </div>
+      <div className="fc-repeat">
+        {items.length ? (
+          <ul className="fc-repeat__rows">
+            {items.map((item, index) => (
+              <ArrayFieldRow
+                key={index}
+                field={field}
+                item={item}
+                index={index}
+                itemsLength={items.length}
+                draggedIndex={draggedIndex}
+                isHandleHovered={isHandleHovered}
+                renderField={this.renderField}
+                onSetDragged={this.handleSetDragged}
+                onSetHandleHovered={this.handleSetHandleHovered}
+                onReorder={this.handleReorder}
+                onMoveUp={this.handleMoveUp}
+                onMoveDown={this.handleMoveDown}
+                onRemove={this.handleRemoveItem}
+              />
+            ))}
+          </ul>
+        ) : null}
+        <RepeatRowAdd label={AdminI18n.t('ui.array.add')} onAdd={this.handleAddItem} />
+      </div>
     );
   }
 }

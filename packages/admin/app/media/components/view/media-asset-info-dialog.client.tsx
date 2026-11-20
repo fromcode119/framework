@@ -1,10 +1,10 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Platform, bound, prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { Dialog } from '@/components/ui/view/dialog.client';
+import { AdminFactGrid } from '@/components/ui/view/admin-fact-grid.client';
 import { AdminServices } from '@/lib/admin-services';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -23,29 +23,21 @@ export class MediaAssetInfoDialog extends AdminComponent {
   @prop declare item: IMediaItem | null;
   @prop declare onClose: () => void;
 
-  componentDidMount(): void {
-    if (Platform.isBrowser) document.body.style.overflow = 'hidden';
-  }
-
-  componentWillUnmount(): void {
-    if (Platform.isBrowser) document.body.style.overflow = 'unset';
-  }
-
   private get mediaUrl(): string {
     return AdminServices.getInstance().media.resolveMediaUrl(this.item?.url || '');
   }
 
-  /** `[label, value]` for every fact the asset actually reports — nothing invented, nothing blank. */
-  private get facts(): Array<[string, string]> {
+  /** Every fact the asset actually reports — nothing invented, nothing blank. */
+  private get facts(): Array<{ key: string; label: string; value: string }> {
     const item = this.item;
     if (!item) return [];
-    const rows: Array<[string, string]> = [[AdminI18n.t('media.fileName'), item.originalName]];
-    if (item.relativePath) rows.push([AdminI18n.t('media.pathInTheme'), item.relativePath]);
-    rows.push([AdminI18n.t('media.type'), item.mimeType]);
+    const rows = [{ key: 'name', label: AdminI18n.t('media.fileName'), value: item.originalName }];
+    if (item.relativePath) rows.push({ key: 'path', label: AdminI18n.t('media.pathInTheme'), value: item.relativePath });
+    rows.push({ key: 'type', label: AdminI18n.t('media.type'), value: item.mimeType });
     const bytes = Number(item.fileSize);
-    if (Number.isFinite(bytes) && bytes > 0) rows.push([AdminI18n.t('media.size'), AdminServices.getInstance().formatter.formatSize(bytes)]);
-    if (item.width && item.height) rows.push([AdminI18n.t('media.dimensions'), `${item.width} × ${item.height}`]);
-    rows.push(['URL', item.url]);
+    if (Number.isFinite(bytes) && bytes > 0) rows.push({ key: 'size', label: AdminI18n.t('media.size'), value: AdminServices.getInstance().formatter.formatSize(bytes) });
+    if (item.width && item.height) rows.push({ key: 'dimensions', label: AdminI18n.t('media.dimensions'), value: `${item.width} × ${item.height}` });
+    rows.push({ key: 'url', label: 'URL', value: item.url });
     return rows;
   }
 
@@ -53,59 +45,20 @@ export class MediaAssetInfoDialog extends AdminComponent {
     if (Platform.isBrowser) window.open(this.mediaUrl, '_blank', 'noopener,noreferrer');
   }
 
-  private renderFact(label: string, value: string): ReactNode {
-    return (
-      <div key={label} className="grid grid-cols-[110px_1fr] gap-3 py-1.5">
-        <span className="text-[12px] font-medium text-slate-500">{label}</span>
-        <span className="min-w-0 break-all text-[12px] text-slate-700 dark:text-slate-300">{value}</span>
-      </div>
-    );
-  }
-
   render(): ReactNode {
     const item = this.item;
     if (!item) return null;
-    const dark = this.theme === ThemeMode.DARK;
-
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[500] flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md" onClick={this.onClose} />
-          <div className={`relative my-auto max-h-[calc(100vh-3rem)] w-full max-w-md overflow-y-auto rounded-xl border p-8 shadow-2xl ${
-            dark ? 'border-slate-800 bg-slate-900 shadow-black/50' : 'border-slate-100 bg-white shadow-slate-200/50'
-          }`}>
-            <div className="mb-6 flex items-start gap-4">
-              <div className={`flex-shrink-0 rounded-xl p-3 ${dark ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'}`}>
-                <FrameworkIcons.File size={24} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.assetDetails')}</h3>
-                <p className="mt-1 text-[12px] leading-relaxed text-slate-500">
-                  {AdminI18n.t('media.thisFileShipsInsideThe')}
-                </p>
-              </div>
-              <button onClick={this.onClose} className="rounded-lg p-1 text-slate-400 transition-colors hover:text-slate-900 dark:hover:text-white">
-                <FrameworkIcons.Close size={20} />
-              </button>
-            </div>
-
-            {item.mimeType.startsWith('image/') ? (
-              <div className={`mb-6 overflow-hidden rounded-xl border ${dark ? 'border-slate-800 bg-slate-800/50' : 'border-slate-100 bg-slate-50'}`}>
-                <img src={this.mediaUrl} alt={item.originalName} className="max-h-40 w-full object-contain" />
-              </div>
-            ) : null}
-
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {this.facts.map(([label, value]) => this.renderFact(label, value))}
-            </div>
-
-            <div className="flex flex-col gap-3 pt-6 sm:flex-row">
-              <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button">{AdminI18n.t('media.close')}</Button>
-              <Button variant={ButtonVariant.PRIMARY} className="flex-1" onClick={this.openFile} type="button">{AdminI18n.t('media.openFile')}</Button>
-            </div>
-          </div>
+      <Dialog isOpen wide onClose={this.onClose} title={AdminI18n.t('media.assetDetails')} description={AdminI18n.t('media.thisFileShipsInsideThe')}
+        foot={<>
+          <Button variant={ButtonVariant.SECONDARY} onClick={this.onClose}>{AdminI18n.t('media.close')}</Button>
+          <Button variant={ButtonVariant.PRIMARY} onClick={this.openFile}>{AdminI18n.t('media.openFile')}</Button>
+        </>}>
+        <div className="fc-form-stack">
+          {item.mimeType.startsWith('image/') ? <div className="fc-preview"><img src={this.mediaUrl} alt={item.originalName} /></div> : null}
+          <AdminFactGrid facts={this.facts as any} />
         </div>
-      </RootFramework>
+      </Dialog>
     );
   }
 }

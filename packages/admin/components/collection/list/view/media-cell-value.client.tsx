@@ -64,12 +64,12 @@ export class CollectionListMediaCellValue extends AdminComponent {
     const preview = this.preview;
     return (
       <span className="inline-flex items-center gap-2" title={preview?.filename || undefined}>
-        <span className={`${this.thumbnail ? 'w-14 h-14 rounded-lg' : 'w-10 h-10 rounded-md'} shrink-0 overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400`}>
+        <span className={`${this.thumbnail ? 'w-14 h-14 rounded-lg' : 'w-10 h-10 rounded-md'} shrink-0 overflow-hidden border fc-tone-line fc-tone-raised inline-flex items-center justify-center fc-tone-muted`}>
           {this.isImage
             ? <img src={preview!.url} alt={preview!.filename || ''} loading="lazy" className="w-full h-full object-cover" />
             : <FrameworkIcons.File size={16} />}
         </span>
-        {count > 1 && !this.thumbnail ? <span className="text-[12px] font-medium text-slate-500">+{count - 1}</span> : null}
+        {count > 1 && !this.thumbnail ? <span className="fc-size-xs font-medium fc-tone-muted">+{count - 1}</span> : null}
       </span>
     );
   }

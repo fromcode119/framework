@@ -28,7 +28,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
   protected present({ authState }: IAppearanceSecurityGateValues): ReactNode {
     const { Shell, nav, user, children } = this.props;
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
+      return <div className="flex min-h-screen items-center justify-center fc-canvas transition-colors duration-500 "><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
     }
 
     // A WORKSPACE domain reaches the console through THIS gate, not `ClientLayoutShell` — its tenant
@@ -40,7 +40,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     }
 
     if (!authState.user && !authState.isAuthPage) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
+      return <div className="flex min-h-screen items-center justify-center fc-canvas transition-colors duration-500 "><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
     }
 
     // Reached only after every branch above, so a visitor with a session, one this workspace refuses,
@@ -48,7 +48,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     // (rendered by the login PAGE from `ILoginController`) unable to stand in for the authenticated
     // shell: it exists only on a route that only a session-less visitor is shown.
     if (authState.isAuthPage) {
-      return <div className="min-h-screen bg-slate-50 font-sans transition-colors duration-300 dark:bg-[#020617]">{children}</div>;
+      return <div className="min-h-screen fc-canvas font-sans transition-colors duration-300 ">{children}</div>;
     }
 
     // Authed user (any role) on a normal page. PluginLoader is the shared DATA layer (loads plugin metadata + the

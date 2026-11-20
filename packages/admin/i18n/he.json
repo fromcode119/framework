@@ -162,6 +162,7 @@
       "reorderHandle": "גררו לשינוי הסדר — או התמקדו והשתמשו במקשי החצים",
       "reorderEnable": "הציגו את הרשימה בסדר שלה כדי לשנות את הסדר",
       "reorderFailed": "לא ניתן היה לשמור את הסדר החדש",
+      "noMatch": "שום דבר לא תואם את החיפוש או המסננים.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "לייבא את {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "עריכה",
       "notFilledIn": "לא מולא",
       "statusSection": "סטטוס",
-      "statusConfirm": "לשנות את הסטטוס ל\"{{status}}\"?",
       "recordSection": "רשומה",
       "showJson": "הצג כ־JSON",
       "showForm": "הצג כטופס",
@@ -245,7 +245,8 @@
       "copied": "הועתק",
       "more": "עוד",
       "moreFields": "{{count}} שדות",
-      "moreOneField": "שדה {{count}}"
+      "moreOneField": "שדה {{count}}",
+      "statusConfirm": "לשנות את הסטטוס ל\"{{status}}\"?"
     },
     "notFound": {
       "title": "האוסף לא נמצא",
@@ -366,7 +367,8 @@
     "reset": "איפוס",
     "notScheduledYet": "טרם תוזמן",
     "more": "פעולות נוספות",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "הסרה"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "בחירת צבע",
-      "colour": "צבע",
-      "pick": "בחרו צבע",
       "hex": "קוד Hex",
-      "confirm": "אישור צבע",
       "notSet": "לא הוגדר"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "זוהו תלויות לא פעילות",
       "intro": "כדי להפעיל את {{plugin}}, יש לטפל בפריטים הבאים:",
       "notInstalled": "לא מותקן",
+      "inactive": "כבוי",
+      "incompatible": "גרסה אחרת",
       "requires": "נדרשת גרסה {{version}}. ניתן להוריד אותה מהמרקטפלייס.",
       "needsActivation": "כבר מותקן אך יש להפעיל אותו (גרסה {{version}}).",
       "mismatch": "אי-התאמה בגרסה: נדרשת {{expected}}, נמצאה {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "תצוגה מקדימה של הפלטפורמה",
-      "image": "תצוגה מקדימה {{number}}"
+      "image": "תצוגה מקדימה {{number}}",
+      "previous": "הקודם",
+      "next": "הבא"
     },
     "menuField": {
       "newItem": "פריט תפריט חדש",
-      "structure": "מבנה התפריט",
-      "add": "הוספת פריט תפריט"
+      "add": "הוספת פריט תפריט",
+      "reorder": "גררו כדי להזיז; חצים: למעלה ולמטה להזזה, ימינה לקינון, שמאלה להוצאה"
     },
     "field": {
       "notSet": "לא הוגדר",
@@ -461,8 +464,8 @@
       "record": "רשומה"
     },
     "array": {
-      "addNew": "הוספת {{label}} חדש",
-      "item": "פריט"
+      "add": "הוספה",
+      "reorder": "גררו כדי להזיז, או השתמשו במקשי החצים"
     },
     "stepper": {
       "increment": "הגדלה",
@@ -528,9 +531,7 @@
       "noContact": "אין אימייל או טלפון באנשים",
       "hasLogin": "יש חשבון כניסה",
       "noLogin": "אין חשבון כניסה",
-      "source": "השם, האימייל והטלפון מגיעים מאנשים #{{id}}; יש לשנות אותם שם.",
       "open": "פתיחה באנשים",
-      "choose": "בחירת מישהו אחר",
       "searchFailed": "לא ניתן לחפש באנשים כרגע.",
       "noMatch": "אין התאמה באנשים. הזינו את הפרטים למטה; השמירה תוסיף אותם לאנשים.",
       "ref": "אנשים #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "פתיחת אתרים"
       }
     },
-    "relativeOverridesInheritTheCollection": "דריסות יחסיות יורשות את קידומת האוסף. הפעילו מצב מוחלט כדי לעקוף קידומות כמו `/shop`.",
     "range": "טווח",
     "noDataForThisRange": "אין נתונים לטווח זה",
     "peak": "· שיא {{value}}",
@@ -626,7 +626,8 @@
       "filters": "מסננים",
       "clearFilters": "ניקוי הכול",
       "removeFilter": "הסרת המסנן {{label}}",
-      "showResults": "הצגת {{count}} תוצאות"
+      "showResults": "הצגת {{count}} תוצאות",
+      "showResultsOne": "הצגת תוצאה אחת"
     },
     "personFieldPicker": {
       "none": "לא נשמר בשדה של אדם",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "מגבלות ארגז החול עבור {{name}} נשמרו, אך הפעלת התהליך מחדש איתן נכשלה: {{value}}",
       "restartRequired": "נדרשת הפעלה מחדש",
       "sandboxSettingsForWereSaved": "הגדרות ארגז החול עבור {{name}} נשמרו, אך נדרשת הפעלה מחדש של ה-API כדי שייכנסו לתוקף.",
-      "resourcesUpdated": "המשאבים עודכנו",
-      "sandboxLimitsForUpdated": "מגבלות ארגז החול עבור {{name}} עודכנו.",
       "sandboxDisabledFor": "ארגז החול הושבת עבור {{name}}.",
       "saveFailed": "השמירה נכשלה",
       "failedToUpdateSandboxLimits": "עדכון מגבלות ארגז החול נכשל.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "במנוחה. לא נרשמו אירועים לאחרונה.",
       "updating": "מעדכן...",
       "updateAvailable": "קיים עדכון",
-      "updatePolicy": "מדיניות עדכונים",
       "saveChanges": "שמירת שינויים",
       "unsavedChanges": "שינויים שלא נשמרו",
       "exportSettingsAsJson": "ייצוא הגדרות כ-JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "חדש בגרסה v{{version}}",
       "installedVersion": "מותקנת {{version}}",
       "marketplaceVersion": "בחנות {{version}}",
-      "saving": "שומר...",
       "saveSettings": "שמירת הגדרות",
       "viewDefinition": "הצגת ההגדרה",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "מראה",
       "failedToLoadAppearances": "טעינת המראות נכשלה",
       "failedToSaveShadowSetting": "שמירת הגדרת הצל נכשלה",
+      "failedToSaveMenuSetting": "שמירת הגדרת התפריט נכשלה",
       "switchedToReloading": "הוחלף ל-\"{{slug}}\". טוען מחדש…",
       "failedToSwitchAppearance": "החלפת המראה נכשלה",
       "installFailed": "ההתקנה נכשלה",
@@ -1919,6 +1917,8 @@
       "install": "התקנה",
       "surfaceShadows": "צללי משטחים",
       "depthOnPanelsDialogsAnd": "עומק בלוחות, בתיבות דו-שיח ובלחצנים. כבו זאת לממשק ניהול שטוח — הגבולות והפינות נשארים בדיוק כפי שהם.",
+      "secondMenuColumn": "עמודת תפריט שנייה",
+      "sectionPagesBesideTheMenu": "דפי מדור עומדים בעמודה לצד התפריט. בכיבוי הם נפתחים מתחת לשורה שלהם בתפריט היחיד, וכל מסך מתרחב ב‑220px.",
       "installFromAPackageUrl": "התקנה מכתובת URL של חבילה",
       "builtIn": "מובנה",
       "installed": "מותקן",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "נתוני המיקום לפי IP לא עודכנו",
       "geoUnavailable": "מצב המיקום לפי IP אינו זמין",
       "geoAttribution": "מיקום גאוגרפי לפי IP באמצעות {{name}} ({{license}}). מתעדכן מדי חודש כל עוד האפשרות פעילה.",
-      "geoSaved": "נשמר",
-      "geoSavedOn": "מסד הנתונים יורד כעת. גודלו כ-60 MB.",
-      "geoSavedOff": "מסד הנתונים הוסר מהשרת.",
       "everyPluginRunsIsolated": "מבודד: כל תוסף פועל בתהליך משלו. מגבלת הזיכרון ומגבלת הזמן חלות על כל התוספים. חלק ה-CPU, הזיכרון הכולל, הדיסק והתהליכים חלים רק על תוספים שאתר העלה.",
       "schemaOrphans": "סכמת מסד הנתונים",
       "schemaOrphansHelp": "עמודות שעדיין קיימות במסד הנתונים, אך אף רכיב כבר לא מצהיר עליהן. הפלטפורמה רק מציגה אותן ואינה מוחקת דבר עד שתחליטו. לא ניתן לשחזר עמודה שנמחקה.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "מושבת — נקודת הקצה מחזירה 403 לכולם.",
       "mediaPayloadLimitMb": "מגבלת גודל מדיה (MB)",
       "maximumDecodedUploadOrRemote": "הגודל המרבי של העלאה מפוענחת או הורדה מרוחקת שכלי המדיה של MCP מקבלים.",
-      "saveLimit": "שמירת המגבלה",
       "allSites": "כל האתרים",
       "issuedBeforeSites": "הונפק לפני האתרים",
       "noTokensYet": "אין עדיין אסימונים.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "ברירת מחדל של הפלטפורמה",
       "thisSite": "אתר זה",
       "inForceNow": "בתוקף כעת",
-      "saving": "שומר…",
-      "savePolicy": "שמירת מדיניות",
       "thePlatformDefaultIsSet": "ברירת המחדל של הפלטפורמה נקבעת על ידי מנהל פלטפורמה.",
       "useTheLayerBelow": "שימוש בשכבה שמתחת",
       "whyTheLawRequiresThese": "מדוע החוק מחייב לשמור רשומות אלה",
-      "inheritsThePlatformDefault": "יורש: ברירת המחדל של הפלטפורמה"
+      "inheritsThePlatformDefault": "יורש: ברירת המחדל של הפלטפורמה",
+      "strategyDelete": "מחיקה",
+      "strategyAnonymise": "הפיכה לאנונימי",
+      "strategyRetain": "שמירה",
+      "declaredBy": "ברירת מחדל שהוגדרה על ידי {{plugin}}",
+      "inheritsValue": "יורש: {{value}}",
+      "legalBasis": "בסיס חוקי",
+      "theSiteColumnIsSet": "העמודה \"אתר זה\" מוגדרת בתוך אתר. בחרו אתר במחליף כדי לשנות אותה."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "שם תצוגה",
     "thisPersonHasALogin": "לאדם זה יש חשבון התחברות; כתובת האימייל משתנה בחשבון.",
     "birthDate": "תאריך לידה",
-    "saveChanges": "שמירת שינויים",
     "sendPasswordResetEmail": "שליחת אימייל לאיפוס סיסמה",
     "cancel": "ביטול",
     "accountManagement": "ניהול חשבון",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "יש להעתיק את קודי השחזור באופן ידני.",
     "nameRequired": "נדרש שם",
     "enterATokenNameFirst": "יש להזין תחילה שם לאסימון.",
-    "tokenCreated": "האסימון נוצר",
     "copyTheTokenNowIt": "העתיקו את האסימון כעת. הוא מוצג פעם אחת בלבד.",
     "failedToCreateApiToken": "יצירת אסימון ה-API נכשלה",
     "areYouSureYouWant2": "האם להשבית את האימות הדו-שלבי עבור משתמש זה? פעולה זו תפחית את אבטחת החשבון.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "ההפעלה בוטלה",
     "deviceSessionRevokedSuccessfully": "הפעלת המכשיר בוטלה בהצלחה.",
     "failedToRevokeSession": "ביטול ההפעלה נכשל",
-    "rolesUpdated": "התפקידים עודכנו",
-    "theUserSRolesWere": "תפקידי המשתמש נשמרו.",
     "saveFailed": "השמירה נכשלה",
     "failedToSaveRoles": "שמירת התפקידים נכשלה.",
     "loadingRoles": "טוען תפקידים",
@@ -3448,8 +3445,6 @@
     "remove": "הסרה",
     "loadFailed": "הטעינה נכשלה",
     "couldNotRetrieveRoleDetails": "לא ניתן היה לאחזר את פרטי התפקיד.",
-    "roleUpdated": "התפקיד עודכן",
-    "wasSaved": "\"{{name}}\" נשמר.",
     "updateFailed": "העדכון נכשל",
     "anErrorOccurredWhileSaving": "אירעה שגיאה בעת השמירה.",
     "loadingRole": "טוען תפקיד...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "חזרה למשתמשים",
     "selfServiceSecurityControls": "בקרות אבטחה בשירות עצמי",
     "sessionDeviceControlsAndPersonal": "בקרות הפעלות ומכשירים ואסימוני API אישיים זמינים רק בעת צפייה בחשבון המשתמש שלך.",
-    "securityRecommendations": "המלצות אבטחה",
     "twoFactorAuthentication": "אימות דו-שלבי",
-    "activeAndProtectingThisAccount": "פעיל ומגן על חשבון זה",
-    "notEnabledHighlyRecommendedFor": "לא מופעל - מומלץ מאוד לחשבונות מנהל",
-    "passwordProtected": "מוגן בסיסמה",
-    "accountHasASecurePassword": "לחשבון יש סיסמה מאובטחת",
-    "administratorAccess": "גישת מנהל",
     "fullSystemAccess2faStrongly": "גישה מלאה למערכת - מומלץ מאוד להפעיל אימות דו-שלבי",
     "personalApiTokens": "אסימוני API אישיים",
     "tokenNameEGCi": "שם האסימון (למשל CI deploy)",
     "days": "ימים",
     "createToken": "יצירת אסימון",
-    "copyNowShownOnce": "העתיקו עכשיו (מוצג פעם אחת)",
     "loadingApiTokens": "טוען אסימוני API...",
     "noApiTokensCreatedYet": "עדיין לא נוצרו אסימוני API.",
     "revoke": "ביטול",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "פעילות התחברות והפעלות",
     "loadingAuthActivity": "טוען פעילות אימות...",
     "noRecentLoginSessionEvents": "אין אירועי התחברות או הפעלה אחרונים עבור משתמש זה.",
-    "unknownTime": "זמן לא ידוע",
-    "activityEvent": "אירוע פעילות",
     "openFullGlobalActivity": "פתיחת הפעילות הכללית המלאה",
-    "2faStatus": "סטטוס אימות דו-שלבי",
     "addAnExtraLayerOf": "הוספת שכבת אבטחה נוספת באמצעות אימות מבוסס אפליקציה (TOTP)",
-    "recommended": "מומלץ",
     "enableTwoFactorAuthenticationTo": "הפעילו אימות דו-שלבי כדי להגן על חשבון זה באמצעות סיסמאות חד-פעמיות מבוססות זמן (TOTP).",
     "enable2fa": "הפעלת אימות דו-שלבי",
     "step1ScanQrCode": "שלב 1: סריקת קוד QR",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "שלב 2: אימות הקוד",
     "enterThe6DigitCode": "הזינו את הקוד בן 6 הספרות מאפליקציית האימות כדי להשלים את ההגדרה:",
     "verifyEnable": "אימות והפעלה",
-    "protectionActive": "ההגנה פעילה",
     "thisAccountRequiresA6": "חשבון זה דורש קוד בן 6 ספרות מאפליקציית אימות בעת ההתחברות.",
     "regenerateRecoveryCodes": "יצירה מחדש של קודי שחזור",
     "disable2fa": "השבתת אימות דו-שלבי",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "ביטול הפעלות אחרות",
     "loadingSessions": "טוען הפעלות...",
     "noActiveSessions": "אין הפעלות פעילות.",
-    "currentSession": "ההפעלה הנוכחית",
-    "deviceSession": "הפעלה במכשיר",
     "current": "נוכחי",
     "unknownDevice": "מכשיר לא ידוע",
     "editAccount2": "עריכת חשבון",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "פתיחת רשומת המשתמש",
     "token": "אסימון",
     "createdOn": "נוצר ב-{{date}}",
-    "notAvailable": "לא זמין",
     "revokedOn": "בוטל ב-{{date}}",
     "recoveryCodesRemaining": "קודי שחזור שנותרו:",
-    "unknownValue": "לא ידוע",
     "expiresOn": "תוקף עד: {{date}}",
     "person2": "אדם",
     "added": "נוסף",
@@ -3591,12 +3570,10 @@
       "loading": "טוען שדות אנשים…",
       "loadFailed": "לא ניתן היה לטעון את שדות האנשים.",
       "saveFailed": "לא ניתן היה לשמור את השדות.",
-      "saved": "השדות נשמרו.",
       "empty": "עדיין אין שדות אנשים. הוסיפו שדה כדי להתחיל לשמור אותו עבור כל אדם.",
       "noneDeclared": "לאתר זה עדיין אין שדות אנשים.",
       "declare": "הוספת שדות אנשים",
       "manage": "ניהול שדות",
-      "save": "שמירת שדות",
       "saveField": "שמירת שדה",
       "delete": "מחיקה",
       "deleteTitle": "למחוק שדה זה?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "בתוקף למשך (ימים)",
+    "revokeOtherSessionsConfirm": "כל המכשירים האחרים מנותקים מיד.",
+    "revokeSessionConfirm": "המכשיר הזה מנותק מיד.",
+    "revokeCurrentSessionConfirm": "זה המכשיר שבו אתה משתמש עכשיו. תנותק מיד.",
+    "revokeTokenConfirm": "\"{{name}}\" מפסיק לעבוד מיד.",
+    "twoFactorTurnedOff": "כניסה דו-שלבית כבויה באתר הזה, ולכן אי אפשר להגדיר אותה כאן.",
+    "openSecuritySettings": "פתיחת הגדרות האבטחה"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "הגדרות אתר ({{what}}) מוגדרות בתוך כל אתר — בחרו אתר מתפריט האתרים.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "לא ניתן היה לפתוח אתר זה לתצוגה מקדימה.",
     "couldNotLoadTheSite": "לא ניתן היה לטעון את האתר.",
     "couldNotReloadThePlugin": "לא ניתן היה לטעון מחדש את רשימת התוספים.",
-    "siteSaved": "האתר נשמר",
-    "routingFollowsImmediatelyNoRestart": "הניתוב מתעדכן מיד — ללא הפעלה מחדש.",
     "notSaved": "לא נשמר",
     "theSiteCouldNotBe2": "לא ניתן היה לשמור את האתר.",
     "couldNotOpenTheSite": "לא ניתן לפתוח את האתר",
@@ -3789,7 +3771,6 @@
     "visit": "ביקור",
     "openThisSite": "פתיחת אתר זה",
     "export": "ייצוא",
-    "save": "שמירה",
     "couldNotLoadCertificates": "לא ניתן היה לטעון את האישורים.",
     "couldNotSwitchThisHost": "לא ניתן היה להעביר מארח זה למצב אוטומטי.",
     "couldNotSwitchThisHost2": "לא ניתן היה להעביר מארח זה למצב אוטומטי (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "עדכון זמין",
     "isNowActive": "{{name}} פעילה כעת.",
     "themeHasBeenUpdated2": "ערכת העיצוב {{name}} עודכנה.",
-    "configurationSaved": "התצורה נשמרה",
-    "visualProtocolsUpdatedSuccessfully": "הגדרות התצוגה עודכנו בהצלחה.",
     "saveFailed": "השמירה נכשלה",
     "hasBeenRemoved2": "{{name}} הוסרה.",
     "seedsExecuted": "נתוני ההתחלה הורצו",
@@ -4300,7 +4279,6 @@
     "layoutSection": "פריסה",
     "extensionsSection": "הרחבות",
     "versionReady": "גרסה {{version}} מוכנה",
-    "saveChanges": "שמירת השינויים",
     "runSeedsHint": "טוען מחדש לאתר זה את נתוני הבסיס של ערכת העיצוב — דפי הדוגמה והתוכן שלה.",
     "resetThemeHint": "מנקה את הגדרות ערכת העיצוב השמורות של אתר זה וטוען מחדש את נתוני הבסיס.",
     "notActiveHint": "אתר זה משתמש בערכת עיצוב אחרת.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "מה השתנה בגרסה {{version}}",
     "whatChanged": "מה השתנה",
-    "closeBuildSourceDialog": "סגירת חלון מקור הבנייה",
-    "close": "סגירה",
     "couldNotInstallThatVersion": "לא ניתן היה להתקין גרסה זו.",
     "couldNotChangeAutomaticUpdating": "לא ניתן היה לשנות את העדכון האוטומטי.",
     "failed": "נכשל",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "אישורים אוטומטיים כבויים. {{reason}}",
     "automaticCertificatesComeFrom": "אישורים אוטומטיים מונפקים על ידי {{authority}}.",
     "noSecretKeyIsConfigured": "לא הוגדר SECRET_KEY בשרת הזה, ולכן לא ניתן לשמור מפתח פרטי. ההעלאה מושבתת עד שיוגדר.",
-    "nothingToSavePasteA": "אין מה לשמור — הדביקו אסימון, או השתמשו בניקוי כדי להסיר את האסימון השמור.",
     "savedThisSiteNowUses": "נשמר. האתר הזה משתמש כעת באסימון Cloudflare משלו.",
     "removedThisSiteFallsBack": "הוסר. האתר הזה חוזר להשתמש באסימון של הפלטפורמה.",
     "couldNotSaveTheToken": "לא ניתן לשמור את האסימון.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "האסימון של האתר",
     "savedLeaveBlankToKeep": "נשמר — השאירו ריק כדי לשמור, או השתמשו בניקוי כדי להסיר",
     "pasteACloudflareApiToken": "הדביקו אסימון API של Cloudflare",
-    "save": "שמירה",
     "clear": "ניקוי",
     "nothingStoredThisHostCannot": "לא נשמר דבר — הפלטפורמה לא יכולה להגיש את המארח הזה ב-HTTPS.",
     "nothingStoredHereTlsFor": "לא נשמר כאן דבר — TLS של המארח הזה מסתיים לפני הפלטפורמה, ולכן האישור שלו נמצא שם.",
@@ -4706,28 +4680,18 @@
     "roles": "תפקידים",
     "permissions": "הרשאות",
     "eventDetails": "פרטי האירוע",
-    "context": "הקשר",
     "resource": "משאב",
     "system": "מערכת",
     "timestamp": "חותמת זמן",
-    "authority": "גורם מוסמך",
-    "actorId": "מזהה מבצע",
-    "type": "סוג",
-    "systemLog": "יומן מערכת",
-    "audit": "ביקורת: {{status}}",
-    "activityMessage": "הודעת הפעילות",
-    "actionTaken": "הפעולה שבוצעה",
-    "resourcePool": "מאגר משאבים",
-    "rawMetadata": "מטא-נתונים גולמיים",
     "thisEntryIsPartOf": "רשומה זו היא חלק מנתיב ביקורת שאינו ניתן לשינוי.",
     "exportJson": "ייצוא JSON",
     "event": "אירוע",
     "actor": "מבצע",
+    "plugin": "תוסף",
     "activity": "פעילות",
     "status": "סטטוס",
     "action": "פעולה",
     "time": "זמן",
-    "logSignature": "חתימת יומן: {{id}}",
     "internal": "פנימי",
     "level": {
       "INFO": "מידע",
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "רשומה #{{id}}",
+    "recordedData": "נתונים שנרשמו"
   },
   "mediaPicker": {
     "showingOnly": "מוצגים רק: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "משימה",
       "schedule": "תזמון",
       "lastRun": "הרצה אחרונה",
-      "nextRun": "הרצה הבאה"
+      "nextRun": "הרצה הבאה",
+      "duration": "משך"
     },
     "ownedBy": "{{owner}}",
     "platform": "פלטפורמה",

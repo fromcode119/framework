@@ -31,7 +31,6 @@ export class UserProfileHeader extends PureReactor {
             <AdminLink href={AdminConstants.ROUTES.USERS.EDIT(userId)}>
               <Button
                 variant={ButtonVariant.SECONDARY}
-                className="px-4 h-9 rounded-lg font-medium text-xs"
                 icon={<FrameworkIcons.Settings size={15} />}
               >
                 {AdminI18n.t('users.editProfile')}
@@ -40,7 +39,6 @@ export class UserProfileHeader extends PureReactor {
             {this.selfService ? (
               <AdminLink href={AdminConstants.ROUTES.USERS.SECURITY(userId)}>
                 <Button
-                  className="px-4 h-9 rounded-lg font-medium text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
                   {AdminI18n.t('users.security')}
@@ -49,7 +47,6 @@ export class UserProfileHeader extends PureReactor {
             ) : (
               <AdminLink href={AdminConstants.ROUTES.USERS.ROLES(userId)}>
                 <Button
-                  className="px-4 h-9 rounded-lg font-medium text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
                   {AdminI18n.t('users.configureRbac')}

@@ -1,12 +1,12 @@
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { VersionChangeSummary } from '@/components/collection/version-change-summary';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type React from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RevisionModal extends PureReactor {
@@ -16,150 +16,97 @@ export class RevisionModal extends PureReactor {
   @prop declare setShowOnlyChanges: (val: boolean) => void;
   @prop declare formData: any;
   @prop declare setFormData: (data: any) => void;
-  @prop declare theme: ThemeMode;
+  @prop declare theme: any;
   @prop declare currentRevIndex: number;
   @prop declare revisions: any[];
   @prop declare restoringPermanently: boolean;
   @prop declare handleHardRestore: (version: number) => void;
   @prop declare setActiveVersionId: (id: number) => void;
   @prop declare setStatus: (status: { type: NotificationType, message: string } | null) => void;
+  /** The collection's fields, so each row is named the way the form names it. */
+  @prop declare fields?: any[];
+
+  /** Moving between versions on the left; what to do with this one on the right. */
+  private get foot(): React.ReactNode {
+    const { selectedRevision, setSelectedRevision, currentRevIndex, revisions, formData, setFormData,
+      setActiveVersionId, setStatus, restoringPermanently, handleHardRestore } = this;
+    return (
+      <>
+        <Button
+          variant={ButtonVariant.SECONDARY}
+          disabled={currentRevIndex >= revisions.length - 1}
+          onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
+        >
+          {AdminI18n.t('collection.revision.older')}
+        </Button>
+        <Button
+          variant={ButtonVariant.SECONDARY}
+          disabled={currentRevIndex <= 0}
+          onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
+        >
+          {AdminI18n.t('collection.revision.newer')}
+        </Button>
+        <Button
+          variant={ButtonVariant.SECONDARY}
+          onClick={() => {
+            setFormData({ ...formData, ...selectedRevision.changes });
+            setActiveVersionId(selectedRevision.id);
+            setSelectedRevision(null);
+            setStatus({ type: NotificationType.SUCCESS, message: AdminI18n.t('collection.revision.applied') });
+          }}
+        >
+          {AdminI18n.t('collection.revision.previewInForm')}
+        </Button>
+        <Button
+          variant={ButtonVariant.PRIMARY}
+          isLoading={restoringPermanently}
+          onClick={() => handleHardRestore(selectedRevision.version)}
+        >
+          {AdminI18n.t('collection.revision.restorePermanently')}
+        </Button>
+      </>
+    );
+  }
 
   render(): React.ReactNode {
-    const {
-  selectedRevision,
-  setSelectedRevision,
-  showOnlyChanges,
-  setShowOnlyChanges,
-  formData,
-  setFormData,
-  theme,
-  currentRevIndex,
-  revisions,
-  restoringPermanently,
-  handleHardRestore,
-  setActiveVersionId,
-  setStatus
-} = this;
-  if (!selectedRevision) return null;
+    const { selectedRevision, setSelectedRevision, showOnlyChanges, setShowOnlyChanges, formData, restoringPermanently } = this;
+    if (!selectedRevision) return null;
+    const all = VersionChangeSummary.compare(formData, selectedRevision.changes, this.fields || []);
+    const rows = showOnlyChanges ? all.filter((row) => row.changed) : all;
 
-  return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6 animate-in fade-in duration-300">
-       <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setSelectedRevision(null)} />
-       <Card className="relative w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
-          <div className="flex justify-between items-center mb-6">
-             <div>
-                <h2 className="text-xs font-medium text-indigo-500">{AdminI18n.t('collection.revision.title', { version: selectedRevision.version })}</h2>
-                <p className="text-[12px] text-slate-500 font-medium mt-1">{AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}</p>
-             </div>
-             <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => setShowOnlyChanges(!showOnlyChanges)}
-                  className={`text-[12px] font-medium px-3 py-1.5 rounded-lg border transition-all ${showOnlyChanges ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
-                >
-                  {AdminI18n.t(showOnlyChanges ? 'collection.revision.onlyChanges' : 'collection.revision.allFields')}
-                </button>
-                <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <FrameworkIcons.Close size={20} />
-                </button>
-             </div>
-          </div>
-
-          <div className={`${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} overflow-hidden`}>
-             <div className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
-                <div className="px-4 py-2 text-[12px] font-medium text-slate-400">{AdminI18n.t('collection.revision.current')}</div>
-                <div className="px-4 py-2 text-[12px] font-medium text-indigo-500">{AdminI18n.t('collection.revision.versionValues', { version: selectedRevision.version })}</div>
-             </div>
-             <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
-                {Object.entries(selectedRevision.changes)
-                  .filter(([key]) => {
-                     if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
-                     if (showOnlyChanges) {
-                        const curVal = formData[key];
-                        const revVal = selectedRevision.changes[key];
-                        return JSON.stringify(curVal) !== JSON.stringify(revVal);
-                     }
-                     return true;
-                  })
-                  .map(([key, val]) => {
-                     const curVal = formData[key];
-                     const hasChanged = JSON.stringify(curVal) !== JSON.stringify(val);
-                     
-                     return (
-                      <div key={key} className={`grid grid-cols-2 group border-b border-slate-100 dark:border-slate-800 last:border-0 ${hasChanged ? 'bg-indigo-500/5' : ''}`}>
-                         <div className="p-4 border-e border-slate-100 dark:border-slate-800">
-                            <span className="text-[12px] font-medium text-slate-400 block mb-1">{key}</span>
-                            <div className="text-[12px] font-medium text-slate-500 line-clamp-3">
-                               {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(curVal))}
-                            </div>
-                         </div>
-                         <div className="p-4">
-                            <span className="text-[12px] font-medium text-indigo-500 block mb-1">{key}</span>
-                            <div className={`text-[12px] font-medium line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
-                               {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(val))}
-                            </div>
-                         </div>
-                      </div>
-                     );
-                  })}
-                {showOnlyChanges && Object.entries(selectedRevision.changes).filter(([key]) => {
-                     if (['createdAt', 'updatedAt', 'id', 'created_at', 'updated_at'].includes(key)) return false;
-                     const curVal = formData[key];
-                     const revVal = selectedRevision.changes[key];
-                     return JSON.stringify(curVal) !== JSON.stringify(revVal);
-                }).length === 0 && (
-                  <div className="p-12 text-center">
-                     <p className="text-xs text-slate-400 font-medium italic">{AdminI18n.t('collection.revision.noChanges')}</p>
-                  </div>
-                )}
-             </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 mt-8">
-             <div className="flex items-center gap-2">
-                <Button 
-                  variant={ButtonVariant.GHOST} 
-                  className="text-[12px] font-medium disabled:opacity-30" 
-                  disabled={currentRevIndex >= revisions.length - 1}
-                  onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
-                >
-                   <FrameworkIcons.Left size={12} className="me-2" />
-                   {AdminI18n.t('collection.revision.older')}
-                </Button>
-                <Button 
-                  variant={ButtonVariant.GHOST} 
-                  className="text-[12px] font-medium disabled:opacity-30" 
-                  disabled={currentRevIndex <= 0}
-                  onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
-                >
-                   {AdminI18n.t('collection.revision.newer')}
-                   <FrameworkIcons.Right size={12} className="ms-2" />
-                </Button>
-             </div>
-             <div className="flex items-center gap-3">
-                <Button 
-                   variant={ButtonVariant.GHOST}
-                   className="px-6 text-[12px] font-medium text-slate-500"
-                   onClick={() => {
-                      setFormData({ ...formData, ...selectedRevision.changes });
-                      setActiveVersionId(selectedRevision.id);
-                      setSelectedRevision(null);
-                      setStatus({ type: NotificationType.SUCCESS, message: AdminI18n.t('collection.revision.applied') });
-                   }}
-                >
-                   {AdminI18n.t('collection.revision.previewInForm')}
-                </Button>
-                <Button 
-                   className="px-8 text-[12px] font-medium shadow-lg shadow-indigo-500/30"
-                   isLoading={restoringPermanently}
-                   onClick={() => handleHardRestore(selectedRevision.version)}
-                   icon={<FrameworkIcons.Refresh size={14} />}
-                >
-                   {AdminI18n.t('collection.revision.restorePermanently')}
-                </Button>
-             </div>
-          </div>
-       </Card>
-    </div>
-  );
+    return (
+      <EditSheet
+        isOpen
+        onClose={() => setSelectedRevision(null)}
+        title={AdminI18n.t('collection.revision.title', { version: selectedRevision.version })}
+        subtitle={AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}
+        saving={restoringPermanently}
+        foot={this.foot}
+      >
+        <div className="fc-form-stack">
+          <Tabs value={showOnlyChanges ? 'changes' : 'all'} onChange={(key: string) => setShowOnlyChanges(key === 'changes')}
+            tabs={[
+              { id: 'changes', label: AdminI18n.t('collection.revision.onlyChanges'), count: all.filter((row) => row.changed).length },
+              { id: 'all', label: AdminI18n.t('collection.revision.allFields'), count: all.length },
+            ]} />
+          {rows.length === 0 ? <EmptyState inline title={AdminI18n.t('collection.revision.noChanges')} /> : (
+            <div className="fc-compare" role="table">
+              <div className="fc-compare__row fc-compare__row--head" role="row">
+                <span role="columnheader" />
+                <span role="columnheader">{AdminI18n.t('collection.revision.current')}</span>
+                <span role="columnheader">{AdminI18n.t('collection.revision.versionValues', { version: selectedRevision.version })}</span>
+              </div>
+              {rows.map((row) => (
+                <div key={row.key} className={`fc-compare__row${row.changed ? ' fc-compare__row--changed' : ''}`} role="row">
+                  <span className="fc-compare__label" role="rowheader">{row.label}</span>
+                  <span className="fc-compare__was" role="cell">{row.current}</span>
+                  <span className="fc-compare__now" role="cell">{row.version}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </EditSheet>
+    );
   }
 }

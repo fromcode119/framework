@@ -5,6 +5,10 @@ import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-
 import { SystemLocaleOptionsService } from '@/components/collection/fields/system-locale-options-service';
 import { ISystemLocaleOption } from '@/components/collection/fields/interfaces/system-locale-option.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { FrameworkIcons } from '@fromcode119/react';
 
 /**
  * Built-in, framework-owned picker for SEVERAL system locales, in a deliberate order.
@@ -78,49 +82,42 @@ export class SystemLocalesField extends Reactor {
   }
 
   render(): ReactNode {
-    const { options, loaded, theme } = this;
-    const isDark = theme === ThemeMode.DARK;
+    const { options, loaded } = this;
     const selected = this.selected;
 
     if (!loaded) {
-      return <div className="text-xs text-slate-400 py-2">{AdminI18n.t('ui.locales.loading')}</div>;
+      return <div className="fc-size-xs fc-tone-muted py-2">{AdminI18n.t('ui.locales.loading')}</div>;
     }
 
     return (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
         {options.map((option) => {
           const position = selected.indexOf(option.value);
           const isSelected = position >= 0;
           return (
             <span key={option.value} className="inline-flex items-center">
-              <button
-                type="button"
-                onClick={() => this.toggle(option.value)}
+              <Checkbox
+                checked={isSelected}
                 disabled={this.isReadOnly}
-                aria-pressed={isSelected}
-                className={`px-2.5 py-1 text-[12px] font-medium rounded-lg border transition-colors ${
-                  isSelected
-                    ? isDark ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-200' : 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                    : isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-500 hover:text-slate-800'
-                } ${this.isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isSelected && <span className="me-1.5 opacity-70">{position + 1}</span>}
-                {option.label}
-              </button>
+                onChange={() => this.toggle(option.value)}
+                label={<>{isSelected ? <span className="me-1.5 fc-tone-faint">{position + 1}</span> : null}{option.label}</>}
+              />
               {isSelected && position > 0 && !this.isReadOnly && (
-                <button
+                <Button
                   type="button"
+                  variant={ButtonVariant.GHOST}
+                  className="fc-btn--glyph ms-0.5"
                   onClick={() => this.moveEarlier(option.value)}
                   title={AdminI18n.t('ui.locales.moveEarlier')}
-                  className="ms-0.5 px-1 py-1 text-[12px] text-slate-400 hover:text-indigo-500 transition-colors"
+                  aria-label={AdminI18n.t('ui.locales.moveEarlier')}
                 >
-                  ↑
-                </button>
+                  <FrameworkIcons.ArrowUp size={13} />
+                </Button>
               )}
             </span>
           );
         })}
-        {!options.length && <span className="text-xs text-slate-400">{AdminI18n.t('ui.locales.none')}</span>}
+        {!options.length && <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('ui.locales.none')}</span>}
       </div>
     );
   }

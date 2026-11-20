@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import type { ThemeMode } from '@fromcode119/core/client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import type { IPluginRuntimeRegistration } from '@/app/plugins/[slug]/interfaces/plugin-runtime-registration.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -9,6 +12,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class PluginProcessRegistrations extends PureReactor {
   @prop declare registrations: IPluginRuntimeRegistration[];
+  @prop declare theme: ThemeMode;
 
   private static label(registration: IPluginRuntimeRegistration): string {
     if (registration.steps?.length) return PluginProcessRegistrations.declared(registration);
@@ -42,18 +46,14 @@ export class PluginProcessRegistrations extends PureReactor {
       list.push(PluginProcessRegistrations.label(registration));
       groups.set(registration.kind, list);
     }
-    if (groups.size === 0) return <p className="text-xs text-slate-500">{AdminI18n.t('plugins.detail.thisProcessHasRegisteredNothing')}</p>;
-    return (
-      <div className="space-y-2">
-        {[...groups.entries()].map(([kind, labels]) => (
-          <details key={kind} className="rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2">
-            <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">{kind} <span className="text-slate-400 font-normal">· {labels.length}</span></summary>
-            <ul className="mt-2 space-y-1">
-              {labels.map((label, index) => <li key={`${kind}-${index}`} className="font-mono text-[12px] text-slate-500 break-all">{label}</li>)}
-            </ul>
-          </details>
-        ))}
-      </div>
-    );
+    if (groups.size === 0) return <div className="fc-settings-note"><Hint>{AdminI18n.t('plugins.detail.thisProcessHasRegisteredNothing')}</Hint></div>;
+    // Every kind open, one row each: nothing here is folded away to be guessed at.
+    return [...groups.entries()].map(([kind, labels]) => (
+      <SettingRow key={kind} theme={this.theme} title={`${kind} · ${labels.length}`} stacked>
+        <ul className="fc-code-list">
+          {labels.map((label, index) => <li key={`${kind}-${index}`}>{label}</li>)}
+        </ul>
+      </SettingRow>
+    ));
   }
 }

@@ -4,6 +4,7 @@ import { Slot } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
 
 export class ForgeClient extends PureReactor {
   render(): React.ReactNode {
@@ -12,14 +13,7 @@ export class ForgeClient extends PureReactor {
       <Slot
         name="admin.minimal.root"
         fallback={
-          <div className="flex h-full min-h-0 items-center justify-center p-6">
-            <div className={`max-w-lg ${AdminClass.SURFACE} p-6 text-center`}>
-              <h1 className="text-xl font-medium tracking-tight text-slate-900 dark:text-slate-100">{AppEnv.AI_NAME}</h1>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                <AdminRichText k="shell.forge.noExtension" />
-              </p>
-            </div>
-          </div>
+          <StatePage title={AppEnv.AI_NAME} hint={<AdminRichText k="shell.forge.noExtension" />} />
         }
       />
     </div>

@@ -1,3 +1,5 @@
+import { Alert } from '@/components/ui/view/alert.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactElement } from 'react';
 import { state } from '@fromcode119/react-class-components';
@@ -77,14 +79,14 @@ export class PersonFieldsPage extends AdminComponent {
       { header: AdminI18n.t('users.fields.label'), id: 'label', accessor: (field: IPersonFieldDefinition) => (
         <div>
           <div className="font-medium tracking-tight">{PersonFieldWords.pick(field.label, field.key)}</div>
-          <div className="text-[12px] font-mono text-slate-500">{field.key}</div>
+          <div className="fc-size-xs font-mono fc-tone-muted">{field.key}</div>
         </div>
       ) },
       { header: AdminI18n.t('users.fields.type'), id: 'type', accessor: (field: IPersonFieldDefinition) => AdminI18n.t(`users.fields.types.${field.type}`) },
       { header: AdminI18n.t('users.fields.selfEditable'), id: 'selfEditable', accessor: (field: IPersonFieldDefinition) =>
         AdminI18n.t(field.selfEditable ? 'common.yes' : 'common.no') },
       { header: AdminI18n.t('users.fields.description'), id: 'description', accessor: (field: IPersonFieldDefinition) =>
-        <span className="text-[12px] text-slate-500">{PersonFieldWords.pick(field.description, '—')}</span> },
+        <span className="fc-size-xs fc-tone-muted">{PersonFieldWords.pick(field.description, '—')}</span> },
     ];
   }
 
@@ -97,23 +99,22 @@ export class PersonFieldsPage extends AdminComponent {
             icon={<FrameworkIcons.ListChecks size={18} strokeWidth={2} />}
             title={AdminI18n.t('users.fields.title')} subtitle={AdminI18n.t('users.fields.subtitle')}
             actions={this.editing ? null : (
-              <Button variant={ButtonVariant.PRIMARY} type="button" icon={<FrameworkIcons.Plus size={14} />} onClick={() => this.open(null)}
-                className="h-9 px-4 rounded-xl font-medium text-[12px]">{AdminI18n.t('users.fields.add')}</Button>
+              <Button variant={ButtonVariant.PRIMARY} type="button" icon={<FrameworkIcons.Plus size={14} />} onClick={() => this.open(null)}>{AdminI18n.t('users.fields.add')}</Button>
             )} />
-          <div className="w-full p-6 fc-page-stack">
-            {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-medium dark:bg-rose-500/10">{this.error}</div> : null}
+          <div className="w-full py-6 fc-page-stack">
+            {this.error ? <Alert tone="danger">{this.error}</Alert> : null}
             {this.editing ? (
               <PersonFieldEditor key={this.current?.key ?? 'new'} field={this.current} locales={this.locales} theme={theme}
                 onCancel={() => { this.editing = false; }}
                 onSaved={() => { this.editing = false; void this.load(); }} />
             ) : null}
             {this.loading ? <Loader label={AdminI18n.t('users.fields.loading')} /> : (
-              <DataTable columns={this.columns()} data={this.fields.map((field) => ({ ...field, id: field.key }))} loading={false} emptyMessage={AdminI18n.t('users.fields.empty')}
+              <ListShell><DataTable columns={this.columns()} data={this.fields.map((field) => ({ ...field, id: field.key }))} loading={false} emptyMessage={AdminI18n.t('users.fields.empty')}
                 onRowClick={(field: IPersonFieldDefinition) => this.open(field)}
                 actions={(field: IPersonFieldDefinition) => (
                   <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.Trash size={14} />}
-                    onClick={() => { this.removing = field; }} className="h-8 px-3 rounded-lg text-[12px] font-medium">{AdminI18n.t('users.fields.delete')}</Button>
-                )} />
+                    onClick={() => { this.removing = field; }}>{AdminI18n.t('users.fields.delete')}</Button>
+                )} /></ListShell>
             )}
           </div>
           <ConfirmDialog isOpen={Boolean(this.removing)} onClose={() => { this.removing = null; }} onConfirm={() => void this.remove()}

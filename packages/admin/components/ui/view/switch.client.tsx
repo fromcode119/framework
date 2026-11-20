@@ -23,10 +23,10 @@ export class Switch extends PureReactor {
   render(): ReactNode {
     const { checked, label, description, disabled, className } = this;
   return (
-    <div className={`flex items-center justify-between gap-4 ${className ?? ''}`}>
+    <div className={`fc-switch-field ${className ?? ''}`}>
       {(label || description) && (
         <div
-          className={`flex flex-col select-none ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+          className={`fc-switch-field__text${disabled ? ' fc-switch-field__text--off' : ''}`}
           onClick={disabled ? undefined : this.handleToggle}
         >
           {label && <span className="fc-field-label">{label}</span>}

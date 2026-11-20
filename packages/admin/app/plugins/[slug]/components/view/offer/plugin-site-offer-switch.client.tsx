@@ -1,6 +1,6 @@
+import { Divider } from '@/components/ui/view/divider.client';
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -40,9 +40,9 @@ export class PluginSiteOfferSwitch extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`mt-4 pt-4 border-t ${dark ? 'border-slate-800/80' : 'border-slate-100'}`}>
+      <div className="fc-stack">
+        <Divider />
         <Switch
           checked={this.offered === true}
           disabled={this.offered === null || this.saving}

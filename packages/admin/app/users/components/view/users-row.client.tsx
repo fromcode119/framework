@@ -1,3 +1,6 @@
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { ListRow } from '@/components/ui/view/list-row.client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -36,11 +39,10 @@ export class UsersRow extends PureReactor {
   }
 
   private pills(): ReactNode[] {
-    const pill = AdminClass.of('ext-pill');
     const roles = Array.isArray(this.user.roles) ? this.user.roles : [];
-    const out: ReactNode[] = roles.map((role) => <span key={`r-${role}`} className={pill}>{this.roleNames[role] || role}</span>);
-    if (UsersRow.isSuspended(this.user)) out.push(<span key="s" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('users.suspended')}</span>);
-    if (this.user.forcePasswordReset) out.push(<span key="p" className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('users.resetRequired')}</span>);
+    const out: ReactNode[] = roles.map((role) => <Badge key={`r-${role}`} variant={BadgeVariant.DEFAULT}>{this.roleNames[role] || role}</Badge>);
+    if (UsersRow.isSuspended(this.user)) out.push(<Badge key="s" variant={BadgeVariant.DANGER}>{AdminI18n.t('users.suspended')}</Badge>);
+    if (this.user.forcePasswordReset) out.push(<Badge key="p" variant={BadgeVariant.WARNING}>{AdminI18n.t('users.resetRequired')}</Badge>);
     return out;
   }
 
@@ -48,20 +50,15 @@ export class UsersRow extends PureReactor {
     const { user } = this;
     const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '';
     return (
-      <div className={AdminClass.of('ext-row')}>
-        <div className={`${AdminClass.of('ext-row__icon')} ${AdminClass.of('ext-row__icon--person')}`} aria-hidden="true">{this.initials}</div>
-        <div className={AdminClass.of('ext-row__text')}>
-          <div className={AdminClass.of('ext-row__name')}>
-            <AdminLink href={AdminConstants.ROUTES.USERS.DETAIL(user.id)}>{this.name}</AdminLink>
-            {this.pills()}
-          </div>
-          <p className={AdminClass.of('ext-row__desc')} title={user.email}>{user.email}</p>
-        </div>
-        <div className={AdminClass.of('ext-row__meta')} title={joined ? `${AdminI18n.t('users.joined')} ${joined}` : undefined}>
-          {joined ? `${AdminI18n.t('users.joined')} ${joined}` : ''}
-        </div>
-        <div className={AdminClass.of('ext-row__actions')}>{this.actions}</div>
-      </div>
+      <ListRow
+        initials={this.initials}
+        title={<AdminLink href={AdminConstants.ROUTES.USERS.DETAIL(user.id)}>{this.name}</AdminLink>}
+        badges={this.pills()}
+        description={user.email}
+        descriptionTitle={user.email}
+        meta={joined ? `${AdminI18n.t('users.joined')} ${joined}` : undefined}
+        actions={this.actions}
+      />
     );
   }
 }

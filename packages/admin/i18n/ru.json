@@ -162,6 +162,7 @@
       "reorderHandle": "Перетащите для изменения порядка — или выберите и используйте клавиши со стрелками",
       "reorderEnable": "Чтобы изменить порядок, отобразите список в собственном порядке",
       "reorderFailed": "Не удалось сохранить новый порядок",
+      "noMatch": "Ничто не соответствует поиску или фильтрам.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Импортировать {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Редактировать",
       "notFilledIn": "Не заполнено",
       "statusSection": "Статус",
-      "statusConfirm": "Изменить статус на «{{status}}»?",
       "recordSection": "Запись",
       "showJson": "Показать как JSON",
       "showForm": "Показать как форму",
@@ -245,7 +245,8 @@
       "copied": "Скопировано",
       "more": "Ещё",
       "moreFields": "Полей: {{count}}",
-      "moreOneField": "Поле: {{count}}"
+      "moreOneField": "Поле: {{count}}",
+      "statusConfirm": "Изменить статус на «{{status}}»?"
     },
     "notFound": {
       "title": "Коллекция не найдена",
@@ -366,7 +367,8 @@
     "reset": "Сбросить",
     "notScheduledYet": "ещё не запланировано",
     "more": "Другие действия",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Удалить"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Выбрать цвет",
-      "colour": "Цвет",
-      "pick": "Выберите цвет",
       "hex": "HEX-код",
-      "confirm": "Подтвердить цвет",
       "notSet": "Не задан"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Обнаружены неактивные зависимости",
       "intro": "Чтобы включить {{plugin}}, необходимо выполнить следующее:",
       "notInstalled": "НЕ УСТАНОВЛЕН",
+      "inactive": "выключен",
+      "incompatible": "другая версия",
       "requires": "Требуется версия {{version}}. Её можно загрузить из каталога.",
       "needsActivation": "Уже установлен, но требует активации (версия {{version}}).",
       "mismatch": "Несовпадение версий: требуется {{expected}}, установлена {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Предпросмотр платформы",
-      "image": "Предпросмотр {{number}}"
+      "image": "Предпросмотр {{number}}",
+      "previous": "Назад",
+      "next": "Вперёд"
     },
     "menuField": {
       "newItem": "Новый пункт меню",
-      "structure": "Структура меню",
-      "add": "Добавить пункт меню"
+      "add": "Добавить пункт меню",
+      "reorder": "Перетащите, чтобы переместить; стрелки: вверх и вниз перемещают, вправо вкладывают, влево выносят"
     },
     "field": {
       "notSet": "Не задано",
@@ -461,8 +464,8 @@
       "record": "запись"
     },
     "array": {
-      "addNew": "Добавить: {{label}}",
-      "item": "Элемент"
+      "add": "Добавить",
+      "reorder": "Перетащите, чтобы переместить, или используйте стрелки"
     },
     "stepper": {
       "increment": "Увеличить",
@@ -528,9 +531,7 @@
       "noContact": "В разделе «Люди» нет email или телефона",
       "hasLogin": "Есть учётная запись",
       "noLogin": "Нет учётной записи",
-      "source": "Имя, email и телефон берутся из записи «Люди» #{{id}}; изменяйте их там.",
       "open": "Открыть в разделе «Люди»",
-      "choose": "Выбрать другого человека",
       "searchFailed": "Сейчас не удалось выполнить поиск в разделе «Люди».",
       "noMatch": "В разделе «Люди» совпадений нет. Введите данные ниже — при сохранении человек будет добавлен в «Люди».",
       "ref": "Люди #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Открыть «Сайты»"
       }
     },
-    "relativeOverridesInheritTheCollection": "Относительные переопределения наследуют префикс коллекции. Включите абсолютный режим, чтобы обойти префиксы вроде `/shop`.",
     "range": "Период",
     "noDataForThisRange": "Нет данных за этот период",
     "peak": "· пик {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Фильтры",
       "clearFilters": "Сбросить все",
       "removeFilter": "Удалить фильтр «{{label}}»",
-      "showResults": "Показать результаты: {{count}}"
+      "showResults": "Показать результаты: {{count}}",
+      "showResultsOne": "Показать 1 результат"
     },
     "personFieldPicker": {
       "none": "Не сохраняется в поле человека",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Лимиты песочницы для {{name}} сохранены, но не удалось перезапустить процесс с ними: {{value}}",
       "restartRequired": "Требуется перезапуск",
       "sandboxSettingsForWereSaved": "Настройки песочницы для {{name}} сохранены, но для их применения нужно перезапустить API.",
-      "resourcesUpdated": "Ресурсы обновлены",
-      "sandboxLimitsForUpdated": "Лимиты песочницы для {{name}} обновлены.",
       "sandboxDisabledFor": "Песочница для {{name}} отключена.",
       "saveFailed": "Ошибка сохранения",
       "failedToUpdateSandboxLimits": "Не удалось обновить лимиты песочницы.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Простой. Недавних событий нет.",
       "updating": "Обновление...",
       "updateAvailable": "Доступно обновление",
-      "updatePolicy": "Политика обновлений",
       "saveChanges": "Сохранить изменения",
       "unsavedChanges": "Несохранённые изменения",
       "exportSettingsAsJson": "Экспортировать настройки в JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Новое в v{{version}}",
       "installedVersion": "Установлена {{version}}",
       "marketplaceVersion": "В каталоге {{version}}",
-      "saving": "Сохранение...",
       "saveSettings": "Сохранить настройки",
       "viewDefinition": "Показать описание",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Оформление",
       "failedToLoadAppearances": "Не удалось загрузить оформления",
       "failedToSaveShadowSetting": "Не удалось сохранить настройку теней",
+      "failedToSaveMenuSetting": "Не удалось сохранить настройку меню",
       "switchedToReloading": "Переключено на «{{slug}}». Перезагрузка…",
       "failedToSwitchAppearance": "Не удалось переключить оформление",
       "installFailed": "Ошибка установки",
@@ -1919,6 +1917,8 @@
       "install": "Установить",
       "surfaceShadows": "Тени поверхностей",
       "depthOnPanelsDialogsAnd": "Объём панелей, диалогов и кнопок. Отключите для плоской панели — рамки и скругления останутся прежними.",
+      "secondMenuColumn": "Вторая колонка меню",
+      "sectionPagesBesideTheMenu": "Страницы раздела стоят в колонке рядом с меню. Если выключить, они открываются под своей строкой в одном меню, и каждый экран становится шире на 220px.",
       "installFromAPackageUrl": "Установить по URL пакета",
       "builtIn": "Встроенное",
       "installed": "Установлено",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Не удалось обновить базу геолокации по IP",
       "geoUnavailable": "Состояние геолокации по IP недоступно",
       "geoAttribution": "Геолокация по IP: {{name}} ({{license}}). Пока функция включена, база обновляется ежемесячно.",
-      "geoSaved": "Сохранено",
-      "geoSavedOn": "Загружается база данных (около 60 МБ).",
-      "geoSavedOff": "База данных удалена с сервера.",
       "everyPluginRunsIsolated": "Изоляция: каждый плагин работает в отдельном процессе. Лимит памяти и предельное время выполнения действуют для всех плагинов; доля CPU, общий объём памяти, диск и число процессов — только для плагинов, загруженных сайтом.",
       "schemaOrphans": "Схема базы данных",
       "schemaOrphansHelp": "Столбцы, которые ещё есть в базе данных, но больше нигде не объявлены. Платформа только показывает их; ничего не удаляется без вашего решения, а удалённый столбец восстановить нельзя.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Отключено — эндпоинт отвечает 403 всем.",
       "mediaPayloadLimitMb": "Лимит размера медиафайлов (МБ)",
       "maximumDecodedUploadOrRemote": "Максимальный размер декодированной загрузки или удалённого скачивания, который принимают медиаинструменты MCP.",
-      "saveLimit": "Сохранить лимит",
       "allSites": "все сайты",
       "issuedBeforeSites": "выпущен до появления сайтов",
       "noTokensYet": "Токенов пока нет.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "По умолчанию для платформы",
       "thisSite": "Этот сайт",
       "inForceNow": "Действует сейчас",
-      "saving": "Сохранение…",
-      "savePolicy": "Сохранить политику",
       "thePlatformDefaultIsSet": "Значение платформы по умолчанию задаёт администратор платформы.",
       "useTheLayerBelow": "Использовать нижний уровень",
       "whyTheLawRequiresThese": "Почему закон требует хранить эти записи",
-      "inheritsThePlatformDefault": "наследуется: значение платформы по умолчанию"
+      "inheritsThePlatformDefault": "наследуется: значение платформы по умолчанию",
+      "strategyDelete": "Удалить",
+      "strategyAnonymise": "Обезличить",
+      "strategyRetain": "Хранить",
+      "declaredBy": "По умолчанию, заданное {{plugin}}",
+      "inheritsValue": "наследует: {{value}}",
+      "legalBasis": "Правовое основание",
+      "theSiteColumnIsSet": "Столбец «Этот сайт» задаётся внутри сайта. Чтобы изменить его, выберите сайт в переключателе."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Отображаемое имя",
     "thisPersonHasALogin": "У этого человека есть учётная запись; email изменяется в учётной записи.",
     "birthDate": "Дата рождения",
-    "saveChanges": "Сохранить изменения",
     "sendPasswordResetEmail": "Отправить письмо для сброса пароля",
     "cancel": "Отмена",
     "accountManagement": "Управление учётной записью",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Скопируйте коды восстановления вручную.",
     "nameRequired": "Требуется имя",
     "enterATokenNameFirst": "Сначала введите имя токена.",
-    "tokenCreated": "Токен создан",
     "copyTheTokenNowIt": "Скопируйте токен сейчас. Он показывается только один раз.",
     "failedToCreateApiToken": "Не удалось создать API-токен",
     "areYouSureYouWant2": "Отключить 2FA для этого пользователя? Это снизит защищённость учётной записи.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Сеанс завершён",
     "deviceSessionRevokedSuccessfully": "Сеанс устройства успешно завершён.",
     "failedToRevokeSession": "Не удалось завершить сеанс",
-    "rolesUpdated": "Роли обновлены",
-    "theUserSRolesWere": "Роли пользователя сохранены.",
     "saveFailed": "Ошибка сохранения",
     "failedToSaveRoles": "Не удалось сохранить роли.",
     "loadingRoles": "Загрузка ролей",
@@ -3448,8 +3445,6 @@
     "remove": "Удалить",
     "loadFailed": "Ошибка загрузки",
     "couldNotRetrieveRoleDetails": "Не удалось получить сведения о роли.",
-    "roleUpdated": "Роль обновлена",
-    "wasSaved": "«{{name}}» сохранена.",
     "updateFailed": "Ошибка обновления",
     "anErrorOccurredWhileSaving": "При сохранении произошла ошибка.",
     "loadingRole": "Загрузка роли...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Вернуться к пользователям",
     "selfServiceSecurityControls": "Самостоятельное управление безопасностью",
     "sessionDeviceControlsAndPersonal": "Управление сеансами и устройствами, а также личные API-токены доступны только при просмотре собственной учётной записи.",
-    "securityRecommendations": "Рекомендации по безопасности",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
-    "activeAndProtectingThisAccount": "Включена и защищает эту учётную запись",
-    "notEnabledHighlyRecommendedFor": "Не включена — настоятельно рекомендуется для учётных записей администраторов",
-    "passwordProtected": "Защищено паролем",
-    "accountHasASecurePassword": "У учётной записи надёжный пароль",
-    "administratorAccess": "Доступ администратора",
     "fullSystemAccess2faStrongly": "Полный доступ к системе — настоятельно рекомендуется 2FA",
     "personalApiTokens": "Личные API-токены",
     "tokenNameEGCi": "Название токена (например, CI deploy)",
     "days": "Дней",
     "createToken": "Создать токен",
-    "copyNowShownOnce": "Скопируйте сейчас (показывается один раз)",
     "loadingApiTokens": "Загрузка API-токенов...",
     "noApiTokensCreatedYet": "API-токены ещё не созданы.",
     "revoke": "Отозвать",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Входы и сеансы",
     "loadingAuthActivity": "Загрузка истории входов...",
     "noRecentLoginSessionEvents": "Нет недавних событий входа или сеансов для этого пользователя.",
-    "unknownTime": "Время неизвестно",
-    "activityEvent": "Событие",
     "openFullGlobalActivity": "Открыть общий журнал активности",
-    "2faStatus": "Статус 2FA",
     "addAnExtraLayerOf": "Добавьте дополнительный уровень защиты с помощью приложения-аутентификатора (TOTP)",
-    "recommended": "Рекомендуется",
     "enableTwoFactorAuthenticationTo": "Включите двухфакторную аутентификацию, чтобы защитить эту учётную запись одноразовыми паролями на основе времени (TOTP).",
     "enable2fa": "Включить 2FA",
     "step1ScanQrCode": "Шаг 1. Отсканируйте QR-код",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Шаг 2. Подтвердите код",
     "enterThe6DigitCode": "Введите 6-значный код из приложения-аутентификатора, чтобы завершить настройку:",
     "verifyEnable": "Подтвердить и включить",
-    "protectionActive": "Защита включена",
     "thisAccountRequiresA6": "При входе в эту учётную запись требуется 6-значный код из приложения-аутентификатора.",
     "regenerateRecoveryCodes": "Создать новые коды восстановления",
     "disable2fa": "Отключить 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Завершить другие сеансы",
     "loadingSessions": "Загрузка сеансов...",
     "noActiveSessions": "Нет активных сеансов.",
-    "currentSession": "Текущий сеанс",
-    "deviceSession": "Сеанс на устройстве",
     "current": "Текущий",
     "unknownDevice": "Неизвестное устройство",
     "editAccount2": "Изменить учётную запись",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Открыть запись пользователя",
     "token": "Токен",
     "createdOn": "Создан {{date}}",
-    "notAvailable": "н/д",
     "revokedOn": "Отозван {{date}}",
     "recoveryCodesRemaining": "Осталось кодов восстановления:",
-    "unknownValue": "неизвестно",
     "expiresOn": "Истекает: {{date}}",
     "person2": "Человек",
     "added": "Добавлен",
@@ -3591,12 +3570,10 @@
       "loading": "Загрузка полей профиля…",
       "loadFailed": "Не удалось загрузить поля профиля.",
       "saveFailed": "Не удалось сохранить поля.",
-      "saved": "Поля сохранены.",
       "empty": "Полей профиля пока нет. Добавьте поле, чтобы хранить его для каждого человека.",
       "noneDeclared": "На этом сайте пока нет полей профиля.",
       "declare": "Добавить поля профиля",
       "manage": "Управление полями",
-      "save": "Сохранить поля",
       "saveField": "Сохранить поле",
       "delete": "Удалить",
       "deleteTitle": "Удалить это поле?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Действует (дней)",
+    "revokeOtherSessionsConfirm": "Все остальные устройства сразу выходят из системы.",
+    "revokeSessionConfirm": "Это устройство сразу выходит из системы.",
+    "revokeCurrentSessionConfirm": "Это устройство, которым вы пользуетесь сейчас. Вы сразу выйдете из системы.",
+    "revokeTokenConfirm": "«{{name}}» сразу перестаёт работать.",
+    "twoFactorTurnedOff": "Двухфакторный вход отключён для этого сайта, поэтому его нельзя настроить здесь.",
+    "openSecuritySettings": "Открыть настройки безопасности"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Настройки сайта ({{what}}) задаются внутри каждого сайта — выберите сайт в меню сайтов.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Не удалось открыть этот сайт для предпросмотра.",
     "couldNotLoadTheSite": "Не удалось загрузить сайт.",
     "couldNotReloadThePlugin": "Не удалось перезагрузить список плагинов.",
-    "siteSaved": "Сайт сохранён",
-    "routingFollowsImmediatelyNoRestart": "Маршрутизация применяется сразу — без перезапуска.",
     "notSaved": "Не сохранено",
     "theSiteCouldNotBe2": "Не удалось сохранить сайт.",
     "couldNotOpenTheSite": "Не удалось открыть сайт",
@@ -3789,7 +3771,6 @@
     "visit": "Открыть",
     "openThisSite": "Открыть этот сайт",
     "export": "Экспорт",
-    "save": "Сохранить",
     "couldNotLoadCertificates": "Не удалось загрузить сертификаты.",
     "couldNotSwitchThisHost": "Не удалось перевести этот хост в автоматический режим.",
     "couldNotSwitchThisHost2": "Не удалось перевести этот хост в автоматический режим (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Доступно обновление",
     "isNowActive": "Тема {{name}} активирована.",
     "themeHasBeenUpdated2": "Тема {{name}} обновлена.",
-    "configurationSaved": "Настройки сохранены",
-    "visualProtocolsUpdatedSuccessfully": "Параметры оформления обновлены.",
     "saveFailed": "Ошибка сохранения",
     "hasBeenRemoved2": "Тема {{name}} удалена.",
     "seedsExecuted": "Начальные данные загружены",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Макет",
     "extensionsSection": "Расширения",
     "versionReady": "Версия {{version}} готова",
-    "saveChanges": "Сохранить изменения",
     "runSeedsHint": "Повторно загружает начальные данные темы — примеры страниц и контент — на этот сайт.",
     "resetThemeHint": "Удаляет сохранённые настройки темы для этого сайта и повторно загружает начальные данные.",
     "notActiveHint": "Этот сайт использует другую тему.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Что нового в v{{version}}",
     "whatChanged": "Что изменилось",
-    "closeBuildSourceDialog": "Закрыть окно источника сборки",
-    "close": "Закрыть",
     "couldNotInstallThatVersion": "Не удалось установить эту версию.",
     "couldNotChangeAutomaticUpdating": "Не удалось изменить настройку автоматического обновления.",
     "failed": "Ошибка",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Автоматические сертификаты отключены. {{reason}}",
     "automaticCertificatesComeFrom": "Автоматические сертификаты выпускает {{authority}}.",
     "noSecretKeyIsConfigured": "На этом сервере не настроен SECRET_KEY, поэтому закрытый ключ нельзя сохранить. Загрузка недоступна, пока он не задан.",
-    "nothingToSavePasteA": "Нечего сохранять — вставьте токен или нажмите «Очистить», чтобы удалить сохранённый.",
     "savedThisSiteNowUses": "Сохранено. Теперь этот сайт использует собственный токен Cloudflare.",
     "removedThisSiteFallsBack": "Удалено. Этот сайт снова использует токен платформы.",
     "couldNotSaveTheToken": "Не удалось сохранить токен.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Токен этого сайта",
     "savedLeaveBlankToKeep": "Сохранён — оставьте пустым, чтобы сохранить, или нажмите «Очистить», чтобы удалить",
     "pasteACloudflareApiToken": "Вставьте API-токен Cloudflare",
-    "save": "Сохранить",
     "clear": "Очистить",
     "nothingStoredThisHostCannot": "Ничего не сохранено — эта платформа не может обслуживать этот хост по HTTPS.",
     "nothingStoredHereTlsFor": "Здесь ничего не хранится — TLS для этого хоста терминируется до платформы, и сертификат находится там.",
@@ -4706,36 +4680,26 @@
     "roles": "Роли",
     "permissions": "Разрешения",
     "eventDetails": "Сведения о событии",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Система",
     "timestamp": "Время",
-    "authority": "Полномочия",
-    "actorId": "ID исполнителя",
-    "type": "Тип",
-    "systemLog": "Системный журнал",
-    "audit": "Аудит: {{status}}",
-    "activityMessage": "Сообщение",
-    "actionTaken": "Выполненное действие",
-    "resourcePool": "Пул ресурсов",
-    "rawMetadata": "Исходные метаданные",
     "thisEntryIsPartOf": "Эта запись входит в неизменяемый журнал аудита.",
     "exportJson": "Экспорт JSON",
     "event": "Событие",
     "actor": "Исполнитель",
+    "plugin": "Плагин",
     "activity": "Активность",
     "status": "Статус",
     "action": "Действие",
     "time": "Время",
-    "logSignature": "Подпись записи: {{id}}",
     "internal": "ВНУТРЕННИЙ",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запись № {{id}}",
+    "recordedData": "Записанные данные"
   },
   "mediaPicker": {
     "showingOnly": "Показаны только: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Задача",
       "schedule": "Расписание",
       "lastRun": "Последний запуск",
-      "nextRun": "Следующий запуск"
+      "nextRun": "Следующий запуск",
+      "duration": "Длительность"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

@@ -63,18 +63,18 @@ export class DashboardCollectionsGrid extends PureReactor {
           }
 
           return (
-            <div key={s.slug} className={`p-3 ${AdminClass.SURFACE} flex items-center gap-3 transition-colors hover:border-indigo-200 group cursor-pointer dark:hover:border-indigo-500/40`} onClick={() => this.onNavigate(adminPath)}>
-              <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg transition-colors bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 [&_svg]:h-4 [&_svg]:w-4">
+            <div key={s.slug} className={`p-3 ${AdminClass.SURFACE} flex items-center gap-3 transition-colors fc-tone-hover-brand-line group cursor-pointer`} onClick={() => this.onNavigate(adminPath)}>
+              <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg transition-colors fc-tone-brand-soft fc-tone-brand fc-tone-group-brand-solid group-hover:text-white [&_svg]:h-4 [&_svg]:w-4">
                 <DynamicIcon name={s.icon || 'Database'} size={16} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-medium tracking-tight text-slate-400 truncate">{s.name || colShortSlug}</p>
+                <p className="fc-size-xs font-medium tracking-tight fc-tone-muted truncate">{s.name || colShortSlug}</p>
                 <div className="flex items-baseline gap-1.5">
-                  <h4 className="text-lg font-medium tracking-tight text-slate-900 dark:text-white leading-tight">{s.count}</h4>
-                  <span className="text-[12px] text-slate-400 dark:text-slate-500 truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
+                  <h4 className="text-lg font-medium tracking-tight fc-tone-text leading-tight">{s.count}</h4>
+                  <span className="fc-size-xs fc-tone-muted truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
                 </div>
               </div>
-              <FrameworkIcons.ArrowRight size={14} className="shrink-0 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+              <FrameworkIcons.ArrowRight size={14} className="shrink-0 fc-tone-muted fc-tone-group-brand transition-colors" />
             </div>
           );
         })}

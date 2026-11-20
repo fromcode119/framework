@@ -162,6 +162,7 @@
       "reorderHandle": "Превуците да промените редослед — или изаберите и користите тастере са стрелицама",
       "reorderEnable": "Прикажите листу у њеном сопственом редоследу да бисте га променили",
       "reorderFailed": "Нови редослед није могао да се сачува",
+      "noMatch": "Ништа не одговара претрази или филтерима.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Увести {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Уреди",
       "notFilledIn": "Није попуњено",
       "statusSection": "Статус",
-      "statusConfirm": "Променити статус у „{{status}}“?",
       "recordSection": "Запис",
       "showJson": "Прикажи као JSON",
       "showForm": "Прикажи као образац",
@@ -245,7 +245,8 @@
       "copied": "Копирано",
       "more": "Више",
       "moreFields": "{{count}} поља",
-      "moreOneField": "{{count}} поље"
+      "moreOneField": "{{count}} поље",
+      "statusConfirm": "Променити статус у „{{status}}“?"
     },
     "notFound": {
       "title": "Колекција није пронађена",
@@ -366,7 +367,8 @@
     "reset": "Ресетуј",
     "notScheduledYet": "још није заказано",
     "more": "Више радњи",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Уклони"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Изаберите боју",
-      "colour": "Боја",
-      "pick": "Изаберите боју",
       "hex": "Hex кôд",
-      "confirm": "Потврди боју",
       "notSet": "Није подешено"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Откривене су неактивне зависности",
       "intro": "Да бисмо омогућили {{plugin}}, потребно је решити следеће:",
       "notInstalled": "НИЈЕ ИНСТАЛИРАНО",
+      "inactive": "искључен",
+      "incompatible": "друга верзија",
       "requires": "Захтева верзију {{version}}. Можемо је преузети са маркетплејса.",
       "needsActivation": "Већ је инсталирано, али треба га активирати (верзија {{version}}).",
       "mismatch": "Неподударање верзије: захтева се {{expected}}, пронађено {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Преглед платформе",
-      "image": "Преглед {{number}}"
+      "image": "Преглед {{number}}",
+      "previous": "Претходно",
+      "next": "Следеће"
     },
     "menuField": {
       "newItem": "Нова ставка менија",
-      "structure": "Структура менија",
-      "add": "Додај ставку менија"
+      "add": "Додај ставку менија",
+      "reorder": "Превуците да померите; стрелице: горе и доле померају, десно угњеждава, лево извлачи"
     },
     "field": {
       "notSet": "Није подешено",
@@ -461,8 +464,8 @@
       "record": "запис"
     },
     "array": {
-      "addNew": "Додај: {{label}}",
-      "item": "Ставка"
+      "add": "Додај",
+      "reorder": "Превуците да померите или користите стрелице"
     },
     "stepper": {
       "increment": "Повећај",
@@ -528,9 +531,7 @@
       "noContact": "Нема е-поште ни телефона у одељку Особе",
       "hasLogin": "Има налог за пријаву",
       "noLogin": "Нема налог за пријаву",
-      "source": "Име, е-пошта и телефон потичу из записа Особе #{{id}}; измените их тамо.",
       "open": "Отвори у одељку Особе",
-      "choose": "Изаберите неког другог",
       "searchFailed": "Претрага особа тренутно није могућа.",
       "noMatch": "Ниједна особа се не поклапа. Унесите податке испод; чувањем ће бити додата у Особе.",
       "ref": "Особе #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Отвори Сајтове"
       }
     },
-    "relativeOverridesInheritTheCollection": "Релативна замена наслеђује префикс колекције. Укључите апсолутни режим да бисте заобишли префиксе као што је `/shop`.",
     "range": "Опсег",
     "noDataForThisRange": "Нема података за овај опсег",
     "peak": "· врх {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Филтери",
       "clearFilters": "Обриши све",
       "removeFilter": "Уклони филтер {{label}}",
-      "showResults": "Прикажи резултате ({{count}})"
+      "showResults": "Прикажи резултате ({{count}})",
+      "showResultsOne": "Прикажи 1 резултат"
     },
     "personFieldPicker": {
       "none": "Не чува се у поље особе",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Ограничења sandbox окружења за {{name}} су сачувана, али поновно покретање процеса са њима није успело: {{value}}",
       "restartRequired": "Потребно је поновно покретање",
       "sandboxSettingsForWereSaved": "Подешавања sandbox окружења за {{name}} су сачувана, али је потребно поново покренути API да би ступила на снагу.",
-      "resourcesUpdated": "Ресурси су ажурирани",
-      "sandboxLimitsForUpdated": "Ограничења sandbox окружења за {{name}} су ажурирана.",
       "sandboxDisabledFor": "Sandbox окружење је онемогућено за {{name}}.",
       "saveFailed": "Чување није успело",
       "failedToUpdateSandboxLimits": "Ажурирање ограничења sandbox окружења није успело.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Неактивно. Нема недавно забележених догађаја.",
       "updating": "Ажурирање...",
       "updateAvailable": "Доступно је ажурирање",
-      "updatePolicy": "Смернице ажурирања",
       "saveChanges": "Сачувај измене",
       "unsavedChanges": "Несачуване измене",
       "exportSettingsAsJson": "Извези подешавања као JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Ново у v{{version}}",
       "installedVersion": "Инсталирано {{version}}",
       "marketplaceVersion": "Продавница {{version}}",
-      "saving": "Чување...",
       "saveSettings": "Сачувај подешавања",
       "viewDefinition": "Прикажи дефиницију",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Изглед",
       "failedToLoadAppearances": "Учитавање изгледа није успело",
       "failedToSaveShadowSetting": "Чување подешавања сенки није успело",
+      "failedToSaveMenuSetting": "Подешавање менија није сачувано",
       "switchedToReloading": "Пребачено на „{{slug}}“. Поновно учитавање…",
       "failedToSwitchAppearance": "Промена изгледа није успела",
       "installFailed": "Инсталација није успела",
@@ -1919,6 +1917,8 @@
       "install": "Инсталирај",
       "surfaceShadows": "Сенке површина",
       "depthOnPanelsDialogsAnd": "Дубина на панелима, дијалозима и дугмадима. Искључите за равну администрацију — ивице и углови остају потпуно исти.",
+      "secondMenuColumn": "Друга колона менија",
+      "sectionPagesBesideTheMenu": "Странице одељка стоје у колони поред менија. Када се искључи, отварају се испод свог реда у једном менију, а сваки екран добија 220px.",
       "installFromAPackageUrl": "Инсталирај са URL-а пакета",
       "builtIn": "Уграђено",
       "installed": "Инсталирано",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "Локација по IP адреси није ажурирана",
       "geoUnavailable": "Статус локације по IP адреси није доступан",
       "geoAttribution": "IP геолокацију обезбеђује {{name}} ({{license}}). Ажурира се месечно док је укључена.",
-      "geoSaved": "Сачувано",
-      "geoSavedOn": "База се сада преузима; има око 60 MB.",
-      "geoSavedOff": "База је уклоњена са сервера.",
       "everyPluginRunsIsolated": "Изоловано: сваки додатак ради у сопственом процесу. Ограничење меморије и рок важе за сваки додатак; удео процесора, укупна меморија, диск и процеси важе само за додатке које је отпремио неки сајт.",
       "schemaOrphans": "Шема базе података",
       "schemaOrphansHelp": "Колоне које још постоје у бази, а које више ништа не декларише. Платформа их само приказује; ништа се не брише док ви не одлучите, а обрисана колона не може да се врати.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Онемогућено — крајња тачка свима одговара са 403.",
       "mediaPayloadLimitMb": "Ограничење величине медија (MB)",
       "maximumDecodedUploadOrRemote": "Највећа декодирана отпремљена или удаљено преузета датотека коју MCP алатке за медије прихватају.",
-      "saveLimit": "Сачувај ограничење",
       "allSites": "сви сајтови",
       "issuedBeforeSites": "издат пре увођења сајтова",
       "noTokensYet": "Још нема токена.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Подразумевано за платформу",
       "thisSite": "Овај сајт",
       "inForceNow": "Тренутно на снази",
-      "saving": "Чување…",
-      "savePolicy": "Сачувај смерницу",
       "thePlatformDefaultIsSet": "Подразумевану вредност платформе поставља администратор платформе.",
       "useTheLayerBelow": "Користи нижи ниво",
       "whyTheLawRequiresThese": "Зашто закон захтева чување ових записа",
-      "inheritsThePlatformDefault": "наслеђује: подразумевано за платформу"
+      "inheritsThePlatformDefault": "наслеђује: подразумевано за платформу",
+      "strategyDelete": "Обриши",
+      "strategyAnonymise": "Анонимизуј",
+      "strategyRetain": "Задржи",
+      "declaredBy": "Подразумевано, које је објавио {{plugin}}",
+      "inheritsValue": "наслеђује: {{value}}",
+      "legalBasis": "Правни основ",
+      "theSiteColumnIsSet": "Колона „Овај сајт“ се подешава унутар сајта. Изаберите сајт у бирачу да бисте је променили."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Име за приказ",
     "thisPersonHasALogin": "Ова особа има налог за пријаву; е-пошта се мења на налогу.",
     "birthDate": "Датум рођења",
-    "saveChanges": "Сачувај измене",
     "sendPasswordResetEmail": "Пошаљи е-поруку за ресетовање лозинке",
     "cancel": "Откажи",
     "accountManagement": "Управљање налогом",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Копирајте кодове за опоравак ручно.",
     "nameRequired": "Назив је обавезан",
     "enterATokenNameFirst": "Прво унесите назив токена.",
-    "tokenCreated": "Токен је направљен",
     "copyTheTokenNowIt": "Копирајте токен сада. Приказује се само једном.",
     "failedToCreateApiToken": "Прављење API токена није успело",
     "areYouSureYouWant2": "Да ли сте сигурни да желите да искључите 2FA за овог корисника? Тиме ће се смањити безбедност налога.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Сесија је опозвана",
     "deviceSessionRevokedSuccessfully": "Сесија уређаја је успешно опозвана.",
     "failedToRevokeSession": "Опозивање сесије није успело",
-    "rolesUpdated": "Улоге су ажуриране",
-    "theUserSRolesWere": "Улоге корисника су сачуване.",
     "saveFailed": "Чување није успело",
     "failedToSaveRoles": "Чување улога није успело.",
     "loadingRoles": "Учитавање улога",
@@ -3448,8 +3445,6 @@
     "remove": "Уклони",
     "loadFailed": "Учитавање није успело",
     "couldNotRetrieveRoleDetails": "Није могуће преузети детаље улоге.",
-    "roleUpdated": "Улога је ажурирана",
-    "wasSaved": "„{{name}}“ је сачувано.",
     "updateFailed": "Ажурирање није успело",
     "anErrorOccurredWhileSaving": "Дошло је до грешке приликом чувања.",
     "loadingRole": "Учитавање улоге...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Назад на кориснике",
     "selfServiceSecurityControls": "Самостална безбедносна подешавања",
     "sessionDeviceControlsAndPersonal": "Управљање сесијама и уређајима и лични API токени доступни су само када прегледате сопствени кориснички налог.",
-    "securityRecommendations": "Безбедносне препоруке",
     "twoFactorAuthentication": "Двофакторска потврда идентитета",
-    "activeAndProtectingThisAccount": "Активна и штити овај налог",
-    "notEnabledHighlyRecommendedFor": "Није укључена – топло се препоручује за администраторске налоге",
-    "passwordProtected": "Заштићено лозинком",
-    "accountHasASecurePassword": "Налог има безбедну лозинку",
-    "administratorAccess": "Администраторски приступ",
     "fullSystemAccess2faStrongly": "Пун приступ систему – 2FA се топло препоручује",
     "personalApiTokens": "Лични API токени",
     "tokenNameEGCi": "Назив токена (нпр. CI deploy)",
     "days": "Дана",
     "createToken": "Направи токен",
-    "copyNowShownOnce": "Копирајте сада (приказује се само једном)",
     "loadingApiTokens": "Учитавање API токена...",
     "noApiTokensCreatedYet": "Још није направљен ниједан API токен.",
     "revoke": "Опозови",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Активност пријава и сесија",
     "loadingAuthActivity": "Учитавање активности пријава...",
     "noRecentLoginSessionEvents": "Нема недавних догађаја пријаве или сесија за овог корисника.",
-    "unknownTime": "Непознато време",
-    "activityEvent": "Догађај активности",
     "openFullGlobalActivity": "Отвори целокупну глобалну активност",
-    "2faStatus": "Статус 2FA",
     "addAnExtraLayerOf": "Додајте додатни ниво безбедности помоћу апликације за потврду идентитета (TOTP)",
-    "recommended": "Препоручено",
     "enableTwoFactorAuthenticationTo": "Укључите двофакторску потврду идентитета да бисте заштитили овај налог временски ограниченим једнократним лозинкама (TOTP).",
     "enable2fa": "Укључи 2FA",
     "step1ScanQrCode": "Корак 1: Скенирајте QR кôд",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Корак 2: Потврдите кôд",
     "enterThe6DigitCode": "Унесите шестоцифрени кôд из апликације за потврду идентитета да бисте довршили подешавање:",
     "verifyEnable": "Потврди и укључи",
-    "protectionActive": "Заштита је активна",
     "thisAccountRequiresA6": "Овај налог при пријави захтева шестоцифрени кôд из апликације за потврду идентитета.",
     "regenerateRecoveryCodes": "Поново генериши кодове за опоравак",
     "disable2fa": "Искључи 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Опозови остале сесије",
     "loadingSessions": "Учитавање сесија...",
     "noActiveSessions": "Нема активних сесија.",
-    "currentSession": "Тренутна сесија",
-    "deviceSession": "Сесија уређаја",
     "current": "Тренутна",
     "unknownDevice": "Непознат уређај",
     "editAccount2": "Измени налог",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Отвори запис корисника",
     "token": "Токен",
     "createdOn": "Направљено {{date}}",
-    "notAvailable": "н/д",
     "revokedOn": "Опозвано {{date}}",
     "recoveryCodesRemaining": "Преостали кодови за опоравак:",
-    "unknownValue": "непознато",
     "expiresOn": "Истиче: {{date}}",
     "person2": "Особа",
     "added": "Додато",
@@ -3591,12 +3570,10 @@
       "loading": "Учитавање поља особа…",
       "loadFailed": "Поља особа није могуће учитати.",
       "saveFailed": "Поља није могуће сачувати.",
-      "saved": "Поља су сачувана.",
       "empty": "Још нема поља особа. Додајте једно да бисте га чували за сваку особу.",
       "noneDeclared": "Овај сајт још нема поља особа.",
       "declare": "Додај поља особа",
       "manage": "Управљај пољима",
-      "save": "Сачувај поља",
       "saveField": "Сачувај поље",
       "delete": "Обриши",
       "deleteTitle": "Обрисати ово поље?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Važi (dana)",
+    "revokeOtherSessionsConfirm": "Svi ostali uređaji se odmah odjavljuju.",
+    "revokeSessionConfirm": "Taj uređaj se odmah odjavljuje.",
+    "revokeCurrentSessionConfirm": "Ovo je uređaj koji sada koristite. Odmah ćete biti odjavljeni.",
+    "revokeTokenConfirm": "„{{name}}“ odmah prestaje da radi.",
+    "twoFactorTurnedOff": "Prijava u dva koraka je isključena za ovaj sajt, pa se ovde ne može podesiti.",
+    "openSecuritySettings": "Otvori bezbednosna podešavanja"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Подешавања сајта ({{what}}) подешавају се унутар сваког сајта — изаберите један из менија сајтова.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Овај сајт није могуће отворити за преглед.",
     "couldNotLoadTheSite": "Није могуће учитати сајт.",
     "couldNotReloadThePlugin": "Није могуће поново учитати списак додатака.",
-    "siteSaved": "Сајт је сачуван",
-    "routingFollowsImmediatelyNoRestart": "Рутирање се примењује одмах — без поновног покретања.",
     "notSaved": "Није сачувано",
     "theSiteCouldNotBe2": "Сајт није могуће сачувати.",
     "couldNotOpenTheSite": "Није могуће отворити сајт",
@@ -3789,7 +3771,6 @@
     "visit": "Посети",
     "openThisSite": "Отвори овај сајт",
     "export": "Извези",
-    "save": "Сачувај",
     "couldNotLoadCertificates": "Није могуће учитати сертификате.",
     "couldNotSwitchThisHost": "Није могуће пребацити овај хост на аутоматски.",
     "couldNotSwitchThisHost2": "Није могуће пребацити овај хост на аутоматски (wildcard).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Доступно је ажурирање",
     "isNowActive": "{{name}} је сада активна.",
     "themeHasBeenUpdated2": "Тема {{name}} је ажурирана.",
-    "configurationSaved": "Конфигурација је сачувана",
-    "visualProtocolsUpdatedSuccessfully": "Визуелни протоколи су успешно ажурирани.",
     "saveFailed": "Чување није успело",
     "hasBeenRemoved2": "{{name}} је уклоњена.",
     "seedsExecuted": "Почетни подаци су учитани",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Распоред",
     "extensionsSection": "Проширења",
     "versionReady": "Верзија {{version}} је спремна",
-    "saveChanges": "Сачувај измене",
     "runSeedsHint": "Поново учитава почетне податке теме — пробне странице и садржај — у овај сајт.",
     "resetThemeHint": "Брише сачувана подешавања теме за овај сајт и поново учитава почетне податке.",
     "notActiveHint": "Овај сајт користи другу тему.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Шта је ново у v{{version}}",
     "whatChanged": "Шта је ново",
-    "closeBuildSourceDialog": "Затвори дијалог извора за изградњу",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Инсталирање те верзије није успело.",
     "couldNotChangeAutomaticUpdating": "Промена аутоматског ажурирања није успела.",
     "failed": "Неуспешно",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Аутоматски сертификати су искључени. {{reason}}",
     "automaticCertificatesComeFrom": "Аутоматске сертификате издаје {{authority}}.",
     "noSecretKeyIsConfigured": "На овом серверу није подешен SECRET_KEY, па приватни кључ не може да се сачува. Отпремање је онемогућено док се не подеси.",
-    "nothingToSavePasteA": "Нема шта да се сачува — налепите токен или користите „Обриши“ да уклоните сачувани.",
     "savedThisSiteNowUses": "Сачувано. Овај сајт сада користи сопствени Cloudflare токен.",
     "removedThisSiteFallsBack": "Уклоњено. Овај сајт сада користи токен платформе.",
     "couldNotSaveTheToken": "Чување токена није успело.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Токен овог сајта",
     "savedLeaveBlankToKeep": "Сачувано — оставите празно да задржите или користите „Обриши“ за уклањање",
     "pasteACloudflareApiToken": "Налепите Cloudflare API токен",
-    "save": "Сачувај",
     "clear": "Обриши",
     "nothingStoredThisHostCannot": "Ништа није сачувано — ова платформа не може да служи овај хост преко HTTPS-а.",
     "nothingStoredHereTlsFor": "Овде ништа није сачувано — TLS за овај хост се терминира пре платформе, па је његов сертификат тамо.",
@@ -4706,36 +4680,26 @@
     "roles": "Улоге",
     "permissions": "Дозволе",
     "eventDetails": "Детаљи догађаја",
-    "context": "Контекст",
     "resource": "Ресурс",
     "system": "Систем",
     "timestamp": "Временска ознака",
-    "authority": "Овлашћење",
-    "actorId": "ID актера",
-    "type": "Тип",
-    "systemLog": "Системски дневник",
-    "audit": "Ревизија: {{status}}",
-    "activityMessage": "Порука активности",
-    "actionTaken": "Извршена радња",
-    "resourcePool": "Скуп ресурса",
-    "rawMetadata": "Необрађени метаподаци",
     "thisEntryIsPartOf": "Овај запис је део непроменљивог трага ревизије.",
     "exportJson": "Извези JSON",
     "event": "Догађај",
     "actor": "Актер",
+    "plugin": "Додатак",
     "activity": "Активност",
     "status": "Статус",
     "action": "Радња",
     "time": "Време",
-    "logSignature": "Потпис записа: {{id}}",
     "internal": "ИНТЕРНО",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Запис бр. {{id}}",
+    "recordedData": "Забележени подаци"
   },
   "mediaPicker": {
     "showingOnly": "Приказује се само: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Задатак",
       "schedule": "Покреће се",
       "lastRun": "Последње извршавање",
-      "nextRun": "Следеће извршавање"
+      "nextRun": "Следеће извршавање",
+      "duration": "Трајање"
     },
     "ownedBy": "{{owner}}",
     "platform": "Платформа",

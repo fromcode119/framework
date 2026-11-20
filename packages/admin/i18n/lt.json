@@ -162,6 +162,7 @@
       "reorderHandle": "Vilkite, kad pakeistumėte tvarką, arba pažymėkite ir naudokite rodyklių klavišus",
       "reorderEnable": "Norėdami keisti tvarką, rodykite sąrašą jo paties tvarka",
       "reorderFailed": "Nepavyko išsaugoti naujos tvarkos",
+      "noMatch": "Paieškos ar filtrų neatitinka niekas.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importuoti {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Redaguoti",
       "notFilledIn": "Neužpildyta",
       "statusSection": "Būsena",
-      "statusConfirm": "Pakeisti būseną į „{{status}}“?",
       "recordSection": "Įrašas",
       "showJson": "Rodyti kaip JSON",
       "showForm": "Rodyti kaip formą",
@@ -245,7 +245,8 @@
       "copied": "Nukopijuota",
       "more": "Daugiau",
       "moreFields": "{{count}} laukai",
-      "moreOneField": "{{count}} laukas"
+      "moreOneField": "{{count}} laukas",
+      "statusConfirm": "Pakeisti būseną į „{{status}}“?"
     },
     "notFound": {
       "title": "Kolekcija nerasta",
@@ -366,7 +367,8 @@
     "reset": "Atstatyti",
     "notScheduledYet": "dar nesuplanuota",
     "more": "Daugiau veiksmų",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Pašalinti"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Pasirinkti spalvą",
-      "colour": "Spalva",
-      "pick": "Pasirinkite spalvą",
       "hex": "Hex kodas",
-      "confirm": "Patvirtinti spalvą",
       "notSet": "Nenustatyta"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Aptiktos neaktyvios priklausomybės",
       "intro": "Norint įjungti {{plugin}}, reikia atlikti šiuos veiksmus:",
       "notInstalled": "NEĮDIEGTA",
+      "inactive": "išjungtas",
+      "incompatible": "kita versija",
       "requires": "Reikalinga versija {{version}}. Ją galima atsisiųsti iš katalogo.",
       "needsActivation": "Jau įdiegta, bet reikia aktyvuoti (versija {{version}}).",
       "mismatch": "Versijų neatitikimas: reikia {{expected}}, rasta {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Platformos peržiūra",
-      "image": "Peržiūra {{number}}"
+      "image": "Peržiūra {{number}}",
+      "previous": "Ankstesnis",
+      "next": "Kitas"
     },
     "menuField": {
       "newItem": "Naujas meniu punktas",
-      "structure": "Meniu struktūra",
-      "add": "Pridėti meniu punktą"
+      "add": "Pridėti meniu punktą",
+      "reorder": "Vilkite, kad perkeltumėte; rodyklės: aukštyn ir žemyn perkelia, dešinėn įdeda, kairėn iškelia"
     },
     "field": {
       "notSet": "Nenustatyta",
@@ -461,8 +464,8 @@
       "record": "įrašas"
     },
     "array": {
-      "addNew": "Pridėti naują: {{label}}",
-      "item": "Elementas"
+      "add": "Pridėti",
+      "reorder": "Vilkite, kad perkeltumėte, arba naudokite rodykles"
     },
     "stepper": {
       "increment": "Padidinti",
@@ -528,9 +531,7 @@
       "noContact": "Skiltyje „Žmonės“ nėra el. pašto ar telefono",
       "hasLogin": "Turi prisijungimą",
       "noLogin": "Neturi prisijungimo",
-      "source": "Vardas, el. paštas ir telefonas paimti iš asmens #{{id}} skiltyje „Žmonės“; keiskite juos ten.",
       "open": "Atidaryti skiltyje „Žmonės“",
-      "choose": "Pasirinkti kitą asmenį",
       "searchFailed": "Šiuo metu nepavyko ieškoti skiltyje „Žmonės“.",
       "noMatch": "Skiltyje „Žmonės“ atitikmenų nėra. Įveskite duomenis žemiau; išsaugojus asmuo bus pridėtas į „Žmonės“.",
       "ref": "Asmuo #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Atidaryti svetaines"
       }
     },
-    "relativeOverridesInheritTheCollection": "Santykiniai perrašymai paveldi kolekcijos prefiksą. Įjunkite absoliutų režimą, kad apeitumėte prefiksus, pvz., `/shop`.",
     "range": "Laikotarpis",
     "noDataForThisRange": "Šiam laikotarpiui duomenų nėra",
     "peak": "· piko reikšmė {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filtrai",
       "clearFilters": "Išvalyti viską",
       "removeFilter": "Pašalinti filtrą „{{label}}“",
-      "showResults": "Rodyti rezultatus ({{count}})"
+      "showResults": "Rodyti rezultatus ({{count}})",
+      "showResultsOne": "Rodyti 1 rezultatą"
     },
     "personFieldPicker": {
       "none": "Neišsaugoma asmens lauke",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "{{name}} smėlio dėžės ribos išsaugotos, tačiau nepavyko iš naujo paleisti jo proceso su jomis: {{value}}",
       "restartRequired": "Reikia paleisti iš naujo",
       "sandboxSettingsForWereSaved": "{{name}} smėlio dėžės nustatymai išsaugoti, tačiau, kad jie įsigaliotų, reikia iš naujo paleisti API.",
-      "resourcesUpdated": "Ištekliai atnaujinti",
-      "sandboxLimitsForUpdated": "{{name}} smėlio dėžės ribos atnaujintos.",
       "sandboxDisabledFor": "{{name}} smėlio dėžė išjungta.",
       "saveFailed": "Išsaugoti nepavyko",
       "failedToUpdateSandboxLimits": "Nepavyko atnaujinti smėlio dėžės ribų.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Neaktyvus. Pastaruoju metu įvykių neužfiksuota.",
       "updating": "Atnaujinama...",
       "updateAvailable": "Yra naujinimas",
-      "updatePolicy": "Naujinimo politika",
       "saveChanges": "Išsaugoti pakeitimus",
       "unsavedChanges": "Neišsaugoti pakeitimai",
       "exportSettingsAsJson": "Eksportuoti nustatymus kaip JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nauja v{{version}}",
       "installedVersion": "Įdiegta {{version}}",
       "marketplaceVersion": "Parduotuvėje {{version}}",
-      "saving": "Saugoma...",
       "saveSettings": "Išsaugoti nustatymus",
       "viewDefinition": "Peržiūrėti aprašą",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Išvaizda",
       "failedToLoadAppearances": "Nepavyko įkelti išvaizdų",
       "failedToSaveShadowSetting": "Nepavyko išsaugoti šešėlių nustatymo",
+      "failedToSaveMenuSetting": "Nepavyko išsaugoti meniu nustatymo",
       "switchedToReloading": "Perjungta į „{{slug}}“. Įkeliama iš naujo…",
       "failedToSwitchAppearance": "Nepavyko perjungti išvaizdos",
       "installFailed": "Įdiegti nepavyko",
@@ -1919,6 +1917,8 @@
       "install": "Įdiegti",
       "surfaceShadows": "Paviršių šešėliai",
       "depthOnPanelsDialogsAnd": "Gylis skydeliuose, dialogo languose ir mygtukuose. Išjunkite, jei norite plokščios administravimo sąsajos — kraštinės ir kampai lieka tokie patys.",
+      "secondMenuColumn": "Antras meniu stulpelis",
+      "sectionPagesBesideTheMenu": "Skilties puslapiai yra stulpelyje šalia meniu. Išjungus jie atsidaro po savo eilute viename meniu, o kiekvienas ekranas praplatėja 220px.",
       "installFromAPackageUrl": "Įdiegti iš paketo URL",
       "builtIn": "Integruota",
       "installed": "Įdiegta",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP vietovė neatnaujinta",
       "geoUnavailable": "IP vietovės būsena nepasiekiama",
       "geoAttribution": "IP geolokaciją teikia {{name}} ({{license}}). Kol įjungta, atnaujinama kas mėnesį.",
-      "geoSaved": "Išsaugota",
-      "geoSavedOn": "Duomenų bazė atsisiunčiama; jos dydis apie 60 MB.",
-      "geoSavedOff": "Duomenų bazė pašalinta iš serverio.",
       "everyPluginRunsIsolated": "Izoliuota: kiekvienas įskiepis veikia atskirame procese. Atminties riba ir laiko limitas taikomi visiems įskiepiams; CPU dalis, bendra atmintis, diskas ir procesai – tik svetainės įkeltiems įskiepiams.",
       "schemaOrphans": "Duomenų bazės schema",
       "schemaOrphansHelp": "Stulpeliai, kurie dar yra duomenų bazėje, bet kurių niekas nebedeklaruoja. Platforma juos tik išvardija; niekas nepašalinama, kol nenuspręsite, o pašalinto stulpelio atkurti neįmanoma.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Išjungta — galinis taškas visiems grąžina 403.",
       "mediaPayloadLimitMb": "Medijos duomenų riba (MB)",
       "maximumDecodedUploadOrRemote": "Didžiausias iškoduotas įkėlimas ar nuotolinis atsisiuntimas, kurį priima MCP medijos įrankiai.",
-      "saveLimit": "Išsaugoti ribą",
       "allSites": "visos svetainės",
       "issuedBeforeSites": "išduota prieš atsirandant svetainėms",
       "noTokensYet": "Prieigos raktų dar nėra.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Platformos numatytoji",
       "thisSite": "Ši svetainė",
       "inForceNow": "Šiuo metu galioja",
-      "saving": "Įrašoma…",
-      "savePolicy": "Įrašyti politiką",
       "thePlatformDefaultIsSet": "Platformos numatytąją politiką nustato platformos administratorius.",
       "useTheLayerBelow": "Naudoti žemesnio lygmens nustatymą",
       "whyTheLawRequiresThese": "Kodėl įstatymai reikalauja saugoti šiuos įrašus",
-      "inheritsThePlatformDefault": "paveldima: platformos numatytoji"
+      "inheritsThePlatformDefault": "paveldima: platformos numatytoji",
+      "strategyDelete": "Ištrinti",
+      "strategyAnonymise": "Anonimizuoti",
+      "strategyRetain": "Išsaugoti",
+      "declaredBy": "Numatytoji reikšmė, nurodyta {{plugin}}",
+      "inheritsValue": "paveldi: {{value}}",
+      "legalBasis": "Teisinis pagrindas",
+      "theSiteColumnIsSet": "Stulpelis „Ši svetainė“ nustatomas svetainėje. Norėdami jį pakeisti, perjungiklyje pasirinkite svetainę."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Rodomas vardas",
     "thisPersonHasALogin": "Šis asmuo turi prisijungimo paskyrą; el. pašto adresas keičiamas paskyroje.",
     "birthDate": "Gimimo data",
-    "saveChanges": "Išsaugoti pakeitimus",
     "sendPasswordResetEmail": "Siųsti slaptažodžio atkūrimo laišką",
     "cancel": "Atšaukti",
     "accountManagement": "Paskyros valdymas",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Nukopijuokite atkūrimo kodus rankiniu būdu.",
     "nameRequired": "Būtinas pavadinimas",
     "enterATokenNameFirst": "Pirmiausia įveskite prieigos rakto pavadinimą.",
-    "tokenCreated": "Prieigos raktas sukurtas",
     "copyTheTokenNowIt": "Nukopijuokite prieigos raktą dabar. Jis rodomas tik vieną kartą.",
     "failedToCreateApiToken": "Nepavyko sukurti API prieigos rakto",
     "areYouSureYouWant2": "Ar tikrai norite išjungti 2FA šiam naudotojui? Tai sumažins paskyros saugumą.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Sesija atšaukta",
     "deviceSessionRevokedSuccessfully": "Įrenginio sesija sėkmingai atšaukta.",
     "failedToRevokeSession": "Nepavyko atšaukti sesijos",
-    "rolesUpdated": "Vaidmenys atnaujinti",
-    "theUserSRolesWere": "Naudotojo vaidmenys išsaugoti.",
     "saveFailed": "Išsaugoti nepavyko",
     "failedToSaveRoles": "Nepavyko išsaugoti vaidmenų.",
     "loadingRoles": "Įkeliami vaidmenys",
@@ -3448,8 +3445,6 @@
     "remove": "Pašalinti",
     "loadFailed": "Įkelti nepavyko",
     "couldNotRetrieveRoleDetails": "Nepavyko gauti vaidmens duomenų.",
-    "roleUpdated": "Vaidmuo atnaujintas",
-    "wasSaved": "„{{name}}“ išsaugotas.",
     "updateFailed": "Atnaujinti nepavyko",
     "anErrorOccurredWhileSaving": "Išsaugant įvyko klaida.",
     "loadingRole": "Įkeliamas vaidmuo...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Grįžti į naudotojus",
     "selfServiceSecurityControls": "Savitarnos saugos valdikliai",
     "sessionDeviceControlsAndPersonal": "Seansų ir įrenginių valdikliai bei asmeniniai API raktai pasiekiami tik peržiūrint savo naudotojo paskyrą.",
-    "securityRecommendations": "Saugos rekomendacijos",
     "twoFactorAuthentication": "Dviejų veiksnių autentifikavimas",
-    "activeAndProtectingThisAccount": "Įjungta ir saugo šią paskyrą",
-    "notEnabledHighlyRecommendedFor": "Neįjungta – labai rekomenduojama administratorių paskyroms",
-    "passwordProtected": "Apsaugota slaptažodžiu",
-    "accountHasASecurePassword": "Paskyra turi saugų slaptažodį",
-    "administratorAccess": "Administratoriaus prieiga",
     "fullSystemAccess2faStrongly": "Visiška prieiga prie sistemos – primygtinai rekomenduojamas 2FA",
     "personalApiTokens": "Asmeniniai API raktai",
     "tokenNameEGCi": "Rakto pavadinimas (pvz., CI diegimas)",
     "days": "Dienos",
     "createToken": "Sukurti raktą",
-    "copyNowShownOnce": "Nukopijuokite dabar (rodoma vieną kartą)",
     "loadingApiTokens": "Įkeliami API raktai...",
     "noApiTokensCreatedYet": "API raktų dar nesukurta.",
     "revoke": "Atšaukti",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Prisijungimų ir seansų veikla",
     "loadingAuthActivity": "Įkeliama autentifikavimo veikla...",
     "noRecentLoginSessionEvents": "Šio naudotojo pastarųjų prisijungimų ar seansų įvykių nėra.",
-    "unknownTime": "Nežinomas laikas",
-    "activityEvent": "Veiklos įvykis",
     "openFullGlobalActivity": "Atverti visą bendrą veiklą",
-    "2faStatus": "2FA būsena",
     "addAnExtraLayerOf": "Papildomas saugos lygis naudojant autentifikavimo programėlę (TOTP)",
-    "recommended": "Rekomenduojama",
     "enableTwoFactorAuthenticationTo": "Įjunkite dviejų veiksnių autentifikavimą, kad ši paskyra būtų apsaugota laiko pagrindu generuojamais vienkartiniais slaptažodžiais (TOTP).",
     "enable2fa": "Įjungti 2FA",
     "step1ScanQrCode": "1 veiksmas: nuskaitykite QR kodą",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "2 veiksmas: patvirtinkite kodą",
     "enterThe6DigitCode": "Įveskite 6 skaitmenų kodą iš autentifikavimo programėlės, kad užbaigtumėte sąranką:",
     "verifyEnable": "Patvirtinti ir įjungti",
-    "protectionActive": "Apsauga įjungta",
     "thisAccountRequiresA6": "Prisijungiant prie šios paskyros reikia 6 skaitmenų kodo iš autentifikavimo programėlės.",
     "regenerateRecoveryCodes": "Iš naujo sugeneruoti atkūrimo kodus",
     "disable2fa": "Išjungti 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Atšaukti kitus seansus",
     "loadingSessions": "Įkeliami seansai...",
     "noActiveSessions": "Aktyvių seansų nėra.",
-    "currentSession": "Dabartinis seansas",
-    "deviceSession": "Įrenginio seansas",
     "current": "Dabartinis",
     "unknownDevice": "Nežinomas įrenginys",
     "editAccount2": "Redaguoti paskyrą",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Atverti naudotojo įrašą",
     "token": "Raktas",
     "createdOn": "Sukurta {{date}}",
-    "notAvailable": "nėra",
     "revokedOn": "Atšaukta {{date}}",
     "recoveryCodesRemaining": "Likę atkūrimo kodai:",
-    "unknownValue": "nežinoma",
     "expiresOn": "Galioja iki: {{date}}",
     "person2": "Asmuo",
     "added": "Pridėta",
@@ -3591,12 +3570,10 @@
       "loading": "Įkeliami asmens laukai…",
       "loadFailed": "Nepavyko įkelti asmens laukų.",
       "saveFailed": "Nepavyko išsaugoti laukų.",
-      "saved": "Laukai išsaugoti.",
       "empty": "Asmens laukų dar nėra. Pridėkite lauką, kad jis būtų saugomas kiekvienam asmeniui.",
       "noneDeclared": "Šioje svetainėje dar nėra asmens laukų.",
       "declare": "Pridėti asmens laukų",
       "manage": "Tvarkyti laukus",
-      "save": "Išsaugoti laukus",
       "saveField": "Išsaugoti lauką",
       "delete": "Ištrinti",
       "deleteTitle": "Ištrinti šį lauką?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Galioja (dienų)",
+    "revokeOtherSessionsConfirm": "Visi kiti įrenginiai iš karto atjungiami.",
+    "revokeSessionConfirm": "Tas įrenginys iš karto atjungiamas.",
+    "revokeCurrentSessionConfirm": "Tai įrenginys, kurį dabar naudojate. Būsite iš karto atjungti.",
+    "revokeTokenConfirm": "„{{name}}“ iš karto nustoja veikti.",
+    "twoFactorTurnedOff": "Dviejų veiksnių prisijungimas šioje svetainėje išjungtas, todėl jo čia nustatyti negalima.",
+    "openSecuritySettings": "Atidaryti saugos nustatymus"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Svetainės nustatymai ({{what}}) nustatomi kiekvienoje svetainėje atskirai — pasirinkite svetainę iš svetainių meniu.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Šios svetainės nepavyko atidaryti peržiūrai.",
     "couldNotLoadTheSite": "Nepavyko įkelti svetainės.",
     "couldNotReloadThePlugin": "Nepavyko iš naujo įkelti įskiepių sąrašo.",
-    "siteSaved": "Svetainė išsaugota",
-    "routingFollowsImmediatelyNoRestart": "Maršrutizavimas atnaujinamas iš karto — paleisti iš naujo nereikia.",
     "notSaved": "Neišsaugota",
     "theSiteCouldNotBe2": "Nepavyko išsaugoti svetainės.",
     "couldNotOpenTheSite": "Nepavyko atidaryti svetainės",
@@ -3789,7 +3771,6 @@
     "visit": "Aplankyti",
     "openThisSite": "Atidaryti šią svetainę",
     "export": "Eksportuoti",
-    "save": "Išsaugoti",
     "couldNotLoadCertificates": "Nepavyko įkelti sertifikatų.",
     "couldNotSwitchThisHost": "Nepavyko perjungti šio serverio į automatinį režimą.",
     "couldNotSwitchThisHost2": "Nepavyko perjungti šio serverio į automatinį režimą (pakaitos simbolis).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Yra atnaujinimas",
     "isNowActive": "{{name}} dabar aktyvi.",
     "themeHasBeenUpdated2": "Tema {{name}} atnaujinta.",
-    "configurationSaved": "Konfigūracija išsaugota",
-    "visualProtocolsUpdatedSuccessfully": "Vaizdo protokolai sėkmingai atnaujinti.",
     "saveFailed": "Išsaugoti nepavyko",
     "hasBeenRemoved2": "{{name}} pašalinta.",
     "seedsExecuted": "Pradiniai duomenys įkelti",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Maketas",
     "extensionsSection": "Plėtiniai",
     "versionReady": "Versija {{version}} paruošta",
-    "saveChanges": "Išsaugoti pakeitimus",
     "runSeedsHint": "Iš naujo įkelia temos pradinius duomenis – pavyzdinius puslapius ir turinį – į šią svetainę.",
     "resetThemeHint": "Išvalo šios svetainės išsaugotus temos nustatymus ir iš naujo įkelia pradinius duomenis.",
     "notActiveHint": "Ši svetainė naudoja kitą temą.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Kas pasikeitė v{{version}}",
     "whatChanged": "Kas pasikeitė",
-    "closeBuildSourceDialog": "Uždaryti kūrimo šaltinio langą",
-    "close": "Uždaryti",
     "couldNotInstallThatVersion": "Nepavyko įdiegti šios versijos.",
     "couldNotChangeAutomaticUpdating": "Nepavyko pakeisti automatinio atnaujinimo.",
     "failed": "Nepavyko",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatiniai sertifikatai išjungti. {{reason}}",
     "automaticCertificatesComeFrom": "Automatinius sertifikatus išduoda {{authority}}.",
     "noSecretKeyIsConfigured": "Šiame serveryje nesukonfigūruotas SECRET_KEY, todėl privačiojo rakto išsaugoti negalima. Įkėlimas išjungtas, kol jis bus nustatytas.",
-    "nothingToSavePasteA": "Nėra ką išsaugoti – įklijuokite prieigos raktą arba spauskite „Išvalyti“, kad pašalintumėte išsaugotąjį.",
     "savedThisSiteNowUses": "Išsaugota. Ši svetainė dabar naudoja savo Cloudflare prieigos raktą.",
     "removedThisSiteFallsBack": "Pašalinta. Ši svetainė vėl naudoja platformos prieigos raktą.",
     "couldNotSaveTheToken": "Nepavyko išsaugoti prieigos rakto.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Šios svetainės prieigos raktas",
     "savedLeaveBlankToKeep": "Išsaugota – palikite tuščią, kad išliktų, arba spauskite „Išvalyti“, kad pašalintumėte",
     "pasteACloudflareApiToken": "Įklijuokite Cloudflare API prieigos raktą",
-    "save": "Išsaugoti",
     "clear": "Išvalyti",
     "nothingStoredThisHostCannot": "Nieko neišsaugota – ši platforma negali teikti šio pagrindinio kompiuterio per HTTPS.",
     "nothingStoredHereTlsFor": "Čia nieko neišsaugota – šio pagrindinio kompiuterio TLS užbaigiamas prieš platformą, todėl sertifikatas laikomas ten.",
@@ -4706,36 +4680,26 @@
     "roles": "Vaidmenys",
     "permissions": "Teisės",
     "eventDetails": "Įvykio informacija",
-    "context": "Kontekstas",
     "resource": "Išteklius",
     "system": "Sistema",
     "timestamp": "Laiko žyma",
-    "authority": "Įgaliojimas",
-    "actorId": "Vykdytojo ID",
-    "type": "Tipas",
-    "systemLog": "Sistemos žurnalas",
-    "audit": "Auditas: {{status}}",
-    "activityMessage": "Veiklos pranešimas",
-    "actionTaken": "Atliktas veiksmas",
-    "resourcePool": "Išteklių telkinys",
-    "rawMetadata": "Neapdoroti metaduomenys",
     "thisEntryIsPartOf": "Šis įrašas yra nekeičiamo audito žurnalo dalis.",
     "exportJson": "Eksportuoti JSON",
     "event": "Įvykis",
     "actor": "Vykdytojas",
+    "plugin": "Papildinys",
     "activity": "Veikla",
     "status": "Būsena",
     "action": "Veiksmas",
     "time": "Laikas",
-    "logSignature": "Žurnalo parašas: {{id}}",
     "internal": "VIDINIS",
     "level": {
-      "INFO": "INFO",
-      "WARN": "WARN",
-      "ERROR": "ERROR",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "AUDIT"
+      "INFO": "Info",
+      "WARN": "Warn",
+      "ERROR": "Error",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Audit"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Įrašas Nr. {{id}}",
+    "recordedData": "Užfiksuoti duomenys"
   },
   "mediaPicker": {
     "showingOnly": "Rodoma tik: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Užduotis",
       "schedule": "Vykdoma",
       "lastRun": "Paskutinis vykdymas",
-      "nextRun": "Kitas vykdymas"
+      "nextRun": "Kitas vykdymas",
+      "duration": "Trukmė"
     },
     "ownedBy": "{{owner}}",
     "platform": "Platforma",

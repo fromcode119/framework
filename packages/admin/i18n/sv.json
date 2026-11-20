@@ -162,6 +162,7 @@
       "reorderHandle": "Dra för att ändra ordning – eller fokusera och använd piltangenterna",
       "reorderEnable": "Visa listan i dess egen ordning för att kunna ändra ordningen",
       "reorderFailed": "Den nya ordningen kunde inte sparas",
+      "noMatch": "Inget matchar din sökning eller dina filter.",
       "exportCsv": "CSV",
       "exportJsonFile": "JSON",
       "importConfirmTitle": "Importera {{file}}?",
@@ -234,7 +235,6 @@
       "editSection": "Redigera",
       "notFilledIn": "Inte ifyllt",
       "statusSection": "Status",
-      "statusConfirm": "Ändra status till ”{{status}}”?",
       "recordSection": "Post",
       "showJson": "Visa som JSON",
       "showForm": "Visa som formulär",
@@ -245,7 +245,8 @@
       "copied": "Kopierat",
       "more": "Mer",
       "moreFields": "{{count}} fält",
-      "moreOneField": "{{count}} fält"
+      "moreOneField": "{{count}} fält",
+      "statusConfirm": "Ändra status till ”{{status}}”?"
     },
     "notFound": {
       "title": "Samlingen hittades inte",
@@ -366,7 +367,8 @@
     "reset": "Återställ",
     "notScheduledYet": "inte schemalagd än",
     "more": "Fler åtgärder",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Ta bort"
   },
   "ui": {
     "table": {
@@ -376,10 +378,7 @@
     },
     "color": {
       "choose": "Välj färg",
-      "colour": "Färg",
-      "pick": "Välj en färg",
       "hex": "Hexkod",
-      "confirm": "Bekräfta färg",
       "notSet": "Inte angiven"
     },
     "dependencies": {
@@ -390,6 +389,8 @@
       "inactiveTitle": "Inaktiva beroenden hittades",
       "intro": "För att aktivera {{plugin}} behöver följande hanteras:",
       "notInstalled": "INTE INSTALLERAD",
+      "inactive": "av",
+      "incompatible": "annan version",
       "requires": "Kräver version {{version}}. Den kan hämtas från marknadsplatsen.",
       "needsActivation": "Redan installerad men behöver aktiveras (version {{version}}).",
       "mismatch": "Versionen stämmer inte: kräver {{expected}}, hittade {{actual}}.",
@@ -436,12 +437,14 @@
     },
     "lightbox": {
       "title": "Förhandsvisning av plattform",
-      "image": "Förhandsvisning {{number}}"
+      "image": "Förhandsvisning {{number}}",
+      "previous": "Föregående",
+      "next": "Nästa"
     },
     "menuField": {
       "newItem": "Nytt menyobjekt",
-      "structure": "Menystruktur",
-      "add": "Lägg till menyobjekt"
+      "add": "Lägg till menyobjekt",
+      "reorder": "Dra för att flytta; piltangenter: upp och ned flyttar, höger drar in, vänster flyttar ut"
     },
     "field": {
       "notSet": "Inte angiven",
@@ -461,8 +464,8 @@
       "record": "post"
     },
     "array": {
-      "addNew": "Lägg till {{label}}",
-      "item": "Objekt"
+      "add": "Lägg till",
+      "reorder": "Dra för att flytta, eller använd piltangenterna"
     },
     "stepper": {
       "increment": "Öka",
@@ -528,9 +531,7 @@
       "noContact": "Ingen e-post eller telefon i Personer",
       "hasLogin": "Har inloggning",
       "noLogin": "Ingen inloggning",
-      "source": "Namn, e-post och telefon hämtas från Personer #{{id}}; ändra dem där.",
       "open": "Öppna i Personer",
-      "choose": "Välj någon annan",
       "searchFailed": "Det gick inte att söka i Personer just nu.",
       "noMatch": "Ingen i Personer matchar. Ange uppgifterna nedan; när du sparar läggs personen till i Personer.",
       "ref": "Personer #{{id}}",
@@ -612,7 +613,6 @@
         "openSites": "Öppna Webbplatser"
       }
     },
-    "relativeOverridesInheritTheCollection": "Relativa åsidosättningar ärver samlingens prefix. Aktivera absolut läge för att kringgå prefix som `/shop`.",
     "range": "Intervall",
     "noDataForThisRange": "Inga data för det här intervallet",
     "peak": "· topp {{value}}",
@@ -626,7 +626,8 @@
       "filters": "Filter",
       "clearFilters": "Rensa alla",
       "removeFilter": "Ta bort filtret {{label}}",
-      "showResults": "Visa {{count}} resultat"
+      "showResults": "Visa {{count}} resultat",
+      "showResultsOne": "Visa 1 resultat"
     },
     "personFieldPicker": {
       "none": "Sparas inte i ett personfält",
@@ -1101,8 +1102,6 @@
       "sandboxLimitsForWereSaved": "Sandlådegränserna för {{name}} sparades, men processen kunde inte startas om med dem: {{value}}",
       "restartRequired": "Omstart krävs",
       "sandboxSettingsForWereSaved": "Sandlådeinställningarna för {{name}} sparades, men API:et måste startas om innan de börjar gälla.",
-      "resourcesUpdated": "Resurser uppdaterade",
-      "sandboxLimitsForUpdated": "Sandlådegränserna för {{name}} har uppdaterats.",
       "sandboxDisabledFor": "Sandlådan har inaktiverats för {{name}}.",
       "saveFailed": "Det gick inte att spara",
       "failedToUpdateSandboxLimits": "Det gick inte att uppdatera sandlådegränserna.",
@@ -1135,7 +1134,6 @@
       "idleNoRecentEventsRecorded": "Inaktiv. Inga nya händelser har registrerats.",
       "updating": "Uppdaterar...",
       "updateAvailable": "Uppdatering tillgänglig",
-      "updatePolicy": "Uppdateringspolicy",
       "saveChanges": "Spara ändringar",
       "unsavedChanges": "Osparade ändringar",
       "exportSettingsAsJson": "Exportera inställningar som JSON",
@@ -1185,7 +1183,6 @@
       "newIn": "Nytt i v{{version}}",
       "installedVersion": "Installerad {{version}}",
       "marketplaceVersion": "Marknadsplats {{version}}",
-      "saving": "Sparar...",
       "saveSettings": "Spara inställningar",
       "viewDefinition": "Visa definition",
       "definition": {
@@ -1906,6 +1903,7 @@
       "appearance": "Utseende",
       "failedToLoadAppearances": "Det gick inte att läsa in utseenden",
       "failedToSaveShadowSetting": "Det gick inte att spara skugginställningen",
+      "failedToSaveMenuSetting": "Menyinställningen kunde inte sparas",
       "switchedToReloading": "Bytte till \"{{slug}}\". Laddar om…",
       "failedToSwitchAppearance": "Det gick inte att byta utseende",
       "installFailed": "Installationen misslyckades",
@@ -1919,6 +1917,8 @@
       "install": "Installera",
       "surfaceShadows": "Ytskuggor",
       "depthOnPanelsDialogsAnd": "Djup på paneler, dialogrutor och knappar. Stäng av för en platt adminpanel – kanter och hörn förblir exakt som de är.",
+      "secondMenuColumn": "Andra menykolumnen",
+      "sectionPagesBesideTheMenu": "En sektions sidor står i en kolumn bredvid menyn. Avstängd öppnas de under sin rad i den enda menyn och varje skärm blir 220px bredare.",
       "installFromAPackageUrl": "Installera från en paket-URL",
       "builtIn": "Inbyggt",
       "installed": "Installerat",
@@ -2123,9 +2123,6 @@
       "geoUpdateFailed": "IP-platsen uppdaterades inte",
       "geoUnavailable": "Status för IP-plats är inte tillgänglig",
       "geoAttribution": "IP-geolokalisering från {{name}} ({{license}}). Uppdateras varje månad när funktionen är på.",
-      "geoSaved": "Sparat",
-      "geoSavedOn": "Databasen laddas ned nu; den är cirka 60 MB.",
-      "geoSavedOff": "Databasen har tagits bort från servern.",
       "everyPluginRunsIsolated": "Isolerat: varje plugin körs i en egen process. Minnestaket och tidsgränsen gäller alla plugins; CPU-andel, totalt minne, disk och processer gäller bara plugins som en webbplats har laddat upp.",
       "schemaOrphans": "Databasschema",
       "schemaOrphansHelp": "Kolumner som fortfarande finns i databasen men som ingenting längre deklarerar. Plattformen listar dem bara; inget tas bort förrän du bestämmer det, och en borttagen kolumn kan inte återställas.",
@@ -2229,7 +2226,6 @@
       "disabledTheEndpointAnswers403": "Inaktiverad – slutpunkten svarar 403 till alla.",
       "mediaPayloadLimitMb": "Gräns för mediedata (MB)",
       "maximumDecodedUploadOrRemote": "Största avkodade uppladdning eller fjärrnedladdning som MCP-medieverktygen accepterar.",
-      "saveLimit": "Spara gräns",
       "allSites": "alla webbplatser",
       "issuedBeforeSites": "utfärdad före webbplatser",
       "noTokensYet": "Inga token ännu.",
@@ -3210,12 +3206,17 @@
       "platformDefault": "Plattformens standard",
       "thisSite": "Den här webbplatsen",
       "inForceNow": "Gäller nu",
-      "saving": "Sparar…",
-      "savePolicy": "Spara policy",
       "thePlatformDefaultIsSet": "Plattformens standard anges av en plattformsadministratör.",
       "useTheLayerBelow": "Använd nivån nedanför",
       "whyTheLawRequiresThese": "Varför lagen kräver att dessa uppgifter sparas",
-      "inheritsThePlatformDefault": "ärver: plattformens standard"
+      "inheritsThePlatformDefault": "ärver: plattformens standard",
+      "strategyDelete": "Radera",
+      "strategyAnonymise": "Anonymisera",
+      "strategyRetain": "Behåll",
+      "declaredBy": "Standard angiven av {{plugin}}",
+      "inheritsValue": "ärver: {{value}}",
+      "legalBasis": "Rättslig grund",
+      "theSiteColumnIsSet": "Kolumnen ”Den här webbplatsen” anges inne i en webbplats. Välj en webbplats i växlaren för att ändra den."
     }
   },
   "users": {
@@ -3334,7 +3335,6 @@
     "displayName": "Visningsnamn",
     "thisPersonHasALogin": "Personen har ett inloggningskonto; e-postadressen ändras på kontot.",
     "birthDate": "Födelsedatum",
-    "saveChanges": "Spara ändringar",
     "sendPasswordResetEmail": "Skicka e-post för lösenordsåterställning",
     "cancel": "Avbryt",
     "accountManagement": "Kontohantering",
@@ -3355,7 +3355,6 @@
     "pleaseCopyTheRecoveryCodes": "Kopiera återställningskoderna manuellt.",
     "nameRequired": "Namn krävs",
     "enterATokenNameFirst": "Ange ett tokennamn först.",
-    "tokenCreated": "Token skapad",
     "copyTheTokenNowIt": "Kopiera token nu. Den visas bara en gång.",
     "failedToCreateApiToken": "Det gick inte att skapa API-token",
     "areYouSureYouWant2": "Vill du verkligen inaktivera 2FA för den här användaren? Det försämrar kontots säkerhet.",
@@ -3386,8 +3385,6 @@
     "sessionRevoked": "Session återkallad",
     "deviceSessionRevokedSuccessfully": "Enhetssessionen har återkallats.",
     "failedToRevokeSession": "Det gick inte att återkalla sessionen",
-    "rolesUpdated": "Rollerna har uppdaterats",
-    "theUserSRolesWere": "Användarens roller har sparats.",
     "saveFailed": "Det gick inte att spara",
     "failedToSaveRoles": "Det gick inte att spara rollerna.",
     "loadingRoles": "Läser in roller",
@@ -3448,8 +3445,6 @@
     "remove": "Ta bort",
     "loadFailed": "Inläsningen misslyckades",
     "couldNotRetrieveRoleDetails": "Det gick inte att hämta rollens uppgifter.",
-    "roleUpdated": "Rollen har uppdaterats",
-    "wasSaved": "”{{name}}” har sparats.",
     "updateFailed": "Uppdateringen misslyckades",
     "anErrorOccurredWhileSaving": "Ett fel uppstod när ändringarna skulle sparas.",
     "loadingRole": "Läser in roll...",
@@ -3475,19 +3470,12 @@
     "returnToUsers": "Tillbaka till Användare",
     "selfServiceSecurityControls": "Säkerhetsinställningar för självbetjäning",
     "sessionDeviceControlsAndPersonal": "Hantering av sessioner/enheter och personliga API-tokens är bara tillgängliga när du visar ditt eget användarkonto.",
-    "securityRecommendations": "Säkerhetsrekommendationer",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
-    "activeAndProtectingThisAccount": "Aktiv och skyddar det här kontot",
-    "notEnabledHighlyRecommendedFor": "Inte aktiverad – rekommenderas starkt för administratörskonton",
-    "passwordProtected": "Lösenordsskyddat",
-    "accountHasASecurePassword": "Kontot har ett säkert lösenord",
-    "administratorAccess": "Administratörsåtkomst",
     "fullSystemAccess2faStrongly": "Full systemåtkomst – 2FA rekommenderas starkt",
     "personalApiTokens": "Personliga API-tokens",
     "tokenNameEGCi": "Tokennamn (t.ex. CI-driftsättning)",
     "days": "Dagar",
     "createToken": "Skapa token",
-    "copyNowShownOnce": "Kopiera nu (visas bara en gång)",
     "loadingApiTokens": "Läser in API-tokens...",
     "noApiTokensCreatedYet": "Inga API-tokens har skapats än.",
     "revoke": "Återkalla",
@@ -3495,12 +3483,8 @@
     "loginSessionActivity": "Inloggnings- och sessionsaktivitet",
     "loadingAuthActivity": "Läser in autentiseringsaktivitet...",
     "noRecentLoginSessionEvents": "Inga nyliga inloggnings- eller sessionshändelser för den här användaren.",
-    "unknownTime": "Okänd tid",
-    "activityEvent": "Aktivitetshändelse",
     "openFullGlobalActivity": "Öppna all global aktivitet",
-    "2faStatus": "2FA-status",
     "addAnExtraLayerOf": "Lägg till ett extra säkerhetslager med appbaserad autentisering (TOTP)",
-    "recommended": "Rekommenderas",
     "enableTwoFactorAuthenticationTo": "Aktivera tvåfaktorsautentisering för att skydda det här kontot med tidsbaserade engångslösenord (TOTP).",
     "enable2fa": "Aktivera 2FA",
     "step1ScanQrCode": "Steg 1: Skanna QR-koden",
@@ -3510,7 +3494,6 @@
     "step2VerifyCode": "Steg 2: Verifiera koden",
     "enterThe6DigitCode": "Ange den 6-siffriga koden från din autentiseringsapp för att slutföra konfigurationen:",
     "verifyEnable": "Verifiera och aktivera",
-    "protectionActive": "Skyddet är aktivt",
     "thisAccountRequiresA6": "Det här kontot kräver en 6-siffrig kod från en autentiseringsapp vid inloggning.",
     "regenerateRecoveryCodes": "Generera nya återställningskoder",
     "disable2fa": "Inaktivera 2FA",
@@ -3521,8 +3504,6 @@
     "revokeOtherSessions": "Återkalla övriga sessioner",
     "loadingSessions": "Läser in sessioner...",
     "noActiveSessions": "Inga aktiva sessioner.",
-    "currentSession": "Aktuell session",
-    "deviceSession": "Enhetssession",
     "current": "Aktuell",
     "unknownDevice": "Okänd enhet",
     "editAccount2": "Redigera konto",
@@ -3555,10 +3536,8 @@
     "openUserRecord": "Öppna användarposten",
     "token": "Token",
     "createdOn": "Skapad {{date}}",
-    "notAvailable": "–",
     "revokedOn": "Återkallad {{date}}",
     "recoveryCodesRemaining": "Återstående återställningskoder:",
-    "unknownValue": "okänt",
     "expiresOn": "Upphör: {{date}}",
     "person2": "Person",
     "added": "Tillagd",
@@ -3591,12 +3570,10 @@
       "loading": "Läser in personfält…",
       "loadFailed": "Personfälten kunde inte läsas in.",
       "saveFailed": "Fälten kunde inte sparas.",
-      "saved": "Fälten har sparats.",
       "empty": "Inga personfält ännu. Lägg till ett för att börja spara det för varje person.",
       "noneDeclared": "Den här webbplatsen har inga personfält ännu.",
       "declare": "Lägg till personfält",
       "manage": "Hantera fält",
-      "save": "Spara fält",
       "saveField": "Spara fält",
       "delete": "Ta bort",
       "deleteTitle": "Ta bort det här fältet?",
@@ -3649,7 +3626,14 @@
       "partner": "Partner",
       "user": "User"
     },
-    "hasAccount": "Can sign in"
+    "hasAccount": "Can sign in",
+    "validForDays": "Giltig i (dagar)",
+    "revokeOtherSessionsConfirm": "Alla andra enheter loggas ut direkt.",
+    "revokeSessionConfirm": "Den enheten loggas ut direkt.",
+    "revokeCurrentSessionConfirm": "Det här är enheten du använder nu. Du loggas ut direkt.",
+    "revokeTokenConfirm": "”{{name}}” slutar fungera direkt.",
+    "twoFactorTurnedOff": "Tvåfaktorsinloggning är avstängd för den här webbplatsen, så den kan inte ställas in här.",
+    "openSecuritySettings": "Öppna säkerhetsinställningar"
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Webbplatsinställningar ({{what}}) anges inuti varje webbplats – välj en i webbplatsmenyn.",
@@ -3773,8 +3757,6 @@
     "thisSiteCouldNotBe": "Den här webbplatsen kunde inte öppnas för förhandsvisning.",
     "couldNotLoadTheSite": "Det gick inte att läsa in webbplatsen.",
     "couldNotReloadThePlugin": "Det gick inte att läsa in tilläggslistan igen.",
-    "siteSaved": "Webbplatsen har sparats",
-    "routingFollowsImmediatelyNoRestart": "Routningen uppdateras direkt – ingen omstart krävs.",
     "notSaved": "Inte sparad",
     "theSiteCouldNotBe2": "Webbplatsen kunde inte sparas.",
     "couldNotOpenTheSite": "Det gick inte att öppna webbplatsen",
@@ -3789,7 +3771,6 @@
     "visit": "Besök",
     "openThisSite": "Öppna den här webbplatsen",
     "export": "Exportera",
-    "save": "Spara",
     "couldNotLoadCertificates": "Det gick inte att läsa in certifikat.",
     "couldNotSwitchThisHost": "Det gick inte att växla den här värden till automatiskt.",
     "couldNotSwitchThisHost2": "Det gick inte att växla den här värden till automatiskt (jokertecken).",
@@ -4199,8 +4180,6 @@
     "updateAvailable": "Uppdatering tillgänglig",
     "isNowActive": "{{name}} är nu aktivt.",
     "themeHasBeenUpdated2": "Temat {{name}} har uppdaterats.",
-    "configurationSaved": "Konfigurationen har sparats",
-    "visualProtocolsUpdatedSuccessfully": "De visuella protokollen har uppdaterats.",
     "saveFailed": "Det gick inte att spara",
     "hasBeenRemoved2": "{{name}} har tagits bort.",
     "seedsExecuted": "Seed-data har körts",
@@ -4300,7 +4279,6 @@
     "layoutSection": "Layout",
     "extensionsSection": "Utökningar",
     "versionReady": "Version {{version}} är klar",
-    "saveChanges": "Spara ändringar",
     "runSeedsHint": "Läser in temats startdata – exempelsidor och innehåll – på denna webbplats igen.",
     "resetThemeHint": "Rensar webbplatsens sparade temainställningar och läser in startdata igen.",
     "notActiveHint": "Denna webbplats använder ett annat tema.",
@@ -4492,8 +4470,6 @@
   "sources": {
     "whatChangedInV": "Nyheter i v{{version}}",
     "whatChanged": "Nyheter",
-    "closeBuildSourceDialog": "Stäng dialogrutan för byggkälla",
-    "close": "Stäng",
     "couldNotInstallThatVersion": "Det gick inte att installera den versionen.",
     "couldNotChangeAutomaticUpdating": "Det gick inte att ändra automatisk uppdatering.",
     "failed": "Misslyckades",
@@ -4641,7 +4617,6 @@
     "automaticCertificatesAreOff": "Automatiska certifikat är avstängda. {{reason}}",
     "automaticCertificatesComeFrom": "Automatiska certifikat kommer från {{authority}}.",
     "noSecretKeyIsConfigured": "Ingen SECRET_KEY är konfigurerad på servern, så en privat nyckel kan inte lagras. Uppladdning är inaktiverad tills en har angetts.",
-    "nothingToSavePasteA": "Inget att spara – klistra in en token eller använd Rensa för att ta bort den sparade.",
     "savedThisSiteNowUses": "Sparat. Den här webbplatsen använder nu sin egen Cloudflare-token.",
     "removedThisSiteFallsBack": "Borttaget. Den här webbplatsen använder nu plattformens token.",
     "couldNotSaveTheToken": "Det gick inte att spara token.",
@@ -4651,7 +4626,6 @@
     "thisSiteSToken": "Webbplatsens token",
     "savedLeaveBlankToKeep": "Sparad – lämna tomt för att behålla, eller använd Rensa för att ta bort",
     "pasteACloudflareApiToken": "Klistra in en Cloudflare API-token",
-    "save": "Spara",
     "clear": "Rensa",
     "nothingStoredThisHostCannot": "Inget sparat – den här värden kan inte betjänas över HTTPS av plattformen.",
     "nothingStoredHereTlsFor": "Inget sparat här – TLS för den här värden avslutas före plattformen, så certifikatet finns där.",
@@ -4706,36 +4680,26 @@
     "roles": "Roller",
     "permissions": "Behörigheter",
     "eventDetails": "Händelsedetaljer",
-    "context": "Kontext",
     "resource": "Resurs",
     "system": "System",
     "timestamp": "Tidsstämpel",
-    "authority": "Behörighet",
-    "actorId": "Aktörs-ID",
-    "type": "Typ",
-    "systemLog": "Systemlogg",
-    "audit": "Granskning: {{status}}",
-    "activityMessage": "Aktivitetsmeddelande",
-    "actionTaken": "Utförd åtgärd",
-    "resourcePool": "Resurspool",
-    "rawMetadata": "Rå metadata",
     "thisEntryIsPartOf": "Den här posten ingår i en oföränderlig granskningslogg.",
     "exportJson": "Exportera JSON",
     "event": "Händelse",
     "actor": "Aktör",
+    "plugin": "Tillägg",
     "activity": "Aktivitet",
     "status": "Status",
     "action": "Åtgärd",
     "time": "Tid",
-    "logSignature": "Loggsignatur: {{id}}",
     "internal": "INTERN",
     "level": {
-      "INFO": "INFO",
-      "WARN": "VARNING",
-      "ERROR": "FEL",
-      "DEBUG": "DEBUG",
-      "SYSTEM": "SYSTEM",
-      "AUDIT": "GRANSKNING"
+      "INFO": "Info",
+      "WARN": "Varning",
+      "ERROR": "Fel",
+      "DEBUG": "Debug",
+      "SYSTEM": "System",
+      "AUDIT": "Granskning"
     },
     "events": {
       "auth": {
@@ -4748,7 +4712,9 @@
         },
         "registered": "Account created"
       }
-    }
+    },
+    "entryNumber": "Post #{{id}}",
+    "recordedData": "Registrerade data"
   },
   "mediaPicker": {
     "showingOnly": "Visar endast: {{types}}",
@@ -4782,7 +4748,8 @@
       "task": "Uppgift",
       "schedule": "Körs",
       "lastRun": "Senaste körning",
-      "nextRun": "Nästa körning"
+      "nextRun": "Nästa körning",
+      "duration": "Varaktighet"
     },
     "ownedBy": "{{owner}}",
     "platform": "Plattform",

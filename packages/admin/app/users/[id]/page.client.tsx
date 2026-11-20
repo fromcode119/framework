@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactElement, ReactNode } from 'react';
 import { Card } from '@/components/ui/view/card.client';
@@ -90,7 +92,7 @@ export class UserProfilePage extends AdminComponent {
     if (!user) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
-          <h1 className="text-2xl font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
+          <h1 className="text-2xl font-medium fc-tone-muted tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
           <AdminLink href={AdminConstants.ROUTES.USERS.LIST}>
             <Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToDatabase')}</Button>
           </AdminLink>
@@ -102,7 +104,6 @@ export class UserProfilePage extends AdminComponent {
       ? `${user.firstName[0]}${user.lastName[0]}`
       : user.email[0].toUpperCase();
 
-    const pill = AdminClass.of('ext-pill');
     const suspended = AccountStatus.resolve(user.accountStatus) === AccountStatus.SUSPENDED;
     const roles: string[] = Array.isArray(user.roles) ? user.roles : [];
     const value = (text: ReactNode) => <span className={AdminClass.of('settings-value')}>{text}</span>;
@@ -112,7 +113,7 @@ export class UserProfilePage extends AdminComponent {
       <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <UserProfileHeader theme={theme} user={user} userId={id} initials={initials} selfService={selfService} />
 
-        <div className="w-full p-6 fc-page-stack">
+        <div className="w-full py-6 fc-page-stack">
           <Card title={AdminI18n.t('users.accountInformation')}>
             <SettingRow title={AdminI18n.t('users.firstName')} width={SettingRowWidth.AUTO}>{user.firstName ? value(user.firstName) : notSet}</SettingRow>
             <SettingRow title={AdminI18n.t('users.lastName')} width={SettingRowWidth.AUTO}>{user.lastName ? value(user.lastName) : notSet}</SettingRow>
@@ -123,7 +124,7 @@ export class UserProfilePage extends AdminComponent {
           <Card title={AdminI18n.t('users.assignedSecurityRoles')}>
             <SettingRow title={AdminI18n.t('users.roles')} width={SettingRowWidth.AUTO}>
               {roles.length
-                ? roles.map((role) => <span key={role} className={pill}>{this.roleNames[role] || role}</span>)
+                ? roles.map((role) => <Badge key={role} variant={BadgeVariant.DEFAULT}>{this.roleNames[role] || role}</Badge>)
                 : <span className={`${AdminClass.of('settings-value')} ${AdminClass.of('settings-value--empty')}`}>{AdminI18n.t('users.noRolesAssignedToThis')}</span>}
               {selfService ? null : (
                 <AdminLink href={AdminConstants.ROUTES.USERS.ROLES(id)}>
@@ -135,7 +136,7 @@ export class UserProfilePage extends AdminComponent {
 
           <Card title={AdminI18n.t('users.systemMetadata')}>
             <SettingRow title={AdminI18n.t('users.accountStatus')} width={SettingRowWidth.AUTO}>
-              <span className={`${pill} ${AdminClass.of(suspended ? 'ext-pill--danger' : 'ext-pill--ok')}`}>{suspended ? AdminI18n.t('users.suspended') : AdminI18n.t('users.active')}</span>
+              <Badge variant={suspended ? BadgeVariant.DANGER : BadgeVariant.SUCCESS}>{suspended ? AdminI18n.t('users.suspended') : AdminI18n.t('users.active')}</Badge>
             </SettingRow>
             <SettingRow title={AdminI18n.t('users.passwordReset')} width={SettingRowWidth.AUTO}>
               {value(user.forcePasswordReset ? AdminI18n.t('users.requiredOnNextLogin') : AdminI18n.t('users.notRequired'))}

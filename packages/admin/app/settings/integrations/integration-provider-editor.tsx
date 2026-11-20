@@ -1,3 +1,9 @@
+import { Hint } from '@/components/ui/view/hint.client';
+import { Label } from '@/components/ui/view/label.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Text } from '@/components/ui/view/text.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
@@ -100,25 +106,19 @@ export class IntegrationProviderEditor extends PureReactor {
 
   private renderStatus(): ReactNode {
     return (
-      <div className="md:col-span-2">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <span className="text-[12px] font-medium text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.status')}</span>
-          <span className="inline-flex h-6 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[12px] font-medium tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-            <FrameworkIcons.Lock size={10} />
-            {AdminI18n.t('ui.field.readOnly')}
-          </span>
-        </div>
-        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[13px] text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">{this.statusText()}</p>
+      <div className="fc-form-grid__wide fc-field-stack">
+        <Label optional={AdminI18n.t('ui.field.readOnly')}>{AdminI18n.t('settings.integrations.status')}</Label>
+        <span className="fc-field-shown">{this.statusText()}</span>
       </div>
     );
   }
 
   private renderProviderChoice(): ReactNode {
     return (
-      <div>
+      <div className="fc-field-stack">
         <Select value={this.editor.providerKey} onChange={this.onChooseProvider} options={this.providerOptions}
           label={AdminI18n.t('settings.integrations.provider')} searchable={false} size={FieldSize.MD} />
-        {this.single ? <p className="mt-1 text-[12px] text-slate-500">{AdminI18n.t('settings.integrations.oneProviderAtATime')}</p> : null}
+        {this.single ? <Hint>{AdminI18n.t('settings.integrations.oneProviderAtATime')}</Hint> : null}
       </div>
     );
   }
@@ -141,78 +141,52 @@ export class IntegrationProviderEditor extends PureReactor {
   private renderRemove(): ReactNode {
     if (this.single || this.editor.isNew) return null;
     if (!this.canRemove) {
-      return <p className="border-t border-slate-100 pt-4 text-[12px] text-slate-500 dark:border-slate-800">{AdminI18n.t('settings.integrations.removeLastRefused')}</p>;
+      return <div className="fc-form-foot"><Hint>{AdminI18n.t('settings.integrations.removeLastRefused')}</Hint></div>;
     }
     return (
-      <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <div className="fc-form-foot">
         {this.confirmingRemove ? (
           <>
-            <button type="button" onClick={this.onConfirmRemove} disabled={this.removing}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-rose-600 bg-rose-600 px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-rose-500 disabled:opacity-50">
-              {this.removing ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Trash size={14} />}
-              {AdminI18n.t('settings.integrations.removeProvider')}
-            </button>
-            <button type="button" onClick={this.onCancelRemove}
-              className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-3.5 text-[13px] font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-              {AdminI18n.t('settings.integrations.cancel')}
-            </button>
+            <Button variant={ButtonVariant.DANGER} isLoading={this.removing} icon={<FrameworkIcons.Trash size={14} />} onClick={this.onConfirmRemove}>{AdminI18n.t('settings.integrations.removeProvider')}</Button>
+            <Button variant={ButtonVariant.SECONDARY} onClick={this.onCancelRemove}>{AdminI18n.t('settings.integrations.cancel')}</Button>
           </>
         ) : (
-          <button type="button" onClick={this.onRequestRemove}
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-rose-600 hover:text-rose-700 dark:text-rose-400">
-            <FrameworkIcons.Trash size={14} />
-            {AdminI18n.t('settings.integrations.removeProvider')}
-          </button>
+          <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Trash size={14} />} onClick={this.onRequestRemove}>{AdminI18n.t('settings.integrations.removeProvider')}</Button>
         )}
       </div>
     );
   }
 
-  private renderHeading(): ReactNode {
-    const integration = this.activeIntegration;
-    if (this.single) {
-      return (
-        <div>
-          <h2 className="text-base font-medium text-slate-900 dark:text-white">{integration.label}</h2>
-          {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
-        </div>
-      );
-    }
-    const title = this.editor.isNew
+  /** The card's name, and for one provider among several the way back to the list. */
+  private get title(): string {
+    if (this.single) return this.activeIntegration.label;
+    return this.editor.isNew
       ? AdminI18n.t('settings.integrations.addProvider')
       : this.editor.providerName || this.currentProviderDefinition?.label || this.editor.providerKey;
-    return (
-      <div className="space-y-2">
-        <button type="button" onClick={this.onBack}
-          className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200">
-          <FrameworkIcons.ArrowLeft size={13} />
-          {AdminI18n.t('settings.integrations.backTo', { label: integration.label })}
-        </button>
-        <h2 className="text-base font-medium text-slate-900 dark:text-white">{title}</h2>
-      </div>
-    );
   }
 
   render(): ReactNode {
     const editor = this.editor;
+    const integration = this.activeIntegration;
     return (
-      <div className="space-y-4">
-        {this.renderHeading()}
-        <form id={IntegrationProviderEditor.FORM_ID} onSubmit={this.handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <RecordCard title={this.title}
+        aside={this.single ? undefined : <div className="fc-record-card__table-tools"><Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.ArrowLeft size={14} />} onClick={this.onBack}>{AdminI18n.t('settings.integrations.backTo', { label: integration.label })}</Button></div>}>
+        <form id={IntegrationProviderEditor.FORM_ID} onSubmit={this.handleSubmit} className="fc-form-stack">
+          {this.single && integration.description ? <Text size="small" muted as="p">{integration.description}</Text> : null}
+          <div className="fc-form-grid">
             {this.single ? this.renderStatus() : null}
             {this.single || editor.isNew ? this.renderProviderChoice() : null}
             {this.single ? null : (
               <Input value={editor.providerName} onChange={this.handleProviderNameChange}
                 label={AdminI18n.t('settings.integrations.displayNameOptional')}
-                placeholder={this.currentProviderDefinition?.label} autoComplete="off" size={FieldSize.MD} />
+                placeholder={this.currentProviderDefinition?.label} autoComplete="off" />
             )}
             {this.renderFields()}
           </div>
           <IntegrationSetupAddresses addresses={this.currentProviderDefinition?.setupAddresses || []} />
           {this.renderRemove()}
         </form>
-      </div>
+      </RecordCard>
     );
   }
 }

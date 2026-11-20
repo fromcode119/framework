@@ -1,3 +1,4 @@
+import { Avatar } from '@/components/ui/view/avatar.client';
 import type { ReactElement } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -5,7 +6,6 @@ import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
-import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -199,32 +199,25 @@ export class SidebarAccountCard extends AdminComponent {
         label: AdminI18n.t('shell.account.signOut'),
         icon: <FrameworkIcons.Logout size={16} />,
         onClick: logout,
-        variant: DropdownItemVariant.DANGER,
       },
     ];
   }
 
+  /** The console's `Avatar`, at the row's size or the menu head's. It was a brand-filled circle of its own. */
   private avatar(size: AvatarSize): ReactElement {
-    const box = size === AvatarSize.SMALL ? 'h-7 w-7 text-[12px]' : 'h-9 w-9 text-[13px]';
-    return (
-      <span
-        className={`${box} flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary)] font-medium text-white ring-1 ring-inset ring-white/15`}
-      >
-        {this.initial}
-      </span>
-    );
+    return <Avatar fallback={this.initial} size={size === AvatarSize.SMALL ? 'base' : 'large'} />;
   }
 
   /** The same identity the trigger shows, repeated at the top of the menu so the menu stands alone. */
   private get menuHeader(): ReactElement {
     return (
-      <div className="flex items-center gap-3">
+      <div className="fc-account fc-account--head">
         {this.avatar(AvatarSize.MEDIUM)}
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[13px] font-medium leading-tight text-slate-900 dark:text-white">
+        <div className="fc-account__text">
+          <span className="fc-account__name">
             {this.displayName}
           </span>
-          <span className="truncate text-[12px] leading-tight text-slate-500 dark:text-slate-400">
+          <span className="fc-account__role">
             {this.auth.user?.email}
           </span>
         </div>
@@ -242,14 +235,14 @@ export class SidebarAccountCard extends AdminComponent {
     }
 
     return (
-      <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
+      <span className="fc-account">
         {this.avatar(AvatarSize.SMALL)}
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[13px] font-medium leading-tight text-slate-800 dark:text-slate-100">
+        <span className="fc-account__text">
+          <span className="fc-account__name">
             {this.displayName}
           </span>
           {this.subtitle ? (
-            <span className={`truncate text-[12px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
+            <span className={`fc-account__role${this.multiTenant ? '' : ' capitalize'}`}>{this.subtitle}</span>
           ) : null}
         </span>
         {/*
@@ -260,17 +253,14 @@ export class SidebarAccountCard extends AdminComponent {
           * from. The paired chevrons are what every switcher of this shape uses, and they claim
           * nothing about where you are headed.
           */}
-        <FrameworkIcons.ChevronsUpDown
-          size={14}
-          className="shrink-0 text-slate-300 transition-colors group-hover/account:text-slate-500 dark:text-slate-600"
-        />
+        <FrameworkIcons.ChevronsUpDown size={15} className="fc-account__caret" />
       </span>
     );
   }
 
   render(): ReactElement {
     return (
-      <div className={`border-t border-slate-200/80 dark:border-slate-800/80 ${this.isMini ? 'p-2' : 'p-2'}`}>
+      <div className="fc-account-slot">
         <Dropdown
           block
           placement={DropdownPlacement.BESIDE}

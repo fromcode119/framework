@@ -3,8 +3,6 @@ import type { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.en
 
 export interface IBuildSourceFormProps {
   build: any | null;
-  busy: boolean;
   mode: SourceEditorMode;
-  onCancel: () => void;
   onSubmit: (values: IBuildSourceFormValues) => void;
 }

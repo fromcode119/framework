@@ -4,11 +4,8 @@ import { bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
-import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
@@ -70,8 +67,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.howManyDistinctThemePlugin')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={1}
                   step={1}
@@ -90,8 +87,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.aThemeWorldThatAllocates')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={128} step={64} value={this.ssrRenderMemoryMb} onChange={this.onSsrRenderMemory} placeholder={AdminI18n.t('settings.infrastructure.default6', { SSR_RENDER_MEMORY_MB_DEFAULT: SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT })} />
               </div>
             </div>
@@ -102,18 +99,10 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.aPageRenderThatDoes')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={AdminI18n.t('settings.infrastructure.default7', { SSR_RENDER_TIMEOUT_MS_DEFAULT: SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT })} />
               </div>
-              <Button
-                onClick={this.saveSsrCap}
-                isLoading={this.isSavingSsrCap}
-                icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
         </Card>
@@ -138,8 +127,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.daysOfSystemLogHistory')}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={0}
                   step={1}
@@ -148,14 +137,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
-              <Button
-                onClick={this.saveRetention}
-                isLoading={this.isSavingRetention}
-                icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
 
@@ -176,8 +157,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               </Explanation>
             )}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-full md:w-40">
+            <div className="fc-settings-group">
+              <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper
                   min={0}
                   step={1}
@@ -186,14 +167,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
-              <Button
-                onClick={this.saveAuditRetention}
-                isLoading={this.isSavingAuditRetention}
-                icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
 

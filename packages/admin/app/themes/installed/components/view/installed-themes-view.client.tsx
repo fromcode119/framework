@@ -1,3 +1,5 @@
+import { PageBar } from '@/components/ui/view/page-bar.client';
+import { ListCard } from '@/components/ui/view/list-card.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import { Button } from '@/components/ui/view/button.client';
 import { Loader } from '@/components/ui/view/loader.client';
@@ -76,13 +78,14 @@ export class InstalledThemesView extends PureReactor {
       ? `${AdminI18n.t('themes.onlyThisSiteSeesIt')}${siteQuota ? ` ${AdminI18n.t('themes.thisSiteHoldsOfThemes', { themes: siteQuota.themes, maxThemes: siteQuota.maxThemes, round: Math.round(siteQuota.maxBytes / (1024 * 1024)) })}` : ''}`
       : '';
     return (
-      <div className={AdminClass.of('ext-toolbar')}>
+      // The page's one action at the END of the bar, where every other list has it. It stood alone at
+      // the start of a row of its own, over an empty card.
+      <PageBar lead={note ? <span className={AdminClass.of('ext-toolbar__note')} title={note}>{note}</span> : null}>
         <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" />
-        <Button onClick={this.handleUploadClick} isLoading={this.isUploading || this.isInspectingUpload}>
+        <Button icon={<FrameworkIcons.Upload size={15} />} onClick={this.handleUploadClick} isLoading={this.isUploading || this.isInspectingUpload}>
           {this.isInspectingUpload ? AdminI18n.t('themes.inspecting') : siteScope ? AdminI18n.t('themes.uploadForThisSite') : AdminI18n.t('themes.uploadThemeZipTarGz')}
         </Button>
-        {note ? <span className={AdminClass.of('ext-toolbar__note')} title={note}>{note}</span> : null}
-      </div>
+      </PageBar>
     );
   }
 
@@ -102,7 +105,7 @@ export class InstalledThemesView extends PureReactor {
   private renderThemes(): ReactNode {
     const themes = this.themes;
     if (!themes.length) {
-      return <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{AdminI18n.t('themes.noThemesInstalled')}</div>;
+      return <ListCard empty={AdminI18n.t('themes.noThemesInstalled')} />;
     }
     // `themes` is API JSON, so `state` is a raw string here — resolve before comparing to a member.
     const isActive = (theme: IInstalledThemeManifest) => ThemeState.resolve(theme.state) === ThemeState.ACTIVE;
@@ -112,12 +115,12 @@ export class InstalledThemesView extends PureReactor {
       <>
         <h2 className={`${AdminClass.of('ext-section')} ${AdminClass.of('ext-section--first')}`}>{AdminI18n.t('themes.activeTheme')}</h2>
         {active.length
-          ? <div className={AdminClass.of('ext-list')}>{active.map((theme) => this.row(theme))}</div>
-          : <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{AdminI18n.t('themes.noActiveTheme')}</div>}
+          ? <ListCard>{active.map((theme) => this.row(theme))}</ListCard>
+          : <ListCard empty={AdminI18n.t('themes.noActiveTheme')} />}
         {others.length ? (
           <>
             <h2 className={AdminClass.of('ext-section')}>{AdminI18n.t('themes.otherThemes')}</h2>
-            <div className={AdminClass.of('ext-list')}>{others.map((theme) => this.row(theme))}</div>
+            <ListCard>{others.map((theme) => this.row(theme))}</ListCard>
           </>
         ) : null}
       </>

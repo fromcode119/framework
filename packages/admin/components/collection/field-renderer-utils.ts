@@ -76,7 +76,7 @@ export class FieldRendererUtils {
     const block = FieldRendererUtils.isBlockField(field);
     const colSpan = block || FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ? 'col-span-full' : '';
 
-    // No box around a read-only field. It used to get `rounded-xl border bg-slate-50/70 p-2.5`,
+    // No box around a read-only field. It used to get `rounded-xl border fc-tone-raised p-2.5`,
     // which put a frame inside the section's card for every locked value on the screen — a page of
     // nested outlines. Locked already reads as locked without one: the field carries its own
     // "Unlock edit" control and the input renders disabled.

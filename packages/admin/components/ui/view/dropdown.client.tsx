@@ -112,8 +112,10 @@ export class Dropdown extends DropdownPositioning {
               // than the space below the trigger simply ran off the bottom of the window. It scrolls
               // inside itself now instead.
               maxHeight: coords.maxHeight,
+              // The same limit for a panel that keeps its own head and foot in view and scrolls only between them.
+              ['--fc-dropdown-max-h' as string]: `${coords.maxHeight}px`,
               overflowY: 'auto',
-              minWidth: '13rem',
+              minWidth: '220px',
               // Laid out (so it can be measured) but not shown until the measurement has been applied —
               // otherwise the first frame paints the unclamped guess and the panel visibly jumps.
               visibility: this.positioned ? 'visible' : 'hidden'
@@ -126,15 +128,14 @@ export class Dropdown extends DropdownPositioning {
             // measured, and an animation started then would be over by the time anything was on screen.
             // It asked for `animate-in fade-in-0 zoom-in-95`, which no stylesheet here defines, so until
             // now the menu simply appeared between two frames.
-            className={`fc-menu-sheet w-max min-w-56 max-w-[min(22rem,calc(100vw-2rem))] border z-[9999] ${
+            className={`fc-menu-sheet w-max max-w-[min(22rem,calc(100vw-2rem))] z-[9999] ${
               this.positioned ? 'fc-enter fc-enter--menu' : ''
             } ${
               coords.direction === DropdownDirection.UP ? 'origin-bottom-right' : 'origin-top-right'
-            } bg-white border-slate-200 shadow-lg shadow-slate-900/[0.08]
-              dark:bg-slate-900 dark:border-slate-800 dark:shadow-black/40`}
+            }`}
           >
             {header && (
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="px-4 py-3 border-b fc-tone-line">
                 {header}
               </div>
             )}
@@ -142,7 +143,7 @@ export class Dropdown extends DropdownPositioning {
               {DropdownPositioning.groupItems(items).map((group, groupIdx) => (
                 <Fragment key={group.section ?? `group-${groupIdx}`}>
                 {group.scrolls && group.section ? (
-                  <div className="mt-2 mb-0.5 px-3 text-[12px] font-medium text-slate-400 dark:text-slate-500">
+                  <div className="mt-2 mb-0.5 px-3 fc-size-xs font-medium fc-tone-muted">
                     {group.section}
                   </div>
                 ) : null}
@@ -161,7 +162,7 @@ export class Dropdown extends DropdownPositioning {
                       * like a separator between two unrelated things rather than a heading.
                       */}
                     {item.section && !group.scrolls ? (
-                      <div className="mt-2 mb-0.5 px-3 text-[12px] font-medium text-slate-400 dark:text-slate-500">
+                      <div className="mt-2 mb-0.5 px-3 fc-size-xs font-medium fc-tone-muted">
                         {item.section}
                       </div>
                     ) : null}

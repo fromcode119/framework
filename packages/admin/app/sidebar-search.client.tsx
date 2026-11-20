@@ -1,3 +1,4 @@
+import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Reactor, bound, prop, ref } from '@fromcode119/react-class-components';
@@ -7,16 +8,20 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The menu's own search: what is typed narrows the menu in place to the pages whose names match, so any
- * page of any section is one word away. ⌘K (Ctrl+K) puts the cursor here from anywhere in the console;
- * Escape clears it and gives the full menu back.
+ * page of any section is one word away; Escape clears it and gives the full menu back. ⌘K (Ctrl+K)
+ * opens the big search from anywhere in the console, and so does the key printed in this field.
  */
 export class SidebarSearch extends Reactor {
   @prop declare query: string;
   @prop declare onQuery: (query: string) => void;
+  /** Opens the big search; ⌘K (Ctrl+K) from anywhere in the console. */
+  @prop declare onPalette: () => void;
+  /** False where this is shown but must not listen to the whole window (the kit, beside the real one). */
+  @prop declare listens?: boolean;
   @ref declare private input: Ref<Input>;
 
   componentDidMount(): void {
-    window.addEventListener('keydown', this.shortcut);
+    if (this.listens !== false) window.addEventListener('keydown', this.shortcut);
   }
 
   componentWillUnmount(): void {
@@ -26,7 +31,7 @@ export class SidebarSearch extends Reactor {
   @bound private shortcut(event: globalThis.KeyboardEvent): void {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
       event.preventDefault();
-      this.input.current?.focus();
+      this.onPalette();
     }
   }
 
@@ -45,7 +50,7 @@ export class SidebarSearch extends Reactor {
         <FrameworkIcons.Search size={15} className="fc-nav-search__icon" />
         <Input ref={this.input} type="search" value={this.query} onChange={this.change} onKeyDown={this.key}
           placeholder={label} aria-label={label} inputClassName="fc-nav-search__field" />
-        {this.query ? null : <kbd className="fc-nav-search__kbd">{AdminI18n.t('shell.nav.searchShortcut')}</kbd>}
+        {this.query ? null : <button type="button" className="fc-nav-search__key" onClick={this.onPalette} aria-label={label}><Kbd>{AdminI18n.t('shell.nav.searchShortcut')}</Kbd></button>}
       </div>
     );
   }
