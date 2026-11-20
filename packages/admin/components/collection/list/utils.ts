@@ -59,7 +59,14 @@ export class CollectionListUtils {
     return CollectionListUtils.prettifyColumnName(String(fallbackSlug || '').trim() || AdminI18n.t('collection.list.records'));
   }
 
+  /**
+   * One record's name, for "New …" and "Create …". A collection that declares it (`labels.singular` or
+   * `admin.singularLabel`, as the recent-edits list already reads) is taken at its word; only an undeclared
+   * one is guessed from the plural, and the guess cannot know that "Warehouses" is not "Warehous" + "es".
+   */
   static resolveCollectionSingularLabel(collection: any, fallbackSlug: string): string {
+    const declared = String(collection?.labels?.singular || collection?.admin?.singularLabel || '').trim();
+    if (declared) return declared;
     const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
     if (/ies$/i.test(label)) return label.replace(/ies$/i, 'y');
     if (/ses$/i.test(label)) return label.replace(/es$/i, '');
