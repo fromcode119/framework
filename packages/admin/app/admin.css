@@ -3114,8 +3114,8 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 
 /* ---------- Tooltip, avatar, divider, command bar ---------- */
 .fc-tooltip__anchor { display: inline-flex; }
-.fc-tooltip { position: fixed; z-index: 2000; width: max-content; max-width: min(320px, calc(100vw - 16px)); padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: start; pointer-events: none; transform: translate(-50%, -100%); }
-.fc-tooltip[data-side="bottom"] { transform: translate(-50%, 0); }
+.fc-tooltip { position: fixed; z-index: 2000; width: max-content; max-width: min(320px, calc(100vw - 16px)); padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: start; pointer-events: none; translate: -50% -100%; }
+.fc-tooltip[data-side="bottom"] { translate: -50% 0; }
 
 .fc-avatar { display: inline-flex; flex: none; align-items: center; justify-content: center; overflow: hidden; width: 28px; height: 28px; border-radius: 999px; background: var(--fc-surface); box-shadow: var(--fc-control-shadow); color: var(--fc-text-muted); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); }
 .fc-avatar[data-size="2xsmall"] { width: 16px; height: 16px; font-size: 12px; }

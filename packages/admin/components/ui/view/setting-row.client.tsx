@@ -45,7 +45,8 @@ export class SettingRow extends PureReactor {
   private measure(): void {
     const line = this.descRef.current;
     if (!line) return;
-    const cut = line.scrollWidth > line.clientWidth + 1;
+    // One line with an ellipsis on a wide screen, two clamped lines on a phone: either way is cut.
+    const cut = line.scrollWidth > line.clientWidth + 1 || line.scrollHeight > line.clientHeight + 1;
     if (cut !== this.cut) this.cut = cut;
   }
 
