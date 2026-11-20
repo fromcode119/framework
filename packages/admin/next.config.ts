@@ -37,6 +37,7 @@ class AdminNextConfig {
   assetPrefix: `${adminBasePath}${ConsoleAssetConstants.PREFIX}`,
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
+  experimental: { turbopackFileSystemCacheForDev: false }, // dev cache in memory: on disk it has no size bound (one console reached 33 GB)
   // Names the framework to every visitor and helps nobody.
   poweredByHeader: false,
   env: {
