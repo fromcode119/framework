@@ -56,6 +56,15 @@ describe('AdminSchemaLocalizer', () => {
     expect([url.label, url.admin.patternNote, url.admin.pattern]).toEqual(['Връзка', 'Не е връзка, която плеърът приема.', '^https?://']);
   });
 
+  it('translates what a number field says for a stored 0', () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.usageLimit.zeroLabel': 'Без лимит' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog',
+      fields: [{ name: 'usageLimit', type: 'number', label: 'Usage Limit', admin: { zeroLabel: 'No limit' } }],
+    });
+    expect(out.fields[0].admin.zeroLabel).toBe('Без лимит');
+  });
+
   it("translates the related-records panel's title and empty hint", () => {
     const words = { ...dictionary, 'shop.admin.collections.catalog.recordLinks.title': 'Свързани записи' };
     const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
@@ -86,6 +95,16 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[2].fields[0].label).toBe('Код');
   });
 
+  it("translates what an option says it does before it is chosen, and adds nothing to an option that says nothing", () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.status.confirm.archived': 'Изчезва от витрината.' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog',
+      fields: [{ name: 'status', options: [{ label: 'Draft', value: 'draft' }, { label: 'Archived', value: 'archived', confirm: 'Leaves the storefront.' }] }],
+    });
+    expect(out.fields[0].options[1].confirm).toBe('Изчезва от витрината.');
+    expect('confirm' in out.fields[0].options[0]).toBe(false);
+  });
+
   it('names the keys a structured field prints from the dictionary alone, with nothing listed in the schema', () => {
     const block = (plugin: string, key: string) => Object.fromEntries(Object.entries(dictionary)
       .filter(([name]) => name.startsWith(`${plugin}.${key}.`))
@@ -97,6 +116,16 @@ describe('AdminSchemaLocalizer', () => {
     });
     expect(out.fields[0].admin.keyLabels).toEqual({ changedBy: 'Променено от' });
     expect(out.fields[1].admin).toBeUndefined();
+  });
+
+  it("translates what an empty table cell means, and leaves a column that declares none alone", () => {
+    const words = { 'shop.admin.collections.catalog.fields.variants.tableEmpty.stock': 'От продукта' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products',
+      shortSlug: 'catalog',
+      fields: [{ name: 'variants', admin: { tableLayout: [{ key: 'sku' }, { key: 'stock', empty: 'From the product' }] } }],
+    });
+    expect(out.fields[0].admin.tableLayout).toEqual([{ key: 'sku' }, { key: 'stock', empty: 'От продукта' }]);
   });
 
   it('leaves text a dictionary lacks exactly as declared, and adds nothing that was not declared', () => {

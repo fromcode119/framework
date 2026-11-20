@@ -161,7 +161,12 @@
       "noGroup": "Без групе",
       "reorderHandle": "Превуците да промените редослед — или изаберите и користите тастере са стрелицама",
       "reorderEnable": "Прикажите листу у њеном сопственом редоследу да бисте га променили",
-      "reorderFailed": "Нови редослед није могао да се сачува"
+      "reorderFailed": "Нови редослед није могао да се сачува",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Увести {{file}}?",
+      "importConfirmDescription": "Записи у датотеци: {{count}}. Сваки се прави као нови запис. ИД-ови из датотеке се не задржавају, па датотека извезена из ове листе прави копије.",
+      "importNoRecords": "{{file}} не садржи листу записа за увоз."
     },
     "edit": {
       "sectionShow": "Прикажи",
@@ -229,6 +234,7 @@
       "editSection": "Уреди",
       "notFilledIn": "Није попуњено",
       "statusSection": "Статус",
+      "statusConfirm": "Променити статус у „{{status}}“?",
       "recordSection": "Запис",
       "showJson": "Прикажи као JSON",
       "showForm": "Прикажи као образац",

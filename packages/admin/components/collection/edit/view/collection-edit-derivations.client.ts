@@ -17,6 +17,46 @@ import { RecordSectionFields } from '@/components/collection/edit/record-section
  * `self` is the `CollectionEditPageView` instance, typed loosely to avoid a circular import.
  */
 export class CollectionEditDerivations {
+  /**
+   * The status options the header may offer for a record that holds `stored`. An option that declares
+   * `reachableFrom` is offered only from those statuses — the menu offered every option and the server
+   * refused the move ("Cannot transition order from 'processing' to 'refunded'"). The current status is
+   * always listed, as the checked row. When nothing else is reachable (a closed record) there is no
+   * choice to make, so no status rows at all. A new record holds no status yet and is offered all.
+   */
+  static reachableStatusOptions(options: any[], stored: unknown): { label: string; value: string; tone: string; confirm?: string }[] {
+    const held = String(stored ?? '').trim();
+    const all = options
+      .map((option: any) => ({
+        label: String(option?.label || option?.value || '').trim(),
+        value: String(option?.value || '').trim(),
+        tone: String(option?.tone || '').trim(),
+        ...(option?.confirm ? { confirm: String(option.confirm) } : {}),
+        reachableFrom: Array.isArray(option?.reachableFrom) ? option.reachableFrom.map((value: unknown) => String(value)) : null,
+      }))
+      .filter((option) => option.value);
+    if (!held) return all.map(({ reachableFrom, ...option }) => option);
+    const offered = all.filter((option) => option.value === held || option.reachableFrom === null || option.reachableFrom.includes(held));
+    if (offered.every((option) => option.value === held)) return [];
+    return offered.map(({ reachableFrom, ...option }) => option);
+  }
+
+  /**
+   * The options a select FIELD on the form may offer for a record that holds `stored`: the same rule as the
+   * header menu, applied to the field's own control, which offered every option and let the operator pick
+   * a move the server then refused. Unlike the header, the held option always stays — it is the value the
+   * control shows. A field with no `reachableFrom` on any option, or a record that holds no value yet, is
+   * left as declared.
+   */
+  static reachableFieldOptions<T>(options: T[], stored: unknown): T[] {
+    const held = String(stored ?? '').trim();
+    if (!held) return options;
+    return options.filter((option: any) => {
+      const value = String(option?.value ?? '').trim();
+      return value === held || !Array.isArray(option?.reachableFrom) || option.reachableFrom.map((from: unknown) => String(from)).includes(held);
+    });
+  }
+
   /** The form data with each top-level field the form does not hold yet given its schema `defaultValue`, as its control shows it. */
   static shown(fields: IField[], formData: Record<string, unknown> | null | undefined): Record<string, unknown> {
     const shown: Record<string, unknown> = { ...(formData || {}) };
@@ -77,7 +117,14 @@ export class CollectionEditDerivations {
      * and the existing password-gated override remains the one deliberate way past it.
      */
     const locked = !isNew && (collection?.admin as any)?.disableEdit === true;
-    const lockField = (field: any) => (locked ? { ...field, admin: { ...(field.admin || {}), readOnly: true } } : field);
+    const locks = (field: any) => (locked ? { ...field, admin: { ...(field.admin || {}), readOnly: true } } : field);
+    const pristine = self.state.pristineFormData || {};
+    const drawnField = (field: any) => {
+      const shown = locks(field);
+      return Array.isArray(shown?.options) && !isNew
+        ? { ...shown, options: CollectionEditDerivations.reachableFieldOptions(shown.options, pristine[shown.name]) }
+        : shown;
+    };
 
     /**
      * A field whose control is rendered by a SIBLING field's component, so the standard renderer must
@@ -102,7 +149,7 @@ export class CollectionEditDerivations {
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
       FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && !isRenderedBySibling(f) && f.name !== 'customPermalink' &&
       services.validation.evaluateCondition(f.admin?.condition, shownData, f.name));
-    const sidebarGrouped = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
+    const sidebarGrouped = CollectionEditDerivations.groupSidebar(sidebarFields.map(drawnField));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
       if (field.admin?.hidden || isRenderedBySibling(field) || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
@@ -113,7 +160,7 @@ export class CollectionEditDerivations {
       }
       return true;
     });
-    const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(lockField));
+    const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(drawnField));
     /**
      * Sections are grouped from EVERY eligible field first and narrowed after: a section's place and width
      * come from its fields, so narrowing first moved a section whenever the field that set its layout was
@@ -149,7 +196,7 @@ export class CollectionEditDerivations {
     // refused with "Unlock confirmation is required" — so a read-only status, or a locked record, gets no
     // header control.
     const statusOptions = Array.isArray(statusField?.options) && statusField?.admin?.readOnly !== true && !locked
-      ? statusField.options.map((option: any) => ({ label: String(option?.label || option?.value || '').trim(), value: String(option?.value || '').trim(), tone: String(option?.tone || '').trim() })).filter((option: any) => option.value)
+      ? CollectionEditDerivations.reachableStatusOptions(statusField.options, self.state.pristineFormData?.status)
       : [];
 
     const hasSlug = collection?.fields.some((f: IField) => f.name === 'slug');

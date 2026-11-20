@@ -161,7 +161,12 @@
       "noGroup": "ไม่มีกลุ่ม",
       "reorderHandle": "ลากเพื่อจัดลำดับใหม่ หรือโฟกัสแล้วใช้ปุ่มลูกศร",
       "reorderEnable": "แสดงรายการตามลำดับของรายการเองเพื่อจัดลำดับใหม่",
-      "reorderFailed": "ไม่สามารถบันทึกลำดับใหม่ได้"
+      "reorderFailed": "ไม่สามารถบันทึกลำดับใหม่ได้",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "นำเข้า {{file}} หรือไม่",
+      "importConfirmDescription": "รายการในไฟล์: {{count}} แต่ละรายการจะถูกสร้างเป็นรายการใหม่ ID ในไฟล์จะไม่ถูกเก็บไว้ ไฟล์ที่ส่งออกจากรายการนี้จึงสร้างสำเนา",
+      "importNoRecords": "{{file}} ไม่มีรายการที่จะนำเข้า"
     },
     "edit": {
       "sectionShow": "แสดง",
@@ -229,6 +234,7 @@
       "editSection": "แก้ไข",
       "notFilledIn": "ยังไม่ได้กรอก",
       "statusSection": "สถานะ",
+      "statusConfirm": "เปลี่ยนสถานะเป็น “{{status}}” หรือไม่?",
       "recordSection": "ระเบียน",
       "showJson": "แสดงเป็น JSON",
       "showForm": "แสดงเป็นฟอร์ม",

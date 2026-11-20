@@ -161,7 +161,12 @@
       "noGroup": "Be grupės",
       "reorderHandle": "Vilkite, kad pakeistumėte tvarką, arba pažymėkite ir naudokite rodyklių klavišus",
       "reorderEnable": "Norėdami keisti tvarką, rodykite sąrašą jo paties tvarka",
-      "reorderFailed": "Nepavyko išsaugoti naujos tvarkos"
+      "reorderFailed": "Nepavyko išsaugoti naujos tvarkos",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importuoti {{file}}?",
+      "importConfirmDescription": "Įrašai faile: {{count}}. Kiekvienas sukuriamas kaip naujas įrašas. Failo ID neišsaugomi, todėl iš šio sąrašo eksportuotas failas sukuria kopijas.",
+      "importNoRecords": "{{file}} neturi importuojamų įrašų sąrašo."
     },
     "edit": {
       "sectionShow": "Rodyti",
@@ -229,6 +234,7 @@
       "editSection": "Redaguoti",
       "notFilledIn": "Neužpildyta",
       "statusSection": "Būsena",
+      "statusConfirm": "Pakeisti būseną į „{{status}}“?",
       "recordSection": "Įrašas",
       "showJson": "Rodyti kaip JSON",
       "showForm": "Rodyti kaip formą",

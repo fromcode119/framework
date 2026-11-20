@@ -161,7 +161,12 @@
       "noGroup": "Sem grupo",
       "reorderHandle": "Arraste para reordenar — ou selecione e use as teclas de seta",
       "reorderEnable": "Mostre a lista na sua própria ordem para a reordenar",
-      "reorderFailed": "Não foi possível guardar a nova ordem"
+      "reorderFailed": "Não foi possível guardar a nova ordem",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importar {{file}}?",
+      "importConfirmDescription": "Registos no ficheiro: {{count}}. Cada um é criado como um registo novo. Os IDs do ficheiro não são mantidos, por isso um ficheiro exportado desta lista cria cópias.",
+      "importNoRecords": "{{file}} não contém uma lista de registos para importar."
     },
     "edit": {
       "sectionShow": "Mostrar",
@@ -229,6 +234,7 @@
       "editSection": "Editar",
       "notFilledIn": "Não preenchido",
       "statusSection": "Estado",
+      "statusConfirm": "Alterar o estado para «{{status}}»?",
       "recordSection": "Registo",
       "showJson": "Mostrar como JSON",
       "showForm": "Mostrar como formulário",

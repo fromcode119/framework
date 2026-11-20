@@ -161,7 +161,12 @@
       "noGroup": "未分组",
       "reorderHandle": "拖动以调整顺序，或聚焦后使用方向键",
       "reorderEnable": "按自定义顺序显示列表后即可调整顺序",
-      "reorderFailed": "无法保存新的顺序"
+      "reorderFailed": "无法保存新的顺序",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "导入 {{file}}？",
+      "importConfirmDescription": "文件中的记录：{{count}}。每条都会创建为新记录。文件中的 ID 不会保留，因此从此列表导出的文件会生成副本。",
+      "importNoRecords": "{{file}} 中没有可导入的记录列表。"
     },
     "edit": {
       "sectionShow": "显示",
@@ -229,6 +234,7 @@
       "editSection": "编辑",
       "notFilledIn": "未填写",
       "statusSection": "状态",
+      "statusConfirm": "将状态更改为“{{status}}”？",
       "recordSection": "记录",
       "showJson": "以 JSON 显示",
       "showForm": "以表单显示",

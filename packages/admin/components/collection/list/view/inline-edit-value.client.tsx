@@ -5,6 +5,9 @@ import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
 
 /**
  * A list value that becomes its own control when clicked: the price, the stock, the status.
@@ -34,17 +37,41 @@ export class InlineEditValue extends PureReactor {
   @state record: Record<string, any> = {};
   @state error = '';
   @state coords = { top: 0, left: 0 };
+  /** A choice that declares `confirm`, waiting for the operator to agree to what it does. */
+  @state asked: { label: string; value: string; tone: string; confirm: string } | null = null;
+  /** Where the trigger sat when the popover opened, to place it above when there is no room below. */
+  private anchor: DOMRect | null = null;
 
   private trigger = this.ref<HTMLButtonElement>();
   private panel = this.ref<HTMLDivElement>();
 
   componentDidMount(): void {
     this.listen(document, 'mousedown', this.handleOutside);
+    this.listen(document, 'keydown', this.handleEscape);
+  }
+
+  /** Escape closes the popover wherever the focus is: a list of choices takes no focus when it opens. */
+  @bound private handleEscape(event: Event): void {
+    if (!this.open || this.saving || this.asked || (event as globalThis.KeyboardEvent).key !== 'Escape') return;
+    this.close();
+  }
+
+  /**
+   * The popover opens below the value; on the last rows of a list that is past the bottom of the window
+   * and its choices could not be reached. Once it has a height it moves above the value instead.
+   */
+  componentDidUpdate(): void {
+    const panel = this.panel.current;
+    if (!this.open || !panel || !this.anchor) return;
+    const height = panel.getBoundingClientRect().height;
+    const below = this.anchor.bottom + 6;
+    const top = below + height > window.innerHeight - 8 ? Math.max(8, this.anchor.top - height - 6) : below;
+    if (top !== this.coords.top) this.coords = { ...this.coords, top };
   }
 
   /** A click anywhere but the popover — or a menu the popover opened, which also lives in the portal — closes it. */
   @bound private handleOutside(event: Event): void {
-    if (!this.open || this.saving) return;
+    if (!this.open || this.saving || this.asked) return;
     const target = event.target as Node;
     if (this.panel.current?.contains(target) || this.trigger.current?.contains(target)) return;
     if (document.getElementById('portal-root')?.contains(target)) return;
@@ -55,6 +82,7 @@ export class InlineEditValue extends PureReactor {
     event.stopPropagation();
     if (this.open) return this.close();
     const rect = this.trigger.current?.getBoundingClientRect();
+    this.anchor = rect || null;
     const width = 300;
     this.coords = rect
       ? { top: rect.bottom + 6, left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) }
@@ -70,7 +98,7 @@ export class InlineEditValue extends PureReactor {
   }
 
   @bound private close(): void {
-    this.patch({ open: false, error: '', saving: false });
+    this.patch({ open: false, error: '', saving: false, asked: null });
   }
 
   @bound private change(value: any): void {
@@ -81,15 +109,40 @@ export class InlineEditValue extends PureReactor {
    * A single-value select with declared options is picked, not edited: its choices show as buttons and
    * one tap saves — a status changes in one step instead of open, choose, Save. A select drawn by its
    * own component keeps that component.
+   *
+   * The choices follow the record page's rules: an option that declares `reachableFrom` is offered only
+   * from those values (the list offered "Refunded" on a pending order, which the server then refused), and
+   * one that declares `confirm` says what it does before it is saved, as the record page's status menu does.
    */
-  private get choices(): { label: string; value: string }[] {
+  private get choices(): { label: string; value: string; tone: string; confirm: string }[] {
     const field = this.field;
     if (field.type !== 'select' || field.hasMany || field.admin?.component || !Array.isArray(field.options)) return [];
-    return field.options.map((option: any) => ({ label: String(option?.label ?? option?.value ?? option), value: String(option?.value ?? option) }));
+    return CollectionEditDerivations.reachableFieldOptions(field.options, this.initial).map((option: any) => ({
+      label: String(option?.label ?? option?.value ?? option),
+      value: String(option?.value ?? option),
+      tone: String(option?.tone ?? ''),
+      confirm: String(option?.confirm ?? ''),
+    }));
   }
 
   @bound private pick(event: MouseEvent): void {
-    this.value = (event.currentTarget as HTMLButtonElement).value;
+    const value = (event.currentTarget as HTMLButtonElement).value;
+    const choice = this.choices.find((candidate) => candidate.value === value);
+    if (choice?.confirm && value !== String(this.initial ?? '')) {
+      this.asked = choice;
+      return;
+    }
+    this.value = value;
+    void this.save();
+  }
+
+  @bound private dismissAsked(): void {
+    if (!this.saving) this.asked = null;
+  }
+
+  @bound private confirmAsked(): void {
+    if (!this.asked) return;
+    this.value = this.asked.value;
     void this.save();
   }
 
@@ -101,12 +154,12 @@ export class InlineEditValue extends PureReactor {
       this.close();
       this.onSaved();
     } catch (error: any) {
-      this.patch({ saving: false, error: error?.message || AdminI18n.t('collection.list.quickEditSaveFailed') });
+      // The refusal shows in the popover, so a confirmation still open over it is closed.
+      this.patch({ saving: false, asked: null, error: error?.message || AdminI18n.t('collection.list.quickEditSaveFailed') });
     }
   }
 
   @bound private handleKey(event: KeyboardEvent): void {
-    if (event.key === 'Escape') this.close();
     if (event.key === 'Enter' && (event.target as HTMLElement).tagName !== 'TEXTAREA') {
       event.preventDefault();
       void this.save();
@@ -201,7 +254,18 @@ export class InlineEditValue extends PureReactor {
         >
           {this.children}
         </button>
-        {this.open ? this.renderPanel() : null}
+        {/* While a choice is being confirmed the dialog alone is on screen; the popover returns if it is cancelled. */}
+        {this.open && !this.asked ? this.renderPanel() : null}
+        {this.asked ? (
+          // The dialog draws through the portal, but its clicks still bubble up the React tree to the row,
+          // which opened the record on Cancel.
+          <span onClick={this.stop} className="contents">
+          <ConfirmDialog isOpen onClose={this.dismissAsked} onConfirm={this.confirmAsked}
+            title={AdminI18n.t('collection.edit.statusConfirm', { status: this.asked.label })}
+            description={this.asked.confirm} isLoading={this.saving}
+            variant={this.asked.tone === 'danger' ? ButtonVariant.DANGER : ButtonVariant.PRIMARY} />
+          </span>
+        ) : null}
       </>
     );
   }

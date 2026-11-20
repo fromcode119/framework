@@ -161,7 +161,12 @@
       "noGroup": "Ingen grupp",
       "reorderHandle": "Dra för att ändra ordning – eller fokusera och använd piltangenterna",
       "reorderEnable": "Visa listan i dess egen ordning för att kunna ändra ordningen",
-      "reorderFailed": "Den nya ordningen kunde inte sparas"
+      "reorderFailed": "Den nya ordningen kunde inte sparas",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importera {{file}}?",
+      "importConfirmDescription": "Poster i filen: {{count}}. Var och en skapas som en ny post. ID:n i filen behålls inte, så en fil som exporterats från den här listan skapar kopior.",
+      "importNoRecords": "{{file}} innehåller ingen lista med poster att importera."
     },
     "edit": {
       "sectionShow": "Visa",
@@ -229,6 +234,7 @@
       "editSection": "Redigera",
       "notFilledIn": "Inte ifyllt",
       "statusSection": "Status",
+      "statusConfirm": "Ändra status till ”{{status}}”?",
       "recordSection": "Post",
       "showJson": "Visa som JSON",
       "showForm": "Visa som formulär",

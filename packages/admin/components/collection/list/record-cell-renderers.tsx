@@ -8,6 +8,7 @@ import { PluginCellValue } from '@/components/collection/list/view/plugin-cell-v
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { TimezoneUtils } from '@/lib/timezone';
 
 /**
  * Turning one cell's raw value into what the list actually shows.
@@ -33,6 +34,9 @@ export class RecordCellRenderers {
     raw: any;
     row?: Record<string, any>;
   }): ReactNode {
+    // A number whose 0 is a setting says what the setting is, before any cell formats it as an amount.
+    const zero = this.zeroLabel(field, raw);
+    if (zero) return zero;
     // A field that names its own display component (`admin.cell`) is drawn by it — a price in its
     // currency is its plugin's to format, not the list's. The plain rendering stays as its fallback.
     if (field?.admin?.cell && row) {
@@ -70,8 +74,10 @@ export class RecordCellRenderers {
       if (!date || Number.isNaN(date.getTime())) return '-';
       // A date field shows the day; a datetime field the day and the minute. A list cell holds one line, so
       // a moment this year leaves out its year, as an inbox does; the full moment is in the tooltip.
-      if (field?.type !== 'datetime') return date.toLocaleDateString(AdminI18n.locale);
-      const thisYear = date.getFullYear() === new Date().getFullYear();
+      // A literal `YYYY-MM-DD` is that calendar day everywhere; formatSystemDate keeps it from shifting.
+      if (field?.type !== 'datetime') return TimezoneUtils.formatSystemDate(raw, { year: 'numeric', month: 'numeric', day: 'numeric' });
+      // "This year" in the site's timezone, the zone the cell is written in.
+      const thisYear = TimezoneUtils.getZonedDateParts(date)?.year === TimezoneUtils.getZonedDateParts(new Date())?.year;
       const short = date.toLocaleString(AdminI18n.locale, thisYear
         ? { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }
         : { dateStyle: 'medium', timeStyle: 'short' });
@@ -117,6 +123,13 @@ export class RecordCellRenderers {
    * The label the field declares for a stored option value — the words the operator picked in the
    * editor, in the console's language — or '' when the value is not one of its options.
    */
+  /** The words a number field declares for a stored 0 (`admin.zeroLabel`), or '' when the value is not 0. */
+  static zeroLabel(field: any, raw: any): string {
+    const label = field?.admin?.zeroLabel;
+    if (!label || field?.type !== 'number' || raw === null || raw === undefined || raw === '') return '';
+    return Number(raw) === 0 ? AdminServices.getInstance().localization.resolveLabelText(label) : '';
+  }
+
   /** The tone a select option declares for this value (`success`, `warning`, `danger`, `info`, `default`), or ''. */
   static optionTone(field: any, raw: any): string {
     const value = String(raw ?? '').trim();

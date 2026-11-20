@@ -161,7 +161,12 @@
       "noGroup": "Gan ghrúpa",
       "reorderHandle": "Tarraing chun an t-ord a athrú — nó dírigh air agus úsáid na saigheadeochracha",
       "reorderEnable": "Taispeáin an liosta ina ord féin chun an t-ord a athrú",
-      "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil"
+      "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Iompórtáil {{file}}?",
+      "importConfirmDescription": "Taifid sa chomhad: {{count}}. Cruthaítear gach ceann mar thaifead nua. Ní choinnítear na haitheantóirí sa chomhad, mar sin cruthaíonn comhad a easpórtáladh ón liosta seo cóipeanna.",
+      "importNoRecords": "Níl liosta taifead le hiompórtáil in {{file}}."
     },
     "edit": {
       "sectionShow": "Taispeáin",
@@ -229,6 +234,7 @@
       "editSection": "Cuir in eagar",
       "notFilledIn": "Gan líonadh",
       "statusSection": "Stádas",
+      "statusConfirm": "An stádas a athrú go “{{status}}”?",
       "recordSection": "Taifead",
       "showJson": "Taispeáin mar JSON",
       "showForm": "Taispeáin mar fhoirm",

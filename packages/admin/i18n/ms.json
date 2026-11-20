@@ -161,7 +161,12 @@
       "noGroup": "Tiada kumpulan",
       "reorderHandle": "Seret untuk menyusun semula — atau fokus dan gunakan kekunci anak panah",
       "reorderEnable": "Paparkan senarai mengikut susunannya sendiri untuk menyusunnya semula",
-      "reorderFailed": "Susunan baharu tidak dapat disimpan"
+      "reorderFailed": "Susunan baharu tidak dapat disimpan",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Import {{file}}?",
+      "importConfirmDescription": "Rekod dalam fail: {{count}}. Setiap satu dicipta sebagai rekod baharu. ID dalam fail tidak dikekalkan, jadi fail yang dieksport daripada senarai ini membuat salinan.",
+      "importNoRecords": "{{file}} tidak mengandungi senarai rekod untuk diimport."
     },
     "edit": {
       "sectionShow": "Tunjukkan",
@@ -229,6 +234,7 @@
       "editSection": "Edit",
       "notFilledIn": "Belum diisi",
       "statusSection": "Status",
+      "statusConfirm": "Tukar status kepada “{{status}}”?",
       "recordSection": "Rekod",
       "showJson": "Papar sebagai JSON",
       "showForm": "Papar sebagai borang",

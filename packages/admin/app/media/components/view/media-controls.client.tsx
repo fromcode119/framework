@@ -128,7 +128,7 @@ export class MediaControls extends PureReactor {
               placeholder={AdminI18n.t('media.searchMedia')}
               value={searchQuery}
               onChange={this.onSearchChange}
-              inputClassName="ps-12"
+              inputClassName="fc-field--icon"
             />
           </div>
           {this.activeView === 'files' ? (

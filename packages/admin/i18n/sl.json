@@ -161,7 +161,12 @@
       "noGroup": "Brez skupine",
       "reorderHandle": "Povlecite za spremembo vrstnega reda ali pa izberite element in uporabite puščične tipke",
       "reorderEnable": "Za spreminjanje vrstnega reda prikažite seznam v njegovem lastnem vrstnem redu",
-      "reorderFailed": "Novega vrstnega reda ni bilo mogoče shraniti"
+      "reorderFailed": "Novega vrstnega reda ni bilo mogoče shraniti",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Uvozim {{file}}?",
+      "importConfirmDescription": "Zapisi v datoteki: {{count}}. Vsak se ustvari kot nov zapis. ID-ji iz datoteke se ne ohranijo, zato datoteka, izvožena iz tega seznama, ustvari kopije.",
+      "importNoRecords": "{{file}} ne vsebuje seznama zapisov za uvoz."
     },
     "edit": {
       "sectionShow": "Prikaži",
@@ -229,6 +234,7 @@
       "editSection": "Uredi",
       "notFilledIn": "Ni izpolnjeno",
       "statusSection": "Stanje",
+      "statusConfirm": "Spremenim stanje v »{{status}}«?",
       "recordSection": "Zapis",
       "showJson": "Prikaži kot JSON",
       "showForm": "Prikaži kot obrazec",

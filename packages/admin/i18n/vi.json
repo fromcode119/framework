@@ -161,7 +161,12 @@
       "noGroup": "Không có nhóm",
       "reorderHandle": "Kéo để sắp xếp lại — hoặc chọn rồi dùng các phím mũi tên",
       "reorderEnable": "Hiển thị danh sách theo thứ tự riêng để sắp xếp lại",
-      "reorderFailed": "Không thể lưu thứ tự mới"
+      "reorderFailed": "Không thể lưu thứ tự mới",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Nhập {{file}}?",
+      "importConfirmDescription": "Số bản ghi trong tệp: {{count}}. Mỗi bản ghi được tạo mới. ID trong tệp không được giữ lại, nên tệp xuất từ danh sách này sẽ tạo bản sao.",
+      "importNoRecords": "{{file}} không chứa danh sách bản ghi để nhập."
     },
     "edit": {
       "sectionShow": "Hiện",
@@ -229,6 +234,7 @@
       "editSection": "Chỉnh sửa",
       "notFilledIn": "Chưa điền",
       "statusSection": "Trạng thái",
+      "statusConfirm": "Đổi trạng thái thành “{{status}}”?",
       "recordSection": "Bản ghi",
       "showJson": "Hiển thị dạng JSON",
       "showForm": "Hiển thị dạng biểu mẫu",

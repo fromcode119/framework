@@ -161,7 +161,12 @@
       "noGroup": "Bez grupas",
       "reorderHandle": "Velciet, lai mainītu secību, vai fokusējiet un izmantojiet bulttaustiņus",
       "reorderEnable": "Lai mainītu secību, rādiet sarakstu tā paša secībā",
-      "reorderFailed": "Jauno secību neizdevās saglabāt"
+      "reorderFailed": "Jauno secību neizdevās saglabāt",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importēt {{file}}?",
+      "importConfirmDescription": "Ieraksti failā: {{count}}. Katrs tiek izveidots kā jauns ieraksts. Faila ID netiek saglabāti, tāpēc no šī saraksta eksportēts fails izveido kopijas.",
+      "importNoRecords": "{{file}} nesatur importējamu ierakstu sarakstu."
     },
     "edit": {
       "sectionShow": "Rādīt",
@@ -229,6 +234,7 @@
       "editSection": "Rediģēt",
       "notFilledIn": "Nav aizpildīts",
       "statusSection": "Statuss",
+      "statusConfirm": "Mainīt statusu uz “{{status}}”?",
       "recordSection": "Ieraksts",
       "showJson": "Rādīt kā JSON",
       "showForm": "Rādīt kā veidlapu",

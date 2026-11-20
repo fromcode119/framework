@@ -161,7 +161,12 @@
       "noGroup": "Nincs csoport",
       "reorderHandle": "Húzza az átrendezéshez – vagy jelölje ki, és használja a nyílbillentyűket",
       "reorderEnable": "Az átrendezéshez jelenítse meg a listát a saját sorrendjében",
-      "reorderFailed": "Az új sorrendet nem sikerült menteni"
+      "reorderFailed": "Az új sorrendet nem sikerült menteni",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importálja a(z) {{file}} fájlt?",
+      "importConfirmDescription": "Rekordok a fájlban: {{count}}. Mindegyik új rekordként jön létre. A fájlban lévő azonosítók nem maradnak meg, így az ebből a listából exportált fájl másolatokat hoz létre.",
+      "importNoRecords": "A(z) {{file}} nem tartalmaz importálható rekordlistát."
     },
     "edit": {
       "sectionShow": "Megjelenítés",
@@ -229,6 +234,7 @@
       "editSection": "Szerkesztés",
       "notFilledIn": "Nincs kitöltve",
       "statusSection": "Állapot",
+      "statusConfirm": "Állapot módosítása erre: „{{status}}”?",
       "recordSection": "Rekord",
       "showJson": "Megjelenítés JSON-ként",
       "showForm": "Megjelenítés űrlapként",

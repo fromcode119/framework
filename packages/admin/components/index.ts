@@ -1,5 +1,6 @@
 export * from '@/components/media/view/media-picker.client';
 export * from '@/components/ui/view/button.client';
+export * from '@/components/ui/view/edit-sheet-unsaved';
 export * from '@/components/ui/view/input.client';
 export * from '@/components/ui/view/select.client';
 // `Select.options` is typed `IOption[]`; like `Column` below, a caller outside this package could not

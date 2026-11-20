@@ -27,7 +27,14 @@ export interface IField {
   required?: boolean;
   unique?: boolean;
   defaultValue?: any;
-  options?: { label: string; value: any; tone?: string }[]; // For select type; `tone` = list badge colour
+  /**
+   * For select type. `tone` = list badge colour. `reachableFrom`, on a record's `status` options: the
+   * stored statuses this option may be chosen from. Absent = from any. The record's header offers only
+   * the options reachable from what the record holds now, so it never offers a move the server refuses.
+   * `confirm`, on the same options: what choosing it sets off (an email, stock given back), said in the
+   * question the header asks before it saves the new status. Absent = the question names only the status.
+   */
+  options?: { label: string; value: any; tone?: string; reachableFrom?: string[]; confirm?: string }[];
   relationTo?: string | string[]; // For relationship/upload type
   /**
    * A relationship to whichever collection REGISTERED itself as this entity's provider, instead of a
@@ -112,6 +119,13 @@ export interface IField {
       readonly badge?: boolean;
       /** Use the values of a nested group as the display text, falling back to the named key. */
       readonly join?: { readonly from: string; readonly separator: string };
+      /**
+       * What an EMPTY cell of this column means, when empty is a value the runtime uses and not a gap.
+       * Without it an empty cell reads "Not recorded" — which, for a variant that keeps no stock of its
+       * own and so sells from its product's, says the opposite of what the storefront does. Translated
+       * from `fields.<field>.tableEmpty.<key>` in the plugin's dictionary.
+       */
+      readonly empty?: string;
     }[];
     /**
      * Where a row of a structured data table LEADS, as a path with `{key}` standing for that row's
@@ -261,5 +275,10 @@ export interface IField {
      */
     pattern?: string;
     patternNote?: string;
+    /**
+     * What a stored 0 MEANS, for a number whose 0 is a setting rather than an amount — `'No limit'` on a
+     * usage limit. The list and the record read it instead of a bare "0", which reads as "none allowed".
+     */
+    zeroLabel?: string;
   };
 }

@@ -83,4 +83,7 @@ export interface ICollectionListPageViewModel {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   fetchData: (targetPage?: number) => Promise<void>;
   handleExport: (format: ExportFormat, ids?: string[]) => Promise<void>;
+  importRecords: (records: unknown[]) => Promise<void>;
+  /** An action that failed, as the console's corner notice. */
+  notifyError: (title: string, message: string) => void;
 }

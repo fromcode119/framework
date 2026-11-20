@@ -44,4 +44,9 @@ describe('TimezoneUtils', () => {
     const parts = TimezoneUtils.getZonedDateParts('2026-08-11', 'America/New_York');
     expect(parts).toMatchObject({ year: 2026, month: 8, day: 11, hour: 0 });
   });
+
+  it('always offers UTC, the default, so a site moved to another zone can be put back', () => {
+    // Browsers list only named regions; without UTC among them it could never be picked again.
+    expect(TimezoneUtils.getTimezoneOptions('Europe/Sofia').map((option) => option.value)).toContain('UTC');
+  });
 });

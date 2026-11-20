@@ -161,7 +161,12 @@
       "noGroup": "無群組",
       "reorderHandle": "拖曳以重新排序，或聚焦後使用方向鍵",
       "reorderEnable": "以清單自訂順序顯示後即可重新排序",
-      "reorderFailed": "無法儲存新的順序"
+      "reorderFailed": "無法儲存新的順序",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "匯入 {{file}}？",
+      "importConfirmDescription": "檔案中的記錄：{{count}}。每筆都會建立為新記錄。檔案中的 ID 不會保留，因此從此清單匯出的檔案會產生副本。",
+      "importNoRecords": "{{file}} 中沒有可匯入的記錄清單。"
     },
     "edit": {
       "sectionShow": "顯示",
@@ -229,6 +234,7 @@
       "editSection": "編輯",
       "notFilledIn": "未填寫",
       "statusSection": "狀態",
+      "statusConfirm": "將狀態變更為「{{status}}」？",
       "recordSection": "記錄",
       "showJson": "以 JSON 顯示",
       "showForm": "以表單顯示",

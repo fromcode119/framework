@@ -44,6 +44,23 @@ export class CollectionEditPageHandlers {
     CollectionEditPageHandlers.setFieldValue(self, name, value);
   }
 
+  /**
+   * A status chosen from the record's ⋯ menu, saved at once. The choice used to change only the form: the
+   * page showed nothing new but an "Unsaved changes" bar, and the move (and the email it sends) waited on
+   * a Save nobody connected with the menu. The header asks first; this saves the record with the new
+   * status. A refused save puts the stored status back, so the menu never shows one that is not saved.
+   */
+  static async commitStatus(self: any, value: string): Promise<void> {
+    const held = self.state.pristineFormData?.status;
+    await new Promise<void>((resolve) => self.setState((prev: any) => ({ formData: { ...prev.formData, status: value } }), resolve));
+    try {
+      await CollectionEditPageHandlers.handleSubmit(self);
+    } catch (error) {
+      await new Promise<void>((resolve) => self.setState((prev: any) => ({ formData: { ...prev.formData, status: held } }), resolve));
+      throw error;
+    }
+  }
+
   static handlePatch(self: any, partial: Record<string, any>): void {
     for (const [name, value] of Object.entries(partial || {})) CollectionEditPageHandlers.setFieldValue(self, name, value);
   }
@@ -63,6 +80,16 @@ export class CollectionEditPageHandlers {
     const fields = Object.keys(self.state.readOnlyOverrideFields || {}).filter(Boolean);
     if (!fields.length || !self.state.readOnlyOverrideGrant) return {};
     return { _readOnlyOverride: { fields, grant: self.state.readOnlyOverrideGrant } };
+  }
+
+  /**
+   * A save started by a button or a shortcut, nobody awaiting it. A refused save is already on screen —
+   * the message in the save bar, each field's own error — so its rejection is not left unhandled (it was
+   * logged a second time as "Uncaught (in promise)"). A caller that needs to know, the section sheet that
+   * stays open on a refusal, awaits {@link handleSubmit} itself.
+   */
+  static submit(self: any, e?: any, summary?: string): void {
+    CollectionEditPageHandlers.handleSubmit(self, e, summary).catch(() => undefined);
   }
 
   static async handleSubmit(self: any, e?: any, summary?: string): Promise<any> {
@@ -87,8 +114,8 @@ export class CollectionEditPageHandlers {
         readOnlyOverrideFields: {},
         readOnlyOverrideGrant: '',
         ...(saved ? { formData: saved, pristineFormData: saved } : { pristineFormData: { ...self.state.formData } }),
-        status: { type: NotificationType.SUCCESS, message: AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated') },
       });
+      self.announce(AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated'));
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
       return result;
@@ -170,7 +197,8 @@ export class CollectionEditPageHandlers {
     self.setState({ restoringPermanently: true });
     try {
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, self.props.id, version), {});
-      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), status: { type: NotificationType.SUCCESS, message: AdminI18n.t('collection.edit.hardRestored', { version }) }, selectedRevision: null });
+      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), selectedRevision: null });
+      self.announce(AdminI18n.t('collection.edit.hardRestored', { version }));
       CollectionEditPageHandlers.fetchRevisions(self, 1);
     } catch (err: any) {
       console.error('Hard restore failed:', err);
@@ -196,7 +224,9 @@ export class CollectionEditPageHandlers {
       await AdminApi.delete(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${self.props.id}`);
       self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}`);
     } catch (err: any) {
-      self.setState({ status: { type: NotificationType.ERROR, message: err.message }, deleting: false, showDeleteConfirm: false });
+      // Refused: the banner says why. It is not a refused SAVE, so the save bar — "Unsaved changes",
+      // "Not saved: …" — stays out of it; nothing on the record was edited.
+      self.setState({ status: { type: NotificationType.ERROR, message: err.message, deleteRefused: true }, deleting: false, showDeleteConfirm: false });
     }
   }
 
@@ -252,9 +282,9 @@ export class CollectionEditPageHandlers {
       self.setState({
         readOnlyOverrideGrant: grant,
         readOnlyOverrideFields: unlocked,
-        status: { type: NotificationType.SUCCESS, message: count > 1 ? AdminI18n.t('collection.edit.unlockedMany', { count }) : AdminI18n.t('collection.edit.unlockedOne', { label: target.label }) },
         readOnlyOverridePasswordTarget: null,
       });
+      self.announce(count > 1 ? AdminI18n.t('collection.edit.unlockedMany', { count }) : AdminI18n.t('collection.edit.unlockedOne', { label: target.label }));
     } catch (err: any) {
       self.setState({ status: { type: NotificationType.ERROR, message: err?.message || AdminI18n.t('collection.edit.passwordFailed') } });
     } finally {

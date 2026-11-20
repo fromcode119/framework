@@ -161,7 +161,12 @@
       "noGroup": "ללא קבוצה",
       "reorderHandle": "גררו לשינוי הסדר — או התמקדו והשתמשו במקשי החצים",
       "reorderEnable": "הציגו את הרשימה בסדר שלה כדי לשנות את הסדר",
-      "reorderFailed": "לא ניתן היה לשמור את הסדר החדש"
+      "reorderFailed": "לא ניתן היה לשמור את הסדר החדש",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "לייבא את {{file}}?",
+      "importConfirmDescription": "רשומות בקובץ: {{count}}. כל אחת נוצרת כרשומה חדשה. המזהים בקובץ אינם נשמרים, כך שקובץ שיוצא מרשימה זו יוצר עותקים.",
+      "importNoRecords": "{{file}} אינו מכיל רשימת רשומות לייבוא."
     },
     "edit": {
       "sectionShow": "הצג",
@@ -229,6 +234,7 @@
       "editSection": "עריכה",
       "notFilledIn": "לא מולא",
       "statusSection": "סטטוס",
+      "statusConfirm": "לשנות את הסטטוס ל\"{{status}}\"?",
       "recordSection": "רשומה",
       "showJson": "הצג כ־JSON",
       "showForm": "הצג כטופס",

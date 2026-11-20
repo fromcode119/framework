@@ -34,15 +34,23 @@ export class TextArea extends PureReactor {
 
     // `h-auto`: a text area is as tall as its `rows`, never less than the minimum. Without it the
     // single-line height every field carries stayed on, and `rows` changed nothing on any screen.
+    const field = (
+      <textarea
+        {...props}
+        value={value}
+        className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
+          ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
+      />
+    );
+    // The label wraps the field so that clicking it focuses the field, as `Input` does.
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
-        <textarea
-          {...props}
-          value={value}
-          className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
-            ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
-        />
+        {label ? (
+          <label className="fc-field-stack">
+            <span className={UiFieldUtils.TEXT.LABEL}>{label}</span>
+            {field}
+          </label>
+        ) : field}
         {error && (
           <div className="flex items-center gap-2 px-1 animate-fade-in-up">
             <span className={UiFieldUtils.TEXT.ERROR}>

@@ -79,22 +79,6 @@ export class CollectionListPageActions {
     });
   }
 
-  static handleImport(event: React.ChangeEvent<HTMLInputElement>, resolvedSlug: string): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (loadEvent) => {
-      try {
-        const result = await RecordOperations.importRecordsFromText(resolvedSlug, loadEvent.target?.result as string);
-        alert(AdminI18n.t('collection.list.importDone', { count: result.success, errors: result.errors.length }));
-        window.location.reload();
-      } catch (error: any) {
-        alert(AdminI18n.t('collection.list.importFailed', { message: error.message }));
-      }
-    };
-    reader.readAsText(file);
-  }
-
   static async handleBulkStatusChange({
     resolvedSlug,
     selectedIds,
@@ -102,7 +86,8 @@ export class CollectionListPageActions {
     page,
     setLoading,
     setSelectedIds,
-    fetchData
+    fetchData,
+    notifyError
   }: {
     resolvedSlug: string;
     selectedIds: string[];
@@ -111,6 +96,7 @@ export class CollectionListPageActions {
     setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
     fetchData: (targetPage?: number) => Promise<void>;
+    notifyError: (title: string, message: string) => void;
   }): Promise<void> {
     if (!selectedIds.length) return;
     setLoading(true);
@@ -118,8 +104,8 @@ export class CollectionListPageActions {
       await RecordOperations.updateBulkStatus(resolvedSlug, selectedIds, newStatus);
       setSelectedIds([]);
       await fetchData(page);
-    } catch {
-      alert(AdminI18n.t('collection.list.statusUpdateFailed'));
+    } catch (error: any) {
+      notifyError(AdminI18n.t('collection.list.statusUpdateFailed'), error?.message || '');
     } finally {
       setLoading(false);
     }
@@ -138,7 +124,8 @@ export class CollectionListPageActions {
     setQuickEditExpandedId,
     setQuickEditStatus,
     setPage,
-    fetchData
+    fetchData,
+    notifyError
   }: {
     deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null;
     resolvedSlug: string;
@@ -153,6 +140,7 @@ export class CollectionListPageActions {
     setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: NotificationType; message: string } | null>>;
     setPage: React.Dispatch<React.SetStateAction<number>>;
     fetchData: (targetPage?: number) => Promise<void>;
+    notifyError: (title: string, message: string) => void;
   }): Promise<void> {
     if (!deleteDialogState) return;
     setDeleteLoading(true);
@@ -170,8 +158,8 @@ export class CollectionListPageActions {
       const targetPage = RecordOperations.resolveTargetPage({ total, removedCount, pageSize, page });
       if (targetPage !== page) setPage(targetPage);
       await fetchData(targetPage);
-    } catch {
-      alert(AdminI18n.t(deleteDialogState.mode === 'single' ? 'collection.list.deleteFailed' : 'collection.list.bulkDeleteFailed'));
+    } catch (error: any) {
+      notifyError(AdminI18n.t(deleteDialogState.mode === 'single' ? 'collection.list.deleteFailed' : 'collection.list.bulkDeleteFailed'), error?.message || '');
     } finally {
       setDeleteLoading(false);
       setDeleteDialogState(null);

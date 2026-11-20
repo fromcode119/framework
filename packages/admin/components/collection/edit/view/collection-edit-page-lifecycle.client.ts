@@ -25,7 +25,7 @@ export class CollectionEditPageLifecycle {
     self.onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        CollectionEditPageHandlers.handleSubmit(self, new Event('submit'), self.state.changeSummary);
+        CollectionEditPageHandlers.submit(self, new Event('submit'), self.state.changeSummary);
         self.updateState('changeSummary', '');
       }
     };
@@ -94,7 +94,8 @@ export class CollectionEditPageLifecycle {
         AdminApi.get(`${base}/${resolvedSlug}/${duplicateFromId}?locale_mode=raw`)
           .then((entryData: any) => {
             if (!fresh()) return;
-            self.setState({ formData: services.entityFormData.normalizeLoadedRecord(collection, CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || [])), status: { type: NotificationType.SUCCESS, message: AdminI18n.t('collection.edit.duplicateLoaded') }, loading: false });
+            self.setState({ formData: services.entityFormData.normalizeLoadedRecord(collection, CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || [])), loading: false });
+            self.announce(AdminI18n.t('collection.edit.duplicateLoaded'));
           })
           .catch((err: any) => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: err?.message || AdminI18n.t('collection.edit.duplicateFailed') }, loading: false }); });
         return;

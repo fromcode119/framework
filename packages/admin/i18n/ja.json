@@ -161,7 +161,12 @@
       "noGroup": "グループなし",
       "reorderHandle": "ドラッグして並べ替え、またはフォーカスして矢印キーを使用",
       "reorderEnable": "並べ替えるには、リストを独自の順序で表示してください",
-      "reorderFailed": "新しい順序を保存できませんでした"
+      "reorderFailed": "新しい順序を保存できませんでした",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}} をインポートしますか？",
+      "importConfirmDescription": "ファイル内のレコード: {{count}}。それぞれ新しいレコードとして作成されます。ファイル内の ID は保持されないため、この一覧からエクスポートしたファイルはコピーを作成します。",
+      "importNoRecords": "{{file}} にはインポートするレコードの一覧がありません。"
     },
     "edit": {
       "sectionShow": "表示",
@@ -229,6 +234,7 @@
       "editSection": "編集",
       "notFilledIn": "未入力",
       "statusSection": "ステータス",
+      "statusConfirm": "ステータスを「{{status}}」に変更しますか？",
       "recordSection": "レコード",
       "showJson": "JSON で表示",
       "showForm": "フォームで表示",

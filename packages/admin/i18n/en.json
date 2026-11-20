@@ -161,7 +161,12 @@
       "noGroup": "No group",
       "reorderHandle": "Drag to reorder — or focus and use the arrow keys",
       "reorderEnable": "Show the list in its own order to reorder it",
-      "reorderFailed": "The new order could not be saved"
+      "reorderFailed": "The new order could not be saved",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Import {{file}}?",
+      "importConfirmDescription": "Records in the file: {{count}}. Each one is created as a new record. Ids in the file are not kept, so a file exported from this list makes copies.",
+      "importNoRecords": "{{file}} holds no list of records to import."
     },
     "edit": {
       "sectionShow": "Show",
@@ -229,6 +234,7 @@
       "editSection": "Edit",
       "notFilledIn": "Not filled in",
       "statusSection": "Status",
+      "statusConfirm": "Change the status to “{{status}}”?",
       "recordSection": "Record",
       "showJson": "Show as JSON",
       "showForm": "Show as form",

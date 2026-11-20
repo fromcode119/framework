@@ -23,7 +23,7 @@ export class MarketplaceSearchBar extends PureReactor {
           placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')}
           value={searchQuery}
           onChange={(e) => onChange(e.target.value)}
-          inputClassName="ps-11"
+          inputClassName="fc-field--icon"
         />
       </div>
     );
