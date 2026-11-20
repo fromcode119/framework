@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Socraíonn riarthóir ardáin réamhshocrú an ardáin.",
       "useTheLayerBelow": "Úsáid an ciseal thíos",
       "whyTheLawRequiresThese": "Cén fáth a n-éilíonn an dlí go gcoinneofaí na taifid seo",
-      "inheritsThePlatformDefault": "oidhreacht: réamhshocrú an ardáin"
+      "inheritsThePlatformDefault": "oidhreacht: réamhshocrú an ardáin",
+      "strategyDelete": "Scrios",
+      "strategyAnonymise": "Anaithnidigh",
+      "strategyRetain": "Coinnigh",
+      "declaredBy": "Réamhshocrú arna fhógairt ag {{plugin}}",
+      "inheritsValue": "faigheann le hoidhreacht: {{value}}",
+      "legalBasis": "Bunús dlí",
+      "theSiteColumnIsSet": "Socraítear an colún \"An suíomh seo\" laistigh de shuíomh. Roghnaigh suíomh sa lascóir chun é a athrú."
     }
   },
   "users": {

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Значение платформы по умолчанию задаёт администратор платформы.",
       "useTheLayerBelow": "Использовать нижний уровень",
       "whyTheLawRequiresThese": "Почему закон требует хранить эти записи",
-      "inheritsThePlatformDefault": "наследуется: значение платформы по умолчанию"
+      "inheritsThePlatformDefault": "наследуется: значение платформы по умолчанию",
+      "strategyDelete": "Удалить",
+      "strategyAnonymise": "Обезличить",
+      "strategyRetain": "Хранить",
+      "declaredBy": "По умолчанию, заданное {{plugin}}",
+      "inheritsValue": "наследует: {{value}}",
+      "legalBasis": "Правовое основание",
+      "theSiteColumnIsSet": "Столбец «Этот сайт» задаётся внутри сайта. Чтобы изменить его, выберите сайт в переключателе."
     }
   },
   "users": {

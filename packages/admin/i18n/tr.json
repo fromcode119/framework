@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Platform varsayılanı bir platform yöneticisi tarafından belirlenir.",
       "useTheLayerBelow": "Alt katmanı kullan",
       "whyTheLawRequiresThese": "Yasanın bu kayıtların saklanmasını neden zorunlu kıldığı",
-      "inheritsThePlatformDefault": "devralınan: platform varsayılanı"
+      "inheritsThePlatformDefault": "devralınan: platform varsayılanı",
+      "strategyDelete": "Sil",
+      "strategyAnonymise": "Anonimleştir",
+      "strategyRetain": "Sakla",
+      "declaredBy": "{{plugin}} tarafından bildirilen varsayılan",
+      "inheritsValue": "devralır: {{value}}",
+      "legalBasis": "Hukuki dayanak",
+      "theSiteColumnIsSet": "\"Bu site\" sütunu bir sitenin içinden ayarlanır. Değiştirmek için seçiciden bir site seçin."
     }
   },
   "users": {

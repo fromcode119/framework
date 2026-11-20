@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "플랫폼 기본값은 플랫폼 관리자가 설정합니다.",
       "useTheLayerBelow": "하위 계층 설정 사용",
       "whyTheLawRequiresThese": "법률상 이 기록을 보관해야 하는 이유",
-      "inheritsThePlatformDefault": "상속: 플랫폼 기본값"
+      "inheritsThePlatformDefault": "상속: 플랫폼 기본값",
+      "strategyDelete": "삭제",
+      "strategyAnonymise": "익명화",
+      "strategyRetain": "보존",
+      "declaredBy": "{{plugin}}에서 선언한 기본값",
+      "inheritsValue": "상속: {{value}}",
+      "legalBasis": "법적 근거",
+      "theSiteColumnIsSet": "\"이 사이트\" 열은 사이트 안에서 설정합니다. 변경하려면 전환기에서 사이트를 선택하세요."
     }
   },
   "users": {

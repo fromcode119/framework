@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Privzeto nastavitev platforme določi skrbnik platforme.",
       "useTheLayerBelow": "Uporabi spodnjo raven",
       "whyTheLawRequiresThese": "Zakaj zakon zahteva hrambo teh zapisov",
-      "inheritsThePlatformDefault": "podeduje: privzeto za platformo"
+      "inheritsThePlatformDefault": "podeduje: privzeto za platformo",
+      "strategyDelete": "Izbriši",
+      "strategyAnonymise": "Anonimiziraj",
+      "strategyRetain": "Ohrani",
+      "declaredBy": "Privzeto, ki ga določa {{plugin}}",
+      "inheritsValue": "podeduje: {{value}}",
+      "legalBasis": "Pravna podlaga",
+      "theSiteColumnIsSet": "Stolpec »To spletno mesto« se nastavi znotraj spletnega mesta. Za spremembo izberite spletno mesto v preklopniku."
     }
   },
   "users": {

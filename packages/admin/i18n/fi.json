@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Alustan oletuksen määrittää alustan ylläpitäjä.",
       "useTheLayerBelow": "Käytä alemman tason asetusta",
       "whyTheLawRequiresThese": "Miksi laki edellyttää näiden tietojen säilyttämistä",
-      "inheritsThePlatformDefault": "periytyy: alustan oletus"
+      "inheritsThePlatformDefault": "periytyy: alustan oletus",
+      "strategyDelete": "Poista",
+      "strategyAnonymise": "Anonymisoi",
+      "strategyRetain": "Säilytä",
+      "declaredBy": "Oletus, jonka {{plugin}} määrittää",
+      "inheritsValue": "perii: {{value}}",
+      "legalBasis": "Oikeusperuste",
+      "theSiteColumnIsSet": "Sarake ”Tämä sivusto” asetetaan sivuston sisällä. Valitse sivusto vaihtimesta muuttaaksesi sitä."
     }
   },
   "users": {

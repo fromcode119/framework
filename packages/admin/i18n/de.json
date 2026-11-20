@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Der Plattform-Standard wird von einem Plattform-Administrator festgelegt.",
       "useTheLayerBelow": "Untergeordnete Ebene verwenden",
       "whyTheLawRequiresThese": "Warum diese Datensätze gesetzlich aufbewahrt werden müssen",
-      "inheritsThePlatformDefault": "übernimmt: Plattform-Standard"
+      "inheritsThePlatformDefault": "übernimmt: Plattform-Standard",
+      "strategyDelete": "Löschen",
+      "strategyAnonymise": "Anonymisieren",
+      "strategyRetain": "Aufbewahren",
+      "declaredBy": "Standard, festgelegt von {{plugin}}",
+      "inheritsValue": "übernimmt: {{value}}",
+      "legalBasis": "Rechtsgrundlage",
+      "theSiteColumnIsSet": "Die Spalte „Diese Website“ wird innerhalb einer Website festgelegt. Wählen Sie im Umschalter eine Website, um sie zu ändern."
     }
   },
   "users": {

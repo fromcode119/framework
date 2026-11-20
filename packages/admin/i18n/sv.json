@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Plattformens standard anges av en plattformsadministratör.",
       "useTheLayerBelow": "Använd nivån nedanför",
       "whyTheLawRequiresThese": "Varför lagen kräver att dessa uppgifter sparas",
-      "inheritsThePlatformDefault": "ärver: plattformens standard"
+      "inheritsThePlatformDefault": "ärver: plattformens standard",
+      "strategyDelete": "Radera",
+      "strategyAnonymise": "Anonymisera",
+      "strategyRetain": "Behåll",
+      "declaredBy": "Standard angiven av {{plugin}}",
+      "inheritsValue": "ärver: {{value}}",
+      "legalBasis": "Rättslig grund",
+      "theSiteColumnIsSet": "Kolumnen ”Den här webbplatsen” anges inne i en webbplats. Välj en webbplats i växlaren för att ändra den."
     }
   },
   "users": {

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "ברירת המחדל של הפלטפורמה נקבעת על ידי מנהל פלטפורמה.",
       "useTheLayerBelow": "שימוש בשכבה שמתחת",
       "whyTheLawRequiresThese": "מדוע החוק מחייב לשמור רשומות אלה",
-      "inheritsThePlatformDefault": "יורש: ברירת המחדל של הפלטפורמה"
+      "inheritsThePlatformDefault": "יורש: ברירת המחדל של הפלטפורמה",
+      "strategyDelete": "מחיקה",
+      "strategyAnonymise": "הפיכה לאנונימי",
+      "strategyRetain": "שמירה",
+      "declaredBy": "ברירת מחדל שהוגדרה על ידי {{plugin}}",
+      "inheritsValue": "יורש: {{value}}",
+      "legalBasis": "בסיס חוקי",
+      "theSiteColumnIsSet": "העמודה \"אתר זה\" מוגדרת בתוך אתר. בחרו אתר במחליף כדי לשנות אותה."
     }
   },
   "users": {

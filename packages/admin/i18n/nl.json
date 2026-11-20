@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "De platformstandaard wordt ingesteld door een platformbeheerder.",
       "useTheLayerBelow": "Onderliggende laag gebruiken",
       "whyTheLawRequiresThese": "Waarom de wet vereist dat deze gegevens worden bewaard",
-      "inheritsThePlatformDefault": "overgenomen: de platformstandaard"
+      "inheritsThePlatformDefault": "overgenomen: de platformstandaard",
+      "strategyDelete": "Verwijderen",
+      "strategyAnonymise": "Anonimiseren",
+      "strategyRetain": "Bewaren",
+      "declaredBy": "Standaard opgegeven door {{plugin}}",
+      "inheritsValue": "neemt over: {{value}}",
+      "legalBasis": "Rechtsgrond",
+      "theSiteColumnIsSet": "De kolom ‘Deze site’ stel je in binnen een site. Kies een site in de wisselaar om hem te wijzigen."
     }
   },
   "users": {

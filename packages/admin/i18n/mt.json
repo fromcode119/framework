@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Is-setting awtomatiku tal-pjattaforma jiġi stabbilit minn amministratur tal-pjattaforma.",
       "useTheLayerBelow": "Uża s-saff ta' taħt",
       "whyTheLawRequiresThese": "Għaliex il-liġi teħtieġ li dawn ir-rekords jinżammu",
-      "inheritsThePlatformDefault": "jiret: is-setting awtomatiku tal-pjattaforma"
+      "inheritsThePlatformDefault": "jiret: is-setting awtomatiku tal-pjattaforma",
+      "strategyDelete": "Ħassar",
+      "strategyAnonymise": "Agħmel anonimu",
+      "strategyRetain": "Żomm",
+      "declaredBy": "Default iddikjarat minn {{plugin}}",
+      "inheritsValue": "jiret: {{value}}",
+      "legalBasis": "Bażi legali",
+      "theSiteColumnIsSet": "Il-kolonna \"Dan is-sit\" tiġi ssettjata ġewwa sit. Agħżel sit fis-swiċċ biex tibdilha."
     }
   },
   "users": {

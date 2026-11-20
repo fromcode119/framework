@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "The platform default is set by a platform administrator.",
       "useTheLayerBelow": "Use the layer below",
       "whyTheLawRequiresThese": "Why the law requires these records to be kept",
-      "inheritsThePlatformDefault": "inherits: the platform default"
+      "inheritsThePlatformDefault": "inherits: the platform default",
+      "strategyDelete": "Delete",
+      "strategyAnonymise": "Anonymise",
+      "strategyRetain": "Retain",
+      "declaredBy": "Default declared by {{plugin}}",
+      "inheritsValue": "inherits: {{value}}",
+      "legalBasis": "Legal basis",
+      "theSiteColumnIsSet": "The \"This site\" column is set inside a site. Choose a site in the switcher to change it."
     }
   },
   "users": {

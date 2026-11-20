@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Ang default ng platform ay itinatakda ng platform administrator.",
       "useTheLayerBelow": "Gamitin ang nasa ibabang layer",
       "whyTheLawRequiresThese": "Bakit hinihingi ng batas na itago ang mga rekord na ito",
-      "inheritsThePlatformDefault": "minamana: ang default ng platform"
+      "inheritsThePlatformDefault": "minamana: ang default ng platform",
+      "strategyDelete": "Burahin",
+      "strategyAnonymise": "Gawing anonimo",
+      "strategyRetain": "Panatilihin",
+      "declaredBy": "Default na itinakda ng {{plugin}}",
+      "inheritsValue": "minamana: {{value}}",
+      "legalBasis": "Legal na batayan",
+      "theSiteColumnIsSet": "Ang column na \"Ang site na ito\" ay itinatakda sa loob ng isang site. Pumili ng site sa switcher para baguhin ito."
     }
   },
   "users": {

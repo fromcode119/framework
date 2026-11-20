@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Типове значення платформи встановлює адміністратор платформи.",
       "useTheLayerBelow": "Використовувати нижчий рівень",
       "whyTheLawRequiresThese": "Чому закон вимагає зберігати ці записи",
-      "inheritsThePlatformDefault": "успадковує: типове значення платформи"
+      "inheritsThePlatformDefault": "успадковує: типове значення платформи",
+      "strategyDelete": "Видалити",
+      "strategyAnonymise": "Знеособити",
+      "strategyRetain": "Зберігати",
+      "declaredBy": "Типове значення, задане {{plugin}}",
+      "inheritsValue": "успадковує: {{value}}",
+      "legalBasis": "Правова підстава",
+      "theSiteColumnIsSet": "Стовпець «Цей сайт» налаштовується всередині сайту. Щоб змінити його, виберіть сайт у перемикачі."
     }
   },
   "users": {

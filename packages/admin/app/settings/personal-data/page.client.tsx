@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { state, bound } from '@fromcode119/react-class-components';
@@ -94,9 +93,10 @@ export class PersonalDataSettingsPage extends AdminComponent {
       // column is read against it and hiding it would make the inherited value unexplainable.
       const inSite = platformKeys?.tenantMode === true && platformKeys?.siteSelected !== false;
       this.platformEditable = Boolean(platformKeys?.editable) && !inSite;
-      // With no site chosen the settings PUT refuses any per-site key outright, so the site column is
-      // shown as read-only rather than offering an edit that cannot be saved.
-      this.siteEditable = Boolean(platformKeys?.siteSelected);
+      // With no site chosen on a multi-site deployment the settings PUT refuses any per-site key, so
+      // the site column is read-only there. A single-site deployment has no such scope: its one site's
+      // row is always the one written (the rule `PlatformSettingLocks` applies to every settings page).
+      this.siteEditable = platformKeys?.tenantMode !== true || platformKeys?.siteSelected !== false;
       this.pending?.mark();
     } catch (error: any) {
       this.loadError = error?.message || AdminI18n.t('settings.personalData.unknownError');
@@ -145,9 +145,6 @@ export class PersonalDataSettingsPage extends AdminComponent {
   }
 
   render(): ReactNode {
-    const theme = this.theme;
-    const isDark = theme === ThemeMode.DARK;
-
     if (this.isLoading) return <Loader />;
 
     return (
@@ -166,30 +163,37 @@ export class PersonalDataSettingsPage extends AdminComponent {
 
         {this.datasets && (
           <Card title={AdminI18n.t('settings.personalData.erasureStrategyPerDataset')}>
-            <div className={`hidden md:grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 pb-2 text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              <span>{AdminI18n.t('settings.personalData.dataset')}</span>
-              <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
-              <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
-              <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
+            <div className="fc-pd">
+              <div className="fc-pd__grid fc-pd__head">
+                <span>{AdminI18n.t('settings.personalData.dataset')}</span>
+                <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
+                <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
+                <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
+              </div>
+              {this.datasets.map((dataset) => (
+                <PersonalDataPolicyRow
+                  key={dataset.id}
+                  dataset={dataset}
+                  site={this.site[dataset.id]}
+                  platform={this.platform[dataset.id]}
+                  platformEditable={this.platformEditable}
+                  siteEditable={this.siteEditable}
+                  onSiteChange={this.onSiteChange}
+                  onPlatformChange={this.onPlatformChange}
+                  theme={this.theme}
+                />
+              ))}
             </div>
-
-            {this.datasets.map((dataset) => (
-              <PersonalDataPolicyRow
-                key={dataset.id}
-                dataset={dataset}
-                site={this.site[dataset.id]}
-                platform={this.platform[dataset.id]}
-                platformEditable={this.platformEditable}
-                siteEditable={this.siteEditable}
-                onSiteChange={this.onSiteChange}
-                onPlatformChange={this.onPlatformChange}
-                theme={theme}
-              />
-            ))}
 
             {!this.platformEditable ? (
               <div className="fc-settings-note">
                 <Hint>{AdminI18n.t('settings.personalData.thePlatformDefaultIsSet')}</Hint>
+              </div>
+            ) : null}
+            {/* The site column is read-only in the platform scope, where the API refuses a per-site key. */}
+            {!this.siteEditable ? (
+              <div className="fc-settings-note">
+                <Hint>{AdminI18n.t('settings.personalData.theSiteColumnIsSet')}</Hint>
               </div>
             ) : null}
           </Card>

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "ค่าเริ่มต้นของแพลตฟอร์มกำหนดโดยผู้ดูแลแพลตฟอร์ม",
       "useTheLayerBelow": "ใช้ค่าจากระดับล่าง",
       "whyTheLawRequiresThese": "เหตุผลที่กฎหมายกำหนดให้ต้องเก็บบันทึกเหล่านี้",
-      "inheritsThePlatformDefault": "สืบทอด: ค่าเริ่มต้นของแพลตฟอร์ม"
+      "inheritsThePlatformDefault": "สืบทอด: ค่าเริ่มต้นของแพลตฟอร์ม",
+      "strategyDelete": "ลบ",
+      "strategyAnonymise": "ทำให้ไม่ระบุตัวตน",
+      "strategyRetain": "เก็บไว้",
+      "declaredBy": "ค่าเริ่มต้นที่ {{plugin}} กำหนด",
+      "inheritsValue": "สืบทอด: {{value}}",
+      "legalBasis": "ฐานทางกฎหมาย",
+      "theSiteColumnIsSet": "คอลัมน์ \"ไซต์นี้\" ตั้งค่าภายในไซต์ เลือกไซต์ในตัวสลับเพื่อเปลี่ยน"
     }
   },
   "users": {

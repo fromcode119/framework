@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "平台默认值由平台管理员设置。",
       "useTheLayerBelow": "使用下一层设置",
       "whyTheLawRequiresThese": "法律要求保留这些记录的原因",
-      "inheritsThePlatformDefault": "继承：平台默认值"
+      "inheritsThePlatformDefault": "继承：平台默认值",
+      "strategyDelete": "删除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保留",
+      "declaredBy": "由 {{plugin}} 声明的默认值",
+      "inheritsValue": "继承：{{value}}",
+      "legalBasis": "法律依据",
+      "theSiteColumnIsSet": "“此站点”列在站点内设置。要更改，请在切换器中选择一个站点。"
     }
   },
   "users": {

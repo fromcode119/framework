@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Valoarea implicită a platformei este setată de un administrator al platformei.",
       "useTheLayerBelow": "Folosește nivelul de dedesubt",
       "whyTheLawRequiresThese": "De ce legea impune păstrarea acestor înregistrări",
-      "inheritsThePlatformDefault": "moștenește: valoarea implicită a platformei"
+      "inheritsThePlatformDefault": "moștenește: valoarea implicită a platformei",
+      "strategyDelete": "Șterge",
+      "strategyAnonymise": "Anonimizează",
+      "strategyRetain": "Păstrează",
+      "declaredBy": "Implicit declarat de {{plugin}}",
+      "inheritsValue": "moștenește: {{value}}",
+      "legalBasis": "Temei legal",
+      "theSiteColumnIsSet": "Coloana „Acest site” se setează în interiorul unui site. Alegeți un site din comutator pentru a o modifica."
     }
   },
   "users": {

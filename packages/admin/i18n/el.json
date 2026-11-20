@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Η προεπιλογή της πλατφόρμας ορίζεται από διαχειριστή πλατφόρμας.",
       "useTheLayerBelow": "Χρήση του κατώτερου επιπέδου",
       "whyTheLawRequiresThese": "Γιατί ο νόμος απαιτεί τη διατήρηση αυτών των εγγραφών",
-      "inheritsThePlatformDefault": "κληρονομεί: την προεπιλογή της πλατφόρμας"
+      "inheritsThePlatformDefault": "κληρονομεί: την προεπιλογή της πλατφόρμας",
+      "strategyDelete": "Διαγραφή",
+      "strategyAnonymise": "Ανωνυμοποίηση",
+      "strategyRetain": "Διατήρηση",
+      "declaredBy": "Προεπιλογή που δηλώνει το {{plugin}}",
+      "inheritsValue": "κληρονομεί: {{value}}",
+      "legalBasis": "Νομική βάση",
+      "theSiteColumnIsSet": "Η στήλη «Αυτός ο ιστότοπος» ορίζεται μέσα σε έναν ιστότοπο. Επιλέξτε ιστότοπο από τον επιλογέα για να την αλλάξετε."
     }
   },
   "users": {

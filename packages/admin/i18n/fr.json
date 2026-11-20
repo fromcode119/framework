@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "La valeur par défaut de la plateforme est définie par un administrateur de la plateforme.",
       "useTheLayerBelow": "Utiliser le niveau inférieur",
       "whyTheLawRequiresThese": "Pourquoi la loi impose la conservation de ces données",
-      "inheritsThePlatformDefault": "hérite : valeur par défaut de la plateforme"
+      "inheritsThePlatformDefault": "hérite : valeur par défaut de la plateforme",
+      "strategyDelete": "Supprimer",
+      "strategyAnonymise": "Anonymiser",
+      "strategyRetain": "Conserver",
+      "declaredBy": "Valeur par défaut déclarée par {{plugin}}",
+      "inheritsValue": "hérite : {{value}}",
+      "legalBasis": "Base légale",
+      "theSiteColumnIsSet": "La colonne « Ce site » se règle à l’intérieur d’un site. Choisissez un site dans le sélecteur pour la modifier."
     }
   },
   "users": {

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Подразумевану вредност платформе поставља администратор платформе.",
       "useTheLayerBelow": "Користи нижи ниво",
       "whyTheLawRequiresThese": "Зашто закон захтева чување ових записа",
-      "inheritsThePlatformDefault": "наслеђује: подразумевано за платформу"
+      "inheritsThePlatformDefault": "наслеђује: подразумевано за платформу",
+      "strategyDelete": "Обриши",
+      "strategyAnonymise": "Анонимизуј",
+      "strategyRetain": "Задржи",
+      "declaredBy": "Подразумевано, које је објавио {{plugin}}",
+      "inheritsValue": "наслеђује: {{value}}",
+      "legalBasis": "Правни основ",
+      "theSiteColumnIsSet": "Колона „Овај сајт“ се подешава унутар сајта. Изаберите сајт у бирачу да бисте је променили."
     }
   },
   "users": {

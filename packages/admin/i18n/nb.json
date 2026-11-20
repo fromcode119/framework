@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Plattformstandarden angis av en plattformadministrator.",
       "useTheLayerBelow": "Bruk nivået under",
       "whyTheLawRequiresThese": "Hvorfor loven krever at disse opplysningene oppbevares",
-      "inheritsThePlatformDefault": "arver: plattformstandarden"
+      "inheritsThePlatformDefault": "arver: plattformstandarden",
+      "strategyDelete": "Slett",
+      "strategyAnonymise": "Anonymiser",
+      "strategyRetain": "Behold",
+      "declaredBy": "Standard angitt av {{plugin}}",
+      "inheritsValue": "arver: {{value}}",
+      "legalBasis": "Rettslig grunnlag",
+      "theSiteColumnIsSet": "Kolonnen «Dette nettstedet» angis inne i et nettsted. Velg et nettsted i bryteren for å endre den."
     }
   },
   "users": {

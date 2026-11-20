@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Platformos numatytąją politiką nustato platformos administratorius.",
       "useTheLayerBelow": "Naudoti žemesnio lygmens nustatymą",
       "whyTheLawRequiresThese": "Kodėl įstatymai reikalauja saugoti šiuos įrašus",
-      "inheritsThePlatformDefault": "paveldima: platformos numatytoji"
+      "inheritsThePlatformDefault": "paveldima: platformos numatytoji",
+      "strategyDelete": "Ištrinti",
+      "strategyAnonymise": "Anonimizuoti",
+      "strategyRetain": "Išsaugoti",
+      "declaredBy": "Numatytoji reikšmė, nurodyta {{plugin}}",
+      "inheritsValue": "paveldi: {{value}}",
+      "legalBasis": "Teisinis pagrindas",
+      "theSiteColumnIsSet": "Stulpelis „Ši svetainė“ nustatomas svetainėje. Norėdami jį pakeisti, perjungiklyje pasirinkite svetainę."
     }
   },
   "users": {

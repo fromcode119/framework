@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "平台預設值由平台管理員設定。",
       "useTheLayerBelow": "使用下層設定",
       "whyTheLawRequiresThese": "法律要求保留這些紀錄的原因",
-      "inheritsThePlatformDefault": "繼承：平台預設值"
+      "inheritsThePlatformDefault": "繼承：平台預設值",
+      "strategyDelete": "刪除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保留",
+      "declaredBy": "由 {{plugin}} 宣告的預設值",
+      "inheritsValue": "繼承：{{value}}",
+      "legalBasis": "法律依據",
+      "theSiteColumnIsSet": "「此網站」欄位需在網站內設定。若要變更，請在切換器中選擇網站。"
     }
   },
   "users": {

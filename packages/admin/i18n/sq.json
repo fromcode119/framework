@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Parazgjedhja e platformës caktohet nga një administrator i platformës.",
       "useTheLayerBelow": "Përdor shtresën më poshtë",
       "whyTheLawRequiresThese": "Pse ligji kërkon që këto të dhëna të ruhen",
-      "inheritsThePlatformDefault": "trashëgon: parazgjedhjen e platformës"
+      "inheritsThePlatformDefault": "trashëgon: parazgjedhjen e platformës",
+      "strategyDelete": "Fshi",
+      "strategyAnonymise": "Anonimizo",
+      "strategyRetain": "Ruaj",
+      "declaredBy": "Parazgjedhje e deklaruar nga {{plugin}}",
+      "inheritsValue": "trashëgon: {{value}}",
+      "legalBasis": "Baza ligjore",
+      "theSiteColumnIsSet": "Kolona \"Ky sajt\" caktohet brenda një sajti. Zgjidhni një sajt te ndërruesi për ta ndryshuar."
     }
   },
   "users": {

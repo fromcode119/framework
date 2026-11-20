@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "प्लेटफ़ॉर्म डिफ़ॉल्ट प्लेटफ़ॉर्म एडमिनिस्ट्रेटर द्वारा सेट किया जाता है।",
       "useTheLayerBelow": "नीचे की परत का उपयोग करें",
       "whyTheLawRequiresThese": "कानून के अनुसार इन रिकॉर्ड को रखना क्यों ज़रूरी है",
-      "inheritsThePlatformDefault": "इनहेरिट करता है: प्लेटफ़ॉर्म डिफ़ॉल्ट"
+      "inheritsThePlatformDefault": "इनहेरिट करता है: प्लेटफ़ॉर्म डिफ़ॉल्ट",
+      "strategyDelete": "हटाएँ",
+      "strategyAnonymise": "गुमनाम करें",
+      "strategyRetain": "रखें",
+      "declaredBy": "{{plugin}} द्वारा घोषित डिफ़ॉल्ट",
+      "inheritsValue": "विरासत में: {{value}}",
+      "legalBasis": "कानूनी आधार",
+      "theSiteColumnIsSet": "\"यह साइट\" कॉलम किसी साइट के अंदर सेट होता है। इसे बदलने के लिए स्विचर में कोई साइट चुनें।"
     }
   },
   "users": {

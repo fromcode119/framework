@@ -1046,6 +1046,22 @@ html.dark {
 .fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
 /* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
 /* Two-factor setup: the QR code keeps a white ground in either theme, since a scanner reads dark on light. */
+/* Personal data: one row per dataset, four columns once the card is wide enough. */
+.fc-pd { container-type: inline-size; padding: 0 var(--fc-settings-pad-x) 8px; }
+.fc-pd__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.fc-pd__head { display: none; padding-bottom: 8px; font-size: 12px; line-height: 20px; font-weight: 500; color: var(--fc-text-muted); }
+.fc-pd__row { padding: 16px 0; border-bottom: 1px solid var(--fc-border); }
+.fc-pd__row:last-child { border-bottom: 0; }
+.fc-pd__cell { display: flex; flex-direction: column; gap: 8px; }
+.fc-pd__cell--tight { gap: 2px; }
+.fc-pd__problem { color: var(--fc-warning-strong); }
+/* Names a cell while the columns are stacked; the header row names them once they sit side by side. */
+.fc-pd__cell-label { font-size: 12px; line-height: 20px; font-weight: 500; color: var(--fc-text-muted); }
+@container (min-width: 44rem) {
+  .fc-pd__grid { grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); }
+  .fc-pd__head { display: grid; }
+  .fc-pd__cell-label { display: none; }
+}
 .fc-twofactor-setup__qr { display: block; width: 176px; height: 176px; padding: 8px; background: #fff; border: 1px solid var(--fc-border); border-radius: var(--fc-radius); }
 .fc-twofactor-setup__verify { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; font-size: var(--fc-control-text); line-height: 20px; }

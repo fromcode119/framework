@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Default platform ditetapkan oleh administrator platform.",
       "useTheLayerBelow": "Gunakan lapisan di bawahnya",
       "whyTheLawRequiresThese": "Alasan hukum mewajibkan catatan ini disimpan",
-      "inheritsThePlatformDefault": "mewarisi: default platform"
+      "inheritsThePlatformDefault": "mewarisi: default platform",
+      "strategyDelete": "Hapus",
+      "strategyAnonymise": "Anonimkan",
+      "strategyRetain": "Simpan",
+      "declaredBy": "Bawaan yang ditetapkan oleh {{plugin}}",
+      "inheritsValue": "mewarisi: {{value}}",
+      "legalBasis": "Dasar hukum",
+      "theSiteColumnIsSet": "Kolom \"Situs ini\" diatur di dalam situs. Pilih situs di pengalih untuk mengubahnya."
     }
   },
   "users": {

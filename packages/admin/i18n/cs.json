@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Výchozí nastavení platformy určuje administrátor platformy.",
       "useTheLayerBelow": "Použít nižší úroveň",
       "whyTheLawRequiresThese": "Proč zákon vyžaduje uchování těchto záznamů",
-      "inheritsThePlatformDefault": "dědí: výchozí nastavení platformy"
+      "inheritsThePlatformDefault": "dědí: výchozí nastavení platformy",
+      "strategyDelete": "Smazat",
+      "strategyAnonymise": "Anonymizovat",
+      "strategyRetain": "Ponechat",
+      "declaredBy": "Výchozí hodnota určená {{plugin}}",
+      "inheritsValue": "dědí: {{value}}",
+      "legalBasis": "Právní základ",
+      "theSiteColumnIsSet": "Sloupec „Tento web“ se nastavuje uvnitř webu. Chcete-li ho změnit, vyberte web v přepínači."
     }
   },
   "users": {

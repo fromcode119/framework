@@ -1,4 +1,5 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import { PersonalDataPolicyClient } from '@/lib/settings/personal-data-policy-client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
@@ -25,19 +26,16 @@ export class PersonalDataPolicyRow extends PureReactor {
   @prop declare onPlatformChange: (id: string, choice: IPersonalDataPolicyChoice | undefined) => void;
   @prop declare theme: ThemeMode;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
-
   /** Only what this dataset declared it can honour, plus the explicit "inherit" the blank value means. */
   private get options() {
     return [
       { value: '', label: AdminI18n.t('settings.personalData.useTheLayerBelow') },
-      ...this.dataset.strategies.map((strategy) => ({ value: strategy, label: strategy })),
+      ...this.dataset.strategies.map((strategy) => ({ value: strategy, label: PersonalDataPolicyClient.strategyLabel(strategy) })),
     ];
   }
 
   private column(
+    heading: string,
     choice: IPersonalDataPolicyChoice | undefined,
     editable: boolean,
     inherits: string,
@@ -45,7 +43,8 @@ export class PersonalDataPolicyRow extends PureReactor {
   ): ReactNode {
     const strategy = String(choice?.strategy ?? '');
     return (
-      <div className="flex flex-col gap-2">
+      <div className="fc-pd__cell">
+        <span className="fc-pd__cell-label">{heading}</span>
         <Select
           value={strategy}
           options={this.options}
@@ -61,6 +60,7 @@ export class PersonalDataPolicyRow extends PureReactor {
             required, and the policy refuses the choice until it is filled. */}
         {strategy === 'retain' && (
           <Input
+            label={AdminI18n.t('settings.personalData.legalBasis')}
             value={String(choice?.reason ?? '')}
             disabled={!editable}
             placeholder={AdminI18n.t('settings.personalData.whyTheLawRequiresThese')}
@@ -68,7 +68,7 @@ export class PersonalDataPolicyRow extends PureReactor {
           />
         )}
         {!strategy && (
-          <span className={`text-[12px] ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{inherits}</span>
+          <span className="fc-text fc-text--xsmall fc-text--muted">{inherits}</span>
         )}
       </div>
     );
@@ -77,26 +77,26 @@ export class PersonalDataPolicyRow extends PureReactor {
   render(): ReactNode {
     const { dataset } = this;
     return (
-      <div className={`py-4 grid grid-cols-1 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 border-b last:border-0 ${this.isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+      <div className="fc-pd__grid fc-pd__row">
         <div>
-          <h3 className={`text-sm font-medium tracking-tight ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.label}</h3>
-          <p className={`text-[12px] font-mono mt-0.5 ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{dataset.id}</p>
+          <p className="fc-text fc-text--base fc-text--plus">{dataset.label}</p>
           {dataset.fields.length > 0 && (
-            <p className={`text-[12px] mt-1 leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{dataset.fields.join(', ')}</p>
+            <p className="fc-text fc-text--xsmall fc-text--muted">{dataset.fields.join(', ')}</p>
           )}
         </div>
 
-        {this.column(this.platform, this.platformEditable, `inherits: ${dataset.declaredProvenance}`, this.onPlatformChange)}
-        {this.column(this.site, this.siteEditable, AdminI18n.t('settings.personalData.inheritsThePlatformDefault'), this.onSiteChange)}
+        {this.column(AdminI18n.t('settings.personalData.platformDefault'), this.platform, this.platformEditable, AdminI18n.t('settings.personalData.inheritsValue', { value: dataset.declaredProvenance }), this.onPlatformChange)}
+        {this.column(AdminI18n.t('settings.personalData.thisSite'), this.site, this.siteEditable, AdminI18n.t('settings.personalData.inheritsThePlatformDefault'), this.onSiteChange)}
 
-        <div className="flex flex-col gap-1">
-          <span className={`text-sm font-medium ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.strategy}</span>
-          <span className={`text-[12px] ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{dataset.provenance}</span>
+        <div className="fc-pd__cell fc-pd__cell--tight">
+          <span className="fc-pd__cell-label">{AdminI18n.t('settings.personalData.inForceNow')}</span>
+          <span className="fc-text fc-text--base fc-text--plus">{PersonalDataPolicyClient.strategyLabel(dataset.strategy)}</span>
+          <span className="fc-text fc-text--xsmall fc-text--muted">{dataset.provenance}</span>
           {dataset.reason && (
-            <span className={`text-[12px] italic ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{dataset.reason}</span>
+            <span className="fc-text fc-text--xsmall fc-text--muted">{dataset.reason}</span>
           )}
           {dataset.problem && (
-            <span className="text-[12px] text-amber-600 leading-relaxed">{dataset.problem}</span>
+            <span className="fc-text fc-text--xsmall fc-pd__problem">{dataset.problem}</span>
           )}
         </div>
       </div>

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Platvormi vaikeväärtuse määrab platvormi administraator.",
       "useTheLayerBelow": "Kasuta alumist taset",
       "whyTheLawRequiresThese": "Miks seadus nõuab nende kirjete säilitamist",
-      "inheritsThePlatformDefault": "pärib: platvormi vaikeväärtus"
+      "inheritsThePlatformDefault": "pärib: platvormi vaikeväärtus",
+      "strategyDelete": "Kustuta",
+      "strategyAnonymise": "Anonüümi",
+      "strategyRetain": "Säilita",
+      "declaredBy": "Vaikimisi määranud {{plugin}}",
+      "inheritsValue": "pärib: {{value}}",
+      "legalBasis": "Õiguslik alus",
+      "theSiteColumnIsSet": "Veergu „See sait“ määratakse saidi sees. Selle muutmiseks vali lülitist sait."
     }
   },
   "users": {

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Lalai platform ditetapkan oleh pentadbir platform.",
       "useTheLayerBelow": "Gunakan lapisan di bawah",
       "whyTheLawRequiresThese": "Sebab undang-undang memerlukan rekod ini disimpan",
-      "inheritsThePlatformDefault": "mewarisi: lalai platform"
+      "inheritsThePlatformDefault": "mewarisi: lalai platform",
+      "strategyDelete": "Padam",
+      "strategyAnonymise": "Tanpa nama",
+      "strategyRetain": "Simpan",
+      "declaredBy": "Lalai yang diisytiharkan oleh {{plugin}}",
+      "inheritsValue": "mewarisi: {{value}}",
+      "legalBasis": "Asas undang-undang",
+      "theSiteColumnIsSet": "Lajur \"Tapak ini\" ditetapkan di dalam tapak. Pilih tapak dalam penukar untuk mengubahnya."
     }
   },
   "users": {

@@ -3224,7 +3224,14 @@
       "thePlatformDefaultIsSet": "Правилото на платформата се задава от администратор на платформата.",
       "useTheLayerBelow": "Използвай нивото отдолу",
       "whyTheLawRequiresThese": "Защо законът изисква тези записи да се пазят",
-      "inheritsThePlatformDefault": "наследява: правилото на платформата"
+      "inheritsThePlatformDefault": "наследява: правилото на платформата",
+      "strategyDelete": "Изтриване",
+      "strategyAnonymise": "Анонимизиране",
+      "strategyRetain": "Запазване",
+      "declaredBy": "По подразбиране, обявено от {{plugin}}",
+      "inheritsValue": "наследява: {{value}}",
+      "legalBasis": "Правно основание",
+      "theSiteColumnIsSet": "Колоната „Този сайт“ се настройва вътре в сайт. Изберете сайт от превключвателя, за да я промените."
     }
   },
   "scope": {

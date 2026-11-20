@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Platformas noklusējumu iestata platformas administrators.",
       "useTheLayerBelow": "Izmantot zemāko līmeni",
       "whyTheLawRequiresThese": "Kāpēc likums pieprasa šos ierakstus saglabāt",
-      "inheritsThePlatformDefault": "manto: platformas noklusējumu"
+      "inheritsThePlatformDefault": "manto: platformas noklusējumu",
+      "strategyDelete": "Dzēst",
+      "strategyAnonymise": "Anonimizēt",
+      "strategyRetain": "Saglabāt",
+      "declaredBy": "Noklusējums, ko nosaka {{plugin}}",
+      "inheritsValue": "manto: {{value}}",
+      "legalBasis": "Juridiskais pamats",
+      "theSiteColumnIsSet": "Kolonnu “Šī vietne” iestata vietnē. Lai to mainītu, pārslēdzējā izvēlieties vietni."
     }
   },
   "users": {

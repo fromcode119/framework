@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Стандардот на платформата го поставува администратор на платформата.",
       "useTheLayerBelow": "Користи го долниот слој",
       "whyTheLawRequiresThese": "Зошто законот бара овие записи да се чуваат",
-      "inheritsThePlatformDefault": "наследува: стандардот на платформата"
+      "inheritsThePlatformDefault": "наследува: стандардот на платформата",
+      "strategyDelete": "Избриши",
+      "strategyAnonymise": "Анонимизирај",
+      "strategyRetain": "Задржи",
+      "declaredBy": "Стандардно, објавено од {{plugin}}",
+      "inheritsValue": "наследува: {{value}}",
+      "legalBasis": "Правна основа",
+      "theSiteColumnIsSet": "Колоната „Оваа страница“ се поставува внатре во страница. Изберете страница во менувачот за да ја промените."
     }
   },
   "users": {

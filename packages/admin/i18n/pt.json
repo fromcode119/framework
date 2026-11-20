@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "A predefinição da plataforma é definida por um administrador da plataforma.",
       "useTheLayerBelow": "Usar a camada inferior",
       "whyTheLawRequiresThese": "Porque é que a lei exige a conservação destes registos",
-      "inheritsThePlatformDefault": "herda: a predefinição da plataforma"
+      "inheritsThePlatformDefault": "herda: a predefinição da plataforma",
+      "strategyDelete": "Eliminar",
+      "strategyAnonymise": "Anonimizar",
+      "strategyRetain": "Manter",
+      "declaredBy": "Predefinição declarada por {{plugin}}",
+      "inheritsValue": "herda: {{value}}",
+      "legalBasis": "Base legal",
+      "theSiteColumnIsSet": "A coluna «Este site» é definida dentro de um site. Escolha um site no seletor para a alterar."
     }
   },
   "users": {

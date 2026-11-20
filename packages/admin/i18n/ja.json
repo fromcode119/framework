@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "プラットフォームの既定値はプラットフォーム管理者が設定します。",
       "useTheLayerBelow": "下位の設定を使用",
       "whyTheLawRequiresThese": "法律でこれらの記録の保管が求められる理由",
-      "inheritsThePlatformDefault": "継承: プラットフォームの既定値"
+      "inheritsThePlatformDefault": "継承: プラットフォームの既定値",
+      "strategyDelete": "削除",
+      "strategyAnonymise": "匿名化",
+      "strategyRetain": "保持",
+      "declaredBy": "{{plugin}} が宣言した既定値",
+      "inheritsValue": "継承: {{value}}",
+      "legalBasis": "法的根拠",
+      "theSiteColumnIsSet": "「このサイト」列はサイト内で設定します。変更するには切り替えでサイトを選択してください。"
     }
   },
   "users": {

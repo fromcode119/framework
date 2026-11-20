@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "El valor predeterminado de la plataforma lo establece un administrador de la plataforma.",
       "useTheLayerBelow": "Usar la capa inferior",
       "whyTheLawRequiresThese": "Por qué la ley exige conservar estos registros",
-      "inheritsThePlatformDefault": "hereda: el predeterminado de la plataforma"
+      "inheritsThePlatformDefault": "hereda: el predeterminado de la plataforma",
+      "strategyDelete": "Eliminar",
+      "strategyAnonymise": "Anonimizar",
+      "strategyRetain": "Conservar",
+      "declaredBy": "Valor predeterminado declarado por {{plugin}}",
+      "inheritsValue": "hereda: {{value}}",
+      "legalBasis": "Base legal",
+      "theSiteColumnIsSet": "La columna «Este sitio» se configura dentro de un sitio. Elige un sitio en el selector para cambiarla."
     }
   },
   "users": {

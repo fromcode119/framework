@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Zadana pravila platforme postavlja administrator platforme.",
       "useTheLayerBelow": "Koristi razinu ispod",
       "whyTheLawRequiresThese": "Zašto zakon zahtijeva čuvanje ovih zapisa",
-      "inheritsThePlatformDefault": "nasljeđuje: zadano za platformu"
+      "inheritsThePlatformDefault": "nasljeđuje: zadano za platformu",
+      "strategyDelete": "Izbriši",
+      "strategyAnonymise": "Anonimiziraj",
+      "strategyRetain": "Zadrži",
+      "declaredBy": "Zadano prema {{plugin}}",
+      "inheritsValue": "nasljeđuje: {{value}}",
+      "legalBasis": "Pravna osnova",
+      "theSiteColumnIsSet": "Stupac „Ova stranica” postavlja se unutar stranice. Odaberite stranicu u izborniku da biste ga promijenili."
     }
   },
   "users": {

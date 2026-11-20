@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Domyślne ustawienie platformy określa administrator platformy.",
       "useTheLayerBelow": "Użyj warstwy niższej",
       "whyTheLawRequiresThese": "Dlaczego prawo wymaga przechowywania tych rejestrów",
-      "inheritsThePlatformDefault": "dziedziczy: domyślne ustawienie platformy"
+      "inheritsThePlatformDefault": "dziedziczy: domyślne ustawienie platformy",
+      "strategyDelete": "Usuń",
+      "strategyAnonymise": "Anonimizuj",
+      "strategyRetain": "Zachowaj",
+      "declaredBy": "Domyślne ustawione przez {{plugin}}",
+      "inheritsValue": "dziedziczy: {{value}}",
+      "legalBasis": "Podstawa prawna",
+      "theSiteColumnIsSet": "Kolumnę „Ta witryna” ustawia się wewnątrz witryny. Wybierz witrynę w przełączniku, aby ją zmienić."
     }
   },
   "users": {

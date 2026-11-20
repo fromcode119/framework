@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "A platform alapértelmezését platformadminisztrátor állítja be.",
       "useTheLayerBelow": "Az alatta lévő szint használata",
       "whyTheLawRequiresThese": "Miért írja elő a jogszabály ezen nyilvántartások megőrzését",
-      "inheritsThePlatformDefault": "örökölt: a platform alapértelmezése"
+      "inheritsThePlatformDefault": "örökölt: a platform alapértelmezése",
+      "strategyDelete": "Törlés",
+      "strategyAnonymise": "Anonimizálás",
+      "strategyRetain": "Megőrzés",
+      "declaredBy": "A(z) {{plugin}} által megadott alapértelmezés",
+      "inheritsValue": "örökli: {{value}}",
+      "legalBasis": "Jogalap",
+      "theSiteColumnIsSet": "Az „Ez a webhely” oszlop egy webhelyen belül állítható. A módosításhoz válasszon webhelyet a váltóban."
     }
   },
   "users": {

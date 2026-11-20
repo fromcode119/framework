@@ -24,20 +24,52 @@ export class PersonalDataPolicyClient {
   /** The endpoint's rows, in the shape one screen row needs. */
   static toDatasets(response: any): IPersonalDataPolicyDataset[] {
     const rows = Array.isArray(response?.datasets) ? response.datasets : [];
-    return rows.map((row: any) => ({
-      id: String(row?.id ?? ''),
-      label: String(row?.label ?? ''),
-      fields: Array.isArray(row?.fields) ? row.fields.map((field: any) => String(field)) : [],
-      strategies: Array.isArray(row?.strategies) ? row.strategies.map((s: any) => String(s)) : [],
-      strategy: String(row?.strategy ?? ''),
-      reason: String(row?.reason ?? ''),
-      provenance: String(row?.provenance ?? ''),
-      // Phrased "the default declared by X", never "X default": the framework's own datasets are
-      // addressed as `platform`, and "platform default — anonymise" sitting under a column headed
-      // "Platform default" reads as the platform LAYER rather than as the declaring owner.
-      declaredProvenance: AdminI18n.t('lib.theDefaultDeclaredBy', { plugin: String(row?.pluginSlug ?? ''), strategy: String(row?.defaultStrategy ?? '') }),
-      problem: String(row?.problem ?? ''),
-    }));
+    return rows.map((row: any) => {
+      const plugin = String(row?.pluginSlug ?? '');
+      return {
+        id: String(row?.id ?? ''),
+        label: String(row?.label ?? ''),
+        fields: Array.isArray(row?.fields) ? row.fields.map((field: any) => PersonalDataPolicyClient.fieldLabel(String(field))) : [],
+        strategies: Array.isArray(row?.strategies) ? row.strategies.map((s: any) => String(s)) : [],
+        strategy: String(row?.strategy ?? ''),
+        reason: String(row?.reason ?? ''),
+        provenance: PersonalDataPolicyClient.provenanceLabel(String(row?.source ?? ''), plugin, String(row?.provenance ?? '')),
+        // Phrased "the default declared by X", never "X default": the framework's own datasets are
+        // addressed as `platform`, and "platform default — anonymise" sitting under a column headed
+        // "Platform default" reads as the platform LAYER rather than as the declaring owner.
+        declaredProvenance: AdminI18n.t('lib.theDefaultDeclaredBy', { plugin, strategy: PersonalDataPolicyClient.strategyLabel(String(row?.defaultStrategy ?? '')) }),
+        problem: String(row?.problem ?? ''),
+      };
+    });
+  }
+
+  /** A strategy in the console's language; the three the platform runs are a closed list. */
+  static strategyLabel(strategy: string): string {
+    const key = PersonalDataPolicyClient.STRATEGY_KEYS[strategy];
+    return key ? AdminI18n.t(key) : strategy;
+  }
+
+  private static readonly STRATEGY_KEYS: Record<string, string> = {
+    delete: 'settings.personalData.strategyDelete',
+    anonymise: 'settings.personalData.strategyAnonymise',
+    retain: 'settings.personalData.strategyRetain',
+  };
+
+  /**
+   * Which layer decided, in the console's language. The server's own `provenance` is English text
+   * built for the erasure record; the layer it names is `source`, so the screen words it here. A layer
+   * this page does not know keeps the server's words rather than being renamed.
+   */
+  static provenanceLabel(source: string, plugin: string, fallback: string): string {
+    if (source === 'declared') return AdminI18n.t('settings.personalData.declaredBy', { plugin });
+    if (source === 'site') return AdminI18n.t('settings.personalData.thisSite');
+    if (source === 'platform') return AdminI18n.t('settings.personalData.platformDefault');
+    return fallback;
+  }
+
+  /** A declared field key (`firstName`) as words (`first name`). */
+  static fieldLabel(field: string): string {
+    return field.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ').toLowerCase();
   }
 
   /** A stored blob is JSON text or an already-parsed object, depending on the settings response. */

@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "يحدد مسؤول المنصة الإعداد الافتراضي للمنصة.",
       "useTheLayerBelow": "استخدام المستوى الأدنى",
       "whyTheLawRequiresThese": "سبب إلزام القانون بالاحتفاظ بهذه السجلات",
-      "inheritsThePlatformDefault": "موروث: الإعداد الافتراضي للمنصة"
+      "inheritsThePlatformDefault": "موروث: الإعداد الافتراضي للمنصة",
+      "strategyDelete": "حذف",
+      "strategyAnonymise": "إخفاء الهوية",
+      "strategyRetain": "الاحتفاظ",
+      "declaredBy": "افتراضي أعلنه {{plugin}}",
+      "inheritsValue": "يرث: {{value}}",
+      "legalBasis": "الأساس القانوني",
+      "theSiteColumnIsSet": "يُضبط عمود \"هذا الموقع\" داخل موقع. اختر موقعًا من المبدّل لتغييره."
     }
   },
   "users": {

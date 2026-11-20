@@ -3187,7 +3187,14 @@
       "thePlatformDefaultIsSet": "Mặc định của nền tảng do quản trị viên nền tảng thiết lập.",
       "useTheLayerBelow": "Dùng thiết lập cấp dưới",
       "whyTheLawRequiresThese": "Lý do pháp luật yêu cầu lưu giữ các bản ghi này",
-      "inheritsThePlatformDefault": "kế thừa: mặc định của nền tảng"
+      "inheritsThePlatformDefault": "kế thừa: mặc định của nền tảng",
+      "strategyDelete": "Xóa",
+      "strategyAnonymise": "Ẩn danh hóa",
+      "strategyRetain": "Giữ lại",
+      "declaredBy": "Mặc định do {{plugin}} khai báo",
+      "inheritsValue": "kế thừa: {{value}}",
+      "legalBasis": "Cơ sở pháp lý",
+      "theSiteColumnIsSet": "Cột \"Trang này\" được đặt bên trong một trang. Chọn một trang trong bộ chuyển để thay đổi."
     }
   },
   "users": {
