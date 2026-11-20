@@ -249,7 +249,9 @@
 .fc-ext-row__name { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fc-settings-label); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 /* A state beside the name never runs under the row's controls: in a narrow row it is cut, not spilled. */
 .fc-ext-row__name > * { min-width: 0; max-width: 100%; }
-.fc-ext-row__name .fc-badge { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+/* Block so a long state can end in "…"; a block does not centre like the badge's own flex, so the line
+   fills the badge's height inside its border instead — else the text sits on the top edge. */
+.fc-ext-row__name .fc-badge { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; line-height: calc(var(--fc-badge-h) - 2px); }
 .fc-ext-row__name a { color: inherit; text-decoration: none; }
 .fc-ext-row__name a:hover { color: var(--fc-brand); }
 .fc-ext-row__link { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
