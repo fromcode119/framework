@@ -3780,6 +3780,16 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-affix__input--end { text-align: end; }
 .fc-affix__input::placeholder { color: var(--fc-text-muted); }
 
+/* A value the operator may not change: the box of a field, recessed, with the lock where the cursor would be. */
+.fc-locked-value-stack { display: flex; flex-direction: column; gap: 4px; }
+.fc-locked-value { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--fc-field-h); padding: 6px 10px; border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); box-shadow: inset 0 0 0 1px var(--fc-border); }
+.fc-locked-value__text { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: var(--fc-control-text); line-height: 18px; color: var(--fc-text); }
+.fc-locked-value__text--empty { color: var(--fc-text-muted); }
+.fc-locked-value__lock { flex: none; color: var(--fc-text-muted); }
+/* An amount reads from the right, as in the steppers beside it; the lock stays at the end. */
+.fc-locked-value--amount .fc-locked-value__text { text-align: end; font-variant-numeric: tabular-nums; }
+.fc-locked-value__note { margin: 0; font-size: 12px; line-height: 16px; color: var(--fc-text-muted); }
+
 /* The record's public address: one line read like a field, opened in place to change it. */
 .fc-permalink { display: flex; align-items: center; gap: 8px; width: 100%; min-height: var(--fc-field-h); padding: 6px 10px; border: 0; border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); text-align: start; cursor: pointer; transition: box-shadow .15s ease; }
 .fc-permalink:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--fc-border-strong); }
