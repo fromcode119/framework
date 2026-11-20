@@ -21,7 +21,7 @@ export class BackupImportService {
     const sanitizedFilename = this.sanitizeFilename(originalFilename);
     const extension = this.resolveSupportedExtension(sanitizedFilename);
     if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
+      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, .sql.gz or .db backup.');
     }
 
     const targetDirectory = BackupService.getBackupsDirectory(this.resolveTargetSubdirectory(extension).value);
@@ -48,7 +48,7 @@ export class BackupImportService {
     const sanitizedFilename = this.sanitizeFilename(originalFilename);
     const extension = this.resolveSupportedExtension(sanitizedFilename);
     if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
+      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, .sql.gz or .db backup.');
     }
     if (!Number.isFinite(totalSizeBytes) || totalSizeBytes <= 0) {
       throw new BackupOperationError(400, 'Backup size must be greater than zero.');
@@ -124,7 +124,7 @@ export class BackupImportService {
 
     const extension = this.resolveSupportedExtension(metadata.originalFilename);
     if (!extension) {
-      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, or .db backup.');
+      throw new BackupOperationError(400, 'Unsupported backup archive format. Upload a .tar.gz, .sql, .sql.gz or .db backup.');
     }
 
     const assembledPath = path.join(this.resolveSessionDirectory(uploadId), `assembled${extension}`);
@@ -149,13 +149,14 @@ export class BackupImportService {
   private static resolveSupportedExtension(filename: string): BackupArchiveExtension | null {
     const lowerCaseFilename = filename.toLowerCase();
     if (lowerCaseFilename.endsWith(BackupArchiveExtension.TAR_GZ.value)) return BackupArchiveExtension.TAR_GZ;
+    if (lowerCaseFilename.endsWith(BackupArchiveExtension.SQL_GZ.value)) return BackupArchiveExtension.SQL_GZ;
     if (lowerCaseFilename.endsWith(BackupArchiveExtension.SQL.value)) return BackupArchiveExtension.SQL;
     if (lowerCaseFilename.endsWith(BackupArchiveExtension.DB.value)) return BackupArchiveExtension.DB;
     return null;
   }
 
   private static resolveTargetSubdirectory(extension: BackupArchiveExtension): BackupStorageKind {
-    return extension === BackupArchiveExtension.SQL || extension === BackupArchiveExtension.DB ? BackupStorageKind.DATABASE : BackupStorageKind.SYSTEM;
+    return extension === BackupArchiveExtension.SQL || extension === BackupArchiveExtension.SQL_GZ || extension === BackupArchiveExtension.DB ? BackupStorageKind.DATABASE : BackupStorageKind.SYSTEM;
   }
 
   private static resolveSessionDirectory(uploadId: string): string {

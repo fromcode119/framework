@@ -162,7 +162,7 @@ export class BackupCatalogService {
       return normalizedPath.endsWith('/site-snapshot.tar.gz');
     }
 
-    return normalizedPath.endsWith('.tar.gz') || normalizedPath.endsWith('.sql') || normalizedPath.endsWith('.db');
+    return normalizedPath.endsWith('.tar.gz') || normalizedPath.endsWith('.sql') || normalizedPath.endsWith('.sql.gz') || normalizedPath.endsWith('.db');
   }
 
   private walkDirectory(directoryPath: string, results: string[]): void {

@@ -31,10 +31,11 @@ describe('PostgresDatabaseBackupHandler', () => {
   it('keeps the password out of every command and passes it through the environment', async () => {
     const { calls, dump, result } = await runWith(url);
 
-    expect(result).toBe('/tmp/backups/db-dump-2026-11-19.sql');
+    expect(result).toBe('/tmp/backups/db-dump-2026-11-19.sql.gz');
     for (const call of calls) expect(call.args.join(' ')).not.toContain('s3cr3t');
     expect(dump?.options.env.PGPASSWORD).toBe('s3cr3t');
     expect(dump?.options.shell).toBeUndefined();
+    expect(dump?.args).toContain('--compress=6');
     expect(dump?.args).toContain('--dbname=postgresql://app@db:5432/fromcode?sslmode=require');
   });
 
@@ -52,7 +53,7 @@ describe('PostgresDatabaseBackupHandler', () => {
   it('leaves out a table the role cannot read and names it', async () => {
     const { result, dump, warnings } = await runWith(url, { unreadable: 'public._bak_sale_doc\npublic."Odd Name"\n' });
 
-    expect(result).toBe('/tmp/backups/db-dump-2026-11-19.sql');
+    expect(result).toBe('/tmp/backups/db-dump-2026-11-19.sql.gz');
     expect(dump?.args).toContain('--exclude-table=public._bak_sale_doc');
     expect(dump?.args).toContain('--exclude-table=public."Odd Name"');
     expect(warnings).toEqual(["The database backup leaves out tables the application's database role cannot read: public._bak_sale_doc, public.\"Odd Name\"."]);
