@@ -37,6 +37,15 @@ describe('NumberStepper buttons', () => {
     expect(onChange).toHaveBeenLastCalledWith(0);
   });
 
+  it('lands on min when a button is pressed on an empty field that declares one', () => {
+    const onChange = vi.fn();
+    render(<NumberStepper value={null} min={64} onChange={onChange} />);
+    fireEvent.click(buttons()[1]);
+    expect(onChange).toHaveBeenLastCalledWith(64);
+    fireEvent.click(buttons()[0]);
+    expect(onChange).toHaveBeenLastCalledWith(64);
+  });
+
   it('has − and + on a fractional step too, moving by that step', () => {
     const onChange = vi.fn();
     render(<NumberStepper value={1.25} step={0.5} onChange={onChange} />);
