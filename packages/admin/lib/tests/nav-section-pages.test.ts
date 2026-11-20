@@ -42,6 +42,11 @@ describe('NavSectionPages.holds', () => {
     expect(NavSectionPages.holds(group, '/area/orders')).toBe(false);
     expect(NavSectionPages.holds(group, '')).toBe(false);
   });
+
+  it('is open on the overview its own line leads to', () => {
+    const group = { pages: [page('/cms/pages'), page('/cms/posts')], href: '/cms' };
+    expect(NavSectionPages.holds(group, '/cms')).toBe(true);
+  });
 });
 
 describe('NavSectionPages.arrange — an area of several plugins', () => {

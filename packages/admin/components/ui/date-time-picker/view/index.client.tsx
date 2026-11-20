@@ -198,10 +198,6 @@ export class DateTimePicker extends AdminComponent {
     this.onChange(null);
   }
 
-  @bound private jumpToSelected(): void {
-    this.visibleMonth = this.pickerDate || new Date();
-  }
-
   @bound private toggleJumpView(): void {
     this.isJumpViewOpen = !this.isJumpViewOpen;
   }
@@ -267,16 +263,12 @@ export class DateTimePicker extends AdminComponent {
           theme={this.theme}
           showTime={showTime}
           timezone={this.timezone}
-          placeholder={placeholder}
-          value={this.value}
           coords={this.coords}
           visibleMonth={this.visibleMonth}
           isJumpViewOpen={this.isJumpViewOpen}
-          utcDate={this.utcDate}
           zonedParts={this.zonedParts}
           pickerDate={this.pickerDate}
           popoverRef={this.popoverRef}
-          onJumpToSelected={this.jumpToSelected}
           onShiftMonth={this.shiftVisibleMonth}
           onToggleJumpView={this.toggleJumpView}
           onShiftYear={this.shiftVisibleYear}

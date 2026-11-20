@@ -83,8 +83,11 @@ export class NavSectionPages {
     });
   }
 
-  /** Whether a sub-menu holds the page now open. */
-  static holds(entry: { pages: any[] }, activePath: string): boolean {
-    return Boolean(activePath) && entry.pages.some((page) => NavUtils.normalizePath(page.path) === activePath);
+  /** Whether a sub-menu holds the page now open — one of its pages, or the page its own line leads to
+      (an overview that is not among its pages): standing on it, the sub-menu is open. */
+  static holds(entry: { pages: any[]; href?: string }, activePath: string): boolean {
+    if (!activePath) return false;
+    if (entry.href && NavUtils.normalizePath(entry.href) === activePath) return true;
+    return entry.pages.some((page) => NavUtils.normalizePath(page.path) === activePath);
   }
 }
