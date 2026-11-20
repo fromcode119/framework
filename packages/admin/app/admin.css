@@ -875,6 +875,7 @@ html.dark {
 .fc-menu-action { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 6px 8px; border-radius: var(--fc-control-radius); font-size: 13px; line-height: 20px; font-weight: 500; text-align: start; color: var(--fc-text); }
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
+.fc-menu-action:disabled:not([aria-busy="true"]) { cursor: not-allowed; color: var(--fc-text-muted); }
 .fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
 /* The row the menu is currently on: the console's quiet wash, not a filled indigo band. */
 .fc-menu-action[aria-current="true"] { background: var(--fc-surface-muted); }
@@ -982,6 +983,8 @@ html.dark {
 .fc-menu-action__text { min-width: 0; flex: 1; display: grid; }
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
+/* Why a row is switched off is a sentence to read, not a status to clip: it wraps, and never widens the menu off screen. */
+.fc-menu-action:disabled:not([aria-busy="true"]) .fc-menu-action__detail { white-space: normal; max-width: 240px; }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
 .fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: var(--fc-badge-h); padding: 0 7px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-badge-text); font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
 .fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
@@ -1091,7 +1094,9 @@ html.dark {
 .fc-record-part__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .fc-record-part__button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: var(--fc-control-h); padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); font-size: var(--fc-control-text); font-weight: var(--fc-weight-strong); color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
-.fc-record-part__button:hover { background: var(--fc-surface-muted); }
+.fc-record-part__button:hover:not(:disabled) { background: var(--fc-surface-muted); }
+.fc-record-part__button:disabled { cursor: not-allowed; color: var(--fc-text-muted); background: var(--fc-surface-muted); }
+.fc-record-part__reason { flex: 1; min-width: 0; text-align: end; font-size: 12px; color: var(--fc-text-muted); }
 /* A card that is the part itself (an order's invoices) needs no label repeating its title. */
 .fc-record-part__group--bare { grid-template-columns: minmax(0, 1fr); }
 
@@ -2486,7 +2491,7 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
   white-space: nowrap;
 }
 .fc-record-head__button:hover,
-.fc-record-part__button:hover,
+.fc-record-part__button:hover:not(:disabled),
 .fc-sro-table__page:hover:not(:disabled) { background: var(--fc-surface-muted); }
 
 /* An icon alone carries NO edge — a row of ringed squares beside a value reads as empty inputs. */

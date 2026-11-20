@@ -1,5 +1,6 @@
 import type { IRecordsHubItem } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
+import type { IRecordPartAction } from '@/components/collection/edit/interfaces/record-part-action.interface';
 
 /**
  * The records other plugins hold about this one, asked for ONCE while a page draws: every card and every
@@ -9,9 +10,9 @@ import { AdminApi } from '@/lib/api';
 export class RecordPartSource {
   private static readonly SHARED_MS = 5000;
   private static readonly asked = new Map<string, number>();
-  private static readonly answers = new Map<string, Promise<{ items: IRecordsHubItem[]; actions: Array<{ id: string; label: string; href: string; icon?: string; part?: string }> }>>();
+  private static readonly answers = new Map<string, Promise<{ items: IRecordsHubItem[]; actions: IRecordPartAction[] }>>();
 
-  static load(url: string, fresh = false): Promise<{ items: IRecordsHubItem[]; actions: Array<{ id: string; label: string; href: string; icon?: string; part?: string }> }> {
+  static load(url: string, fresh = false): Promise<{ items: IRecordsHubItem[]; actions: IRecordPartAction[] }> {
     const known = RecordPartSource.answers.get(url);
     if (known && !fresh && Date.now() - (RecordPartSource.asked.get(url) || 0) < RecordPartSource.SHARED_MS) return known;
     RecordPartSource.asked.set(url, Date.now());

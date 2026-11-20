@@ -148,7 +148,8 @@ export class EntityRecordsResolutionService {
     const label = String(raw?.label ?? '').trim();
     const href = String(raw?.href ?? '').trim();
     if (!id || !label || !href) return null;
-    return { id: `${providerKey}:${id}`, label, href, icon: raw?.icon, part: String(raw?.part || providerPart || '').trim() || undefined };
+    const unavailable = String(raw?.unavailable ?? '').trim() || undefined;
+    return { id: `${providerKey}:${id}`, label, href, icon: raw?.icon, part: String(raw?.part || providerPart || '').trim() || undefined, unavailable };
   }
 
   private groupItems(items: IEntityRecordItem[]): IEntityRecordGroup[] {

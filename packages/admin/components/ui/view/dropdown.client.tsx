@@ -30,9 +30,11 @@ export class Dropdown extends DropdownPositioning {
   componentDidUpdate(): void {
     if (!this.isOpen) {
       this.measuredWidth = 0;
+      this.stopWatchingSize();
       if (this.positioned) this.positioned = false;
       return;
     }
+    this.watchSize();
     const width = this.menuRef.current?.offsetWidth || 0;
     if (!width) return;
     if (width !== this.measuredWidth) {
@@ -46,6 +48,31 @@ export class Dropdown extends DropdownPositioning {
   componentWillUnmount(): void {
     document.removeEventListener('mousedown', this.handleClickOutside);
     this.removePositionListeners();
+    this.stopWatchingSize();
+  }
+
+  /**
+   * Rows another component adds (a plugin's actions in a record card's ⋯) arrive after the menu was
+   * measured, and only re-render THAT component — this one never updates, so the panel kept the width it
+   * had without them and opened past the right edge. The panel's own size is watched while it is open.
+   */
+  private sizeWatch: ResizeObserver | null = null;
+
+  private watchSize(): void {
+    const menu = this.menuRef.current;
+    if (!menu || this.sizeWatch) return;
+    this.sizeWatch = new ResizeObserver(() => {
+      const width = this.menuRef.current?.offsetWidth || 0;
+      if (!width || width === this.measuredWidth) return;
+      this.measuredWidth = width;
+      this.updatePosition();
+    });
+    this.sizeWatch.observe(menu);
+  }
+
+  private stopWatchingSize(): void {
+    this.sizeWatch?.disconnect();
+    this.sizeWatch = null;
   }
 
   @watch('isOpen') onOpenChange(next: boolean): void {
