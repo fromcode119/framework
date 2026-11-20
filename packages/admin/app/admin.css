@@ -2752,11 +2752,15 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
  *
  * Measured 18.11.2026 before that: five dialogs each drew their own scrim and panel, at 20, 24 and
  * 32px of padding, widths md/lg/2xl, close buttons in three greys, icon tiles hardcoded rose, amber
- * and indigo, and one at z-index 1000 against the others' 500. */
+ * and indigo, and one at z-index 1000 against the others' 500.
+ *
+ * A question is asked FROM something, often from a sheet (the unlock asked while editing a section),
+ * so it sits one layer above the sheets. At the same layer the sheet, drawn later, covered it: on a
+ * phone the sheet is the whole screen and the password prompt opened unseen behind it. */
 .fc-dialog {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2892,7 +2896,7 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-confirm {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 600;
   display: flex;
   align-items: center;
   justify-content: center;

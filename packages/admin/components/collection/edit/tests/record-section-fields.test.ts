@@ -26,6 +26,12 @@ describe('RecordSectionFields.ownsItsControl', () => {
     expect(RecordSectionFields.shownFields([variants], { x: [{ a: 1 }] })).toHaveLength(0);
   });
 
+  it('reads LOCKED data as data, never as a text row that prints "[Object]"', () => {
+    const recorded = field('json', { component: 'OrderRecordFacts', readOnly: true });
+    expect(RecordSectionFields.readsAsData(recorded)).toBe(true);
+    expect(RecordSectionFields.shownFields([recorded], { x: { quote: { total: 4.6 } } })).toHaveLength(0);
+  });
+
   it('leaves data alone when the field says how it reads or that it is used in place', () => {
     expect(RecordSectionFields.readsAsData(field('json', { component: 'Tags', readComponent: 'TagsRead' }))).toBe(false);
     expect(RecordSectionFields.readsAsData(field('json', { component: 'Tags', inPlace: true }))).toBe(false);

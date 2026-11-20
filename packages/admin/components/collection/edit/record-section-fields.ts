@@ -52,7 +52,10 @@ export class RecordSectionFields {
    */
   static readsAsData(field: any): boolean {
     if (!field?.admin?.component || field?.admin?.readComponent || field?.admin?.readAsValue || field?.admin?.readBy) return false;
-    if (RecordSectionFields.displaysOnly(field) || field.admin.inPlace === true) return false;
+    if (field.admin.inPlace === true) return false;
+    // A locked one is still data: unless its component is how it reads, the card reads it as data too.
+    // Leaving it out made it a plain row, and a plain row prints an object as "[Object]".
+    if (RecordSectionFields.displaysOnly(field) && RecordSectionFields.readsThroughItsComponent(field)) return false;
     return RecordSectionFields.DATA_TYPES.has(String(field?.type || ''));
   }
 
