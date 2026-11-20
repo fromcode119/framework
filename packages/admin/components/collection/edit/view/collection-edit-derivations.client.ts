@@ -6,6 +6,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { StatusTone } from '@/components/collection/status-tone';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 import { CollectionEditFieldDepth } from '@/components/collection/edit/view/collection-edit-field-depth.client';
 import { FieldLevel } from '@fromcode119/core/client';
@@ -216,6 +217,7 @@ export class CollectionEditDerivations {
       // Named in the header whether or not it may be changed there: a read-only status is still the
       // record's state. The option's label, never the raw value; nothing when the record has none.
       currentStatusLabel: CollectionEditDerivations.optionLabel(statusField, formData?.status || statusField?.defaultValue),
+      currentStatusTone: StatusTone.of(statusField, formData?.status || statusField?.defaultValue),
       currentRevIndex: self.state.selectedRevision ? self.state.revisions.findIndex((r: any) => r.id === self.state.selectedRevision.id) : -1,
       hasDisablePermalink: collection?.fields.some((f: any) => f.name === 'disablePermalink'),
       showPreview: canPreviewCollection && !isNew, showPermalink, isFullWidth,

@@ -219,7 +219,7 @@ export class CollectionEditPageView extends Reactor {
               collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
               resolvedTitleValue={edit.resolvedTitleValue}
               formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
-              statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
+              statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel} currentStatusTone={edit.currentStatusTone}
               handleInputChange={edit.handleInputChange}
               advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
               handleSubmit={edit.handleSubmit} commitStatus={edit.commitStatus} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}

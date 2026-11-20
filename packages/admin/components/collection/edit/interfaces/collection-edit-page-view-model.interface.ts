@@ -84,4 +84,6 @@ export interface ICollectionEditPageViewModel {
   currentStatusValue: string;
   /** The status option's label, for the header badge; '' when the record has no status. */
   currentStatusLabel: string;
+  /** The status option's declared tone, coloring the header badge's dot. */
+  currentStatusTone: string;
 }
