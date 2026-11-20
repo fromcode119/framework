@@ -21,6 +21,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { Alert } from '@/components/ui/view/alert.client';
 
 export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
@@ -117,18 +118,19 @@ export class EditPageBody extends PureReactor {
       */}
       <form onSubmit={(event) => event.preventDefault()}>
         {status && (
-          <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'fc-tone-success-soft fc-tone-success-line fc-tone-success' : 'fc-tone-danger-soft fc-tone-danger-line fc-tone-danger'}`}>
-            <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'fc-tone-success-solid text-white shadow-lg shadow-emerald-500/20' : 'fc-tone-danger-solid text-white shadow-lg shadow-rose-500/20'}`}>
-              {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
-              <p className="text-sm opacity-90">{status.message}</p>
-            </div>
-            <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={() => setStatus(null)}>
-              <FrameworkIcons.Close size={16} />
-            </Button>
-          </div>
+          <Alert
+            tone={status.type === NotificationType.SUCCESS ? 'success' : 'danger'}
+            role={status.type === NotificationType.SUCCESS ? 'status' : 'alert'}
+            title={AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}
+            className="mb-6"
+            action={(
+              <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={() => setStatus(null)}>
+                <FrameworkIcons.Close size={15} />
+              </Button>
+            )}
+          >
+            {status.message}
+          </Alert>
         )}
 
 
