@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -12,8 +13,8 @@ export class KitFrame extends PureReactor {
   render(): ReactNode {
     return (
       <div className="fc-kitdoc">
-        <nav className="fc-kitdoc__nav" aria-label="Kit">
-          <AdminLink href="/kit" className={`fc-kitdoc__link${this.current ? '' : ' fc-kitdoc__link--on'}`}>Overview</AdminLink>
+        <nav className="fc-kitdoc__nav" aria-label={KitCopy.t('kit-frame.kit')}>
+          <AdminLink href="/kit" className={`fc-kitdoc__link${this.current ? '' : ' fc-kitdoc__link--on'}`}>{KitCopy.t('kit-frame.overview')}</AdminLink>
           {KitCatalog.groups().map((group) => (
             <div key={group.name} className="fc-kitdoc__group">
               <p className="fc-kitdoc__group-name">{group.name}</p>

@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminLink } from '@/components/view/admin-link.client';
@@ -14,8 +15,8 @@ export class KitPage extends AdminComponent {
     return (
       <KitFrame>
         <header className="fc-kitdoc__head">
-          <h1 className="fc-kitdoc__h1">Kit</h1>
-          <p className="fc-kitdoc__lead">Every component of the console. Open one to see each way it is used, the code for it and the options it takes.</p>
+          <h1 className="fc-kitdoc__h1">{KitCopy.t('page.kit')}</h1>
+          <p className="fc-kitdoc__lead">{KitCopy.t('page.everyComponentOfTheConsole')}</p>
         </header>
         {KitCatalog.groups().map((group) => (
           <section key={group.name} className="fc-kitdoc__example">

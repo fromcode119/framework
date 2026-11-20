@@ -26,7 +26,7 @@ export class CommandBar extends PureReactor {
     const shown = typeof document === 'undefined' ? null : this.presence.state(this.open);
     if (!shown) return null;
     const name = AdminClass.of('command-bar');
-    return createPortal(
+    return this.portal(
       <div className={`${name} ${this.className ?? ''}`} data-state={shown} role="toolbar">
         <div className={`${name}__bar`}>
           <div className={`${name}__value`}>{this.value}</div>

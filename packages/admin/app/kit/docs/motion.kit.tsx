@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Reactor, state, bound } from '@fromcode119/react-class-components';
 import type { ReactNode } from 'react';
@@ -42,9 +43,9 @@ class SavingDemo extends Reactor {
   render(): ReactNode {
     return (
       <>
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.open}>Edit and save</Button>
-        <EditSheet isOpen={this.shown} onClose={this.close} onSave={this.save} saving={this.saving} title="Edit product" subtitle="Cotton T-shirt">
-          <div className="fc-field-stack"><Input label="Title" value="Cotton T-shirt" onChange={() => undefined} /></div>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.open}>{KitCopy.t('docs.motion.editAndSave')}</Button>
+        <EditSheet isOpen={this.shown} onClose={this.close} onSave={this.save} saving={this.saving} title={KitCopy.t('docs.motion.editProduct')} subtitle="Cotton T-shirt">
+          <div className="fc-field-stack"><Input label={KitCopy.t('docs.motion.title')} value="Cotton T-shirt" onChange={() => undefined} /></div>
         </EditSheet>
       </>
     );
@@ -62,24 +63,24 @@ export class MotionKit {
 
   static doc(): KitDoc {
     return {
-      slug: 'motion', name: 'Motion', group: 'Foundations',
-      intro: 'How the console moves. Three durations and one curve, for everything: what was asked for arrives in 200ms, leaves in 150ms, and what answers the pointer takes 150ms. Nothing gets a number of its own. A reader who asked for less motion gets none.',
+      slug: 'motion', name: 'Motion', group: KitCopy.t('docs.motion.foundations'),
+      intro: KitCopy.t('docs.motion.howTheConsoleMovesThree'),
       from: '--fc-dur-overlay: 200ms;  --fc-dur-exit: 150ms;  --fc-dur-ui: 150ms;  --fc-ease: cubic-bezier(0.4, 0, 0.2, 1);',
       examples: [
-        { title: 'Opening and closing', text: 'The ground fades. A dialog rises 8px and grows from 97%. A sheet comes in from the side it is hinged to. The full-screen modal rises without growing. Each leaves the way it came, a little quicker.', demo: <>{MotionKit.opens('Dialog', (open, close) => <ConfirmDialog isOpen={open} onClose={close} onConfirm={close} title="Publish the product?" description="It becomes visible in the shop at once." confirmLabel="Publish" />)}{MotionKit.opens('Sheet', (open, close) => <EditSheet isOpen={open} onClose={close} onSave={close} title="Edit product"><div className="fc-field-stack"><Input label="Title" value="Cotton T-shirt" onChange={() => undefined} /></div></EditSheet>)}{MotionKit.opens('Focus modal', (open, close) => <FocusModal isOpen={open} label="Create product" onClose={close} onConfirm={close}><div className="fc-kitdoc__cell"><Input label="Title" value="" onChange={() => undefined} /></div></FocusModal>)}</>, code: '/* Nothing to write: every overlay of the kit moves by itself. */' },
-        { title: 'Saving', text: 'Three things in a row: the button turns to a spinner and stops taking presses; when the save is done the sheet leaves; a toast rises at the corner to say so. A failed save keeps the sheet open and says what is wrong inside it.', demo: <SavingDemo />, code: '<EditSheet isOpen={open} onSave={save} saving={saving} error={error} … />\n// after a save that worked:\nnotify(NotificationType.SUCCESS, \'Saved\', \'The product was saved.\');' },
-        { title: 'Menus, popovers, tooltips', text: 'These open beside the control that asked for them, so they travel half as far (4px) and at the pointer’s speed (150ms).', demo: <><Dropdown align={HorizontalAlign.LEFT} items={[{ label: 'Edit', onClick: () => undefined }, { label: 'Duplicate', onClick: () => undefined }]} trigger={<span className="fc-toolbar-btn"><FrameworkIcons.More size={15} />Menu</span>} /><Popover trigger={<span className="fc-toolbar-btn">Popover</span>}><span className="fc-field-note">A panel of its own content.</span></Popover><Tooltip content="A few words"><Button variant={ButtonVariant.SECONDARY}>Tooltip</Button></Tooltip></>, code: '/* Dropdown, Popover and Tooltip move by themselves. */' },
-        { title: 'The bar of commands', text: 'It comes up from the foot of the screen when something is selected, and goes back down when nothing is.', demo: MotionKit.opens('Select 2 rows', (open, close) => <CommandBar open={open} value="2 selected"><CommandBarCommand label="Publish" onClick={close} /><CommandBarCommand label={<FrameworkIcons.Close size={15} />} title="Clear selection" onClick={close} /></CommandBar>), code: '<CommandBar open={selected.length > 0} value={`${selected.length} selected`}>…</CommandBar>' },
-        { title: 'What answers the pointer', text: 'A button darkens while it is held. A checkbox pops and draws its tick. A switch slides. All in 150ms.', demo: <><Button variant={ButtonVariant.PRIMARY}>Press and hold</Button><Button variant={ButtonVariant.SECONDARY}>Press and hold</Button><KitPlay initial={false}>{(value, set) => <Checkbox checked={value} onChange={set} label="Tick me" />}</KitPlay><KitPlay initial={false}>{(value, set) => <Switch checked={value} onChange={set} label="Flip me" />}</KitPlay></>, code: '/* Built into Button, Checkbox and Switch. */' },
-        { title: 'Something new of your own', text: 'A panel that is not one of the kit’s overlays takes the class `fc-enter` to arrive like them; `fc-enter--fade` only fades, `fc-enter--menu` is the short, quick one. To leave as well, keep it drawn for the exit with `OverlayPresence` and put `data-state` on it.', demo: <span className="fc-field-note">See the code.</span>, code: '<div className="fc-enter">…</div>\n<div className="fc-enter fc-enter--fade">…</div>\n<div className="fc-enter fc-enter--menu">…</div>' },
+        { title: KitCopy.t('docs.motion.openingAndClosing'), text: KitCopy.t('docs.motion.theGroundFadesADialog'), demo: <>{MotionKit.opens('Dialog', (open, close) => <ConfirmDialog isOpen={open} onClose={close} onConfirm={close} title={KitCopy.t('docs.motion.publishTheProduct')} description={KitCopy.t('docs.motion.itBecomesVisibleInThe')} confirmLabel="Publish" />)}{MotionKit.opens('Sheet', (open, close) => <EditSheet isOpen={open} onClose={close} onSave={close} title={KitCopy.t('docs.motion.editProduct')}><div className="fc-field-stack"><Input label={KitCopy.t('docs.motion.title')} value="Cotton T-shirt" onChange={() => undefined} /></div></EditSheet>)}{MotionKit.opens('Focus modal', (open, close) => <FocusModal isOpen={open} label={KitCopy.t('docs.motion.createProduct')} onClose={close} onConfirm={close}><div className="fc-kitdoc__cell"><Input label={KitCopy.t('docs.motion.title')} value="" onChange={() => undefined} /></div></FocusModal>)}</>, code: '/* Nothing to write: every overlay of the kit moves by itself. */' },
+        { title: KitCopy.t('docs.motion.saving'), text: KitCopy.t('docs.motion.threeThingsInARow'), demo: <SavingDemo />, code: '<EditSheet isOpen={open} onSave={save} saving={saving} error={error} … />\n// after a save that worked:\nnotify(NotificationType.SUCCESS, \'Saved\', \'The product was saved.\');' },
+        { title: KitCopy.t('docs.motion.menusPopoversTooltips'), text: KitCopy.t('docs.motion.theseOpenBesideTheControl'), demo: <><Dropdown align={HorizontalAlign.LEFT} items={[{ label: KitCopy.t('docs.motion.edit'), onClick: () => undefined }, { label: KitCopy.t('docs.motion.duplicate'), onClick: () => undefined }]} trigger={<span className="fc-toolbar-btn"><FrameworkIcons.More size={15} />{KitCopy.t('docs.motion.menu')}</span>} /><Popover trigger={<span className="fc-toolbar-btn">{KitCopy.t('docs.motion.popover')}</span>}><span className="fc-field-note">{KitCopy.t('docs.motion.aPanelOfItsOwn')}</span></Popover><Tooltip content={KitCopy.t('docs.motion.aFewWords')}><Button variant={ButtonVariant.SECONDARY}>{KitCopy.t('docs.motion.tooltip')}</Button></Tooltip></>, code: '/* Dropdown, Popover and Tooltip move by themselves. */' },
+        { title: KitCopy.t('docs.motion.theBarOfCommands'), text: KitCopy.t('docs.motion.itComesUpFromThe'), demo: MotionKit.opens('Select 2 rows', (open, close) => <CommandBar open={open} value="2 selected"><CommandBarCommand label={KitCopy.t('docs.motion.publish')} onClick={close} /><CommandBarCommand label={<FrameworkIcons.Close size={15} />} title={KitCopy.t('docs.motion.clearSelection')} onClick={close} /></CommandBar>), code: '<CommandBar open={selected.length > 0} value={`${selected.length} selected`}>…</CommandBar>' },
+        { title: KitCopy.t('docs.motion.whatAnswersThePointer'), text: KitCopy.t('docs.motion.aButtonDarkensWhileIt'), demo: <><Button variant={ButtonVariant.PRIMARY}>{KitCopy.t('docs.motion.pressAndHold')}</Button><Button variant={ButtonVariant.SECONDARY}>{KitCopy.t('docs.motion.pressAndHold')}</Button><KitPlay initial={false}>{(value, set) => <Checkbox checked={value} onChange={set} label={KitCopy.t('docs.motion.tickMe')} />}</KitPlay><KitPlay initial={false}>{(value, set) => <Switch checked={value} onChange={set} label={KitCopy.t('docs.motion.flipMe')} />}</KitPlay></>, code: '/* Built into Button, Checkbox and Switch. */' },
+        { title: KitCopy.t('docs.motion.somethingNewOfYourOwn'), text: KitCopy.t('docs.motion.aPanelThatIsNot'), demo: <span className="fc-field-note">{KitCopy.t('docs.motion.seeTheCode')}</span>, code: '<div className="fc-enter">…</div>\n<div className="fc-enter fc-enter--fade">…</div>\n<div className="fc-enter fc-enter--menu">…</div>' },
       ],
       options: [
-        { name: '--fc-dur-overlay', type: '200ms', does: 'Something that was asked for arrives: a dialog, a sheet, a toast.' },
-        { name: '--fc-dur-exit', type: '150ms', does: 'The same thing leaves.' },
-        { name: '--fc-dur-ui', type: '150ms', does: 'What answers the pointer: a hover, a press, a menu, a tooltip.' },
-        { name: '--fc-ease', type: 'cubic-bezier(0.4, 0, 0.2, 1)', does: 'The one curve.' },
-        { name: '--fc-rise', type: '8px', does: 'How far an overlay travels on its way in.' },
-        { name: 'prefers-reduced-motion', type: 'the reader’s setting', does: 'Turns every one of these off and leaves the finished state.' },
+        { name: '--fc-dur-overlay', type: '200ms', does: KitCopy.t('docs.motion.somethingThatWasAskedFor') },
+        { name: '--fc-dur-exit', type: '150ms', does: KitCopy.t('docs.motion.theSameThingLeaves') },
+        { name: '--fc-dur-ui', type: '150ms', does: KitCopy.t('docs.motion.whatAnswersThePointerA') },
+        { name: '--fc-ease', type: 'cubic-bezier(0.4, 0, 0.2, 1)', does: KitCopy.t('docs.motion.theOneCurve') },
+        { name: '--fc-rise', type: '8px', does: KitCopy.t('docs.motion.howFarAnOverlayTravels') },
+        { name: 'prefers-reduced-motion', type: 'the reader’s setting', does: KitCopy.t('docs.motion.turnsEveryOneOfThese') },
       ],
     };
   }

@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import type { ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -21,7 +22,7 @@ export class KitComponentPage extends AdminComponent {
   render(): ReactNode {
     if (!this.slug) return null;
     const doc = KitCatalog.find(this.slug);
-    if (!doc) return <KitFrame current={this.slug}><StatePage title="No such component" hint={`The kit has no page for "${this.slug}".`} /></KitFrame>;
+    if (!doc) return <KitFrame current={this.slug}><StatePage title={KitCopy.t('component.noSuchComponent')} hint={KitCopy.t('component.noPage', { slug: this.slug })} /></KitFrame>;
     return (
       <KitFrame current={doc.slug}>
         <header className="fc-kitdoc__head">
@@ -33,7 +34,7 @@ export class KitComponentPage extends AdminComponent {
         {doc.examples.map((example) => <KitExampleView key={example.title} example={example} />)}
         {doc.options.length ? (
           <section className="fc-kitdoc__example" id="options">
-            <h2 className="fc-kitdoc__h2">Options</h2>
+            <h2 className="fc-kitdoc__h2">{KitCopy.t('component.options')}</h2>
             <ListShell>
               <DataTable
                 cards={false}

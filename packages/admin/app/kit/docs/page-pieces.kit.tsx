@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import { Fragment } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RecordCard } from '@/components/ui/view/record-card.client';
@@ -15,13 +16,13 @@ export class PagePiecesKit {
 
   static doc(): KitDoc {
     return {
-      slug: 'page-pieces', name: 'Page pieces (classes)', group: 'Layout',
-      intro: 'Small pieces a screen writes as a class on its own markup: a folder path, a big figure with its bars, a row of stat cards, a file chip, a picture preview, a link in running text.',
+      slug: 'page-pieces', name: 'Page pieces (classes)', group: KitCopy.t('docs.page-pieces.layout'),
+      intro: KitCopy.t('docs.page-pieces.smallPiecesAScreenWrites'),
       from: "/* Classes from the console's stylesheet — no import. */",
       examples: [
         {
-          title: 'fc-path — where you are',
-          text: 'Steps separated by a slash; the current one is `aria-current="page"` and is not a link.',
+          title: KitCopy.t('docs.page-pieces.fcPathWhereYouAre'),
+          text: KitCopy.t('docs.page-pieces.stepsSeparatedByASlash'),
           demo: (
             <span className="fc-path">
               {['Library', 'Products', 'Spring 2026'].map((step, index, all) => (
@@ -35,13 +36,13 @@ export class PagePiecesKit {
           code: '<span className="fc-path">\n  <button type="button" className="fc-path__step">Library</button>\n  <span className="fc-path__sep" aria-hidden="true">/</span>\n  <button type="button" className="fc-path__step" aria-current="page">Products</button>\n</span>',
         },
         {
-          title: 'fc-figure and fc-bars — one number and its days',
+          title: KitCopy.t('docs.page-pieces.fcFigureAndFcBars'),
           flush: true,
-          text: 'The figure with its unit, and a bar per day; each bar is its share of the highest day, as `height`.',
+          text: KitCopy.t('docs.page-pieces.theFigureWithItsUnit'),
           demo: (
-            <RecordCard title="Activity">
+            <RecordCard title={KitCopy.t('docs.page-pieces.activity')}>
               <div className="fc-stack">
-                <div className="fc-figure"><span className="fc-figure__value">52</span><span className="fc-figure__unit">events</span></div>
+                <div className="fc-figure"><span className="fc-figure__value">52</span><span className="fc-figure__unit">{KitCopy.t('docs.page-pieces.events')}</span></div>
                 <div className="fc-bars">
                   {PagePiecesKit.DAYS.map((count, index) => (
                     <div key={index} className="fc-bars__bar" title={`${count} events`} style={{ height: `${Math.round((count / 12) * 100)}%` }} />
@@ -53,16 +54,16 @@ export class PagePiecesKit {
           code: '<div className="fc-figure">\n  <span className="fc-figure__value">52</span>\n  <span className="fc-figure__unit">events</span>\n</div>\n<div className="fc-bars">\n  <div className="fc-bars__bar" style={{ height: \'25%\' }} />\n  …\n</div>',
         },
         {
-          title: 'fc-stat-strip — a row of figures',
+          title: KitCopy.t('docs.page-pieces.fcStatStripARow'),
           flush: true,
-          text: 'As many `StatCard`s as fit, each at least 120px. `fc-stat-strip--tight` is four to a row, two on a phone.',
+          text: KitCopy.t('docs.page-pieces.asManyStatcardSAs'),
           demo: <div className="fc-stat-strip fc-stat-strip--tight">{[['Files', '128'], ['Folders', '9'], ['Shared', '4'], ['Size', '312 MB']].map(([label, value]) => <StatCard key={label} title={label} value={value} />)}</div>,
           code: '<div className="fc-stat-strip fc-stat-strip--tight">\n  <StatCard title="Files" value="128" />\n  …\n</div>',
         },
         {
-          title: 'fc-file-chip — a file named in a line',
+          title: KitCopy.t('docs.page-pieces.fcFileChipAFile'),
           demo: (
-            <span className="fc-file-chip" title="spring-catalogue.pdf">
+            <span className="fc-file-chip" title={KitCopy.t('docs.page-pieces.springCataloguePdf')}>
               <span className="fc-file-chip__picture"><FrameworkIcons.File size={14} /></span>
               <span className="fc-file-chip__name">spring-catalogue.pdf</span>
             </span>
@@ -70,21 +71,21 @@ export class PagePiecesKit {
           code: '<span className="fc-file-chip" title={name}>\n  <span className="fc-file-chip__picture"><img src={thumb} alt="" /></span>\n  <span className="fc-file-chip__name">{name}</span>\n</span>',
         },
         {
-          title: 'fc-preview — a picture inside a card or a sheet',
-          text: 'Centred on a quiet ground, at most 200px high, never cropped.',
-          demo: <div className="fc-preview fc-kitdoc__cell--wide"><img src={PagePiecesKit.PICTURE} alt="A sample picture" /></div>,
+          title: KitCopy.t('docs.page-pieces.fcPreviewAPictureInside'),
+          text: KitCopy.t('docs.page-pieces.centredOnAQuietGround'),
+          demo: <div className="fc-preview fc-kitdoc__cell--wide"><img src={PagePiecesKit.PICTURE} alt={KitCopy.t('docs.page-pieces.aSamplePicture')} /></div>,
           code: '<div className="fc-preview"><img src={url} alt={alt} /></div>',
         },
         {
-          title: 'fc-link — a link inside running text',
-          text: 'Underlined in the text colour; a link that is an action is a `Button` instead.',
-          demo: <p className="fc-field-note">Location data from <a className="fc-link" href="#kit">a public source</a>, under its own licence.</p>,
+          title: KitCopy.t('docs.page-pieces.fcLinkALinkInside'),
+          text: KitCopy.t('docs.page-pieces.underlinedInTheTextColour'),
+          demo: <p className="fc-field-note">{KitCopy.t('docs.page-pieces.locationDataFrom')} <a className="fc-link" href="#kit">{KitCopy.t('docs.page-pieces.aPublicSource')}</a>{KitCopy.t('docs.page-pieces.underItsOwnLicence')}</p>,
           code: '<a className="fc-link" href={url}>a public source</a>',
         },
       ],
       options: [
-        { name: 'fc-path__step[aria-current="page"]', type: 'class', does: 'The step you are on: stronger, not clickable.' },
-        { name: 'fc-stat-strip--tight', type: 'class', does: 'Four to a row with 8px between, two on a phone.' },
+        { name: 'fc-path__step[aria-current="page"]', type: 'class', does: KitCopy.t('docs.page-pieces.theStepYouAreOn') },
+        { name: 'fc-stat-strip--tight', type: 'class', does: KitCopy.t('docs.page-pieces.fourToARowWith') },
       ],
     };
   }

@@ -39,7 +39,7 @@ export class Tooltip extends PureReactor {
       <span className={`${name}__anchor`} onMouseEnter={this.show} onMouseLeave={this.hide} onFocus={this.show} onBlur={this.hide} onClick={this.show}>
         {this.children}
         {this.at && this.content
-          ? createPortal(
+          ? this.portal(
               <span role="tooltip" className={name} data-side={this.side || 'top'} style={{ left: this.at.x, top: this.at.y }}>
                 {this.content}
               </span>,

@@ -53,7 +53,7 @@ export class PersonAccountPanel extends PureReactor {
       <RecordCard title={AdminI18n.t('users.loginAccount')} aside={<StateBadge tone="success">{AdminI18n.t('users.linkedUser', { id: account.id })}</StateBadge>}>
         <div className="fc-stack">
           <AdminFactGrid facts={[
-            { key: 'email', label: 'Email', value: account.email },
+            { key: 'email', label: AdminI18n.t('users.eMailAddress'), value: account.email },
             ...(account.username ? [{ key: 'username', label: AdminI18n.t('users.username'), value: `@${account.username}` }] : []),
           ]} />
           <div>

@@ -62,7 +62,7 @@ export class CommandPalette extends PureReactor {
     const shown = typeof document === 'undefined' ? null : this.presence.state(this.open);
     if (!shown) return null;
     const name = AdminClass.of('palette');
-    return createPortal(
+    return this.portal(
       <div className={name} data-state={shown} onKeyDown={this.key}>
         <div className={`${name}__backdrop`} onClick={this.onClose} />
         <div className={`${name}__panel`} role={shown === 'open' ? 'dialog' : undefined} aria-hidden={shown === 'closed' || undefined} aria-modal="true" aria-label={this.placeholder}>

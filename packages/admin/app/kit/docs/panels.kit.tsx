@@ -1,3 +1,4 @@
+import { KitCopy } from '@/app/kit/kit-copy';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Reactor } from '@fromcode119/react-class-components';
 import type { ReactNode } from 'react';
@@ -24,9 +25,9 @@ class ToastButtons extends Reactor {
   render(): ReactNode {
     return (
       <>
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.SUCCESS, 'Saved', 'The product was saved.')}>Success</Button>
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.ERROR, 'Not saved', 'The price is required.')}>Error</Button>
-        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.INFO, 'Heads up', 'A new version is available.')}>Info</Button>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.SUCCESS, 'Saved', 'The product was saved.')}>{KitCopy.t('docs.panels.success')}</Button>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.ERROR, 'Not saved', 'The price is required.')}>{KitCopy.t('docs.panels.error')}</Button>
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.raise(NotificationType.INFO, 'Heads up', 'A new version is available.')}>{KitCopy.t('docs.panels.info')}</Button>
       </>
     );
   }
@@ -36,57 +37,57 @@ export class PanelsKit {
   static docs(): KitDoc[] {
     return [
       {
-        slug: 'toast', name: 'Toast', group: 'Feedback',
-        intro: 'A passing message at the corner of the screen: something was done, or could not be. It leaves by itself — for something that must stay until dealt with, use Alert.',
+        slug: 'toast', name: 'Toast', group: KitCopy.t('docs.panels.feedback'),
+        intro: KitCopy.t('docs.panels.aPassingMessageAtThe'),
         from: "this.context.notify(NotificationType.SUCCESS, 'Saved', 'The product was saved.');",
         examples: [
-          { title: 'Kinds', text: 'Press one to raise it.', demo: <ToastButtons />, code: "notify(NotificationType.SUCCESS, 'Saved', 'The product was saved.');\nnotify(NotificationType.ERROR, 'Not saved', 'The price is required.');\nnotify(NotificationType.INFO, 'Heads up', 'A new version is available.');" },
+          { title: KitCopy.t('docs.panels.kinds'), text: KitCopy.t('docs.panels.pressOneToRaiseIt'), demo: <ToastButtons />, code: "notify(NotificationType.SUCCESS, 'Saved', 'The product was saved.');\nnotify(NotificationType.ERROR, 'Not saved', 'The price is required.');\nnotify(NotificationType.INFO, 'Heads up', 'A new version is available.');" },
         ],
         options: [
-          { name: 'type', type: 'NotificationType', does: 'SUCCESS, ERROR or INFO.' },
-          { name: 'title, message', type: 'string', does: 'What happened, in a few words, and one sentence more.' },
+          { name: 'type', type: 'NotificationType', does: KitCopy.t('docs.panels.successErrorOrInfo') },
+          { name: 'title, message', type: 'string', does: KitCopy.t('docs.panels.whatHappenedInAFew') },
         ],
       },
       {
-        slug: 'stat-card', name: 'StatCard', group: 'Data',
-        intro: 'One figure the page is about, with its name and where it is heading.',
+        slug: 'stat-card', name: 'StatCard', group: KitCopy.t('docs.panels.data'),
+        intro: KitCopy.t('docs.panels.oneFigureThePageIs'),
         from: "import { StatCard } from '@fromcode119/sdk/admin';",
         examples: [
-          { title: 'Rising, falling, plain', demo: <><div className="fc-kitdoc__cell"><StatCard title="Orders" value="128" icon={<FrameworkIcons.Clock size={18} />} trend={{ value: 12, isPositive: true }} /></div><div className="fc-kitdoc__cell"><StatCard title="Returns" value="3" icon={<FrameworkIcons.Refresh size={18} />} trend={{ value: 2, isPositive: false }} /></div><div className="fc-kitdoc__cell"><StatCard title="Products" value="64" icon={<FrameworkIcons.Plugins size={18} />} /></div></>, code: '<StatCard title="Orders" value="128" icon={<Icon />} trend={{ value: 12, isPositive: true }} />' },
-          { title: 'With a line under the figure, in columns', flush: true, text: '`Columns` lays cards side by side — two or three — and drops to one column on a narrow screen.', demo: <Columns count={3}><StatCard title="Plugins isolated" value="2 / 2" icon={<FrameworkIcons.Plugins size={15} />} note="Active plugins running in their own process." /><StatCard title="Threat alerts" value="0" icon={<FrameworkIcons.Check size={15} />} tone="success" note="Policy violations (24h)" /><StatCard title="Threat alerts" value="4" icon={<FrameworkIcons.Alert size={15} />} tone="danger" note="Policy violations (24h)" /></Columns>, code: '<Columns count={3}>\n  <StatCard title="Threat alerts" value="0" icon={<Icon size={15} />} tone="success" note="Policy violations (24h)" />\n  …\n</Columns>' },
+          { title: KitCopy.t('docs.panels.risingFallingPlain'), demo: <><div className="fc-kitdoc__cell"><StatCard title={KitCopy.t('docs.panels.orders')} value="128" icon={<FrameworkIcons.Clock size={18} />} trend={{ value: 12, isPositive: true }} /></div><div className="fc-kitdoc__cell"><StatCard title={KitCopy.t('docs.panels.returns')} value="3" icon={<FrameworkIcons.Refresh size={18} />} trend={{ value: 2, isPositive: false }} /></div><div className="fc-kitdoc__cell"><StatCard title={KitCopy.t('docs.panels.products')} value="64" icon={<FrameworkIcons.Plugins size={18} />} /></div></>, code: '<StatCard title="Orders" value="128" icon={<Icon />} trend={{ value: 12, isPositive: true }} />' },
+          { title: KitCopy.t('docs.panels.withALineUnderThe'), flush: true, text: KitCopy.t('docs.panels.columnsLaysCardsSideBy'), demo: <Columns count={3}><StatCard title={KitCopy.t('docs.panels.pluginsIsolated')} value="2 / 2" icon={<FrameworkIcons.Plugins size={15} />} note="Active plugins running in their own process." /><StatCard title={KitCopy.t('docs.panels.threatAlerts')} value="0" icon={<FrameworkIcons.Check size={15} />} tone="success" note="Policy violations (24h)" /><StatCard title={KitCopy.t('docs.panels.threatAlerts')} value="4" icon={<FrameworkIcons.Alert size={15} />} tone="danger" note="Policy violations (24h)" /></Columns>, code: '<Columns count={3}>\n  <StatCard title="Threat alerts" value="0" icon={<Icon size={15} />} tone="success" note="Policy violations (24h)" />\n  …\n</Columns>' },
         ],
         options: [
-          { name: 'title, value', type: 'string', does: 'What is counted and the figure, already formatted.' },
-          { name: 'icon', type: 'ReactNode', does: 'A quiet icon.' },
-          { name: 'Columns count, top', type: '2 | 3, boolean', initial: '2, false', does: 'How many columns; `top` lets each be as tall as its own content.' },
-          { name: 'trend', type: '{ value, isPositive }', does: 'The change, in percent, and whether it is good.' },
-          { name: 'note', type: 'ReactNode', does: 'One line under the figure.' },
-          { name: 'tone', type: "success · warning · danger · info", does: 'The colour of the icon when the figure is good or bad news.' },
+          { name: 'title, value', type: 'string', does: KitCopy.t('docs.panels.whatIsCountedAndThe') },
+          { name: 'icon', type: 'ReactNode', does: KitCopy.t('docs.panels.aQuietIcon') },
+          { name: 'Columns count, top', type: '2 | 3, boolean', initial: '2, false', does: KitCopy.t('docs.panels.howManyColumnsTopLets') },
+          { name: 'trend', type: '{ value, isPositive }', does: KitCopy.t('docs.panels.theChangeInPercentAnd') },
+          { name: 'note', type: 'ReactNode', does: KitCopy.t('docs.panels.oneLineUnderTheFigure') },
+          { name: 'tone', type: "success · warning · danger · info", does: KitCopy.t('docs.panels.theColourOfTheIcon') },
         ],
       },
       {
-        slug: 'fact-grid', name: 'AdminFactGrid', group: 'Data',
-        intro: 'A few facts about a thing, each a label over a value, laid out in columns.',
+        slug: 'fact-grid', name: 'AdminFactGrid', group: KitCopy.t('docs.panels.data'),
+        intro: KitCopy.t('docs.panels.aFewFactsAboutA'),
         from: "import { AdminFactGrid } from '@fromcode119/sdk/admin';",
         examples: [
-          { title: 'Facts, one with a note', demo: <div className="fc-kitdoc__cell--wide"><AdminFactGrid facts={[{ key: 'a', label: 'Weight', value: '400 g' }, { key: 'b', label: 'Origin', value: 'Bulgaria' }, { key: 'c', label: 'HS code', value: '6109.10', note: 'Checked on export' }]} /></div>, code: "<AdminFactGrid facts={[\n  { key: 'weight', label: 'Weight', value: '400 g' },\n  { key: 'hs', label: 'HS code', value: '6109.10', note: 'Checked on export' },\n]} />" },
+          { title: KitCopy.t('docs.panels.factsOneWithANote'), demo: <div className="fc-kitdoc__cell--wide"><AdminFactGrid facts={[{ key: 'a', label: KitCopy.t('docs.panels.weight'), value: '400 g' }, { key: 'b', label: KitCopy.t('docs.panels.origin'), value: 'Bulgaria' }, { key: 'c', label: KitCopy.t('docs.panels.hsCode'), value: '6109.10', note: 'Checked on export' }]} /></div>, code: "<AdminFactGrid facts={[\n  { key: 'weight', label: 'Weight', value: '400 g' },\n  { key: 'hs', label: 'HS code', value: '6109.10', note: 'Checked on export' },\n]} />" },
         ],
         options: [
-          { name: 'facts', type: '{ key, label, value, note? }[]', does: 'The facts, in order.' },
+          { name: 'facts', type: '{ key, label, value, note? }[]', does: KitCopy.t('docs.panels.theFactsInOrder') },
         ],
       },
       {
-        slug: 'admin-panel', name: 'AdminPanel', group: 'Layout',
-        intro: 'A titled panel a plugin puts on a page that is not its own, with its actions at the end of its head.',
+        slug: 'admin-panel', name: 'AdminPanel', group: KitCopy.t('docs.panels.layout'),
+        intro: KitCopy.t('docs.panels.aTitledPanelAPlugin'),
         from: "import { AdminPanel } from '@fromcode119/sdk/admin';",
         examples: [
-          { title: 'With a description and an action', flush: true, demo: <AdminPanel title="Shipments" description="What has been sent for this order." actions={<Button variant={ButtonVariant.SECONDARY}>Create shipment</Button>}><p className="fc-field-note">The panel’s body.</p></AdminPanel>, code: '<AdminPanel title="Shipments" description="What has been sent for this order."\n  actions={<Button variant={ButtonVariant.SECONDARY}>Create shipment</Button>}>\n  …\n</AdminPanel>' },
-          { title: 'Title only', flush: true, demo: <AdminPanel title="Notes"><p className="fc-field-note">The panel’s body.</p></AdminPanel>, code: '<AdminPanel title="Notes">…</AdminPanel>' },
+          { title: KitCopy.t('docs.panels.withADescriptionAndAn'), flush: true, demo: <AdminPanel title={KitCopy.t('docs.panels.shipments')} description={KitCopy.t('docs.panels.whatHasBeenSentFor')} actions={<Button variant={ButtonVariant.SECONDARY}>{KitCopy.t('docs.panels.createShipment')}</Button>}><p className="fc-field-note">{KitCopy.t('docs.panels.thePanelSBody')}</p></AdminPanel>, code: '<AdminPanel title="Shipments" description="What has been sent for this order."\n  actions={<Button variant={ButtonVariant.SECONDARY}>Create shipment</Button>}>\n  …\n</AdminPanel>' },
+          { title: KitCopy.t('docs.panels.titleOnly'), flush: true, demo: <AdminPanel title={KitCopy.t('docs.panels.notes')}><p className="fc-field-note">{KitCopy.t('docs.panels.thePanelSBody')}</p></AdminPanel>, code: '<AdminPanel title="Notes">…</AdminPanel>' },
         ],
         options: [
-          { name: 'title, description', type: 'string', does: 'The panel’s name and a line under it.' },
-          { name: 'icon', type: 'ReactNode', does: 'An icon before the name.' },
-          { name: 'actions', type: 'ReactNode', does: 'Buttons at the end of the head.' },
+          { name: 'title, description', type: 'string', does: KitCopy.t('docs.panels.thePanelSNameAnd') },
+          { name: 'icon', type: 'ReactNode', does: KitCopy.t('docs.panels.anIconBeforeTheName') },
+          { name: 'actions', type: 'ReactNode', does: KitCopy.t('docs.panels.buttonsAtTheEndOf') },
         ],
       },
     ];

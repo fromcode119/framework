@@ -31,7 +31,7 @@ export class MarketplaceDetailHeader extends PureReactor {
     const facts = [
       ...(plugin.author ? [{ key: 'author', label: AdminI18n.t('plugins.list.developer'), value: String(plugin.author) }] : []),
       { key: 'version', label: AdminI18n.t('plugins.detail.version'), value: `v${selectedVersion || plugin.version}${selectedVersion === latest ? ` ${AdminI18n.t('plugins.list.latest')}` : ''}` },
-      ...(plugin.homepage ? [{ key: 'homepage', label: 'Web', value: String(plugin.homepage) }] : []),
+      ...(plugin.homepage ? [{ key: 'homepage', label: AdminI18n.t('plugins.detail.definition.homepage'), value: String(plugin.homepage) }] : []),
     ];
     return (
       <RecordCard title={plugin.name} aside={<Badge variant={installedPlugin ? BadgeVariant.SUCCESS : BadgeVariant.DEFAULT}>{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>}>
