@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Aplikuje sa aktualizácia...",
       "applySystemUpdate": "Aplikovať aktualizáciu systému?",
       "youAreAboutToUpdate": "Chystáte sa aktualizovať {{PRODUCT_NAME}} z v{{installedVersion}} na v{{latestVersion}}. Pred pokračovaním sa automaticky vytvorí úplná záloha systému. Tento proces prepíše systémové súbory a počas reštartu servera môže spôsobiť dočasný výpadok služby.",
+      "youAreAboutToUpdateBesideRunning": "Chystáte sa aktualizovať {{PRODUCT_NAME}} z v{{installedVersion}} na v{{latestVersion}}. Nová verzia sa spustí vedľa bežiacej; ak sa nespustí, predchádzajúca verzia beží ďalej. Záloha sa nevytvára automaticky — ak ju potrebujete, vytvorte ju vopred.",
       "noNotesWereWrittenFor": "K tomuto vydaniu neboli napísané žiadne poznámky.",
       "recommendedUpdate": "v{{version}} Odporúčaná aktualizácia",
       "installCore": "Nainštalovať jadro v{{version}}",

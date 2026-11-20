@@ -253,14 +253,15 @@ export class BackupService {
         };
       }
 
-      const tempDbFile = `database-backup-${timestamp}${path.extname(dbDumpPath)}`;
-      fs.copyFileSync(dbDumpPath, path.join(rootDir, tempDbFile));
+      const tempDbFile = SystemBackupHelper.databaseArchiveEntry(rootDir, dbDumpPath, timestamp);
+      SystemBackupHelper.cleanupDatabaseOld(this.getBackupsDirectory('database'), 5);
       return { tempDbFile, warnings };
-    } catch {
-      console.warn('[BackupService] Database backup failed, proceeding without a database snapshot.');
+    } catch (error: any) {
+      const reason = String(error?.message || error);
+      console.warn(`[BackupService] The database dump could not be added to the archive: ${reason}`);
       return {
         tempDbFile: null,
-        warnings: ['Database backup failed, so the archive contains files only.'],
+        warnings: [`The archive contains files only: the database dump could not be added to it (${reason}).`],
       };
     }
   }

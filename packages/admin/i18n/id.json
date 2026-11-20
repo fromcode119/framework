@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Menerapkan Pembaruan...",
       "applySystemUpdate": "Terapkan Pembaruan Sistem?",
       "youAreAboutToUpdate": "Anda akan memperbarui {{PRODUCT_NAME}} dari v{{installedVersion}} ke v{{latestVersion}}. Cadangan sistem lengkap akan dibuat secara otomatis sebelum melanjutkan. Proses ini akan menimpa file sistem dan dapat menyebabkan gangguan layanan sementara saat server dimulai ulang.",
+      "youAreAboutToUpdateBesideRunning": "Anda akan memperbarui {{PRODUCT_NAME}} dari v{{installedVersion}} ke v{{latestVersion}}. Versi baru dijalankan di samping versi yang sedang berjalan; jika tidak berhasil dijalankan, versi sebelumnya tetap berjalan. Cadangan tidak dibuat secara otomatis — buat terlebih dahulu jika Anda membutuhkannya.",
       "noNotesWereWrittenFor": "Tidak ada catatan untuk rilis ini.",
       "recommendedUpdate": "v{{version}} Pembaruan yang Disarankan",
       "installCore": "Pasang Inti v{{version}}",

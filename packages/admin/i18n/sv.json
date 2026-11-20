@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Installerar uppdatering...",
       "applySystemUpdate": "Installera systemuppdatering?",
       "youAreAboutToUpdate": "Du håller på att uppdatera {{PRODUCT_NAME}} från v{{installedVersion}} till v{{latestVersion}}. En fullständig systemsäkerhetskopia skapas automatiskt innan uppdateringen fortsätter. Processen skriver över systemfiler och kan orsaka ett tillfälligt avbrott medan servern startas om.",
+      "youAreAboutToUpdateBesideRunning": "Du är på väg att uppdatera {{PRODUCT_NAME}} från v{{installedVersion}} till v{{latestVersion}}. Den nya versionen startar bredvid den som körs; om den inte startar fortsätter den föregående versionen att köras. Ingen säkerhetskopia skapas automatiskt — skapa en först om du behöver den.",
       "noNotesWereWrittenFor": "Inga versionsanteckningar skrevs för den här versionen.",
       "recommendedUpdate": "v{{version}} Rekommenderad uppdatering",
       "installCore": "Installera kärna v{{version}}",

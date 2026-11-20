@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Ina-apply ang Update...",
       "applySystemUpdate": "I-apply ang System Update?",
       "youAreAboutToUpdate": "Ia-update mo ang {{PRODUCT_NAME}} mula v{{installedVersion}} patungong v{{latestVersion}}. Awtomatikong gagawa ng kumpletong system backup bago magpatuloy. Mao-overwrite ng prosesong ito ang mga file ng system at maaaring magdulot ng pansamantalang pagkaantala ng serbisyo habang nagre-restart ang server.",
+      "youAreAboutToUpdateBesideRunning": "Ia-update mo ang {{PRODUCT_NAME}} mula v{{installedVersion}} patungong v{{latestVersion}}. Magsisimula ang bagong bersyon katabi ng tumatakbo; kung hindi ito magsimula, patuloy na tatakbo ang nakaraang bersyon. Walang awtomatikong ginagawang backup — gumawa muna ng isa kung kailangan mo.",
       "noNotesWereWrittenFor": "Walang isinulat na notes para sa release na ito.",
       "recommendedUpdate": "v{{version}} Inirerekomendang Update",
       "installCore": "I-install ang Core v{{version}}",

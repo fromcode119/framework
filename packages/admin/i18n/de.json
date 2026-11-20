@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Update wird angewendet...",
       "applySystemUpdate": "Systemupdate anwenden?",
       "youAreAboutToUpdate": "Sie sind dabei, {{PRODUCT_NAME}} von v{{installedVersion}} auf v{{latestVersion}} zu aktualisieren. Vorher wird automatisch eine vollständige Systemsicherung erstellt. Dabei werden Systemdateien überschrieben, und während des Serverneustarts kann der Dienst vorübergehend unterbrochen sein.",
+      "youAreAboutToUpdateBesideRunning": "Sie sind dabei, {{PRODUCT_NAME}} von v{{installedVersion}} auf v{{latestVersion}} zu aktualisieren. Die neue Version startet neben der laufenden; startet sie nicht, läuft die vorherige Version weiter. Es wird keine Sicherung automatisch erstellt — erstellen Sie vorher eine, wenn Sie sie brauchen.",
       "noNotesWereWrittenFor": "Für dieses Release wurden keine Hinweise verfasst.",
       "recommendedUpdate": "v{{version}} – empfohlenes Update",
       "installCore": "Kern v{{version}} installieren",

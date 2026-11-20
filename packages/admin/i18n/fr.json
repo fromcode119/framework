@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Application de la mise à jour...",
       "applySystemUpdate": "Appliquer la mise à jour du système ?",
       "youAreAboutToUpdate": "Vous êtes sur le point de mettre à jour {{PRODUCT_NAME}} de la v{{installedVersion}} vers la v{{latestVersion}}. Une sauvegarde complète du système sera créée automatiquement au préalable. Cette opération écrasera des fichiers système et peut provoquer une interruption temporaire du service pendant le redémarrage du serveur.",
+      "youAreAboutToUpdateBesideRunning": "Vous êtes sur le point de mettre à jour {{PRODUCT_NAME}} de v{{installedVersion}} vers v{{latestVersion}}. La nouvelle version démarre à côté de celle en cours ; si elle ne démarre pas, la version précédente continue de fonctionner. Aucune sauvegarde n’est créée automatiquement — créez-en une au préalable si vous en avez besoin.",
       "noNotesWereWrittenFor": "Aucune note n'a été rédigée pour cette version.",
       "recommendedUpdate": "v{{version}} Mise à jour recommandée",
       "installCore": "Installer le cœur v{{version}}",

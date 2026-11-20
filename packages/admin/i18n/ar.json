@@ -2999,6 +2999,7 @@
       "applyingUpdate": "جارٍ تطبيق التحديث...",
       "applySystemUpdate": "هل تريد تطبيق تحديث النظام؟",
       "youAreAboutToUpdate": "أنت على وشك تحديث {{PRODUCT_NAME}} من الإصدار v{{installedVersion}} إلى الإصدار v{{latestVersion}}. ستُنشأ نسخة احتياطية كاملة للنظام تلقائيًا قبل المتابعة. ستستبدل هذه العملية ملفات النظام وقد تتسبب في انقطاع مؤقت للخدمة أثناء إعادة تشغيل الخادم.",
+      "youAreAboutToUpdateBesideRunning": "أنت على وشك تحديث {{PRODUCT_NAME}} من v{{installedVersion}} إلى v{{latestVersion}}. يبدأ الإصدار الجديد بجانب الإصدار العامل؛ وإذا لم يبدأ، يستمر الإصدار السابق في العمل. لا تُنشأ نسخة احتياطية تلقائيًا — أنشئ واحدة أولًا إذا احتجت إليها.",
       "noNotesWereWrittenFor": "لم تُكتب ملاحظات لهذا الإصدار.",
       "recommendedUpdate": "v{{version}} تحديث موصى به",
       "installCore": "تثبيت النواة v{{version}}",

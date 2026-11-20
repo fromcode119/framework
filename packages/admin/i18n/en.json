@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Applying Update...",
       "applySystemUpdate": "Apply System Update?",
       "youAreAboutToUpdate": "You are about to update {{PRODUCT_NAME}} from v{{installedVersion}} to v{{latestVersion}}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.",
+      "youAreAboutToUpdateBesideRunning": "You are about to update {{PRODUCT_NAME}} from v{{installedVersion}} to v{{latestVersion}}. The new version starts beside the running one; if it does not start, the previous version keeps running. No backup is created automatically — create one first if you need it.",
       "noNotesWereWrittenFor": "No notes were written for this release.",
       "recommendedUpdate": "v{{version}} Recommended Update",
       "installCore": "Install Core v{{version}}",

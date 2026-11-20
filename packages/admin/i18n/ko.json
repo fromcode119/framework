@@ -2999,6 +2999,7 @@
       "applyingUpdate": "업데이트 적용 중...",
       "applySystemUpdate": "시스템 업데이트를 적용하시겠습니까?",
       "youAreAboutToUpdate": "{{PRODUCT_NAME}}을(를) v{{installedVersion}}에서 v{{latestVersion}}(으)로 업데이트하려고 합니다. 진행하기 전에 전체 시스템 백업이 자동으로 생성됩니다. 이 과정에서 시스템 파일을 덮어쓰며, 서버가 재시작되는 동안 서비스가 일시적으로 중단될 수 있습니다.",
+      "youAreAboutToUpdateBesideRunning": "{{PRODUCT_NAME}}을(를) v{{installedVersion}}에서 v{{latestVersion}}(으)로 업데이트하려고 합니다. 새 버전은 실행 중인 버전 옆에서 시작되며, 시작되지 않으면 이전 버전이 계속 실행됩니다. 백업은 자동으로 생성되지 않습니다. 필요하면 먼저 만들어 두세요.",
       "noNotesWereWrittenFor": "이 릴리스에 대한 릴리스 노트가 없습니다.",
       "recommendedUpdate": "v{{version}} 권장 업데이트",
       "installCore": "코어 v{{version}} 설치",

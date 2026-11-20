@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Update toepassen...",
       "applySystemUpdate": "Systeemupdate toepassen?",
       "youAreAboutToUpdate": "U staat op het punt {{PRODUCT_NAME}} bij te werken van v{{installedVersion}} naar v{{latestVersion}}. Voordat de update begint, wordt automatisch een volledige systeemback-up gemaakt. Hierbij worden systeembestanden overschreven en kan de dienst tijdelijk onderbroken zijn terwijl de server opnieuw opstart.",
+      "youAreAboutToUpdateBesideRunning": "U staat op het punt {{PRODUCT_NAME}} bij te werken van v{{installedVersion}} naar v{{latestVersion}}. De nieuwe versie start naast de actieve; als die niet start, blijft de vorige versie draaien. Er wordt niet automatisch een back-up gemaakt — maak er eerst een als u die nodig hebt.",
       "noNotesWereWrittenFor": "Voor deze release zijn geen notities geschreven.",
       "recommendedUpdate": "v{{version}} Aanbevolen update",
       "installCore": "Core v{{version}} installeren",

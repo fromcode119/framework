@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Aplicando la actualización...",
       "applySystemUpdate": "¿Aplicar la actualización del sistema?",
       "youAreAboutToUpdate": "Está a punto de actualizar {{PRODUCT_NAME}} de la v{{installedVersion}} a la v{{latestVersion}}. Antes de continuar se creará automáticamente una copia de seguridad completa del sistema. Este proceso sobrescribirá archivos del sistema y puede provocar una interrupción temporal del servicio mientras se reinicia el servidor.",
+      "youAreAboutToUpdateBesideRunning": "Está a punto de actualizar {{PRODUCT_NAME}} de v{{installedVersion}} a v{{latestVersion}}. La nueva versión se inicia junto a la que está en ejecución; si no se inicia, la versión anterior sigue funcionando. No se crea ninguna copia de seguridad automáticamente — cree una antes si la necesita.",
       "noNotesWereWrittenFor": "No hay notas para esta versión.",
       "recommendedUpdate": "v{{version}} Actualización recomendada",
       "installCore": "Instalar núcleo v{{version}}",
