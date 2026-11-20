@@ -3790,6 +3790,11 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-locked-value--amount .fc-locked-value__text { text-align: end; font-variant-numeric: tabular-nums; }
 .fc-locked-value__note { margin: 0; font-size: 12px; line-height: 16px; color: var(--fc-text-muted); }
 
+/* A machine string read as written: a host name, a key. */
+.fc-mono { font-family: ui-monospace, SFMono-Regular, monospace; overflow-wrap: anywhere; }
+/* A pasted certificate or key: monospace, tall enough to see where it begins and ends. */
+textarea.fc-field.fc-pem-input { min-height: 140px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; line-height: 16px; }
+
 /* The record's public address: one line read like a field, opened in place to change it. */
 .fc-permalink { display: flex; align-items: center; gap: 8px; width: 100%; min-height: var(--fc-field-h); padding: 6px 10px; border: 0; border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); box-shadow: var(--fc-control-shadow); text-align: start; cursor: pointer; transition: box-shadow .15s ease; }
 .fc-permalink:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--fc-border-strong); }
