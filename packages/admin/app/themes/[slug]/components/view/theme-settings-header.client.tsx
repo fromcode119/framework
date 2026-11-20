@@ -2,6 +2,8 @@ import { ThemeMode, ThemeState } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Badge } from '@/components/ui/view/badge.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
@@ -24,11 +26,9 @@ export class ThemeSettingsHeader extends PureReactor {
     const url = this.model.livePreviewUrl;
     if (!url) return null;
     return (
-      <a href={url} target="_blank" rel="noreferrer"
-        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 fc-size-sm font-medium transition-colors fc-tone-line fc-tone-text fc-tone-hover`}>
-        <FrameworkIcons.External size={14} />
+      <Button href={url} target="_blank" variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.External size={14} />}>
         {AdminI18n.t('themes.openSite')}
-      </a>
+      </Button>
     );
   }
 

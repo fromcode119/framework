@@ -1296,6 +1296,13 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 /* The column that takes the width the others leave. Its text is cut with an ellipsis rather than
    pushing the table wider than its card; with `fc-dt-wrap` it runs onto more lines instead. */
 .fc-dt-fill { width: 100%; max-width: 0; }
+/* A narrow-screen table card whose columns are CONTROLS (an editable registry) is not a line of facts:
+   each control gets its own line, its heading on the left and the control on the right — a text field
+   takes the rest of the line, a switch sits at the end, the way a setting row reads everywhere else. */
+.fc-dt-card__details:has(.fc-field, .fc-switch) { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 8px; }
+.fc-dt-card__details:has(.fc-field, .fc-switch) > .fc-dt-card__part { display: flex; justify-content: space-between; gap: 12px; }
+.fc-dt-card__part:has(.fc-field) > .fc-dt-card__value { flex: 1; }
+
 .fc-dt-td.fc-dt-fill > .fc-dt-cell { overflow: hidden; text-overflow: ellipsis; }
 .fc-dt-td.fc-dt-wrap { white-space: normal; padding-block: 12px; }
 /* A pinned cell is opaque, so the columns scrolling under it never show through; it follows its row. */
@@ -2024,10 +2031,10 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
     width: 100%;
     justify-content: flex-start;
   }
-  /* One short thing — a state, a single quiet link — stays beside the name: a line of its own for
-     "Open" made every such head half as tall again. */
-  .fc-list-shell > .fc-record-card__head:has(> .fc-record-card__aside > :only-child:is(.fc-badge, .fc-state-badge, .fc-btn--ghost)) { align-items: center; }
-  .fc-list-shell > .fc-record-card__head > .fc-record-card__aside:has(> :only-child:is(.fc-badge, .fc-state-badge, .fc-btn--ghost)) { width: auto; margin-inline-start: auto; }
+  /* One short thing — a state, a single link, the one "Add" — stays beside the name: a line of its own
+     for "Open" made every such head half as tall again, and an "Add" belongs on its list's title line. */
+  .fc-list-shell > .fc-record-card__head:has(> .fc-record-card__aside > :only-child:is(.fc-badge, .fc-state-badge, .fc-btn)) { align-items: center; }
+  .fc-list-shell > .fc-record-card__head > .fc-record-card__aside:has(> :only-child:is(.fc-badge, .fc-state-badge, .fc-btn)) { width: auto; margin-inline-start: auto; }
 }
 .fc-record-card__subtitle { flex-basis: 100%; margin: 0; font-size: var(--fc-text-xs); line-height: var(--fc-leading); color: var(--fc-text-muted); order: 3; }
 /* What is on the right of the band keeps together. */

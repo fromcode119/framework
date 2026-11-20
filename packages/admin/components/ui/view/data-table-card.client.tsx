@@ -47,11 +47,11 @@ export class DataTableCard<T extends { id: any }> extends PureReactor {
       .filter(({ value }) => !DataTableCard.isEmpty(value));
     if (!parts.length) return null;
     return (
-      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 fc-size-xs font-medium fc-tone-muted">
+      <div className="fc-dt-card__details mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 fc-size-xs font-medium fc-tone-muted">
         {parts.map(({ column, value }) => (
-          <span key={column.id} className="inline-flex min-w-0 max-w-full items-center gap-1.5">
+          <span key={column.id} className="fc-dt-card__part inline-flex min-w-0 max-w-full items-center gap-1.5">
             {column.header ? <span className="shrink-0 fc-tone-muted">{column.header}</span> : null}
-            <span className="min-w-0">{value}</span>
+            <span className="fc-dt-card__value min-w-0">{value}</span>
           </span>
         ))}
       </div>
