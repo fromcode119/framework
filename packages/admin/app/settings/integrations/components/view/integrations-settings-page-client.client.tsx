@@ -18,6 +18,8 @@ import { IntegrationsSettingsPageActions } from '@/app/settings/integrations/com
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { state, bound } from '@fromcode119/react-class-components';
 
 /**
  * The integrations settings screen.
@@ -26,8 +28,14 @@ import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
  * the links below — see `IntegrationsSettingsPageState`.
  */
 export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActions {
+  /** Whether a panel below the providers (its own switch, a limit) holds something unsaved. */
+  @state private panelsDirty = false;
+  @state private panelsSaving = false;
+  private stopPanels: (() => void) | null = null;
+
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.stopPanels = PendingSaves.subscribe(this.readPanels);
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;
     // The `searchParams` promise resolves EMPTY on this route because the page is statically
@@ -52,6 +60,30 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
 
   componentWillUnmount(): void {
     this.mounted = false;
+    this.stopPanels?.();
+  }
+
+  @bound private readPanels(): void {
+    const dirty = PendingSaves.anyDirty();
+    if (dirty !== this.panelsDirty) this.panelsDirty = dirty;
+  }
+
+  /** The page's one bar saves the open provider and every panel below it that changed. */
+  @bound private async saveAll(): Promise<void> {
+    if (this.editorDirty) await this.handleSaveProvider();
+    if (!PendingSaves.anyDirty()) return;
+    this.panelsSaving = true;
+    try {
+      await PendingSaves.saveAll();
+    } finally {
+      this.panelsSaving = false;
+      this.readPanels();
+    }
+  }
+
+  @bound private discardAll(): void {
+    if (this.editorDirty) this.discardEditorChanges();
+    PendingSaves.discardAll();
   }
 
   /** Top row: who registered the types — the platform first, then each plugin. */
@@ -174,10 +206,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
             {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
           </section>
           <SettingsSaveBar
-            dirty={this.editorDirty}
-            saving={this.saving}
-            onSave={() => this.handleSaveProvider()}
-            onDiscard={() => this.discardEditorChanges()}
+            dirty={this.editorDirty || this.panelsDirty}
+            saving={this.saving || this.panelsSaving}
+            onSave={this.saveAll}
+            onDiscard={this.discardAll}
           />
         </div>
       </div>
