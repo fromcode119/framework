@@ -49,9 +49,9 @@ describe('VersionChangeSummary', () => {
       <SidebarVersions revisions={revisions} revisionsLoading={false} activeVersionId={2} setSelectedRevision={vi.fn()} setFormData={vi.fn()}
         setActiveVersionId={vi.fn()} loadMoreRevisions={vi.fn()} hasMoreRevisions={false} formData={{}} fields={fields} />,
     );
-    expect(screen.getByText('Status:')).toBeTruthy();
-    expect(screen.getByText('cancelled')).toBeTruthy();
-    expect(screen.getByText(/^Created$/)).toBeTruthy();
+    // One line per version: what was done, then what changed.
+    expect(screen.getByText(/Status: issued → cancelled/)).toBeTruthy();
+    expect(screen.getByText(/· Created$/)).toBeTruthy();
   });
 
   it('shows no guess for the oldest loaded version while earlier ones may still exist', () => {
@@ -63,7 +63,7 @@ describe('VersionChangeSummary', () => {
       <SidebarVersions revisions={revisions} revisionsLoading={false} activeVersionId={2} setSelectedRevision={vi.fn()} setFormData={vi.fn()}
         setActiveVersionId={vi.fn()} loadMoreRevisions={vi.fn()} hasMoreRevisions={true} formData={{}} fields={fields} />,
     );
-    expect(screen.queryByText(/^Created$/)).toBeNull();
+    expect(screen.queryByText(/Created$/)).toBeNull();
   });
 
   it('says "changed" when a value differs but prints the same on both sides', () => {
@@ -75,8 +75,7 @@ describe('VersionChangeSummary', () => {
       <SidebarVersions revisions={revisions} revisionsLoading={false} activeVersionId={2} setSelectedRevision={vi.fn()} setFormData={vi.fn()}
         setActiveVersionId={vi.fn()} loadMoreRevisions={vi.fn()} hasMoreRevisions={false} formData={{}} fields={[{ name: 'lineItems', label: 'Line Items' }]} />,
     );
-    expect(screen.getByText('Line Items:')).toBeTruthy();
-    expect(screen.getByText('changed')).toBeTruthy();
-    expect(screen.queryByText('[1]')).toBeNull();
+    expect(screen.getByText(/Line Items: changed/)).toBeTruthy();
+    expect(screen.queryByText(/\[1\]/)).toBeNull();
   });
 });

@@ -2620,7 +2620,6 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-move__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--fc-weight-strong); }
 
 /* A version beside the current values: the switch between "only what changed" and every field. */
-.fc-revision__filter { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 
 /* ── A block inside a dialog ─────────────────────────────────────────────────────────────────────
  * One subject inside a dialog's body: a quiet heading, its values, and whatever control belongs to it,
@@ -3836,3 +3835,28 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-switch-field__text--off { cursor: not-allowed; opacity: .6; }
 
 .fc-form-foot > .fc-form-grid { flex: 1 1 100%; }
+
+/* ── Two states of one record, field by field ─────────────────────────────────────────────────────
+ * The field's name, what it holds now, what it held then. A row that differs is the one to read, so
+ * its values are in the text's own colour and the rows that match step back. */
+.fc-compare { border-radius: var(--fc-card-radius); box-shadow: 0 0 0 1px var(--fc-border); background: var(--fc-surface); overflow: hidden; }
+.fc-compare__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.2fr); gap: 12px; padding: 10px 16px; font-size: var(--fc-record-text); line-height: 20px; color: var(--fc-text-muted); }
+.fc-compare__row + .fc-compare__row { border-top: var(--fc-record-rule); }
+.fc-compare__row > * { min-width: 0; overflow-wrap: anywhere; }
+.fc-compare__row--head { font-size: 12px; font-weight: var(--fc-weight-strong); background: var(--fc-surface-muted); }
+.fc-compare__label { color: var(--fc-text); }
+.fc-compare__row--changed .fc-compare__now { color: var(--fc-text); font-weight: var(--fc-weight-strong); }
+/* Both values of a row that differs are read: what is there now, plainly; what the version held, stronger. */
+.fc-compare__row--changed .fc-compare__was { color: var(--fc-text); }
+@media (max-width: 640px) {
+  .fc-compare__row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 2px; }
+  .fc-compare__label, .fc-compare__row--head > :first-child { grid-column: 1 / -1; }
+  .fc-compare__row--head > :first-child { display: none; }
+}
+
+/* A sheet's foot with more buttons than fit side by side on a phone wraps them, each still full width
+   of its share — the last one was cut off at the edge of the screen. */
+@media (max-width: 640px) {
+  .fc-sheet__foot:has(> :nth-child(3)) { flex-wrap: wrap; }
+  .fc-sheet__foot:has(> :nth-child(3)) > * { flex: 1 1 40%; min-width: 0; }
+}

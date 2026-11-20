@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { RecordCard } from '@/components/ui/view/record-card.client';
+import { ListShell } from '@/components/ui/view/list-shell.client';
+import { ListRow } from '@/components/ui/view/list-row.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { StateBadge } from '@/components/ui/view/state-badge.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { VersionChangeSummary } from '@/components/collection/version-change-summary';
@@ -18,102 +24,56 @@ export class SidebarVersions extends PureReactor {
   /** The collection's fields, for the labels of what changed. */
   @prop declare fields: any[];
 
-  /** What this version changed, from the version before it: a few "Field: before → after" lines. */
-  private renderChanges(index: number): ReactNode {
+  /** What this version changed from the one before it, on one line: "Price: 10 → 12 · Title changed". */
+  private changesLine(index: number): string {
     const older = this.revisions[index + 1];
-    if (!older) {
-      // The oldest version loaded: it is the creation when there is nothing further back, otherwise unknown until more is loaded.
-      return this.hasMoreRevisions ? null : <p className="text-[12px] text-slate-500 mt-1">{AdminI18n.t('collection.edit.versionCreated')}</p>;
-    }
+    // The oldest version loaded: it is the creation when there is nothing further back, otherwise unknown until more is loaded.
+    if (!older) return this.hasMoreRevisions ? '' : AdminI18n.t('collection.edit.versionCreated');
     const changes = VersionChangeSummary.between(this.revisions[index].changes, older.changes, this.fields);
-    if (!changes) return null;
-    if (changes.length === 0) return <p className="text-[12px] text-slate-400 mt-1">{AdminI18n.t('collection.edit.versionNoFieldChanges')}</p>;
-    const shown = changes.slice(0, 4);
-    return (
-      <ul className="mt-1 space-y-0.5">
-        {shown.map((change) => (
-          <li key={change.label} className="text-[12px] text-slate-600 dark:text-slate-300 break-words">
-            <span className="font-medium">{change.label}:</span>{' '}
-            {change.from === change.to
-              // Same text on both sides (a list of the same length, a long value cut short): it did change, and saying
-              // "[1] → [1]" does not tell the operator so.
-              ? <span>{AdminI18n.t('collection.edit.versionValueChanged')}</span>
-              : <><span className="text-slate-400 line-through">{change.from}</span> → <span>{change.to}</span></>}
-          </li>
-        ))}
-        {changes.length > shown.length && <li className="text-[12px] text-slate-400">{AdminI18n.t('collection.edit.versionMoreChanges', { count: changes.length - shown.length })}</li>}
-      </ul>
-    );
+    if (!changes) return '';
+    if (changes.length === 0) return AdminI18n.t('collection.edit.versionNoFieldChanges');
+    const shown = changes.slice(0, 4).map((change) => (change.from === change.to
+      // Same text on both sides (a list of the same length, a long value cut short): it did change, and
+      // "[1] → [1]" does not say so.
+      ? `${change.label}: ${AdminI18n.t('collection.edit.versionValueChanged')}`
+      : `${change.label}: ${change.from} → ${change.to}`));
+    if (changes.length > shown.length) shown.push(AdminI18n.t('collection.edit.versionMoreChanges', { count: changes.length - shown.length }));
+    return shown.join(' · ');
   }
 
   render(): ReactNode {
-    const {
-  revisions,
-  revisionsLoading,
-  activeVersionId,
-  setSelectedRevision,
-  setFormData,
-  setActiveVersionId,
-  loadMoreRevisions,
-  hasMoreRevisions,
-  formData
-} = this;
-  return (
-    <RecordCard title={AdminI18n.t('collection.edit.versions')}>
-      <div className="space-y-4 max-h-[400px] overflow-y-auto pe-2 custom-scrollbar">
-          {revisions.length === 0 && !revisionsLoading && (
-            <p className="text-[12px] text-slate-400 font-medium italic py-2">{AdminI18n.t('collection.edit.noVersions')}</p>
-          )}
-          {revisions.map((v, i) => (
-            <div
-              key={i}
-              onClick={() => setSelectedRevision(v)}
-              className={`flex items-start gap-3 group cursor-pointer p-2.5 -mx-2 rounded-xl transition-all border border-transparent ${v.id === activeVersionId ? 'bg-indigo-50/30 border-indigo-100/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
-            >
-              <div className={`mt-1.5 h-1.5 w-1.5 rounded-full ${v.id === activeVersionId ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' : 'bg-slate-300'} shrink-0`} />
-              <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <span className={`text-[12px] font-medium px-1.5 py-0.5 rounded-lg shrink-0 ${v.id === activeVersionId ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'}`}>V{v.version}</span>
-                        <span className="text-[12px] font-medium text-slate-800 dark:text-slate-200 truncate">{v.user}</span>
-                    </div>
-                    {v.id !== activeVersionId && (
-                      <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFormData({ ...formData, ...v.changes });
-                            setActiveVersionId(v.id);
-                          }}
-                          className="text-[12px] font-medium text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
-                      >
-                          <FrameworkIcons.Refresh size={8} />
-                          {AdminI18n.t('collection.edit.restore')}
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
-                  {this.renderChanges(i)}
-                  <p className="text-[12px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
-              </div>
-            </div>
-          ))}
-
-          {revisionsLoading && (
-            <div className="flex items-center justify-center py-4">
-              <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
-            </div>
-          )}
-
-          {hasMoreRevisions && !revisionsLoading && (
-            <button
-              onClick={loadMoreRevisions}
-              className="w-full py-3 text-[12px] font-medium text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
-            >
-              {AdminI18n.t('collection.edit.loadMoreVersions')}
-            </button>
-          )}
-      </div>
-    </RecordCard>
-  );
+    const { revisions, revisionsLoading, activeVersionId, setSelectedRevision, setFormData, setActiveVersionId, loadMoreRevisions, hasMoreRevisions, formData } = this;
+    return (
+      <ListShell title={AdminI18n.t('collection.edit.versions')} count={revisions.length}
+        foot={hasMoreRevisions && !revisionsLoading ? <Button variant={ButtonVariant.SECONDARY} onClick={loadMoreRevisions}>{AdminI18n.t('collection.edit.loadMoreVersions')}</Button> : undefined}>
+        {revisions.length === 0 && !revisionsLoading ? <EmptyState inline title={AdminI18n.t('collection.edit.noVersions')} /> : (
+          <div>
+            {revisions.map((v, i) => {
+              // What was done, then what changed; said once when both are the same word ("Created").
+              const parts = [v.action, this.changesLine(i)].filter(Boolean);
+              const line = [...new Set(parts)].join(' · ');
+              // The version the record holds now: the chosen one, or the newest when none was chosen.
+              const isCurrent = activeVersionId === null || activeVersionId === undefined ? i === 0 : v.id === activeVersionId;
+              return (
+                <ListRow
+                  key={v.id ?? i}
+                  title={<button type="button" className="fc-ext-row__link" onClick={() => setSelectedRevision(v)}>V{v.version} · {v.user}</button>}
+                  badges={isCurrent ? <StateBadge tone="info">{AdminI18n.t('users.current')}</StateBadge> : undefined}
+                  description={line || undefined}
+                  descriptionTitle={line}
+                  meta={v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                  menu={isCurrent ? undefined : [{
+                    label: AdminI18n.t('collection.edit.restore'),
+                    icon: <FrameworkIcons.Refresh size={15} />,
+                    onClick: () => { setFormData({ ...formData, ...v.changes }); setActiveVersionId(v.id); },
+                  }]}
+                />
+              );
+            })}
+          </div>
+        )}
+        {revisionsLoading ? <Loader /> : null}
+      </ListShell>
+    );
   }
 }

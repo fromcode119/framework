@@ -219,6 +219,7 @@ export class CollectionEditPageView extends Reactor {
           formData={edit.formData} setFormData={edit.setFormData} theme={edit.theme} currentRevIndex={edit.currentRevIndex}
           revisions={edit.revisions} restoringPermanently={edit.restoringPermanently} handleHardRestore={edit.handleHardRestore}
           setActiveVersionId={edit.setActiveVersionId} setStatus={edit.setStatus}
+          fields={collection?.fields || []}
         />
 
         {!edit.hideFooter && canSave && (
