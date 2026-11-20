@@ -87,6 +87,7 @@ export { NumberUtils } from '@core/utils/number-utils';
 export { MeasurementSystemUtils } from '@core/utils/measurement-system-utils';
 export { TimeFormatUtils } from '@core/utils/time-format-utils';
 export { PlatformCountryUtils } from '@core/utils/platform-country-utils';
+export { CountryCodes } from '@core/utils/country-codes';
 export { PlatformCountrySource } from '@core/enums/platform-country-source.enum';
 export { EmailDeliveryRoute } from '@core/integrations/enums/email-delivery-route.enum';
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
