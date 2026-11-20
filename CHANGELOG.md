@@ -6,11 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.616] - 2026-11-20
+
+### Fixed
+
+- **admin**: controls that say what they do — reachable statuses, disabled actions, site timezone, zero/empty labels ([#1551](https://github.com/fromcode119/framework/pull/1551))
+
 ## [0.2.615] - 2026-11-20
 
 ### Fixed
 
 - **core**: a release that removes a field removes it from the console too ([#1549](https://github.com/fromcode119/framework/pull/1549))
+- **dev**: keep the Turbopack dev cache in memory ([#1548](https://github.com/fromcode119/framework/pull/1548))
 
 ## [0.2.614] - 2026-11-20
 
