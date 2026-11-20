@@ -58,7 +58,9 @@ export class SecuritySettingsPage extends AdminComponent {
   }
 
   async componentDidMount(): Promise<void> {
-    if (!this.canManagePlatform) this.activeTab = SecurityTab.SETTINGS;
+    // A link may open the Settings tab directly (`?tab=settings`), e.g. from an account's 2FA card.
+    const askedTab = new URLSearchParams(window.location.search).get('tab');
+    if (!this.canManagePlatform || askedTab === SecurityTab.SETTINGS.value) this.activeTab = SecurityTab.SETTINGS;
     await this.loadPageData();
     this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), SecuritySettingsKeys.ALL);
   }

@@ -1045,6 +1045,9 @@ html.dark {
 .fc-state-badge[data-tone="danger"] { --fc-tone: var(--fc-danger); }
 .fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
 /* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
+/* Two-factor setup: the QR code keeps a white ground in either theme, since a scanner reads dark on light. */
+.fc-twofactor-setup__qr { display: block; width: 176px; height: 176px; padding: 8px; background: #fff; border: 1px solid var(--fc-border); border-radius: var(--fc-radius); }
+.fc-twofactor-setup__verify { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; font-size: var(--fc-control-text); line-height: 20px; }
 .fc-copy-value__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--fc-control-h); height: var(--fc-control-h); border-radius: var(--fc-control-radius); color: var(--fc-text-muted); }
