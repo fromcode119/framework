@@ -98,6 +98,8 @@ export class AccountFilesContent extends PluginComponent {
           </div>
         )}
 
+        {group.note ? <p className={AccountClass.of('empty-note')}>{group.note}</p> : null}
+
         {!group.files.length ? (
           <p className={AccountClass.of('empty-note')}>{this.t('account.files.noFiles')}</p>
         ) : (
@@ -114,9 +116,11 @@ export class AccountFilesContent extends PluginComponent {
                   {headingRepeatsFile && group.badge ? (
                     <span className={AccountClass.of('badge')}>{group.badge.label}</span>
                   ) : null}
-                  <a className={AccountClass.of('btn', 'link')} href={file.href} rel="noopener">
-                    {this.t('account.files.download')}
-                  </a>
+                  {group.note ? null : (
+                    <a className={AccountClass.of('btn', 'link')} href={file.href} rel="noopener">
+                      {this.t('account.files.download')}
+                    </a>
+                  )}
                 </div>
               </li>
             ))}
