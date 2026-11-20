@@ -6,6 +6,8 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * One row per site: host, the theme actually serving it, and whether anything broke there today.
@@ -67,9 +69,9 @@ export class DashboardSitesPanel extends AdminComponent {
               </span>
               <span className="shrink-0 text-[12px] text-slate-500">{this.statusText(site)}</span>
               {site.state && site.state !== 'active' ? (
-                <span className="shrink-0 rounded border border-amber-500/30 px-1.5 text-[12px] font-medium text-amber-600 dark:text-amber-400">
+                <Badge variant={BadgeVariant.WARNING} className="shrink-0">
                   {AdminI18n.optional(`sites.stateValue.${site.state}`) || String(site.state)}
-                </span>
+                </Badge>
               ) : null}
             </div>
           ))}

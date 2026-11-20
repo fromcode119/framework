@@ -7,6 +7,8 @@ import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 export class FieldTextInput extends PureReactor {
   @prop declare field: ICollectionField;
@@ -96,10 +98,10 @@ export class FieldTextInput extends PureReactor {
           </div>
         )}
         {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
-          <div className="absolute top-1/2 -translate-y-1/2 end-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[12px] font-medium tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
-            <FrameworkIcons.Refresh size={8} />
+          <Badge variant={BadgeVariant.INFO} className="absolute top-1/2 -translate-y-1/2 end-2 pointer-events-none">
+            <FrameworkIcons.Refresh size={10} />
             {AdminI18n.t('ui.field.auto')}
-          </div>
+          </Badge>
         )}
       </div>
     );

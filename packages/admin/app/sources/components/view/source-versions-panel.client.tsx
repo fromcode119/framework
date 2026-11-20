@@ -6,6 +6,8 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { SourceVersionsActions } from '@/app/sources/components/view/source-versions-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * The version panel inside an opened Sources row: installed against built, automatic updating, and
@@ -35,9 +37,9 @@ export class SourceVersionsPanel extends SourceVersionsActions {
           </strong>
         </span>
         {this.versionsDiffer ? (
-          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600">
+          <Badge variant={BadgeVariant.WARNING}>
             {AdminI18n.t('sources.builtVersionIsNotThe')}
-          </span>
+          </Badge>
         ) : null}
       </div>
     );

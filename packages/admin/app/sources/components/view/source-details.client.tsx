@@ -4,6 +4,7 @@ import { BuildChangelog } from '@/app/sources/components/view/build-changelog.cl
 import { SourceVersionsPanel } from '@/app/sources/components/view/source-versions-panel.client';
 import type { SourceRow } from '@/app/sources/source-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * An opened Sources row: everything the one-line row leaves out. Where the source comes from and
@@ -68,9 +69,7 @@ export class SourceDetails extends PureReactor {
           {this.renderFact(AdminI18n.t('sources.publishToSite'), this.renderPublish())}
         </dl>
         {row.status === 'failed' && row.build.lastError ? (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
-            {row.build.lastError}
-          </div>
+          <Alert tone="danger">{row.build.lastError}</Alert>
         ) : null}
         <BuildChangelog changelog={row.build.changelog} version={row.version} />
         <SourceVersionsPanel build={row.build} />

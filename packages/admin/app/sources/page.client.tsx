@@ -12,6 +12,7 @@ import { BuildSourceDialog } from '@/app/sources/components/view/build-source-di
 import { BuildSourceForm } from '@/app/sources/components/view/build-source-form.client';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * The Sources screen: the repositories this platform builds from, as one searchable, filterable
@@ -57,8 +58,8 @@ export class BuildOverview extends SourcesPageActions {
       >
         <BuildSourceForm build={this.editingBuild} busy={this.savingSource} mode={this.editorMode} onCancel={this.closeEditor} onSubmit={this.saveSource} />
         {this.editorError ? (
-          <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
-            {this.editorError}
+          <div ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4">
+            <Alert tone="danger">{this.editorError}</Alert>
           </div>
         ) : null}
       </BuildSourceDialog>
@@ -90,7 +91,7 @@ export class BuildOverview extends SourcesPageActions {
           <CompactPageHeader title={AdminI18n.t('sources.sources')} subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')} icon={<Hammer size={20} />} actions={this.renderHeaderActions()} />
           <div className="py-6 fc-page-stack">
             {this.error ? (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{this.error}</div>
+              <Alert tone="danger">{this.error}</Alert>
             ) : null}
             <ListToolbar search={this.search} onSearch={this.setSearch} placeholder={AdminI18n.t('sources.searchSources')} theme={this.theme} filters={this.filters} total={matching.length} />
             <SourcesTable

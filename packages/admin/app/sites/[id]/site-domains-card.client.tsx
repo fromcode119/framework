@@ -8,6 +8,7 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * This site's addresses and what each one serves HTTPS with.
@@ -111,7 +112,7 @@ export class SiteDomainsCard extends AdminComponent {
         </p>
 
         {this.loadError ? (
-          <p className={`text-xs rounded-lg px-3 py-2 mb-3 ${dark ? 'bg-red-500/10 text-red-300' : 'bg-red-50 text-red-700'}`}>{this.loadError}</p>
+          <Alert tone="danger" className="mb-3">{this.loadError}</Alert>
         ) : null}
 
         {this.isLoading ? (

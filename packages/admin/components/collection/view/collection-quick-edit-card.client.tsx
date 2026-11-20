@@ -6,6 +6,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { QuickEditField } from '@/components/collection/list/quick-edit-field';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Alert } from '@/components/ui/view/alert.client';
+import { Loader } from '@/components/ui/view/loader.client';
+import { EmptyState } from '@/components/ui/view/empty-state.client';
 
 /**
  * The form that opens under a row: the fields the collection declared in `admin.list.quickEdit.row`,
@@ -46,18 +49,15 @@ export class CollectionQuickEditCard extends PureReactor {
   private renderStatus(): ReactNode {
     const status = this.quickEditStatus;
     if (!status) return null;
-    const tone = status.type === NotificationType.SUCCESS
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30'
-      : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30';
-    return <div className={`mb-4 rounded-xl border px-4 py-2.5 text-[13px] font-medium ${tone}`}>{status.message}</div>;
+    return <Alert tone={status.type === NotificationType.SUCCESS ? 'success' : 'danger'} className="mb-4">{status.message}</Alert>;
   }
 
   private renderFields(): ReactNode {
     if (this.isLoadingRow) {
-      return <div className="py-10 text-center text-sm font-medium text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>;
+      return <Loader label={AdminI18n.t('collection.quickEdit.loading')} />;
     }
     if (!this.quickEditFields.length) {
-      return <div className="py-6 text-center text-sm font-medium text-slate-500">{AdminI18n.t('collection.quickEdit.noFields')}</div>;
+      return <EmptyState inline title={AdminI18n.t('collection.quickEdit.noFields')} />;
     }
     return (
       <div className="fc-quick-edit__grid">

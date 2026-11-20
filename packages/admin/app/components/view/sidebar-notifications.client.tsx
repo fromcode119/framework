@@ -14,6 +14,8 @@ import { AdminNotificationEndpoints } from '@/lib/constants/admin-notification-e
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 /**
  * The console's notifications — what plugins and the framework tell the signed-in person
@@ -134,7 +136,7 @@ export class SidebarNotifications extends AdminComponent {
         </span>
       );
     }
-    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[12px] font-medium leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
+    const badge = this.unread ? <Badge variant={BadgeVariant.INFO}>{this.unread > 99 ? '99+' : this.unread}</Badge> : null;
     if (this.isMini) {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>
