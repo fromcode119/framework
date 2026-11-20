@@ -12,6 +12,7 @@ import type { IPluginHealthNotificationData } from '@core/plugin/services/interf
 import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
 import { PluginHealthAlertMemory } from '@core/plugin/services/health/plugin-health-alert-memory';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 
 /**
@@ -64,6 +65,7 @@ export class PluginBootHealthReporter {
           slug: p.manifest?.slug,
           held: !isError,
           reason: p.heldReason,
+          coreTooOld: !isError && PluginHeldReason.resolve(p.heldReason) === PluginHeldReason.CORE_TOO_OLD,
           error: p.error,
         };
       }),
