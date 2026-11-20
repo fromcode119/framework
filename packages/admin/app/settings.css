@@ -214,6 +214,8 @@
 }
 .fc-page-tabs__tab:hover { color: var(--fc-text); }
 .fc-page-tabs__tab[aria-current='page'], .fc-page-tabs__tab[aria-pressed='true'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-elevation-control); }
+/* A phone: four tabs (Installed · Health · Events · Marketplace) cut the last one by a few pixels at 12px a side. */
+@media (max-width: 480px) { .fc-page-tabs__tab { padding-inline: 10px; } }
 
 /* ── Extension lists: tabs with counts, one line per plugin or theme ─────────────────────────── */
 /* The second row of a settings screen: the console's one tab (`fc-tab`), not an underlined one. */
