@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.621] - 2026-11-20
+
+### Fixed
+
+- customer account round 3 ([#1563](https://github.com/fromcode119/framework/pull/1563))
+- **admin**: one colour for a record's state in the list, the header and its menu ([#1564](https://github.com/fromcode119/framework/pull/1564))
+
 ## [0.2.620] - 2026-11-20
 
 ### Fixed
