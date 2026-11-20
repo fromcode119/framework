@@ -22,12 +22,39 @@ export class EditMoreSectionsCard extends PureReactor {
   @prop declare navigate?: (href: string) => void;
 
   /**
-   * The section opens just above this card, where the operator is already looking, so the page does not
-   * move under them. Nothing is scrolled: there is nowhere to scroll TO any more.
+   * Choosing a row opens that section's held-back fields where the section is drawn: inside its card
+   * when the record already shows one (often a screen above), or just above this card when it does not.
+   * Either way it appeared somewhere other than where the operator pressed, and they had to go and find
+   * it. Once it is drawn the page moves so the section's head lands where the pressed row was.
    */
-  private open(key: string): void {
+  /** The row just pressed and where it was, until the page has drawn what it opened. */
+  private pending: { key: string; pressedAt: number } | null = null;
+
+  private open(key: string, row: HTMLElement): void {
     if (!this.recordHref || !this.navigate) return;
+    this.pending = { key, pressedAt: row.getBoundingClientRect().top };
     this.navigate(CollectionEditRecordMore.hrefOpening(this.recordHref, this.openedSections || [], key));
+  }
+
+  /** The address now names the section, so the page has drawn it: move the page by what it moved. */
+  componentDidUpdate(): void {
+    const pending = this.pending;
+    if (!pending || !(this.openedSections || []).includes(pending.key)) return;
+    this.pending = null;
+    window.requestAnimationFrame(() => {
+      // At the foot a section is drawn under its own key (`section-side:…` for a side one); in its card
+      // in the side column, under the key that card answers to.
+      const section = [`section-${pending.key}`, CollectionEditRecordMore.anchorId(pending.key)]
+        .map((id) => document.getElementById(id)).find(Boolean);
+      if (!section) return;
+      const shift = section.getBoundingClientRect().top - pending.pressedAt;
+      if (Math.abs(shift) < 1) return;
+      let scroller: HTMLElement | null = section.parentElement;
+      while (scroller && !(scroller.scrollHeight > scroller.clientHeight && /(auto|scroll)/.test(getComputedStyle(scroller).overflowY))) {
+        scroller = scroller.parentElement;
+      }
+      (scroller || document.scrollingElement || document.documentElement).scrollBy({ top: shift });
+    });
   }
 
   render(): ReactNode {
@@ -41,7 +68,7 @@ export class EditMoreSectionsCard extends PureReactor {
         <div className="fc-record-card__body">
           <div className="fc-record-card__rows">
             {sections.map((section) => (
-              <button key={section.key} type="button" className="fc-record-more__row" onClick={() => this.open(section.key)}>
+              <button key={section.key} type="button" className="fc-record-more__row" onClick={(event) => this.open(section.key, event.currentTarget)}>
                 <span className="fc-record-more__name">{section.title}</span>
                 <span className="fc-record-more__count">
                   {AdminI18n.t(section.count === 1 ? 'collection.edit.moreOneField' : 'collection.edit.moreFields', { count: section.count })}

@@ -1,12 +1,21 @@
 import type { ReactNode } from 'react';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
 
+/**
+ * Draws its children over the page, in a host of its own inside the shared portal root.
+ *
+ * Every overlay used to portal straight INTO the shared root, and whichever one created that root also
+ * removed it when it unmounted. A short-lived overlay (a menu) could therefore create the root, close,
+ * and take it out of the document while a dialog opened later still portalled into it: the dialog was
+ * rendered, open and focused, but into a node no longer on the page, so nothing appeared. The root is
+ * now never removed, and each overlay adds and removes only its own host, in the order they open, so a
+ * dialog opened from another one is drawn above it.
+ */
 export class RootFramework extends Reactor {
   @prop declare children: ReactNode;
   @prop declare containerId?: string;
 
   @state container: HTMLElement | null = null;
-  private createdContainer = false;
 
   private get targetId(): string {
     return this.containerId || 'portal-root';
@@ -33,23 +42,19 @@ export class RootFramework extends Reactor {
   }
 
   private attachContainer(containerId: string): void {
-    let element = document.getElementById(containerId);
-    if (!element) {
-      element = document.createElement('div');
-      element.id = containerId;
-      document.body.appendChild(element);
-      this.createdContainer = true;
+    let root = document.getElementById(containerId);
+    if (!root) {
+      root = document.createElement('div');
+      root.id = containerId;
+      document.body.appendChild(root);
     }
-
-    this.container = element;
+    const host = document.createElement('div');
+    root.appendChild(host);
+    this.container = host;
   }
 
   private detachContainer(): void {
-    if (this.createdContainer && this.container?.parentNode) {
-      this.container.parentNode.removeChild(this.container);
-    }
-
-    this.createdContainer = false;
+    this.container?.remove();
     this.container = null;
   }
 }

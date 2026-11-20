@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const apiGet = vi.fn();
 const apiPost = vi.fn();
@@ -33,6 +33,8 @@ const uncounted = { table: 'fcp_shop_carts', column: 'token', firstSeenAt: '2026
  * a zero, and drops nothing until the operator confirms.
  */
 describe('SchemaOrphansCard', () => {
+  // A dialog left open by an earlier test stays on the page now that a closing overlay no longer detaches the portal root.
+  afterEach(cleanup);
   beforeEach(() => {
     apiGet.mockReset();
     apiPost.mockReset();
@@ -76,8 +78,7 @@ describe('SchemaOrphansCard', () => {
     expect(await screen.findByText(/removed from the database for every site, permanently/i)).toBeTruthy();
     expect(screen.getAllByText(/31 of 40/).length).toBeGreaterThan(1);
 
-    const confirmButtons = screen.getAllByRole('button', { name: /drop column/i });
-    fireEvent.click(confirmButtons[confirmButtons.length - 1]);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /drop column/i }));
 
     await waitFor(() => expect(apiPost).toHaveBeenCalledTimes(1));
     expect(apiPost.mock.calls[0][1]).toEqual({ table: 'fcp_shop_orders', column: 'old_ref' });
@@ -90,8 +91,7 @@ describe('SchemaOrphansCard', () => {
     mount(<SchemaOrphansCard />);
 
     fireEvent.click(await screen.findByRole('button', { name: /drop column/i }));
-    const buttons = await screen.findAllByRole('button', { name: /drop column/i });
-    fireEvent.click(buttons[buttons.length - 1]);
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /drop column/i }));
 
     await waitFor(() => expect(notify).toHaveBeenCalled());
     expect(notify.mock.calls.at(-1)?.[1]).toMatch(/could not be dropped/i);
