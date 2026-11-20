@@ -16,6 +16,8 @@ export class MarketplacePlugin {
   declare iconUrl?: string;
   declare capabilities?: string[];
   declare dependencies?: Record<string, string>;
+  /** The platform this build needs (`manifest.engines`). `core` is a semver range; a too-old core refuses the install. */
+  declare engines?: { core?: string };
   declare screenshots?: Screenshot[];
   declare changelog?: any[];
   declare isFeatured?: boolean;

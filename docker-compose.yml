@@ -25,11 +25,20 @@ include:
     project_directory: .
 
 services:
+  # Every local project resolves to the SAME image tag. Compose names a `build:` service's image
+  # after the PROJECT, so a second stack (a worktree, a verify run) under another project name
+  # rebuilt all five from scratch: ~3 GB each, measured as 16 GB of duplicates and 29 GB of dead
+  # images on one machine. The image carries only the node runtime and node_modules — every line of
+  # framework and plugin code is mounted from the checkout — so sharing one tag loses nothing and
+  # a throwaway stack becomes containers only. Production is untouched: it overrides these with
+  # `deploy/docker-compose.images.yml`, and the DEV_IMAGE_* variables let a stack opt out.
+  #
   # T6: the platform gateway is the ONE upstream Traefik forwards every framework.local host to. It
   # routes by host from the tenant table (`GET /internal/routing`): site hosts → frontend, workspace
   # hosts → admin, `api.` aliases → api, the platform's own hosts as configured. api/admin/frontend
   # are no longer exposed to Traefik directly (see their `traefik.enable=false` below).
   gateway:
+    image: ${DEV_IMAGE_GATEWAY:-fromcode-dev-gateway}
     environment:
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - GATEWAY_ROUTING_TTL_MS=${GATEWAY_ROUTING_TTL_MS:-30000}
@@ -43,6 +52,7 @@ services:
       - "traefik.http.services.fc-framework-gateway.loadbalancer.server.port=3000"
 
   api:
+    image: ${DEV_IMAGE_API:-fromcode-dev-api}
     # T5: isolated plugins are separate processes INSIDE this container — one per ACTIVE plugin, each
     # with its own heap ceiling (Settings → Infrastructure → Plugin Isolation). The base file's 768M
     # was sized for one process; this checkout runs seven active plugins plus the api itself.
@@ -114,10 +124,9 @@ services:
   # The plugin processes run here, not in the api (the included topology gives the api
   # EXTENSION_HOST_SOCKET), so this container needs what the api's plugins used to have locally.
   extension-host:
-    # The image the api was built as in this project: Compose names a build after the project and
-    # the service. The topology's `atlantis-api` exists only where IMAGE_API is set, so locally this
-    # container would build a second image, from whatever the checkout held at that moment.
-    image: framework-api
+    # The same image the api runs, not the topology's `atlantis-api` default: the plugin processes
+    # must be the build the api itself was made from, or host and guests run different code.
+    image: ${DEV_IMAGE_API:-fromcode-dev-api}
     volumes:
       # This checkout's extension roots and data, at the container paths production names them by —
       # the topology's `../plugins` and `../data` are the deploy directory's, which a checkout lacks.
@@ -127,14 +136,26 @@ services:
       - ../../themes:/app/themes
       - ../../appearance:/app/appearance
 
+  # The platform's own edge. It builds the gateway target too, so without a tag of its own it is a
+  # sixth project-named image.
+  edge:
+    image: ${DEV_IMAGE_GATEWAY:-fromcode-dev-gateway}
+
+  # The site-scoped plugin processes. The topology's `atlantis-api` default is a DIFFERENT image from
+  # the api this checkout actually builds, so locally it must follow the same tag as the api and the
+  # extension host — otherwise the site guests run code the api never built.
+  site-extension-host:
+    image: ${DEV_IMAGE_API:-fromcode-dev-api}
+
   # The one-shot that writes the bundled superuser password runs the CLI. Locally the image is the
   # api's own build, whose baked package.json can predate the npm script name the topology calls, so
   # the CLI is run directly instead of through that script.
   db-secrets:
-    image: framework-api
+    image: ${DEV_IMAGE_API:-fromcode-dev-api}
     entrypoint: ["npx", "tsx", "packages/cli/src/bin.ts", "db", "init-bundled-superuser", "--file", "/run/fromcode-db/superuser.password"]
 
   admin:
+    image: ${DEV_IMAGE_ADMIN:-fromcode-dev-admin}
     build:
       args:
         - NEXT_PUBLIC_ADMIN_AI_ENABLED=${NEXT_PUBLIC_ADMIN_AI_ENABLED:-false}
@@ -154,6 +175,7 @@ services:
       - "traefik.http.services.fc-framework-admin.loadbalancer.server.port=3000"
 
   frontend:
+    image: ${DEV_IMAGE_FRONTEND:-fromcode-dev-frontend}
     volumes:
       - ../../themes:/app/themes:ro
       - ../../plugins:/app/plugins:ro

@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Инсталирани",
       "health": "Состојба",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Прегледај и одобри",
       "needsAttention": "Бара внимание",
       "needsReApproval": "Бара повторно одобрување",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Промена на можностите од одобрувањето: {{drift}}",
       "heldPendingReApprovalOf": "Задржан до повторно одобрување на променетите можности.",
       "approveEnable": "Одобри и вклучи",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Сите инсталирани приклучоци се веќе на најновата верзија од маркетот.",
       "updatingPlugin": "Преостануваат {{remaining}} — {{pluginSlug}} се ажурира на v{{version}}...",
       "pluginUpdateFailed": "Ажурирањето на {{pluginSlug}} не успеа: {{error}} — се продолжува со останатите.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Сите ажурирања ({{count}}) се инсталирани — API се рестартира за приклучоците што работат во него...",
       "allUpdatesReplaced": "Сите ажурирања ({{count}}) се инсталирани; процесот на секој приклучок е заменет на место.",
       "pluginReloaded": "Приклучокот „{{pluginSlug}}“ е заменет и неговиот процес е рестартиран со новиот код. Не е потребно рестартирање на API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Се применува ажурирањето...",
       "applySystemUpdate": "Да се примени системското ажурирање?",
       "youAreAboutToUpdate": "Ќе го ажурирате {{PRODUCT_NAME}} од v{{installedVersion}} на v{{latestVersion}}. Пред да се продолжи, автоматски ќе се создаде целосна системска резервна копија. Овој процес ќе ги презапише системските датотеки и може да предизвика привремен прекин на услугата додека серверот се рестартира.",
+      "youAreAboutToUpdateBesideRunning": "Претстои ажурирање на {{PRODUCT_NAME}} од v{{installedVersion}} на v{{latestVersion}}. Новата верзија се стартува покрај таа што работи; ако не се стартува, претходната продолжува да работи. Резервна копија не се создава автоматски — создајте ја претходно ако ви треба.",
       "noNotesWereWrittenFor": "За ова издание не се напишани белешки.",
       "recommendedUpdate": "v{{version}} Препорачано ажурирање",
       "installCore": "Инсталирај јадро v{{version}}",

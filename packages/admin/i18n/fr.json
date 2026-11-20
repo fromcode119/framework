@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installés",
       "health": "État",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Vérifier et approuver",
       "needsAttention": "Intervention requise",
       "needsReApproval": "Réapprobation requise",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Modification des capacités depuis l'approbation : {{drift}}",
       "heldPendingReApprovalOf": "En attente de réapprobation des capacités modifiées.",
       "approveEnable": "Approuver et activer",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Tous les plugins installés sont déjà à leur dernière version disponible sur la marketplace.",
       "updatingPlugin": "{{remaining}} restant(s) — mise à jour de {{pluginSlug}} vers la v{{version}}...",
       "pluginUpdateFailed": "Échec de la mise à jour de {{pluginSlug}} : {{error}} — poursuite avec les autres.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Les {{count}} mise(s) à jour sont installées — redémarrage de l’API pour le(s) plugin(s) qui s’y exécutent...",
       "allUpdatesReplaced": "Les {{count}} mise(s) à jour sont installées ; le processus de chaque plugin a été remplacé sur place.",
       "pluginReloaded": "Le plugin « {{pluginSlug}} » a été remplacé et son processus a redémarré sur le nouveau code. Aucun redémarrage de l’API n’est nécessaire.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Application de la mise à jour...",
       "applySystemUpdate": "Appliquer la mise à jour du système ?",
       "youAreAboutToUpdate": "Vous êtes sur le point de mettre à jour {{PRODUCT_NAME}} de la v{{installedVersion}} vers la v{{latestVersion}}. Une sauvegarde complète du système sera créée automatiquement au préalable. Cette opération écrasera des fichiers système et peut provoquer une interruption temporaire du service pendant le redémarrage du serveur.",
+      "youAreAboutToUpdateBesideRunning": "Vous êtes sur le point de mettre à jour {{PRODUCT_NAME}} de v{{installedVersion}} vers v{{latestVersion}}. La nouvelle version démarre à côté de celle en cours ; si elle ne démarre pas, la version précédente continue de fonctionner. Aucune sauvegarde n’est créée automatiquement — créez-en une au préalable si vous en avez besoin.",
       "noNotesWereWrittenFor": "Aucune note n'a été rédigée pour cette version.",
       "recommendedUpdate": "v{{version}} Mise à jour recommandée",
       "installCore": "Installer le cœur v{{version}}",

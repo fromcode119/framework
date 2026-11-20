@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installed",
       "health": "Health",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Review and approve",
       "needsAttention": "Needs attention",
       "needsReApproval": "Needs re-approval",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Capability change since approval: {{drift}}",
       "heldPendingReApprovalOf": "Held pending re-approval of changed capabilities.",
       "approveEnable": "Approve & enable",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Every installed plugin is already at its latest marketplace version.",
       "updatingPlugin": "{{remaining}} remaining — updating {{pluginSlug}} to v{{version}}...",
       "pluginUpdateFailed": "Update failed for {{pluginSlug}}: {{error}} — continuing with the rest.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "All {{count}} update(s) installed — restarting the API for the plugin(s) that run inside it...",
       "allUpdatesReplaced": "All {{count}} update(s) installed; each plugin's process was replaced in place.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" was replaced and its process restarted on the new code. No API restart needed.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Applying Update...",
       "applySystemUpdate": "Apply System Update?",
       "youAreAboutToUpdate": "You are about to update {{PRODUCT_NAME}} from v{{installedVersion}} to v{{latestVersion}}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.",
+      "youAreAboutToUpdateBesideRunning": "You are about to update {{PRODUCT_NAME}} from v{{installedVersion}} to v{{latestVersion}}. The new version starts beside the running one; if it does not start, the previous version keeps running. No backup is created automatically — create one first if you need it.",
       "noNotesWereWrittenFor": "No notes were written for this release.",
       "recommendedUpdate": "v{{version}} Recommended Update",
       "installCore": "Install Core v{{version}}",

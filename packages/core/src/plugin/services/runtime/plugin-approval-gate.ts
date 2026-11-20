@@ -93,7 +93,7 @@ export class PluginApprovalGate {
    * Stops a plugin that asks for more than it was approved for, and marks it held so the console shows
    * the approval it waits on. Active plugins that depend on it answer as if it were missing.
    */
-  async hold(slug: string, reason: PluginHeldReason): Promise<void> {
+  async hold(slug: string, reason: PluginHeldReason, notice?: { subject: string; text: string; logLine: string }): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) return;
     if (plugin.state === PluginState.ACTIVE) await this.teardown.disable(slug, { ignoreDependents: true });
@@ -101,6 +101,13 @@ export class PluginApprovalGate {
     plugin.heldReason = reason;
     plugin.healthStatus = PluginRegistryHealth.WARNING;
     await this.registry.markPluginHeld(slug, reason);
+    // A hold with a cause of its own (e.g. a too-old core) carries its own notice; the consent wording
+    // below is only right for an approval hold and would mislead for anything else.
+    if (notice) {
+      this.logger.warn(notice.logLine);
+      await this.notify(notice.subject, notice.text);
+      return;
+    }
     const missing = PluginConsentSet.missing(plugin.manifest, plugin.approvedCapabilities);
     this.logger.warn(`Plugin "${slug}" HELD for approval: it asks for ${missing.join(', ')}.`);
     await this.notify(

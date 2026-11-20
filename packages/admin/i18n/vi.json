@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Đã cài đặt",
       "health": "Tình trạng",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Xem xét và phê duyệt",
       "needsAttention": "Cần chú ý",
       "needsReApproval": "Cần phê duyệt lại",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Quyền hạn đã thay đổi kể từ khi phê duyệt: {{drift}}",
       "heldPendingReApprovalOf": "Bị tạm giữ chờ phê duyệt lại các quyền hạn đã thay đổi.",
       "approveEnable": "Phê duyệt và bật",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Tất cả plugin đã cài đều đang ở phiên bản mới nhất trên marketplace.",
       "updatingPlugin": "Còn {{remaining}} — đang cập nhật {{pluginSlug}} lên v{{version}}...",
       "pluginUpdateFailed": "Cập nhật {{pluginSlug}} thất bại: {{error}} — tiếp tục với các plugin còn lại.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Đã cài đặt toàn bộ {{count}} bản cập nhật — đang khởi động lại API cho các plugin chạy bên trong nó...",
       "allUpdatesReplaced": "Đã cài đặt toàn bộ {{count}} bản cập nhật; tiến trình của từng plugin đã được thay thế tại chỗ.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" đã được thay thế và tiến trình của nó đã khởi động lại với mã mới. Không cần khởi động lại API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Đang áp dụng cập nhật...",
       "applySystemUpdate": "Áp dụng cập nhật hệ thống?",
       "youAreAboutToUpdate": "Bạn sắp cập nhật {{PRODUCT_NAME}} từ v{{installedVersion}} lên v{{latestVersion}}. Một bản sao lưu toàn bộ hệ thống sẽ được tạo tự động trước khi tiến hành. Quá trình này sẽ ghi đè các tệp hệ thống và có thể gây gián đoạn dịch vụ tạm thời trong lúc máy chủ khởi động lại.",
+      "youAreAboutToUpdateBesideRunning": "Bạn sắp cập nhật {{PRODUCT_NAME}} từ v{{installedVersion}} lên v{{latestVersion}}. Phiên bản mới khởi động bên cạnh phiên bản đang chạy; nếu không khởi động được, phiên bản trước vẫn tiếp tục chạy. Bản sao lưu không được tạo tự động — hãy tạo trước nếu bạn cần.",
       "noNotesWereWrittenFor": "Không có ghi chú nào cho bản phát hành này.",
       "recommendedUpdate": "Bản cập nhật khuyến nghị v{{version}}",
       "installCore": "Cài đặt lõi v{{version}}",

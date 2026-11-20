@@ -34,7 +34,7 @@ export abstract class PluginManagerExtensions extends PluginManagerState {
   /** Update every installed plugin with a newer marketplace version — ONE restart at the end. */
   async updateAllFromMarketplace(
     options: { progressReporter?: IPluginInstallProgressReporter } = {},
-  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[] }> {
+  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[]; heldForCore?: { slug: string; version: string; required: string }[] }> {
     const outcome = await this.installation.updateAllFromMarketplace(options);
     // ONE refresh for the whole batch, and only when something actually changed on disk.
     if (outcome.updated.length) {

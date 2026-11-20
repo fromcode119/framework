@@ -51,8 +51,9 @@ const nextConfig = {
     remotePatterns: NextConfigEnvironment.getRemoteImagePatterns(),
   },
   webpack: (config: INextWebpackConfig, { dev, isServer }: INextWebpackContext) => {
-    // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above. `next dev` runs
-    // with --webpack, so without this the dev server would never see the generated route exports and
+    // [next-build-codegen + typescript-multiple-inheritance] Same build-time source contracts as the turbopack rules above, for a run
+    // started with `--webpack` (the dev server itself runs Turbopack, which held about half the memory:
+    // 0.7 GB against 1.4 GB on the same page). Without this such a run would never see the generated route exports and
     // `'use client'` directives — source declaring only `export class` would fail to resolve as a route.
     config.module.rules.unshift({
       // PRE loader, for the reason the admin's identical rule records: webpack runs pre-loaders before

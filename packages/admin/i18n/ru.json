@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Установленные",
       "health": "Состояние",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Проверить и одобрить",
       "needsAttention": "Требует внимания",
       "needsReApproval": "Требуется повторное одобрение",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Изменения разрешений с момента одобрения: {{drift}}",
       "heldPendingReApprovalOf": "Приостановлен до повторного одобрения изменённых разрешений.",
       "approveEnable": "Одобрить и включить",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Все установленные плагины уже обновлены до последней версии из маркетплейса.",
       "updatingPlugin": "Осталось: {{remaining}} — обновление {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Не удалось обновить {{pluginSlug}}: {{error}} — продолжаем с остальными.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Все обновления установлены ({{count}}) — перезапуск API для плагинов, работающих внутри него...",
       "allUpdatesReplaced": "Все обновления установлены ({{count}}); процесс каждого плагина заменён на месте.",
       "pluginReloaded": "Плагин «{{pluginSlug}}» заменён, его процесс перезапущен с новым кодом. Перезапуск API не требуется.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Установка обновления...",
       "applySystemUpdate": "Установить обновление системы?",
       "youAreAboutToUpdate": "Вы собираетесь обновить {{PRODUCT_NAME}} с v{{installedVersion}} до v{{latestVersion}}. Перед началом будет автоматически создана полная резервная копия системы. Системные файлы будут перезаписаны, а во время перезапуска сервера возможен временный перерыв в работе.",
+      "youAreAboutToUpdateBesideRunning": "Вы собираетесь обновить {{PRODUCT_NAME}} с v{{installedVersion}} до v{{latestVersion}}. Новая версия запускается рядом с работающей; если она не запустится, предыдущая версия продолжит работать. Резервная копия автоматически не создаётся — создайте её заранее, если она нужна.",
       "noNotesWereWrittenFor": "Для этого выпуска нет примечаний.",
       "recommendedUpdate": "v{{version}} · рекомендуемое обновление",
       "installCore": "Установить ядро v{{version}}",

@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Nainštalované",
       "health": "Stav",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Skontrolovať a schváliť",
       "needsAttention": "Vyžaduje pozornosť",
       "needsReApproval": "Vyžaduje opätovné schválenie",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Zmena oprávnení od schválenia: {{drift}}",
       "heldPendingReApprovalOf": "Pozastavené do opätovného schválenia zmenených oprávnení.",
       "approveEnable": "Schváliť a zapnúť",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Všetky nainštalované pluginy už majú najnovšiu verziu z marketplace.",
       "updatingPlugin": "Zostáva: {{remaining}} — {{pluginSlug}} sa aktualizuje na v{{version}}...",
       "pluginUpdateFailed": "Aktualizácia {{pluginSlug}} zlyhala: {{error}} — pokračuje sa so zvyškom.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Všetky aktualizácie ({{count}}) sú nainštalované — API sa reštartuje kvôli pluginom, ktoré v ňom bežia...",
       "allUpdatesReplaced": "Všetky aktualizácie ({{count}}) sú nainštalované; proces každého pluginu bol nahradený za chodu.",
       "pluginReloaded": "Plugin „{{pluginSlug}}“ bol nahradený a jeho proces sa reštartoval s novým kódom. Reštart API nie je potrebný.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Aplikuje sa aktualizácia...",
       "applySystemUpdate": "Aplikovať aktualizáciu systému?",
       "youAreAboutToUpdate": "Chystáte sa aktualizovať {{PRODUCT_NAME}} z v{{installedVersion}} na v{{latestVersion}}. Pred pokračovaním sa automaticky vytvorí úplná záloha systému. Tento proces prepíše systémové súbory a počas reštartu servera môže spôsobiť dočasný výpadok služby.",
+      "youAreAboutToUpdateBesideRunning": "Chystáte sa aktualizovať {{PRODUCT_NAME}} z v{{installedVersion}} na v{{latestVersion}}. Nová verzia sa spustí vedľa bežiacej; ak sa nespustí, predchádzajúca verzia beží ďalej. Záloha sa nevytvára automaticky — ak ju potrebujete, vytvorte ju vopred.",
       "noNotesWereWrittenFor": "K tomuto vydaniu neboli napísané žiadne poznámky.",
       "recommendedUpdate": "v{{version}} Odporúčaná aktualizácia",
       "installCore": "Nainštalovať jadro v{{version}}",

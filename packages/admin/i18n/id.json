@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Terpasang",
       "health": "Kesehatan",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Tinjau dan setujui",
       "needsAttention": "Perlu perhatian",
       "needsReApproval": "Perlu persetujuan ulang",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Perubahan kapabilitas sejak disetujui: {{drift}}",
       "heldPendingReApprovalOf": "Ditahan menunggu persetujuan ulang atas kapabilitas yang berubah.",
       "approveEnable": "Setujui & aktifkan",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Semua plugin yang terpasang sudah menggunakan versi marketplace terbaru.",
       "updatingPlugin": "{{remaining}} tersisa — memperbarui {{pluginSlug}} ke v{{version}}...",
       "pluginUpdateFailed": "Pembaruan {{pluginSlug}} gagal: {{error}} — melanjutkan dengan yang lain.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Semua {{count}} pembaruan terpasang — memulai ulang API untuk plugin yang berjalan di dalamnya...",
       "allUpdatesReplaced": "Semua {{count}} pembaruan terpasang; proses setiap plugin diganti di tempat.",
       "pluginReloaded": "Plugin \"{{pluginSlug}}\" telah diganti dan prosesnya dimulai ulang dengan kode baru. API tidak perlu dimulai ulang.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Menerapkan Pembaruan...",
       "applySystemUpdate": "Terapkan Pembaruan Sistem?",
       "youAreAboutToUpdate": "Anda akan memperbarui {{PRODUCT_NAME}} dari v{{installedVersion}} ke v{{latestVersion}}. Cadangan sistem lengkap akan dibuat secara otomatis sebelum melanjutkan. Proses ini akan menimpa file sistem dan dapat menyebabkan gangguan layanan sementara saat server dimulai ulang.",
+      "youAreAboutToUpdateBesideRunning": "Anda akan memperbarui {{PRODUCT_NAME}} dari v{{installedVersion}} ke v{{latestVersion}}. Versi baru dijalankan di samping versi yang sedang berjalan; jika tidak berhasil dijalankan, versi sebelumnya tetap berjalan. Cadangan tidak dibuat secara otomatis — buat terlebih dahulu jika Anda membutuhkannya.",
       "noNotesWereWrittenFor": "Tidak ada catatan untuk rilis ini.",
       "recommendedUpdate": "v{{version}} Pembaruan yang Disarankan",
       "installCore": "Pasang Inti v{{version}}",

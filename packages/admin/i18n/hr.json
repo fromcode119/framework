@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Instalirano",
       "health": "Stanje",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Pregledaj i odobri",
       "needsAttention": "Potrebna pažnja",
       "needsReApproval": "Potrebno ponovno odobrenje",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Promjena mogućnosti od odobrenja: {{drift}}",
       "heldPendingReApprovalOf": "Zadržano do ponovnog odobrenja promijenjenih mogućnosti.",
       "approveEnable": "Odobri i omogući",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Svi instalirani dodaci već su na najnovijoj verziji s tržnice.",
       "updatingPlugin": "Preostalo: {{remaining}} — ažuriranje {{pluginSlug}} na v{{version}}...",
       "pluginUpdateFailed": "Ažuriranje nije uspjelo za {{pluginSlug}}: {{error}} — nastavlja se s ostalima.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Instalirana su sva ažuriranja ({{count}}) — ponovno pokretanje API-ja za dodatke koji rade unutar njega...",
       "allUpdatesReplaced": "Instalirana su sva ažuriranja ({{count}}); proces svakog dodatka zamijenjen je na mjestu.",
       "pluginReloaded": "Dodatak \"{{pluginSlug}}\" je zamijenjen, a njegov proces ponovno pokrenut s novim kodom. Ponovno pokretanje API-ja nije potrebno.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Primjena ažuriranja...",
       "applySystemUpdate": "Primijeniti ažuriranje sustava?",
       "youAreAboutToUpdate": "Ažurirat ćete {{PRODUCT_NAME}} s v{{installedVersion}} na v{{latestVersion}}. Prije nastavka automatski će se izraditi potpuna sigurnosna kopija sustava. Ovaj postupak prepisat će sistemske datoteke i može uzrokovati privremeni prekid usluge dok se poslužitelj ponovno pokreće.",
+      "youAreAboutToUpdateBesideRunning": "Upravo ćete ažurirati {{PRODUCT_NAME}} s v{{installedVersion}} na v{{latestVersion}}. Nova verzija pokreće se uz onu koja radi; ako se ne pokrene, prethodna verzija nastavlja raditi. Sigurnosna kopija ne stvara se automatski — izradite je prije ako vam je potrebna.",
       "noNotesWereWrittenFor": "Za ovo izdanje nisu napisane bilješke.",
       "recommendedUpdate": "v{{version}} Preporučeno ažuriranje",
       "installCore": "Instaliraj jezgru v{{version}}",

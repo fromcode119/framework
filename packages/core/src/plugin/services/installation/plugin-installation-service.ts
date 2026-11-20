@@ -19,6 +19,8 @@ import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { InstalledPluginManifestService } from '@core/plugin/services/installation/installed-plugin-manifest-service';
 import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
 import { PluginInstallRollback } from '@core/plugin/services/installation/plugin-install-rollback';
+import { PluginCoreCompatibility } from '@core/plugin/services/runtime/plugin-core-compatibility';
+import { PluginCoreIncompatibleError } from '@core/plugin/services/installation/plugin-core-incompatible-error';
 
 export class PluginInstallationService {
   constructor(
@@ -44,6 +46,8 @@ export class PluginInstallationService {
     private readonly holdIfUnapproved: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
     /** A renamed plugin takes over its old name's data before its first migration (PluginSuccessionService). */
     private readonly adoptPredecessors: (manifest: IPluginManifest, pluginPath: string) => Promise<unknown> = async () => undefined,
+    /** The core version this installation runs. Lazy by default to keep the engine out of the module graph (no cycle). */
+    private readonly coreVersion: () => string | Promise<string> = async () => (await import('@core/management/system-update-service')).SystemUpdateService.installedVersion(),
   ) {
     this.migrations = new PluginMigrationRunner(migrationManager, migrationDatabaseFor);
     this.rollback = new PluginInstallRollback(pluginsRoot, logger);
@@ -63,6 +67,14 @@ export class PluginInstallationService {
     const pkg = await this.marketplace.getPluginInfo(slug, options.version);
     if (!pkg) {
       throw new Error(`Plugin "${slug}"${options.version ? ` v${options.version}` : ''} not found in marketplace.`);
+    }
+
+    // Refuse a version this installation's core cannot run BEFORE anything is backed up or downloaded,
+    // so the working version keeps running. A plugin whose UI imports something a newer core added would
+    // otherwise install and then fail to load its whole bundle (plugin auto-update outran the core).
+    const compatibility = PluginCoreCompatibility.check({ engines: pkg.engines }, String(await this.coreVersion()));
+    if (!compatibility.ok) {
+      throw new PluginCoreIncompatibleError(slug, compatibility, PluginCoreCompatibility.message(slug, compatibility));
     }
 
     options.progressReporter?.({ phase: 'resolving-marketplace-package', message: `Checking marketplace package for "${slug}"...`, messageKey: 'checkingMarketplacePackage', messageParams: { pluginSlug: slug }, pluginSlug: slug });
@@ -123,19 +135,34 @@ export class PluginInstallationService {
    */
   async updateAllFromMarketplace(
     options: { progressReporter?: IPluginInstallProgressReporter } = {},
-  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[] }> {
+  ): Promise<{ updated: string[]; failed: { slug: string; error: string }[]; heldForCore: { slug: string; version: string; required: string }[] }> {
     const catalog = await this.marketplace.fetchCatalog();
-    const updates = (catalog || []).filter((entry) => {
+    const newer = (catalog || []).filter((entry) => {
       const installed = this.plugins.get(entry.slug);
       return Boolean(installed && VersionComparisonService.isGreater(entry.version, installed.manifest?.version));
     });
+
+    // Leave behind every newer version this core cannot run: taking it would replace the working plugin
+    // with one whose bundle fails to load. The operator updates the core, then these land on the next run.
+    const running = String(await this.coreVersion());
+    const updates: typeof newer = [];
+    const heldForCore: { slug: string; version: string; required: string }[] = [];
+    for (const entry of newer) {
+      const compatibility = PluginCoreCompatibility.check({ engines: entry.engines }, running);
+      if (compatibility.ok) updates.push(entry);
+      else heldForCore.push({ slug: entry.slug, version: entry.version, required: compatibility.required || '' });
+    }
+    for (const held of heldForCore) {
+      this.logger.warn(`Update for "${held.slug}" to v${held.version} held back: it needs core ${held.required}, this installation runs ${running}.`);
+      options.progressReporter?.({ phase: 'plugin-held', message: `${held.slug} v${held.version} needs core ${held.required} — held back until the core is updated.`, messageKey: 'pluginUpdateHeldForCore', messageParams: { pluginSlug: held.slug, version: held.version, required: held.required }, pluginSlug: held.slug });
+    }
 
     const updated: string[] = [];
     const failed: { slug: string; error: string }[] = [];
 
     if (!updates.length) {
       options.progressReporter?.({ phase: 'completed', message: 'Every installed plugin is already at its latest marketplace version.', messageKey: 'allUpToDate', pluginSlug: 'all' });
-      return { updated, failed };
+      return { updated, failed, heldForCore };
     }
 
     for (const [index, entry] of updates.entries()) {
@@ -163,7 +190,7 @@ export class PluginInstallationService {
       options.progressReporter?.({ phase: 'completed', message: `All ${updated.length} update(s) installed; each plugin's process was replaced in place.`, messageKey: 'allUpdatesReplaced', messageParams: { count: updated.length }, pluginSlug: 'all' });
     }
 
-    return { updated, failed };
+    return { updated, failed, heldForCore };
   }
 
   async finalizeInstalledPlugin(

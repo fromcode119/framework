@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "מותקנים",
       "health": "תקינות",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "בדיקה ואישור",
       "needsAttention": "דורש תשומת לב",
       "needsReApproval": "דורש אישור מחדש",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "שינוי ביכולות מאז האישור: {{drift}}",
       "heldPendingReApprovalOf": "מושהה עד לאישור מחדש של היכולות שהשתנו.",
       "approveEnable": "אישור והפעלה",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "כל התוספים המותקנים כבר בגרסה העדכנית ביותר שלהם בחנות.",
       "updatingPlugin": "נותרו {{remaining}} — מעדכן את {{pluginSlug}} לגרסה v{{version}}...",
       "pluginUpdateFailed": "העדכון של {{pluginSlug}} נכשל: {{error}} — ממשיך עם השאר.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "כל {{count}} העדכונים הותקנו — מפעיל מחדש את ה-API עבור התוספים שפועלים בתוכו...",
       "allUpdatesReplaced": "כל {{count}} העדכונים הותקנו; התהליך של כל תוסף הוחלף במקומו.",
       "pluginReloaded": "התוסף \"{{pluginSlug}}\" הוחלף והתהליך שלו הופעל מחדש עם הקוד החדש. אין צורך להפעיל מחדש את ה-API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "מחיל עדכון...",
       "applySystemUpdate": "להחיל את עדכון המערכת?",
       "youAreAboutToUpdate": "פעולה זו תעדכן את {{PRODUCT_NAME}} מגרסה v{{installedVersion}} לגרסה v{{latestVersion}}. לפני ההמשך ייווצר אוטומטית גיבוי מלא של המערכת. התהליך ידרוס קובצי מערכת ועלול לגרום להפרעה זמנית בשירות בזמן שהשרת מופעל מחדש.",
+      "youAreAboutToUpdateBesideRunning": "אתם עומדים לעדכן את {{PRODUCT_NAME}} מ-v{{installedVersion}} ל-v{{latestVersion}}. הגרסה החדשה מופעלת לצד הגרסה הפועלת; אם היא לא תופעל, הגרסה הקודמת תמשיך לפעול. גיבוי אינו נוצר אוטומטית — צרו גיבוי מראש אם אתם זקוקים לו.",
       "noNotesWereWrittenFor": "לא נכתבו הערות לגרסה זו.",
       "recommendedUpdate": "v{{version}} עדכון מומלץ",
       "installCore": "התקנת ליבה v{{version}}",

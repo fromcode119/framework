@@ -41,6 +41,31 @@ describe('PluginEntityRegistrationService.refreshOwnCollection', () => {
     expect((existing.fields[0] as any).localized).toBe(true);
   });
 
+  it('drops a field the owner USED to declare and no longer does, and keeps the extension beside it', () => {
+    const service = new PluginEntityRegistrationService();
+    // As at registration: the owner's declaration is marked, the extension joins through the merge.
+    const owned = service.applyFrameworkFields({
+      slug: 'products', admin: {},
+      fields: [{ name: 'name', type: 'text' }, { name: 'price', type: 'number' }, { name: 'onTheStorefront', type: 'boolean' }],
+    } as any);
+    service.mergeCollectionFields(owned, service.applyFrameworkFields({ slug: 'products', admin: {}, fields: [{ name: 'origin', type: 'text' }] } as any));
+    expect(owned.fields.map((field: any) => field.name)).toEqual(['name', 'price', 'onTheStorefront', 'origin']);
+
+    // The release that removed the control.
+    service.refreshOwnCollection(owned, service.applyFrameworkFields({
+      slug: 'products', admin: {},
+      fields: [{ name: 'name', type: 'text' }, { name: 'price', type: 'number' }],
+    } as any));
+    expect(owned.fields.map((field: any) => field.name)).toEqual(['name', 'price', 'origin']);
+  });
+
+  it('keeps a field of unknown provenance — only what the owner declared is its to drop', () => {
+    const service = new PluginEntityRegistrationService();
+    const existing = registered();
+    service.refreshOwnCollection(existing, { slug: 'products', admin: {}, fields: [{ name: 'name', type: 'text' }] } as any);
+    expect(existing.fields.map((field: any) => field.name)).toEqual(['name', 'price', 'origin']);
+  });
+
   it('puts a field the release adds where the release declares it', () => {
     const existing = registered();
     new PluginEntityRegistrationService().refreshOwnCollection(existing, {

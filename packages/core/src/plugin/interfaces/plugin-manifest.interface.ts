@@ -44,6 +44,15 @@ export interface IPluginManifest {
   // Dependencies
   dependencies?: Record<string, string>; // pluginSlug -> semver
   peerDependencies?: Record<string, string>;
+
+  /**
+   * The platform versions this build needs. `core` is a semver RANGE (e.g. ">=0.2.603"): the plugin is
+   * refused — on update and at boot — where the running core does not satisfy it, instead of installing
+   * against an older core and failing with a broken bundle (`PluginCoreCompatibility`). Omitted means
+   * "any core" — older plugins predate the field. Stamped by the extension release workflow from the
+   * SDK the plugin was built against; raise it by hand only to require more.
+   */
+  engines?: { core?: string };
   
   // Capabilities & Permissions
   /**

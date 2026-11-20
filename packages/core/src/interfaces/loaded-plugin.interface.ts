@@ -32,6 +32,12 @@ export interface ILoadedPlugin extends IFromcodePlugin {
   registrationDeferred?: { isFreshInstall: boolean; savedVersion?: string };
   error?: string; // Error message when state is PluginState.ERROR
   /**
+   * Its code never loaded (the scan or the registration failed): this record is only the manifest,
+   * with no module, no collections and no hooks behind it. Enabling it cannot run anything — it has to
+   * be LOADED again first, or it would report ACTIVE while serving nothing ("collection not found").
+   */
+  loadFailed?: boolean;
+  /**
    * The platform switched it off while it ran (a crash loop, a resource limit, a violation) — not a
    * load that failed. A rescan retries a plugin that failed to load; it must not restart this one, or
    * opening the Plugins page would bring back what was just stopped. Cleared when it is enabled again.

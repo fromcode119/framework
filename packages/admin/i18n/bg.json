@@ -1095,6 +1095,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Инсталирани",
       "health": "Състояние",
@@ -1404,6 +1418,7 @@
       "reApproveAllHeld": "Прегледай и одобри",
       "needsAttention": "Изисква внимание",
       "needsReApproval": "Нужно е повторно одобрение",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Промяна в правата след одобрението: {{drift}}",
       "heldPendingReApprovalOf": "Задържан до повторно одобрение на променените права.",
       "approveEnable": "Одобри и включи",
@@ -1744,6 +1759,7 @@
       "allUpToDate": "Всички инсталирани плъгини вече са на последната си версия.",
       "updatingPlugin": "Остават {{remaining}} — обновяване на {{pluginSlug}} до v{{version}}...",
       "pluginUpdateFailed": "Обновяването на {{pluginSlug}} не успя: {{error}} — продължава с останалите.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Всички обновления ({{count}}) са инсталирани — API се рестартира заради плъгините, които работят в него...",
       "allUpdatesReplaced": "Всички обновления ({{count}}) са инсталирани; процесът на всеки плъгин е подменен на място.",
       "pluginReloaded": "Плъгинът „{{pluginSlug}}“ е подменен и процесът му е рестартиран с новия код. Не е нужен рестарт на API.",
@@ -3166,6 +3182,7 @@
       "applyingUpdate": "Прилагане на обновлението...",
       "applySystemUpdate": "Да се приложи ли системното обновление?",
       "youAreAboutToUpdate": "Предстои обновяване на {{PRODUCT_NAME}} от v{{installedVersion}} до v{{latestVersion}}. Преди това автоматично ще се създаде пълен системен архив. Процесът презаписва системните файлове и може да прекъсне временно работата, докато сървърът се рестартира.",
+      "youAreAboutToUpdateBesideRunning": "Предстои обновяване на {{PRODUCT_NAME}} от v{{installedVersion}} до v{{latestVersion}}. Новата версия се стартира до работещата; ако не стартира, предишната продължава да работи. Архив не се създава автоматично — създайте го предварително, ако ви трябва.",
       "noNotesWereWrittenFor": "За тази версия няма бележки.",
       "recommendedUpdate": "v{{version}} Препоръчително обновление",
       "installCore": "Инсталирай ядро v{{version}}",

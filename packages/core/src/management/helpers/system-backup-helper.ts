@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import * as tar from 'tar';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import { BackupArchivePathService } from '@core/management/helpers/backup-archive-path-service';
 
@@ -50,6 +51,54 @@ export class SystemBackupHelper {
     });
   }
 
+  /**
+   * Writes the archive and answers with the entries it had to leave out as unreadable. An archive that
+   * fails part-way is removed: half of one would sit in the list as if it were a backup.
+   */
+  static async writeArchive(rootDir: string, backupPath: string, entries: string[], excludePaths?: string[]): Promise<string[]> {
+    const unreadable: string[] = [];
+    try {
+      await tar.create(
+        {
+          filter: (entryPath, stat) => !BackupArchivePathService.isArchivePathExcluded(String(entryPath || ''), excludePaths)
+            && SystemBackupHelper.isReadableEntry(rootDir, String(entryPath || ''), stat as fs.Stats, unreadable),
+          gzip: true,
+          file: backupPath,
+          cwd: rootDir,
+        },
+        entries,
+      );
+    } catch (error) {
+      fs.rmSync(backupPath, { force: true });
+      throw error;
+    }
+    return unreadable;
+  }
+
+  /**
+   * Whether the archive can take this entry. A directory or file the server's own user may not read
+   * used to stop the whole archive part-way (`EACCES ... scandir`); it is left out instead and
+   * recorded in `unreadable`, so the finished backup names what it does not hold.
+   */
+  static isReadableEntry(rootDir: string, entryPath: string, stat: { isDirectory(): boolean; isFile(): boolean } | undefined, unreadable: string[]): boolean {
+    if (!stat || (!stat.isDirectory() && !stat.isFile())) return true;
+    try {
+      fs.accessSync(path.resolve(rootDir, entryPath), stat.isDirectory() ? fs.constants.R_OK | fs.constants.X_OK : fs.constants.R_OK);
+      return true;
+    } catch {
+      unreadable.push(entryPath);
+      return false;
+    }
+  }
+
+  /** The warning for entries left out as unreadable, or nothing when the archive holds everything. */
+  static unreadableWarnings(unreadable: string[]): string[] {
+    if (!unreadable.length) return [];
+    const shown = unreadable.slice(0, 20).join(', ');
+    const more = unreadable.length > 20 ? ` and ${unreadable.length - 20} more` : '';
+    return [`Left out of the backup because the server cannot read them: ${shown}${more}.`];
+  }
+
   static resolveIncludedSections(
     requestedSections: BackupSectionKey[],
     rootEntries: string[],
@@ -74,8 +123,29 @@ export class SystemBackupHelper {
     return includedSections;
   }
 
+  private static readonly TEMPORARY_DATABASE_PREFIX = 'database-backup-';
+
+  /**
+   * The path, relative to the project root, the archive takes the database dump from.
+   *
+   * A dump already inside the project root (the backups folder normally is) is archived where it lies.
+   * It used to be copied into the root first, and on an installation that runs from a published image
+   * the root is not writable by the server's user — so the copy failed and every archive was written
+   * without its database. Only a dump kept outside the root still needs the copy.
+   */
+  static databaseArchiveEntry(rootDir: string, dbDumpPath: string, timestamp: string): string {
+    const relative = path.relative(rootDir, dbDumpPath);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return relative.split(path.sep).join('/');
+    }
+    const temporary = `${SystemBackupHelper.TEMPORARY_DATABASE_PREFIX}${timestamp}${path.extname(dbDumpPath)}`;
+    fs.copyFileSync(dbDumpPath, path.join(rootDir, temporary));
+    return temporary;
+  }
+
+  /** Removes the copy `databaseArchiveEntry` made in the root — never a dump archived where it lay. */
   static cleanupTemporaryDatabaseEntry(rootDir: string, tempDbFile: string | null): void {
-    if (!tempDbFile) {
+    if (!tempDbFile || tempDbFile.includes('/') || !tempDbFile.startsWith(SystemBackupHelper.TEMPORARY_DATABASE_PREFIX)) {
       return;
     }
 
@@ -90,7 +160,7 @@ export class SystemBackupHelper {
 
     const files = fs.readdirSync(databaseDir)
       .filter((fileName) =>
-        (fileName.startsWith('db-dump-') && fileName.endsWith('.sql'))
+        (fileName.startsWith('db-dump-') && (fileName.endsWith('.sql') || fileName.endsWith('.sql.gz')))
         || (fileName.startsWith('db-copy-') && fileName.endsWith('.db')),
       )
       .map((fileName) => ({

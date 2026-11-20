@@ -28,6 +28,7 @@ export class PluginsLayout extends AdminComponent {
     return [
       { label: AdminI18n.t('plugins.detail.installed'), href: AdminConstants.ROUTES.PLUGINS.INSTALLED },
       { label: AdminI18n.t('plugins.detail.health'), href: AdminConstants.ROUTES.PLUGINS.HEALTH },
+      { label: AdminI18n.t('plugins.events.title'), href: AdminConstants.ROUTES.PLUGINS.EVENTS },
       { label: AdminI18n.t('plugins.detail.marketplace'), href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE },
     ];
   }

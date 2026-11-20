@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Instalados",
       "health": "Estado",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Revisar e aprovar",
       "needsAttention": "Requer atenção",
       "needsReApproval": "Requer reaprovação",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Alteração de capacidades desde a aprovação: {{drift}}",
       "heldPendingReApprovalOf": "Retido aguardando reaprovação das capacidades alteradas.",
       "approveEnable": "Aprovar e ativar",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Todos os plugins instalados já estão na versão mais recente do marketplace.",
       "updatingPlugin": "{{remaining}} restante(s) — a atualizar {{pluginSlug}} para v{{version}}...",
       "pluginUpdateFailed": "A atualização de {{pluginSlug}} falhou: {{error}} — a continuar com os restantes.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Todas as {{count}} atualização(ões) instaladas — a reiniciar a API para o(s) plugin(s) que nela são executados...",
       "allUpdatesReplaced": "Todas as {{count}} atualização(ões) instaladas; o processo de cada plugin foi substituído no local.",
       "pluginReloaded": "O plugin \"{{pluginSlug}}\" foi substituído e o seu processo reiniciado com o novo código. Não é necessário reiniciar a API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "A aplicar a atualização...",
       "applySystemUpdate": "Aplicar a atualização do sistema?",
       "youAreAboutToUpdate": "Está prestes a atualizar o {{PRODUCT_NAME}} de v{{installedVersion}} para v{{latestVersion}}. Será criada automaticamente uma cópia de segurança completa do sistema antes de prosseguir. Este processo substituirá ficheiros do sistema e poderá causar uma interrupção temporária do serviço enquanto o servidor reinicia.",
+      "youAreAboutToUpdateBesideRunning": "Está prestes a atualizar {{PRODUCT_NAME}} de v{{installedVersion}} para v{{latestVersion}}. A nova versão inicia ao lado da que está em execução; se não iniciar, a versão anterior continua a funcionar. Nenhuma cópia de segurança é criada automaticamente — crie uma antes, se precisar.",
       "noNotesWereWrittenFor": "Não foram escritas notas para esta versão.",
       "recommendedUpdate": "v{{version}} Atualização recomendada",
       "installCore": "Instalar núcleo v{{version}}",

@@ -233,7 +233,7 @@ export class UpdatesPage extends AdminComponent {
             onConfirm={this.handleUpdate}
             isLoading={updating}
             title={AdminI18n.t('settings.updates.applySystemUpdate')}
-            description={AdminI18n.t('settings.updates.youAreAboutToUpdate', { PRODUCT_NAME: AppEnv.PRODUCT_NAME, installedVersion: installedVersion, latestVersion: latestVersion })}
+            description={AdminI18n.t(this.canApplyInPlace ? 'settings.updates.youAreAboutToUpdate' : 'settings.updates.youAreAboutToUpdateBesideRunning', { PRODUCT_NAME: AppEnv.PRODUCT_NAME, installedVersion: installedVersion, latestVersion: latestVersion })}
           />
         </div>
       </div>

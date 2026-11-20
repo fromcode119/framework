@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Asennetut",
       "health": "Kunto",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Tarkista ja hyväksy",
       "needsAttention": "Vaatii huomiota",
       "needsReApproval": "Vaatii uudelleenhyväksynnän",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Oikeuksien muutos hyväksynnän jälkeen: {{drift}}",
       "heldPendingReApprovalOf": "Pysäytetty, kunnes muuttuneet oikeudet hyväksytään uudelleen.",
       "approveEnable": "Hyväksy ja ota käyttöön",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Kaikki asennetut lisäosat ovat jo kauppapaikan uusimmassa versiossa.",
       "updatingPlugin": "{{remaining}} jäljellä — päivitetään {{pluginSlug}} versioon v{{version}}...",
       "pluginUpdateFailed": "Lisäosan {{pluginSlug}} päivitys epäonnistui: {{error}} — jatketaan muiden kanssa.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Kaikki {{count}} päivitystä asennettu — käynnistetään API uudelleen sen sisällä toimivia lisäosia varten...",
       "allUpdatesReplaced": "Kaikki {{count}} päivitystä asennettu; kunkin lisäosan prosessi korvattiin paikallaan.",
       "pluginReloaded": "Lisäosa \"{{pluginSlug}}\" korvattiin ja sen prosessi käynnistettiin uudelleen uudella koodilla. API:n uudelleenkäynnistystä ei tarvita.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Asennetaan päivitystä...",
       "applySystemUpdate": "Asennetaanko järjestelmäpäivitys?",
       "youAreAboutToUpdate": "Olet päivittämässä {{PRODUCT_NAME}}:n versiosta v{{installedVersion}} versioon v{{latestVersion}}. Täydellinen järjestelmän varmuuskopio luodaan automaattisesti ennen jatkamista. Toiminto korvaa järjestelmätiedostoja ja voi aiheuttaa tilapäisen palvelukatkon palvelimen käynnistyessä uudelleen.",
+      "youAreAboutToUpdateBesideRunning": "Olet päivittämässä tuotetta {{PRODUCT_NAME}} versiosta v{{installedVersion}} versioon v{{latestVersion}}. Uusi versio käynnistyy käynnissä olevan rinnalle; jos se ei käynnisty, edellinen versio jatkaa toimintaa. Varmuuskopiota ei luoda automaattisesti — luo se ensin, jos tarvitset sitä.",
       "noNotesWereWrittenFor": "Tälle julkaisulle ei ole kirjoitettu julkaisutietoja.",
       "recommendedUpdate": "v{{version}} – suositeltu päivitys",
       "installCore": "Asenna ydin v{{version}}",

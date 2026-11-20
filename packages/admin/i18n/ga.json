@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Suiteáilte",
       "health": "Sláinte",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Athbhreithnigh agus ceadaigh",
       "needsAttention": "Aird ag teastáil",
       "needsReApproval": "Athcheadú ag teastáil",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Athrú cumais ón gceadú: {{drift}}",
       "heldPendingReApprovalOf": "Coinnithe go dtí go n-athcheadófar na cumais athraithe.",
       "approveEnable": "Ceadaigh agus cumasaigh",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Tá gach breiseán suiteáilte ag an leagan is déanaí sa mhargadh cheana féin.",
       "updatingPlugin": "{{remaining}} fágtha — {{pluginSlug}} á nuashonrú go v{{version}}...",
       "pluginUpdateFailed": "Theip ar an nuashonrú do {{pluginSlug}}: {{error}} — ag leanúint leis an gcuid eile.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Suiteáladh gach nuashonrú ({{count}}) — an API á atosú do na breiseáin a ritheann laistigh de...",
       "allUpdatesReplaced": "Suiteáladh gach nuashonrú ({{count}}); athsholáthraíodh próiseas gach breiseáin ina áit.",
       "pluginReloaded": "Athsholáthraíodh an breiseán \"{{pluginSlug}}\" agus atosaíodh a phróiseas ar an gcód nua. Níl gá an API a atosú.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Nuashonrú á chur i bhfeidhm...",
       "applySystemUpdate": "An bhfuil fonn ort an nuashonrú córais a chur i bhfeidhm?",
       "youAreAboutToUpdate": "Tá tú ar tí {{PRODUCT_NAME}} a nuashonrú ó v{{installedVersion}} go v{{latestVersion}}. Cruthófar cúltaca iomlán den chóras go huathoibríoch roimh dul ar aghaidh. Scríobhfaidh an próiseas seo thar chomhaid an chórais agus d'fhéadfadh sé cur isteach sealadach a dhéanamh ar an tseirbhís fad a atosaíonn an freastalaí.",
+      "youAreAboutToUpdateBesideRunning": "Tá tú ar tí {{PRODUCT_NAME}} a nuashonrú ó v{{installedVersion}} go v{{latestVersion}}. Tosaíonn an leagan nua taobh leis an gceann atá ar siúl; mura dtosaíonn sé, leanann an leagan roimhe ag obair. Ní chruthaítear cúltaca go huathoibríoch — cruthaigh ceann ar dtús más gá duit é.",
       "noNotesWereWrittenFor": "Níor scríobhadh aon nótaí don eisiúint seo.",
       "recommendedUpdate": "v{{version}} Nuashonrú Molta",
       "installCore": "Suiteáil an Croí v{{version}}",

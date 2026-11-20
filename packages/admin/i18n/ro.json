@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Instalate",
       "health": "Stare",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Verifică și aprobă",
       "needsAttention": "Necesită atenție",
       "needsReApproval": "Necesită reaprobare",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Modificare de capabilități de la aprobare: {{drift}}",
       "heldPendingReApprovalOf": "Reținut până la reaprobarea capabilităților modificate.",
       "approveEnable": "Aprobă și activează",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Toate pluginurile instalate au deja cea mai recentă versiune din marketplace.",
       "updatingPlugin": "{{remaining}} rămase — se actualizează {{pluginSlug}} la v{{version}}...",
       "pluginUpdateFailed": "Actualizarea {{pluginSlug}} a eșuat: {{error}} — se continuă cu restul.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Toate cele {{count}} actualizări au fost instalate — se repornește API-ul pentru pluginurile care rulează în interiorul lui...",
       "allUpdatesReplaced": "Toate cele {{count}} actualizări au fost instalate; procesul fiecărui plugin a fost înlocuit pe loc.",
       "pluginReloaded": "Pluginul „{{pluginSlug}}” a fost înlocuit, iar procesul său a repornit cu noul cod. Nu este necesară repornirea API-ului.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Se aplică actualizarea...",
       "applySystemUpdate": "Aplicați actualizarea de sistem?",
       "youAreAboutToUpdate": "Urmează să actualizați {{PRODUCT_NAME}} de la v{{installedVersion}} la v{{latestVersion}}. Înainte de a continua, se va crea automat un backup complet al sistemului. Acest proces va suprascrie fișierele de sistem și poate cauza o întrerupere temporară a serviciului în timp ce serverul repornește.",
+      "youAreAboutToUpdateBesideRunning": "Urmează să actualizați {{PRODUCT_NAME}} de la v{{installedVersion}} la v{{latestVersion}}. Noua versiune pornește alături de cea care rulează; dacă nu pornește, versiunea anterioară continuă să funcționeze. Nu se creează automat nicio copie de rezervă — creați una înainte, dacă aveți nevoie.",
       "noNotesWereWrittenFor": "Nu au fost scrise note pentru această versiune.",
       "recommendedUpdate": "v{{version}} Actualizare recomandată",
       "installCore": "Instalează nucleul v{{version}}",

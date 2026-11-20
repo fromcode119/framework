@@ -76,9 +76,12 @@ export class InstalledPluginCard extends PureReactor {
     } else if (plugin.healthStatus === PluginRegistryHealth.ERROR) {
       out.push(<Badge key="s" variant={BadgeVariant.DANGER}>{AdminI18n.t('plugins.detail.security')}</Badge>);
     } else if (isHeld) {
+      // The change in permissions counts only against an earlier approval: on a fresh install awaiting
+      // its first one, `approvedCapabilities` is empty and every permission would read as "added".
+      const hasPriorApproval = (plugin.approvedCapabilities || []).length > 0;
       const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
       const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
-      const drift = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
+      const drift = hasPriorApproval ? [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ') : '';
       // The state in a word; WHAT changed is behind it, on hover and on a tap. Printed in the pill, a
       // plugin's eighteen permissions ran across the row and under the version and the switch.
       const held = <Badge variant={BadgeVariant.WARNING}>{PluginHeldLabel.of(plugin.heldReason)}</Badge>;

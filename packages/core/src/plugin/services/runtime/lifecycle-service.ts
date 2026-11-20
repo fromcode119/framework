@@ -12,7 +12,6 @@ import { NotificationsContextProxy } from '@core/plugin/context/notifications';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { SchemaManager } from '@core/database/schema-manager';
-
 import { ManifestValidator } from '@core/management/manifest-validator';
 import { Seeder } from '@core/database/seeder';
 import { PluginFailureIsolationService } from '@core/plugin/services/runtime/plugin-failure-isolation-service';
@@ -22,13 +21,13 @@ import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registr
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
-
 import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-boot-health-reporter';
 import { PluginSeedRunner } from '@core/plugin/services/runtime/plugin-seed-runner';
 import { PluginRegistrationState } from '@core/plugin/services/runtime/plugin-registration-state';
 import { PluginTeardownService } from '@core/plugin/services/runtime/plugin-teardown-service';
 import { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
 import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
+import { PluginCoreCompatibility } from '@core/plugin/services/runtime/plugin-core-compatibility';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -37,17 +36,20 @@ export class LifecycleService {
   private activation: PluginCollectionActivationService;
   private bootHealth: PluginBootHealthReporter;
   private seedRunner: PluginSeedRunner;
-
   private readonly registrationState: PluginRegistrationState;
   private readonly teardown: PluginTeardownService;
   readonly approval: PluginApprovalGate;
+  /** The core version this installation runs. A thunk, resolved lazily to keep the engine out of the module graph (no cycle). */
+  private readonly coreVersion: () => string | Promise<string>;
 
   constructor(
     private manager: IPluginManagerInterface,
     private registry: PluginStateService,
     private discovery: DiscoveryService,
-    private schemaManager: SchemaManager
+    private schemaManager: SchemaManager,
+    coreVersion?: () => string | Promise<string>,
   ) {
+    this.coreVersion = coreVersion ?? (async () => (await import('@core/management/system-update-service')).SystemUpdateService.installedVersion());
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
@@ -57,7 +59,6 @@ export class LifecycleService {
     this.bootHealth = new PluginBootHealthReporter(this.manager, this.logger);
     this.seedRunner = new PluginSeedRunner(this.manager, this.activation);
   }
-
   /** @inheritdoc — delegated to PluginBootHealthReporter. */
   async reportBootPluginHealth(): Promise<void> {
     return this.bootHealth.reportBootPluginHealth();
@@ -76,7 +77,6 @@ export class LifecycleService {
   async register(plugin: IFromcodePlugin, pluginPath?: string): Promise<void> {
     const slug = plugin.manifest.slug;
     const existingEntry = this.manager.plugins.get(slug);
-    
     // Only throw if the plugin is already registered AND it's not in an error state.
     // If it's in an error state, we want to allow re-registration to attempt recovery.
     if (existingEntry && existingEntry.state !== PluginState.ERROR) {
@@ -192,7 +192,6 @@ export class LifecycleService {
     await PluginSiteDataReplay.run(plugin, ctx, this.manager.db, this.logger);
   }
 
-  /** Syncs an active plugin's collections to the database, e.g. after its process was swapped for new code. */
   /**
    * What an active plugin needs after a hot update put new code in place: its tables synced to the
    * collections the new code declares, and the default pages its contracts require created. Enabling and
@@ -208,6 +207,7 @@ export class LifecycleService {
   async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
+    if (plugin.loadFailed) throw new Error(`Plugin "${slug}" could not be loaded: ${plugin.error ?? 'unknown error'}`); // only a manifest, no code (see ILoadedPlugin.loadFailed)
     if (plugin.state === PluginState.ACTIVE) {
       if (options.force) {
         this.logger.info(`Plugin "${slug}" already active; forcing collection schema sync.`);
@@ -215,10 +215,27 @@ export class LifecycleService {
       }
       return;
     }
+    // A build that needs a newer core than this installation runs must never go ACTIVE: its UI bundle
+    // would fail to import and take EVERY component of the plugin down with it (plugin auto-update
+    // outran the core). Hold it with a clear reason until the operator updates the core. Deliberately
+    // NOT bypassed by `force` — running on too-old core is the defect, not a dependency to override.
+    // The running core is resolved ONLY when a requirement is declared, so a plugin that declares none
+    // never pays the version lookup.
+    if (plugin.manifest?.engines?.core) {
+      const coreCompatibility = PluginCoreCompatibility.check(plugin.manifest, String(await this.coreVersion()));
+      if (!coreCompatibility.ok) {
+        const message = PluginCoreCompatibility.message(slug, coreCompatibility);
+        await this.approval.hold(slug, PluginHeldReason.CORE_TOO_OLD, {
+          subject: `[Fromcode Framework] "${slug}" needs a newer platform`,
+          text: message,
+          logLine: `Plugin "${slug}" HELD: ${message}`,
+        });
+        return;
+      }
+    }
 
     if (!options.force) {
       const issues = this.discovery.checkDependencies(plugin.manifest, this.manager.plugins, { checkActive: true });
-      
       if (issues.length > 0) {
         if (options.recursive) {
           for (const issue of issues) {
@@ -239,7 +256,6 @@ export class LifecycleService {
 
     await this.approval.ensureApproved(plugin, options.approve);
     const ctx = (this.manager as any).createContext(plugin);
-    
     try {
       if (plugin.registrationDeferred) {
         await this.runRegistrationHooks(plugin, ctx, plugin.registrationDeferred);
@@ -277,10 +293,8 @@ export class LifecycleService {
   disable(...args: Parameters<PluginTeardownService["disable"]>): ReturnType<PluginTeardownService["disable"]> {
     return this.teardown.disable(...args);
   }
-
   /** @see PluginTeardownService.delete */
   delete(...args: Parameters<PluginTeardownService["delete"]>): ReturnType<PluginTeardownService["delete"]> {
     return this.teardown.delete(...args);
   }
-
 }

@@ -40,6 +40,7 @@ export class SchemaTenantIsolationService {
     // build of this sweep is sitting on policies right now.
     if (!TenantMode.isEnabled()) {
       await this.removeTenantIsolation();
+      await this.releaseOwnerKeys(systemTables);
       return;
     }
 
@@ -58,6 +59,27 @@ export class SchemaTenantIsolationService {
     for (const table of new Set(policed.map((entry) => entry.table))) {
       await this.scopeUniqueConstraints(table);
     }
+  }
+
+  /**
+   * With no tenants a row has no site to name, so the site must not be part of a table's key: a fresh
+   * single-site installation could not upload a file or keep the signed-in user's person record
+   * (`PostgresTenantOwnerKey`). System tables and tables whose isolation was deliberately kept are
+   * left alone. Nothing here runs once a tenant exists.
+   */
+  private async releaseOwnerKeys(systemTables: Set<string>): Promise<void> {
+    const policed = new Set((await this.db.tenantIsolation.listPolicies()).map((entry) => entry.table));
+    const released: string[] = [];
+    for (const table of (await this.db.getTables()) ?? []) {
+      const name = String(table);
+      if (policed.has(name) || systemTables.has(name.toLowerCase()) || name.startsWith('_system_')) continue;
+      const changed = await this.db.tenantIsolation.releaseOwnerKey(name).catch((error: any) => {
+        this.logger.warn(`Could not take the site out of the key of "${name}": ${error?.message || error}`);
+        return false;
+      });
+      if (changed) released.push(name);
+    }
+    if (released.length) this.logger.warn(`Deployment has NO tenants: ${released.length} table(s) are keyed without a site again: ${released.join(', ')}`);
   }
 
   /**

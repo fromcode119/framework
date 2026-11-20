@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Naka-install",
       "health": "Kalusugan",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Suriin at aprubahan",
       "needsAttention": "Kailangan ng atensyon",
       "needsReApproval": "Kailangang muling aprubahan",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Pagbabago sa kakayahan mula nang aprubahan: {{drift}}",
       "heldPendingReApprovalOf": "Naka-hold habang hinihintay ang muling pag-apruba ng mga binagong kakayahan.",
       "approveEnable": "Aprubahan at i-enable",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Nasa pinakabagong bersyon na sa marketplace ang lahat ng naka-install na plugin.",
       "updatingPlugin": "{{remaining}} pa ang natitira — ina-update ang {{pluginSlug}} sa v{{version}}...",
       "pluginUpdateFailed": "Nabigo ang update ng {{pluginSlug}}: {{error}} — itinutuloy ang iba.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Na-install ang lahat ng {{count}} update — nire-restart ang API para sa (mga) plugin na tumatakbo sa loob nito...",
       "allUpdatesReplaced": "Na-install ang lahat ng {{count}} update; pinalitan sa lugar ang proseso ng bawat plugin.",
       "pluginReloaded": "Napalitan ang plugin na \"{{pluginSlug}}\" at nag-restart ang proseso nito gamit ang bagong code. Hindi kailangang i-restart ang API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Ina-apply ang Update...",
       "applySystemUpdate": "I-apply ang System Update?",
       "youAreAboutToUpdate": "Ia-update mo ang {{PRODUCT_NAME}} mula v{{installedVersion}} patungong v{{latestVersion}}. Awtomatikong gagawa ng kumpletong system backup bago magpatuloy. Mao-overwrite ng prosesong ito ang mga file ng system at maaaring magdulot ng pansamantalang pagkaantala ng serbisyo habang nagre-restart ang server.",
+      "youAreAboutToUpdateBesideRunning": "Ia-update mo ang {{PRODUCT_NAME}} mula v{{installedVersion}} patungong v{{latestVersion}}. Magsisimula ang bagong bersyon katabi ng tumatakbo; kung hindi ito magsimula, patuloy na tatakbo ang nakaraang bersyon. Walang awtomatikong ginagawang backup — gumawa muna ng isa kung kailangan mo.",
       "noNotesWereWrittenFor": "Walang isinulat na notes para sa release na ito.",
       "recommendedUpdate": "v{{version}} Inirerekomendang Update",
       "installCore": "I-install ang Core v{{version}}",

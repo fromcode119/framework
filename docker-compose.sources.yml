@@ -76,6 +76,10 @@ services:
       # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      # The site domain, which next.config turns into `allowedDevOrigins`. Without it Next blocks the HMR
+      # socket from every `*.framework.local` host, and under Turbopack a page whose HMR socket is refused
+      # never hydrates: the console sat blank on /login. Same default as the api in docker-compose.yml.
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
     volumes:
       # The admin aliases `@fromcode119/react-class-components` to that package's SRC, so the dev server
       # compiles these files directly — mount them and a change there needs no build at all. (Unlike core: core
@@ -139,6 +143,10 @@ services:
       # Next's dev server watches the mounted tree; polling is what makes that work across a bind mount.
       - WATCHPACK_POLLING=true
       - CHOKIDAR_USEPOLLING=true
+      # The site domain, which next.config turns into `allowedDevOrigins`. Without it Next blocks the HMR
+      # socket from every `*.framework.local` host, and under Turbopack a page whose HMR socket is refused
+      # never hydrates: the console sat blank on /login. Same default as the api in docker-compose.yml.
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
     volumes:
       # The four package sources the storefront's webpack aliases compile from `src` — the same list
       # `config/next-config-aliases.ts` declares. Without them a change to core, react or the sdk is
@@ -152,6 +160,8 @@ services:
       # Both halves of the config, for the reason the admin block above records: mounting
       # next.config.js without `config/` runs the shared half from the image's baked copy, which is
       # how the dev-origin fix stayed invisible for a round.
+      # The dev script itself, for the reason the admin block records: unmounted, the image's baked one runs.
+      - ./packages/frontend/package.json:/app/packages/frontend/package.json
       - ./packages/frontend/next.config.ts:/app/packages/frontend/next.config.ts
       - ./config:/app/config
       - ./packages/frontend/app:/app/packages/frontend/app

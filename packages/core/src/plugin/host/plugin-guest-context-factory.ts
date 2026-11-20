@@ -52,6 +52,8 @@ export class PluginGuestContextFactory {
       db: this.database([{ name: 'db' }]),
       api: new PluginGuestApiFactory(this.registrar, this.handlers, this.http, this.boot).create(),
       hooks: this.hooks(register),
+      events: this.events(),
+      capabilities: this.capabilities(),
       auth: this.auth(),
       logger: this.logger(),
       plugin: { ...this.boot.plugin },
@@ -131,6 +133,51 @@ export class PluginGuestContextFactory {
       },
       emit: (event: string, payload: unknown) => { void remote.call('context', [{ name: 'hooks' }, { name: 'emit', args: PluginGuestRemote.portable([event, payload]) }]); },
       call: (event: string, payload: unknown) => remote.call('context', [{ name: 'hooks' }, { name: 'call', args: PluginGuestRemote.portable([event, payload]) }]),
+    };
+  }
+
+  /**
+   * `events` for an isolated plugin. An event's CONTRACT carries a zod schema, which does not cross the
+   * process boundary, so `define` is a local no-op here and an isolated plugin's events are validated
+   * only where they are emitted.
+   *
+   * `once` DOES deduplicate: the key is claimed on the host (one row under a unique index, so two
+   * concurrent requests — or two processes — get one winner), the effect runs here, and the claim is
+   * given back if the effect throws. It used to run the effect every time, so an isolated plugin's
+   * "at most once" was not: two requests in the same millisecond issued two invoices for one order.
+   */
+  private events(): unknown {
+    const remote = this.remote;
+    const onHost = (name: string, key: string) => remote.call('context', [{ name: 'events' }, { name, args: [key] }]);
+    return {
+      define: (_contract: unknown) => { /* schema is not portable across the process boundary */ },
+      once: async <T>(key: string, fn: () => Promise<T> | T): Promise<{ ran: boolean; skipped?: boolean; result?: T }> => {
+        if (!(await onHost('claim', key))) return { ran: false, skipped: true };
+        try {
+          return { ran: true, result: await fn() };
+        } catch (error) {
+          await Promise.resolve(onHost('forget', key)).catch(() => {});
+          throw error;
+        }
+      },
+      forget: async (key: string): Promise<void> => { await onHost('forget', key); },
+    };
+  }
+
+  /**
+   * `capabilities` for an isolated plugin. `provide` routes to the host so the plugin registers as a
+   * provider (the common case — a sandboxed payment or shipping provider). Reading providers (`all`/
+   * `one`) is synchronous in-process and cannot be answered from another process, so an isolated plugin
+   * that needs to CONSUME a capability is told to do it in the api; this is loud, never a silent empty.
+   */
+  private capabilities(): unknown {
+    const remote = this.remote;
+    return {
+      provide: (capability: string, meta?: unknown) => {
+        void remote.call('context', [{ name: 'capabilities' }, { name: 'provide', args: PluginGuestRemote.portable([capability, meta]) }]);
+      },
+      all: (_capability: string) => { throw new Error('context.capabilities.all is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
+      one: (_capability: string) => { throw new Error('context.capabilities.one is not available to an isolated plugin; consume capabilities from an in-process plugin.'); },
     };
   }
 

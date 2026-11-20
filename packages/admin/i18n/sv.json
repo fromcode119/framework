@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installerade",
       "health": "Hälsa",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Granska och godkänn",
       "needsAttention": "Kräver åtgärd",
       "needsReApproval": "Kräver nytt godkännande",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ändrade behörigheter sedan godkännandet: {{drift}}",
       "heldPendingReApprovalOf": "Pausat i väntan på nytt godkännande av ändrade behörigheter.",
       "approveEnable": "Godkänn och aktivera",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Alla installerade tillägg har redan den senaste versionen från marknadsplatsen.",
       "updatingPlugin": "{{remaining}} kvar — uppdaterar {{pluginSlug}} till v{{version}}...",
       "pluginUpdateFailed": "Uppdateringen misslyckades för {{pluginSlug}}: {{error}} — fortsätter med resten.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alla {{count}} uppdateringar har installerats — startar om API:t för de tillägg som körs i det...",
       "allUpdatesReplaced": "Alla {{count}} uppdateringar har installerats; varje tilläggs process ersattes på plats.",
       "pluginReloaded": "Tillägget \"{{pluginSlug}}\" ersattes och dess process startades om med den nya koden. Ingen omstart av API:t behövs.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Installerar uppdatering...",
       "applySystemUpdate": "Installera systemuppdatering?",
       "youAreAboutToUpdate": "Du håller på att uppdatera {{PRODUCT_NAME}} från v{{installedVersion}} till v{{latestVersion}}. En fullständig systemsäkerhetskopia skapas automatiskt innan uppdateringen fortsätter. Processen skriver över systemfiler och kan orsaka ett tillfälligt avbrott medan servern startas om.",
+      "youAreAboutToUpdateBesideRunning": "Du är på väg att uppdatera {{PRODUCT_NAME}} från v{{installedVersion}} till v{{latestVersion}}. Den nya versionen startar bredvid den som körs; om den inte startar fortsätter den föregående versionen att köras. Ingen säkerhetskopia skapas automatiskt — skapa en först om du behöver den.",
       "noNotesWereWrittenFor": "Inga versionsanteckningar skrevs för den här versionen.",
       "recommendedUpdate": "v{{version}} Rekommenderad uppdatering",
       "installCore": "Installera kärna v{{version}}",

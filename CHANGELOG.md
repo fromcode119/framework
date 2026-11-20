@@ -6,6 +6,80 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.615] - 2026-11-20
+
+### Fixed
+
+- **core**: a release that removes a field removes it from the console too ([#1549](https://github.com/fromcode119/framework/pull/1549))
+
+## [0.2.614] - 2026-11-20
+
+### Fixed
+
+- **database**: keep the api running when Postgres closes a connection ([#1546](https://github.com/fromcode119/framework/pull/1546))
+
+## [0.2.613] - 2026-11-20
+
+### Fixed
+
+- **backup**: write the PostgreSQL dump compressed ([#1544](https://github.com/fromcode119/framework/pull/1544))
+
+## [0.2.612] - 2026-11-20
+
+### Fixed
+
+- **backup**: put the database dump into the system archive on image installations, and stop the update dialog promising a backup it does not make ([#1542](https://github.com/fromcode119/framework/pull/1542))
+
+## [0.2.611] - 2026-11-20
+
+### Fixed
+
+- **backup**: keep the database password out of the dump command and log, and stop one unreadable table or folder from failing the backup ([#1540](https://github.com/fromcode119/framework/pull/1540))
+
+## [0.2.610] - 2026-11-19
+
+### Fixed
+
+- events.once for isolated plugins, single-site writes, site adoption, sign-up email notice ([#1538](https://github.com/fromcode119/framework/pull/1538))
+- **dev**: give the dev console and storefront the site domain ([#1537](https://github.com/fromcode119/framework/pull/1537))
+- **frontend**: run the storefront dev server on Turbopack ([#1536](https://github.com/fromcode119/framework/pull/1536))
+- **admin**: run the dev server on Turbopack so it fits its memory limit ([#1535](https://github.com/fromcode119/framework/pull/1535))
+
+## [0.2.609] - 2026-11-19
+
+### Fixed
+
+- **plugins**: reload a plugin whose code never loaded instead of enabling its bare manifest ([#1532](https://github.com/fromcode119/framework/pull/1532))
+- **cli**: stack up builds the plugin worktrees it mounts ([#1531](https://github.com/fromcode119/framework/pull/1531))
+
+## [0.2.608] - 2026-11-19
+
+### Added
+
+- **sdk**: export zod from the server SDK so plugins can declare event contracts ([#1529](https://github.com/fromcode119/framework/pull/1529))
+
+### Fixed
+
+- **cli**: stack runs worktree source for admin/storefront, mounts the mirror read-only, never pulls an implicit tag ([#1528](https://github.com/fromcode119/framework/pull/1528))
+- **admin**: a plugin awaiting approval no longer overflows its row ([#1527](https://github.com/fromcode119/framework/pull/1527))
+- **cli**: refuse the shared checkout, and leave nothing behind on a failed start ([#1526](https://github.com/fromcode119/framework/pull/1526))
+- **cli**: make a stack usable by several sessions at once ([#1524](https://github.com/fromcode119/framework/pull/1524))
+
+## [0.2.607] - 2026-11-18
+
+### Added
+
+- **cli**: start a stack from a captured template instead of the wizard ([#1523](https://github.com/fromcode119/framework/pull/1523))
+- **cli**: fromcode stack — a throwaway platform for one worktree ([#1521](https://github.com/fromcode119/framework/pull/1521))
+
+### Fixed
+
+- **compose**: share one image tag across local projects ([#1520](https://github.com/fromcode119/framework/pull/1520))
+
+### Changed
+
+- Framework foundation: event contracts, visible failures + retry, capability registry, idempotency, core-version gate ([#1522](https://github.com/fromcode119/framework/pull/1522))
+
 ## [0.2.606] - 2026-11-18
 
 ### Added

@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Инсталирано",
       "health": "Стање",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Прегледај и одобри",
       "needsAttention": "Потребна пажња",
       "needsReApproval": "Потребно поновно одобрење",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Промена овлашћења од одобрења: {{drift}}",
       "heldPendingReApprovalOf": "Задржан до поновног одобрења промењених овлашћења.",
       "approveEnable": "Одобри и укључи",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Сви инсталирани додаци већ имају најновију верзију са маркетплејса.",
       "updatingPlugin": "Преостало: {{remaining}} — ажурирање {{pluginSlug}} на v{{version}}...",
       "pluginUpdateFailed": "Ажурирање {{pluginSlug}} није успело: {{error}} — наставља се са осталима.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Инсталирана су сва ажурирања ({{count}}) — поново се покреће API због додатака који раде у њему...",
       "allUpdatesReplaced": "Инсталирана су сва ажурирања ({{count}}); процес сваког додатка је замењен на лицу места.",
       "pluginReloaded": "Додатак „{{pluginSlug}}“ је замењен и његов процес је поново покренут са новим кодом. Поновно покретање API-ја није потребно.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Примењивање ажурирања...",
       "applySystemUpdate": "Применити ажурирање система?",
       "youAreAboutToUpdate": "Ажурираћете {{PRODUCT_NAME}} са v{{installedVersion}} на v{{latestVersion}}. Пре наставка ће аутоматски бити направљена комплетна резервна копија система. Овај поступак ће преписати системске датотеке и може изазвати привремени прекид рада док се сервер поново покреће.",
+      "youAreAboutToUpdateBesideRunning": "Управо ћете ажурирати {{PRODUCT_NAME}} са v{{installedVersion}} на v{{latestVersion}}. Нова верзија се покреће поред оне која ради; ако се не покрене, претходна верзија наставља да ради. Резервна копија се не прави аутоматски — направите је унапред ако вам је потребна.",
       "noNotesWereWrittenFor": "За ово издање нису написане белешке.",
       "recommendedUpdate": "v{{version}} Препоручено ажурирање",
       "installCore": "Инсталирај језгро v{{version}}",

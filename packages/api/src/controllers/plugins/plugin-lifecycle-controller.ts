@@ -102,6 +102,13 @@ export class PluginLifecycleController extends BaseController {
           await this.manager.disable(slug);
         }
       });
+      // Enabling can end HELD instead of active (a core too old for it, say). Answering "active" then made
+      // the console report success and flip the switch on for a plugin that serves nothing.
+      const after = this.manager.plugins.get(slug);
+      if (enabled && after && after.state !== PluginState.ACTIVE) {
+        const reason = after.heldReason?.value ?? after.state.value;
+        return res.status(409).json({ code: 'PLUGIN_NOT_ENABLED', heldReason: after.heldReason?.value, error: `Plugin "${slug}" was not enabled: ${reason}.` });
+      }
       res.json({ success: true, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
       // Not a failure: the plugin asks for something nobody approved, and the console shows what.

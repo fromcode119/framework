@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Εγκατεστημένα",
       "health": "Κατάσταση υγείας",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Έλεγχος και έγκριση",
       "needsAttention": "Χρειάζεται προσοχή",
       "needsReApproval": "Χρειάζεται επανέγκριση",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Αλλαγή δυνατοτήτων από την έγκριση: {{drift}}",
       "heldPendingReApprovalOf": "Σε αναμονή επανέγκρισης των αλλαγμένων δυνατοτήτων.",
       "approveEnable": "Έγκριση και ενεργοποίηση",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Όλα τα εγκατεστημένα πρόσθετα έχουν ήδη την τελευταία έκδοση του marketplace.",
       "updatingPlugin": "Απομένουν {{remaining}} — ενημέρωση του {{pluginSlug}} στην v{{version}}...",
       "pluginUpdateFailed": "Η ενημέρωση του {{pluginSlug}} απέτυχε: {{error}} — συνέχεια με τα υπόλοιπα.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Εγκαταστάθηκαν και οι {{count}} ενημερώσεις — επανεκκίνηση του API για τα πρόσθετα που εκτελούνται μέσα σε αυτό...",
       "allUpdatesReplaced": "Εγκαταστάθηκαν και οι {{count}} ενημερώσεις· η διεργασία κάθε προσθέτου αντικαταστάθηκε επί τόπου.",
       "pluginReloaded": "Το πρόσθετο \"{{pluginSlug}}\" αντικαταστάθηκε και η διεργασία του επανεκκινήθηκε με τον νέο κώδικα. Δεν απαιτείται επανεκκίνηση του API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Εφαρμογή ενημέρωσης...",
       "applySystemUpdate": "Εφαρμογή ενημέρωσης συστήματος;",
       "youAreAboutToUpdate": "Πρόκειται να ενημερώσετε το {{PRODUCT_NAME}} από την έκδοση v{{installedVersion}} στην v{{latestVersion}}. Πριν συνεχιστεί η διαδικασία, θα δημιουργηθεί αυτόματα πλήρες αντίγραφο ασφαλείας του συστήματος. Η διαδικασία θα αντικαταστήσει αρχεία συστήματος και ενδέχεται να προκαλέσει προσωρινή διακοπή της υπηρεσίας κατά την επανεκκίνηση του διακομιστή.",
+      "youAreAboutToUpdateBesideRunning": "Πρόκειται να ενημερώσετε το {{PRODUCT_NAME}} από v{{installedVersion}} σε v{{latestVersion}}. Η νέα έκδοση ξεκινά δίπλα σε αυτήν που εκτελείται· αν δεν ξεκινήσει, η προηγούμενη συνεχίζει να λειτουργεί. Δεν δημιουργείται αυτόματα αντίγραφο ασφαλείας — δημιουργήστε ένα πρώτα, αν το χρειάζεστε.",
       "noNotesWereWrittenFor": "Δεν υπάρχουν σημειώσεις για αυτή την έκδοση.",
       "recommendedUpdate": "v{{version}} Προτεινόμενη ενημέρωση",
       "installCore": "Εγκατάσταση πυρήνα v{{version}}",

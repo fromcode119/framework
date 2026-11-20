@@ -1,6 +1,7 @@
 import { PluginArchiveInstallerService } from '@core/plugin/services/installation/plugin-archive-installer-service';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 
@@ -60,6 +61,9 @@ export class PluginTeardownService {
       if (plugin.onDisable) await plugin.onDisable(ctx);
       plugin.state = PluginState.INACTIVE;
       this.manager.middlewares.unregisterByPlugin(slug);
+      // A disabled plugin stops being a provider, so a consumer asking for a capability never gets a
+      // dead plugin back.
+      CapabilityProviderRegistry.withdraw(slug);
       if (options.persistState !== false) {
         await this.registry.savePluginState(slug, PluginState.INACTIVE, undefined, plugin.manifest.version);
         await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);

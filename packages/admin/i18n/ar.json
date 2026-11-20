@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "المثبتة",
       "health": "الحالة الصحية",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "المراجعة والموافقة",
       "needsAttention": "تحتاج إلى انتباه",
       "needsReApproval": "تحتاج إلى إعادة موافقة",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "تغيّر في الصلاحيات منذ الموافقة: {{drift}}",
       "heldPendingReApprovalOf": "معلّقة بانتظار إعادة الموافقة على الصلاحيات المتغيّرة.",
       "approveEnable": "الموافقة والتفعيل",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "جميع الإضافات المثبتة محدّثة بالفعل إلى أحدث إصدار في المتجر.",
       "updatingPlugin": "المتبقي {{remaining}} — جارٍ تحديث {{pluginSlug}} إلى v{{version}}...",
       "pluginUpdateFailed": "فشل تحديث {{pluginSlug}}: {{error}} — جارٍ متابعة البقية.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "تم تثبيت جميع التحديثات ({{count}}) — جارٍ إعادة تشغيل API للإضافات التي تعمل داخلها...",
       "allUpdatesReplaced": "تم تثبيت جميع التحديثات ({{count}})؛ واستُبدلت عملية كل إضافة في مكانها.",
       "pluginReloaded": "تم استبدال الإضافة \"{{pluginSlug}}\" وأُعيد تشغيل عمليتها بالشيفرة الجديدة. لا حاجة لإعادة تشغيل API.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "جارٍ تطبيق التحديث...",
       "applySystemUpdate": "هل تريد تطبيق تحديث النظام؟",
       "youAreAboutToUpdate": "أنت على وشك تحديث {{PRODUCT_NAME}} من الإصدار v{{installedVersion}} إلى الإصدار v{{latestVersion}}. ستُنشأ نسخة احتياطية كاملة للنظام تلقائيًا قبل المتابعة. ستستبدل هذه العملية ملفات النظام وقد تتسبب في انقطاع مؤقت للخدمة أثناء إعادة تشغيل الخادم.",
+      "youAreAboutToUpdateBesideRunning": "أنت على وشك تحديث {{PRODUCT_NAME}} من v{{installedVersion}} إلى v{{latestVersion}}. يبدأ الإصدار الجديد بجانب الإصدار العامل؛ وإذا لم يبدأ، يستمر الإصدار السابق في العمل. لا تُنشأ نسخة احتياطية تلقائيًا — أنشئ واحدة أولًا إذا احتجت إليها.",
       "noNotesWereWrittenFor": "لم تُكتب ملاحظات لهذا الإصدار.",
       "recommendedUpdate": "v{{version}} تحديث موصى به",
       "installCore": "تثبيت النواة v{{version}}",

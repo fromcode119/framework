@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Të instaluara",
       "health": "Gjendja",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Shqyrto dhe mirato",
       "needsAttention": "Kërkon vëmendje",
       "needsReApproval": "Kërkon rimiratim",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ndryshim aftësish që nga miratimi: {{drift}}",
       "heldPendingReApprovalOf": "E pezulluar në pritje të rimiratimit të aftësive të ndryshuara.",
       "approveEnable": "Mirato dhe aktivizo",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Çdo shtojcë e instaluar është tashmë në versionin më të ri të tregut.",
       "updatingPlugin": "{{remaining}} të mbetura — po përditësohet {{pluginSlug}} në v{{version}}...",
       "pluginUpdateFailed": "Përditësimi dështoi për {{pluginSlug}}: {{error}} — po vazhdohet me të tjerat.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "U instaluan të {{count}} përditësimet — po riniset API për shtojcat që ekzekutohen brenda saj...",
       "allUpdatesReplaced": "U instaluan të {{count}} përditësimet; procesi i secilës shtojcë u zëvendësua në vend.",
       "pluginReloaded": "Shtojca \"{{pluginSlug}}\" u zëvendësua dhe procesi i saj u rinis me kodin e ri. Nuk nevojitet rinisja e API-së.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Po zbatohet përditësimi...",
       "applySystemUpdate": "Të zbatohet përditësimi i sistemit?",
       "youAreAboutToUpdate": "Jeni duke përditësuar {{PRODUCT_NAME}} nga v{{installedVersion}} në v{{latestVersion}}. Para se të vazhdohet, do të krijohet automatikisht një kopje rezervë e plotë e sistemit. Ky proces do të mbishkruajë skedarët e sistemit dhe mund të shkaktojë një ndërprerje të përkohshme të shërbimit gjatë rinisjes së serverit.",
+      "youAreAboutToUpdateBesideRunning": "Jeni gati të përditësoni {{PRODUCT_NAME}} nga v{{installedVersion}} në v{{latestVersion}}. Versioni i ri niset përkrah atij që po punon; nëse nuk niset, versioni i mëparshëm vazhdon të punojë. Nuk krijohet kopje rezervë automatikisht — krijoni një më parë nëse ju nevojitet.",
       "noNotesWereWrittenFor": "Nuk janë shkruar shënime për këtë version.",
       "recommendedUpdate": "v{{version}} Përditësim i rekomanduar",
       "installCore": "Instalo bërthamën v{{version}}",

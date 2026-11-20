@@ -25,5 +25,11 @@ export class RetentionMetaKeys {
      * means KEEP FOREVER, as the admin field says. Read by JournalRetentionService.
      */
     JOB_RUN_RETENTION_DAYS: 'job_run_retention_days',
+    /**
+     * Days of `_system_event_deliveries` (failed event deliveries) to keep. Empty means KEEP FOREVER.
+     * Pruned by `updated_at`, so a failure that still recurs keeps its row fresh and is spared; only a
+     * stale one that stopped recurring ages out. Read by JournalRetentionService.
+     */
+    EVENT_DELIVERY_RETENTION_DAYS: 'event_delivery_retention_days',
   } as const;
 }

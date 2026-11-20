@@ -1,3 +1,4 @@
+import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
@@ -32,7 +33,18 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
   /** Every active plugin's seed data, for the site currently in scope. */
   async runPluginSeedsForCurrentSite(): Promise<string[]> { return this.lifecycle.runSeedsForCurrentSite(); }
   /** `approve` is the exact consent list the operator was shown; required when the plugin asks for anything not approved yet. */
-  async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}) { return this.lifecycle.enable(slug, options); }
+  async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}) {
+    // A plugin whose code never loaded (its host was mid-restart during a core update, say) is LOADED
+    // again first: the rescan registers it and enables it if its saved state is active. Enabling the
+    // bare manifest instead used to report it ACTIVE with no collections, and every later rescan then
+    // skipped it as already running.
+    if (this.plugins.get(slug)?.loadFailed) {
+      await this.discoverPlugins();
+      if (this.plugins.get(slug)?.state === PluginState.ACTIVE) return;
+    }
+    return this.lifecycle.enable(slug, options);
+  }
+  abstract discoverPlugins(): Promise<void>;
   /** New files ask for more than was approved: stop and hold the plugin for approval. True when held. */
   async holdIfUnapproved(slug: string, manifest: IPluginManifest): Promise<boolean> { return this.lifecycle.approval.holdIfUnapproved(slug, manifest); }
   /** What the consent dialog shows for an installed plugin, or null when there is no such plugin. */

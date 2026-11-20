@@ -44,6 +44,7 @@ import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
+import { PluginEventsCapabilities } from '@core/plugin/context/plugin-events-capabilities';
 import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
@@ -68,6 +69,11 @@ export class PluginContextFactory {
         manager.hooks.on(event, (handler as any)._wrapped);
       };
       const unsubscribe = (event: string, handler: any) => manager.hooks.off(event, (handler as any)._wrapped || handler);
+      // The plugin's event / hook / capability surface (instrumented hooks, event contracts,
+      // idempotent effects, capability registry access) — built apart in PluginEventsCapabilities.
+      const { hooks, events, capabilities } = PluginEventsCapabilities.build(
+        plugin, manager, security, pluginLogger, subscribe, unsubscribe,
+      );
       // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
@@ -103,18 +109,11 @@ export class PluginContextFactory {
       const context: PluginContext = {
         db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
-        hooks: {
-          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h)),
-          off: (event: string, handler: any) => unsubscribe(event, handler),
-          emit: (event: string, payload: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            manager.hooks.emit(event, payload);
-          },
-          call: (event: string, payload: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            return manager.hooks.call(event, payload);
-          }
-        },
+        // Instrumented hooks, declared event contracts and idempotent effects (`events`), and the
+        // capability registry (`capabilities`) — all built in PluginEventsCapabilities above.
+        hooks,
+        events,
+        capabilities,
         // Fail-closed both ways: with auth wired this adapts the manager to the plugin contract
         // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every
         // member denies, so a plugin calls `context.auth.guard([...])` directly with no defensive

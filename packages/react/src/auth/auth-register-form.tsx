@@ -14,7 +14,7 @@ import type { IAuthRegisterFormState } from '@react/auth/interfaces/auth-registe
 export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegisterFormState> {
   state: IAuthRegisterFormState = {
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
-    loading: false, error: '', verificationPending: false,
+    loading: false, error: '', verificationPending: false, emailNotSent: false, resending: false, resendError: '',
   };
 
   private validate(): string {
@@ -43,7 +43,9 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
         throw { data };
       }
       if (data?.requiresEmailVerification) {
-        this.setState({ loading: false, verificationPending: true });
+        // The server says whether the email left. Telling the person to check their inbox when it did
+        // not leaves them waiting for a message that is never coming.
+        this.setState({ loading: false, verificationPending: true, emailNotSent: data.emailDelivery === 'failed' });
         return;
       }
       const loginData = await this.systemAuth.login({ email: email.trim(), password }, { silent: true, noDedupe: true });
@@ -65,13 +67,44 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
     this.props.onSwitchMode(AuthMode.LOGIN);
   }
 
+  private async handleResend(): Promise<void> {
+    this.setState({ resending: true, resendError: '' });
+    try {
+      const data = await this.systemAuth.resendVerification(this.state.email.trim(), { silent: true, noDedupe: true });
+      if (data?.emailDelivery === 'failed') throw new Error('');
+      this.setState({ resending: false, emailNotSent: false });
+    } catch (error: unknown) {
+      this.setState({ resending: false, resendError: this.errorMessage(error, this.tr('auth.errors.emailSendFailed', 'We could not send the email. Please try again later.')) });
+    }
+  }
+
+  private renderEmailNotSent(): ReactNode {
+    const { resending, resendError } = this.state;
+    return (
+      <>
+        <div className="fc-auth__error">
+          {this.tr('auth.register.emailNotSentBody', 'Your account was created, but we could not send the confirmation email. Send it again; if it still does not arrive, contact us.')}
+        </div>
+        {resendError ? <div className="fc-auth__error">{resendError}</div> : null}
+        <button type="button" disabled={resending} className="fc-auth__button" onClick={() => { void this.handleResend(); }}>
+          {resending ? this.tr('auth.register.resending', 'Sending…') : this.tr('auth.register.resend', 'Send the confirmation email again')}
+        </button>
+      </>
+    );
+  }
+
   private renderVerificationPending(): ReactNode {
+    const { emailNotSent } = this.state;
     return (
       <div className="fc-auth__card">
-        <h1 className="fc-auth__title">{this.tr('auth.register.checkInboxTitle', 'Check your inbox')}</h1>
-        <div className="fc-auth__notice">
-          {this.tr('auth.register.checkInboxBody', 'Your account was created. We sent a verification link to your email — confirm it to sign in.')}
-        </div>
+        <h1 className="fc-auth__title">
+          {emailNotSent ? this.tr('auth.register.emailNotSentTitle', 'Your account was created') : this.tr('auth.register.checkInboxTitle', 'Check your inbox')}
+        </h1>
+        {emailNotSent ? this.renderEmailNotSent() : (
+          <div className="fc-auth__notice">
+            {this.tr('auth.register.checkInboxBody', 'Your account was created. We sent a verification link to your email — confirm it to sign in.')}
+          </div>
+        )}
         <p className="fc-auth__switch">
           <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
             {this.tr('auth.register.backToLogin', 'Back to sign in')}

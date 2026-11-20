@@ -3,6 +3,7 @@ import { Enum } from '@fromcode119/react-class-components/lang';
 /** Supported backup archive file extensions. The `.value` is matched against real filenames. */
 export class BackupArchiveExtension extends Enum {
   static readonly TAR_GZ = new BackupArchiveExtension('.tar.gz');
+  static readonly SQL_GZ = new BackupArchiveExtension('.sql.gz');
   static readonly SQL = new BackupArchiveExtension('.sql');
   static readonly DB = new BackupArchiveExtension('.db');
 

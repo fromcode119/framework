@@ -9,6 +9,8 @@ export class PluginHeldReason extends Enum {
   static readonly CAPABILITY_DRIFT = new PluginHeldReason('capability_drift');
   /** Installed but never approved (a Sources build, an upload): it runs once an admin approves it. */
   static readonly AWAITING_APPROVAL = new PluginHeldReason('awaiting_approval');
+  /** The build needs a newer core than this installation runs (`manifest.engines.core`); update the core first. */
+  static readonly CORE_TOO_OLD = new PluginHeldReason('core_too_old');
 
   private constructor(value: string) {
     super(value);

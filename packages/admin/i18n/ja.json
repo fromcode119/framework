@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "インストール済み",
       "health": "ヘルス",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "確認して承認",
       "needsAttention": "対応が必要",
       "needsReApproval": "再承認が必要",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "承認後の権限の変更: {{drift}}",
       "heldPendingReApprovalOf": "変更された権限の再承認待ちで保留中です。",
       "approveEnable": "承認して有効化",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "インストール済みのすべてのプラグインは、マーケットプレイスの最新バージョンです。",
       "updatingPlugin": "残り {{remaining}} 件 — {{pluginSlug}} を v{{version}} に更新しています...",
       "pluginUpdateFailed": "{{pluginSlug}} の更新に失敗しました: {{error}} — 残りの処理を続行します。",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "{{count}} 件の更新をすべてインストールしました — API 内で動作するプラグインのために API を再起動しています...",
       "allUpdatesReplaced": "{{count}} 件の更新をすべてインストールしました。各プラグインのプロセスはその場で置き換えられました。",
       "pluginReloaded": "プラグイン「{{pluginSlug}}」を置き換え、新しいコードでプロセスを再起動しました。API の再起動は不要です。",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "更新を適用中...",
       "applySystemUpdate": "システム更新を適用しますか？",
       "youAreAboutToUpdate": "{{PRODUCT_NAME}} を v{{installedVersion}} から v{{latestVersion}} に更新します。処理の前にシステム全体のバックアップが自動的に作成されます。この処理ではシステムファイルが上書きされ、サーバーの再起動中は一時的にサービスが停止する場合があります。",
+      "youAreAboutToUpdateBesideRunning": "{{PRODUCT_NAME}} を v{{installedVersion}} から v{{latestVersion}} に更新しようとしています。新しいバージョンは稼働中のバージョンと並行して起動し、起動しない場合は以前のバージョンがそのまま稼働し続けます。バックアップは自動では作成されません。必要な場合は先に作成してください。",
       "noNotesWereWrittenFor": "このリリースにはリリースノートがありません。",
       "recommendedUpdate": "v{{version}} 推奨アップデート",
       "installCore": "コア v{{version}} をインストール",

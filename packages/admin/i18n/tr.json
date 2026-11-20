@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Yüklü",
       "health": "Sağlık",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "İncele ve onayla",
       "needsAttention": "İlgilenilmesi gerekiyor",
       "needsReApproval": "Yeniden onay gerekiyor",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Onaydan sonraki yetenek değişikliği: {{drift}}",
       "heldPendingReApprovalOf": "Değişen yeteneklerin yeniden onaylanması bekleniyor.",
       "approveEnable": "Onayla ve etkinleştir",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Kurulu tüm eklentiler zaten mağazadaki en son sürümde.",
       "updatingPlugin": "{{remaining}} kaldı — {{pluginSlug}} v{{version}} sürümüne güncelleniyor...",
       "pluginUpdateFailed": "{{pluginSlug}} güncellenemedi: {{error}} — diğerleriyle devam ediliyor.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "{{count}} güncellemenin tümü kuruldu — API içinde çalışan eklentiler için API yeniden başlatılıyor...",
       "allUpdatesReplaced": "{{count}} güncellemenin tümü kuruldu; her eklentinin işlemi yerinde değiştirildi.",
       "pluginReloaded": "\"{{pluginSlug}}\" eklentisi değiştirildi ve işlemi yeni kodla yeniden başlatıldı. API'nin yeniden başlatılması gerekmiyor.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Güncelleme Uygulanıyor...",
       "applySystemUpdate": "Sistem Güncellemesi Uygulansın mı?",
       "youAreAboutToUpdate": "{{PRODUCT_NAME}} ürününü v{{installedVersion}} sürümünden v{{latestVersion}} sürümüne güncellemek üzeresiniz. Devam etmeden önce otomatik olarak eksiksiz bir sistem yedeği oluşturulacak. Bu işlem sistem dosyalarının üzerine yazar ve sunucu yeniden başlatılırken hizmette geçici bir kesintiye neden olabilir.",
+      "youAreAboutToUpdateBesideRunning": "{{PRODUCT_NAME}} ürününü v{{installedVersion}} sürümünden v{{latestVersion}} sürümüne güncellemek üzeresiniz. Yeni sürüm çalışan sürümün yanında başlatılır; başlamazsa önceki sürüm çalışmaya devam eder. Yedek otomatik olarak oluşturulmaz — gerekiyorsa önce bir yedek oluşturun.",
       "noNotesWereWrittenFor": "Bu sürüm için not yazılmamış.",
       "recommendedUpdate": "v{{version}} Önerilen Güncelleme",
       "installCore": "Çekirdek v{{version}} Sürümünü Yükle",

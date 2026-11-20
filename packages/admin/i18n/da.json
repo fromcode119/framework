@@ -1058,6 +1058,20 @@
     }
   },
   "plugins": {
+    "events": {
+      "title": "Events",
+      "loading": "Loading…",
+      "none": "No failed event deliveries.",
+      "event": "Event",
+      "plugin": "Plugin",
+      "attempts": "Attempts",
+      "error": "Error",
+      "retry": "Retry",
+      "retried": "Retried",
+      "retriedDetail": "The listener handled the event.",
+      "retryFailed": "Retry failed",
+      "platformOnly": "Event deliveries span every site, so only a platform admin can see them."
+    },
     "detail": {
       "installed": "Installeret",
       "health": "Tilstand",
@@ -1367,6 +1381,7 @@
       "reApproveAllHeld": "Gennemgå og godkend",
       "needsAttention": "Kræver opmærksomhed",
       "needsReApproval": "Skal godkendes igen",
+      "needsNewerCore": "Needs a newer platform",
       "capabilityChangeSinceApproval": "Ændrede rettigheder siden godkendelse: {{drift}}",
       "heldPendingReApprovalOf": "Tilbageholdt, indtil de ændrede rettigheder er godkendt igen.",
       "approveEnable": "Godkend og aktivér",
@@ -1707,6 +1722,7 @@
       "allUpToDate": "Alle installerede plugins har allerede den nyeste version fra markedspladsen.",
       "updatingPlugin": "{{remaining}} tilbage — opdaterer {{pluginSlug}} til v{{version}}...",
       "pluginUpdateFailed": "Opdatering af {{pluginSlug}} mislykkedes: {{error}} — fortsætter med resten.",
+      "pluginUpdateHeldForCore": "{{pluginSlug}} v{{version}} needs a newer platform (core {{required}}) — held back until you update the core.",
       "allUpdatesRestarting": "Alle {{count}} opdatering(er) er installeret — genstarter API'et for de plugins, der kører i det...",
       "allUpdatesReplaced": "Alle {{count}} opdatering(er) er installeret; hvert plugins proces blev udskiftet på stedet.",
       "pluginReloaded": "Pluginet \"{{pluginSlug}}\" blev udskiftet, og dets proces blev genstartet med den nye kode. Ingen genstart af API'et nødvendig.",
@@ -2979,6 +2995,7 @@
       "applyingUpdate": "Installerer opdatering...",
       "applySystemUpdate": "Installer systemopdatering?",
       "youAreAboutToUpdate": "Du er ved at opdatere {{PRODUCT_NAME}} fra v{{installedVersion}} til v{{latestVersion}}. Der oprettes automatisk en komplet systembackup, før der fortsættes. Processen overskriver systemfiler og kan medføre en midlertidig driftsforstyrrelse, mens serveren genstarter.",
+      "youAreAboutToUpdateBesideRunning": "Du er ved at opdatere {{PRODUCT_NAME}} fra v{{installedVersion}} til v{{latestVersion}}. Den nye version starter ved siden af den kørende; hvis den ikke starter, fortsætter den forrige version. Der oprettes ikke automatisk en sikkerhedskopi — opret en først, hvis du har brug for den.",
       "noNotesWereWrittenFor": "Der er ikke skrevet noter til denne udgivelse.",
       "recommendedUpdate": "v{{version}} Anbefalet opdatering",
       "installCore": "Installer kerne v{{version}}",

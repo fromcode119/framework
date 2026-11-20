@@ -2,6 +2,7 @@ import { FieldPosition } from '@core/enums/field-position.enum';
 import { NamingStrategy } from '@fromcode119/database/naming-strategy';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
+import { PluginCollectionFieldOwnership } from '@core/plugin/services/plugin-collection-field-ownership';
 import { CollectionArchive } from '@core/collections/collection-archive';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
@@ -70,6 +71,9 @@ export class PluginEntityRegistrationService {
 
   applyFrameworkFields(collection: ICollection): ICollection {
     const nextCollection = { ...collection, fields: this.cloneFields(collection.fields || []) };
+    // Marked BEFORE the framework adds its own below, so a later release of the owner can drop the
+    // fields it declared and no others (refreshOwnCollection).
+    PluginCollectionFieldOwnership.claim(nextCollection.fields);
 
     if (nextCollection.workflow) {
       this.ensureWorkflowFields(nextCollection);
@@ -89,9 +93,12 @@ export class PluginEntityRegistrationService {
   /**
    * The OWNING plugin registered its collection again — its process was swapped for new code. Its
    * declared fields replace the definitions held since boot (a field turned read-only, relabelled,
-   * given new options), and new ones are added. Fields it no longer declares stay until a restart:
-   * another plugin may have extended this collection, and dropping a field here would hide its data.
-   * Without this, an in-place update kept every changed field definition until the api restarted.
+   * given new options), new ones are added, and the ones it USED to declare and no longer does are
+   * dropped. Only its own: a field another plugin added by extending this collection, and the ones
+   * the framework ensures (workflow, archive, permalink), are kept whatever the owner declares — they
+   * are marked at registration (`markOwnDeclaration`), so "the owner's" is known rather than guessed.
+   * Without the drop, a release that REMOVED a control left it on the console's screens, writing a
+   * column nothing reads, until the api restarted.
    *
    * Its `access` and `hooks` are replaced outright: they are the owner's alone, and an isolated
    * plugin's are calls into the process that was just replaced — kept, every read of the collection
@@ -127,17 +134,26 @@ export class PluginEntityRegistrationService {
     // field the api already had (an update put a new select under the last field of the form until the
     // api restarted). What the release does not declare keeps its place after them, as at boot: the
     // framework's own fields and another plugin's extension fields.
+    PluginCollectionFieldOwnership.claim(incoming.fields);
     const declared = new Set(incoming.fields.map((field: IField) => field.name));
-    const next = [...incoming.fields, ...existing.fields.filter((field: IField) => !declared.has(field.name))];
+    const next = [...incoming.fields, ...existing.fields.filter((field: IField) => (
+      !declared.has(field.name) && !PluginCollectionFieldOwnership.claimed(field)
+    ))];
     // A NEW array, not the old one edited: caches keyed by the fields array (the data processor's
     // password/array field lists) recompute only for a new identity or length — a field turned into
     // a password in place would otherwise keep being returned raw.
     existing.fields = next;
   }
 
+  /**
+   * ANOTHER plugin extends a collection: its fields join the owner's. They are not the owner's
+   * declaration — every field came through `applyFrameworkFields`, which marks them, so the mark is
+   * taken off here. Otherwise the owner's next release would drop an extension it never declared.
+   */
   mergeCollectionFields(existing: ICollection, incoming: ICollection): void {
     const fieldNames = new Set(existing.fields.map((field: IField) => field.name));
     for (const field of incoming.fields) {
+      PluginCollectionFieldOwnership.release(field);
       if (!fieldNames.has(field.name)) {
         existing.fields.push(field);
       }
