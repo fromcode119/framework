@@ -2655,6 +2655,25 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-person-field__meta--warn { color: var(--fc-warning-strong); }
 .fc-person-field__open { font-weight: var(--fc-weight-strong); color: var(--fc-text); text-decoration: underline; text-underline-offset: 2px; }
 
+/* The first steps of a new installation: a numbered list in a card, the next step's button the primary one. */
+.fc-setup__note { margin-block-end: 8px; }
+.fc-setup__steps { margin: 0; padding: 0; list-style: none; }
+.fc-setup__step { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.fc-setup__step + .fc-setup__step { border-top: 1px solid var(--fc-border); }
+.fc-setup__marker { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid var(--fc-border); border-radius: 999px; font-size: 12px; font-weight: var(--fc-weight-strong); color: var(--fc-text-muted); }
+.fc-setup__step[data-next] .fc-setup__marker { border-color: var(--fc-text); color: var(--fc-text); }
+.fc-setup__step[data-done] .fc-setup__marker { border-color: var(--fc-success-soft-border); background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-setup__text { flex: 1; min-width: 0; }
+.fc-setup__title { font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-setup__step[data-done] .fc-setup__title { color: var(--fc-text-muted); text-decoration: line-through; }
+.fc-setup__detail { font-size: 12px; line-height: 18px; color: var(--fc-text-muted); }
+/* On a phone the step's button goes under its text, in line with it, instead of squeezing it to a column. */
+@media (max-width: 639px) {
+  .fc-setup__step { flex-wrap: wrap; align-items: flex-start; row-gap: 8px; }
+  .fc-setup__text { flex-basis: calc(100% - 36px); }
+  .fc-setup__step > :last-child:not(.fc-setup__text) { margin-inline-start: 36px; }
+}
+
 /* ── Asking before something cannot be undone ────────────────────────────────────────────────────
  * ConfirmDialog. Measured against the record pages this one follows: 400px wide, 24px of inset on
  * every side, title 16/24 and the two buttons at the end of their row. Ours was 448 wide with 20px
