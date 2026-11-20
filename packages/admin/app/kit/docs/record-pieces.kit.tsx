@@ -30,7 +30,7 @@ export class RecordPiecesKit {
                 </RecordCard>
               </div>
             ),
-            code: '<ValueRow label="Width">{KitCopy.t('docs.record-pieces.widthValue')}</ValueRow>\n<ValueRow label="Height" empty>–</ValueRow>\n<ValueRow label="Size" action={<Button …/>}>S · M · L</ValueRow>',
+            code: '<ValueRow label="Width">20 cm</ValueRow>\n<ValueRow label="Height" empty>–</ValueRow>\n<ValueRow label="Size" action={<Button …/>}>S · M · L</ValueRow>',
           },
         ],
         options: [
