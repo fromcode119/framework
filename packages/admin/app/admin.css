@@ -3834,3 +3834,5 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-switch-field > .fc-switch:only-child { margin-inline-start: auto; }
 .fc-switch-field__text { display: flex; flex-direction: column; min-width: 0; cursor: pointer; user-select: none; }
 .fc-switch-field__text--off { cursor: not-allowed; opacity: .6; }
+
+.fc-form-foot > .fc-form-grid { flex: 1 1 100%; }

@@ -1,3 +1,7 @@
+import { RecordCard } from '@/components/ui/view/record-card.client';
+import { Text } from '@/components/ui/view/text.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { Label } from '@/components/ui/view/label.client';
 import { PendingSave } from '@/lib/settings/pending-save';
 import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ChangeEvent, ReactNode } from 'react';
@@ -7,9 +11,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { Card } from '@/components/ui/view/card.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { PlatformAddressSuggestion } from '@/app/settings/infrastructure/platform-address-suggestion.client';
 import { Select } from '@/components/ui/view/select.client';
@@ -40,6 +42,8 @@ export class CertificatesSettingsCard extends AdminComponent {
 
   /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
   private pending: PendingSave | null = null;
+  /** A token typed now: nothing typed is nothing to save, so a blank field keeps the stored one. */
+  private pendingToken: PendingSave | null = null;
 
   componentDidUpdate(): void {
     PendingSaves.changed();
@@ -47,6 +51,7 @@ export class CertificatesSettingsCard extends AdminComponent {
 
   componentWillUnmount(): void {
     this.pending?.dispose();
+    this.pendingToken?.dispose();
   }
 
   async componentDidMount(): Promise<void> {
@@ -55,6 +60,12 @@ export class CertificatesSettingsCard extends AdminComponent {
       () => this.save(),
       (values) => { this.directory = values.directory; this.contactEmail = values.contactEmail; this.addresses = values.addresses; },
     );
+    this.pendingToken = new PendingSave(
+      () => this.cloudflareTokenInput.trim(),
+      () => this.saveCloudflareToken(),
+      (value) => { this.cloudflareTokenInput = value; },
+    );
+    this.pendingToken.mark();
     const settings = await AdminSystemSettingsClient.getAll().catch(() => ({} as Record<string, any>));
     this.directory = String(settings?.certificate_acme_directory ?? '');
     this.contactEmail = String(settings?.certificate_acme_contact_email ?? '');
@@ -91,6 +102,7 @@ export class CertificatesSettingsCard extends AdminComponent {
       this.cloudflareTokenInput = '';
       this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.savedDns01WildcardCertificates');
     } catch (err: any) {
+      this.pendingToken?.failed();
       this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
@@ -143,77 +155,53 @@ export class CertificatesSettingsCard extends AdminComponent {
 
   render(): ReactNode {
     if (!this.isLoaded) return null;
-    const dark = this.theme === ThemeMode.DARK;
-    const label = `block text-xs font-medium mb-1.5 ${dark ? 'text-slate-300' : 'text-slate-600'}`;
-    const help = `mt-1.5 text-[12px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`;
-
     return (
-      <Card title={AdminI18n.t('settings.infrastructure.certificates')}>
-        <p className={`text-sm mb-5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          {AdminI18n.t('settings.infrastructure.leaveTheseBlankAndThe')}
-        </p>
+      <RecordCard title={AdminI18n.t('settings.infrastructure.certificates')}>
+        <div className="fc-form-stack">
+          <Text size="small" muted as="p">{AdminI18n.t('settings.infrastructure.leaveTheseBlankAndThe')}</Text>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div>
-            <label className={label}>{AdminI18n.t('settings.infrastructure.certificateAuthority')}</label>
-            <Select value={this.directory} onChange={this.onDirectory} options={this.options} theme={this.theme} />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.pickTheStagingAuthorityTo')}
-            </p>
-
-            <label className={`${label} mt-5`}>{AdminI18n.t('settings.infrastructure.contactEmailForTheAuthority')}</label>
-            <Input value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.optionalUsedForAccountNotices')}
-            </p>
+          <div className="fc-form-grid">
+            <div className="fc-form-stack">
+              <div className="fc-field-stack">
+                <Select label={AdminI18n.t('settings.infrastructure.certificateAuthority')} value={this.directory} onChange={this.onDirectory} options={this.options} theme={this.theme} />
+                <Hint>{AdminI18n.t('settings.infrastructure.pickTheStagingAuthorityTo')}</Hint>
+              </div>
+              <div className="fc-field-stack">
+                <Input label={AdminI18n.t('settings.infrastructure.contactEmailForTheAuthority')} value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
+                <Hint>{AdminI18n.t('settings.infrastructure.optionalUsedForAccountNotices')}</Hint>
+              </div>
+            </div>
+            <div className="fc-field-stack">
+              <Label>{AdminI18n.t('settings.infrastructure.publicAddressesOfThisPlatform')}</Label>
+              <PlatformAddressSuggestion candidates={this.candidates} onUse={this.applyDetected} />
+              <TextArea value={this.addresses} onChange={this.onAddresses} placeholder={'203.0.113.10'} />
+              <Hint>{AdminI18n.t('settings.infrastructure.onePerLineTheseAre')}</Hint>
+            </div>
           </div>
 
-          <div>
-            <label className={label}>{AdminI18n.t('settings.infrastructure.publicAddressesOfThisPlatform')}</label>
-            <PlatformAddressSuggestion candidates={this.candidates} onUse={this.applyDetected} />
-            <TextArea
-              value={this.addresses}
-              onChange={this.onAddresses}
-              placeholder={'203.0.113.10'}
-              inputClassName="h-24 font-mono text-[12px] resize-y"
-            />
-            <p className={help}>
-              {AdminI18n.t('settings.infrastructure.onePerLineTheseAre')}
-            </p>
+          <div className="fc-form-foot">
+            <div className="fc-form-grid">
+              <div className="fc-field-stack">
+                <Input
+                  label={AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')}
+                  value={this.cloudflareTokenInput}
+                  onChange={this.onCloudflareToken}
+                  type="password"
+                  autoComplete="off"
+                  placeholder={this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.savedLeaveBlankToKeep') : AdminI18n.t('settings.infrastructure.pasteACloudflareApiToken')}
+                />
+                <Hint variant={this.isCloudflareConfigured && !this.cloudflareTokenMessage ? 'success' : 'info'}>
+                  {this.cloudflareTokenMessage || (this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard'))}
+                </Hint>
+                {this.isCloudflareConfigured ? (
+                  <div><Button variant={ButtonVariant.SECONDARY} onClick={this.clearCloudflareToken} isLoading={this.isSavingCloudflareToken}>{AdminI18n.t('settings.infrastructure.clear')}</Button></div>
+                ) : null}
+              </div>
+              <Text size="small" muted as="p"><AdminRichText k="settings.infrastructure.dnsTokenHint" /></Text>
+            </div>
           </div>
         </div>
-
-
-        <div className={`mt-6 pt-5 border-t ${dark ? 'border-white/10' : 'border-slate-200'}`}>
-          <label className={label}>{AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')}</label>
-          <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            <AdminRichText k="settings.infrastructure.dnsTokenHint" />
-          </p>
-          <div className="flex items-center gap-2 max-w-md">
-            <Input
-              value={this.cloudflareTokenInput}
-              onChange={this.onCloudflareToken}
-              type="password"
-              placeholder={this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.savedLeaveBlankToKeep') : AdminI18n.t('settings.infrastructure.pasteACloudflareApiToken')}
-            />
-            <Button onClick={this.saveCloudflareToken} isLoading={this.isSavingCloudflareToken} icon={<FrameworkIcons.Save size={14} />}>
-              {AdminI18n.t('settings.infrastructure.save')}
-            </Button>
-            {this.isCloudflareConfigured ? (
-              <Button variant={ButtonVariant.GHOST} onClick={this.clearCloudflareToken} isLoading={this.isSavingCloudflareToken}>
-                {AdminI18n.t('settings.infrastructure.clear')}
-              </Button>
-            ) : null}
-          </div>
-          {this.cloudflareTokenMessage ? (
-            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.cloudflareTokenMessage}</p>
-          ) : (
-            <p className={`mt-2 text-[12px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              {this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard')}
-            </p>
-          )}
-        </div>
-      </Card>
+      </RecordCard>
     );
   }
 }
