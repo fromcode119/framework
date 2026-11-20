@@ -161,7 +161,8 @@
       "noGroup": "그룹 없음",
       "reorderHandle": "드래그하여 순서 변경 — 또는 포커스한 후 화살표 키 사용",
       "reorderEnable": "순서를 변경하려면 목록을 기본 순서로 표시하세요",
-      "reorderFailed": "새 순서를 저장할 수 없습니다"
+      "reorderFailed": "새 순서를 저장할 수 없습니다",
+      "noMatch": "검색 또는 필터와 일치하는 항목이 없습니다."
     },
     "edit": {
       "sectionShow": "표시",

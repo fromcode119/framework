@@ -161,7 +161,8 @@
       "noGroup": "Bez skupiny",
       "reorderHandle": "Přetažením změníte pořadí — nebo použijte šipky po zaměření",
       "reorderEnable": "Pro změnu pořadí zobrazte seznam ve vlastním pořadí",
-      "reorderFailed": "Nové pořadí se nepodařilo uložit"
+      "reorderFailed": "Nové pořadí se nepodařilo uložit",
+      "noMatch": "Hledání ani filtrům nic neodpovídá."
     },
     "edit": {
       "sectionShow": "Zobrazit",

@@ -161,7 +161,8 @@
       "noGroup": "Không có nhóm",
       "reorderHandle": "Kéo để sắp xếp lại — hoặc chọn rồi dùng các phím mũi tên",
       "reorderEnable": "Hiển thị danh sách theo thứ tự riêng để sắp xếp lại",
-      "reorderFailed": "Không thể lưu thứ tự mới"
+      "reorderFailed": "Không thể lưu thứ tự mới",
+      "noMatch": "Không có gì khớp với tìm kiếm hoặc bộ lọc."
     },
     "edit": {
       "sectionShow": "Hiện",

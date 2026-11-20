@@ -161,7 +161,8 @@
       "noGroup": "Keine Gruppe",
       "reorderHandle": "Zum Umsortieren ziehen – oder fokussieren und die Pfeiltasten verwenden",
       "reorderEnable": "Zeigen Sie die Liste in ihrer eigenen Reihenfolge an, um sie umzusortieren",
-      "reorderFailed": "Die neue Reihenfolge konnte nicht gespeichert werden"
+      "reorderFailed": "Die neue Reihenfolge konnte nicht gespeichert werden",
+      "noMatch": "Nichts entspricht deiner Suche oder deinen Filtern."
     },
     "edit": {
       "sectionShow": "Einblenden",

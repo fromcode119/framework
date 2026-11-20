@@ -161,7 +161,8 @@
       "noGroup": "Tiada kumpulan",
       "reorderHandle": "Seret untuk menyusun semula — atau fokus dan gunakan kekunci anak panah",
       "reorderEnable": "Paparkan senarai mengikut susunannya sendiri untuk menyusunnya semula",
-      "reorderFailed": "Susunan baharu tidak dapat disimpan"
+      "reorderFailed": "Susunan baharu tidak dapat disimpan",
+      "noMatch": "Tiada yang sepadan dengan carian atau penapis anda."
     },
     "edit": {
       "sectionShow": "Tunjukkan",

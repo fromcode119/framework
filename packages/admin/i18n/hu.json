@@ -161,7 +161,8 @@
       "noGroup": "Nincs csoport",
       "reorderHandle": "Húzza az átrendezéshez – vagy jelölje ki, és használja a nyílbillentyűket",
       "reorderEnable": "Az átrendezéshez jelenítse meg a listát a saját sorrendjében",
-      "reorderFailed": "Az új sorrendet nem sikerült menteni"
+      "reorderFailed": "Az új sorrendet nem sikerült menteni",
+      "noMatch": "Semmi sem felel meg a keresésnek vagy a szűrőknek."
     },
     "edit": {
       "sectionShow": "Megjelenítés",

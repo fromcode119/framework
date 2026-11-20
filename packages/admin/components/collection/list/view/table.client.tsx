@@ -35,6 +35,8 @@ export class CollectionListTable extends PureReactor {
   @prop declare page: number;
   @prop declare pageSize: number;
   @prop declare search: string;
+  /** A search or a filter is narrowing the list. */
+  @prop declare narrowed?: boolean;
   @prop declare columns: any[];
   @prop declare layout: CollectionListLayout;
   @prop declare cardCells: ReadonlyMap<string, (row: any) => ReactNode>;
@@ -228,6 +230,12 @@ export class CollectionListTable extends PureReactor {
     );
   }
 
+  /** A failed load says so; a search or filter with no answer says nothing matches; otherwise the list's own empty words. */
+  private get emptyMessage(): string | undefined {
+    if (this.loadError) return this.loadError;
+    return this.narrowed ? AdminI18n.t('collection.list.noMatch') : undefined;
+  }
+
   render(): ReactNode {
     const sections = this.sections;
     const slotProps = { collection: this.collection, pluginSlug: this.pluginSlug, resolvedSlug: this.resolvedSlug, total: this.total, page: this.page, search: this.search };
@@ -249,7 +257,7 @@ export class CollectionListTable extends PureReactor {
               onPageChange={this.onPageChange}
               onSort={this.onSort}
               currentSort={this.sort}
-              emptyMessage={this.loadError || undefined}
+              emptyMessage={this.emptyMessage}
               onRowClick={this.onRowClick}
               selectable
               selectedIds={this.selectedIds}
@@ -266,7 +274,7 @@ export class CollectionListTable extends PureReactor {
               layout={this.layout}
               cells={this.cardCells}
               loading={this.loading}
-              emptyMessage={this.loadError || undefined}
+              emptyMessage={this.emptyMessage}
               total={this.total}
               page={this.page}
               pageSize={this.pageSize}

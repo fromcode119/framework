@@ -161,7 +161,8 @@
       "noGroup": "Aucun groupe",
       "reorderHandle": "Faites glisser pour réordonner, ou placez le focus et utilisez les flèches du clavier",
       "reorderEnable": "Affichez la liste dans son ordre propre pour la réordonner",
-      "reorderFailed": "Le nouvel ordre n’a pas pu être enregistré"
+      "reorderFailed": "Le nouvel ordre n’a pas pu être enregistré",
+      "noMatch": "Rien ne correspond à votre recherche ou à vos filtres."
     },
     "edit": {
       "sectionShow": "Afficher",

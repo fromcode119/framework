@@ -161,7 +161,8 @@
       "noGroup": "Bez grupe",
       "reorderHandle": "Povucite za promjenu redoslijeda ili fokusirajte i koristite tipke sa strelicama",
       "reorderEnable": "Prikažite popis prema vlastitom redoslijedu kako biste ga mogli preurediti",
-      "reorderFailed": "Novi redoslijed nije moguće spremiti"
+      "reorderFailed": "Novi redoslijed nije moguće spremiti",
+      "noMatch": "Ništa ne odgovara pretrazi ili filtrima."
     },
     "edit": {
       "sectionShow": "Prikaži",

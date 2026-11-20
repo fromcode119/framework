@@ -161,7 +161,8 @@
       "noGroup": "Gan ghrúpa",
       "reorderHandle": "Tarraing chun an t-ord a athrú — nó dírigh air agus úsáid na saigheadeochracha",
       "reorderEnable": "Taispeáin an liosta ina ord féin chun an t-ord a athrú",
-      "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil"
+      "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil",
+      "noMatch": "Níl aon rud ag teacht le do chuardach ná le do scagairí."
     },
     "edit": {
       "sectionShow": "Taispeáin",

@@ -46,6 +46,8 @@ export class CollectionListPageProps {
     const tableProps = {
       collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort, access,
       layout, cardCells, pageSize,
+      // A search or a filter is narrowing the list: an empty answer then means "nothing matches", not "nothing yet".
+      narrowed: Boolean(String(search || '').trim()) || statusFilter !== 'all' || Object.values(fieldFilters || {}).some((value) => Boolean(value) && value !== 'all'),
       stickyColumnIds,
       arrangement, arranged, onArrange: handleArrange, onArrangeMode: enterArrangeMode,
       onArchive: archivable ? (id: string, archiving: boolean) => handleArchive([id], archiving) : undefined,

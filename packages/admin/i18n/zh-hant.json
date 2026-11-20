@@ -161,7 +161,8 @@
       "noGroup": "無群組",
       "reorderHandle": "拖曳以重新排序，或聚焦後使用方向鍵",
       "reorderEnable": "以清單自訂順序顯示後即可重新排序",
-      "reorderFailed": "無法儲存新的順序"
+      "reorderFailed": "無法儲存新的順序",
+      "noMatch": "沒有符合搜尋或篩選條件的項目。"
     },
     "edit": {
       "sectionShow": "顯示",

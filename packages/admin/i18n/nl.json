@@ -161,7 +161,8 @@
       "noGroup": "Geen groep",
       "reorderHandle": "Sleep om de volgorde te wijzigen — of geef focus en gebruik de pijltjestoetsen",
       "reorderEnable": "Toon de lijst in de eigen volgorde om deze te wijzigen",
-      "reorderFailed": "De nieuwe volgorde kon niet worden opgeslagen"
+      "reorderFailed": "De nieuwe volgorde kon niet worden opgeslagen",
+      "noMatch": "Niets komt overeen met je zoekopdracht of filters."
     },
     "edit": {
       "sectionShow": "Tonen",

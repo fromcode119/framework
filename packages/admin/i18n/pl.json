@@ -161,7 +161,8 @@
       "noGroup": "Bez grupy",
       "reorderHandle": "Przeciągnij, aby zmienić kolejność — lub zaznacz i użyj klawiszy strzałek",
       "reorderEnable": "Wyświetl listę w jej własnej kolejności, aby móc ją zmieniać",
-      "reorderFailed": "Nie udało się zapisać nowej kolejności"
+      "reorderFailed": "Nie udało się zapisać nowej kolejności",
+      "noMatch": "Nic nie pasuje do wyszukiwania ani filtrów."
     },
     "edit": {
       "sectionShow": "Pokaż",

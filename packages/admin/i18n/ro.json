@@ -161,7 +161,8 @@
       "noGroup": "Fără grup",
       "reorderHandle": "Trageți pentru a reordona — sau focalizați și folosiți tastele săgeți",
       "reorderEnable": "Afișați lista în ordinea proprie pentru a o reordona",
-      "reorderFailed": "Noua ordine nu a putut fi salvată"
+      "reorderFailed": "Noua ordine nu a putut fi salvată",
+      "noMatch": "Nimic nu se potrivește căutării sau filtrelor."
     },
     "edit": {
       "sectionShow": "Afișează",

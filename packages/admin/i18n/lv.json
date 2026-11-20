@@ -161,7 +161,8 @@
       "noGroup": "Bez grupas",
       "reorderHandle": "Velciet, lai mainītu secību, vai fokusējiet un izmantojiet bulttaustiņus",
       "reorderEnable": "Lai mainītu secību, rādiet sarakstu tā paša secībā",
-      "reorderFailed": "Jauno secību neizdevās saglabāt"
+      "reorderFailed": "Jauno secību neizdevās saglabāt",
+      "noMatch": "Meklēšanai vai filtriem nekas neatbilst."
     },
     "edit": {
       "sectionShow": "Rādīt",

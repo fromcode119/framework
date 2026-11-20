@@ -161,7 +161,8 @@
       "noGroup": "Walang grupo",
       "reorderHandle": "I-drag para ayusin ang pagkakasunod — o i-focus at gamitin ang mga arrow key",
       "reorderEnable": "Ipakita ang listahan sa sarili nitong pagkakasunod para maayos ito",
-      "reorderFailed": "Hindi ma-save ang bagong pagkakasunod"
+      "reorderFailed": "Hindi ma-save ang bagong pagkakasunod",
+      "noMatch": "Walang tumutugma sa iyong paghahanap o mga filter."
     },
     "edit": {
       "sectionShow": "Ipakita",

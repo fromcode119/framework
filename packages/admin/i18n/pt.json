@@ -161,7 +161,8 @@
       "noGroup": "Sem grupo",
       "reorderHandle": "Arraste para reordenar — ou selecione e use as teclas de seta",
       "reorderEnable": "Mostre a lista na sua própria ordem para a reordenar",
-      "reorderFailed": "Não foi possível guardar a nova ordem"
+      "reorderFailed": "Não foi possível guardar a nova ordem",
+      "noMatch": "Nada corresponde à sua pesquisa ou filtros."
     },
     "edit": {
       "sectionShow": "Mostrar",

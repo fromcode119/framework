@@ -161,7 +161,8 @@
       "noGroup": "L-ebda grupp",
       "reorderHandle": "Kaxkar biex tirranġa mill-ġdid — jew iffoka u uża l-vleġeġ tat-tastiera",
       "reorderEnable": "Uri l-lista fl-ordni tagħha stess biex tirranġaha mill-ġdid",
-      "reorderFailed": "L-ordni l-ġdida ma setgħetx tiġi ssejvjata"
+      "reorderFailed": "L-ordni l-ġdida ma setgħetx tiġi ssejvjata",
+      "noMatch": "Xejn ma jaqbel mat-tfittxija jew mal-filtri tiegħek."
     },
     "edit": {
       "sectionShow": "Uri",

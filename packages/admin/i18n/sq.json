@@ -161,7 +161,8 @@
       "noGroup": "Pa grup",
       "reorderHandle": "Tërhiqeni për ta rirenditur — ose fokusojeni dhe përdorni tastet me shigjeta",
       "reorderEnable": "Shfaqeni listën në renditjen e saj për ta rirenditur",
-      "reorderFailed": "Renditja e re nuk u ruajt dot"
+      "reorderFailed": "Renditja e re nuk u ruajt dot",
+      "noMatch": "Asgjë nuk përputhet me kërkimin ose filtrat."
     },
     "edit": {
       "sectionShow": "Shfaq",

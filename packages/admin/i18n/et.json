@@ -161,7 +161,8 @@
       "noGroup": "Grupita",
       "reorderHandle": "Lohistage järjestuse muutmiseks või fokuseerige ja kasutage nooleklahve",
       "reorderEnable": "Järjestuse muutmiseks kuvage loend selle oma järjestuses",
-      "reorderFailed": "Uut järjestust ei õnnestunud salvestada"
+      "reorderFailed": "Uut järjestust ei õnnestunud salvestada",
+      "noMatch": "Otsingule või filtritele ei vasta midagi."
     },
     "edit": {
       "sectionShow": "Näita",

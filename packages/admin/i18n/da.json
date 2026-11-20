@@ -161,7 +161,8 @@
       "noGroup": "Ingen gruppe",
       "reorderHandle": "Træk for at ændre rækkefølgen — eller fokusér og brug piletasterne",
       "reorderEnable": "Vis listen i dens egen rækkefølge for at ændre rækkefølgen",
-      "reorderFailed": "Den nye rækkefølge kunne ikke gemmes"
+      "reorderFailed": "Den nye rækkefølge kunne ikke gemmes",
+      "noMatch": "Intet matcher din søgning eller dine filtre."
     },
     "edit": {
       "sectionShow": "Vis",

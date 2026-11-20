@@ -161,7 +161,8 @@
       "noGroup": "Ingen grupp",
       "reorderHandle": "Dra för att ändra ordning – eller fokusera och använd piltangenterna",
       "reorderEnable": "Visa listan i dess egen ordning för att kunna ändra ordningen",
-      "reorderFailed": "Den nya ordningen kunde inte sparas"
+      "reorderFailed": "Den nya ordningen kunde inte sparas",
+      "noMatch": "Inget matchar din sökning eller dina filter."
     },
     "edit": {
       "sectionShow": "Visa",

@@ -161,7 +161,8 @@
       "noGroup": "Brez skupine",
       "reorderHandle": "Povlecite za spremembo vrstnega reda ali pa izberite element in uporabite puščične tipke",
       "reorderEnable": "Za spreminjanje vrstnega reda prikažite seznam v njegovem lastnem vrstnem redu",
-      "reorderFailed": "Novega vrstnega reda ni bilo mogoče shraniti"
+      "reorderFailed": "Novega vrstnega reda ni bilo mogoče shraniti",
+      "noMatch": "Nič se ne ujema z iskanjem ali filtri."
     },
     "edit": {
       "sectionShow": "Prikaži",

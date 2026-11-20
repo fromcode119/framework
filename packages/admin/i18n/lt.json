@@ -161,7 +161,8 @@
       "noGroup": "Be grupės",
       "reorderHandle": "Vilkite, kad pakeistumėte tvarką, arba pažymėkite ir naudokite rodyklių klavišus",
       "reorderEnable": "Norėdami keisti tvarką, rodykite sąrašą jo paties tvarka",
-      "reorderFailed": "Nepavyko išsaugoti naujos tvarkos"
+      "reorderFailed": "Nepavyko išsaugoti naujos tvarkos",
+      "noMatch": "Paieškos ar filtrų neatitinka niekas."
     },
     "edit": {
       "sectionShow": "Rodyti",
