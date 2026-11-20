@@ -14,7 +14,6 @@ import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interfa
  */
 export class RecordsHubItemRow extends PureReactor {
   @prop declare item: IRecordsHubItem;
-  @prop declare dark: boolean;
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
   @prop declare onDownloadItem?: (item: IRecordsHubItem) => void;
 

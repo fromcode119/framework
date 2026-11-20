@@ -26,6 +26,8 @@ export class RecordsHubImplementation extends Reactor {
   /** Host handler for opening/downloading an item (href nav or authed download). */
   @prop declare onOpenItem?: (item: IRecordsHubItem) => void;
   @prop declare onDownloadItem?: (item: IRecordsHubItem) => void;
+  /** No longer read: the hub draws in the console's colours, which follow its light/dark mode by
+      themselves. Still accepted, because plugin pages pass it. */
   @prop declare theme?: ThemeMode | string;
   @prop declare title?: string;
   @prop declare emptyHint?: string;
@@ -86,25 +88,12 @@ export class RecordsHubImplementation extends Reactor {
     return order.map((group) => ({ group, items: buckets.get(group)! }));
   }
 
-
-  /**
-   * `theme` arrives as the member OR its string (`theme.value` — the People page, and every plugin
-   * page, pass the string). Comparing the raw prop to the member was false for the string, so the
-   * hub rendered light on the dark admin everywhere.
-   */
-  private isDark(): boolean {
-    return ThemeMode.resolve(this.theme) === ThemeMode.DARK;
-  }
-
-
-
   /** Resolves an icon name to a component (FileText for unknown names); icons resolve lazily at render time. */
   private icon(name: string): ComponentType<any> {
     return FrameworkIcons.getIcon(LucideLazyLoader.has(name) ? name : 'FileText');
   }
 
   render(): ReactNode {
-    const dark = this.isDark();
     const IconInbox = this.icon('Inbox');
     const IconAlertTriangle = this.icon('AlertTriangle');
     const { loading, error, groups, total, activeGroup, errors } = this;
@@ -143,7 +132,7 @@ export class RecordsHubImplementation extends Reactor {
               <span className="fc-empty__text"><span className="fc-empty__title">{this.emptyHint || ViewTranslations.t('view.recordsHub.empty')}</span></span>
             </div>
           ) : (
-            <div className="fc-stack">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
+            <div className="fc-stack">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
           )}
           {errors.length ? (
             <div className="fc-alert" data-tone="warning" role="status">

@@ -162,7 +162,6 @@ export class PersonEditPage extends PersonEditPageActions {
 
           <div>
             <RecordsHub
-              theme={theme.value}
               title={AdminI18n.t('users.documentsRecords')}
               emptyHint={AdminI18n.t('users.noDocumentsOrRecordsLinked')}
               reloadKey={person.id}
