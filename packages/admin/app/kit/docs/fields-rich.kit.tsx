@@ -41,13 +41,15 @@ export class FieldsRichKit {
       },
       {
         slug: 'color-field', name: 'ColorField', group: 'Forms',
-        intro: 'A colour: a swatch that opens the picker, and its value to type.',
+        intro: 'A colour: a field showing the colour and its value, opening a palette, a picker and the value to type. Plugins may import it as ColorPicker; it is the same control.',
         from: "import { ColorField } from '@fromcode119/sdk/admin';",
         examples: [
           { title: 'Plain and disabled', demo: <><KitPlay initial="#3b82f6">{(value, set) => <ColorField value={value} onChange={set} />}</KitPlay><ColorField value="#18181b" onChange={() => undefined} disabled /></>, code: '<ColorField value={colour} onChange={setColour} />\n<ColorField value={colour} onChange={setColour} disabled />' },
+          { title: 'Not set, and a colour that is not a hex', demo: <><KitPlay initial="">{(value, set) => <ColorField value={value} onChange={set} />}</KitPlay><KitPlay initial="rgb(16, 185, 129)">{(value, set) => <ColorField value={value} onChange={set} />}</KitPlay></>, code: '<ColorField value="" onChange={setColour} />\n<ColorField value="rgb(16, 185, 129)" onChange={setColour} />' },
         ],
         options: [
-          { name: 'value, onChange', type: 'string, (value) => void', does: 'The colour as #rrggbb.' },
+          { name: 'value, onChange', type: 'string, (value) => void', does: 'The colour: a hex from the palette or picker, or any colour typed. Empty reads “Not set”.' },
+          { name: 'className', type: 'string', initial: '—', does: 'Classes on the wrapper; the field fills it.' },
           { name: 'disabled', type: 'boolean', initial: 'false', does: 'Not available.' },
         ],
       },

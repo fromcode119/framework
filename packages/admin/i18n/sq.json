@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Zgjidhni ngjyrën",
-      "colour": "Ngjyra",
-      "pick": "Zgjidhni një ngjyrë",
       "hex": "Kodi hex",
-      "confirm": "Konfirmo ngjyrën",
       "notSet": "E pacaktuar"
     },
     "dependencies": {

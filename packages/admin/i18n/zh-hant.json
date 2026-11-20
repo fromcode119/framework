@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "選擇顏色",
-      "colour": "顏色",
-      "pick": "挑選顏色",
       "hex": "十六進位色碼",
-      "confirm": "確認顏色",
       "notSet": "未設定"
     },
     "dependencies": {

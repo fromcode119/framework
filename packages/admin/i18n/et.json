@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Vali värv",
-      "colour": "Värv",
-      "pick": "Valige värv",
       "hex": "Hex-kood",
-      "confirm": "Kinnita värv",
       "notSet": "Määramata"
     },
     "dependencies": {

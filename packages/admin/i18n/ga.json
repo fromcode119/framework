@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Roghnaigh dath",
-      "colour": "Dath",
-      "pick": "Roghnaigh dath",
       "hex": "Cód Heics",
-      "confirm": "Deimhnigh an Dath",
       "notSet": "Gan socrú"
     },
     "dependencies": {

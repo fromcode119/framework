@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Pumili ng kulay",
-      "colour": "Kulay",
-      "pick": "Pumili ng kulay",
       "hex": "Hex Code",
-      "confirm": "Kumpirmahin ang Kulay",
       "notSet": "Hindi nakatakda"
     },
     "dependencies": {

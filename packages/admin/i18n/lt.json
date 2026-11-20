@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Pasirinkti spalvą",
-      "colour": "Spalva",
-      "pick": "Pasirinkite spalvą",
       "hex": "Hex kodas",
-      "confirm": "Patvirtinti spalvą",
       "notSet": "Nenustatyta"
     },
     "dependencies": {

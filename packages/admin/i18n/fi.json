@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Valitse väri",
-      "colour": "Väri",
-      "pick": "Valitse väri",
       "hex": "Hex-koodi",
-      "confirm": "Vahvista väri",
       "notSet": "Ei asetettu"
     },
     "dependencies": {

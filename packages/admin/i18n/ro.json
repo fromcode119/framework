@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Alegeți culoarea",
-      "colour": "Culoare",
-      "pick": "Alegeți o culoare",
       "hex": "Cod hex",
-      "confirm": "Confirmă culoarea",
       "notSet": "Nesetat"
     },
     "dependencies": {

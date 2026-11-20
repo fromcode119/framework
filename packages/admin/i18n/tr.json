@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Renk seçin",
-      "colour": "Renk",
-      "pick": "Bir renk seçin",
       "hex": "Hex Kodu",
-      "confirm": "Rengi Onayla",
       "notSet": "Ayarlanmadı"
     },
     "dependencies": {

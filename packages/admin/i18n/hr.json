@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Odaberite boju",
-      "colour": "Boja",
-      "pick": "Odaberite boju",
       "hex": "Hex kod",
-      "confirm": "Potvrdi boju",
       "notSet": "Nije postavljeno"
     },
     "dependencies": {

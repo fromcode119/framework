@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "색상 선택",
-      "colour": "색상",
-      "pick": "색상 선택",
       "hex": "Hex 코드",
-      "confirm": "색상 확인",
       "notSet": "설정되지 않음"
     },
     "dependencies": {

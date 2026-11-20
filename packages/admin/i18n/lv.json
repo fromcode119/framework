@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Izvēlēties krāsu",
-      "colour": "Krāsa",
-      "pick": "Izvēlieties krāsu",
       "hex": "Hex kods",
-      "confirm": "Apstiprināt krāsu",
       "notSet": "Nav iestatīts"
     },
     "dependencies": {

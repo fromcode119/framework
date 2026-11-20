@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Agħżel kulur",
-      "colour": "Kulur",
-      "pick": "Agħżel kulur",
       "hex": "Kodiċi Hex",
-      "confirm": "Ikkonferma l-Kulur",
       "notSet": "Mhux issettjat"
     },
     "dependencies": {

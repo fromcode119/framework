@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Szín kiválasztása",
-      "colour": "Szín",
-      "pick": "Válasszon színt",
       "hex": "Hexkód",
-      "confirm": "Szín megerősítése",
       "notSet": "Nincs beállítva"
     },
     "dependencies": {

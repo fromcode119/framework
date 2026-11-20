@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Chọn màu",
-      "colour": "Màu",
-      "pick": "Chọn một màu",
       "hex": "Mã Hex",
-      "confirm": "Xác nhận màu",
       "notSet": "Chưa đặt"
     },
     "dependencies": {

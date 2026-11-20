@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Choisir une couleur",
-      "colour": "Couleur",
-      "pick": "Choisissez une couleur",
       "hex": "Code hexadécimal",
-      "confirm": "Confirmer la couleur",
       "notSet": "Non défini"
     },
     "dependencies": {

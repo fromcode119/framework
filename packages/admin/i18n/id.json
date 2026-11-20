@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Pilih warna",
-      "colour": "Warna",
-      "pick": "Pilih warna",
       "hex": "Kode Hex",
-      "confirm": "Konfirmasi Warna",
       "notSet": "Belum diatur"
     },
     "dependencies": {

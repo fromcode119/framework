@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "اختيار اللون",
-      "colour": "اللون",
-      "pick": "اختر لونًا",
       "hex": "رمز Hex",
-      "confirm": "تأكيد اللون",
       "notSet": "غير محدد"
     },
     "dependencies": {

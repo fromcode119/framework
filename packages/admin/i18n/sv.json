@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Välj färg",
-      "colour": "Färg",
-      "pick": "Välj en färg",
       "hex": "Hexkod",
-      "confirm": "Bekräfta färg",
       "notSet": "Inte angiven"
     },
     "dependencies": {

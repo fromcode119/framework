@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "בחירת צבע",
-      "colour": "צבע",
-      "pick": "בחרו צבע",
       "hex": "קוד Hex",
-      "confirm": "אישור צבע",
       "notSet": "לא הוגדר"
     },
     "dependencies": {

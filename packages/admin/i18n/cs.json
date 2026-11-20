@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Vybrat barvu",
-      "colour": "Barva",
-      "pick": "Vyberte barvu",
       "hex": "Hex kód",
-      "confirm": "Potvrdit barvu",
       "notSet": "Nenastaveno"
     },
     "dependencies": {

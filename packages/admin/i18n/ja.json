@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "色を選択",
-      "colour": "色",
-      "pick": "色を選択",
       "hex": "16進コード",
-      "confirm": "色を確定",
       "notSet": "未設定"
     },
     "dependencies": {

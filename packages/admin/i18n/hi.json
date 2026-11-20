@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "रंग चुनें",
-      "colour": "रंग",
-      "pick": "एक रंग चुनें",
       "hex": "Hex कोड",
-      "confirm": "रंग की पुष्टि करें",
       "notSet": "सेट नहीं है"
     },
     "dependencies": {

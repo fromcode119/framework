@@ -407,10 +407,7 @@
     },
     "color": {
       "choose": "Избор на цвят",
-      "colour": "Цвят",
-      "pick": "Изберете цвят",
       "hex": "Hex код",
-      "confirm": "Потвърди цвета",
       "notSet": "Не е зададен"
     },
     "dependencies": {

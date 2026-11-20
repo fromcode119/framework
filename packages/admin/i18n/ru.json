@@ -370,10 +370,7 @@
     },
     "color": {
       "choose": "Выбрать цвет",
-      "colour": "Цвет",
-      "pick": "Выберите цвет",
       "hex": "HEX-код",
-      "confirm": "Подтвердить цвет",
       "notSet": "Не задан"
     },
     "dependencies": {
