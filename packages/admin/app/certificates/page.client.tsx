@@ -18,6 +18,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminClass } from '@/lib/admin-class';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { CertificateListPoller } from '@/lib/certificates/certificate-list-poller';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 /**
  * Every TLS certificate on the platform, in one list.
@@ -181,7 +182,10 @@ export class CertificatesPageClient extends AdminComponent {
           places writing one value.
         */}
         {this.scope?.isSite ? (
-          <CertificateDnsTokenCard automation={this.automation} onChanged={this.load} />
+          <>
+            <CertificateDnsTokenCard automation={this.automation} onChanged={this.load} />
+            <PendingSavesBar />
+          </>
         ) : null}
         </div>
 
