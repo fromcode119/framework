@@ -1,6 +1,7 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactNode, TextareaHTMLAttributes } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, prop, ref } from '@fromcode119/react-class-components';
+import type { Ref } from '@fromcode119/react-class-components';
 import { FieldErrorMark } from '@/components/ui/view/field-error-mark.client';
 import { UiFieldUtils } from '@/lib/ui';
 
@@ -15,6 +16,8 @@ export class TextArea extends PureReactor {
   @prop declare inputClassName?: string;
   @prop declare value?: TextareaHTMLAttributes<HTMLTextAreaElement>['value'];
   @prop declare size?: FieldSize;
+
+  @ref private declare elementRef: Ref<HTMLTextAreaElement>;
 
   render(): ReactNode {
     const {
@@ -37,11 +40,18 @@ export class TextArea extends PureReactor {
     // single-line height every field carries stayed on, and `rows` changed nothing on any screen.
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
+        {/* Bound like Input: `htmlFor` when the caller gave an id, otherwise the label names the field. */}
+        {label && (
+          <label className={UiFieldUtils.TEXT.LABEL} htmlFor={props.id} onClick={props.id ? undefined : () => this.elementRef.current?.focus()}>
+            {label}
+          </label>
+        )}
         <div className="fc-field-wrap">
           <textarea
+            ref={this.elementRef}
             {...props}
             value={value}
+            aria-label={!props.id && label && !props['aria-label'] ? label : props['aria-label']}
             aria-invalid={error ? true : undefined}
             className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)} ${error ? 'fc-field--error' : ''}`}
           />

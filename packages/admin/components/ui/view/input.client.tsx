@@ -43,15 +43,24 @@ export class Input extends PureReactor {
     const inputClassName = this.inputClassName ?? '';
     const size = this.size ?? FieldSize.MD;
     const error = this.error;
+    const id = this.rest.id;
 
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {this.label && <label className={UiFieldUtils.TEXT.LABEL}>{this.label}</label>}
+        {/* The label names the field for a screen reader and focuses it on a click: by `htmlFor` when the
+            caller gave the field an id, otherwise by naming the field itself (no generated id, so the
+            server and the browser render the same markup). */}
+        {this.label && (
+          <label className={UiFieldUtils.TEXT.LABEL} htmlFor={id} onClick={id ? undefined : () => this.focus()}>
+            {this.label}
+          </label>
+        )}
         <div className="fc-field-wrap">
           <input
             ref={this.elementRef}
             {...this.rest}
             value={this.normalizedValue}
+            aria-label={!id && this.label && !this.rest['aria-label'] ? this.label : this.rest['aria-label']}
             aria-invalid={error ? true : undefined}
             className={`${UiFieldUtils.getFieldClasses(size, inputClassName)} ${error ? 'fc-field--error' : ''}`}
           />
