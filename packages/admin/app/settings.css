@@ -69,8 +69,8 @@
 .fc-card__head { margin-bottom: 12px; }
 .fc-card__title { margin: 0; font-size: var(--fc-settings-title); font-weight: var(--fc-weight-strong); letter-spacing: -0.01em; color: var(--card-foreground); }
 .fc-card__desc { margin: 0; font-size: var(--fc-settings-text); line-height: 20px; color: var(--fc-text-muted); }
-.fc-surface:has(> .fc-settings-row) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
-.fc-surface:has(> .fc-settings-row) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); }
+.fc-surface:has(> .fc-settings-row, > .fc-settings-note) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
+.fc-surface:has(> .fc-settings-row, > .fc-settings-note) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); }
 
 /* ── Setting row ─────────────────────────────────────────────────────────────────────────────── */
 .fc-settings-row {
@@ -307,6 +307,9 @@
 
 /* What a settings card says under its rows: a checked-at time, a failure, a credit. At the rows' inset. */
 .fc-settings-note { display: flex; flex-direction: column; gap: 4px; padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x); border-top: 1px solid var(--fc-border); }
+/* The rest of the row above it — one entry of a list, read together with its name: no line between them. */
+.fc-settings-row:has(+ .fc-settings-note--of-row) { padding-bottom: 4px; }
+.fc-settings-note--of-row { border-top: 0; padding-top: 0; }
 
 /* ── A small control never drops under its words ───────────────────────────────────────────────────
  * A row is stacked when its control needs the whole width: a long text field, an editor, a list. A

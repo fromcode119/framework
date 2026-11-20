@@ -1,9 +1,14 @@
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -71,37 +76,44 @@ export class SchemaOrphansCard extends AdminComponent {
     return `${AdminI18n.t('settings.infrastructure.schemaOrphanDropWarning', { name: `${entry.table}.${entry.column}` })} ${this.contents(entry)}`;
   }
 
+  /** One column: its name and what it holds, Drop at the end; under it what to know before dropping. */
   private renderEntry(entry: IUndeclaredColumn): ReactNode {
-    const holdsData = entry.nonEmpty === undefined || entry.nonEmpty > 0;
     const plugins = entry.inactivePluginsAtScan ?? [];
+    const name = `${entry.table}.${entry.column}`;
     return (
-      <li key={`${entry.table}.${entry.column}`} className="flex items-start justify-between gap-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
-        <div className="min-w-0 text-sm">
-          <p className="font-mono font-medium break-all">{entry.table}.{entry.column}</p>
-          <p className={`text-xs ${holdsData ? 'text-amber-600' : 'text-slate-500'}`}>{this.contents(entry)}</p>
-          {entry.sample ? <p className="text-xs text-slate-500 break-all">{AdminI18n.t('settings.infrastructure.schemaOrphanSample', { sample: entry.sample })}</p> : null}
-          {plugins.length ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.schemaOrphanInactivePlugins', { plugins: plugins.join(', ') })}</p> : null}
-          <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.schemaOrphanSince', { time: new Date(entry.firstSeenAt).toLocaleString() })}</p>
+      <Fragment key={name}>
+        <SettingRow title={<code className="fc-code">{name}</code>} description={this.contents(entry)} width={SettingRowWidth.AUTO}>
+          <div className="fc-settings-group">
+            <Button variant={ButtonVariant.SECONDARY} onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />}>
+              {AdminI18n.t('settings.infrastructure.schemaOrphanDrop')}
+            </Button>
+          </div>
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row">
+          {plugins.length ? <Hint variant="warning">{AdminI18n.t('settings.infrastructure.schemaOrphanInactivePlugins', { plugins: plugins.join(', ') })}</Hint> : null}
+          {entry.sample ? <Hint>{AdminI18n.t('settings.infrastructure.schemaOrphanSample', { sample: entry.sample })}</Hint> : null}
+          <Hint>{AdminI18n.t('settings.infrastructure.schemaOrphanSince', { time: new Date(entry.firstSeenAt).toLocaleString() })}</Hint>
         </div>
-        <Button onClick={() => { this.pending = entry; }} icon={<FrameworkIcons.Trash size={13} />} className="shrink-0">
-          {AdminI18n.t('settings.infrastructure.schemaOrphanDrop')}
-        </Button>
-      </li>
+      </Fragment>
     );
   }
 
-  private renderBody(): ReactNode {
-    if (this.loadFailed) return <p className="text-sm text-amber-600">{AdminI18n.t('settings.infrastructure.schemaOrphansUnavailable')}</p>;
-    if (!this.loaded) return <p className="text-sm text-slate-500">{AdminI18n.t('settings.infrastructure.schemaOrphansLoading')}</p>;
-    if (!this.columns.length) return <p className="text-sm text-slate-500">{AdminI18n.t('settings.infrastructure.schemaOrphansNone')}</p>;
-    return <ul>{this.columns.map((entry) => this.renderEntry(entry))}</ul>;
+  /** The state of the scan when there is no column to list. */
+  private renderState(): ReactNode {
+    if (this.loadFailed) return <Hint variant="error">{AdminI18n.t('settings.infrastructure.schemaOrphansUnavailable')}</Hint>;
+    if (!this.loaded) return <Hint>{AdminI18n.t('settings.infrastructure.schemaOrphansLoading')}</Hint>;
+    return <Hint variant="success">{AdminI18n.t('settings.infrastructure.schemaOrphansNone')}</Hint>;
   }
 
   render(): ReactNode {
+    const listed = this.loaded && !this.loadFailed && this.columns.length > 0;
     return (
       <Card title={AdminI18n.t('settings.infrastructure.schemaOrphans')}>
-        <p className="text-sm text-slate-500 mb-3">{AdminI18n.t('settings.infrastructure.schemaOrphansHelp')}</p>
-        {this.renderBody()}
+        <div className="fc-settings-note">
+          <Hint>{AdminI18n.t('settings.infrastructure.schemaOrphansHelp')}</Hint>
+          {listed ? null : this.renderState()}
+        </div>
+        {listed ? this.columns.map((entry) => this.renderEntry(entry)) : null}
         <ConfirmDialog
           isOpen={this.pending !== null}
           onClose={this.close}
