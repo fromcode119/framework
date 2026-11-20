@@ -60,7 +60,8 @@ export class Dropdown extends DropdownPositioning {
 
   private watchSize(): void {
     const menu = this.menuRef.current;
-    if (!menu || this.sizeWatch) return;
+    // A runtime without it (a test DOM) keeps the width measured on open.
+    if (!menu || this.sizeWatch || !('ResizeObserver' in globalThis)) return;
     this.sizeWatch = new ResizeObserver(() => {
       const width = this.menuRef.current?.offsetWidth || 0;
       if (!width || width === this.measuredWidth) return;

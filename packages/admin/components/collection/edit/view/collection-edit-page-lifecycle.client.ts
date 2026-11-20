@@ -25,7 +25,7 @@ export class CollectionEditPageLifecycle {
     self.onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 's') {
         e.preventDefault();
-        CollectionEditPageHandlers.handleSubmit(self, new Event('submit'), self.state.changeSummary);
+        CollectionEditPageHandlers.submit(self, new Event('submit'), self.state.changeSummary);
         self.updateState('changeSummary', '');
       }
     };

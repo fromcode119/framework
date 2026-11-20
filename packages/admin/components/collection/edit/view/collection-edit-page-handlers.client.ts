@@ -65,6 +65,16 @@ export class CollectionEditPageHandlers {
     return { _readOnlyOverride: { fields, grant: self.state.readOnlyOverrideGrant } };
   }
 
+  /**
+   * A save started by a button or a shortcut, nobody awaiting it. A refused save is already on screen —
+   * the message in the save bar, each field's own error — so its rejection is not left unhandled (it was
+   * logged a second time as "Uncaught (in promise)"). A caller that needs to know, the section sheet that
+   * stays open on a refusal, awaits {@link handleSubmit} itself.
+   */
+  static submit(self: any, e?: any, summary?: string): void {
+    CollectionEditPageHandlers.handleSubmit(self, e, summary).catch(() => undefined);
+  }
+
   static async handleSubmit(self: any, e?: any, summary?: string): Promise<any> {
     if (e?.preventDefault) e.preventDefault();
     const { collection, resolvedSlug, isNew } = CollectionEditPageHandlers.context(self);

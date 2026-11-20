@@ -79,7 +79,8 @@ export class EditHeader extends PureReactor {
   }
 
   @bound private onSave(e: any): void {
-    this.handleSubmit(e, '');
+    // A refused save is already on screen (the save bar's message, the fields' errors); nothing awaits it here.
+    Promise.resolve(this.handleSubmit(e, '')).catch(() => undefined);
   }
 
   @bound private onDelete(): void {
