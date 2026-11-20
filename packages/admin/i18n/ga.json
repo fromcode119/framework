@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Mír Roghchláir Nua",
       "add": "Cuir Mír Roghchláir Leis",
-      "indent": "Neadaigh faoin mír thuas",
-      "outdent": "Bog amach leibhéal amháin"
+      "reorder": "Tarraing chun bogadh; saigheada: suas agus síos chun bogadh, deas chun neadú, clé chun tabhairt amach"
     },
     "field": {
       "notSet": "Gan socrú",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Cuir {{label}} Nua Leis",
       "item": "Mír",
-      "moveUp": "Bog suas",
-      "moveDown": "Bog síos"
+      "reorder": "Tarraing chun bogadh, nó úsáid na saigheadeochracha"
     },
     "stepper": {
       "increment": "Méadaigh",

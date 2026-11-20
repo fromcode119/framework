@@ -1,7 +1,7 @@
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ReactNode } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import type { DragEvent, ReactNode } from 'react';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
@@ -11,10 +11,12 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { RepeatRow } from '@/components/ui/view/repeat-row.client';
+import { RepeatRowGrip } from '@/components/ui/view/repeat-row-grip.client';
 
 /**
- * A menu built row by row: each item is a RepeatRow moved in by its depth, with its own reorder, nest and
- * remove tools.
+ * A menu built row by row: each item is a RepeatRow moved in by its depth. Its handle drags it, or moves
+ * it with the arrow keys: up and down to reorder, right to nest it under the item above, left to move it
+ * out a level.
  */
 export class VisualMenuField extends PureReactor {
   @prop declare field: any;
@@ -22,6 +24,8 @@ export class VisualMenuField extends PureReactor {
   @prop declare onChange: (value: any[]) => void;
   @prop declare theme?: ThemeMode;
   @prop declare collectionSlug: string;
+  @state private dragged: number | null = null;
+  @state private handleHovered: number | null = null;
 
   get items(): any[] {
     return Array.isArray(this.value) ? this.value : [];
@@ -125,18 +129,36 @@ export class VisualMenuField extends PureReactor {
     return <Input value={val} onChange={onChange} placeholder={f.placeholder} type="text" />;
   }
 
-  private tools(item: any, index: number): ReactNode {
+  /** The arrow key pressed on a row's handle; the answer is where the row is now, or null. */
+  private move(index: number, key: string): number | null {
+    const item = this.items[index];
     const depth = item.depth || 0;
-    const tool = (label: string, icon: ReactNode, onClick: () => void, disabled = false) => (
-      <button type="button" className="fc-repeat__tool" onClick={onClick} disabled={disabled} title={label} aria-label={label}>{icon}</button>
-    );
+    if (key === 'ArrowUp' && index > 0) { this.handleMoveUp(index); return index - 1; }
+    if (key === 'ArrowDown' && index < this.items.length - 1) { this.handleMoveDown(index); return index + 1; }
+    if (key === 'ArrowRight' && index > 0 && (this.items[index - 1].depth || 0) >= depth) { this.handleIndent(index, HorizontalAlign.RIGHT); return index; }
+    if (key === 'ArrowLeft' && depth > 0) { this.handleIndent(index, HorizontalAlign.LEFT); return index; }
+    return null;
+  }
+
+  private reorder(from: number, to: number): void {
+    const next = [...this.items];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    this.onChange(next);
+  }
+
+  private tools(index: number): ReactNode {
+    const deleteLabel = AdminI18n.t('common.delete');
     return (
       <>
-        {tool(AdminI18n.t('ui.array.moveUp'), <FrameworkIcons.ChevronUp size={14} />, () => this.handleMoveUp(index), index === 0)}
-        {tool(AdminI18n.t('common.delete'), <FrameworkIcons.Close size={14} />, () => this.handleRemoveItem(index))}
-        {tool(AdminI18n.t('ui.array.moveDown'), <FrameworkIcons.ChevronDown size={14} />, () => this.handleMoveDown(index), index === this.items.length - 1)}
-        {tool(AdminI18n.t('ui.menuField.indent'), <FrameworkIcons.Right size={14} />, () => this.handleIndent(index, HorizontalAlign.RIGHT), index === 0 || (this.items[index - 1].depth || 0) < depth)}
-        {tool(AdminI18n.t('ui.menuField.outdent'), <FrameworkIcons.Left size={14} />, () => this.handleIndent(index, HorizontalAlign.LEFT), depth === 0)}
+        <button type="button" className="fc-repeat__tool" onClick={() => this.handleRemoveItem(index)} title={deleteLabel} aria-label={deleteLabel}>
+          <FrameworkIcons.Close size={14} />
+        </button>
+        <RepeatRowGrip
+          label={AdminI18n.t('ui.menuField.reorder')}
+          onMove={(key: string) => this.move(index, key)}
+          onHover={(on: boolean) => { this.handleHovered = on ? index : null; }}
+        />
       </>
     );
   }
@@ -154,7 +176,17 @@ export class VisualMenuField extends PureReactor {
                 fields={subFields
                   .filter((f: any) => !f.admin?.condition || f.admin.condition({}, item))
                   .map((f: any) => ({ key: f.name, label: f.label, control: this.renderFieldInput(f, item, index) }))}
-                tools={this.tools(item, index)}
+                tools={this.tools(index)}
+                dragging={this.dragged === index}
+                draggable={this.handleHovered === index || this.dragged === index}
+                onDragStart={(e: DragEvent<HTMLLIElement>) => { this.dragged = index; e.dataTransfer.effectAllowed = 'move'; }}
+                onDragOver={(e: DragEvent<HTMLLIElement>) => {
+                  e.preventDefault();
+                  if (this.dragged === null || this.dragged === index) return;
+                  this.reorder(this.dragged, index);
+                  this.dragged = index;
+                }}
+                onDragEnd={() => { this.dragged = null; this.handleHovered = null; }}
               />
             ))}
           </ul>

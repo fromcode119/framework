@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nytt menyelement",
       "add": "Legg til menyelement",
-      "indent": "Legg under elementet over",
-      "outdent": "Flytt ett nivå ut"
+      "reorder": "Dra for å flytte; piltaster: opp og ned flytter, høyre rykker inn, venstre rykker ut"
     },
     "field": {
       "notSet": "Ikke angitt",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Legg til {{label}}",
       "item": "Element",
-      "moveUp": "Flytt opp",
-      "moveDown": "Flytt ned"
+      "reorder": "Dra for å flytte, eller bruk piltastene"
     },
     "stepper": {
       "increment": "Øk",

@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Item Menu Baharu",
       "add": "Tambah Item Menu",
-      "indent": "Sarangkan di bawah item di atas",
-      "outdent": "Keluarkan satu tahap"
+      "reorder": "Seret untuk alih; anak panah: atas dan bawah untuk alih, kanan untuk sarang, kiri untuk keluar"
     },
     "field": {
       "notSet": "Tidak ditetapkan",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Tambah {{label}} Baharu",
       "item": "Item",
-      "moveUp": "Alih ke atas",
-      "moveDown": "Alih ke bawah"
+      "reorder": "Seret untuk alih, atau guna kekunci anak panah"
     },
     "stepper": {
       "increment": "Tambah",

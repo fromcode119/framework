@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Element de meniu nou",
       "add": "Adaugă element de meniu",
-      "indent": "Imbrică sub elementul de deasupra",
-      "outdent": "Scoate cu un nivel"
+      "reorder": "Trageți pentru a muta; săgeți: sus și jos mută, dreapta imbrică, stânga scoate"
     },
     "field": {
       "notSet": "Nesetat",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Adaugă {{label}}",
       "item": "Element",
-      "moveUp": "Mută în sus",
-      "moveDown": "Mută în jos"
+      "reorder": "Trageți pentru a muta sau folosiți săgețile"
     },
     "stepper": {
       "increment": "Crește",

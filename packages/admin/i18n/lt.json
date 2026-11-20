@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Naujas meniu punktas",
       "add": "Pridėti meniu punktą",
-      "indent": "Įdėti po aukščiau esančiu elementu",
-      "outdent": "Iškelti vienu lygiu"
+      "reorder": "Vilkite, kad perkeltumėte; rodyklės: aukštyn ir žemyn perkelia, dešinėn įdeda, kairėn iškelia"
     },
     "field": {
       "notSet": "Nenustatyta",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Pridėti naują: {{label}}",
       "item": "Elementas",
-      "moveUp": "Perkelti aukštyn",
-      "moveDown": "Perkelti žemyn"
+      "reorder": "Vilkite, kad perkeltumėte, arba naudokite rodykles"
     },
     "stepper": {
       "increment": "Padidinti",

@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Yeni Menü Öğesi",
       "add": "Menü Öğesi Ekle",
-      "indent": "Üstteki öğenin altına yerleştir",
-      "outdent": "Bir düzey dışarı al"
+      "reorder": "Taşımak için sürükleyin; ok tuşları: yukarı ve aşağı taşır, sağ iç içe koyar, sol dışarı alır"
     },
     "field": {
       "notSet": "Ayarlanmadı",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Yeni {{label}} Ekle",
       "item": "Öğe",
-      "moveUp": "Yukarı taşı",
-      "moveDown": "Aşağı taşı"
+      "reorder": "Taşımak için sürükleyin veya ok tuşlarını kullanın"
     },
     "stepper": {
       "increment": "Artır",

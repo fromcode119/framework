@@ -9,6 +9,9 @@ import { DropArea } from '@/components/ui/view/drop-area.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { RepeatRow } from '@/components/ui/view/repeat-row.client';
+import { RepeatRowGrip } from '@/components/ui/view/repeat-row-grip.client';
+import { Input } from '@/components/ui/view/input.client';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { VisualMenuField } from '@/components/ui/view/visual-menu-field.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -100,31 +103,67 @@ export class FieldsRichKit {
       },
       {
         slug: 'repeat-row', name: 'RepeatRow and VisualMenuField', group: 'Forms',
-        intro: 'One row of a group that repeats, when each row holds several fields: a raised card with each field’s words on the left of its control, and the row’s tools (reorder, remove) on the right. A group whose rows hold one line each is a table instead. VisualMenuField is a menu built from these rows, nested by depth.',
-        from: "import { RepeatRow, VisualMenuField } from '@fromcode119/sdk/admin';",
+        intro: 'One row of a group that repeats, when each row holds several fields: a raised card with each field’s words on the left of its control, in a column only as wide as the words, and the row’s tools on the right — remove, and the handle that moves it. The handle is dragged, or focused and moved with the arrow keys, so there is no column of arrows. A number in a row is a plain field. VisualMenuField is a menu built from these rows, nested by depth.',
+        from: "import { RepeatRow, RepeatRowGrip, VisualMenuField } from '@fromcode119/sdk/admin';",
         examples: [
           {
             title: 'Rows in a list',
-            text: 'The rows go in `<ul className="fc-repeat__rows">` inside `.fc-repeat`, with the Add button after them. Tools are `.fc-repeat__tool` buttons, each with a label.',
+            text: 'The rows go in `<ul className="fc-repeat__rows">` inside `.fc-repeat`, with the Add button after them. Tools are `.fc-repeat__tool` buttons, each with a label; two at most stand in a column, so they never make the row taller than its fields.',
             demo: (
-              <div className="fc-kitdoc__cell--wide fc-repeat">
-                <ul className="fc-repeat__rows">
-                  <RepeatRow
-                    fields={[
-                      { key: 'from', label: 'From quantity', control: <NumberStepper value={10} onChange={() => undefined} /> },
-                      { key: 'price', label: 'Unit price', control: <NumberStepper value={8.5} onChange={() => undefined} /> },
-                    ]}
-                    tools={<button type="button" className="fc-repeat__tool" aria-label="Delete" title="Delete"><FrameworkIcons.Close size={14} /></button>}
-                  />
-                </ul>
-                <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={13} />}>Add quantity price</Button>
+              <div className="fc-kitdoc__cell--wide">
+                <KitPlay initial={[{ from: 1, price: 10 }, { from: 10, price: 8.5 }]}>
+                  {(rows: Array<{ from: number | ''; price: number | '' }>, set) => {
+                    const patch = (at: number, change: object) => set(rows.map((row, i) => (i === at ? { ...row, ...change } : row)));
+                    const move = (at: number, key: string): number | null => {
+                      const to = key === 'ArrowUp' ? at - 1 : key === 'ArrowDown' ? at + 1 : -1;
+                      if (to < 0 || to >= rows.length) return null;
+                      const next = [...rows];
+                      next.splice(to, 0, next.splice(at, 1)[0]);
+                      set(next);
+                      return to;
+                    };
+                    return (
+                      <div className="fc-repeat">
+                        {rows.length ? (
+                          <ul className="fc-repeat__rows">
+                            {rows.map((row, at) => (
+                              <RepeatRow
+                                key={at}
+                                fields={[
+                                  { key: 'from', label: 'From quantity', control: <NumberStepper value={row.from} onChange={(from) => patch(at, { from })} /> },
+                                  { key: 'price', label: 'Unit price', control: <NumberStepper value={row.price} onChange={(price) => patch(at, { price })} /> },
+                                ]}
+                                tools={<>
+                                  <button type="button" className="fc-repeat__tool" aria-label="Delete" title="Delete" onClick={() => set(rows.filter((_, i) => i !== at))}><FrameworkIcons.Close size={14} /></button>
+                                  {rows.length > 1 ? <RepeatRowGrip label="Drag to move, or use the arrow keys" onMove={(key: string) => move(at, key)} /> : null}
+                                </>}
+                              />
+                            ))}
+                          </ul>
+                        ) : null}
+                        <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} icon={<FrameworkIcons.Plus size={13} />} onClick={() => set([...rows, { from: '', price: '' }])}>Add quantity price</Button>
+                      </div>
+                    );
+                  }}
+                </KitPlay>
               </div>
             ),
-            code: '<ul className="fc-repeat__rows">\n  <RepeatRow\n    fields={[{ key: \'from\', label: \'From quantity\', control: <NumberStepper … /> }]}\n    tools={<button className="fc-repeat__tool" aria-label="Delete">…</button>} />\n</ul>',
+            code: '<ul className="fc-repeat__rows">\n  <RepeatRow\n    fields={[{ key: \'from\', label: \'From quantity\', control: <NumberStepper … /> }]}\n    tools={<>\n      <button className="fc-repeat__tool" aria-label="Delete">…</button>\n      <RepeatRowGrip label="…" onMove={(key: string) => newIndexOrNull} />\n    </>} />\n</ul>',
+          },
+          {
+            title: 'A row without words',
+            text: 'When no field has a label (one line of text, a pair the group heading names), the controls stand side by side.',
+            demo: (
+              <ul className="fc-kitdoc__cell--wide fc-repeat__rows">
+                <RepeatRow fields={[{ key: 'line', control: <Input value="Free returns for 30 days" onChange={() => undefined} /> }]}
+                  tools={<button type="button" className="fc-repeat__tool" aria-label="Delete" title="Delete"><FrameworkIcons.Close size={14} /></button>} />
+              </ul>
+            ),
+            code: "<RepeatRow fields={[{ key: 'line', control: <Input … /> }]} tools={…} />",
           },
           {
             title: 'VisualMenuField',
-            text: 'Each item can be moved, nested under the one above, or moved back out.',
+            text: 'Drag an item by its handle, or focus the handle: up and down move it, right nests it under the one above, left moves it back out.',
             demo: (
               <div className="fc-kitdoc__cell--wide">
                 <KitPlay initial={[{ label: 'Shop', url: '/shop', depth: 0 }, { label: 'T-shirts', url: '/shop/t-shirts', depth: 1 }, { label: 'About', url: '/about', depth: 0 }]}>
@@ -137,9 +176,10 @@ export class FieldsRichKit {
         ],
         options: [
           { name: 'fields', type: '{ key, label?, control }[]', does: 'The row’s fields, each with its words and its control.' },
-          { name: 'tools', type: 'ReactNode', does: 'The row’s buttons; two or more stand two by two.' },
+          { name: 'tools', type: 'ReactNode', does: 'The row’s buttons: remove, then a RepeatRowGrip when the row can move. Two to a column.' },
           { name: 'depth', type: 'number', initial: '0', does: 'How far the row is nested (24px a level).' },
-          { name: 'dragging, draggable, onDrag…', type: 'boolean, handlers', does: 'Reordering by dragging the row.' },
+          { name: 'dragging, draggable, onDrag…', type: 'boolean, handlers', does: 'Reordering by dragging the row (draggable while the pointer is on the grip).' },
+          { name: 'RepeatRowGrip onMove', type: '(key) => number | null', does: 'An arrow key pressed on the handle; answer the row’s new place, and focus follows it.' },
         ],
       },
     ];

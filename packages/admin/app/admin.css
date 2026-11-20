@@ -452,6 +452,9 @@ html.dark {
 :root[data-theme='dark'] {
   --fc-elevation-surface: 0 1px 2px -1px rgb(0 0 0 / 0.5), 0 1px 1px rgb(0 0 0 / 0.3);
   --fc-elevation-control: 0 1px 2px 0 rgb(0 0 0 / 0.4), 0 1px 3px 0 rgb(0 0 0 / 0.3);
+  /* The card ring in the dark: a black ring on a dark page is no ring at all, so the edge is a faint
+     light line over a ring of the raised surface, then the two drops. */
+  --fc-card-shadow: 0 -1px 0 0 rgb(255 255 255 / .06), 0 0 0 1px rgb(255 255 255 / .06), 0 0 0 1px #27272a, 0 1px 2px 0 rgb(0 0 0 / .32), 0 2px 4px 0 rgb(0 0 0 / .32);
 }
 
 /* The off switch. `SurfaceElevationService` stamps data-fc-shadows on <html> from the
@@ -2176,28 +2179,44 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-rows__remove:hover { background: var(--fc-danger-soft); color: var(--fc-danger); }
 /* RepeatRow — one row of a repeating group whose rows hold several fields (the table layout above holds
    one line each). Drawn like the reference's repeated rows: a raised card, each field's words on the
-   left of its control, one pair per line, and the row's tools in a narrow column on the right that is
-   always visible (a control that appears only on hover does not exist on a phone). A nested row (a menu
-   item under another) is moved in by its depth, which the component sets as --fc-repeat-depth. */
+   left of its control in a column only as wide as the words, one pair per line, and the row's tools in
+   one narrow column on the right, centred on the row, always visible (a control that appears only on
+   hover does not exist on a phone). Two tools at most stack in a column, so the tools never make a row
+   taller than its fields. A nested row (a menu item under another) is moved in by its depth, which the
+   component sets as --fc-repeat-depth. */
 .fc-repeat { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
 .fc-repeat__rows { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 0; padding: 0; list-style: none; }
 .fc-repeat__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   gap: 6px;
   margin-inline-start: calc(var(--fc-repeat-depth, 0) * 24px);
   padding: 6px;
   border-radius: var(--fc-card-radius);
-  background: var(--fc-surface);
+  background: var(--fc-surface-muted);
   box-shadow: var(--fc-card-shadow);
 }
 .fc-repeat__row--dragging { opacity: 0.4; }
-.fc-repeat__fields { display: grid; grid-template-columns: 8rem minmax(0, 1fr); align-items: center; gap: 6px; min-width: 0; }
-.fc-repeat__label { padding: 0 8px; color: var(--fc-text-muted); font-size: 12px; line-height: 20px; font-weight: 500; }
+.fc-repeat__fields { display: grid; grid-template-columns: fit-content(10rem) minmax(0, 1fr); align-items: center; gap: 6px; min-width: 0; }
+.fc-repeat__fields--bare {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+
+.fc-repeat__label { padding: 6px 8px; color: var(--fc-text-muted); font-size: 12px; line-height: 20px; font-weight: 500; }
 .fc-repeat__control { min-width: 0; }
-.fc-repeat__tools { display: grid; grid-template-columns: repeat(2, 28px); gap: 2px; }
-.fc-repeat__tools:has(> :only-child) { grid-template-columns: 28px; }
+/* On the row's raised ground a field is the page's own white again, as in the reference, so the box
+   stands out from the row it sits in. */
+.fc-repeat__control .fc-field:not(:disabled) { background: var(--fc-surface); }
+.fc-repeat__control .fc-field:not(:disabled):hover { background: var(--fc-surface-muted); }
+.fc-repeat__tools { display: grid; grid-template-rows: repeat(2, 28px); grid-auto-flow: column; grid-auto-columns: 28px; gap: 2px; }
+.fc-repeat__tools:has(> :only-child) { grid-template-rows: 28px; }
+/* A number in a row is a plain field, as in the reference: the stepper's − and + at both ends of a
+   wide box read as two stray buttons around an empty middle. The arrow keys still step it. */
+.fc-repeat__control .fc-stepper__btn { display: none; }
+.fc-repeat__control .fc-field.fc-stepper__input { padding-inline: 8px; text-align: start; }
 .fc-repeat__tool {
   display: inline-flex;
   align-items: center;
@@ -2216,6 +2235,7 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 @media (max-width: 479px) {
   .fc-repeat__fields { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .fc-repeat__label { padding: 4px 2px 0; }
+  .fc-repeat__fields--bare { grid-auto-flow: row; gap: 6px; }
 }
 /* A value nobody has set reads as a dash in the muted ink — the row keeps the shape of a filled row, so
    an empty section is the same kind of card as a full one instead of a paragraph where content belongs.

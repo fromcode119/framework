@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "새 메뉴 항목",
       "add": "메뉴 항목 추가",
-      "indent": "위 항목 아래로 넣기",
-      "outdent": "한 단계 밖으로"
+      "reorder": "드래그하여 이동. 화살표: 위아래로 이동, 오른쪽으로 하위 항목, 왼쪽으로 상위 항목"
     },
     "field": {
       "notSet": "설정되지 않음",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "새 {{label}} 추가",
       "item": "항목",
-      "moveUp": "위로 이동",
-      "moveDown": "아래로 이동"
+      "reorder": "드래그하거나 화살표 키로 이동"
     },
     "stepper": {
       "increment": "증가",

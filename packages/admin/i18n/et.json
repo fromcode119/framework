@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Uus menüüüksus",
       "add": "Lisa menüüüksus",
-      "indent": "Pane ülemise üksuse alla",
-      "outdent": "Tõsta tase välja"
+      "reorder": "Lohista liigutamiseks; nooleklahvid: üles ja alla liigutab, paremale pesastab, vasakule tõstab välja"
     },
     "field": {
       "notSet": "Määramata",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Lisa uus: {{label}}",
       "item": "Üksus",
-      "moveUp": "Liiguta üles",
-      "moveDown": "Liiguta alla"
+      "reorder": "Lohista liigutamiseks või kasuta nooleklahve"
     },
     "stepper": {
       "increment": "Suurenda",

@@ -83,6 +83,7 @@ export * from '@/components/ui/view/color-picker.client';
 export * from '@/components/ui/view/code-editor.client';
 export * from '@/components/ui/view/visual-menu-field.client';
 export * from '@/components/ui/view/repeat-row.client';
+export * from '@/components/ui/view/repeat-row-grip.client';
 export * from '@/components/view/icon.client';
 export * from '@/components/view/theme-context.client';
 export * from '@/components/view/theme-context-store.client';

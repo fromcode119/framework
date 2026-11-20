@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nuevo elemento de menú",
       "add": "Añadir elemento de menú",
-      "indent": "Anidar bajo el elemento anterior",
-      "outdent": "Sacar un nivel"
+      "reorder": "Arrastra para mover; flechas: arriba y abajo para mover, derecha para anidar, izquierda para sacar"
     },
     "field": {
       "notSet": "Sin definir",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Añadir {{label}}",
       "item": "Elemento",
-      "moveUp": "Subir",
-      "moveDown": "Bajar"
+      "reorder": "Arrastra para mover o usa las flechas"
     },
     "stepper": {
       "increment": "Aumentar",

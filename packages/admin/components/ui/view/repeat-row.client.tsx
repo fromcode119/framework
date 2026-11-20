@@ -28,12 +28,20 @@ export class RepeatRow extends PureReactor {
         onDragOver={this.onDragOver}
         onDragEnd={this.onDragEnd}
       >
-        <div className="fc-repeat__fields">
-          {this.fields.map((field) => [
-            <span key={`${field.key}-label`} className="fc-repeat__label">{field.label}</span>,
-            <div key={`${field.key}-control`} className="fc-repeat__control">{field.control}</div>,
-          ])}
-        </div>
+        {this.fields.some((field) => field.label) ? (
+          <div className="fc-repeat__fields">
+            {this.fields.map((field) => [
+              <span key={`${field.key}-label`} className="fc-repeat__label">{field.label}</span>,
+              <div key={`${field.key}-control`} className="fc-repeat__control">{field.control}</div>,
+            ])}
+          </div>
+        ) : (
+          // A row whose fields need no words (one line of text, a pair the group heading already names)
+          // puts its controls side by side.
+          <div className="fc-repeat__fields fc-repeat__fields--bare">
+            {this.fields.map((field) => <div key={field.key} className="fc-repeat__control">{field.control}</div>)}
+          </div>
+        )}
         {this.tools ? <div className="fc-repeat__tools">{this.tools}</div> : null}
       </li>
     );

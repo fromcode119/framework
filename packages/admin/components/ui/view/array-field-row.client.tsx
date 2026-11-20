@@ -1,8 +1,8 @@
 import type { DragEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { GripVertical } from 'lucide-react';
 import { RepeatRow } from '@/components/ui/view/repeat-row.client';
+import { RepeatRowGrip } from '@/components/ui/view/repeat-row-grip.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ArrayFieldRow extends PureReactor {
@@ -20,38 +20,28 @@ export class ArrayFieldRow extends PureReactor {
   @prop declare onMoveDown: (index: number) => void;
   @prop declare onRemove: (index: number) => void;
 
-  private get tools(): ReactNode {
+  /** Up and down move the row one place; the answer is where it went. */
+  private move(key: string): number | null {
     const { index, itemsLength } = this;
+    if (key === 'ArrowUp' && index > 0) { this.onMoveUp(index); return index - 1; }
+    if (key === 'ArrowDown' && index < itemsLength - 1) { this.onMoveDown(index); return index + 1; }
+    return null;
+  }
+
+  private get tools(): ReactNode {
     const deleteLabel = AdminI18n.t('common.delete');
     return (
       <>
-        {itemsLength > 1 ? (
-          <>
-            <button type="button" className="fc-repeat__tool" disabled={index === 0} onClick={() => this.onMoveUp(index)}
-              title={AdminI18n.t('ui.array.moveUp')} aria-label={AdminI18n.t('ui.array.moveUp')}>
-              <FrameworkIcons.ChevronUp size={14} />
-            </button>
-            <button type="button" className="fc-repeat__tool" onClick={() => this.onRemove(index)} title={deleteLabel} aria-label={deleteLabel}>
-              <FrameworkIcons.Close size={14} />
-            </button>
-            <button type="button" className="fc-repeat__tool" disabled={index === itemsLength - 1} onClick={() => this.onMoveDown(index)}
-              title={AdminI18n.t('ui.array.moveDown')} aria-label={AdminI18n.t('ui.array.moveDown')}>
-              <FrameworkIcons.ChevronDown size={14} />
-            </button>
-            <span
-              className="fc-repeat__tool fc-repeat__tool--grip"
-              aria-hidden="true"
-              onMouseEnter={() => this.onSetHandleHovered(index)}
-              onMouseLeave={() => this.onSetHandleHovered(null)}
-            >
-              <GripVertical size={14} />
-            </span>
-          </>
-        ) : (
-          <button type="button" className="fc-repeat__tool" onClick={() => this.onRemove(index)} title={deleteLabel} aria-label={deleteLabel}>
-            <FrameworkIcons.Close size={14} />
-          </button>
-        )}
+        <button type="button" className="fc-repeat__tool" onClick={() => this.onRemove(this.index)} title={deleteLabel} aria-label={deleteLabel}>
+          <FrameworkIcons.Close size={14} />
+        </button>
+        {this.itemsLength > 1 ? (
+          <RepeatRowGrip
+            label={AdminI18n.t('ui.array.reorder')}
+            onMove={(key: string) => this.move(key)}
+            onHover={(on: boolean) => this.onSetHandleHovered(on ? this.index : null)}
+          />
+        ) : null}
       </>
     );
   }

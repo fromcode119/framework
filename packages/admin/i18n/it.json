@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nuova voce di menu",
       "add": "Aggiungi voce di menu",
-      "indent": "Annida sotto l'elemento sopra",
-      "outdent": "Sposta fuori di un livello"
+      "reorder": "Trascina per spostare; frecce: su e giù per spostare, destra per annidare, sinistra per estrarre"
     },
     "field": {
       "notSet": "Non impostato",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Aggiungi {{label}}",
       "item": "Elemento",
-      "moveUp": "Sposta su",
-      "moveDown": "Sposta giù"
+      "reorder": "Trascina per spostare o usa i tasti freccia"
     },
     "stepper": {
       "increment": "Aumenta",

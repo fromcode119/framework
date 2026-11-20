@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nouvel élément de menu",
       "add": "Ajouter un élément de menu",
-      "indent": "Imbriquer sous l'élément au-dessus",
-      "outdent": "Remonter d'un niveau"
+      "reorder": "Faites glisser pour déplacer ; flèches : haut et bas pour déplacer, droite pour imbriquer, gauche pour sortir"
     },
     "field": {
       "notSet": "Non défini",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Ajouter : {{label}}",
       "item": "Élément",
-      "moveUp": "Monter",
-      "moveDown": "Descendre"
+      "reorder": "Faites glisser pour déplacer, ou utilisez les flèches"
     },
     "stepper": {
       "increment": "Augmenter",

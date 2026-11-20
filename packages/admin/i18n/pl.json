@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nowa pozycja menu",
       "add": "Dodaj pozycję menu",
-      "indent": "Zagnieźdź pod elementem powyżej",
-      "outdent": "Wysuń o jeden poziom"
+      "reorder": "Przeciągnij, aby przenieść; strzałki: góra i dół przenoszą, prawo zagnieżdża, lewo wyciąga"
     },
     "field": {
       "notSet": "Nie ustawiono",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Dodaj: {{label}}",
       "item": "Element",
-      "moveUp": "Przesuń w górę",
-      "moveDown": "Przesuń w dół"
+      "reorder": "Przeciągnij, aby przenieść, lub użyj strzałek"
     },
     "stepper": {
       "increment": "Zwiększ",

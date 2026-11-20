@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "新選單項目",
       "add": "新增選單項目",
-      "indent": "嵌套到上方項目之下",
-      "outdent": "移出一層"
+      "reorder": "拖曳以移動；方向鍵：上下移動，向右巢狀，向左移出"
     },
     "field": {
       "notSet": "未設定",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "新增{{label}}",
       "item": "項目",
-      "moveUp": "上移",
-      "moveDown": "下移"
+      "reorder": "拖曳以移動，或使用方向鍵"
     },
     "stepper": {
       "increment": "增加",

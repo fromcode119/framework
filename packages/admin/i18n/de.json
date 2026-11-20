@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Neuer Menüeintrag",
       "add": "Menüeintrag hinzufügen",
-      "indent": "Unter den Eintrag darüber einrücken",
-      "outdent": "Eine Ebene ausrücken"
+      "reorder": "Zum Verschieben ziehen; Pfeiltasten: hoch und runter verschieben, rechts einrücken, links ausrücken"
     },
     "field": {
       "notSet": "Nicht festgelegt",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "{{label}} hinzufügen",
       "item": "Eintrag",
-      "moveUp": "Nach oben",
-      "moveDown": "Nach unten"
+      "reorder": "Zum Verschieben ziehen oder Pfeiltasten verwenden"
     },
     "stepper": {
       "increment": "Erhöhen",

@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Bagong Menu Item",
       "add": "Magdagdag ng Menu Item",
-      "indent": "Ilagay sa ilalim ng item sa itaas",
-      "outdent": "Ilabas nang isang antas"
+      "reorder": "I-drag para ilipat; arrow keys: taas at baba para ilipat, kanan para isailalim, kaliwa para ilabas"
     },
     "field": {
       "notSet": "Hindi nakatakda",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Magdagdag ng Bagong {{label}}",
       "item": "Item",
-      "moveUp": "Ilipat pataas",
-      "moveDown": "Ilipat pababa"
+      "reorder": "I-drag para ilipat, o gamitin ang arrow keys"
     },
     "stepper": {
       "increment": "Dagdagan",

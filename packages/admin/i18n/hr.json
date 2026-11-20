@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nova stavka izbornika",
       "add": "Dodaj stavku izbornika",
-      "indent": "Ugnijezdi pod stavku iznad",
-      "outdent": "Izvuci jednu razinu"
+      "reorder": "Povucite za premještanje; strelice: gore i dolje premještaju, desno ugniježđuje, lijevo izvlači"
     },
     "field": {
       "notSet": "Nije postavljeno",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Dodaj novo: {{label}}",
       "item": "Stavka",
-      "moveUp": "Pomakni gore",
-      "moveDown": "Pomakni dolje"
+      "reorder": "Povucite za premještanje ili koristite strelice"
     },
     "stepper": {
       "increment": "Povećaj",

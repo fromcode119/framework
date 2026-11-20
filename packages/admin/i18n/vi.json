@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Mục menu mới",
       "add": "Thêm mục menu",
-      "indent": "Lồng dưới mục phía trên",
-      "outdent": "Đưa ra một cấp"
+      "reorder": "Kéo để di chuyển; mũi tên: lên và xuống để di chuyển, phải để lồng vào, trái để đưa ra"
     },
     "field": {
       "notSet": "Chưa đặt",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Thêm {{label}} mới",
       "item": "Mục",
-      "moveUp": "Di chuyển lên",
-      "moveDown": "Di chuyển xuống"
+      "reorder": "Kéo để di chuyển, hoặc dùng phím mũi tên"
     },
     "stepper": {
       "increment": "Tăng",

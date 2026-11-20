@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Új menüpont",
       "add": "Menüpont hozzáadása",
-      "indent": "Beágyazás a fenti elem alá",
-      "outdent": "Egy szinttel kijjebb"
+      "reorder": "Húzással mozgathatja; nyilak: fel és le mozgat, jobbra beágyaz, balra kiemel"
     },
     "field": {
       "notSet": "Nincs beállítva",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Új {{label}} hozzáadása",
       "item": "Elem",
-      "moveUp": "Mozgatás fel",
-      "moveDown": "Mozgatás le"
+      "reorder": "Húzással mozgathatja, vagy használja a nyílbillentyűket"
     },
     "stepper": {
       "increment": "Növelés",

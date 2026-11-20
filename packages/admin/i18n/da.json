@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nyt menupunkt",
       "add": "Tilføj menupunkt",
-      "indent": "Indlejr under punktet ovenfor",
-      "outdent": "Flyt et niveau ud"
+      "reorder": "Træk for at flytte; piletaster: op og ned flytter, højre indrykker, venstre rykker ud"
     },
     "field": {
       "notSet": "Ikke angivet",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Tilføj ny {{label}}",
       "item": "Element",
-      "moveUp": "Flyt op",
-      "moveDown": "Flyt ned"
+      "reorder": "Træk for at flytte, eller brug piletasterne"
     },
     "stepper": {
       "increment": "Forøg",

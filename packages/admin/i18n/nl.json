@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nieuw menu-item",
       "add": "Menu-item toevoegen",
-      "indent": "Onder het item erboven plaatsen",
-      "outdent": "Eén niveau terug"
+      "reorder": "Sleep om te verplaatsen; pijltjes: omhoog en omlaag verplaatsen, rechts nesten, links uitnesten"
     },
     "field": {
       "notSet": "Niet ingesteld",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Nieuw {{label}} toevoegen",
       "item": "Item",
-      "moveUp": "Omhoog",
-      "moveDown": "Omlaag"
+      "reorder": "Sleep om te verplaatsen, of gebruik de pijltjestoetsen"
     },
     "stepper": {
       "increment": "Verhogen",

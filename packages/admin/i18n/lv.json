@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Jauns izvēlnes vienums",
       "add": "Pievienot izvēlnes vienumu",
-      "indent": "Ievietot zem augstāk esošā vienuma",
-      "outdent": "Iznest vienu līmeni augstāk"
+      "reorder": "Velciet, lai pārvietotu; bultiņas: augšup un lejup pārvieto, pa labi ievieto, pa kreisi izceļ"
     },
     "field": {
       "notSet": "Nav iestatīts",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Pievienot jaunu: {{label}}",
       "item": "Vienums",
-      "moveUp": "Pārvietot augšup",
-      "moveDown": "Pārvietot lejup"
+      "reorder": "Velciet, lai pārvietotu, vai izmantojiet bultiņas"
     },
     "stepper": {
       "increment": "Palielināt",

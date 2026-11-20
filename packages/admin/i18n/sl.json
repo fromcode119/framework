@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nov element menija",
       "add": "Dodaj element menija",
-      "indent": "Ugnezdi pod element zgoraj",
-      "outdent": "Premakni en nivo ven"
+      "reorder": "Povlecite za premik; puščice: gor in dol premakne, desno ugnezdi, levo izvleče"
     },
     "field": {
       "notSet": "Ni nastavljeno",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Dodaj: {{label}}",
       "item": "Element",
-      "moveUp": "Premakni gor",
-      "moveDown": "Premakni dol"
+      "reorder": "Povlecite za premik ali uporabite puščice"
     },
     "stepper": {
       "increment": "Povečaj",

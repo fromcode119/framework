@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Element i ri menuje",
       "add": "Shto element menuje",
-      "indent": "Fute nën elementin sipër",
-      "outdent": "Nxirre një nivel"
+      "reorder": "Tërhiqni për ta lëvizur; shigjetat: lart e poshtë lëvizin, djathtas fut brenda, majtas nxjerr jashtë"
     },
     "field": {
       "notSet": "E pacaktuar",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Shto {{label}} të ri",
       "item": "Element",
-      "moveUp": "Lëviz lart",
-      "moveDown": "Lëviz poshtë"
+      "reorder": "Tërhiqni për ta lëvizur, ose përdorni shigjetat"
     },
     "stepper": {
       "increment": "Rrit",

@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nová položka menu",
       "add": "Přidat položku menu",
-      "indent": "Vnořit pod položku výše",
-      "outdent": "Vysunout o úroveň výš"
+      "reorder": "Přetažením přesunete; šipky: nahoru a dolů přesun, vpravo vnoření, vlevo vynoření"
     },
     "field": {
       "notSet": "Nenastaveno",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Přidat: {{label}}",
       "item": "Položka",
-      "moveUp": "Posunout nahoru",
-      "moveDown": "Posunout dolů"
+      "reorder": "Přetažením přesunete, nebo použijte šipky"
     },
     "stepper": {
       "increment": "Zvýšit",

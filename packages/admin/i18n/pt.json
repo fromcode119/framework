@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Novo item de menu",
       "add": "Adicionar item de menu",
-      "indent": "Aninhar sob o item acima",
-      "outdent": "Subir um nível"
+      "reorder": "Arraste para mover; setas: cima e baixo para mover, direita para aninhar, esquerda para retirar"
     },
     "field": {
       "notSet": "Não definido",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Adicionar {{label}}",
       "item": "Item",
-      "moveUp": "Mover para cima",
-      "moveDown": "Mover para baixo"
+      "reorder": "Arraste para mover ou use as setas"
     },
     "stepper": {
       "increment": "Aumentar",

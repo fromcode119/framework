@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Uusi valikkokohde",
       "add": "Lisää valikkokohde",
-      "indent": "Sisennä yllä olevan kohteen alle",
-      "outdent": "Siirrä tasoa ylemmäs"
+      "reorder": "Siirrä vetämällä; nuolet: ylös ja alas siirtää, oikealle sisentää, vasemmalle nostaa ylös"
     },
     "field": {
       "notSet": "Ei asetettu",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Lisää uusi: {{label}}",
       "item": "Kohde",
-      "moveUp": "Siirrä ylös",
-      "moveDown": "Siirrä alas"
+      "reorder": "Siirrä vetämällä tai nuolinäppäimillä"
     },
     "stepper": {
       "increment": "Lisää",

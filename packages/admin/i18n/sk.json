@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nová položka menu",
       "add": "Pridať položku menu",
-      "indent": "Vnoriť pod položku vyššie",
-      "outdent": "Vysunúť o úroveň vyššie"
+      "reorder": "Presuňte potiahnutím; šípky: hore a dole presun, vpravo vnorenie, vľavo vynorenie"
     },
     "field": {
       "notSet": "Nenastavené",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Pridať: {{label}}",
       "item": "Položka",
-      "moveUp": "Posunúť nahor",
-      "moveDown": "Posunúť nadol"
+      "reorder": "Presuňte potiahnutím alebo použite šípky"
     },
     "stepper": {
       "increment": "Zvýšiť",

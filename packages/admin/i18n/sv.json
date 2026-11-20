@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "Nytt menyobjekt",
       "add": "Lägg till menyobjekt",
-      "indent": "Lägg under objektet ovanför",
-      "outdent": "Flytta ut en nivå"
+      "reorder": "Dra för att flytta; piltangenter: upp och ned flyttar, höger drar in, vänster flyttar ut"
     },
     "field": {
       "notSet": "Inte angiven",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "Lägg till {{label}}",
       "item": "Objekt",
-      "moveUp": "Flytta upp",
-      "moveDown": "Flytta ned"
+      "reorder": "Dra för att flytta, eller använd piltangenterna"
     },
     "stepper": {
       "increment": "Öka",

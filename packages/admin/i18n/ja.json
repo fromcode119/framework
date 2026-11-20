@@ -437,8 +437,7 @@
     "menuField": {
       "newItem": "新しいメニュー項目",
       "add": "メニュー項目を追加",
-      "indent": "上の項目の下に入れる",
-      "outdent": "1 階層上げる"
+      "reorder": "ドラッグで移動。矢印キー：上下で移動、右で入れ子、左で階層を上げる"
     },
     "field": {
       "notSet": "未設定",
@@ -460,8 +459,7 @@
     "array": {
       "addNew": "{{label}}を追加",
       "item": "項目",
-      "moveUp": "上へ移動",
-      "moveDown": "下へ移動"
+      "reorder": "ドラッグするか矢印キーで移動"
     },
     "stepper": {
       "increment": "増やす",
