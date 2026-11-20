@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Pratinjau Platform",
-      "image": "Pratinjau {{number}}"
+      "image": "Pratinjau {{number}}",
+      "previous": "Sebelumnya",
+      "next": "Berikutnya"
     },
     "menuField": {
       "newItem": "Item Menu Baru",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Yang berubah di v{{version}}",
     "whatChanged": "Yang berubah",
-    "closeBuildSourceDialog": "Tutup dialog sumber build",
-    "close": "Tutup",
     "couldNotInstallThatVersion": "Tidak dapat memasang versi tersebut.",
     "couldNotChangeAutomaticUpdating": "Tidak dapat mengubah pembaruan otomatis.",
     "failed": "Gagal",

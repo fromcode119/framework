@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Náhled platformy",
-      "image": "Náhled {{number}}"
+      "image": "Náhled {{number}}",
+      "previous": "Předchozí",
+      "next": "Další"
     },
     "menuField": {
       "newItem": "Nová položka menu",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Co se změnilo ve v{{version}}",
     "whatChanged": "Co se změnilo",
-    "closeBuildSourceDialog": "Zavřít dialog zdroje sestavení",
-    "close": "Zavřít",
     "couldNotInstallThatVersion": "Tuto verzi nelze nainstalovat.",
     "couldNotChangeAutomaticUpdating": "Automatické aktualizace nelze změnit.",
     "failed": "Selhalo",

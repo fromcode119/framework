@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Réamhamharc ar an Ardán",
-      "image": "Réamhamharc {{number}}"
+      "image": "Réamhamharc {{number}}",
+      "previous": "Roimhe seo",
+      "next": "Ar aghaidh"
     },
     "menuField": {
       "newItem": "Mír Roghchláir Nua",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Cad a d'athraigh i v{{version}}",
     "whatChanged": "Cad a d'athraigh",
-    "closeBuildSourceDialog": "Dún dialóg na foinse tógála",
-    "close": "Dún",
     "couldNotInstallThatVersion": "Níorbh fhéidir an leagan sin a shuiteáil.",
     "couldNotChangeAutomaticUpdating": "Níorbh fhéidir an nuashonrú uathoibríoch a athrú.",
     "failed": "Theip air",

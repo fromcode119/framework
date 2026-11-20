@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Plattformvorschau",
-      "image": "Vorschau {{number}}"
+      "image": "Vorschau {{number}}",
+      "previous": "Zurück",
+      "next": "Weiter"
     },
     "menuField": {
       "newItem": "Neuer Menüeintrag",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Neuerungen in v{{version}}",
     "whatChanged": "Neuerungen",
-    "closeBuildSourceDialog": "Dialog für Build-Quelle schließen",
-    "close": "Schließen",
     "couldNotInstallThatVersion": "Diese Version konnte nicht installiert werden.",
     "couldNotChangeAutomaticUpdating": "Automatische Aktualisierung konnte nicht geändert werden.",
     "failed": "Fehlgeschlagen",

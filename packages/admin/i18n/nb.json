@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Forhåndsvisning av plattformen",
-      "image": "Forhåndsvisning {{number}}"
+      "image": "Forhåndsvisning {{number}}",
+      "previous": "Forrige",
+      "next": "Neste"
     },
     "menuField": {
       "newItem": "Nytt menyelement",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Endringer i v{{version}}",
     "whatChanged": "Endringer",
-    "closeBuildSourceDialog": "Lukk dialogen for byggekilde",
-    "close": "Lukk",
     "couldNotInstallThatVersion": "Kunne ikke installere den versjonen.",
     "couldNotChangeAutomaticUpdating": "Kunne ikke endre automatisk oppdatering.",
     "failed": "Mislyktes",

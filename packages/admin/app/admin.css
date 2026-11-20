@@ -3856,6 +3856,7 @@ textarea.fc-field.fc-pem-input { min-height: 140px; font-family: ui-monospace, S
 .fc-stat__icon[data-tone="info"] { color: var(--fc-info); }
 /* A card whose body is a line and a few labels: the labels follow the line, 6px apart. */
 .fc-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.fc-sheet__subtitle .fc-chip-row, .fc-field-stack > .fc-chip-row { margin-top: 0; align-items: center; }
 .fc-card-block + .fc-card-block { margin-top: 16px; }
 
 /* The same labels inside a table cell stand on the cell's own line, with no space over them. */
@@ -4102,4 +4103,17 @@ textarea.fc-field.fc-pem-input { min-height: 140px; font-family: ui-monospace, S
 @media (max-width: 640px) {
   .fc-sheet__foot:has(> :nth-child(3)) { flex-wrap: wrap; }
   .fc-sheet__foot:has(> :nth-child(3)) > * { flex: 1 1 40%; min-width: 0; }
+}
+
+/* The picture viewer: the sheet's backdrop made opaque, a bar of the console's text on top, the picture
+   in the middle at its own proportions, the console's icon buttons. */
+.fc-lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: var(--fc-canvas); animation: fc-enter var(--fc-dur-overlay) var(--fc-ease) both; --fc-enter-from: 0px; --fc-enter-scale: 1; }
+.fc-lightbox__bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--fc-border); background: var(--fc-surface); }
+.fc-lightbox__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-control-text); font-weight: var(--fc-weight-strong); color: var(--fc-text); }
+.fc-lightbox__count { font-size: var(--fc-control-text); color: var(--fc-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fc-lightbox__stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 24px 16px; }
+.fc-lightbox__image { min-width: 0; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--fc-control-radius); box-shadow: 0 0 0 1px var(--fc-border); }
+.fc-lightbox__nav { flex: none; }
+@media (max-width: 639.98px) {
+  .fc-lightbox__stage { gap: 8px; padding: 16px 8px; }
 }

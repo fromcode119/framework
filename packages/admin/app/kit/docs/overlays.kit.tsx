@@ -12,6 +12,7 @@ import { CommandBarCommand } from '@/components/ui/view/command-bar-command.clie
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Lightbox } from '@/components/ui/view/lightbox.client';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
 import type { KitDoc } from '@/app/kit/kit-doc';
 
@@ -30,6 +31,10 @@ export class OverlaysKit {
     );
   }
 
+  /** Three plain pictures drawn here, so the viewer has something to show without a file. */
+  private static readonly PICTURES = ['#6366f1', '#14b8a6', '#f59e0b'].map((fill, n) =>
+    `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="${fill}"/><text x="600" y="430" font-family="sans-serif" font-size="96" fill="white" text-anchor="middle">${n + 1}</text></svg>`)}`);
+
   static docs(): KitDoc[] {
     const items = [
       { label: 'Edit', icon: <FrameworkIcons.Edit size={15} />, onClick: () => undefined },
@@ -47,6 +52,16 @@ export class OverlaysKit {
           { title: 'Dialog', text: 'The dialog itself, for a question with content of its own. `wide` is for a list to read before answering.', demo: <>{OverlaysKit.opens('Dialog', (open, close) => <Dialog isOpen={open} onClose={close} title="Restore the archive?" description="The site returns to how it was on 12 November." foot={<><Button variant={ButtonVariant.SECONDARY} onClick={close}>Cancel</Button><Button variant={ButtonVariant.PRIMARY} onClick={close}>Restore</Button></>}><p className="fc-field-note">Whatever the question needs under it.</p></Dialog>)}{OverlaysKit.opens('Wide dialog', (open, close) => <Dialog wide isOpen={open} onClose={close} title="Approve Finance Core" description="What it will be allowed to do." foot={<Button variant={ButtonVariant.PRIMARY} onClick={close}>Approve and turn on</Button>}><p className="fc-field-note">A list to read.</p></Dialog>)}</>, code: '<Dialog isOpen={open} onClose={close} title="Restore the archive?"\n  description="The site returns to how it was on 12 November."\n  foot={<>…buttons…</>}>\n  …\n</Dialog>' },
           { title: 'EditSheet', text: 'A part of a record edited beside the page it belongs to, 560px from the side, with Save and Cancel at its foot.', demo: OverlaysKit.opens('Sheet', (open, close) => <EditSheet isOpen={open} onClose={close} onSave={close} title="Edit product" subtitle="Cotton T-shirt"><div className="fc-field-stack"><Input label="Title" value="Cotton T-shirt" onChange={() => undefined} /></div></EditSheet>), code: '<EditSheet isOpen={open} onClose={close} onSave={save} saving={saving} error={error}\n  title="Edit product" subtitle="Cotton T-shirt">\n  …fields…\n</EditSheet>' },
           { title: 'FocusModal', text: 'The whole screen for making something new, in steps when it has them.', demo: OverlaysKit.opens('Focus modal', (open, close) => <FocusModal isOpen={open} label="Create product" onClose={close} onConfirm={close}><div className="fc-kitdoc__cell"><Input label="Title" value="" placeholder="Winter jacket" onChange={() => undefined} /></div></FocusModal>), code: '<FocusModal isOpen={open} label="Create product" onClose={close} onConfirm={create}\n  tabs={steps} activeTab={step} onTab={setStep}>\n  …\n</FocusModal>' },
+          { title: 'Lightbox', text: 'A picture over the whole console: what it is and where it is in the set on top with ✕, ‹ › at the sides when there is more than one. Arrow keys move, Esc closes.', demo: (
+            <KitPlay initial={false}>
+              {(at, set) => (
+                <>
+                  <Button variant={ButtonVariant.SECONDARY} onClick={() => set(0)}>Screenshots</Button>
+                  <Lightbox isOpen={at !== false} images={OverlaysKit.PICTURES} currentIndex={at === false ? 0 : at} onNavigate={set} onClose={() => set(false)} title="Screenshots" />
+                </>
+              )}
+            </KitPlay>
+          ), code: '<Lightbox isOpen={open} images={urls} currentIndex={index}\n  onNavigate={setIndex} onClose={close} title={name} />' },
         ],
         options: [
           { name: 'isOpen, onClose', type: 'boolean, () => void', does: 'Every overlay: whether it shows, and what closes it (Esc and the backdrop call it too).' },
@@ -59,6 +74,7 @@ export class OverlaysKit {
           { name: 'FocusModal tabs, activeTab, onTab, confirmDisabled', type: 'steps', does: 'Steps across its head and whether it may be confirmed yet.' },
           { name: 'FocusModal footNote', type: 'ReactNode', does: 'What the buttons will act on, at the start of the foot: the file chosen.' },
           { name: 'FocusModal wide', type: 'boolean', initial: 'false', does: 'A grid of pictures rather than a form: the column takes up to 1120px instead of 720.' },
+          { name: 'Lightbox images, currentIndex, onNavigate, title', type: 'string[], number, (index) => void, string', does: 'The pictures, which one shows, moving between them, and what they are.' },
         ],
       },
       {

@@ -1,19 +1,17 @@
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 
-import { Button } from '@/components/ui/view/button.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Input } from '@/components/ui/view/input.client';
 import { Switch } from '@/components/ui/view/switch.client';
-import { FrameworkIcons, RootFramework } from '@fromcode119/react';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Grants an existing account access to this site.
  *
- * A dialog because granting access is an ACTION, not a property of the list. It used to be a permanent
+ * A drawer because granting access is an ACTION, not a property of the list. It used to be a permanent
  * input, toggle and button welded under the roster, which read as a third thing stacked on the pager
  * with equal weight and left a form sitting open on a page nobody came to fill in a form.
  *
@@ -54,49 +52,28 @@ export class SiteGrantDialog extends AdminComponent {
   }
 
   render(): ReactNode {
-    if (!this.isOpen) return null;
-    const dark = this.theme === ThemeMode.DARK;
-
+    // The console's side drawer, like every other form: the address, the role, Cancel and Grant.
     return (
-      <RootFramework>
-        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-300" onClick={this.onClose} />
-          <form
-            onSubmit={this.submit}
-            className={`relative w-full max-w-md my-auto rounded-xl border shadow-2xl p-8 animate-in zoom-in-95 slide-in-from-bottom-8 duration-300 ${
-              dark ? 'bg-slate-900 border-slate-800 shadow-black/50' : 'bg-white border-slate-100 shadow-slate-200/50'
-            }`}
-          >
-            <div className="flex items-start gap-4 mb-6">
-              <div className={`p-3 rounded-xl flex-shrink-0 ${dark ? 'bg-indigo-500/10 text-indigo-500' : 'bg-indigo-50 text-indigo-600'}`}>
-                <FrameworkIcons.Plus size={16} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-medium tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('sites.grantAccess')}</h3>
-                <p className={`mt-1 text-sm leading-relaxed ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {AdminI18n.t('sites.theAccountMustAlreadyExist')}
-                </p>
-              </div>
-            </div>
-
-            <Input value={this.email} onChange={this.onEmail} placeholder="name@company.com" />
-
-            <div className="mt-4">
-              <Switch
-                checked={this.asAdmin}
-                onChange={this.onRole}
-                label={AdminI18n.t('sites.siteAdministrator')}
-                description={AdminI18n.t('sites.canAdministerThisSiteTurn')}
-              />
-            </div>
-
-            <div className="mt-6 flex items-center justify-end gap-2">
-              <Button variant={ButtonVariant.GHOST} onClick={this.onClose} type="button">{AdminI18n.t('sites.cancel')}</Button>
-              <Button type="submit" isLoading={this.isLoading} icon={<FrameworkIcons.Plus size={14} />}>{AdminI18n.t('sites.grantAccess')}</Button>
-            </div>
-          </form>
-        </div>
-      </RootFramework>
+      <EditSheet
+        isOpen={this.isOpen}
+        title={AdminI18n.t('sites.grantAccess')}
+        onClose={this.onClose}
+        onSave={this.submit}
+        saving={this.isLoading}
+        saveLabel={AdminI18n.t('sites.grantAccess')}
+        cancelLabel={AdminI18n.t('sites.cancel')}
+      >
+        <form onSubmit={this.submit} className="fc-form-stack">
+          <Hint>{AdminI18n.t('sites.theAccountMustAlreadyExist')}</Hint>
+          <Input type="email" label={AdminI18n.t('setup.account.email')} value={this.email} onChange={this.onEmail} placeholder="name@company.com" autoFocus />
+          <Switch
+            checked={this.asAdmin}
+            onChange={this.onRole}
+            label={AdminI18n.t('sites.siteAdministrator')}
+            description={AdminI18n.t('sites.canAdministerThisSiteTurn')}
+          />
+        </form>
+      </EditSheet>
     );
   }
 }

@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Предпросмотр платформы",
-      "image": "Предпросмотр {{number}}"
+      "image": "Предпросмотр {{number}}",
+      "previous": "Назад",
+      "next": "Вперёд"
     },
     "menuField": {
       "newItem": "Новый пункт меню",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Что нового в v{{version}}",
     "whatChanged": "Что изменилось",
-    "closeBuildSourceDialog": "Закрыть окно источника сборки",
-    "close": "Закрыть",
     "couldNotInstallThatVersion": "Не удалось установить эту версию.",
     "couldNotChangeAutomaticUpdating": "Не удалось изменить настройку автоматического обновления.",
     "failed": "Ошибка",

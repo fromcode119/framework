@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "플랫폼 미리보기",
-      "image": "미리보기 {{number}}"
+      "image": "미리보기 {{number}}",
+      "previous": "이전",
+      "next": "다음"
     },
     "menuField": {
       "newItem": "새 메뉴 항목",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "v{{version}}의 변경 사항",
     "whatChanged": "변경 사항",
-    "closeBuildSourceDialog": "빌드 소스 대화 상자 닫기",
-    "close": "닫기",
     "couldNotInstallThatVersion": "해당 버전을 설치할 수 없습니다.",
     "couldNotChangeAutomaticUpdating": "자동 업데이트 설정을 변경할 수 없습니다.",
     "failed": "실패",

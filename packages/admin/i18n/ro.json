@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Previzualizare platformă",
-      "image": "Previzualizare {{number}}"
+      "image": "Previzualizare {{number}}",
+      "previous": "Anterior",
+      "next": "Următor"
     },
     "menuField": {
       "newItem": "Element de meniu nou",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Ce s-a schimbat în v{{version}}",
     "whatChanged": "Ce s-a schimbat",
-    "closeBuildSourceDialog": "Închide dialogul sursei de build",
-    "close": "Închide",
     "couldNotInstallThatVersion": "Versiunea nu a putut fi instalată.",
     "couldNotChangeAutomaticUpdating": "Actualizarea automată nu a putut fi modificată.",
     "failed": "Eșuat",

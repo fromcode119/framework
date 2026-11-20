@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Predogled platforme",
-      "image": "Predogled {{number}}"
+      "image": "Predogled {{number}}",
+      "previous": "Prejšnji",
+      "next": "Naslednji"
     },
     "menuField": {
       "newItem": "Nov element menija",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Kaj je novega v v{{version}}",
     "whatChanged": "Kaj je novega",
-    "closeBuildSourceDialog": "Zapri pogovorno okno vira gradnje",
-    "close": "Zapri",
     "couldNotInstallThatVersion": "Te različice ni bilo mogoče namestiti.",
     "couldNotChangeAutomaticUpdating": "Samodejnega posodabljanja ni bilo mogoče spremeniti.",
     "failed": "Neuspešno",

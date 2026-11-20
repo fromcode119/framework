@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Pregled platforme",
-      "image": "Pregled {{number}}"
+      "image": "Pregled {{number}}",
+      "previous": "Prethodno",
+      "next": "Sljedeće"
     },
     "menuField": {
       "newItem": "Nova stavka izbornika",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Što je novo u v{{version}}",
     "whatChanged": "Što je novo",
-    "closeBuildSourceDialog": "Zatvori dijalog izvora izgradnje",
-    "close": "Zatvori",
     "couldNotInstallThatVersion": "Tu verziju nije moguće instalirati.",
     "couldNotChangeAutomaticUpdating": "Nije moguće promijeniti automatsko ažuriranje.",
     "failed": "Neuspjelo",

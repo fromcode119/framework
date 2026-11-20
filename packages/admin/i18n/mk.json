@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Преглед на платформата",
-      "image": "Преглед {{number}}"
+      "image": "Преглед {{number}}",
+      "previous": "Претходно",
+      "next": "Следно"
     },
     "menuField": {
       "newItem": "Нова ставка во менито",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Што е ново во v{{version}}",
     "whatChanged": "Што е ново",
-    "closeBuildSourceDialog": "Затвори го дијалогот за извор на градба",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Таа верзија не може да се инсталира.",
     "couldNotChangeAutomaticUpdating": "Автоматското ажурирање не може да се промени.",
     "failed": "Неуспешно",

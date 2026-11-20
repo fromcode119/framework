@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Anteprima piattaforma",
-      "image": "Anteprima {{number}}"
+      "image": "Anteprima {{number}}",
+      "previous": "Precedente",
+      "next": "Successivo"
     },
     "menuField": {
       "newItem": "Nuova voce di menu",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Novità della v{{version}}",
     "whatChanged": "Novità",
-    "closeBuildSourceDialog": "Chiudi la finestra della sorgente di build",
-    "close": "Chiudi",
     "couldNotInstallThatVersion": "Impossibile installare questa versione.",
     "couldNotChangeAutomaticUpdating": "Impossibile modificare l'aggiornamento automatico.",
     "failed": "Non riuscito",

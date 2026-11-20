@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Alustan esikatselu",
-      "image": "Esikatselu {{number}}"
+      "image": "Esikatselu {{number}}",
+      "previous": "Edellinen",
+      "next": "Seuraava"
     },
     "menuField": {
       "newItem": "Uusi valikkokohde",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Muutokset versiossa v{{version}}",
     "whatChanged": "Muutokset",
-    "closeBuildSourceDialog": "Sulje koontilähteen valintaikkuna",
-    "close": "Sulje",
     "couldNotInstallThatVersion": "Version asentaminen epäonnistui.",
     "couldNotChangeAutomaticUpdating": "Automaattisen päivityksen muuttaminen epäonnistui.",
     "failed": "Epäonnistui",

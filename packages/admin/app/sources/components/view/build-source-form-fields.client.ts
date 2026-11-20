@@ -56,7 +56,8 @@ export abstract class BuildSourceFormFields extends BuildSourceFormRemote {
     this.setState({ autoUpdate: checked });
   }
 
-  @bound protected submit(): void {
+  /** Called by the drawer's Save — the drawer owns the buttons, the form owns what is sent. */
+  @bound submit(): void {
     this.props.onSubmit({
       autoBuild: this.state.autoBuild,
       autoUpdate: this.state.autoUpdate,

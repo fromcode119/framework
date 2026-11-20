@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "प्लेटफ़ॉर्म पूर्वावलोकन",
-      "image": "पूर्वावलोकन {{number}}"
+      "image": "पूर्वावलोकन {{number}}",
+      "previous": "पिछला",
+      "next": "अगला"
     },
     "menuField": {
       "newItem": "नया मेनू आइटम",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} में क्या बदला",
     "whatChanged": "क्या बदला",
-    "closeBuildSourceDialog": "बिल्ड स्रोत संवाद बंद करें",
-    "close": "बंद करें",
     "couldNotInstallThatVersion": "वह संस्करण इंस्टॉल नहीं किया जा सका।",
     "couldNotChangeAutomaticUpdating": "स्वचालित अपडेट सेटिंग नहीं बदली जा सकी।",
     "failed": "विफल",

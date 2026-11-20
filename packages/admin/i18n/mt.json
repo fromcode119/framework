@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Previżjoni tal-Pjattaforma",
-      "image": "Previżjoni {{number}}"
+      "image": "Previżjoni {{number}}",
+      "previous": "Ta' qabel",
+      "next": "Li jmiss"
     },
     "menuField": {
       "newItem": "Element Ġdid tal-Menu",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "X'inbidel f'v{{version}}",
     "whatChanged": "X'inbidel",
-    "closeBuildSourceDialog": "Agħlaq id-djalogu tas-sors tal-bini",
-    "close": "Agħlaq",
     "couldNotInstallThatVersion": "Ma setgħetx tiġi installata dik il-verżjoni.",
     "couldNotChangeAutomaticUpdating": "L-aġġornament awtomatiku ma setax jinbidel.",
     "failed": "Falla",

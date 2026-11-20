@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Xem trước nền tảng",
-      "image": "Xem trước {{number}}"
+      "image": "Xem trước {{number}}",
+      "previous": "Trước",
+      "next": "Tiếp"
     },
     "menuField": {
       "newItem": "Mục menu mới",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Thay đổi trong v{{version}}",
     "whatChanged": "Những thay đổi",
-    "closeBuildSourceDialog": "Đóng hộp thoại nguồn build",
-    "close": "Đóng",
     "couldNotInstallThatVersion": "Không thể cài đặt phiên bản đó.",
     "couldNotChangeAutomaticUpdating": "Không thể thay đổi chế độ tự động cập nhật.",
     "failed": "Thất bại",

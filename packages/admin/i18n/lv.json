@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platformas priekšskatījums",
-      "image": "Priekšskatījums {{number}}"
+      "image": "Priekšskatījums {{number}}",
+      "previous": "Iepriekšējais",
+      "next": "Nākamais"
     },
     "menuField": {
       "newItem": "Jauns izvēlnes vienums",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Izmaiņas versijā v{{version}}",
     "whatChanged": "Izmaiņas",
-    "closeBuildSourceDialog": "Aizvērt būvēšanas avota dialogu",
-    "close": "Aizvērt",
     "couldNotInstallThatVersion": "Neizdevās instalēt šo versiju.",
     "couldNotChangeAutomaticUpdating": "Neizdevās mainīt automātisko atjaunināšanu.",
     "failed": "Neizdevās",

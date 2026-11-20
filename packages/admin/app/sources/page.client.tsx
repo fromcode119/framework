@@ -8,7 +8,8 @@ import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.clie
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SourcesPageActions } from '@/app/sources/sources-page-actions.client';
 import { SourcesTable } from '@/app/sources/components/view/sources-table.client';
-import { BuildSourceDialog } from '@/app/sources/components/view/build-source-dialog.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
+import { Hint } from '@/components/ui/view/hint.client';
 import { BuildSourceForm } from '@/app/sources/components/view/build-source-form.client';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -19,6 +20,9 @@ import { Alert } from '@/components/ui/view/alert.client';
  * table. The top of the chain — what it holds and does is in `SourcesPageState` and its actions.
  */
 export class BuildOverview extends SourcesPageActions {
+  /** The open form, so the drawer's Save can send what it holds. */
+  private sourceForm: BuildSourceForm | null = null;
+
   static slots = ['admin.plugin.sources.content', 'admin.plugin.sources.overview', 'admin.plugin.sources.page.sources'];
 
   private get emptyMessage(): string {
@@ -51,18 +55,21 @@ export class BuildOverview extends SourcesPageActions {
     if (!this.editorMode) return null;
     const editing = this.editorMode === SourceEditorMode.EDIT;
     return (
-      <BuildSourceDialog
+      <EditSheet
+        isOpen
         title={editing ? AdminI18n.t('sources.edit2', { name: this.editingBuild?.slug || AdminI18n.t('sources.source') }) : AdminI18n.t('sources.addSource')}
-        description={editing ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave') : AdminI18n.t('sources.pasteARepositoryUrl')}
         onClose={this.closeEditor}
+        onSave={() => this.sourceForm?.submit()}
+        saving={this.savingSource}
+        error={this.editorError || undefined}
+        saveLabel={editing ? AdminI18n.t('sources.saveSource') : AdminI18n.t('sources.createSource')}
+        cancelLabel={AdminI18n.t('sources.cancel')}
       >
-        <BuildSourceForm build={this.editingBuild} busy={this.savingSource} mode={this.editorMode} onCancel={this.closeEditor} onSubmit={this.saveSource} />
-        {this.editorError ? (
-          <div ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4">
-            <Alert tone="danger">{this.editorError}</Alert>
-          </div>
-        ) : null}
-      </BuildSourceDialog>
+        <div className="fc-form-stack">
+          <Hint>{editing ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave') : AdminI18n.t('sources.pasteARepositoryUrl')}</Hint>
+          <BuildSourceForm ref={(form) => { this.sourceForm = form; }} build={this.editingBuild} mode={this.editorMode} onSubmit={this.saveSource} />
+        </div>
+      </EditSheet>
     );
   }
 

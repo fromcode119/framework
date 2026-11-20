@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platform Preview",
-      "image": "Preview {{number}}"
+      "image": "Preview {{number}}",
+      "previous": "Previous",
+      "next": "Next"
     },
     "menuField": {
       "newItem": "New Menu Item",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "What changed in v{{version}}",
     "whatChanged": "What changed",
-    "closeBuildSourceDialog": "Close build source dialog",
-    "close": "Close",
     "couldNotInstallThatVersion": "Could not install that version.",
     "couldNotChangeAutomaticUpdating": "Could not change automatic updating.",
     "failed": "Failed",

@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Náhľad platformy",
-      "image": "Náhľad {{number}}"
+      "image": "Náhľad {{number}}",
+      "previous": "Predchádzajúce",
+      "next": "Ďalšie"
     },
     "menuField": {
       "newItem": "Nová položka menu",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Čo sa zmenilo vo v{{version}}",
     "whatChanged": "Čo sa zmenilo",
-    "closeBuildSourceDialog": "Zavrieť dialóg zdroja zostavenia",
-    "close": "Zavrieť",
     "couldNotInstallThatVersion": "Túto verziu sa nepodarilo nainštalovať.",
     "couldNotChangeAutomaticUpdating": "Automatické aktualizácie sa nepodarilo zmeniť.",
     "failed": "Zlyhalo",

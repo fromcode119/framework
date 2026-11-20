@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Преглед платформе",
-      "image": "Преглед {{number}}"
+      "image": "Преглед {{number}}",
+      "previous": "Претходно",
+      "next": "Следеће"
     },
     "menuField": {
       "newItem": "Нова ставка менија",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Шта је ново у v{{version}}",
     "whatChanged": "Шта је ново",
-    "closeBuildSourceDialog": "Затвори дијалог извора за изградњу",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Инсталирање те верзије није успело.",
     "couldNotChangeAutomaticUpdating": "Промена аутоматског ажурирања није успела.",
     "failed": "Неуспешно",

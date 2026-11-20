@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "תצוגה מקדימה של הפלטפורמה",
-      "image": "תצוגה מקדימה {{number}}"
+      "image": "תצוגה מקדימה {{number}}",
+      "previous": "הקודם",
+      "next": "הבא"
     },
     "menuField": {
       "newItem": "פריט תפריט חדש",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "מה השתנה בגרסה {{version}}",
     "whatChanged": "מה השתנה",
-    "closeBuildSourceDialog": "סגירת חלון מקור הבנייה",
-    "close": "סגירה",
     "couldNotInstallThatVersion": "לא ניתן היה להתקין גרסה זו.",
     "couldNotChangeAutomaticUpdating": "לא ניתן היה לשנות את העדכון האוטומטי.",
     "failed": "נכשל",

@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "プラットフォームのプレビュー",
-      "image": "プレビュー {{number}}"
+      "image": "プレビュー {{number}}",
+      "previous": "前へ",
+      "next": "次へ"
     },
     "menuField": {
       "newItem": "新しいメニュー項目",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} の変更点",
     "whatChanged": "変更点",
-    "closeBuildSourceDialog": "ビルドソースのダイアログを閉じる",
-    "close": "閉じる",
     "couldNotInstallThatVersion": "このバージョンをインストールできませんでした。",
     "couldNotChangeAutomaticUpdating": "自動更新の設定を変更できませんでした。",
     "failed": "失敗",

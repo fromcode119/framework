@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platform Önizlemesi",
-      "image": "Önizleme {{number}}"
+      "image": "Önizleme {{number}}",
+      "previous": "Önceki",
+      "next": "Sonraki"
     },
     "menuField": {
       "newItem": "Yeni Menü Öğesi",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} sürümündeki değişiklikler",
     "whatChanged": "Değişiklikler",
-    "closeBuildSourceDialog": "Derleme kaynağı penceresini kapat",
-    "close": "Kapat",
     "couldNotInstallThatVersion": "Bu sürüm yüklenemedi.",
     "couldNotChangeAutomaticUpdating": "Otomatik güncelleme ayarı değiştirilemedi.",
     "failed": "Başarısız",

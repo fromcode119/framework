@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Preview ng Platform",
-      "image": "Preview {{number}}"
+      "image": "Preview {{number}}",
+      "previous": "Nakaraan",
+      "next": "Susunod"
     },
     "menuField": {
       "newItem": "Bagong Menu Item",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Ano ang nagbago sa v{{version}}",
     "whatChanged": "Ano ang nagbago",
-    "closeBuildSourceDialog": "Isara ang dialog ng build source",
-    "close": "Isara",
     "couldNotInstallThatVersion": "Hindi ma-install ang bersyong iyon.",
     "couldNotChangeAutomaticUpdating": "Hindi mabago ang awtomatikong pag-update.",
     "failed": "Nabigo",

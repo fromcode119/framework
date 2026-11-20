@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Προεπισκόπηση πλατφόρμας",
-      "image": "Προεπισκόπηση {{number}}"
+      "image": "Προεπισκόπηση {{number}}",
+      "previous": "Προηγούμενο",
+      "next": "Επόμενο"
     },
     "menuField": {
       "newItem": "Νέο στοιχείο μενού",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Τι άλλαξε στην v{{version}}",
     "whatChanged": "Τι άλλαξε",
-    "closeBuildSourceDialog": "Κλείσιμο παραθύρου πηγής build",
-    "close": "Κλείσιμο",
     "couldNotInstallThatVersion": "Δεν ήταν δυνατή η εγκατάσταση αυτής της έκδοσης.",
     "couldNotChangeAutomaticUpdating": "Δεν ήταν δυνατή η αλλαγή της αυτόματης ενημέρωσης.",
     "failed": "Απέτυχε",

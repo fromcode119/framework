@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platformvoorbeeld",
-      "image": "Voorbeeld {{number}}"
+      "image": "Voorbeeld {{number}}",
+      "previous": "Vorige",
+      "next": "Volgende"
     },
     "menuField": {
       "newItem": "Nieuw menu-item",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Wat is er veranderd in v{{version}}",
     "whatChanged": "Wat is er veranderd",
-    "closeBuildSourceDialog": "Dialoogvenster buildbron sluiten",
-    "close": "Sluiten",
     "couldNotInstallThatVersion": "Kan die versie niet installeren.",
     "couldNotChangeAutomaticUpdating": "Kan automatisch bijwerken niet wijzigen.",
     "failed": "Mislukt",

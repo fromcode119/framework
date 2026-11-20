@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platvormi eelvaade",
-      "image": "Eelvaade {{number}}"
+      "image": "Eelvaade {{number}}",
+      "previous": "Eelmine",
+      "next": "Järgmine"
     },
     "menuField": {
       "newItem": "Uus menüüüksus",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Mis muutus versioonis v{{version}}",
     "whatChanged": "Mis muutus",
-    "closeBuildSourceDialog": "Sulge järguallika dialoog",
-    "close": "Sulge",
     "couldNotInstallThatVersion": "Seda versiooni ei õnnestunud installida.",
     "couldNotChangeAutomaticUpdating": "Automaatse uuendamise muutmine ebaõnnestus.",
     "failed": "Ebaõnnestus",

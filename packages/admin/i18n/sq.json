@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Pamje paraprake e platformës",
-      "image": "Pamja paraprake {{number}}"
+      "image": "Pamja paraprake {{number}}",
+      "previous": "E mëparshmja",
+      "next": "Tjetra"
     },
     "menuField": {
       "newItem": "Element i ri menuje",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Çfarë ndryshoi në v{{version}}",
     "whatChanged": "Çfarë ndryshoi",
-    "closeBuildSourceDialog": "Mbyll dialogun e burimit të ndërtimit",
-    "close": "Mbyll",
     "couldNotInstallThatVersion": "Ai version nuk u instalua dot.",
     "couldNotChangeAutomaticUpdating": "Përditësimi automatik nuk u ndryshua dot.",
     "failed": "Dështoi",

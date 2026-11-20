@@ -467,7 +467,9 @@
     },
     "lightbox": {
       "title": "Преглед",
-      "image": "Изображение {{number}}"
+      "image": "Изображение {{number}}",
+      "previous": "Назад",
+      "next": "Напред"
     },
     "menuField": {
       "newItem": "Нов елемент",
@@ -3868,8 +3870,6 @@
   "sources": {
     "whatChangedInV": "Какво е променено във v{{version}}",
     "whatChanged": "Какво е променено",
-    "closeBuildSourceDialog": "Затвори прозореца на източника",
-    "close": "Затвори",
     "couldNotInstallThatVersion": "Тази версия не можа да бъде инсталирана.",
     "couldNotChangeAutomaticUpdating": "Автоматичното обновяване не можа да бъде променено.",
     "failed": "Неуспешни",

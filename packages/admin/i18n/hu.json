@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platform előnézet",
-      "image": "{{number}}. előnézet"
+      "image": "{{number}}. előnézet",
+      "previous": "Előző",
+      "next": "Következő"
     },
     "menuField": {
       "newItem": "Új menüpont",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "A v{{version}} változásai",
     "whatChanged": "Változások",
-    "closeBuildSourceDialog": "Buildforrás párbeszédablak bezárása",
-    "close": "Bezárás",
     "couldNotInstallThatVersion": "Nem sikerült telepíteni ezt a verziót.",
     "couldNotChangeAutomaticUpdating": "Nem sikerült módosítani az automatikus frissítést.",
     "failed": "Sikertelen",

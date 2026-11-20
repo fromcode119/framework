@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "معاينة المنصة",
-      "image": "معاينة {{number}}"
+      "image": "معاينة {{number}}",
+      "previous": "السابق",
+      "next": "التالي"
     },
     "menuField": {
       "newItem": "عنصر قائمة جديد",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "ما الجديد في الإصدار v{{version}}",
     "whatChanged": "ما الجديد",
-    "closeBuildSourceDialog": "إغلاق نافذة مصدر البناء",
-    "close": "إغلاق",
     "couldNotInstallThatVersion": "تعذّر تثبيت هذا الإصدار.",
     "couldNotChangeAutomaticUpdating": "تعذّر تغيير إعداد التحديث التلقائي.",
     "failed": "فشل",

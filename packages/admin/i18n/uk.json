@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Попередній перегляд платформи",
-      "image": "Попередній перегляд {{number}}"
+      "image": "Попередній перегляд {{number}}",
+      "previous": "Назад",
+      "next": "Далі"
     },
     "menuField": {
       "newItem": "Новий пункт меню",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Що змінилося у v{{version}}",
     "whatChanged": "Що змінилося",
-    "closeBuildSourceDialog": "Закрити діалог джерела збірки",
-    "close": "Закрити",
     "couldNotInstallThatVersion": "Не вдалося встановити цю версію.",
     "couldNotChangeAutomaticUpdating": "Не вдалося змінити автоматичне оновлення.",
     "failed": "Помилка",

@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "平台预览",
-      "image": "预览 {{number}}"
+      "image": "预览 {{number}}",
+      "previous": "上一页",
+      "next": "下一页"
     },
     "menuField": {
       "newItem": "新菜单项",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "v{{version}} 的变更内容",
     "whatChanged": "变更内容",
-    "closeBuildSourceDialog": "关闭构建源对话框",
-    "close": "关闭",
     "couldNotInstallThatVersion": "无法安装该版本。",
     "couldNotChangeAutomaticUpdating": "无法更改自动更新设置。",
     "failed": "失败",

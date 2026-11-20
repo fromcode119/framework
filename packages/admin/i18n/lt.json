@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Platformos peržiūra",
-      "image": "Peržiūra {{number}}"
+      "image": "Peržiūra {{number}}",
+      "previous": "Ankstesnis",
+      "next": "Kitas"
     },
     "menuField": {
       "newItem": "Naujas meniu punktas",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Kas pasikeitė v{{version}}",
     "whatChanged": "Kas pasikeitė",
-    "closeBuildSourceDialog": "Uždaryti kūrimo šaltinio langą",
-    "close": "Uždaryti",
     "couldNotInstallThatVersion": "Nepavyko įdiegti šios versijos.",
     "couldNotChangeAutomaticUpdating": "Nepavyko pakeisti automatinio atnaujinimo.",
     "failed": "Nepavyko",

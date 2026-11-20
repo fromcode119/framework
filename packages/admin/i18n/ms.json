@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "Pratonton Platform",
-      "image": "Pratonton {{number}}"
+      "image": "Pratonton {{number}}",
+      "previous": "Sebelumnya",
+      "next": "Seterusnya"
     },
     "menuField": {
       "newItem": "Item Menu Baharu",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "Perubahan dalam v{{version}}",
     "whatChanged": "Perubahan",
-    "closeBuildSourceDialog": "Tutup dialog sumber binaan",
-    "close": "Tutup",
     "couldNotInstallThatVersion": "Versi tersebut tidak dapat dipasang.",
     "couldNotChangeAutomaticUpdating": "Kemas kini automatik tidak dapat diubah.",
     "failed": "Gagal",

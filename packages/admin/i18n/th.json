@@ -430,7 +430,9 @@
     },
     "lightbox": {
       "title": "ตัวอย่างแพลตฟอร์ม",
-      "image": "ตัวอย่าง {{number}}"
+      "image": "ตัวอย่าง {{number}}",
+      "previous": "ก่อนหน้า",
+      "next": "ถัดไป"
     },
     "menuField": {
       "newItem": "รายการเมนูใหม่",
@@ -4444,8 +4446,6 @@
   "sources": {
     "whatChangedInV": "มีอะไรเปลี่ยนแปลงใน v{{version}}",
     "whatChanged": "มีอะไรเปลี่ยนแปลง",
-    "closeBuildSourceDialog": "ปิดกล่องโต้ตอบแหล่งที่มาของบิลด์",
-    "close": "ปิด",
     "couldNotInstallThatVersion": "ไม่สามารถติดตั้งเวอร์ชันนั้นได้",
     "couldNotChangeAutomaticUpdating": "ไม่สามารถเปลี่ยนการอัปเดตอัตโนมัติได้",
     "failed": "ล้มเหลว",
