@@ -2650,6 +2650,11 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-columns-menu__check > :last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-columns-menu .fc-repeat__tool[aria-pressed="true"] { color: var(--fc-text); background: var(--fc-surface-muted); }
 
+/* A person picked from People: the select, and under it one line of what People holds with the way there. */
+.fc-person-field__meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 6px 0 0; font-size: 12px; line-height: 18px; color: var(--fc-text-muted); }
+.fc-person-field__meta--warn { color: var(--fc-warning-strong); }
+.fc-person-field__open { font-weight: var(--fc-weight-strong); color: var(--fc-text); text-decoration: underline; text-underline-offset: 2px; }
+
 /* ── Asking before something cannot be undone ────────────────────────────────────────────────────
  * ConfirmDialog. Measured against the record pages this one follows: 400px wide, 24px of inset on
  * every side, title 16/24 and the two buttons at the end of their row. Ours was 448 wide with 20px

@@ -7,6 +7,7 @@ import { NumberStepper } from '@/components/ui/number-stepper';
 import { DateTimePicker } from '@/components/ui/date-time-picker/view/index.client';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
+import { PersonField } from '@/components/collection/fields/view/person-field.client';
 import type { KitDoc } from '@/app/kit/kit-doc';
 
 export class FieldsMoreKit {
@@ -35,6 +36,20 @@ export class FieldsMoreKit {
           { name: 'placeholder', type: 'string', does: 'Shown while empty.' },
           { name: 'error', type: 'string', does: 'What is wrong, under the field.' },
           { name: 'disabled', type: 'boolean', initial: 'false', does: 'Not available.' },
+        ],
+      },
+      {
+        slug: 'person-field', name: 'PersonField', group: 'Forms',
+        intro: 'Someone from People, picked by searching instead of retyping their name and email. A collection field with `admin.component: \'PersonField\'` stores the person and fills the fields named in `admin.personFields`.',
+        from: "{ name: 'personId', type: 'number', admin: { component: 'PersonField', personFields: { name: 'fullName', email: 'email' } } }",
+        examples: [
+          { title: 'Search and pick', text: 'Type a name, an email or a phone. The chosen person’s contact and the way to People show under it; × unlinks.', demo: <div className="fc-kitdoc__cell"><KitPlay initial={null}>{(value, set) => <PersonField value={value} onChange={set} onPatch={() => undefined} field={{ admin: {} }} />}</KitPlay></div>, code: '<PersonField value={personId} onChange={setPersonId} onPatch={patch} field={field} />' },
+          { title: 'Read-only', demo: <div className="fc-kitdoc__cell"><PersonField value={null} field={{ admin: { readOnly: true } }} /></div>, code: "{ …, admin: { component: 'PersonField', readOnly: true } }" },
+        ],
+        options: [
+          { name: 'value, onChange', type: 'number | null', does: 'The person’s id in People.' },
+          { name: 'admin.personFields', type: '{ name, email, phone }', does: 'Which of the collection’s own fields a picked person fills.' },
+          { name: 'admin.readOnly', type: 'boolean', initial: 'false', does: 'Shows who is linked; cannot be changed.' },
         ],
       },
       {
