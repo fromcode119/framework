@@ -19,5 +19,11 @@ export interface IAccountFileGroup {
    * knowledge of what any plugin's states mean.
    */
   badge?: { label: string; tone?: AccountBadgeTone };
+  /**
+   * Set when the files cannot be opened right now — an order still being completed, an allowance used
+   * up. The panel lists the files under this sentence without a Download button, rather than offering a
+   * link that only answers with an error.
+   */
+  note?: string;
   files: IAccountFile[];
 }
