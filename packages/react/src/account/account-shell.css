@@ -113,6 +113,10 @@
 .fc-acct-field { display: block; margin-bottom: 14px; font-size: 13px; color: #475569; }
 .fc-acct-input { display: block; width: 100%; margin-top: 4px; padding: 10px 12px; border: 1px solid var(--fc-acct-border); border-radius: 10px; font: inherit; font-size: 14px; background: var(--fc-acct-bg); color: var(--fc-acct-fg); }
 .fc-acct-input:focus { outline: none; border-color: var(--fc-acct-accent); box-shadow: 0 0 0 3px var(--fc-acct-accent-soft); }
+.fc-acct-field--wide { grid-column: 1 / -1; max-width: calc(50% - 8px); }
+@media (max-width: 560px) { .fc-acct-field--wide { max-width: none; } }
+.fc-acct-input[readonly] { background: var(--fc-acct-bg-soft); color: var(--fc-acct-muted); }
+.fc-acct-field > small.fc-acct-intro { display: block; margin-top: 4px; font-size: 12.5px; }
 /* Off-screen but still focusable/readable — a hidden username field keeps password managers happy. */
 .fc-acct-sronly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); border: 0; }
 
