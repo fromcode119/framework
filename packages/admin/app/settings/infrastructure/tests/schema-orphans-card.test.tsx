@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const apiGet = vi.fn();
 const apiPost = vi.fn();
@@ -33,6 +33,8 @@ const uncounted = { table: 'fcp_shop_carts', column: 'token', firstSeenAt: '2026
  * a zero, and drops nothing until the operator confirms.
  */
 describe('SchemaOrphansCard', () => {
+  // A dialog left open by an earlier test stays on the page now that a closing overlay no longer detaches the portal root.
+  afterEach(cleanup);
   beforeEach(() => {
     apiGet.mockReset();
     apiPost.mockReset();
