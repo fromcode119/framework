@@ -13,6 +13,11 @@ export class IntegrationConfigReadService {
   constructor(
     private readonly registry: IntegrationRegistry,
     private readonly normalizeKey: (type: string) => string,
+    /**
+     * Where the type's work actually goes for the site in scope, when that differs from naming its
+     * provider — today only email (`EmailDeliveryRoute`). `null` when there is nothing to add.
+     */
+    private readonly describeRoute: (typeKey: string, source: unknown) => Promise<string | null>,
   ) {}
 
   async listConfigs() {
@@ -25,13 +30,7 @@ export class IntegrationConfigReadService {
         const storedProfiles = await this.registry.readStoredProfilesConfig(summary.key).catch(() => null);
         return {
           ...summary,
-          active: active
-            ? {
-                provider: active.providerKey,
-                source: active.source,
-                config: this.registry.sanitizeResolvedConfig(summary.key, active.providerKey, active.config)
-              }
-            : null,
+          active: await this.activeSummary(summary.key, active),
           stored,
           storedProviders,
           storedProfiles: this.sanitizeStoredProfiles(summary.key, storedProfiles),
@@ -55,17 +54,21 @@ export class IntegrationConfigReadService {
 
     return {
       ...summary,
-      active: active
-        ? {
-            provider: active.providerKey,
-            source: active.source,
-            config: this.registry.sanitizeResolvedConfig(normalizedType, active.providerKey, active.config)
-          }
-        : null,
+      active: await this.activeSummary(normalizedType, active),
       stored,
       storedProviders,
       storedProfiles: this.sanitizeStoredProfiles(normalizedType, storedProfiles),
       activeProfileId: storedProfiles?.activeProfileId || null
+    };
+  }
+
+  private async activeSummary(typeKey: string, active: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (!active) return null;
+    return {
+      provider: active.providerKey,
+      source: active.source,
+      route: await this.describeRoute(typeKey, active.source),
+      config: this.registry.sanitizeResolvedConfig(typeKey, active.providerKey, active.config),
     };
   }
 

@@ -9,6 +9,8 @@ import type { IEmailDriver } from '@fromcode119/email';
 import { NonProductionEmailDriver } from '@core/integrations/non-production-email-driver';
 import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
 import { AuditManager } from '@core/security/audit-manager';
+import { RequestContextUtils } from '@core/context/request-context';
+import { EmailDeliveryRoute } from '@core/integrations/enums/email-delivery-route.enum';
 
 /**
  * Resolving ONE site's copy of a core integration, and remembering it.
@@ -85,11 +87,8 @@ export class IntegrationTenantResolver {
     const cached = this.instances.get(key) as IEmailDriver | undefined;
     if (cached) return cached;
     const { email, resolved } = await this.coreRefresh.refreshEmail(true);
-    // Compared by VALUE, not identity: `Enum` has no `equals`, and `toString()` returns the value, so
-    // this holds whether `source` is the enum member the resolver sets or a string it survived as.
-    const resolvedDriver = String(resolved?.source) === String(SettingSource.STORED)
-      ? email
-      : await this.platformSenderOrRefusal(tenantId);
+    const route = await this.emailRoute(resolved?.source);
+    const resolvedDriver = route === EmailDeliveryRoute.OWN ? email : this.platformSenderOrRefusal(tenantId, route);
     // Wrapped, always — the wrapper decides per SEND, not here. A non-production site must stop
     // sending the moment an operator says so, and this driver is cached for the life of the tenant's
     // integrations, so a decision taken at resolve time would outlive the switch that changed it.
@@ -113,25 +112,50 @@ export class IntegrationTenantResolver {
     return undefined;
   }
 
+  /**
+   * Where this site's mail goes, from the `source` its email integration resolved with. The one
+   * decision both the driver above and the integrations page's status line read, so the page can never
+   * say a provider is in use while the site's mail is refused.
+   *
+   * `source` is compared by VALUE, not identity: `Enum` has no `equals`, and `toString()` returns the
+   * value, so this holds whether it is the enum member the resolver sets or a string it survived as.
+   */
+  async emailRoute(source: unknown): Promise<EmailDeliveryRoute> {
+    if (String(source) === String(SettingSource.STORED)) return EmailDeliveryRoute.OWN;
+    if (!(await TenantEmailPolicy.permitsPlatformSender(this.db))) return EmailDeliveryRoute.NONE;
+    // The platform's own "server" may be the mock, which reports every send as delivered and drops it.
+    const { email, resolved } = this.platformMail;
+    return !email || PlatformMailUnavailableEmailDriver.isMock(resolved)
+      ? EmailDeliveryRoute.PLATFORM_UNAVAILABLE
+      : EmailDeliveryRoute.PLATFORM;
+  }
+
+  /**
+   * `route` for the integrations page: only email, and only inside a site — with no site bound, the
+   * platform's own provider IS where its mail goes.
+   */
+  async routeFor(type: string, source: unknown): Promise<string | null> {
+    if (type !== 'email' || !RequestContextUtils.getTenantId()) return null;
+    return String(await this.emailRoute(source));
+  }
+
   /** The platform's own driver when this site has opted in and the platform has a real one; a refusing driver otherwise. */
-  private async platformSenderOrRefusal(tenantId: string): Promise<IEmailDriver> {
-    if (await TenantEmailPolicy.permitsPlatformSender(this.db)) {
-      const { email: platformDriver, resolved } = this.platformMail;
-      // The platform's own "server" may be the mock, which reports every send as delivered and drops it.
-      // Handing that to a site that asked for real mail is the silent failure this method exists to avoid.
-      if (!platformDriver || PlatformMailUnavailableEmailDriver.isMock(resolved)) {
-        this.logger.warn(
-          `Site "${tenantId}" opted into the platform's mail server, but the platform has none configured `
-          + '(its email integration is the mock driver). Its mail is refused rather than dropped.',
-        );
-        return new PlatformMailUnavailableEmailDriver(tenantId);
-      }
+  private platformSenderOrRefusal(tenantId: string, route: EmailDeliveryRoute): IEmailDriver {
+    if (route === EmailDeliveryRoute.PLATFORM_UNAVAILABLE) {
+      // Handing the mock to a site that asked for real mail is the silent failure this method exists to avoid.
+      this.logger.warn(
+        `Site "${tenantId}" opted into the platform's mail server, but the platform has none configured `
+        + '(its email integration is the mock driver). Its mail is refused rather than dropped.',
+      );
+      return new PlatformMailUnavailableEmailDriver(tenantId);
+    }
+    if (route === EmailDeliveryRoute.PLATFORM && this.platformMail.email) {
       this.logger.warn(
         `Site "${tenantId}" has no mail configuration of its own and is sending through the PLATFORM's `
         + 'mail server, under the platform\'s SPF, DKIM and sending reputation. It opted into this with '
         + `"${SystemConstants.META_KEY.EMAIL_PLATFORM_FALLBACK}".`,
       );
-      return platformDriver;
+      return this.platformMail.email;
     }
     return new UnconfiguredTenantEmailDriver(tenantId);
   }

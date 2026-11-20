@@ -88,6 +88,7 @@ export { MeasurementSystemUtils } from '@core/utils/measurement-system-utils';
 export { TimeFormatUtils } from '@core/utils/time-format-utils';
 export { PlatformCountryUtils } from '@core/utils/platform-country-utils';
 export { PlatformCountrySource } from '@core/enums/platform-country-source.enum';
+export { EmailDeliveryRoute } from '@core/integrations/enums/email-delivery-route.enum';
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
 export { FormatUtils } from '@core/utils/format-utils';
 export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from '@core/api';
