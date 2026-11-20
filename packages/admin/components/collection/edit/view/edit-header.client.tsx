@@ -37,6 +37,7 @@ export class EditHeader extends PureReactor {
   @prop declare currentStatusValue: string;
   /** The status option's label, shown as a badge whether or not it may be changed here. */
   @prop declare currentStatusLabel: string;
+  @prop declare currentStatusTone?: string;
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handleSubmit: (e: any, summary: string) => void;
   /** Saves the record with a status chosen from the ⋯ menu. */
@@ -149,7 +150,7 @@ export class EditHeader extends PureReactor {
   private renderBadges(): ReactNode {
     if (this.isNew) return null;
     const badges = EditHeaderRecordFacts.badges(this.collection, this.formData)
-      ?? (this.currentStatusLabel ? [{ key: 'status', label: this.currentStatusLabel, tone: 'default' }] : []);
+      ?? (this.currentStatusLabel ? [{ key: 'status', label: this.currentStatusLabel, tone: this.currentStatusTone || 'default' }] : []);
     return badges.map((badge) => <StateBadge key={badge.key} tone={badge.tone}>{badge.label}</StateBadge>);
   }
 

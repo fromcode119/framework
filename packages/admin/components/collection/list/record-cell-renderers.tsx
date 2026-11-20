@@ -9,6 +9,7 @@ import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { TimezoneUtils } from '@/lib/timezone';
+import { StatusTone } from '@/components/collection/status-tone';
 
 /**
  * Turning one cell's raw value into what the list actually shows.
@@ -50,7 +51,7 @@ export class RecordCellRenderers {
     }
     // A select whose option names a tone shows as a badge in that tone, in any column: the collection
     // says what "paid" or "cancelled" looks like, the list never guesses from the word.
-    const tone = this.optionTone(field, raw);
+    const tone = StatusTone.declared(field, raw);
     if (tone) return React.createElement(Badge, { variant: BadgeVariant.resolve(tone) }, this.optionLabel(field, raw) || String(raw));
     if (columnName === 'status') return this.renderStatusBadge(raw, this.optionLabel(field, raw));
 
@@ -130,14 +131,6 @@ export class RecordCellRenderers {
     return Number(raw) === 0 ? AdminServices.getInstance().localization.resolveLabelText(label) : '';
   }
 
-  /** The tone a select option declares for this value (`success`, `warning`, `danger`, `info`, `default`), or ''. */
-  static optionTone(field: any, raw: any): string {
-    const value = String(raw ?? '').trim();
-    if (!value || !Array.isArray(field?.options)) return '';
-    const option = field.options.find((entry: any) => String(entry?.value ?? entry ?? '') === value);
-    return option && typeof option === 'object' ? String(option.tone ?? '').trim() : '';
-  }
-
   static optionLabel(field: any, raw: any): string {
     const value = String(raw ?? '').trim();
     if (!value || !Array.isArray(field?.options)) return '';
@@ -149,15 +142,7 @@ export class RecordCellRenderers {
   static renderStatusBadge(raw: any, label: string = ''): ReactNode {
     const value = String(raw || '').trim();
     if (!value) return '-';
-    const lower = value.toLowerCase();
-    const variant =
-      lower === 'published' || lower === 'read'
-        ? 'success'
-        : lower === 'draft' || lower === 'unread' || lower === 'new'
-          ? 'warning'
-          : lower === 'archived'
-            ? 'rose'
-            : 'default';
-    return React.createElement(Badge, { variant: variant as any }, label || value);
+    return React.createElement(Badge, { variant: BadgeVariant.resolve(StatusTone.ofWord(value)) }, label || value);
   }
+
 }

@@ -15,6 +15,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { NotificationContextStore } from '@/components/view/notification-context-store.client';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { ArchiveOperations } from '@/components/collection/list/archive-operations';
+import { StatusTone } from '@/components/collection/status-tone';
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 
 /**
@@ -87,7 +88,7 @@ export class EditHeaderMenu extends Reactor {
     const items: IDropdownItem[] = this.statusOptions.map((option, index) => ({
       label: option.label,
       section: index === 0 ? AdminI18n.t('collection.edit.statusSection') : undefined,
-      icon: <span className={AdminClass.of('state-dot')} data-tone={option.tone || 'default'} />,
+      icon: <span className={AdminClass.of('state-dot')} data-tone={option.tone || StatusTone.ofWord(option.value)} />,
       selectable: true,
       selected: option.value === this.currentStatusValue,
       onClick: () => this.onStatusChange(option.value),

@@ -71,7 +71,7 @@ export class CollectionEditPageViewModelBuilder {
       hasDisablePermalink: d.hasDisablePermalink, showPreview: d.showPreview, showPermalink: d.showPermalink,
       isFullWidth: d.isFullWidth, hideFooter: d.hideFooter, isDirty: d.isDirty, hasSidebarFields: d.hasSidebarFields,
       renderSidebar: d.renderSidebar, hasBuiltInSidebarContent: d.hasBuiltInSidebarContent,
-      statusOptions: d.statusOptions, currentStatusValue: d.currentStatusValue, currentStatusLabel: d.currentStatusLabel
+      statusOptions: d.statusOptions, currentStatusValue: d.currentStatusValue, currentStatusLabel: d.currentStatusLabel, currentStatusTone: d.currentStatusTone
     };
   }
 }
