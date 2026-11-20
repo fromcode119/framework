@@ -21,12 +21,14 @@ export class MenuAction extends PureReactor {
   @prop declare current?: boolean;
   /** Drawn at the row's end: a code, a shortcut. */
   @prop declare end?: ReactNode;
+  /** It cannot be pressed now; `detail` says why. */
+  @prop declare disabled?: boolean;
 
   render(): ReactNode {
     const row = AdminClass.of('menu-action');
     return (
       <button type="button" className={row} data-danger={this.danger ? 'true' : undefined} aria-current={this.current ? 'true' : undefined}
-        onClick={this.onClick} disabled={this.isLoading} aria-busy={this.isLoading || undefined} title={this.label}>
+        onClick={this.onClick} disabled={this.isLoading || this.disabled} aria-busy={this.isLoading || undefined} title={this.label}>
         {this.isLoading || this.icon ? <span className={`${row}__icon`}>{this.isLoading ? <FrameworkIcons.Loader size={15} /> : this.icon}</span> : null}
         <span className={`${row}__text`}>
           <span className={`${row}__label`}>{this.label}</span>

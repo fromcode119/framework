@@ -8,6 +8,18 @@ import type { ISelectOptionGroup } from '@/components/ui/interfaces/select-optio
  */
 export class SelectUtils {
   /** Resolves an option/value to a stable string for comparison (handles object-shaped values). */
+  /** A list longer than this opens with a search box (see `Select`). */
+  static readonly SEARCH_FROM = 7;
+
+  /**
+   * Whether a list opens with a search box. Unless the caller says, only when there is something to search:
+   * a long list, a list the owner searches itself, or one that takes a new option typed in. Draft/Published and
+   * three payment methods each opened a search box above two or three rows.
+   */
+  static offersSearch(searchable: boolean | undefined, ownsSearch: boolean, optionCount: number): boolean {
+    return searchable ?? (ownsSearch || optionCount > SelectUtils.SEARCH_FROM);
+  }
+
   static normalizeValue(value: any): string {
     return value && typeof value === 'object'
       ? (value.value || value.id || value.slug)

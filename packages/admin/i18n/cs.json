@@ -162,7 +162,12 @@
       "reorderHandle": "Přetažením změníte pořadí — nebo použijte šipky po zaměření",
       "reorderEnable": "Pro změnu pořadí zobrazte seznam ve vlastním pořadí",
       "reorderFailed": "Nové pořadí se nepodařilo uložit",
-      "noMatch": "Hledání ani filtrům nic neodpovídá."
+      "noMatch": "Hledání ani filtrům nic neodpovídá.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importovat {{file}}?",
+      "importConfirmDescription": "Záznamy v souboru: {{count}}. Každý se vytvoří jako nový záznam. ID ze souboru se nezachovají, takže soubor exportovaný z tohoto seznamu vytvoří kopie.",
+      "importNoRecords": "{{file}} neobsahuje seznam záznamů k importu."
     },
     "edit": {
       "sectionShow": "Zobrazit",
@@ -240,7 +245,8 @@
       "copied": "Zkopírováno",
       "more": "Další",
       "moreFields": "{{count}} polí",
-      "moreOneField": "{{count}} pole"
+      "moreOneField": "{{count}} pole",
+      "statusConfirm": "Změnit stav na „{{status}}“?"
     },
     "notFound": {
       "title": "Kolekce nenalezena",

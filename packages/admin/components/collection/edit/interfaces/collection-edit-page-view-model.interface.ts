@@ -9,7 +9,7 @@ export interface ICollectionEditPageViewModel {
   isNew: boolean;
   pluginSettings: Record<string, any>;
   pluginSettingsSchema: Record<string, any>;
-  status: { type: NotificationType; message: string } | null;
+  status: { type: NotificationType; message: string; deleteRefused?: boolean } | null;
   setStatus: (value: { type: NotificationType; message: string } | null) => void;
   deleting: boolean;
   showDeleteConfirm: boolean;
@@ -27,6 +27,8 @@ export interface ICollectionEditPageViewModel {
   // collection-edit-page-view-model.client.ts.
   setFormData: (value: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => void;
   handleSubmit: (e?: any, summary?: string) => Promise<any>;
+  /** Saves the record with a status chosen from its ⋯ menu; a refused save keeps the stored one. */
+  commitStatus: (value: string) => Promise<void>;
   saving: boolean;
   fieldErrors: Record<string, string[]>;
   resolvedTitleValue: string;

@@ -103,7 +103,7 @@ export interface IPluginManifest {
         type: FieldType | string;
         description?: string;
         defaultValue?: any;
-        options?: { label: string; value: any; tone?: string }[];
+        options?: { label: string; value: any; tone?: string; reachableFrom?: string[]; confirm?: string }[];
         placeholder?: string;
       }[];
     };

@@ -26,6 +26,8 @@ class EditPageStub {
   updateState(key: string, value: any): void {
     this.state[key] = value;
   }
+
+  announce = vi.fn();
 }
 
 describe('handleSubmit — the saved record becomes the new pristine baseline', () => {

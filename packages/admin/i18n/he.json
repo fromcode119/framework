@@ -162,7 +162,12 @@
       "reorderHandle": "גררו לשינוי הסדר — או התמקדו והשתמשו במקשי החצים",
       "reorderEnable": "הציגו את הרשימה בסדר שלה כדי לשנות את הסדר",
       "reorderFailed": "לא ניתן היה לשמור את הסדר החדש",
-      "noMatch": "שום דבר לא תואם את החיפוש או המסננים."
+      "noMatch": "שום דבר לא תואם את החיפוש או המסננים.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "לייבא את {{file}}?",
+      "importConfirmDescription": "רשומות בקובץ: {{count}}. כל אחת נוצרת כרשומה חדשה. המזהים בקובץ אינם נשמרים, כך שקובץ שיוצא מרשימה זו יוצר עותקים.",
+      "importNoRecords": "{{file}} אינו מכיל רשימת רשומות לייבוא."
     },
     "edit": {
       "sectionShow": "הצג",
@@ -240,7 +245,8 @@
       "copied": "הועתק",
       "more": "עוד",
       "moreFields": "{{count}} שדות",
-      "moreOneField": "שדה {{count}}"
+      "moreOneField": "שדה {{count}}",
+      "statusConfirm": "לשנות את הסטטוס ל\"{{status}}\"?"
     },
     "notFound": {
       "title": "האוסף לא נמצא",

@@ -1,3 +1,4 @@
+import { NotificationType } from '@/components/enums/notification-type.enum';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
@@ -89,7 +90,9 @@ export class CollectionListPageViewModelBuilder {
       enterArrangeMode: () => self.enterArrangeMode(), allColumns, selectFilterFields, columns,
       setLoading: (v: any) => self.updateState('loading', v),
       fetchData: (targetPage?: number) => self.fetchData(targetPage),
-      handleExport: (format: ExportFormat, ids?: string[]) => self.handleExport(format, ids)
+      handleExport: (format: ExportFormat, ids?: string[]) => self.handleExport(format, ids),
+      importRecords: (records: unknown[]) => self.importRecords(records),
+      notifyError: (title: string, message: string) => self.context?.notify(NotificationType.ERROR, title, message)
     };
   }
 }

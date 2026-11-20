@@ -1,12 +1,13 @@
 import { OverlayPresence } from '@/components/ui/overlay-presence';
 import { Kbd } from '@/components/ui/view/kbd.client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound, Platform } from '@fromcode119/react-class-components';
+import { PureReactor, prop, state, bound, Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EditSheetUnsaved } from '@/components/ui/view/edit-sheet-unsaved';
 
 /**
  * The one place a piece of a record is edited: a panel with a title, the fields, and Cancel / Save.
@@ -38,6 +39,9 @@ export class EditSheet extends PureReactor {
    */
   @prop declare foot?: ReactNode;
   @prop declare children: ReactNode;
+  /** What a field's pending change asks for, when Save was pressed while it was still on screen. */
+  @state private held = '';
+  private panel: HTMLDivElement | null = null;
 
   // The page stops scrolling under the sheet only on a phone, where it floats; `admin.css` does that.
   componentDidMount(): void {
@@ -54,7 +58,19 @@ export class EditSheet extends PureReactor {
   }
 
   @bound private close(): void {
-    if (!this.saving) this.onClose();
+    if (this.saving) return;
+    this.held = '';
+    this.onClose();
+  }
+
+  /** A field that applies its change by its own action holds Save while that change is pending (`EditSheetUnsaved`). */
+  @bound private save(): void {
+    this.held = EditSheetUnsaved.message(this.panel);
+    if (!this.held) this.onSave?.();
+  }
+
+  @bound private keepPanel(node: HTMLDivElement | null): void {
+    this.panel = node;
   }
 
   /** Keeps it drawn while it leaves — see OverlayPresence. */
@@ -76,7 +92,7 @@ export class EditSheet extends PureReactor {
     return this.portal(
       <div className={sheet} data-state={shown} aria-hidden={shown === 'closed' || undefined} role={shown === 'open' ? 'dialog' : undefined} aria-label={this.title}>
         <div className={`${sheet}__backdrop`} onClick={this.close} />
-        <div className={`${sheet}__panel`}>
+        <div className={`${sheet}__panel`} ref={this.keepPanel}>
           <div className={`${sheet}__head`}>
             <div className={`${sheet}__heading`}>
               <h2 className={`${sheet}__title`}>{this.title}</h2>
@@ -90,14 +106,14 @@ export class EditSheet extends PureReactor {
             </button>
           </div>
           <div className={`${sheet}__body`}>{this.children}</div>
-          {this.error ? <div className={`${sheet}__error`} role="alert">{this.error}</div> : null}
+          {this.held || this.error ? <div className={`${sheet}__error`} role="alert">{this.held || this.error}</div> : null}
           <div className={`${sheet}__foot`}>
             {this.foot ?? (
               <>
                 <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
                   {this.cancelLabel ?? AdminI18n.t('common.cancel')}
                 </Button>
-                <Button type="button" variant={ButtonVariant.PRIMARY} onClick={() => this.onSave?.()} isLoading={this.saving}>
+                <Button type="button" variant={ButtonVariant.PRIMARY} onClick={this.save} isLoading={this.saving}>
                   {this.saveLabel ?? AdminI18n.t('common.save')}
                 </Button>
               </>

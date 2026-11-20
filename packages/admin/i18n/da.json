@@ -162,7 +162,12 @@
       "reorderHandle": "Træk for at ændre rækkefølgen — eller fokusér og brug piletasterne",
       "reorderEnable": "Vis listen i dens egen rækkefølge for at ændre rækkefølgen",
       "reorderFailed": "Den nye rækkefølge kunne ikke gemmes",
-      "noMatch": "Intet matcher din søgning eller dine filtre."
+      "noMatch": "Intet matcher din søgning eller dine filtre.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importér {{file}}?",
+      "importConfirmDescription": "Poster i filen: {{count}}. Hver oprettes som en ny post. Id'er i filen bevares ikke, så en fil eksporteret fra denne liste laver kopier.",
+      "importNoRecords": "{{file}} indeholder ingen liste over poster at importere."
     },
     "edit": {
       "sectionShow": "Vis",
@@ -240,7 +245,8 @@
       "copied": "Kopieret",
       "more": "Mere",
       "moreFields": "{{count}} felter",
-      "moreOneField": "{{count}} felt"
+      "moreOneField": "{{count}} felt",
+      "statusConfirm": "Skift status til “{{status}}”?"
     },
     "notFound": {
       "title": "Samlingen blev ikke fundet",

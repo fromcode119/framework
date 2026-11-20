@@ -46,7 +46,8 @@ export class EditFooter extends PureReactor {
 
   @bound
   private onCommit(e: any): void {
-    this.handleSubmit(e, this.changeSummary);
+    // A refused save is already on screen (the save bar's message, the fields' errors); nothing awaits it here.
+    Promise.resolve(this.handleSubmit(e, this.changeSummary)).catch(() => undefined);
     this.setChangeSummary('');
   }
 

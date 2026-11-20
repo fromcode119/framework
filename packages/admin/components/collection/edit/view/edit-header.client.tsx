@@ -4,7 +4,9 @@ import { PureReactor, prop, bound, state, Platform } from '@fromcode119/react-cl
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Card } from '@/components/ui/view/card.client';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { StateBadge } from '@/components/ui/view/state-badge.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { EditHeaderRecordFacts } from '@/components/collection/edit/view/edit-header-record-facts.client';
@@ -30,12 +32,15 @@ export class EditHeader extends PureReactor {
   @prop declare setFormData: (value: any) => void;
   @prop declare getPreviewUrl: () => string;
   @prop declare showPreview: boolean;
-  @prop declare statusOptions: { label: string; value: string; tone?: string }[];
+  /** `confirm`: what choosing the option sets off, said in the question asked before it is saved. */
+  @prop declare statusOptions: { label: string; value: string; tone?: string; confirm?: string }[];
   @prop declare currentStatusValue: string;
   /** The status option's label, shown as a badge whether or not it may be changed here. */
   @prop declare currentStatusLabel: string;
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handleSubmit: (e: any, summary: string) => void;
+  /** Saves the record with a status chosen from the ⋯ menu. */
+  @prop declare commitStatus?: (value: string) => Promise<void>;
   @prop declare saving: boolean;
   @prop declare setShowDeleteConfirm: (val: boolean) => void;
   /** Whether the signed-in user may save this record (create when new, update otherwise). */
@@ -68,6 +73,9 @@ export class EditHeader extends PureReactor {
   /** Edit the first section, offered as the first item of this header's ⋯ when it heads the first card. */
   @prop declare onEditDetails?: () => void;
   @state private copied = false;
+  /** The status chosen from the menu, waiting for the operator to confirm it. */
+  @state private askedStatus: { label: string; value: string; tone?: string; confirm?: string } | null = null;
+  @state private committing = false;
 
   private get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
@@ -79,12 +87,39 @@ export class EditHeader extends PureReactor {
     return this.resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name });
   }
 
+  /**
+   * A status chosen from the ⋯ menu is a decision about the record, so it is asked and saved at once —
+   * with what it sets off (the option's `confirm`), since a move can email the customer or give stock
+   * back. It used to change only the form: the page showed nothing new but an "Unsaved changes" bar.
+   * With other edits still unsaved it joins them instead, so one Save does not commit work unasked.
+   */
   @bound private onStatusChange(value: string): void {
-    this.handleInputChange('status', value);
+    const option = this.statusOptions.find((candidate) => candidate.value === value);
+    if (!option || value === this.currentStatusValue) return;
+    if (!this.commitStatus || this.isDirty) {
+      this.handleInputChange('status', value);
+      return;
+    }
+    this.askedStatus = option;
+  }
+
+  @bound private async onStatusConfirm(): Promise<void> {
+    const asked = this.askedStatus;
+    if (!asked || !this.commitStatus || this.committing) return;
+    this.committing = true;
+    try {
+      await this.commitStatus(asked.value);
+    } catch {
+      // A refused save is already on screen (the save bar's message); the stored status is kept.
+    } finally {
+      this.committing = false;
+      this.askedStatus = null;
+    }
   }
 
   @bound private onSave(e: any): void {
-    this.handleSubmit(e, '');
+    // A refused save is already on screen (the save bar's message, the fields' errors); nothing awaits it here.
+    Promise.resolve(this.handleSubmit(e, '')).catch(() => undefined);
   }
 
   @bound private onDelete(): void {
@@ -183,6 +218,12 @@ export class EditHeader extends PureReactor {
             />
           )}
         </div>
+        {this.askedStatus ? (
+          <ConfirmDialog isOpen onClose={() => { if (!this.committing) this.askedStatus = null; }} onConfirm={() => void this.onStatusConfirm()}
+            title={AdminI18n.t('collection.edit.statusConfirm', { status: this.askedStatus.label })}
+            description={this.askedStatus.confirm || ''} isLoading={this.committing}
+            variant={this.askedStatus.tone === 'danger' ? ButtonVariant.DANGER : ButtonVariant.PRIMARY} />
+        ) : null}
       </>
     );
     return this.bare ? inner : <Card noPadding className={head}>{inner}</Card>;

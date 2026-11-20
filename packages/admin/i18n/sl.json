@@ -162,7 +162,12 @@
       "reorderHandle": "Povlecite za spremembo vrstnega reda ali pa izberite element in uporabite puščične tipke",
       "reorderEnable": "Za spreminjanje vrstnega reda prikažite seznam v njegovem lastnem vrstnem redu",
       "reorderFailed": "Novega vrstnega reda ni bilo mogoče shraniti",
-      "noMatch": "Nič se ne ujema z iskanjem ali filtri."
+      "noMatch": "Nič se ne ujema z iskanjem ali filtri.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Uvozim {{file}}?",
+      "importConfirmDescription": "Zapisi v datoteki: {{count}}. Vsak se ustvari kot nov zapis. ID-ji iz datoteke se ne ohranijo, zato datoteka, izvožena iz tega seznama, ustvari kopije.",
+      "importNoRecords": "{{file}} ne vsebuje seznama zapisov za uvoz."
     },
     "edit": {
       "sectionShow": "Prikaži",
@@ -240,7 +245,8 @@
       "copied": "Kopirano",
       "more": "Več",
       "moreFields": "{{count}} polj",
-      "moreOneField": "{{count}} polje"
+      "moreOneField": "{{count}} polje",
+      "statusConfirm": "Spremenim stanje v »{{status}}«?"
     },
     "notFound": {
       "title": "Zbirke ni mogoče najti",

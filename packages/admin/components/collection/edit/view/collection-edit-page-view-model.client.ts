@@ -42,6 +42,7 @@ export class CollectionEditPageViewModelBuilder {
         return chosenSlug ? { formData, slugManuallyEdited: true } : { formData };
       }),
       handleSubmit: (e, summary) => CollectionEditPageHandlers.handleSubmit(self, e, summary),
+      commitStatus: (value) => CollectionEditPageHandlers.commitStatus(self, value),
       saving: s.saving, fieldErrors: s.fieldErrors,
       resolvedTitleValue: d.resolvedTitleValue, titleFieldName: d.sourceField, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,
       activeTab: s.activeTab, setActiveTab: (v) => self.updateState('activeTab', v),

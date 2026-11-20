@@ -162,7 +162,12 @@
       "reorderHandle": "Seret untuk menyusun semula — atau fokus dan gunakan kekunci anak panah",
       "reorderEnable": "Paparkan senarai mengikut susunannya sendiri untuk menyusunnya semula",
       "reorderFailed": "Susunan baharu tidak dapat disimpan",
-      "noMatch": "Tiada yang sepadan dengan carian atau penapis anda."
+      "noMatch": "Tiada yang sepadan dengan carian atau penapis anda.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Import {{file}}?",
+      "importConfirmDescription": "Rekod dalam fail: {{count}}. Setiap satu dicipta sebagai rekod baharu. ID dalam fail tidak dikekalkan, jadi fail yang dieksport daripada senarai ini membuat salinan.",
+      "importNoRecords": "{{file}} tidak mengandungi senarai rekod untuk diimport."
     },
     "edit": {
       "sectionShow": "Tunjukkan",
@@ -240,7 +245,8 @@
       "copied": "Disalin",
       "more": "Lagi",
       "moreFields": "{{count}} medan",
-      "moreOneField": "{{count}} medan"
+      "moreOneField": "{{count}} medan",
+      "statusConfirm": "Tukar status kepada “{{status}}”?"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemui",

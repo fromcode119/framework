@@ -10,6 +10,8 @@ import type { CollectionRecordLinksDeclaration } from '@/components/collection/e
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
 import { RecordPartRow } from '@/components/collection/edit/view/record-part-row.client';
 import { RecordPartSource } from '@/components/collection/edit/view/record-part-source.client';
+import { RecordPartActionButton } from '@/components/collection/edit/view/record-part-action-button.client';
+import type { IRecordPartAction } from '@/components/collection/edit/interfaces/record-part-action.interface';
 
 /**
  * What other plugins hold about this record, drawn INSIDE the section it belongs to.
@@ -34,7 +36,7 @@ export class CollectionRecordPart extends Reactor {
   @prop declare standalone?: boolean;
 
   @state private items: IRecordsHubItem[] | null = null;
-  @state private actions: Array<{ id: string; label: string; href: string; icon?: string; part?: string }> = [];
+  @state private actions: IRecordPartAction[] = [];
 
   private alive = false;
 
@@ -93,7 +95,7 @@ export class CollectionRecordPart extends Reactor {
     return groups;
   }
 
-  private actionsOf(term: string): Array<{ id: string; label: string; href: string; icon?: string }> {
+  private actionsOf(term: string): IRecordPartAction[] {
     return this.actions.filter((action) => this.links.termOf(action.part) === term);
   }
 
@@ -123,12 +125,8 @@ export class CollectionRecordPart extends Reactor {
     return (
       <div key={part.term} className="fc-record-part__empty">
         <span className="fc-record-part__empty-text">{this.standalone ? part.empty : <>↳ {part.empty}</>}</span>
-        {first ? (
-          <button type="button" className="fc-record-part__button" onClick={() => this.follow(first.href)}>
-            {this.renderIcon(first.icon)}
-            {first.label}
-          </button>
-        ) : null}
+        {first?.unavailable ? <span className="fc-record-part__reason">{first.unavailable}</span> : null}
+        {first ? <RecordPartActionButton action={first} onOpen={this.follow} /> : null}
       </div>
     );
   }
@@ -142,7 +140,7 @@ export class CollectionRecordPart extends Reactor {
   }
 
   /** Actions the body does not already offer: in the title row of a card only parts fill, else in its ⋯. */
-  private offered(parts: Array<{ term: string; empty: string; menu: boolean; settled: boolean }>): Array<{ id: string; label: string; href: string; icon?: string }> {
+  private offered(parts: Array<{ term: string; empty: string; menu: boolean; settled: boolean }>): IRecordPartAction[] {
     return parts.flatMap((part) => {
       const actions = this.actionsOf(part.term);
       // While the part says nothing (settled by the record's own fields) its first action is offered from the ⋯ too.
@@ -161,12 +159,7 @@ export class CollectionRecordPart extends Reactor {
     }
     if (this.place === RecordPartPlace.HEAD) {
       if (!this.standalone) return null;
-      return this.offered(parts).map((action) => (
-        <button key={action.id} type="button" className="fc-record-part__button" onClick={() => this.follow(action.href)}>
-          {this.renderIcon(action.icon)}
-          {action.label}
-        </button>
-      ));
+      return this.offered(parts).map((action) => <RecordPartActionButton key={action.id} action={action} onOpen={this.follow} />);
     }
     if (this.place === RecordPartPlace.MENU) {
       if (this.standalone) return null;
@@ -180,7 +173,8 @@ export class CollectionRecordPart extends Reactor {
           onClick={() => this.open(item)}
         />
       )), ...this.offered(parts).map((action) => (
-        <MenuAction key={action.id} label={action.label} icon={this.renderIcon(action.icon)} onClick={() => this.follow(action.href)} />
+        <MenuAction key={action.id} label={action.label} icon={this.renderIcon(action.icon)} detail={action.unavailable}
+          disabled={Boolean(action.unavailable)} onClick={() => this.follow(action.href)} />
       ))];
     }
     const body = this.renderBody(parts);

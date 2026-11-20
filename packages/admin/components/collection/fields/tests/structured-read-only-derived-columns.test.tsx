@@ -81,3 +81,14 @@ describe('A structured table with a declared layout', () => {
     }
   });
 });
+
+describe('An empty cell the schema gives a meaning', () => {
+  it('reads as that meaning, and a filled cell beside it keeps its own value', () => {
+    const rows = [{ key: 'S', sku: 'TS-S', stock: null }, { key: 'M', sku: 'TS-M', stock: 4 }];
+    const tableLayout = [{ key: 'key' }, { key: 'stock', empty: 'From the product' }];
+    render(<StructuredReadOnlyField value={rows} field={{ name: 'variants', admin: { tableLayout } }} />);
+    const cells = [...document.querySelectorAll('tbody tr')].map((row) => [...row.querySelectorAll('td')].map((cell) => cell.textContent?.trim()));
+    expect(cells).toEqual([['S', 'From the product'], ['M', '4']]);
+    expect(screen.queryByText('Not recorded')).toBeNull();
+  });
+});

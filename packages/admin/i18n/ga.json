@@ -162,7 +162,12 @@
       "reorderHandle": "Tarraing chun an t-ord a athrú — nó dírigh air agus úsáid na saigheadeochracha",
       "reorderEnable": "Taispeáin an liosta ina ord féin chun an t-ord a athrú",
       "reorderFailed": "Níorbh fhéidir an t-ord nua a shábháil",
-      "noMatch": "Níl aon rud ag teacht le do chuardach ná le do scagairí."
+      "noMatch": "Níl aon rud ag teacht le do chuardach ná le do scagairí.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Iompórtáil {{file}}?",
+      "importConfirmDescription": "Taifid sa chomhad: {{count}}. Cruthaítear gach ceann mar thaifead nua. Ní choinnítear na haitheantóirí sa chomhad, mar sin cruthaíonn comhad a easpórtáladh ón liosta seo cóipeanna.",
+      "importNoRecords": "Níl liosta taifead le hiompórtáil in {{file}}."
     },
     "edit": {
       "sectionShow": "Taispeáin",
@@ -240,7 +245,8 @@
       "copied": "Cóipeáilte",
       "more": "Tuilleadh",
       "moreFields": "{{count}} réimse",
-      "moreOneField": "{{count}} réimse"
+      "moreOneField": "{{count}} réimse",
+      "statusConfirm": "An stádas a athrú go “{{status}}”?"
     },
     "notFound": {
       "title": "Bailiúchán Gan Aimsiú",

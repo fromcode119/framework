@@ -162,7 +162,12 @@
       "reorderHandle": "Tërhiqeni për ta rirenditur — ose fokusojeni dhe përdorni tastet me shigjeta",
       "reorderEnable": "Shfaqeni listën në renditjen e saj për ta rirenditur",
       "reorderFailed": "Renditja e re nuk u ruajt dot",
-      "noMatch": "Asgjë nuk përputhet me kërkimin ose filtrat."
+      "noMatch": "Asgjë nuk përputhet me kërkimin ose filtrat.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Të importohet {{file}}?",
+      "importConfirmDescription": "Regjistrime në skedar: {{count}}. Secili krijohet si regjistrim i ri. ID-të në skedar nuk ruhen, kështu që një skedar i eksportuar nga kjo listë krijon kopje.",
+      "importNoRecords": "{{file}} nuk përmban listë regjistrimesh për import."
     },
     "edit": {
       "sectionShow": "Shfaq",
@@ -240,7 +245,8 @@
       "copied": "U kopjua",
       "more": "Më shumë",
       "moreFields": "{{count}} fusha",
-      "moreOneField": "{{count}} fushë"
+      "moreOneField": "{{count}} fushë",
+      "statusConfirm": "Të ndryshohet statusi në “{{status}}”?"
     },
     "notFound": {
       "title": "Koleksioni nuk u gjet",

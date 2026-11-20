@@ -162,7 +162,12 @@
       "reorderHandle": "Kaxkar biex tirranġa mill-ġdid — jew iffoka u uża l-vleġeġ tat-tastiera",
       "reorderEnable": "Uri l-lista fl-ordni tagħha stess biex tirranġaha mill-ġdid",
       "reorderFailed": "L-ordni l-ġdida ma setgħetx tiġi ssejvjata",
-      "noMatch": "Xejn ma jaqbel mat-tfittxija jew mal-filtri tiegħek."
+      "noMatch": "Xejn ma jaqbel mat-tfittxija jew mal-filtri tiegħek.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Timporta {{file}}?",
+      "importConfirmDescription": "Rekords fil-fajl: {{count}}. Kull wieħed jinħoloq bħala rekord ġdid. L-IDs fil-fajl ma jinżammux, għalhekk fajl esportat minn din il-lista joħloq kopji.",
+      "importNoRecords": "{{file}} ma fihx lista ta' rekords biex jiġu importati."
     },
     "edit": {
       "sectionShow": "Uri",
@@ -240,7 +245,8 @@
       "copied": "Ikkopjat",
       "more": "Aktar",
       "moreFields": "{{count}} oqsma",
-      "moreOneField": "{{count}} qasam"
+      "moreOneField": "{{count}} qasam",
+      "statusConfirm": "Tibdel l-istatus għal “{{status}}”?"
     },
     "notFound": {
       "title": "Il-Kollezzjoni Ma Nstabitx",

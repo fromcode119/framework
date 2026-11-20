@@ -15,4 +15,9 @@ export interface IEntityRecordAction {
   icon?: string;
   /** The part of the subject this belongs to; stamped from its provider unless the action names one. */
   part?: string;
+  /**
+   * Why it cannot be started now ("the money has not arrived yet"). The action is still drawn, switched
+   * off, with this reason beside it — a button that silently disappears leaves the operator guessing.
+   */
+  unavailable?: string;
 }

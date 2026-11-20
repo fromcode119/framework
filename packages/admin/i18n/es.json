@@ -162,7 +162,12 @@
       "reorderHandle": "Arrastre para reordenar, o seleccione y use las teclas de flecha",
       "reorderEnable": "Muestre la lista en su orden propio para reordenarla",
       "reorderFailed": "No se pudo guardar el nuevo orden",
-      "noMatch": "Nada coincide con tu búsqueda o filtros."
+      "noMatch": "Nada coincide con tu búsqueda o filtros.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "¿Importar {{file}}?",
+      "importConfirmDescription": "Registros en el archivo: {{count}}. Cada uno se crea como un registro nuevo. Los ID del archivo no se conservan, así que un archivo exportado desde esta lista crea copias.",
+      "importNoRecords": "{{file}} no contiene una lista de registros para importar."
     },
     "edit": {
       "sectionShow": "Mostrar",
@@ -240,7 +245,8 @@
       "copied": "Copiado",
       "more": "Más",
       "moreFields": "{{count}} campos",
-      "moreOneField": "{{count}} campo"
+      "moreOneField": "{{count}} campo",
+      "statusConfirm": "¿Cambiar el estado a «{{status}}»?"
     },
     "notFound": {
       "title": "Colección no encontrada",

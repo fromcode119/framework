@@ -162,7 +162,12 @@
       "reorderHandle": "Lohistage järjestuse muutmiseks või fokuseerige ja kasutage nooleklahve",
       "reorderEnable": "Järjestuse muutmiseks kuvage loend selle oma järjestuses",
       "reorderFailed": "Uut järjestust ei õnnestunud salvestada",
-      "noMatch": "Otsingule või filtritele ei vasta midagi."
+      "noMatch": "Otsingule või filtritele ei vasta midagi.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Kas importida {{file}}?",
+      "importConfirmDescription": "Kirjeid failis: {{count}}. Igaüks luuakse uue kirjena. Faili ID-sid ei säilitata, seega sellest loendist eksporditud fail loob koopiad.",
+      "importNoRecords": "{{file}} ei sisalda imporditavate kirjete loendit."
     },
     "edit": {
       "sectionShow": "Näita",
@@ -240,7 +245,8 @@
       "copied": "Kopeeritud",
       "more": "Veel",
       "moreFields": "{{count}} välja",
-      "moreOneField": "{{count}} väli"
+      "moreOneField": "{{count}} väli",
+      "statusConfirm": "Kas muuta olekuks „{{status}}“?"
     },
     "notFound": {
       "title": "Kogumit ei leitud",

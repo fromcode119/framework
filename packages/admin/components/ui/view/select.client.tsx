@@ -98,13 +98,17 @@ export class Select extends Reactor {
       // positioning a flip by `rect.top - estimatedHeight` floated the menu a detached gap above its
       // trigger whenever the estimate overshot the real height. A flipped menu instead anchors its
       // BOTTOM to the trigger, so its actual rendered height is irrelevant.
-      const estimatedHeight = Math.min(filteredCount * 40 + (this.searchable !== false ? 58 : 8) + 8, 300);
+      const estimatedHeight = Math.min(filteredCount * 40 + (this.offersSearch ? 58 : 8) + 8, 300);
       const opensUp = rect.bottom + margin + estimatedHeight > window.innerHeight && rect.top > window.innerHeight - rect.bottom;
 
       this.coords = opensUp
         ? { bottom: window.innerHeight - rect.top + margin, left: rect.left, width: rect.width }
         : { top: rect.bottom + margin, left: rect.left, width: rect.width };
     }
+  }
+
+  private get offersSearch(): boolean {
+    return SelectUtils.offersSearch(this.searchable, Boolean(this.onSearchChange || this.onCreateOption), this.options?.length ?? 0);
   }
 
   @bound handleCreate(label: string): void {
@@ -114,10 +118,7 @@ export class Select extends Reactor {
 
   @bound handleClickOutside(event: MouseEvent): void {
     const target = event.target as Node;
-    if (
-      this.triggerRef.current && !this.triggerRef.current.contains(target) &&
-      this.menuRef.current && !this.menuRef.current.contains(target)
-    ) {
+    if (this.triggerRef.current && !this.triggerRef.current.contains(target) && this.menuRef.current && !this.menuRef.current.contains(target)) {
       this.isOpen = false;
     }
   }
@@ -126,7 +127,7 @@ export class Select extends Reactor {
     this.updatePosition();
     window.addEventListener('scroll', this.updatePosition, true);
     window.addEventListener('resize', this.updatePosition);
-    if (this.searchable !== false) {
+    if (this.offersSearch) {
       setTimeout(() => this.searchInputRef.current?.focus(), 50);
     }
   }
@@ -182,7 +183,7 @@ export class Select extends Reactor {
     const theme = this.theme ?? this.context?.theme ?? ThemeMode.LIGHT;
     const className = this.className ?? '';
     const triggerClassName = this.triggerClassName ?? '';
-    const searchable = this.searchable ?? true;
+    const searchable = this.offersSearch;
     const size = this.size ?? FieldSize.MD;
     const clearable = this.clearable ?? false;
     const { isOpen, searchValue, coords } = this;
@@ -200,7 +201,8 @@ export class Select extends Reactor {
 
     return (
     <div className={`fc-field-stack w-full ${className}`}>
-      {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
+      {/* The label focuses the field like a native one; wrapping would forward option clicks to the trigger. */}
+      {label && <label className={UiFieldUtils.TEXT.LABEL} onClick={() => this.triggerRef.current?.querySelector('button')?.focus()}>{label}</label>}
       <div className="relative w-full" ref={this.triggerRef}>
         <button
           type="button"

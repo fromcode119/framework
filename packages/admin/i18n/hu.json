@@ -162,7 +162,12 @@
       "reorderHandle": "Húzza az átrendezéshez – vagy jelölje ki, és használja a nyílbillentyűket",
       "reorderEnable": "Az átrendezéshez jelenítse meg a listát a saját sorrendjében",
       "reorderFailed": "Az új sorrendet nem sikerült menteni",
-      "noMatch": "Semmi sem felel meg a keresésnek vagy a szűrőknek."
+      "noMatch": "Semmi sem felel meg a keresésnek vagy a szűrőknek.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importálja a(z) {{file}} fájlt?",
+      "importConfirmDescription": "Rekordok a fájlban: {{count}}. Mindegyik új rekordként jön létre. A fájlban lévő azonosítók nem maradnak meg, így az ebből a listából exportált fájl másolatokat hoz létre.",
+      "importNoRecords": "A(z) {{file}} nem tartalmaz importálható rekordlistát."
     },
     "edit": {
       "sectionShow": "Megjelenítés",
@@ -240,7 +245,8 @@
       "copied": "Másolva",
       "more": "Továbbiak",
       "moreFields": "{{count}} mező",
-      "moreOneField": "{{count}} mező"
+      "moreOneField": "{{count}} mező",
+      "statusConfirm": "Állapot módosítása erre: „{{status}}”?"
     },
     "notFound": {
       "title": "A gyűjtemény nem található",

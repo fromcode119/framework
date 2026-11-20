@@ -162,7 +162,12 @@
       "reorderHandle": "ลากเพื่อจัดลำดับใหม่ หรือโฟกัสแล้วใช้ปุ่มลูกศร",
       "reorderEnable": "แสดงรายการตามลำดับของรายการเองเพื่อจัดลำดับใหม่",
       "reorderFailed": "ไม่สามารถบันทึกลำดับใหม่ได้",
-      "noMatch": "ไม่มีรายการที่ตรงกับการค้นหาหรือตัวกรอง"
+      "noMatch": "ไม่มีรายการที่ตรงกับการค้นหาหรือตัวกรอง",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "นำเข้า {{file}} หรือไม่",
+      "importConfirmDescription": "รายการในไฟล์: {{count}} แต่ละรายการจะถูกสร้างเป็นรายการใหม่ ID ในไฟล์จะไม่ถูกเก็บไว้ ไฟล์ที่ส่งออกจากรายการนี้จึงสร้างสำเนา",
+      "importNoRecords": "{{file}} ไม่มีรายการที่จะนำเข้า"
     },
     "edit": {
       "sectionShow": "แสดง",
@@ -240,7 +245,8 @@
       "copied": "คัดลอกแล้ว",
       "more": "เพิ่มเติม",
       "moreFields": "{{count}} ช่อง",
-      "moreOneField": "{{count}} ช่อง"
+      "moreOneField": "{{count}} ช่อง",
+      "statusConfirm": "เปลี่ยนสถานะเป็น “{{status}}” หรือไม่?"
     },
     "notFound": {
       "title": "ไม่พบคอลเลกชัน",

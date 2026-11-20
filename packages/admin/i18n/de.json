@@ -162,7 +162,12 @@
       "reorderHandle": "Zum Umsortieren ziehen – oder fokussieren und die Pfeiltasten verwenden",
       "reorderEnable": "Zeigen Sie die Liste in ihrer eigenen Reihenfolge an, um sie umzusortieren",
       "reorderFailed": "Die neue Reihenfolge konnte nicht gespeichert werden",
-      "noMatch": "Nichts entspricht deiner Suche oder deinen Filtern."
+      "noMatch": "Nichts entspricht deiner Suche oder deinen Filtern.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}} importieren?",
+      "importConfirmDescription": "Einträge in der Datei: {{count}}. Jeder wird als neuer Eintrag angelegt. IDs aus der Datei werden nicht übernommen, eine aus dieser Liste exportierte Datei erzeugt also Kopien.",
+      "importNoRecords": "{{file}} enthält keine Liste von Einträgen zum Importieren."
     },
     "edit": {
       "sectionShow": "Einblenden",
@@ -240,7 +245,8 @@
       "copied": "Kopiert",
       "more": "Mehr",
       "moreFields": "{{count}} Felder",
-      "moreOneField": "{{count}} Feld"
+      "moreOneField": "{{count}} Feld",
+      "statusConfirm": "Status auf „{{status}}“ ändern?"
     },
     "notFound": {
       "title": "Sammlung nicht gefunden",

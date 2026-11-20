@@ -41,7 +41,8 @@ export class CollectionEditControllerBuilder {
           onReadOnlyOverrideRequest={edit.handleReadOnlyOverrideRequest}
         />
       ),
-      save: () => { void edit.handleSubmit(undefined, edit.changeSummary); },
+      // A refused save is already on screen (the save bar's message, the fields' errors); nothing awaits it here.
+      save: () => { Promise.resolve(edit.handleSubmit(undefined, edit.changeSummary)).catch(() => undefined); },
       requestDelete: () => edit.setShowDeleteConfirm(true),
       saving: edit.saving,
       isDirty: edit.isDirty,

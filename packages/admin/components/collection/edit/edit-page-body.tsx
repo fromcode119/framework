@@ -94,7 +94,7 @@ export class EditPageBody extends PureReactor {
         hasSidebarFields={hasSidebarFields}
         sidebarFieldSections={sidebarFieldSections}
         hasBuiltInSidebarContent={hasBuiltInSidebarContent}
-        saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+        saveError={status?.type === NotificationType.ERROR && !status.deleteRefused ? status.message : ''}
         recordTitle={edit.resolvedTitleValue}
         clearSaveError={() => setStatus(null)}
         recordLinks={recordLinks}
@@ -182,7 +182,7 @@ export class EditPageBody extends PureReactor {
               recordLinks={recordLinks}
               navigate={navigate}
               handleSubmit={() => handleSubmit()}
-              saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+              saveError={status?.type === NotificationType.ERROR && !status.deleteRefused ? status.message : ''}
               recordTitle={edit.resolvedTitleValue}
               clearSaveError={() => setStatus(null)}
               sectionSlotBase={sectionSlotBase}

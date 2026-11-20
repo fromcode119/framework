@@ -162,7 +162,12 @@
       "reorderHandle": "Velciet, lai mainītu secību, vai fokusējiet un izmantojiet bulttaustiņus",
       "reorderEnable": "Lai mainītu secību, rādiet sarakstu tā paša secībā",
       "reorderFailed": "Jauno secību neizdevās saglabāt",
-      "noMatch": "Meklēšanai vai filtriem nekas neatbilst."
+      "noMatch": "Meklēšanai vai filtriem nekas neatbilst.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importēt {{file}}?",
+      "importConfirmDescription": "Ieraksti failā: {{count}}. Katrs tiek izveidots kā jauns ieraksts. Faila ID netiek saglabāti, tāpēc no šī saraksta eksportēts fails izveido kopijas.",
+      "importNoRecords": "{{file}} nesatur importējamu ierakstu sarakstu."
     },
     "edit": {
       "sectionShow": "Rādīt",
@@ -240,7 +245,8 @@
       "copied": "Nokopēts",
       "more": "Vairāk",
       "moreFields": "{{count}} lauki",
-      "moreOneField": "{{count}} lauks"
+      "moreOneField": "{{count}} lauks",
+      "statusConfirm": "Mainīt statusu uz “{{status}}”?"
     },
     "notFound": {
       "title": "Kolekcija nav atrasta",

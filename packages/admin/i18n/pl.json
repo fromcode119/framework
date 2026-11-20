@@ -162,7 +162,12 @@
       "reorderHandle": "Przeciągnij, aby zmienić kolejność — lub zaznacz i użyj klawiszy strzałek",
       "reorderEnable": "Wyświetl listę w jej własnej kolejności, aby móc ją zmieniać",
       "reorderFailed": "Nie udało się zapisać nowej kolejności",
-      "noMatch": "Nic nie pasuje do wyszukiwania ani filtrów."
+      "noMatch": "Nic nie pasuje do wyszukiwania ani filtrów.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Zaimportować {{file}}?",
+      "importConfirmDescription": "Rekordy w pliku: {{count}}. Każdy jest tworzony jako nowy rekord. Identyfikatory z pliku nie są zachowywane, więc plik wyeksportowany z tej listy tworzy kopie.",
+      "importNoRecords": "{{file}} nie zawiera listy rekordów do zaimportowania."
     },
     "edit": {
       "sectionShow": "Pokaż",
@@ -240,7 +245,8 @@
       "copied": "Skopiowano",
       "more": "Więcej",
       "moreFields": "{{count}} pól",
-      "moreOneField": "{{count}} pole"
+      "moreOneField": "{{count}} pole",
+      "statusConfirm": "Zmienić status na „{{status}}”?"
     },
     "notFound": {
       "title": "Nie znaleziono kolekcji",

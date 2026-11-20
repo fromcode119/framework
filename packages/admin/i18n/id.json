@@ -162,7 +162,12 @@
       "reorderHandle": "Seret untuk mengubah urutan — atau fokuskan lalu gunakan tombol panah",
       "reorderEnable": "Tampilkan daftar dalam urutannya sendiri untuk mengubah urutannya",
       "reorderFailed": "Urutan baru tidak dapat disimpan",
-      "noMatch": "Tidak ada yang cocok dengan pencarian atau filter Anda."
+      "noMatch": "Tidak ada yang cocok dengan pencarian atau filter Anda.",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Impor {{file}}?",
+      "importConfirmDescription": "Catatan dalam file: {{count}}. Masing-masing dibuat sebagai catatan baru. ID dalam file tidak dipertahankan, jadi file yang diekspor dari daftar ini membuat salinan.",
+      "importNoRecords": "{{file}} tidak berisi daftar catatan untuk diimpor."
     },
     "edit": {
       "sectionShow": "Tampilkan",
@@ -240,7 +245,8 @@
       "copied": "Disalin",
       "more": "Lainnya",
       "moreFields": "{{count}} kolom",
-      "moreOneField": "{{count}} kolom"
+      "moreOneField": "{{count}} kolom",
+      "statusConfirm": "Ubah status menjadi “{{status}}”?"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemukan",

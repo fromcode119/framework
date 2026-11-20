@@ -11,6 +11,19 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 
 export class FieldRendererHeader extends PureReactor {
+  private static readonly CONTROLS = 'input:not([type="hidden"]), textarea, select, button, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+
+  /**
+   * Clicking a field's name focuses its control, as a label does in any form. The header and the control are
+   * separate components, so the label cannot wrap or point at it by id: it finds the first control of its own
+   * field, past the header's own buttons (lock, help, language).
+   */
+  static focusControl(event: { currentTarget: HTMLElement }): void {
+    const head = event.currentTarget.closest('.fc-field-head');
+    const controls = Array.from(head?.parentElement?.querySelectorAll<HTMLElement>(FieldRendererHeader.CONTROLS) ?? []);
+    controls.find((control) => !head?.contains(control) && !control.hasAttribute('disabled'))?.focus();
+  }
+
   @prop declare field: ICollectionField;
   @prop declare label: string;
   @prop declare theme: ThemeMode;
@@ -45,7 +58,7 @@ export class FieldRendererHeader extends PureReactor {
         {!field.admin?.hideLabel && (
         <div className="min-w-0">
         <span className="flex min-w-0 items-center gap-1">
-        <label className={UiFieldUtils.TEXT.LABEL}>
+        <label className={UiFieldUtils.TEXT.LABEL} onClick={FieldRendererHeader.focusControl}>
           {label}
           {field.required && <span className="fc-tone-danger ms-1 font-medium font-sans">*</span>}
         </label>

@@ -1,4 +1,4 @@
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { TimezoneUtils } from '@/lib/timezone';
 import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 import { FieldDisplayLabel } from '@/lib/collection/field-display-label';
 
@@ -59,12 +59,15 @@ export class EditHeaderRecordFacts {
       .filter((badge: any): badge is { key: string; label: string; tone: string } => Boolean(badge));
   }
 
-  /** A date reads as words in a heading ("13 ноември 2026 г., 14:40"), not as the form's digits and seconds. */
+  /**
+   * A date reads as words in a heading ("13 ноември 2026 г., 14:40"), not as the form's digits and seconds —
+   * in the site's timezone, as the list, the fields and the history below it read the same moment. A plain
+   * `Intl.DateTimeFormat` used the browser's zone, so an order's heading said 21:14 above a history at 20:14.
+   */
   private static longDate(field: any, value: unknown): string | null {
     if (field?.type !== 'date' && field?.type !== 'datetime') return null;
-    const parsed = value ? new Date(String(value)) : null;
-    if (!parsed || Number.isNaN(parsed.getTime())) return null;
-    return new Intl.DateTimeFormat(AdminI18n.locale, { dateStyle: 'long', timeStyle: field.type === 'datetime' ? 'short' : undefined }).format(parsed);
+    const text = TimezoneUtils.formatSystemDate(value, { dateStyle: 'long', timeStyle: field.type === 'datetime' ? 'short' : undefined }, '');
+    return text || null;
   }
 
   private static field(collection: any, name: string): any {
