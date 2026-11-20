@@ -1,19 +1,15 @@
 import { EmptyState } from '@/components/ui/view/empty-state.client';
-import { RecordCard } from '@/components/ui/view/record-card.client';
-import { Text } from '@/components/ui/view/text.client';
+import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { Hint } from '@/components/ui/view/hint.client';
 import { Heading } from '@/components/ui/view/heading.client';
 import type { ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Badge } from '@/components/ui/view/badge.client';
-import { Button } from '@/components/ui/view/button.client';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { Select } from '@/components/ui/view/select.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -25,17 +21,22 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * acts on. The scope choices come from the LIVE tool list, never a hardcoded array. The "all sites"
  * choice exists for the platform admin only; a site admin's token is bound to their site, shown as a
  * locked field so the binding is visible rather than implied.
+ *
+ * It is a form, so it opens in a drawer from the token list's own "Create token" button instead of
+ * standing on the page as a card nobody is filling in.
  */
 export class McpTokenCreateForm extends AdminComponent {
   static readonly ALL_SITES = 'all';
 
-  declare props: Pick<McpTokenCreateForm, 'toolNames' | 'tokens' | 'multiTenant' | 'platformAdmin' | 'currentSite' | 'onCreated'>;
+  declare props: Pick<McpTokenCreateForm, 'toolNames' | 'tokens' | 'multiTenant' | 'platformAdmin' | 'currentSite' | 'isOpen' | 'onClose' | 'onCreated'>;
 
   @prop declare toolNames: string[];
   @prop declare tokens: IMcpToken[];
   @prop declare multiTenant: boolean;
   @prop declare platformAdmin: boolean;
   @prop declare currentSite: string | null;
+  @prop declare isOpen: boolean;
+  @prop declare onClose: () => void;
   @prop declare onCreated: (rawKey: string) => void;
 
   @state saving = false;
@@ -107,7 +108,7 @@ export class McpTokenCreateForm extends AdminComponent {
       return <EmptyState inline title={AdminI18n.t('settings.integrations.noToolsAreRegisteredYet')} />;
     }
     return (
-      <div className="fc-columns" data-count="3">
+      <div className="fc-columns" data-count="2">
         {options.map((scope) => (
           <Checkbox
             key={scope}
@@ -127,23 +128,25 @@ export class McpTokenCreateForm extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <RecordCard title={AdminI18n.t('settings.integrations.createAToken')}>
+      <EditSheet
+        isOpen={this.isOpen}
+        onClose={this.onClose}
+        onSave={() => void this.createToken()}
+        saving={this.saving}
+        saveLabel={AdminI18n.t('settings.integrations.createToken')}
+        title={AdminI18n.t('settings.integrations.createAToken')}
+        subtitle={AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}
+      >
         <div className="fc-form-stack">
-          <Text size="small" muted as="p">{AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}</Text>
-          <div className="fc-form-grid">
-            <Input label={AdminI18n.t('settings.integrations.label')} placeholder={AdminI18n.t('settings.integrations.labelExample')} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
-            {this.renderSiteChoice()}
-          </div>
+          <Input label={AdminI18n.t('settings.integrations.label')} placeholder={AdminI18n.t('settings.integrations.labelExample')} value={this.label} autoFocus onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
+          {this.renderSiteChoice()}
           <div className="fc-field-stack">
             <Heading level="h3">{AdminI18n.t('settings.integrations.scopes')}</Heading>
             <Hint>{AdminI18n.t('settings.integrations.scopesOnlyNarrowWhatThis')}</Hint>
             {this.renderScopes()}
           </div>
-          <div className="fc-form-foot">
-            <Button variant={ButtonVariant.PRIMARY} isLoading={this.saving} onClick={() => this.createToken()}>{AdminI18n.t('settings.integrations.createToken')}</Button>
-          </div>
         </div>
-      </RecordCard>
+      </EditSheet>
     );
   }
 }

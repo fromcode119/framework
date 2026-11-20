@@ -1,3 +1,4 @@
+import { FrameworkIcons } from '@fromcode119/react';
 import { RecordCard } from '@/components/ui/view/record-card.client';
 import { ListShell } from '@/components/ui/view/list-shell.client';
 import { StateBadge } from '@/components/ui/view/state-badge.client';
@@ -44,6 +45,7 @@ export class McpTokensPanel extends AdminComponent {
   @state tokens: IMcpToken[] = [];
   @state toolNames: string[] = [];
   @state newKey: string | null = null;
+  @state creating = false;
   @state revokeCandidate: IMcpToken | null = null;
   @state currentSite: string | null = null;
   @state multiTenant = false;
@@ -92,6 +94,7 @@ export class McpTokensPanel extends AdminComponent {
   }
 
   private async created(rawKey: string): Promise<void> {
+    this.creating = false;
     this.newKey = rawKey;
     await this.load();
   }
@@ -124,7 +127,8 @@ export class McpTokensPanel extends AdminComponent {
   private renderTokens(): ReactNode {
     return (
       <ListShell title={AdminI18n.t('settings.integrations.existingTokens')} count={this.tokens.length}
-        subtitle={this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis')}>
+        subtitle={this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis')}
+        actions={<Button variant={ButtonVariant.PRIMARY} icon={<FrameworkIcons.Plus size={15} />} onClick={() => { this.creating = true; }}>{AdminI18n.t('settings.integrations.createToken')}</Button>}>
         <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />
       </ListShell>
     );
@@ -142,6 +146,8 @@ export class McpTokensPanel extends AdminComponent {
           multiTenant={this.multiTenant}
           platformAdmin={this.platformAdmin}
           currentSite={this.currentSite}
+          isOpen={this.creating}
+          onClose={() => { this.creating = false; }}
           onCreated={(rawKey: string) => this.created(rawKey)}
         />
         {this.renderTokens()}
