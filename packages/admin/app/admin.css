@@ -3543,6 +3543,9 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-hint svg { flex: none; margin-top: 3px; }
 .fc-hint--error { color: var(--fc-danger); }
 .fc-hint--success { color: var(--fc-success); }
+.fc-hint--warning { color: var(--fc-warning); }
+/* The facts under a hint's first line (since when, which routes): quieter, on lines of their own. */
+.fc-hint__more { display: block; color: var(--fc-text-muted); }
 
 /* ── IconBadge ── an icon in a small tinted square. */
 .fc-icon-badge { display: inline-flex; flex: none; align-items: center; justify-content: center; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); color: var(--fc-tone, var(--fc-text-muted)); }
