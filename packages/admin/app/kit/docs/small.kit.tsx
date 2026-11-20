@@ -48,8 +48,8 @@ export class SmallKit {
           { title: 'Vertical', text: 'Between controls on one line; it takes the line’s height.', demo: <span className="fc-kitdoc__inline fc-kitdoc__tall"><span>Export</span><Divider orientation="vertical" /><span>Import</span></span>, code: '<Divider orientation="vertical" />' },
         ],
         options: [
-          { name: 'orientation', type: "'horizontal' | 'vertical'", initial: 'horizontal', does: 'Which way it runs.' },
-          { name: 'variant', type: "'solid' | 'dashed'", initial: 'solid', does: 'The line.' },
+          { name: 'orientation', type: "horizontal · vertical", initial: 'horizontal', does: 'Which way it runs.' },
+          { name: 'variant', type: "solid · dashed", initial: 'solid', does: 'The line.' },
         ],
       },
       {
@@ -78,7 +78,7 @@ export class SmallKit {
           { name: 'value', type: 'number | null', does: '0–100; left out when the length is not known.' },
           { name: 'label', type: 'ReactNode', does: 'What is going on.' },
           { name: 'detail', type: 'ReactNode', does: 'How far, in the caller’s words.' },
-          { name: 'tone', type: "'warning' | 'danger'", does: 'Says the figure is high: a disk nearly full, a limit nearly reached.' },
+          { name: 'tone', type: "warning · danger", does: 'Says the figure is high: a disk nearly full, a limit nearly reached.' },
         ],
       },
       {

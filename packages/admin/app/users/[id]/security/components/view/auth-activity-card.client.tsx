@@ -19,7 +19,7 @@ export class AuthActivityCard extends PureReactor {
   @prop declare activityLoading: boolean;
   @prop declare email: string;
 
-  private tone(level: string): 'danger' | 'warning' | 'neutral' {
+  private tone(level: string): IconBadge['tone'] {
     if (level === 'ERROR') return 'danger';
     if (level === 'WARN') return 'warning';
     return 'neutral';

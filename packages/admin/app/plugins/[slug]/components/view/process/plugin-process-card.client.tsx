@@ -55,7 +55,7 @@ export class PluginProcessCard extends AdminComponent {
     );
   }
 
-  private note(variant: 'info' | 'error' | 'warning', text: string): ReactNode {
+  private note(variant: Hint['variant'], text: string): ReactNode {
     return <div className="fc-settings-note"><Hint variant={variant}>{text}</Hint></div>;
   }
 

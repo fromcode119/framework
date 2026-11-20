@@ -33,12 +33,12 @@ export class NewPiecesKit {
           { title: 'Label and Hint', text: 'For a control that carries no label of its own. A hint explains; as `error` it says what is wrong.', demo: <div className="fc-kitdoc__stack fc-kitdoc__cell"><Label htmlFor="kit-handle" optional="Optional">Handle</Label><Input id="kit-handle" value="" placeholder="cotton-t-shirt" onChange={() => undefined} /><Hint>Used in the product’s address.</Hint><Hint variant="error">This handle is taken.</Hint></div>, code: '<Label htmlFor="handle" optional="Optional">Handle</Label>\n<Input id="handle" … />\n<Hint>Used in the product’s address.</Hint>\n<Hint variant="error">This handle is taken.</Hint>' },
         ],
         options: [
-          { name: 'Heading level', type: "'h1' | 'h2' | 'h3'", initial: 'h1', does: 'The size, and the element.' },
-          { name: 'Text size', type: "'xsmall' | 'small' | 'base' | 'large'", initial: 'small', does: 'The size and its line height.' },
-          { name: 'Text weight, muted', type: "'regular' | 'plus', boolean", does: 'The medium weight; the quiet colour.' },
-          { name: 'Text as', type: "'p' | 'span' | 'div'", initial: 'p', does: 'The element.' },
+          { name: 'Heading level', type: "h1 · h2 · h3", initial: 'h1', does: 'The size, and the element.' },
+          { name: 'Text size', type: "xsmall · small · base · large", initial: 'small', does: 'The size and its line height.' },
+          { name: 'Text weight, muted', type: "regular · plus, boolean", does: 'The medium weight; the quiet colour.' },
+          { name: 'Text as', type: "p · span · div", initial: 'p', does: 'The element.' },
           { name: 'Label htmlFor, optional', type: 'string, ReactNode', does: 'The control it names; a quiet word after it.' },
-          { name: 'Hint variant', type: "'info' | 'error'", initial: 'info', does: 'An explanation, or what is wrong.' },
+          { name: 'Hint variant', type: "info · error", initial: 'info', does: 'An explanation, or what is wrong.' },
         ],
       },
       {
@@ -50,8 +50,8 @@ export class NewPiecesKit {
           { title: 'Sizes', demo: <><IconBadge><FrameworkIcons.Clock size={14} /></IconBadge><IconBadge size="large"><FrameworkIcons.Clock size={16} /></IconBadge></>, code: '<IconBadge><Icon size={14} /></IconBadge>\n<IconBadge size="large"><Icon size={16} /></IconBadge>' },
         ],
         options: [
-          { name: 'tone', type: "'neutral' | 'info' | 'success' | 'warning' | 'danger'", initial: 'neutral', does: 'The tint.' },
-          { name: 'size', type: "'base' | 'large'", initial: 'base', does: '24px or 28px.' },
+          { name: 'tone', type: "neutral · info · success · warning · danger", initial: 'neutral', does: 'The tint.' },
+          { name: 'size', type: "base · large", initial: 'base', does: '24px or 28px.' },
         ],
       },
       {
@@ -63,7 +63,7 @@ export class NewPiecesKit {
         ],
         options: [
           { name: 'label', type: 'ReactNode', does: 'The strong word it starts with.' },
-          { name: 'variant', type: "'info' | 'success' | 'warning' | 'error'", initial: 'info', does: 'The colour of the bar.' },
+          { name: 'variant', type: "info · success · warning · error", initial: 'info', does: 'The colour of the bar.' },
         ],
       },
       {
@@ -77,8 +77,8 @@ export class NewPiecesKit {
         options: [
           { name: 'trigger', type: 'ReactNode', does: 'What opens it.' },
           { name: 'children', type: 'ReactNode', does: 'What it holds.' },
-          { name: 'align', type: "'start' | 'end'", initial: 'start', does: 'Which edge of the control it lines up with.' },
-          { name: 'side', type: "'bottom' | 'top'", initial: 'bottom', does: 'Under or above.' },
+          { name: 'align', type: "start · end", initial: 'start', does: 'Which edge of the control it lines up with.' },
+          { name: 'side', type: "bottom · top", initial: 'bottom', does: 'Under or above.' },
           { name: 'label', type: 'string', does: 'Its name for a screen reader.' },
         ],
       },

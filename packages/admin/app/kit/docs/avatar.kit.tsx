@@ -15,7 +15,7 @@ export class AvatarKit {
       options: [
         { name: 'fallback', type: 'string', does: 'The initial shown when there is no picture.' },
         { name: 'src, alt', type: 'string', does: 'The picture and what it shows.' },
-        { name: 'size', type: "'2xsmall' … 'xlarge'", initial: 'base', does: 'Six sizes, from a table cell to a profile.' },
+        { name: 'size', type: "2xsmall … xlarge", initial: 'base', does: 'Six sizes, from a table cell to a profile.' },
       ],
     };
   }

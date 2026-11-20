@@ -15,11 +15,11 @@ export class AlertKit {
         { title: 'With actions', text: 'What can be done about it stands at the end, the quiet action first.', demo: <div className="fc-kitdoc__stack fc-kitdoc__cell--wide"><Alert tone="warning" action={<Button variant={ButtonVariant.SECONDARY}>Review and approve</Button>}>Two plugins wait for your approval. They stay off until an admin approves them.</Alert><Alert tone="info" title="Update available" action={<><Button variant={ButtonVariant.GHOST}>Dismiss</Button><Button variant={ButtonVariant.SECONDARY}>View details</Button></>}>A new version is available.</Alert></div>, code: '<Alert tone="warning" action={<Button variant={ButtonVariant.SECONDARY}>Review and approve</Button>}>\n  Two plugins wait for your approval.\n</Alert>' },
       ],
       options: [
-        { name: 'tone', type: "'info' | 'success' | 'warning' | 'danger'", initial: 'info', does: 'The icon and its colour.' },
+        { name: 'tone', type: "info · success · warning · danger", initial: 'info', does: 'The icon and its colour.' },
         { name: 'title', type: 'ReactNode', does: 'A few strong words before the text.' },
         { name: 'children', type: 'ReactNode', does: 'What is to be known.' },
         { name: 'action', type: 'ReactNode', does: 'Buttons at the end.' },
-        { name: 'role', type: "'alert' | 'status'", initial: 'by tone', does: 'How a screen reader announces it.' },
+        { name: 'role', type: "alert · status", initial: 'by tone', does: 'How a screen reader announces it.' },
       ],
     };
   }

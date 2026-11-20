@@ -61,7 +61,7 @@ export class PanelsKit {
           { name: 'Columns count, top', type: '2 | 3, boolean', initial: '2, false', does: 'How many columns; `top` lets each be as tall as its own content.' },
           { name: 'trend', type: '{ value, isPositive }', does: 'The change, in percent, and whether it is good.' },
           { name: 'note', type: 'ReactNode', does: 'One line under the figure.' },
-          { name: 'tone', type: "'success' | 'warning' | 'danger' | 'info'", does: 'The colour of the icon when the figure is good or bad news.' },
+          { name: 'tone', type: "success · warning · danger · info", does: 'The colour of the icon when the figure is good or bad news.' },
         ],
       },
       {

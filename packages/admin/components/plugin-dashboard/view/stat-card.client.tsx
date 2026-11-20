@@ -9,7 +9,7 @@ export class StatCard extends PureReactor {
   @prop declare stat: IStatItem;
 
   /** The plugin's colour word as the tile's tone; `primary` is the quiet default. */
-  private get tone(): 'success' | 'warning' | 'danger' | 'info' | undefined {
+  private get tone(): Tile['tone'] {
     const color = StatColor.resolve(this.stat.color).value;
     return color === 'success' || color === 'warning' || color === 'danger' || color === 'info' ? color : undefined;
   }

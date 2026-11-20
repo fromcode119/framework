@@ -15,7 +15,7 @@ export class BadgeKit {
         { title: 'Beside a name', text: 'A badge follows the name it speaks of, 6–8px after it, centred on its line.', demo: <span className="fc-kitdoc__inline"><strong>Finance Core</strong><Badge variant={BadgeVariant.WARNING}>Waiting for approval</Badge></span>, code: '<span>Finance Core</span>\n<Badge variant={BadgeVariant.WARNING}>Waiting for approval</Badge>' },
       ],
       options: [
-        { name: 'StateBadge tone', type: "'success' | 'warning' | 'danger' | 'info'", initial: 'neutral', does: 'The colour of the dot.' },
+        { name: 'StateBadge tone', type: "success · warning · danger · info", initial: 'neutral', does: 'The colour of the dot.' },
         { name: 'Badge variant', type: 'BadgeVariant', initial: 'DEFAULT', does: 'SUCCESS, WARNING, DANGER, INFO or DEFAULT.' },
         { name: 'children', type: 'ReactNode', does: 'The word — one or two, in sentence case.' },
       ],

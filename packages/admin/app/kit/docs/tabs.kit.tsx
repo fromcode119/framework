@@ -26,7 +26,7 @@ export class TabsKit {
         options: [
           { name: 'tabs', type: '{ id, label, count?, icon?, disabled?, end? }[]', does: 'The tabs. `end` sends a tab to the far side of a bar.' },
           { name: 'value, onChange', type: 'string, (id) => void', does: 'The open tab and what happens on a choice.' },
-          { name: 'variant', type: "'bar' | 'second'", initial: 'plain', does: 'The page’s own row / the level under it.' },
+          { name: 'variant', type: "bar · second", initial: 'plain', does: 'The page’s own row / the level under it.' },
           { name: 'label', type: 'string', does: 'The accessible name of the row.' },
         ],
       },

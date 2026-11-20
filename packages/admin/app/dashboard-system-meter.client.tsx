@@ -29,7 +29,7 @@ export class DashboardSystemMeter extends PureReactor {
     return Math.max(0, Math.min(Number(this.used || 0) / total, 1));
   }
 
-  private get tone(): 'warning' | 'danger' | undefined {
+  private get tone(): ProgressBar['tone'] {
     const fraction = this.fraction ?? 0;
     if (fraction >= DashboardSystemMeter.CRITICAL_AT) return 'danger';
     if (fraction >= DashboardSystemMeter.WARN_AT) return 'warning';

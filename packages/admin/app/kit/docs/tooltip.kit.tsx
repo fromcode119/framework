@@ -21,7 +21,7 @@ export class TooltipKit {
       options: [
         { name: 'content', type: 'ReactNode', does: 'What it says. Keep it to a line or two.' },
         { name: 'children', type: 'ReactNode', does: 'The thing it speaks of.' },
-        { name: 'side', type: "'top' | 'bottom'", initial: 'top', does: 'Where it appears.' },
+        { name: 'side', type: "top · bottom", initial: 'top', does: 'Where it appears.' },
       ],
     };
   }
