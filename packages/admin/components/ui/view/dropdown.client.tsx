@@ -115,6 +115,8 @@ export class Dropdown extends DropdownPositioning {
               // The same limit for a panel that keeps its own head and foot in view and scrolls only between them.
               ['--fc-dropdown-max-h' as string]: `${coords.maxHeight}px`,
               overflowY: 'auto',
+              // A menu never scrolls sideways: a line too long for it wraps or is cut, not the sheet.
+              overflowX: 'hidden',
               minWidth: '220px',
               // Laid out (so it can be measured) but not shown until the measurement has been applied —
               // otherwise the first frame paints the unclamped guess and the panel visibly jumps.
@@ -139,7 +141,9 @@ export class Dropdown extends DropdownPositioning {
                 {header}
               </div>
             )}
-            {panel ?? <div className="p-1.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
+            {/* The sheet scrolls; the list inside it does not. Both did, at the same height, and the sheet's
+                own padding made it overflow by those few pixels: two scrollbars side by side. */}
+            {panel ?? <div className="p-1.5">
               {DropdownPositioning.groupItems(items).map((group, groupIdx) => (
                 <Fragment key={group.section ?? `group-${groupIdx}`}>
                 {group.scrolls && group.section ? (

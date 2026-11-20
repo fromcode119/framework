@@ -108,13 +108,17 @@ export class SidebarNotifications extends AdminComponent {
   /** The panel's title bar: the count, and the one action that clears it. */
   private get header(): ReactElement {
     return (
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-baseline gap-2">
+      <div className="fc-notice-bar">
+        <div className="fc-notice-bar__title">
           <h3 className="fc-size-sm font-medium fc-tone-text">{AdminI18n.t('shell.notifications.title')}</h3>
-          {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
+          {this.unread ? (
+            <span title={AdminI18n.t('shell.notifications.unread', { count: this.unread })}>
+              <Badge variant={BadgeVariant.INFO}>{this.unread > 99 ? '99+' : this.unread}</Badge>
+            </span>
+          ) : null}
         </div>
         {this.unread ? (
-          <Button type="button" variant={ButtonVariant.GHOST} className="fc-btn--mini" onClick={this.readAll}>
+          <Button type="button" variant={ButtonVariant.GHOST} className="fc-btn--mini fc-notice-bar__action" onClick={this.readAll}>
             {AdminI18n.t('shell.notifications.markAllRead')}
           </Button>
         ) : null}

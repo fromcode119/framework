@@ -102,12 +102,6 @@
      what the record IS filed as — status, stock, where it belongs — so it is read at a glance and sized
      for short facts; the main column keeps the rest. */
   --fc-record-side: 440px;
-  /* The form column of a record page. 900, measured on the reference at 1600: main 900 + side 440.
-     Ours said 1120, which let the page stretch half a screen wider than the pages it follows. */
-  --fc-record-main: 900px;
-  /* A record read in ONE column — what the reference shows up to about 1440 — is 780 wide and
-     centred, not stretched to whatever the window gives. */
-  --fc-record-single: 780px;
   --fc-record-title: 18px;
   /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
    * washes are written over the text colour, so they hold in both schemes without a dark rule. */
@@ -844,15 +838,14 @@ html.dark {
    Viewport breakpoints (`lg:grid-cols-3`) measured the window, so with the menu and a plugin's
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
-.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size;
-  /* A record is read, not scanned across a 2.5K screen: 1120 of form + 16 + 440 of sidebar, centred.
-     Uncapped, one row of two fields stretched each field to ~790px and every card read as empty. */
-  max-width: calc(var(--fc-record-main) + 16px + var(--fc-record-side)); margin-inline: auto; }
+.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
+/* A record takes the whole width the page gives it, as a list does (owner, 2026-11-20): a capped,
+   centred record left an empty band on either side and did not line up with the list it opened from. */
 /* A page whose body is a column of cards: one gap, the console's. */
 .fc-page-stack { display: flex; flex-direction: column; gap: var(--fc-stack-gap); }
 /* 12 between one card and the next, 16 between the two columns — the gap the record pages this
    console follows keep. One figure for both made the columns read as one wide column of cards. */
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; max-width: var(--fc-record-single); margin-inline: auto; }
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--fc-record-gap); column-gap: 16px; padding-bottom: 2rem; }
 /* One column of a record's cards: one gap between every card, the same as between the columns. */
 .fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 /* Two columns from ~1280px of window, like the reference (its `xl:grid-cols-[minmax(0,1fr)_440px]`):
@@ -862,8 +855,6 @@ html.dark {
 @container (min-width: 60rem) {
   .fc-edit-columns__grid--sidebar {
     grid-template-columns: minmax(0, 1fr) var(--fc-record-side);
-    max-width: none;
-    justify-content: center;
   }
 }
 /* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
@@ -3525,6 +3516,11 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-notice__meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
 .fc-notice__open { display: inline-flex; flex: none; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--fc-interactive); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); cursor: pointer; }
 .fc-notice-device { padding: 12px 16px; border-top: 1px solid var(--fc-border); }
+/* The panel's title bar: name and unread count on the left, the one action on the right, one line.
+   "16 unread" in words beside a long action overflowed the 22rem panel and gave it a sideways scroll. */
+.fc-notice-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fc-notice-bar__title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-notice-bar__action { flex: none; white-space: nowrap; }
 .fc-kit__nav { width: 240px; max-width: 100%; }
 /* Beside the menu, not over it: where the menu stands at the side, the bar is centred in what is left
    of the window. At eight actions it reached under the menu and covered the account row. */
@@ -4033,6 +4029,9 @@ textarea.fc-field.fc-pem-input { min-height: 140px; font-family: ui-monospace, S
 
 /* A column whose value may be long but which does not take the spare width: cut at a third of the table. */
 .fc-dt-td.fc-dt-clip > .fc-dt-cell { max-width: min(36ch, 30vw); overflow: hidden; text-overflow: ellipsis; }
+/* A cell that holds a control is not clipped: the clip that ends a long text with an ellipsis cut the
+   control's focus ring down to its four corners. The control already keeps to its own width. */
+.fc-dt-td > .fc-dt-cell:has(> .fc-field-stack, > .fc-select) { overflow: visible; }
 
 /* The fields of a sheet or a dialog, one under another with room between a field and the next label. */
 .fc-form-stack { display: flex; flex-direction: column; gap: 16px; }
