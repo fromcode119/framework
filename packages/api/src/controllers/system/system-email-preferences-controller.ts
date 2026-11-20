@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { EmailCategoryAudience } from '@fromcode119/core';
+import { EmailCategoryAudience, EmailCategoryAvailability } from '@fromcode119/core';
 
 /**
  * A person's own email-stream preferences.
@@ -63,7 +63,12 @@ export class SystemEmailPreferencesController {
         return;
       }
 
-      const categories = this.manager?.emailCategories?.list?.(audience) ?? [];
+      // Only what this site sends: a stream whose feature is switched off here is not offered as a choice.
+      const categories = await EmailCategoryAvailability.offered(
+        this.manager?.emailCategories?.list?.(audience) ?? [],
+        (slug: string) => this.manager?.getPluginSettings?.(slug),
+        this.manager?.db,
+      );
       const preferences = await Promise.all(categories.map(async (category: any) => ({
         key: category.key,
         label: this.translate(category.labelKey, audience === EmailCategoryAudience.ADMIN ? '' : category.key),
