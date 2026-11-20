@@ -30,7 +30,7 @@ export class ListSearchInput extends PureReactor {
           value={this.value}
           onChange={this.handleChange}
           // The same box as every other field; only the room for the icon is its own.
-          className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'ps-10 pe-4 text-ellipsis')}
+          className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'fc-field--icon text-ellipsis')}
         />
       </div>
     );

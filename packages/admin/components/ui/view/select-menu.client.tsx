@@ -98,7 +98,7 @@ export class SelectMenu extends PureReactor {
                       placeholder={AdminI18n.t('ui.select.search')}
                       value={searchValue}
                       onChange={(e) => onSearchChange(e.target.value)}
-                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `ps-7 ${searchInputThemeClasses}`)}
+                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `fc-field--icon-sm ${searchInputThemeClasses}`)}
                     />
                   </div>
                 </div>

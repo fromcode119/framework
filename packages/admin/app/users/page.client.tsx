@@ -175,7 +175,7 @@ export class UsersPage extends AdminComponent {
                   placeholder={AdminI18n.t('users.searchUserBaseByName')}
                   value={searchQuery}
                   onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-                  inputClassName="ps-10"
+                  inputClassName="fc-field--icon"
                 />
               </div>
             </div>

@@ -48,7 +48,7 @@ export class MediaPickerToolbar extends Reactor {
             placeholder={AdminI18n.t('mediaPicker.searchMedia')}
             value={search}
             onChange={this.handleSearchChange}
-            inputClassName="ps-10"
+            inputClassName="fc-field--icon"
           />
         </div>
         <input

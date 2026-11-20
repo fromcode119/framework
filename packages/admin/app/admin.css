@@ -2418,6 +2418,11 @@ textarea.fc-record-json__layer { caret-color: var(--fc-text); }
 .fc-field:disabled { color: var(--fc-text-muted); }
 /* A box of several lines is not a line: it keeps the height its own content needs. */
 textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
+/* A field with an icon at its start (a search box) keeps its text clear of the icon. A `ps-*` utility on the
+   field cannot do it: the `padding` shorthand above outranks every utility, so the text ran under the
+   magnifying glass in every list's search. */
+.fc-field.fc-field--icon { padding-inline-start: 40px; }
+.fc-field.fc-field--icon-sm { padding-inline-start: 28px; }
 
 /* A field's name, and the room between the two. 8px holds a label to its field; 32px between fields is
    what keeps a long form readable as fields rather than as one grid of boxes. */

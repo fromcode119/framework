@@ -97,13 +97,22 @@ export class Select extends Reactor {
       // positioning a flip by `rect.top - estimatedHeight` floated the menu a detached gap above its
       // trigger whenever the estimate overshot the real height. A flipped menu instead anchors its
       // BOTTOM to the trigger, so its actual rendered height is irrelevant.
-      const estimatedHeight = Math.min(filteredCount * 40 + (this.searchable !== false ? 58 : 8) + 8, 300);
+      const estimatedHeight = Math.min(filteredCount * 40 + (this.offersSearch ? 58 : 8) + 8, 300);
       const opensUp = rect.bottom + margin + estimatedHeight > window.innerHeight && rect.top > window.innerHeight - rect.bottom;
 
       this.coords = opensUp
         ? { bottom: window.innerHeight - rect.top + margin, left: rect.left, width: rect.width }
         : { top: rect.bottom + margin, left: rect.left, width: rect.width };
     }
+  }
+
+  /**
+   * Whether the list opens with a search box. Unless the caller says, only when there is something to search:
+   * a long list, a list the owner searches itself, or one that takes a new option typed in. Draft/Published and
+   * three payment methods each opened a search box above two or three rows.
+   */
+  private get offersSearch(): boolean {
+    return this.searchable ?? (Boolean(this.onSearchChange) || Boolean(this.onCreateOption) || (this.options?.length ?? 0) > SelectUtils.SEARCH_FROM);
   }
 
   @bound handleCreate(label: string): void {
@@ -125,7 +134,7 @@ export class Select extends Reactor {
     this.updatePosition();
     window.addEventListener('scroll', this.updatePosition, true);
     window.addEventListener('resize', this.updatePosition);
-    if (this.searchable !== false) {
+    if (this.offersSearch) {
       setTimeout(() => this.searchInputRef.current?.focus(), 50);
     }
   }
@@ -181,7 +190,7 @@ export class Select extends Reactor {
     const theme = this.theme ?? this.context?.theme ?? ThemeMode.LIGHT;
     const className = this.className ?? '';
     const triggerClassName = this.triggerClassName ?? '';
-    const searchable = this.searchable ?? true;
+    const searchable = this.offersSearch;
     const size = this.size ?? FieldSize.MD;
     const clearable = this.clearable ?? false;
     const { isOpen, searchValue, coords } = this;

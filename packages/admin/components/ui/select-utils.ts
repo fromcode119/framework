@@ -8,6 +8,9 @@ import type { ISelectOptionGroup } from '@/components/ui/interfaces/select-optio
  */
 export class SelectUtils {
   /** Resolves an option/value to a stable string for comparison (handles object-shaped values). */
+  /** A list longer than this opens with a search box (see `Select`). */
+  static readonly SEARCH_FROM = 7;
+
   static normalizeValue(value: any): string {
     return value && typeof value === 'object'
       ? (value.value || value.id || value.slug)

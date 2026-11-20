@@ -143,7 +143,7 @@ export class InstalledPluginsView extends Reactor {
       <div className={AdminClass.of('ext-toolbar')}>
         <div className={AdminClass.of('ext-toolbar__search')}>
           <FrameworkIcons.Search size={16} />
-          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-10" />
+          <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="fc-field--icon" />
         </div>
         {/* Hidden entirely for a tenant admin: uploading puts code on the box every site runs on,
             and an upload that can only ever 403 is a bug, not a hint. */}
