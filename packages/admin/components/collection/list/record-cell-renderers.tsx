@@ -8,6 +8,7 @@ import { PluginCellValue } from '@/components/collection/list/view/plugin-cell-v
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { TimezoneUtils } from '@/lib/timezone';
 
 /**
  * Turning one cell's raw value into what the list actually shows.
@@ -70,8 +71,10 @@ export class RecordCellRenderers {
       if (!date || Number.isNaN(date.getTime())) return '-';
       // A date field shows the day; a datetime field the day and the minute. A list cell holds one line, so
       // a moment this year leaves out its year, as an inbox does; the full moment is in the tooltip.
-      if (field?.type !== 'datetime') return date.toLocaleDateString(AdminI18n.locale);
-      const thisYear = date.getFullYear() === new Date().getFullYear();
+      // A literal `YYYY-MM-DD` is that calendar day everywhere; formatSystemDate keeps it from shifting.
+      if (field?.type !== 'datetime') return TimezoneUtils.formatSystemDate(raw, { year: 'numeric', month: 'numeric', day: 'numeric' });
+      // "This year" in the site's timezone, the zone the cell is written in.
+      const thisYear = TimezoneUtils.getZonedDateParts(date)?.year === TimezoneUtils.getZonedDateParts(new Date())?.year;
       const short = date.toLocaleString(AdminI18n.locale, thisYear
         ? { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }
         : { dateStyle: 'medium', timeStyle: 'short' });
