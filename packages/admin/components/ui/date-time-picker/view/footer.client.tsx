@@ -28,7 +28,7 @@ export class DateTimePickerFooter extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, showTime, timezone, zonedParts, onQuickAction, onClear, onClose } = this;
+    const { showTime, timezone, zonedParts, onQuickAction, onClear, onClose } = this;
 
     return (
       <>

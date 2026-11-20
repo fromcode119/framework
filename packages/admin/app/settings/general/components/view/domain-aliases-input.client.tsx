@@ -98,7 +98,7 @@ export class DomainAliasesInput extends Reactor {
                 onClick={this.handleRemoveClick}
                 disabled={this.disabled}
                 className={`ms-0.5 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                  isDark ? 'text-slate-400 hover:text-rose-400' : 'text-slate-400 hover:text-rose-600'
+                  'fc-tone-muted fc-tone-hover-danger'
                 }`}
               >
                 <FrameworkIcons.X size={11} strokeWidth={3} />

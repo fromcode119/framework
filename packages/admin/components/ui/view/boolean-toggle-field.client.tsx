@@ -20,15 +20,14 @@ export class BooleanToggleField extends PureReactor {
   @prop declare theme?: ThemeMode;
 
   render(): ReactNode {
-    const { checked, onChange, disabled, theme } = this;
-    const isDark = theme === ThemeMode.DARK;
+    const { checked, onChange, disabled } = this;
     return (
       <div
         className={`flex h-[var(--fc-field-h)] w-full items-center justify-between gap-3 rounded-lg border px-3 transition-colors ${
-          isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white'
+          'fc-tone-line fc-tone-surface'
         } ${disabled ? 'opacity-70' : ''}`}
       >
-        <span className={`text-xs font-medium ${checked ? 'fc-tone-brand' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <span className={`text-xs font-medium ${checked ? 'fc-tone-brand' : 'fc-tone-muted'}`}>
           {AdminI18n.t(checked ? 'common.yes' : 'common.no')}
         </span>
         <Switch checked={checked} onChange={onChange} disabled={disabled} />

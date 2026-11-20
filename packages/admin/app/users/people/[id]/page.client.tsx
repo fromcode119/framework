@@ -3,7 +3,6 @@ import { Alert } from '@/components/ui/view/alert.client';
 import { Hint } from '@/components/ui/view/hint.client';
 import { StatePage } from '@/components/ui/view/state-page.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminApi } from '@/lib/api';

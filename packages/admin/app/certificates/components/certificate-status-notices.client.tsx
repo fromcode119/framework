@@ -1,7 +1,6 @@
 import { Alert } from '@/components/ui/view/alert.client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CertificateNoticeTone } from '@/app/certificates/enums/certificate-notice-tone.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -21,9 +20,6 @@ export class CertificateStatusNotices extends AdminComponent {
   @prop declare automation: Record<string, unknown> | null;
   @prop declare encryptionAvailable: boolean;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   /** A note in the kit's tones: good, warn and bad are its own; a plain fact is the quiet one. */
   private notice(tone: CertificateNoticeTone, body: ReactNode): ReactNode {

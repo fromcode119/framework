@@ -1,7 +1,6 @@
 import { Hint } from '@/components/ui/view/hint.client';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';

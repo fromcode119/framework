@@ -78,8 +78,7 @@ export class SystemLocalesField extends Reactor {
   }
 
   render(): ReactNode {
-    const { options, loaded, theme } = this;
-    const isDark = theme === ThemeMode.DARK;
+    const { options, loaded } = this;
     const selected = this.selected;
 
     if (!loaded) {
@@ -101,7 +100,7 @@ export class SystemLocalesField extends Reactor {
                 className={`px-2.5 py-1 fc-size-xs font-medium rounded-lg border transition-colors ${
                   isSelected
                     ? 'fc-tone-brand-soft fc-tone-brand-line fc-tone-brand'
-                    : isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-500 hover:text-slate-800'
+                    : 'fc-tone-line fc-tone-muted fc-tone-hover-text'
                 } ${this.isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isSelected && <span className="me-1.5 opacity-70">{position + 1}</span>}

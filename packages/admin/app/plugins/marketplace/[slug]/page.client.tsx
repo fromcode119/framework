@@ -1,7 +1,6 @@
 import { DetailSplit } from '@/components/view/detail-split.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { LoadedPluginHydration } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';

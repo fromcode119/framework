@@ -17,10 +17,10 @@ export class PluginDetailPermissions extends PureReactor {
   @prop declare theme: ThemeMode;
 
   render(): ReactNode {
-    const { plugin, theme } = this;
+    const { plugin } = this;
     const summary = PluginConsentSummary.of(plugin.manifest, plugin.approvedCapabilities || []) as IPluginConsentSummary;
     return (
-      <Card className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
+      <Card className={"p-5"}>
         <h3 className={`fc-size-xs font-medium mb-5 fc-tone-muted`}>
           {AdminI18n.t('plugins.detail.securityCapabilities')}
         </h3>
@@ -33,7 +33,7 @@ export class PluginDetailPermissions extends PureReactor {
           </>
         ) : (
           <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed fc-tone-line rounded-xl">
-            <FrameworkIcons.Shield className="text-slate-200 dark:text-slate-800 mb-3" size={40} />
+            <FrameworkIcons.Shield className="fc-tone-muted mb-3" size={40} />
             <p className="fc-tone-muted font-medium text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
             <p className="fc-size-xs fc-tone-muted mt-0.5">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
           </div>

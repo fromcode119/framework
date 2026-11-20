@@ -1,7 +1,6 @@
 import { ListCard } from '@/components/ui/view/list-card.client';
 import { ListRow } from '@/components/ui/view/list-row.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';

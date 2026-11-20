@@ -6,7 +6,7 @@ import { Hint } from '@/components/ui/view/hint.client';
 import { Text } from '@/components/ui/view/text.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode, ThemeState, VersionComparisonService } from '@fromcode119/core/client';
+import { ThemeState, VersionComparisonService } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';

@@ -1,6 +1,5 @@
 import { PendingSaves } from '@/lib/settings/pending-saves';
 import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
@@ -63,7 +62,6 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
   }
 
   protected body(): ReactNode {
-    const theme = this.theme;
 
     if (this.isLoading) return <div className="p-12"><Loader label={AdminI18n.t('settings.infrastructure.loadingInfrastructureSettings')} /></div>;
 

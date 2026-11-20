@@ -38,13 +38,12 @@ export class SiteStatStrip extends PureReactor {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex flex-wrap items-center gap-2">
         {this.stats.map((stat) => (
           <div
             key={stat.label}
-            className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${dark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}
+            className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 fc-tone-line fc-tone-surface`}
           >
             <span className={`text-sm font-medium tabular-nums ${stat.tone}`}>{stat.value}</span>
             <span className={`fc-size-xs font-medium fc-tone-muted`}>{stat.label}</span>

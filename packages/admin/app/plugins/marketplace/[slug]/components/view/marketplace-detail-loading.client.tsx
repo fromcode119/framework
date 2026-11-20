@@ -8,7 +8,6 @@ export class MarketplaceDetailLoading extends PureReactor {
   @prop declare theme: ThemeMode;
 
   render(): ReactNode {
-    const theme = this.theme;
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />

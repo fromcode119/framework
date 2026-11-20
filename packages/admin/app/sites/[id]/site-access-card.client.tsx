@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Icon } from '@/components/view/icon.client';
-import { PluginToggleScopeConstants, ThemeMode } from '@fromcode119/core/client';
+import { PluginToggleScopeConstants } from '@fromcode119/core/client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
@@ -42,9 +42,6 @@ export class SiteAccessCard extends AdminComponent {
   /** The slug being activated platform-wide, so its row can show progress. */
   @state activating = '';
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   @bound private onSearch(e: ChangeEvent<HTMLInputElement>): void {
     this.search = e.target.value;
@@ -184,7 +181,7 @@ export class SiteAccessCard extends AdminComponent {
               const dormant = plugin.runnable === false && !blocked;
               return (
                 <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors fc-tone-hover`}>
-                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'fc-tone-brand-soft fc-tone-brand ring-1 ring-indigo-100'}`}>
+                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center fc-tone-brand-soft fc-tone-brand`}>
                     <Icon name={plugin.icon || 'Box'} size={18} strokeWidth={1.5} />
                   </div>
 

@@ -140,7 +140,7 @@ export class EditPageSidebar extends PureReactor {
 
   render(): ReactNode {
     const {
-      slug, id, isNew, theme, collection, resolvedSlug, formData, setFormData, handleSubmit, saving,
+      slug, id, isNew, collection, resolvedSlug, formData, setFormData, handleSubmit, saving,
       pluginSettings, pluginSettingsSchema, fieldErrors, handleInputChange, handlePatch, handleReadOnlyOverrideRequest,
       readOnlyOverrideGranted, showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections,
       hasBuiltInSidebarContent,

@@ -1,4 +1,4 @@
-import { ThemeMode, LocalizationUtils } from '@fromcode119/core/client';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
@@ -62,7 +62,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             <p className="mb-2 text-xs fc-tone-muted">{AdminI18n.t('themes.componentsHardCodedForReplacement')}</p>
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               {themeDetail.overrides.map((o) => (
-                <code key={o.name} className={`fc-size-sm ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-700'}`}>{o.name}</code>
+                <code key={o.name} className={"fc-size-sm fc-tone-text"}>{o.name}</code>
               ))}
             </div>
           </div>

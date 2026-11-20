@@ -6,7 +6,7 @@ import { PendingSave } from '@/lib/settings/pending-save';
 import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ChangeEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { AcmeDirectory, ThemeMode } from '@fromcode119/core/client';
+import { AcmeDirectory } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { Button } from '@/components/ui/view/button.client';

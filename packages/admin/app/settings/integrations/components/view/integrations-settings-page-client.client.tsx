@@ -3,7 +3,6 @@ import { Text } from '@/components/ui/view/text.client';
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminClass } from '@/lib/admin-class';
 import type { ReactElement, ReactNode } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
 import { Loader } from '@/components/ui/view/loader.client';

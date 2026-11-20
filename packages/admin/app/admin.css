@@ -3741,6 +3741,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-tone-raised { background-color: var(--fc-surface-muted); }
 .fc-tone-hover:hover { background-color: var(--fc-surface-muted); }
 .fc-tone-hover-text:hover { color: var(--fc-text); }
+.fc-tone-hover-danger:hover { color: var(--fc-danger); }
 /* The console's type steps for hand-laid markup, so a size is a token rather than a number per screen. */
 .fc-size-xs { font-size: var(--fc-text-xs); }
 .fc-size-sm { font-size: var(--fc-text-sm); }

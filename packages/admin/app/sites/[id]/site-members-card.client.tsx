@@ -13,7 +13,6 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SiteMember } from '@/lib/tenants/site-member';
 import { SiteGrantDialog } from '@/app/sites/[id]/site-grant-dialog.client';
-import { ThemeMode } from '@fromcode119/core/client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -41,9 +40,6 @@ export class SiteMembersCard extends AdminComponent {
   @state search = '';
   @state loading = true;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   componentDidMount(): void {
     void this.loadPage();
@@ -141,7 +137,7 @@ export class SiteMembersCard extends AdminComponent {
             : null}
           {this.members.map((member) => (
             <div key={member.userId} className={`group flex items-center gap-3 px-3 py-2 transition-colors fc-tone-hover`}>
-              <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center fc-size-xs font-medium ${this.isDark ? 'bg-slate-800 text-slate-300 ring-1 ring-white/10' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
+              <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center fc-size-xs font-medium fc-tone-raised fc-tone-muted`}>
                 {SiteMembersCard.initial(member.email)}
               </div>
               <div className="flex-1 min-w-0">

@@ -1,4 +1,3 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { MouseEvent, ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';

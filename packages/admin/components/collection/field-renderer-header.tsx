@@ -30,7 +30,7 @@ export class FieldRendererHeader extends PureReactor {
 
   render(): ReactNode {
     const {
-      field, label, theme, isFieldReadOnly, supportsReadOnlyOverride, readOnlyOverrideGranted,
+      field, label, isFieldReadOnly, supportsReadOnlyOverride, readOnlyOverrideGranted,
       canRequestReadOnlyOverride, isLocalizedField, componentHandlesLocalization,
       shouldInlineLocaleSwitcher, onRequestReadOnlyOverride, localeSwitcher
     } = this;

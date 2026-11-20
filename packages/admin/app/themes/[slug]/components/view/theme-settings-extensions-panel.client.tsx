@@ -1,4 +1,4 @@
-import { ThemeConfigFieldType, ThemeMode } from '@fromcode119/core/client';
+import { ThemeConfigFieldType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminLink } from '@/components/view/admin-link.client';

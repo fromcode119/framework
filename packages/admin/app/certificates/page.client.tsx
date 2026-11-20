@@ -2,7 +2,7 @@ import { ListShell } from '@/components/ui/view/list-shell.client';
 import { Alert } from '@/components/ui/view/alert.client';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { AdminScope, ThemeMode } from '@fromcode119/core/client';
+import { AdminScope } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';

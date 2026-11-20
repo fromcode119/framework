@@ -1,7 +1,6 @@
 import { Divider } from '@/components/ui/view/divider.client';
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';

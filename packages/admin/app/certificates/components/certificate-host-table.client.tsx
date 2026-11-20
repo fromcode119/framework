@@ -5,7 +5,6 @@ import { Hint } from '@/components/ui/view/hint.client';
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import type { ReactNode } from 'react';
 import { bound, prop } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -42,9 +41,6 @@ export class CertificateHostTable extends AdminComponent {
   @prop declare onAutomate?: (host: string) => void;
   @prop declare onAutomateWildcard?: (host: string) => void;
 
-  private get isDark(): boolean {
-    return this.theme === ThemeMode.DARK;
-  }
 
   @bound private upload(host: string): () => void {
     return () => this.onUpload(host);

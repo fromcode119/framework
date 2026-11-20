@@ -1,6 +1,5 @@
 import { Alert } from '@/components/ui/view/alert.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
@@ -26,7 +25,7 @@ export class BackupsPageClientView extends PureReactor {
   @prop declare controller: IBackupsPageControllerState;
 
   render(): ReactElement {
-    const { theme, controller } = this;
+    const { controller } = this;
 
     if (controller.backupState.isLoading) {
       return <Loader fullPage label={AdminI18n.t('settings.components.indexingBackupInventory')} />;

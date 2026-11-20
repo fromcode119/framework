@@ -4,7 +4,6 @@ import { ListRow } from '@/components/ui/view/list-row.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { Card } from '@/components/ui/view/card.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';

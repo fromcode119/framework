@@ -99,7 +99,6 @@ export class ThemeLayoutField extends Reactor {
     const theme = this.theme ?? ThemeMode.LIGHT;
     const field = this.field;
     const { options, layoutInfoByValue, runtimeDefaultLayout, loading } = this;
-    const isDark = theme === ThemeMode.DARK;
     const readOnly = Boolean(field?.admin?.readOnly) || this.disabled;
 
     const explicitValue = String(value || '').trim();
@@ -140,7 +139,7 @@ export class ThemeLayoutField extends Reactor {
             </div>
           </div>
         ) : (
-          <div className={`rounded-xl border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
+          <div className={`rounded-xl border px-3 py-2 fc-tone-line fc-tone-raised`}>
             <p className={`fc-size-xs font-medium fc-tone-muted`}>{AdminI18n.t('ui.layout.renders')}</p>
             <p className={`mt-1 text-xs font-medium fc-tone-text`}>{effectiveLabel} ({effectiveValue})</p>
             <p className={`mt-1 fc-size-xs leading-relaxed fc-tone-muted`}>

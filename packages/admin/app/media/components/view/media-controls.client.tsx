@@ -67,7 +67,7 @@ export class MediaControls extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, uploading, isDragOver, error, searchQuery, viewMode } = this;
+    const { uploading, isDragOver, error, searchQuery, viewMode } = this;
 
     return (
       <>
