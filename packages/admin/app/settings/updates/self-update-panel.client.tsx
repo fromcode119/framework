@@ -1,8 +1,12 @@
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { RecordCard } from '@/components/ui/view/record-card.client';
-import { Alert } from '@/components/ui/view/alert.client';
-import { Text } from '@/components/ui/view/text.client';
+import { Card } from '@/components/ui/view/card.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { UpdateNoteTone } from '@/app/settings/updates/update-note-tone';
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -27,23 +31,31 @@ export class SelfUpdatePanel extends AdminComponent {
   /** A fresh update check taken while following an update, handed to the page without a spinner. */
   @prop declare onPolled: (check: any) => void;
 
-  @state saving = false;
+  @state automatic = false;
   @state confirmRestart = false;
   @state restarting = false;
 
   private static readonly POLL_MS = 5000;
   private poll: ReturnType<typeof setTimeout> | null = null;
 
+  /** What the page's one save bar reads and writes for this panel. */
+  private pending: PendingSave | null = null;
+
   componentDidMount(): void {
+    this.automatic = this.selfUpdate.plan?.automatic === true;
+    this.pending = new PendingSave(() => this.automatic, () => this.save(), (value) => { this.automatic = value; });
+    this.pending.mark();
     this.follow();
   }
 
   componentDidUpdate(): void {
+    PendingSaves.changed();
     this.follow();
   }
 
   componentWillUnmount(): void {
     if (this.poll) clearTimeout(this.poll);
+    this.pending?.dispose();
   }
 
   /** An update was asked for or is running: re-check every few seconds until it ends. A held one waits. */
@@ -96,15 +108,18 @@ export class SelfUpdatePanel extends AdminComponent {
   private static readonly OFF_STEP = 'turnedOffByDeployment';
 
   @bound
-  private async setAutomatic(on: boolean): Promise<void> {
-    this.saving = true;
+  private setAutomatic(on: boolean): void {
+    this.automatic = on;
+  }
+
+  /** Written by the page's save bar; the page then reads the updater's answer again. */
+  private async save(): Promise<void> {
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [SelfUpdatePanel.SETTING]: on ? 'true' : 'false' });
+      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [SelfUpdatePanel.SETTING]: this.automatic ? 'true' : 'false' });
       this.onChanged();
     } catch (error: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.selfUpdate.saveFailed'), error?.message || '');
-    } finally {
-      this.saving = false;
     }
   }
 
@@ -134,20 +149,18 @@ export class SelfUpdatePanel extends AdminComponent {
   render(): ReactNode {
     const line = this.statusLine;
     return (
-      <RecordCard><div className="fc-stack">
-        <Switch
-          checked={this.selfUpdate.plan?.automatic === true}
-          onChange={this.setAutomatic}
-          disabled={this.saving}
-          label={AdminI18n.t('settings.updates.selfUpdate.automatic')}
-          description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
-        />
-        {line.tone ? <Alert tone={line.tone as any}>{line.text}</Alert> : <Text size="xsmall" muted>{line.text}</Text>}
-        {this.deployLine && !this.held ? <Text size="xsmall" muted>{this.deployLine}</Text> : null}
+      <Card>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.updates.selfUpdate.automatic')} description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')} width={SettingRowWidth.AUTO}>
+          <Switch checked={this.automatic} onChange={this.setAutomatic} />
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row"><Hint variant={UpdateNoteTone.of(line.tone)}>{line.text}</Hint></div>
+        {this.deployLine && !this.held ? <div className="fc-settings-note fc-settings-note--of-row"><Hint>{this.deployLine}</Hint></div> : null}
         {this.held ? (
-          <Button variant={ButtonVariant.PRIMARY} isLoading={this.restarting} onClick={() => { this.confirmRestart = true; }}>
-            {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
-          </Button>
+          <div className="fc-settings-note fc-settings-note--of-row">
+            <Button variant={ButtonVariant.PRIMARY} isLoading={this.restarting} onClick={() => { this.confirmRestart = true; }}>
+              {AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
+            </Button>
+          </div>
         ) : null}
         <ConfirmDialog
           isOpen={this.confirmRestart}
@@ -157,7 +170,7 @@ export class SelfUpdatePanel extends AdminComponent {
           title={AdminI18n.t('settings.updates.selfUpdate.updateWithRestart', { version: this.selfUpdate.plan?.heldBy })}
           description={AdminI18n.t('settings.updates.selfUpdate.updateWithRestartExplained')}
         />
-      </div></RecordCard>
+      </Card>
     );
   }
 }

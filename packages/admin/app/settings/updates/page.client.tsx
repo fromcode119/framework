@@ -22,6 +22,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
 import { SelfUpdatePanel } from '@/app/settings/updates/self-update-panel.client';
 import { PluginAutoUpdatePanel } from '@/app/settings/updates/plugin-auto-update-panel.client';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UpdatesPage extends AdminComponent {
@@ -222,6 +223,7 @@ export class UpdatesPage extends AdminComponent {
 
           {status?.selfUpdate && <SelfUpdatePanel selfUpdate={status.selfUpdate} onChanged={this.fetchStatus} onPolled={this.takeStatus} />}
           <PluginAutoUpdatePanel />
+          <PendingSavesBar />
 
           {status?.lastUpdated ? <Text size="xsmall" muted>{AdminI18n.t('settings.updates.lastRegistrySync', { at: new Date(status.lastUpdated).toLocaleString() })}</Text> : null}
 

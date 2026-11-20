@@ -1,6 +1,10 @@
-import { RecordCard } from '@/components/ui/view/record-card.client';
-import { Alert } from '@/components/ui/view/alert.client';
-import { Text } from '@/components/ui/view/text.client';
+import { Card } from '@/components/ui/view/card.client';
+import { Hint } from '@/components/ui/view/hint.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { UpdateNoteTone } from '@/app/settings/updates/update-note-tone';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -16,19 +20,30 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  *
  * Both come straight from the stored settings: the switch is `plugins_auto_update`, the report is
  * `plugins_auto_update_status`, which only the api writes (the settings endpoint hands JSON values back parsed). The panel never claims an update happened
- * that the report does not say happened.
+ * that the report does not say happened. The switch is written by the page's one save bar.
  */
 export class PluginAutoUpdatePanel extends AdminComponent {
   @state loaded = false;
-  @state saving = false;
   @state automatic = false;
   @state report: { checkedAt: string; updatedAt: string; updated: string[]; failed: { slug: string; error: string }[]; error: string } | null = null;
 
   private static readonly SETTING = 'plugins_auto_update';
   private static readonly REPORT = 'plugins_auto_update_status';
 
+  /** What the page's one save bar reads and writes for this panel. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(() => this.automatic, () => this.save(), (value) => { this.automatic = value; });
     await this.load();
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   private async load(): Promise<void> {
@@ -37,21 +52,23 @@ export class PluginAutoUpdatePanel extends AdminComponent {
       this.automatic = String(settings?.[PluginAutoUpdatePanel.SETTING] ?? '') === 'true';
       this.report = settings?.[PluginAutoUpdatePanel.REPORT] ?? null;
       this.loaded = true;
+      this.pending?.mark();
     } catch (error: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.pluginAuto.loadFailed'), error?.message || '');
     }
   }
 
   @bound
-  private async setAutomatic(on: boolean): Promise<void> {
-    this.saving = true;
+  private setAutomatic(on: boolean): void {
+    this.automatic = on;
+  }
+
+  private async save(): Promise<void> {
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [PluginAutoUpdatePanel.SETTING]: on ? 'true' : 'false' });
-      this.automatic = on;
+      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, { [PluginAutoUpdatePanel.SETTING]: this.automatic ? 'true' : 'false' });
     } catch (error: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.pluginAuto.saveFailed'), error?.message || '');
-    } finally {
-      this.saving = false;
     }
   }
 
@@ -77,16 +94,12 @@ export class PluginAutoUpdatePanel extends AdminComponent {
     if (!this.loaded) return null;
     const line = this.statusLine;
     return (
-      <RecordCard><div className="fc-stack">
-        <Switch
-          checked={this.automatic}
-          onChange={this.setAutomatic}
-          disabled={this.saving}
-          label={AdminI18n.t('settings.updates.pluginAuto.automatic')}
-          description={AdminI18n.t('settings.updates.pluginAuto.automaticExplained')}
-        />
-        {line.tone ? <Alert tone={line.tone as any}>{line.text}</Alert> : <Text size="xsmall" muted>{line.text}</Text>}
-      </div></RecordCard>
+      <Card>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.updates.pluginAuto.automatic')} description={AdminI18n.t('settings.updates.pluginAuto.automaticExplained')} width={SettingRowWidth.AUTO}>
+          <Switch checked={this.automatic} onChange={this.setAutomatic} />
+        </SettingRow>
+        <div className="fc-settings-note fc-settings-note--of-row"><Hint variant={UpdateNoteTone.of(line.tone)}>{line.text}</Hint></div>
+      </Card>
     );
   }
 }
