@@ -307,3 +307,18 @@
 
 /* What a settings card says under its rows: a checked-at time, a failure, a credit. At the rows' inset. */
 .fc-settings-note { display: flex; flex-direction: column; gap: 4px; padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x); border-top: 1px solid var(--fc-border); }
+
+/* ── A small control never drops under its words ───────────────────────────────────────────────────
+ * A row is stacked when its control needs the whole width: a long text field, an editor, a list. A
+ * switch, a number, a short choice or a couple of buttons does not, however long the description is —
+ * so such a row stays ONE line: the words at the start, the control at the end, level with them.
+ * Stacked, the control stood alone on a line of its own under the text, at the far end of it. */
+.fc-settings-row--wide:has(> .fc-settings-row__control > :only-child:is(.fc-stepper, .fc-switch-field, .fc-settings-group, .fc-settings-short)) { flex-direction: row; align-items: center; gap: var(--fc-settings-row-gap); }
+.fc-settings-row--wide:has(> .fc-settings-row__control > :only-child:is(.fc-stepper, .fc-switch-field, .fc-settings-group, .fc-settings-short)) > .fc-settings-row__control { flex: none; width: auto; max-width: 60%; flex-wrap: nowrap; }
+.fc-settings-row--wide > .fc-settings-row__control > .fc-settings-group:only-child { width: auto; }
+@media (max-width: 639.98px) {
+  /* On a phone only a switch fits beside the words; anything wider goes under them, full width. */
+  .fc-settings-row--wide:has(> .fc-settings-row__control > :only-child:is(.fc-stepper, .fc-settings-group, .fc-settings-short)) { flex-direction: column; align-items: stretch; gap: 8px; }
+  .fc-settings-row--wide:has(> .fc-settings-row__control > :only-child:is(.fc-stepper, .fc-settings-group, .fc-settings-short)) > .fc-settings-row__control { width: 100%; max-width: none; }
+  .fc-settings-row--wide > .fc-settings-row__control > .fc-settings-group:only-child { width: 100%; }
+}
