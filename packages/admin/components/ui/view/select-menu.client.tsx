@@ -83,7 +83,7 @@ export class SelectMenu extends PureReactor {
               }`}
             >
               {searchable && (
-                <div className="p-1 pb-2 border-b border-[color:var(--fc-border)]">
+                <div className="p-1 pb-2 border-b fc-tone-line">
                   <div className="fc-search">
                     <div className="fc-search__icon">
                       <FrameworkIcons.Search size={15} />
@@ -116,7 +116,7 @@ export class SelectMenu extends PureReactor {
                   <div className="px-4 py-8 text-center">
                     {/* An empty list while the owner is still searching is not an empty catalogue: saying
                         "no results" there is a wrong answer the operator cannot tell from a right one. */}
-                    <p className="text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">
+                    <p className="text-[length:var(--fc-control-text)] leading-5 fc-tone-muted">
                       {AdminI18n.t(searching ? 'ui.select.searching' : 'ui.select.noResults')}
                     </p>
                   </div>
@@ -129,14 +129,14 @@ export class SelectMenu extends PureReactor {
                     return (
                     <div key={group.name} className="mb-0.5 last:mb-0">
                       {showGroupHeaders && (
-                        <div className="px-2 pt-2 pb-1 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
+                        <div className="px-2 pt-2 pb-1 fc-size-xs font-medium fc-tone-muted">
                           {group.name === 'Options' ? AdminI18n.t('ui.select.options') : group.name}
                         </div>
                       )}
                       {sections.map((section) => (
                         <div key={`${group.name}:${section.name || 'default'}`}>
                           {showSectionHeaders && section.name ? (
-                            <div className="px-3 pt-1 pb-1 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
+                            <div className="px-3 pt-1 pb-1 fc-size-xs font-medium fc-tone-muted">
                               {section.name}
                             </div>
                           ) : null}
@@ -162,7 +162,7 @@ export class SelectMenu extends PureReactor {
                                 event.stopPropagation();
                                 this.onDelete?.(SelectUtils.normalizeValue(opt.value));
                               }}
-                              className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity text-[color:var(--fc-text-muted)] hover:text-[color:var(--fc-danger)]"
+                              className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded opacity-0 group-hover:opacity-100 transition-opacity fc-tone-muted hover:text-[color:var(--fc-danger)]"
                             >
                               <FrameworkIcons.Trash size={13} />
                             </span>
@@ -177,7 +177,7 @@ export class SelectMenu extends PureReactor {
               </div>
 
               {menuNote ? (
-                <div className="border-t border-[color:var(--fc-border)] px-2 py-2 text-[11px] font-medium text-[color:var(--fc-text-muted)]">
+                <div className="border-t fc-tone-line px-2 py-2 fc-size-xs font-medium fc-tone-muted">
                   {menuNote}
                 </div>
               ) : null}

@@ -50,7 +50,7 @@ export class SourcesTable extends PureReactor {
     return (
       <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
         <span className="fc-tone-text">{row.slug}</span>
-        <span className="text-[12px] font-medium fc-tone-muted">{SourcesTable.kind(row.type)}</span>
+        <span className="fc-size-xs font-medium fc-tone-muted">{SourcesTable.kind(row.type)}</span>
       </span>
     );
   }
@@ -59,7 +59,7 @@ export class SourcesTable extends PureReactor {
     return (
       <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
         <span>{row.version ? `v${row.version}` : <span className="font-medium fc-tone-muted">{AdminI18n.t('sources.noBuildYetShort')}</span>}</span>
-        <span className="text-[12px] font-medium fc-tone-muted">{row.branch}</span>
+        <span className="fc-size-xs font-medium fc-tone-muted">{row.branch}</span>
       </span>
     );
   }

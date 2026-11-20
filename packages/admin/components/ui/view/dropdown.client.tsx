@@ -115,7 +115,7 @@ export class Dropdown extends DropdownPositioning {
               {DropdownPositioning.groupItems(items).map((group, groupIdx) => (
                 <Fragment key={group.section ?? `group-${groupIdx}`}>
                 {group.scrolls && group.section ? (
-                  <div className="mt-2 mb-0.5 px-3 text-[12px] font-medium fc-tone-muted">
+                  <div className="mt-2 mb-0.5 px-3 fc-size-xs font-medium fc-tone-muted">
                     {group.section}
                   </div>
                 ) : null}
@@ -134,7 +134,7 @@ export class Dropdown extends DropdownPositioning {
                       * like a separator between two unrelated things rather than a heading.
                       */}
                     {item.section && !group.scrolls ? (
-                      <div className="mt-2 mb-0.5 px-3 text-[12px] font-medium fc-tone-muted">
+                      <div className="mt-2 mb-0.5 px-3 fc-size-xs font-medium fc-tone-muted">
                         {item.section}
                       </div>
                     ) : null}

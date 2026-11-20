@@ -109,7 +109,7 @@ export class RoutingPage extends RoutingPageActions {
               />
             </SettingRow>
             <SettingRow title={AdminI18n.t('settings.routing.resolvedHomepageSource')} width={SettingRowWidth.AUTO}>
-              <span className="text-[13px] font-medium">{resolvedSourceLabel}</span>
+              <span className="fc-size-sm font-medium">{resolvedSourceLabel}</span>
             </SettingRow>
           </Card>
 

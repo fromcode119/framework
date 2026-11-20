@@ -29,7 +29,7 @@ export class FilterChips extends PureReactor {
         {active.map((filter) => (
           <span
             key={filter.key}
-            className="shrink-0 inline-flex items-center gap-1.5 h-7 ps-3 pe-1.5 rounded-full whitespace-nowrap text-[12px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+            className="shrink-0 inline-flex items-center gap-1.5 h-7 ps-3 pe-1.5 rounded-full whitespace-nowrap fc-size-xs font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
           >
             {filter.label}: {filter.valueLabel}
             <button
@@ -42,7 +42,7 @@ export class FilterChips extends PureReactor {
             </button>
           </span>
         ))}
-        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap text-[12px] font-medium fc-tone-muted hover:text-indigo-600">
+        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap fc-size-xs font-medium fc-tone-muted hover:text-indigo-600">
           {AdminI18n.t('ui.listToolbar.clearFilters')}
         </button>
       </div>

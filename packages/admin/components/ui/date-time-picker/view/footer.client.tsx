@@ -35,7 +35,7 @@ export class DateTimePickerFooter extends PureReactor {
         {showTime && (
           /* Label and fields share ONE row. Stacked, they cost ~110px of a popover that already
              overflowed the viewport; side by side they cost ~44px and read the same. */
-          <div className="mt-2 pt-2 flex items-center justify-between gap-3 border-t border-[color:var(--fc-border)]">
+          <div className="mt-2 pt-2 flex items-center justify-between gap-3 border-t fc-tone-line">
             <div className="flex min-w-0 items-center gap-2">
                <div className="flex min-w-0 flex-col">
                   <span className="fc-cal__sum-value">{AdminI18n.t('ui.date.time')}</span>
@@ -54,7 +54,7 @@ export class DateTimePickerFooter extends PureReactor {
                   onChange={this.changeHours}
                 />
               </div>
-              <span className="pb-1.5 text-[13px] font-medium text-[color:var(--fc-text-muted)]">:</span>
+              <span className="pb-1.5 fc-size-sm font-medium fc-tone-muted">:</span>
               <div className="fc-cal__time-cell">
                 <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper

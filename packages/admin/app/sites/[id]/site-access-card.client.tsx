@@ -198,7 +198,7 @@ export class SiteAccessCard extends AdminComponent {
                   </div>
 
                   <div className="flex items-center gap-5 shrink-0">
-                    <span className={`hidden lg:inline text-[12px] tabular-nums fc-tone-muted`}>v{plugin.version}</span>
+                    <span className={`hidden lg:inline fc-size-xs tabular-nums fc-tone-muted`}>v{plugin.version}</span>
                     <Badge
                       variant={blocked ? BadgeVariant.AMBER : (enabled ? BadgeVariant.SUCCESS : BadgeVariant.GRAY)}
                       className="shrink-0 justify-center w-[68px]"

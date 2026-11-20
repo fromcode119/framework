@@ -51,7 +51,7 @@ export class ClientLayoutHeader extends AdminComponent {
   private get warning(): ReactElement | null {
     if (this.apiStatus === ApiStatus.OFFLINE) {
       return (
-        <div role="alert" className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-6 py-2 text-[12px] font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 lg:px-12">
+        <div role="alert" className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-6 py-2 fc-size-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 lg:px-12">
           <FrameworkIcons.Alert size={14} />
           {AdminI18n.t('shell.status.offlineHint')}
         </div>
@@ -59,7 +59,7 @@ export class ClientLayoutHeader extends AdminComponent {
     }
     if (this.isMaintenance) {
       return (
-        <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-[12px] font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 lg:px-12">
+        <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 fc-size-xs font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 lg:px-12">
           <FrameworkIcons.Zap size={14} />
           {AdminI18n.t('shell.status.maintenance')}
         </div>

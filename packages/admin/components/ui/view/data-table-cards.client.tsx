@@ -44,7 +44,7 @@ export class DataTableCards<T extends { id: any }> extends PureReactor {
           return (
             <Fragment key={String(row.id ?? index)}>
               {showGroupHeader ? (
-                <div className="px-3 py-2 fc-tone-raised border-y fc-tone-line text-[12px] font-medium fc-tone-muted">{groupKey}</div>
+                <div className="px-3 py-2 fc-tone-raised border-y fc-tone-line fc-size-xs font-medium fc-tone-muted">{groupKey}</div>
               ) : null}
               <DataTableCard
                 row={row}

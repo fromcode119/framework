@@ -131,7 +131,7 @@ export class GeneralUsageReportCard extends AdminComponent {
         >
           <div className="flex flex-col gap-2 w-full min-w-0">
             {this.preview && (
-              <pre className="text-[12px] leading-relaxed font-mono rounded-xl p-3 overflow-x-auto bg-black/5 dark:bg-white/5 max-h-72">
+              <pre className="fc-size-xs leading-relaxed font-mono rounded-xl p-3 overflow-x-auto bg-black/5 dark:bg-white/5 max-h-72">
                 {JSON.stringify(this.preview.report, null, 2)}
               </pre>
             )}

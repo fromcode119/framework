@@ -57,7 +57,7 @@ export class SiteExportsCard extends PureReactor {
                   <p className={`text-xs leading-snug truncate font-mono fc-tone-muted`}>{entry.filename}</p>
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
-                  <span className={`text-[12px] tabular-nums fc-tone-muted`}>
+                  <span className={`fc-size-xs tabular-nums fc-tone-muted`}>
                     {SiteExportsCard.megabytes(entry.sizeBytes)}
                   </span>
                   <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download className="no-underline">

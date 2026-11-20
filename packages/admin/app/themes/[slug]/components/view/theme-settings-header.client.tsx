@@ -25,7 +25,7 @@ export class ThemeSettingsHeader extends PureReactor {
     if (!url) return null;
     return (
       <a href={url} target="_blank" rel="noreferrer"
-        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors fc-tone-line fc-tone-text fc-tone-hover`}>
+        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 fc-size-sm font-medium transition-colors fc-tone-line fc-tone-text fc-tone-hover`}>
         <FrameworkIcons.External size={14} />
         {AdminI18n.t('themes.openSite')}
       </a>

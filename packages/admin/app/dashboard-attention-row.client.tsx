@@ -33,12 +33,12 @@ export class DashboardAttentionRow extends AdminComponent {
     return (
       <div className="flex items-center gap-2.5 px-4 py-2">
         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${this.dotClass}`} />
-        <span className="min-w-0 flex-1 truncate text-[12px] fc-tone-text">
+        <span className="min-w-0 flex-1 truncate fc-size-xs fc-tone-text">
           {String(item.title)}
           {item.detail ? <span className="fc-tone-muted"> — {String(item.detail)}</span> : null}
         </span>
         {item.siteHost ? (
-          <span className="shrink-0 rounded border fc-tone-line px-1.5 text-[12px] fc-tone-muted">
+          <span className="shrink-0 rounded border fc-tone-line px-1.5 fc-size-xs fc-tone-muted">
             {String(item.siteHost)}
           </span>
         ) : null}
@@ -46,7 +46,7 @@ export class DashboardAttentionRow extends AdminComponent {
           <button
             type="button"
             onClick={this.handleAction}
-            className="shrink-0 text-[12px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+            className="shrink-0 fc-size-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
           >
             {String(item.actionLabel)}
           </button>

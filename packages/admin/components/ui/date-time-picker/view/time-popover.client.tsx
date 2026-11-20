@@ -58,7 +58,7 @@ export class DateTimePickerTimePopover extends PureReactor {
                 <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
-              <span className="pb-1.5 text-[13px] font-medium text-[color:var(--fc-text-muted)]">:</span>
+              <span className="pb-1.5 fc-size-sm font-medium fc-tone-muted">:</span>
               <div className="fc-cal__time-cell">
                 <span className="fc-cal__sum-label text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />

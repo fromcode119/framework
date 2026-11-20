@@ -27,7 +27,7 @@ export class AppearanceMarketplaceCard extends PureReactor {
               </span>
               <div>
                 <span className={`block text-sm font-medium tracking-tight fc-tone-text`}>{it.name}{it.version ? ` · v${it.version}` : ''}</span>
-                <span className="block text-[13px] fc-tone-muted max-w-md leading-relaxed">{it.description || it.author}</span>
+                <span className="block fc-size-sm fc-tone-muted max-w-md leading-relaxed">{it.description || it.author}</span>
               </div>
             </div>
             <Button icon={<FrameworkIcons.Download size={14} />} onClick={() => this.onInstall(it.slug)} disabled={this.busy}>{AdminI18n.t('settings.appearance.install')}</Button>

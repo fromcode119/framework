@@ -108,11 +108,11 @@ export class SidebarNotifications extends AdminComponent {
     return (
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-[13px] font-medium fc-tone-text">{AdminI18n.t('shell.notifications.title')}</h3>
-          {this.unread ? <span className="text-[12px] fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
+          <h3 className="fc-size-sm font-medium fc-tone-text">{AdminI18n.t('shell.notifications.title')}</h3>
+          {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="text-[12px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
             {AdminI18n.t('shell.notifications.markAllRead')}
           </button>
         ) : null}
@@ -146,7 +146,7 @@ export class SidebarNotifications extends AdminComponent {
       );
     }
     return (
-      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start text-[13px] font-medium fc-tone-muted transition-colors fc-tone-hover">
+      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start fc-size-sm font-medium fc-tone-muted transition-colors fc-tone-hover">
         <FrameworkIcons.Bell size={16} className="shrink-0 fc-tone-muted" />
         <span className="flex-1 truncate">{AdminI18n.t('shell.notifications.title')}</span>
         {badge}

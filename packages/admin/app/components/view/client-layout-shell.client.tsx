@@ -78,7 +78,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
             </div>
             <button
               onClick={() => { window.location.href = accountUrl; }}
-              className="w-full rounded-lg bg-slate-900 py-4 text-[12px] font-medium tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
+              className="w-full rounded-lg bg-slate-900 py-4 fc-size-xs font-medium tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
             >
               {AdminI18n.t('shell.account.goToMine')}
             </button>
@@ -87,7 +87,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
                 AuthUtils.purgeAuth();
                 authState.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
               }}
-              className="w-full text-[12px] font-medium tracking-wide fc-tone-muted transition-colors fc-tone-hover-text"
+              className="w-full fc-size-xs font-medium tracking-wide fc-tone-muted transition-colors fc-tone-hover-text"
             >
               {AdminI18n.t('shell.account.signOut')}
             </button>

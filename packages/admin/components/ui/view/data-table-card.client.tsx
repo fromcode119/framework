@@ -47,7 +47,7 @@ export class DataTableCard<T extends { id: any }> extends PureReactor {
       .filter(({ value }) => !DataTableCard.isEmpty(value));
     if (!parts.length) return null;
     return (
-      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium fc-tone-muted">
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 fc-size-xs font-medium fc-tone-muted">
         {parts.map(({ column, value }) => (
           <span key={column.id} className="inline-flex min-w-0 max-w-full items-center gap-1.5">
             {column.header ? <span className="shrink-0 fc-tone-muted">{column.header}</span> : null}
@@ -73,7 +73,7 @@ export class DataTableCard<T extends { id: any }> extends PureReactor {
         ) : null}
         <div className="flex-1 min-w-0">
           {titleColumn ? (
-            <div className="min-w-0 text-[14px] font-medium leading-snug fc-tone-text">{this.value(titleColumn)}</div>
+            <div className="min-w-0 fc-size-md font-medium leading-snug fc-tone-text">{this.value(titleColumn)}</div>
           ) : null}
           {this.renderDetails(rest)}
           {actions ? <div className="mt-2 flex flex-wrap items-center justify-end gap-2" onClick={this.stop}>{actions}</div> : null}

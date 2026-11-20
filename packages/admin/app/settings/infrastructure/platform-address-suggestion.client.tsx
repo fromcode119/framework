@@ -40,17 +40,17 @@ export class PlatformAddressSuggestion extends AdminComponent {
 
     return (
       <div className={`rounded-lg border px-3 py-2.5 mb-2 fc-tone-line fc-tone-raised`}>
-        <p className={`text-[12px] font-medium mb-1 fc-tone-muted`}>
+        <p className={`fc-size-xs font-medium mb-1 fc-tone-muted`}>
           {AdminI18n.t('settings.infrastructure.resolvedFromThisPlatformS')}
         </p>
         {this.candidates.map((candidate) => (
-          <p key={candidate.host} className={`text-[12px] font-mono leading-snug ${muted}`}>
+          <p key={candidate.host} className={`fc-size-xs font-mono leading-snug ${muted}`}>
             {candidate.host} → {candidate.ipv4.join(', ') || '—'}
             {candidate.ipv6.length ? AdminI18n.t('settings.infrastructure.ipv6', { join: candidate.ipv6.join(', ') }) : ''}
           </p>
         ))}
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className={`text-[12px] leading-snug ${muted}`}>
+          <p className={`fc-size-xs leading-snug ${muted}`}>
             {AdminI18n.t('settings.infrastructure.ifThoseHostnamesSitBehind')}
           </p>
           <Button variant={ButtonVariant.OUTLINE} size={FieldSize.SM} onClick={this.use}>

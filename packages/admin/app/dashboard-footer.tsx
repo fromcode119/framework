@@ -33,7 +33,7 @@ export class DashboardFooter extends PureReactor {
                   plugin-health surface, which reads the health endpoint. */}
             </div>
 
-            <div className="flex items-center gap-4 text-[12px] font-medium tracking-tight fc-tone-muted">
+            <div className="flex items-center gap-4 fc-size-xs font-medium tracking-tight fc-tone-muted">
               <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
             </div>
           </div>

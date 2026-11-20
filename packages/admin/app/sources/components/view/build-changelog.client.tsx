@@ -37,7 +37,7 @@ export class BuildChangelog extends AdminComponent {
 
     return (
       <div className="mt-2 rounded-lg border fc-tone-line fc-tone-raised px-3 py-2">
-        <p className="text-[12px] font-medium fc-tone-muted">
+        <p className="fc-size-xs font-medium fc-tone-muted">
           {this.version ? AdminI18n.t('sources.whatChangedInV', { version: this.version }) : AdminI18n.t('sources.whatChanged')}
         </p>
         <ul className="mt-1 space-y-0.5">
@@ -48,7 +48,7 @@ export class BuildChangelog extends AdminComponent {
           ))}
         </ul>
         {remaining > 0 ? (
-          <p className="mt-1 text-[12px] fc-tone-muted">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
+          <p className="mt-1 fc-size-xs fc-tone-muted">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
         ) : null}
       </div>
     );

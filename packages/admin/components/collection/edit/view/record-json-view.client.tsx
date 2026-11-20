@@ -219,8 +219,8 @@ export class RecordJsonView extends Reactor {
         <div className="min-h-[20px]">
           {this.error
             ? <p className="text-[length:var(--fc-control-text)] font-medium leading-5 text-[color:var(--fc-danger)]">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
-            : <p className="text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{AdminI18n.t('collection.json.validState')}</p>}
-          {this.notice && !this.error && <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 text-[color:var(--fc-text-muted)]">{this.notice}</p>}
+            : <p className="text-[length:var(--fc-control-text)] leading-5 fc-tone-muted">{AdminI18n.t('collection.json.validState')}</p>}
+          {this.notice && !this.error && <p className="mt-0.5 text-[length:var(--fc-control-text)] leading-5 fc-tone-muted">{this.notice}</p>}
         </div>
       </div>
     );

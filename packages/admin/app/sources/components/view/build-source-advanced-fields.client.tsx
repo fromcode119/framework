@@ -62,7 +62,7 @@ export class BuildSourceAdvancedFields extends PureReactor {
          summary standing in for them — a control nobody opens is a control nobody sets, and a summary
          of a setting is not the setting. A group with a name is enough. */
       <div className="fc-surface p-4">
-        <h3 className="mb-4 text-[16px] font-medium leading-6 text-[color:var(--fc-text)]">{AdminI18n.t('sources.advanced')}</h3>
+        <h3 className="mb-4 fc-size-lg font-medium leading-6 fc-tone-text">{AdminI18n.t('sources.advanced')}</h3>
         {this.renderFields()}
       </div>
     );

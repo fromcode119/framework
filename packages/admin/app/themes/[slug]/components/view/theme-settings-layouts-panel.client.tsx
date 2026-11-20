@@ -43,14 +43,14 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               className="w-full"
             />
             {LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale) ? (
-              <p className="text-[12px] fc-tone-muted mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
+              <p className="fc-size-xs fc-tone-muted mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
             ) : null}
             {isUnavailable ? (
-              <p className="text-[12px] text-amber-600 mt-2">
+              <p className="fc-size-xs text-amber-600 mt-2">
                 {AdminI18n.t('themes.layoutNoLongerProvided', { layout: tempDefaultLayout })}
               </p>
             ) : null}
-            <p className="text-[12px] fc-tone-muted mt-2">
+            <p className="fc-size-xs fc-tone-muted mt-2">
               {AdminI18n.t('themes.aPageThatPicksA')}
             </p>
           </div>
@@ -62,7 +62,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             <p className="mb-2 text-xs fc-tone-muted">{AdminI18n.t('themes.componentsHardCodedForReplacement')}</p>
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               {themeDetail.overrides.map((o) => (
-                <code key={o.name} className={`text-[13px] ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-700'}`}>{o.name}</code>
+                <code key={o.name} className={`fc-size-sm ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-700'}`}>{o.name}</code>
               ))}
             </div>
           </div>

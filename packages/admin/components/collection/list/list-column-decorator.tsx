@@ -150,7 +150,7 @@ export class ListColumnDecorator {
           <div className="min-w-0">
             <div className="truncate font-medium fc-tone-text">{accessor(row)}</div>
             {parts.length ? (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12px] font-medium fc-tone-muted">
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap fc-size-xs font-medium fc-tone-muted">
                 {parts.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="fc-tone-muted">·</span>, part] : [part]))}
               </div>
             ) : null}

@@ -23,7 +23,7 @@ export class SidebarMiniToggle extends PureReactor {
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ms-3 text-[12px] font-medium tracking-tight fc-tone-muted transition-colors">{AdminI18n.t('shell.nav.collapse')}</span>}
+          {!isMini && <span className="ms-3 fc-size-xs font-medium tracking-tight fc-tone-muted transition-colors">{AdminI18n.t('shell.nav.collapse')}</span>}
         </button>
       </div>
     );

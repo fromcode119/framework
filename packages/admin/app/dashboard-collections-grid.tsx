@@ -68,10 +68,10 @@ export class DashboardCollectionsGrid extends PureReactor {
                 <DynamicIcon name={s.icon || 'Database'} size={16} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[12px] font-medium tracking-tight fc-tone-muted truncate">{s.name || colShortSlug}</p>
+                <p className="fc-size-xs font-medium tracking-tight fc-tone-muted truncate">{s.name || colShortSlug}</p>
                 <div className="flex items-baseline gap-1.5">
                   <h4 className="text-lg font-medium tracking-tight fc-tone-text leading-tight">{s.count}</h4>
-                  <span className="text-[12px] fc-tone-muted truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
+                  <span className="fc-size-xs fc-tone-muted truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
                 </div>
               </div>
               <FrameworkIcons.ArrowRight size={14} className="shrink-0 fc-tone-muted group-hover:text-indigo-500 transition-colors" />

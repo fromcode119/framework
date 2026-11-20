@@ -66,9 +66,9 @@ export class SourceVersionsPanel extends SourceVersionsActions {
   }
 
   render(): ReactNode {
-    if (this.loadingVersions) return <span className="text-[12px] fc-tone-muted">{AdminI18n.t('sources.readingVersions')}</span>;
+    if (this.loadingVersions) return <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('sources.readingVersions')}</span>;
     return (
-      <div className="flex flex-col gap-2 text-[12px]">
+      <div className="flex flex-col gap-2 fc-size-xs">
         {this.renderFacts()}
         {/* The same setting as Edit's "Update if already installed", offered where an operator asks
             "keep this current". Turning it ON also sets "Install after build", which it depends on. */}

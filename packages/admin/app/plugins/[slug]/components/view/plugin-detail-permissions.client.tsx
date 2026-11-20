@@ -21,13 +21,13 @@ export class PluginDetailPermissions extends PureReactor {
     const summary = PluginConsentSummary.of(plugin.manifest, plugin.approvedCapabilities || []) as IPluginConsentSummary;
     return (
       <Card className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <h3 className={`text-[12px] font-medium mb-5 fc-tone-muted`}>
+        <h3 className={`fc-size-xs font-medium mb-5 fc-tone-muted`}>
           {AdminI18n.t('plugins.detail.securityCapabilities')}
         </h3>
         {summary.entries.length > 0 ? (
           <>
             {summary.requiresApproval ? (
-              <p className="mb-4 text-[13px] text-amber-700 dark:text-amber-300">{AdminI18n.t('plugins.detail.requiresYourApproval')}</p>
+              <p className="mb-4 fc-size-sm text-amber-700 dark:text-amber-300">{AdminI18n.t('plugins.detail.requiresYourApproval')}</p>
             ) : null}
             <PluginConsentEntries entries={summary.entries} anyHostReason={summary.anyHostReason} />
           </>
@@ -35,7 +35,7 @@ export class PluginDetailPermissions extends PureReactor {
           <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed fc-tone-line rounded-xl">
             <FrameworkIcons.Shield className="text-slate-200 dark:text-slate-800 mb-3" size={40} />
             <p className="fc-tone-muted font-medium text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
-            <p className="text-[12px] fc-tone-muted mt-0.5">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
+            <p className="fc-size-xs fc-tone-muted mt-0.5">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
           </div>
         )}
       </Card>

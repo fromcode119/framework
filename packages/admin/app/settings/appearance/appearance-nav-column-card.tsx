@@ -20,8 +20,8 @@ export class AppearanceNavColumnCard extends PureReactor {
     return (
       <div className={`${AdminClass.SURFACE} flex items-center justify-between gap-6 p-4`}>
         <div className="min-w-0">
-          <h3 className="text-[13px] font-medium tracking-tight fc-tone-text">{AdminI18n.t('settings.appearance.secondMenuColumn')}</h3>
-          <p className="mt-0.5 text-[12px] font-medium leading-relaxed fc-tone-muted">
+          <h3 className="fc-size-sm font-medium tracking-tight fc-tone-text">{AdminI18n.t('settings.appearance.secondMenuColumn')}</h3>
+          <p className="mt-0.5 fc-size-xs font-medium leading-relaxed fc-tone-muted">
             {AdminI18n.t('settings.appearance.sectionPagesBesideTheMenu')}
           </p>
         </div>

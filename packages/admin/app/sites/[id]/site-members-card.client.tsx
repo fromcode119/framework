@@ -141,11 +141,11 @@ export class SiteMembersCard extends AdminComponent {
             : null}
           {this.members.map((member) => (
             <div key={member.userId} className={`group flex items-center gap-3 px-3 py-2 transition-colors fc-tone-hover`}>
-              <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-[12px] font-medium ${this.isDark ? 'bg-slate-800 text-slate-300 ring-1 ring-white/10' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
+              <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center fc-size-xs font-medium ${this.isDark ? 'bg-slate-800 text-slate-300 ring-1 ring-white/10' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
                 {SiteMembersCard.initial(member.email)}
               </div>
               <div className="flex-1 min-w-0">
-                <span className={`text-[13px] font-medium tracking-tight truncate fc-tone-text`}>
+                <span className={`fc-size-sm font-medium tracking-tight truncate fc-tone-text`}>
                   {member.email || <em className="font-normal fc-tone-muted">{AdminI18n.t('sites.deletedAccount', { id: member.userId })}</em>}
                 </span>
               </div>

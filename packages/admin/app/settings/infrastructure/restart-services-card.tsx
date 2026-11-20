@@ -91,7 +91,7 @@ export class RestartServicesCard extends AdminComponent {
     if (this.loadError) {
       return (
         <Card title={AdminI18n.t('settings.infrastructure.restartServices')}>
-          <p className="text-[13px] text-[var(--destructive)]">{this.loadError}</p>
+          <p className="fc-size-sm text-[var(--destructive)]">{this.loadError}</p>
         </Card>
       );
     }

@@ -79,14 +79,14 @@ export class PersonFieldsPage extends AdminComponent {
       { header: AdminI18n.t('users.fields.label'), id: 'label', accessor: (field: IPersonFieldDefinition) => (
         <div>
           <div className="font-medium tracking-tight">{PersonFieldWords.pick(field.label, field.key)}</div>
-          <div className="text-[12px] font-mono fc-tone-muted">{field.key}</div>
+          <div className="fc-size-xs font-mono fc-tone-muted">{field.key}</div>
         </div>
       ) },
       { header: AdminI18n.t('users.fields.type'), id: 'type', accessor: (field: IPersonFieldDefinition) => AdminI18n.t(`users.fields.types.${field.type}`) },
       { header: AdminI18n.t('users.fields.selfEditable'), id: 'selfEditable', accessor: (field: IPersonFieldDefinition) =>
         AdminI18n.t(field.selfEditable ? 'common.yes' : 'common.no') },
       { header: AdminI18n.t('users.fields.description'), id: 'description', accessor: (field: IPersonFieldDefinition) =>
-        <span className="text-[12px] fc-tone-muted">{PersonFieldWords.pick(field.description, '—')}</span> },
+        <span className="fc-size-xs fc-tone-muted">{PersonFieldWords.pick(field.description, '—')}</span> },
     ];
   }
 

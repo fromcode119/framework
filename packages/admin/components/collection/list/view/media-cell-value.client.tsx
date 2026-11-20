@@ -69,7 +69,7 @@ export class CollectionListMediaCellValue extends AdminComponent {
             ? <img src={preview!.url} alt={preview!.filename || ''} loading="lazy" className="w-full h-full object-cover" />
             : <FrameworkIcons.File size={16} />}
         </span>
-        {count > 1 && !this.thumbnail ? <span className="text-[12px] font-medium fc-tone-muted">+{count - 1}</span> : null}
+        {count > 1 && !this.thumbnail ? <span className="fc-size-xs font-medium fc-tone-muted">+{count - 1}</span> : null}
       </span>
     );
   }
