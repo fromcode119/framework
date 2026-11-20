@@ -22,6 +22,9 @@ import { AdminClass } from '@/lib/admin-class';
 import { PersonEditPageActions } from '@/app/users/people/[id]/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Select } from '@/components/ui/view/select.client';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 /**
  * One person — the record behind a customer or a colleague.
@@ -32,19 +35,25 @@ import { Select } from '@/components/ui/view/select.client';
 export class PersonEditPage extends PersonEditPageActions {
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.pending = new PendingSave(() => this.fields, () => this.save(), (values) => { this.fields = values; });
     const params = await this.params;
     if (!this.mounted) return;
     this.routeId = params.id;
     void this.fetchPerson();
   }
 
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
   componentWillUnmount(): void {
     this.mounted = false;
+    this.pending?.dispose();
   }
 
   render(): ReactElement {
     const theme = this.theme;
-    const { person, loading, saving, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
+    const { person, loading, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
 
     if (loading) {
       return <Loader fullPage label={AdminI18n.t('users.loadingPerson')} />;
@@ -85,7 +94,7 @@ export class PersonEditPage extends PersonEditPageActions {
 
         <div className="fc-columns__stack">
           <div className="fc-record-split">
-            <form onSubmit={(e) => this.save(e)}>
+            <div>
               <RecordCard title={AdminI18n.t('users.identity')}>
                 <div className="fc-stack">
                   {error ? <Alert tone="danger">{error}</Alert> : null}
@@ -99,14 +108,14 @@ export class PersonEditPage extends PersonEditPageActions {
                     {this.field(AdminI18n.t('users.birthDate'), 'birthDate', 'date')}
                   </div>
                   {linked ? <Hint>{AdminI18n.t('users.thisPersonHasALogin')}</Hint> : null}
-                  <div className="fc-chip-row fc-chip-row--cell">
-                    <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving}>{AdminI18n.t('users.saveChanges')}</Button>
-                    {linked ? <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}>{AdminI18n.t('users.sendPasswordResetEmail')}</Button> : null}
-                    <Button variant={ButtonVariant.GHOST} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.ROOT}>{AdminI18n.t('users.cancel')}</Button>
-                  </div>
+                  {linked ? (
+                    <div className="fc-chip-row fc-chip-row--cell">
+                      <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}>{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
+                    </div>
+                  ) : null}
                 </div>
               </RecordCard>
-            </form>
+            </div>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />
           </div>
 
@@ -163,6 +172,7 @@ export class PersonEditPage extends PersonEditPageActions {
               onDownloadItem={(item: IRecordsHubItem) => void this.downloadRecord(item)}
             />
           </div>
+          <PendingSavesBar />
         </div>
       </div>
     );

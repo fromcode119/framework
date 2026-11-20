@@ -1,7 +1,6 @@
-import type { FormEvent, ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { EditUserHeader } from '@/app/users/[id]/edit/components/view/edit-user-header.client';
@@ -13,6 +12,10 @@ import { SelfAccount } from '@/lib/self-account';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AccountStatus } from '@/app/users/enums/account-status.enum';
+import { Alert } from '@/components/ui/view/alert.client';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 export class EditUserPage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -35,17 +38,24 @@ export class EditUserPage extends AdminComponent {
   @state identityLocked = false;
 
   private mounted = false;
+  private pending: PendingSave | null = null;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    this.pending = new PendingSave(() => this.formData, () => this.save(), (values: IEditUserFormData) => { this.formData = values; this.errors = {}; });
     const params = await this.params;
     if (!this.mounted) return;
     this.routeId = params.id;
     void this.fetchUser();
   }
 
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
   componentWillUnmount(): void {
     this.mounted = false;
+    this.pending?.dispose();
   }
 
   /** Your own account without `users:manage` — see {@link SelfAccount}. */
@@ -70,6 +80,7 @@ export class EditUserPage extends AdminComponent {
         password: '',
         confirmPassword: ''
       };
+      this.pending?.mark();
     } catch (err) {
       console.error('Failed to fetch user:', err);
     } finally {
@@ -81,8 +92,8 @@ export class EditUserPage extends AdminComponent {
     this.formData = { ...this.formData, ...patch };
   }
 
-  private async handleSubmit(e: FormEvent): Promise<void> {
-    e.preventDefault();
+  /** Written by the page's save bar. A refusal keeps the edits unsaved and says why beside the field. */
+  private async save(): Promise<void> {
     this.saving = true;
     this.errors = {};
 
@@ -91,12 +102,14 @@ export class EditUserPage extends AdminComponent {
     if (formData.password && formData.password !== formData.confirmPassword) {
       this.errors = { confirmPassword: AdminI18n.t('users.passwordsDoNotMatch') };
       this.saving = false;
+      this.pending?.failed();
       return;
     }
 
     if (this.selfService && formData.password && !formData.currentPassword) {
       this.errors = { currentPassword: AdminI18n.t('users.enterYourCurrentPasswordTo') };
       this.saving = false;
+      this.pending?.failed();
       return;
     }
 
@@ -109,9 +122,11 @@ export class EditUserPage extends AdminComponent {
       } else {
         await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.USER(routeId), formData);
       }
-      this.router.push(AdminConstants.ROUTES.USERS.DETAIL(routeId));
+      // A password is entered once: after it is stored the fields empty, and what stays on screen is saved.
+      this.formData = { ...this.formData, password: '', confirmPassword: '', currentPassword: '' };
     } catch (err: any) {
       console.error('Failed to update user:', err);
+      this.pending?.failed();
       this.errors = { global: err.message || AdminI18n.t('users.failedToUpdateUser') };
     } finally {
       this.saving = false;
@@ -121,7 +136,7 @@ export class EditUserPage extends AdminComponent {
   render(): ReactElement {
     const theme = this.theme;
     const id = this.routeId;
-    const { loading, saving, formData, errors } = this;
+    const { loading, formData, errors } = this;
 
     if (loading) {
       return (
@@ -133,16 +148,10 @@ export class EditUserPage extends AdminComponent {
 
     return (
       <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
-        <EditUserHeader
-          theme={theme}
-          userId={id}
-          saving={saving}
-          onCancel={() => this.router.back()}
-          onSubmit={(e) => this.handleSubmit(e)}
-        />
+        <EditUserHeader theme={theme} userId={id} />
 
         <div className="w-full py-6">
-           <form onSubmit={(e) => this.handleSubmit(e)} className="space-y-6">
+           <div className="fc-stack">
               <EditUserFormFields
                 formData={formData}
                 errors={errors}
@@ -151,18 +160,14 @@ export class EditUserPage extends AdminComponent {
                 identityLocked={this.identityLocked}
               />
 
-              {errors.global && (
-                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-medium flex items-center gap-3">
-                    <FrameworkIcons.Warning size={18} />
-                    {errors.global}
-                 </div>
-              )}
-           </form>
+              {errors.global ? <Alert tone="danger">{errors.global}</Alert> : null}
+           </div>
 
            {/* Your own switches act for the session; for someone else an administrator sets theirs through
                the admin route, which checks the account belongs to this site. */}
            <div className="mt-6"><EditUserNotifications userId={SelfAccount.isOwn(this.auth?.user, id) ? undefined : id} /></div>
         </div>
+        <PendingSavesBar />
       </div>
     );
   }

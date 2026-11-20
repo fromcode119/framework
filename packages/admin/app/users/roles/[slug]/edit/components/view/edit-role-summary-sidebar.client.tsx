@@ -10,8 +10,10 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class EditRoleSummarySidebar extends PureReactor {
   @prop declare type: string;
   @prop declare permissionCount: number;
-  @prop declare loading: boolean;
-  @prop declare onCancel: () => void;
+  @prop declare loading?: boolean;
+  /** Given only while a role is being CREATED: an existing role is saved from the page's save bar, so
+      its summary carries no buttons. */
+  @prop declare onCancel?: () => void;
   /** No Save: this editor may not change the role here (see the notice on the page). */
   @prop declare readOnly?: boolean;
   /** The words on the save button and the tip under it, when they are not the editor's own. */
@@ -29,10 +31,12 @@ export class EditRoleSummarySidebar extends PureReactor {
               { key: 'type', label: AdminI18n.t('users.roleType'), value: type },
               { key: 'scope', label: AdminI18n.t('users.selectedScope'), value: permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.actionsSelected', { permissionCount }) },
             ]} />
-            <div className="fc-record-card__table-tools">
-              <Button variant={ButtonVariant.SECONDARY} onClick={onCancel}>{AdminI18n.t('users.cancel')}</Button>
-              {this.readOnly ? null : <Button type="submit" variant={ButtonVariant.PRIMARY} isLoading={loading}>{this.saveLabel ?? AdminI18n.t('users.save')}</Button>}
-            </div>
+            {onCancel ? (
+              <div className="fc-record-card__table-tools">
+                <Button variant={ButtonVariant.SECONDARY} onClick={onCancel}>{AdminI18n.t('users.cancel')}</Button>
+                {this.readOnly ? null : <Button type="submit" variant={ButtonVariant.PRIMARY} isLoading={loading}>{this.saveLabel ?? AdminI18n.t('users.save')}</Button>}
+              </div>
+            ) : null}
             <InlineTip label={this.tipLabel ?? AdminI18n.t('users.securityNote')}>{this.tip ?? AdminI18n.t('users.changesToRolePermissionsAre')}</InlineTip>
           </div>
         </RecordCard>

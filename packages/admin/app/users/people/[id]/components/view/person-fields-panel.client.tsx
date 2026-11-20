@@ -17,10 +17,13 @@ import { Button } from '@/components/ui/view/button.client';
 import { PersonFieldControl } from '@/app/users/people/fields/components/view/person-field-control.client';
 import { PersonFieldWords } from '@/app/users/people/fields/person-field-words';
 import type { IPersonFieldDefinition } from '@/app/users/people/fields/interfaces/person-field.interface';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 
 /**
  * The person's values for the site's person fields — what they answered in an app, or what the operator
  * set here. Every field declared under People → Person fields appears, with the control its type implies.
+ * Its values are written by the page's save bar, together with the rest of the person.
  */
 export class PersonFieldsPanel extends Reactor {
   declare props: Pick<PersonFieldsPanel, 'personId' | 'theme'>;
@@ -33,10 +36,20 @@ export class PersonFieldsPanel extends Reactor {
   @state loading = true;
   @state saving = false;
   @state error = '';
-  @state notice = '';
+
+  private pending: PendingSave | null = null;
 
   componentDidMount(): void {
+    this.pending = new PendingSave(() => this.values, () => this.save(), (values) => { this.values = values; });
     void this.load();
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   private async load(): Promise<void> {
@@ -47,6 +60,7 @@ export class PersonFieldsPanel extends Reactor {
       ]);
       this.fields = fields?.docs ?? [];
       this.values = values?.values ?? {};
+      this.pending?.mark();
     } catch (error: any) {
       this.error = error?.message || AdminI18n.t('users.fields.loadFailed');
     } finally {
@@ -57,13 +71,12 @@ export class PersonFieldsPanel extends Reactor {
   private async save(): Promise<void> {
     this.saving = true;
     this.error = '';
-    this.notice = '';
     try {
       const payload = Object.fromEntries(this.fields.map((field) => [field.key, this.values[field.key] ?? null]));
       const result = await AdminApi.patch(AdminConstants.ENDPOINTS.SYSTEM.PERSON_FIELD_VALUES(this.personId), { values: payload });
       this.values = result?.values ?? {};
-      this.notice = AdminI18n.t('users.fields.saved');
     } catch (error: any) {
+      this.pending?.failed();
       const field = this.fields.find((candidate) => candidate.key === error?.data?.field);
       this.error = field ? AdminI18n.t('users.fields.invalidValue', { field: PersonFieldWords.pick(field.label, field.key) }) : (error?.message || AdminI18n.t('users.fields.saveFailed'));
     } finally {
@@ -88,7 +101,6 @@ export class PersonFieldsPanel extends Reactor {
             </div>
           ))}
         </div>
-        <div><Button variant={ButtonVariant.PRIMARY} type="button" isLoading={this.saving} onClick={() => void this.save()}>{AdminI18n.t('users.fields.save')}</Button></div>
       </>
     );
   }
@@ -98,7 +110,6 @@ export class PersonFieldsPanel extends Reactor {
       <RecordCard title={AdminI18n.t('users.fields.title')} aside={<div className="fc-record-card__table-tools"><Button variant={ButtonVariant.GHOST} as={AdminLink} href={AdminConstants.ROUTES.PEOPLE.FIELDS}>{AdminI18n.t('users.fields.manage')}</Button></div>}>
         <div className="fc-stack">
           {this.error ? <Alert tone="danger">{this.error}</Alert> : null}
-          {this.notice ? <Alert tone="success">{this.notice}</Alert> : null}
           {this.body()}
         </div>
       </RecordCard>

@@ -4,6 +4,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import type { IPersonEditPageFields } from '@/app/users/people/[id]/interfaces/person-edit-page-fields.interface';
 import { prop, state } from '@fromcode119/react-class-components';
+import type { PendingSave } from '@/lib/settings/pending-save';
 
 /**
  * The person being edited, as a list of FIELDS rather than a fixed form.
@@ -37,6 +38,8 @@ export abstract class PersonEditPageState extends AdminComponent {
   @state reassigning = false;
 
   protected mounted = false;
+  /** The identity fields as the page's save bar sees them. */
+  protected pending: PendingSave | null = null;
 
   protected static toFields(person: IPerson | null): IPersonEditPageFields {
     return {
