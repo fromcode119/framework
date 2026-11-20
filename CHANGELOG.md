@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.622] - 2026-11-20
+
+### Fixed
+
+- **react**: an account file group can say why its files are not downloadable yet ([#1566](https://github.com/fromcode119/framework/pull/1566))
+
 ## [0.2.621] - 2026-11-20
 
 ### Fixed
