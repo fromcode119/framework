@@ -457,8 +457,7 @@
       "record": "rekod"
     },
     "array": {
-      "addNew": "Tambah {{label}} Baharu",
-      "item": "Item",
+      "add": "Tambah",
       "reorder": "Seret untuk alih, atau guna kekunci anak panah"
     },
     "stepper": {

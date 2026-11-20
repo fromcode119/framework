@@ -59,8 +59,8 @@ export class RedirectCreateCard extends PureReactor {
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.redirects.addRedirect')} icon={<FrameworkIcons.Plus size={16} />}>
-        <div className="fc-field-row">
-          <div className="fc-field-row__grow">
+        <div className="fc-inline-fields">
+          <div className="fc-inline-fields__grow">
             <Input
               label={AdminI18n.t('settings.redirects.fromPath')}
               placeholder="/old-page"
@@ -68,7 +68,7 @@ export class RedirectCreateCard extends PureReactor {
               onChange={(event: any) => { this.fromPath = String(event?.target?.value ?? ''); }}
             />
           </div>
-          <div className="fc-field-row__grow">
+          <div className="fc-inline-fields__grow">
             <Input
               label={AdminI18n.t('settings.redirects.toPathOrUrl')}
               placeholder={this.gone ? AdminI18n.t('settings.redirects.goneNoTarget') : AdminI18n.t('settings.redirects.toPathExample')}
@@ -77,7 +77,7 @@ export class RedirectCreateCard extends PureReactor {
               onChange={(event: any) => { this.toPath = String(event?.target?.value ?? ''); }}
             />
           </div>
-          <div className="fc-field-row__pick">
+          <div className="fc-inline-fields__pick">
             <Select
               theme={this.theme}
               value={this.type}

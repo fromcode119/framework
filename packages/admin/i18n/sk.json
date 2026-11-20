@@ -457,8 +457,7 @@
       "record": "záznam"
     },
     "array": {
-      "addNew": "Pridať: {{label}}",
-      "item": "Položka",
+      "add": "Pridať",
       "reorder": "Presuňte potiahnutím alebo použite šípky"
     },
     "stepper": {

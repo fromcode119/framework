@@ -1,10 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { RepeatRowAdd } from '@/components/ui/view/repeat-row-add.client';
 import { ArrayFieldRow } from '@/components/ui/view/array-field-row.client';
 import { ArrayFieldRowRenderer } from '@/components/ui/view/array-field-row-renderer.client';
 import { ArrayFieldTable } from '@/components/ui/view/array-field-table.client';
@@ -145,10 +142,7 @@ export class ArrayField extends Reactor {
             ))}
           </ul>
         ) : null}
-        <Button type="button" variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.handleAddItem}>
-          <FrameworkIcons.Plus size={13} className="me-1.5" />
-          {AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}
-        </Button>
+        <RepeatRowAdd label={AdminI18n.t('ui.array.add')} onAdd={this.handleAddItem} />
       </div>
     );
   }

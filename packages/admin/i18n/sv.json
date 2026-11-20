@@ -457,8 +457,7 @@
       "record": "post"
     },
     "array": {
-      "addNew": "Lägg till {{label}}",
-      "item": "Objekt",
+      "add": "Lägg till",
       "reorder": "Dra för att flytta, eller använd piltangenterna"
     },
     "stepper": {

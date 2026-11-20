@@ -36,7 +36,7 @@ export class FieldLocaleSwitcher extends PureReactor {
         >
           <FrameworkIcons.Globe size={11} />
           <span>{(activeLocaleCode || activeLocale || 'en').toUpperCase()}</span>
-          <FrameworkIcons.Down size={11} className={`${isOpen ? 'rotate-180' : ''} transition-transform`} />
+          <FrameworkIcons.ChevronDown size={11} className={`${isOpen ? 'rotate-180' : ''} transition-transform`} />
         </button>
 
         {isOpen && (

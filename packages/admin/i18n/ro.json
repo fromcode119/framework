@@ -457,8 +457,7 @@
       "record": "înregistrare"
     },
     "array": {
-      "addNew": "Adaugă {{label}}",
-      "item": "Element",
+      "add": "Adaugă",
       "reorder": "Trageți pentru a muta sau folosiți săgețile"
     },
     "stepper": {

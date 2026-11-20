@@ -457,8 +457,7 @@
       "record": "registro"
     },
     "array": {
-      "addNew": "Añadir {{label}}",
-      "item": "Elemento",
+      "add": "Añadir",
       "reorder": "Arrastra para mover o usa las flechas"
     },
     "stepper": {

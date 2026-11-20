@@ -457,8 +457,7 @@
       "record": "rekord"
     },
     "array": {
-      "addNew": "Új {{label}} hozzáadása",
-      "item": "Elem",
+      "add": "Hozzáadás",
       "reorder": "Húzással mozgathatja, vagy használja a nyílbillentyűket"
     },
     "stepper": {

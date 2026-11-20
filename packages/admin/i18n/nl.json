@@ -457,8 +457,7 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Nieuw {{label}} toevoegen",
-      "item": "Item",
+      "add": "Toevoegen",
       "reorder": "Sleep om te verplaatsen, of gebruik de pijltjestoetsen"
     },
     "stepper": {

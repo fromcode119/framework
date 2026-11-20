@@ -457,8 +457,7 @@
       "record": "kirje"
     },
     "array": {
-      "addNew": "Lisa uus: {{label}}",
-      "item": "Üksus",
+      "add": "Lisa",
       "reorder": "Lohista liigutamiseks või kasuta nooleklahve"
     },
     "stepper": {

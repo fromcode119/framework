@@ -457,8 +457,7 @@
       "record": "oppføring"
     },
     "array": {
-      "addNew": "Legg til {{label}}",
-      "item": "Element",
+      "add": "Legg til",
       "reorder": "Dra for å flytte, eller bruk piltastene"
     },
     "stepper": {

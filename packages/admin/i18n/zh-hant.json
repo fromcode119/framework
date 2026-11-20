@@ -457,8 +457,7 @@
       "record": "記錄"
     },
     "array": {
-      "addNew": "新增{{label}}",
-      "item": "項目",
+      "add": "新增",
       "reorder": "拖曳以移動，或使用方向鍵"
     },
     "stepper": {

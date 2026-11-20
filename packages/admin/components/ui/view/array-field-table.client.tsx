@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { Button } from '@/components/ui/view/button.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { RepeatRowAdd } from '@/components/ui/view/repeat-row-add.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -32,7 +30,6 @@ export class ArrayFieldTable extends PureReactor {
   render(): ReactNode {
     const columns = this.columns;
     const items = this.items || [];
-    const addLabel = AdminI18n.t('ui.array.addNew', { label: this.field?.label || AdminI18n.t('ui.array.item') });
     return (
       <div className="fc-rows">
         {items.length ? (
@@ -64,9 +61,7 @@ export class ArrayFieldTable extends PureReactor {
             </table>
           </div>
         ) : null}
-        <Button type="button" variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.onAdd}>
-          <FrameworkIcons.Plus size={13} className="me-1.5" />{addLabel}
-        </Button>
+        <RepeatRowAdd label={AdminI18n.t('ui.array.add')} onAdd={this.onAdd} />
       </div>
     );
   }

@@ -457,8 +457,7 @@
       "record": "ieraksts"
     },
     "array": {
-      "addNew": "Pievienot jaunu: {{label}}",
-      "item": "Vienums",
+      "add": "Pievienot",
       "reorder": "Velciet, lai pārvietotu, vai izmantojiet bultiņas"
     },
     "stepper": {

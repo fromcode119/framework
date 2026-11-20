@@ -457,8 +457,7 @@
       "record": "レコード"
     },
     "array": {
-      "addNew": "{{label}}を追加",
-      "item": "項目",
+      "add": "追加",
       "reorder": "ドラッグするか矢印キーで移動"
     },
     "stepper": {

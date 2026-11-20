@@ -457,8 +457,7 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Add New {{label}}",
-      "item": "Item",
+      "add": "Add",
       "reorder": "Drag to move, or use the arrow keys"
     },
     "stepper": {

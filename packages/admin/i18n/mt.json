@@ -457,8 +457,7 @@
       "record": "rekord"
     },
     "array": {
-      "addNew": "Żid {{label}} Ġdid",
-      "item": "Element",
+      "add": "Żid",
       "reorder": "Kaxkar biex iċċaqlaq, jew uża l-vleġeġ"
     },
     "stepper": {

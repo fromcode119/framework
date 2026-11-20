@@ -457,8 +457,7 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Magdagdag ng Bagong {{label}}",
-      "item": "Item",
+      "add": "Idagdag",
       "reorder": "I-drag para ilipat, o gamitin ang arrow keys"
     },
     "stepper": {

@@ -69,8 +69,8 @@ export class RuntimeConstants {
     // pair that used to live here proved it by shipping a hardcoded currency list nothing configured.
     // A domain control belongs to the plugin that owns the domain, which registers its own component
     // and is selected by name through a field's `admin.component`.
-    'CodeEditor', 'VisualMenuField', 'RepeatRow',
-    'RepeatRowGrip', 'Icon', 'ThemeContext', 'ThemeProvider',
+    'CodeEditor', 'VisualMenuField', 'RepeatRow', 'RepeatRowGrip', 'RepeatRowAdd',
+    'Icon', 'ThemeContext', 'ThemeProvider',
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
     'AdminServices', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',

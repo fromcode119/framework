@@ -457,8 +457,7 @@
       "record": "registo"
     },
     "array": {
-      "addNew": "Adicionar {{label}}",
-      "item": "Item",
+      "add": "Adicionar",
       "reorder": "Arraste para mover ou use as setas"
     },
     "stepper": {

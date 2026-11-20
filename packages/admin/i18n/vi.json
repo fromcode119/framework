@@ -457,8 +457,7 @@
       "record": "bản ghi"
     },
     "array": {
-      "addNew": "Thêm {{label}} mới",
-      "item": "Mục",
+      "add": "Thêm",
       "reorder": "Kéo để di chuyển, hoặc dùng phím mũi tên"
     },
     "stepper": {

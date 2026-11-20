@@ -108,7 +108,7 @@ export class DateTimePickerPopover extends PureReactor {
                 aria-label={AdminI18n.t('ui.date.chooseMonth')}
               >
                 <span>{DateTimePickerConstants.monthLabels()[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
-                <FrameworkIcons.Down size={15} className={`transition-transform duration-150 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
+                <FrameworkIcons.ChevronDown size={15} className={`transition-transform duration-150 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
               </button>
               <button
                 type="button"

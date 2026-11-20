@@ -457,8 +457,7 @@
       "record": "rekaman"
     },
     "array": {
-      "addNew": "Tambah {{label}} Baru",
-      "item": "Item",
+      "add": "Tambah",
       "reorder": "Seret untuk memindahkan, atau gunakan tombol panah"
     },
     "stepper": {

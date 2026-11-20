@@ -457,8 +457,7 @@
       "record": "zapis"
     },
     "array": {
-      "addNew": "Dodaj novo: {{label}}",
-      "item": "Stavka",
+      "add": "Dodaj",
       "reorder": "Povucite za premještanje ili koristite strelice"
     },
     "stepper": {

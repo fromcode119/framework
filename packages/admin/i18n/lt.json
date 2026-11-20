@@ -457,8 +457,7 @@
       "record": "įrašas"
     },
     "array": {
-      "addNew": "Pridėti naują: {{label}}",
-      "item": "Elementas",
+      "add": "Pridėti",
       "reorder": "Vilkite, kad perkeltumėte, arba naudokite rodykles"
     },
     "stepper": {

@@ -457,8 +457,7 @@
       "record": "rekord"
     },
     "array": {
-      "addNew": "Dodaj: {{label}}",
-      "item": "Element",
+      "add": "Dodaj",
       "reorder": "Przeciągnij, aby przenieść, lub użyj strzałek"
     },
     "stepper": {

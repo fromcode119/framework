@@ -457,8 +457,7 @@
       "record": "regjistrim"
     },
     "array": {
-      "addNew": "Shto {{label}} të ri",
-      "item": "Element",
+      "add": "Shto",
       "reorder": "Tërhiqni për ta lëvizur, ose përdorni shigjetat"
     },
     "stepper": {

@@ -2185,6 +2185,17 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
    taller than its fields. A nested row (a menu item under another) is moved in by its depth, which the
    component sets as --fc-repeat-depth. */
 .fc-repeat { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+/* RepeatRowAdd: in a field, "Add" sits at the end of the field's own title line and the rows follow
+   below, as in the reference — the title says what is added. It stays in the flow where there is no
+   title line, or where that line already ends in something (a lock, a language switch).
+   A block of several lists under their own small headings marks each one `fc-repeat-titled`. */
+.fc-field-row:has(.fc-repeat__add), .fc-repeat-titled { position: relative; }
+.fc-field-row:has(> .fc-field-head) .fc-repeat__add,
+.fc-repeat-titled .fc-repeat__add { position: absolute; inset-block-start: -3px; inset-inline-end: 0; }
+.fc-field-row:has(> .fc-field-head > :last-child:not(:empty)) .fc-repeat__add { position: static; }
+/* The button is taller than the title line, so the line keeps a gap below it before the rows begin. */
+.fc-field-row:has(> .fc-field-head > :last-child:empty):has(.fc-repeat__add) > .fc-field-head { margin-block-end: 12px; }
+.fc-repeat-titled > .fc-repeat:has(.fc-repeat__add) { padding-block-start: 6px; }
 .fc-repeat__rows { display: flex; flex-direction: column; gap: 8px; width: 100%; margin: 0; padding: 0; list-style: none; }
 .fc-repeat__row {
   display: grid;
@@ -3899,11 +3910,11 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 
 /* Fields and the button that acts on them, on one line: the fields share the room, a short choice
    keeps its width, and the button is as tall as a field and stands on the fields' own baseline. */
-.fc-field-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
-.fc-field-row__grow { flex: 1 1 12rem; min-width: 0; }
-.fc-field-row__pick { flex: 0 0 11rem; }
-.fc-field-row > .fc-btn { flex: none; height: var(--fc-field-h); }
-@media (max-width: 640px) { .fc-field-row__pick, .fc-field-row > .fc-btn { flex: 1 1 100%; } }
+.fc-inline-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.fc-inline-fields__grow { flex: 1 1 12rem; min-width: 0; }
+.fc-inline-fields__pick { flex: 0 0 11rem; }
+.fc-inline-fields > .fc-btn { flex: none; height: var(--fc-field-h); }
+@media (max-width: 640px) { .fc-inline-fields__pick, .fc-inline-fields > .fc-btn { flex: 1 1 100%; } }
 
 /* A field that takes the whole line of a two-column form. */
 .fc-form-grid__wide { grid-column: 1 / -1; }

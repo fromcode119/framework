@@ -457,8 +457,7 @@
       "record": "kayıt"
     },
     "array": {
-      "addNew": "Yeni {{label}} Ekle",
-      "item": "Öğe",
+      "add": "Ekle",
       "reorder": "Taşımak için sürükleyin veya ok tuşlarını kullanın"
     },
     "stepper": {

@@ -457,8 +457,7 @@
       "record": "zapis"
     },
     "array": {
-      "addNew": "Dodaj: {{label}}",
-      "item": "Element",
+      "add": "Dodaj",
       "reorder": "Povlecite za premik ali uporabite puščice"
     },
     "stepper": {

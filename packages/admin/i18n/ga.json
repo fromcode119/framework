@@ -457,8 +457,7 @@
       "record": "taifead"
     },
     "array": {
-      "addNew": "Cuir {{label}} Nua Leis",
-      "item": "Mír",
+      "add": "Cuir leis",
       "reorder": "Tarraing chun bogadh, nó úsáid na saigheadeochracha"
     },
     "stepper": {

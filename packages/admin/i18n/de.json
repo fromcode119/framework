@@ -457,8 +457,7 @@
       "record": "Datensatz"
     },
     "array": {
-      "addNew": "{{label}} hinzufügen",
-      "item": "Eintrag",
+      "add": "Hinzufügen",
       "reorder": "Zum Verschieben ziehen oder Pfeiltasten verwenden"
     },
     "stepper": {

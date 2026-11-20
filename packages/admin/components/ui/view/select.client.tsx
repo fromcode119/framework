@@ -225,8 +225,8 @@ export class Select extends Reactor {
             {isLoading ? (
               <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
             ) : (
-              <span className={`transition-transform duration-150 ${isOpen ? 'rotate-180' : ''} ${chevronThemeClasses}`}>
-                <FrameworkIcons.Down size={15} />
+              <span className={chevronThemeClasses}>
+                <FrameworkIcons.ChevronsUpDown size={14} />
               </span>
             )}
           </span>

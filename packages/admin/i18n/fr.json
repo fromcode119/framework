@@ -457,8 +457,7 @@
       "record": "enregistrement"
     },
     "array": {
-      "addNew": "Ajouter : {{label}}",
-      "item": "Élément",
+      "add": "Ajouter",
       "reorder": "Faites glisser pour déplacer, ou utilisez les flèches"
     },
     "stepper": {

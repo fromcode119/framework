@@ -457,8 +457,7 @@
       "record": "post"
     },
     "array": {
-      "addNew": "Tilføj ny {{label}}",
-      "item": "Element",
+      "add": "Tilføj",
       "reorder": "Træk for at flytte, eller brug piletasterne"
     },
     "stepper": {

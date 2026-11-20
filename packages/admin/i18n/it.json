@@ -457,8 +457,7 @@
       "record": "record"
     },
     "array": {
-      "addNew": "Aggiungi {{label}}",
-      "item": "Elemento",
+      "add": "Aggiungi",
       "reorder": "Trascina per spostare o usa i tasti freccia"
     },
     "stepper": {

@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { RepeatRow } from '@/components/ui/view/repeat-row.client';
 import { RepeatRowGrip } from '@/components/ui/view/repeat-row-grip.client';
+import { RepeatRowAdd } from '@/components/ui/view/repeat-row-add.client';
 import { Input } from '@/components/ui/view/input.client';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { VisualMenuField } from '@/components/ui/view/visual-menu-field.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -104,11 +104,11 @@ export class FieldsRichKit {
       {
         slug: 'repeat-row', name: 'RepeatRow and VisualMenuField', group: 'Forms',
         intro: 'One row of a group that repeats, when each row holds several fields: a raised card with each field’s words on the left of its control, in a column only as wide as the words, and the row’s tools on the right — remove, and the handle that moves it. The handle is dragged, or focused and moved with the arrow keys, so there is no column of arrows. A number in a row is a plain field. VisualMenuField is a menu built from these rows, nested by depth.',
-        from: "import { RepeatRow, RepeatRowGrip, VisualMenuField } from '@fromcode119/sdk/admin';",
+        from: "import { RepeatRow, RepeatRowAdd, RepeatRowGrip, VisualMenuField } from '@fromcode119/sdk/admin';",
         examples: [
           {
             title: 'Rows in a list',
-            text: 'The rows go in `<ul className="fc-repeat__rows">` inside `.fc-repeat`, with the Add button after them. Tools are `.fc-repeat__tool` buttons, each with a label; two at most stand in a column, so they never make the row taller than its fields.',
+            text: 'The rows go in `<ul className="fc-repeat__rows">` inside `.fc-repeat`, followed by RepeatRowAdd. In a field, Add moves up to the end of the field’s title line and the rows follow below; a list with its own small heading is wrapped in `.fc-repeat-titled` for the same placement. Tools are `.fc-repeat__tool` buttons, each with a label; two at most stand in a column, so they never make the row taller than its fields.',
             demo: (
               <div className="fc-kitdoc__cell--wide">
                 <KitPlay initial={[{ from: 1, price: 10 }, { from: 10, price: 8.5 }]}>
@@ -123,6 +123,8 @@ export class FieldsRichKit {
                       return to;
                     };
                     return (
+                      <div className="fc-repeat-titled space-y-2">
+                      <span className="fc-field-label">Quantity pricing</span>
                       <div className="fc-repeat">
                         {rows.length ? (
                           <ul className="fc-repeat__rows">
@@ -141,14 +143,15 @@ export class FieldsRichKit {
                             ))}
                           </ul>
                         ) : null}
-                        <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} icon={<FrameworkIcons.Plus size={13} />} onClick={() => set([...rows, { from: '', price: '' }])}>Add quantity price</Button>
+                        <RepeatRowAdd label="Add" onAdd={() => set([...rows, { from: '', price: '' }])} />
+                      </div>
                       </div>
                     );
                   }}
                 </KitPlay>
               </div>
             ),
-            code: '<ul className="fc-repeat__rows">\n  <RepeatRow\n    fields={[{ key: \'from\', label: \'From quantity\', control: <NumberStepper … /> }]}\n    tools={<>\n      <button className="fc-repeat__tool" aria-label="Delete">…</button>\n      <RepeatRowGrip label="…" onMove={(key: string) => newIndexOrNull} />\n    </>} />\n</ul>',
+            code: '<div className="fc-repeat-titled">\n<span className="fc-field-label">Quantity pricing</span>\n<div className="fc-repeat">\n<ul className="fc-repeat__rows">\n  <RepeatRow\n    fields={[{ key: \'from\', label: \'From quantity\', control: <NumberStepper … /> }]}\n    tools={<>\n      <button className="fc-repeat__tool" aria-label="Delete">…</button>\n      <RepeatRowGrip label="…" onMove={(key: string) => newIndexOrNull} />\n    </>} />\n</ul>\n<RepeatRowAdd label="Add" onAdd={addRow} />\n</div>\n</div>',
           },
           {
             title: 'A row without words',
@@ -180,6 +183,7 @@ export class FieldsRichKit {
           { name: 'depth', type: 'number', initial: '0', does: 'How far the row is nested (24px a level).' },
           { name: 'dragging, draggable, onDrag…', type: 'boolean, handlers', does: 'Reordering by dragging the row (draggable while the pointer is on the grip).' },
           { name: 'RepeatRowGrip onMove', type: '(key) => number | null', does: 'An arrow key pressed on the handle; answer the row’s new place, and focus follows it.' },
+          { name: 'RepeatRowAdd label, onAdd, disabled', type: 'string, () => void, boolean', does: 'The Add button of the list; on the field’s title line when there is one.' },
         ],
       },
     ];

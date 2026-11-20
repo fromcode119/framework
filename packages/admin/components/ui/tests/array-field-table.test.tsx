@@ -27,7 +27,7 @@ describe('a row list drawn as a table', () => {
   it('shows no empty table before the first row, only the way to add one', () => {
     render(<ArrayField field={videos} value={[]} onChange={() => {}} collectionSlug="products" />);
     expect(screen.queryByRole('table')).toBeNull();
-    expect(screen.getByRole('button', { name: /Videos/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Add$/i })).toBeTruthy();
   });
 
   it('keeps the stacked layout when the field does not ask for a table', () => {

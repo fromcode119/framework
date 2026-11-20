@@ -457,8 +457,7 @@
       "record": "tietue"
     },
     "array": {
-      "addNew": "Lisää uusi: {{label}}",
-      "item": "Kohde",
+      "add": "Lisää",
       "reorder": "Siirrä vetämällä tai nuolinäppäimillä"
     },
     "stepper": {
