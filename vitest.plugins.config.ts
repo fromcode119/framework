@@ -148,6 +148,7 @@ export default defineConfig({
             // A new package is collected by NOTHING until it appears here — every comment above this
             // line is a package that was green by default for exactly that reason.
             glob('packages/extension-builder/**/*.test.ts'),
+            glob('packages/typescript-multiple-inheritance/**/*.test.ts'),
             glob('packages/sources/**/*.test.ts'),
             glob('packages/marketplace-client/**/*.test.ts'),
             glob('packages/sdk/**/*.test.ts'),

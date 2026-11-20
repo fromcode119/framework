@@ -11,28 +11,36 @@
  *
  * Commas inside generics/parens are NOT separators — a generic base with a comma inside it is a SINGLE base. Getting
  * that wrong flipped 333 classes into interfaces once already, so the split is depth-aware, not a regex.
+ *
+ * The `>` of an arrow (`=>`) closes nothing. Counted as a bracket, a props type such as
+ * `extends Base<{ onChange: () => void; map: Record<string, string> }>` left the scan below zero: the
+ * clause ran on into the class body, whose commas then read as further bases, and a single-base class
+ * was rewritten into a `Typor.mixin(...)` that does not parse.
  */
 export class TyporSyntaxPlugin {
   static readonly IMPORT_LINE = "import { Typor } from '@fromcode119/typescript-multiple-inheritance';";
 
-  /** Split an extends clause on TOP-LEVEL commas only (ignoring <>, (), [], {} and strings). */
+  /** True when the `>` at `index` is the head of an arrow (`=>`), which closes no bracket. */
+  private static isArrow(text: string, index: number): boolean {
+    return text[index] === '>' && text[index - 1] === '=';
+  }
+
+  /**
+   * Split an extends clause on TOP-LEVEL commas only (ignoring <>, (), [], {}, arrows, comments and strings).
+   * The commas are found on the masked copy, so a comma or an apostrophe in a comment or a string between
+   * the bases can never split them or open a quote.
+   */
   static splitBases(clause: string): string[] {
+    const scan = TyporSyntaxPlugin.maskNonCode(clause);
     const parts: string[] = [];
-    let depth = 0, quote: string | null = null, current = '';
-    for (let i = 0; i < clause.length; i += 1) {
-      const ch = clause[i];
-      if (quote) {
-        current += ch;
-        if (ch === quote && clause[i - 1] !== '\\') quote = null;
-        continue;
-      }
-      if (ch === '"' || ch === "'" || ch === '`') { quote = ch; current += ch; continue; }
+    let depth = 0, from = 0;
+    for (let i = 0; i < scan.length; i += 1) {
+      const ch = scan[i];
       if (ch === '<' || ch === '(' || ch === '[' || ch === '{') depth += 1;
-      else if (ch === '>' || ch === ')' || ch === ']' || ch === '}') depth -= 1;
-      if (ch === ',' && depth === 0) { parts.push(current.trim()); current = ''; continue; }
-      current += ch;
+      else if ((ch === '>' && !TyporSyntaxPlugin.isArrow(scan, i)) || ch === ')' || ch === ']' || ch === '}') depth -= 1;
+      else if (ch === ',' && depth === 0) { parts.push(clause.slice(from, i).trim()); from = i + 1; }
     }
-    if (current.trim()) parts.push(current.trim());
+    parts.push(clause.slice(from).trim());
     return parts.filter(Boolean);
   }
 
@@ -93,7 +101,7 @@ export class TyporSyntaxPlugin {
       for (; i < scan.length; i += 1) {
         const ch = scan[i];
         if (ch === '<' || ch === '(' || ch === '[') depth += 1;
-        else if (ch === '>' || ch === ')' || ch === ']') depth -= 1;
+        else if ((ch === '>' && !TyporSyntaxPlugin.isArrow(scan, i)) || ch === ')' || ch === ']') depth -= 1;
         else if (ch === '{' && depth === 0) { end = i; break; }
         else if (ch === '{') depth += 1;
         else if (ch === '}') depth -= 1;
