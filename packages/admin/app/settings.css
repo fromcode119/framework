@@ -23,9 +23,6 @@
   --fc-settings-control-narrow: 160px;
   /* A control that takes its own row: as wide as its text needs, not as wide as the screen is. */
   --fc-settings-control-wide: 640px;
-  --fc-settings-bar-bg: var(--fc-text);
-  --fc-settings-bar-text: var(--fc-surface);
-  --fc-settings-bar-shadow: 0 8px 24px rgb(15 23 42 / 0.18);
   --fc-settings-icon-tile: 32px;
   --fc-settings-meta-width: 150px;
   /* The settings column: centred, no wider than a row can be read across. */
@@ -192,21 +189,8 @@
   .fc-settings-fields > .fc-field-row .fc-field-head { margin-bottom: 6px; }
 }
 
-/* ── Save bar: shown only while something is changed ──────────────────────────────────────────── */
-.fc-settings-savebar {
-  position: sticky; bottom: 12px; z-index: 30;
-  display: flex; align-items: center; gap: 8px;
-  /* Its own width up to the cap: inside a flex column (a site's page) auto margins alone shrank it to its words. */
-  width: 100%; max-width: 620px; margin: 16px auto 0; padding: 8px 8px 8px 16px;
-  border-radius: 12px; background: var(--fc-settings-bar-bg); color: var(--fc-settings-bar-text);
-  box-shadow: var(--fc-settings-bar-shadow);
-}
-.fc-settings-savebar__text { flex: 1; font-size: var(--fc-settings-text); font-weight: var(--fc-weight-strong); }
-.fc-settings-savebar__reset {
-  height: 32px; padding: 0 12px; border-radius: 8px; border: 0; background: transparent;
-  color: inherit; font-size: var(--fc-settings-text); font-weight: var(--fc-weight-strong); opacity: 0.8;
-}
-.fc-settings-savebar__reset:hover { opacity: 1; }
+/* ── Save bar: the console's command bar (admin.css); this is only the room it needs ───────────── */
+.fc-settings-savebar-space { flex: none; height: 72px; }
 
 /* ── The quiet line saying where the settings this scope does not show live ───────────────────── */
 .fc-scope-notice {
