@@ -38,7 +38,7 @@ export class SecondarySidebarMobile extends PureReactor {
         aria-expanded={this.isOpen}
         aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
         onClick={this.onOpen}
-        className={`fixed z-[170] ${AdminClass.SURFACE} fc-tone-text hover:border-indigo-400/70 transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 end-6 h-12 w-12' : 'bottom-6 start-[84px] h-10 w-10'}`}
+        className={`fixed z-[170] ${AdminClass.SURFACE} fc-tone-text fc-tone-hover-brand-line transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 end-6 h-12 w-12' : 'bottom-6 start-[84px] h-10 w-10'}`}
       >
         <FrameworkIcons.Right size={18} />
       </button>

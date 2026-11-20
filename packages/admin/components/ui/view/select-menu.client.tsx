@@ -76,11 +76,7 @@ export class SelectMenu extends PureReactor {
               // The sheet every menu in this console opens in. It used to be its own object: a 12px
               // corner, a blurred translucent pane and shadow-2xl, so the list a field opened looked
               // nothing like the list the card's menu opened two rows above it.
-              className={`fc-menu-sheet max-h-[300px] flex flex-col border shadow-lg overflow-hidden ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-900 border-slate-800 shadow-black/40'
-                  : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
-              }`}
+              className="fc-menu-sheet max-h-[300px] flex flex-col overflow-hidden"
             >
               {searchable && (
                 <div className="p-1 pb-2 border-b fc-tone-line">

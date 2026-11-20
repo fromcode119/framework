@@ -34,7 +34,7 @@ export class DashboardFooter extends PureReactor {
             </div>
 
             <div className="flex items-center gap-4 fc-size-xs font-medium tracking-tight fc-tone-muted">
-              <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="fc-tone-hover-brand transition-colors">GitHub</a>
             </div>
           </div>
         </div>

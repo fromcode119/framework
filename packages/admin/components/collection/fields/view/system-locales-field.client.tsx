@@ -111,7 +111,7 @@ export class SystemLocalesField extends Reactor {
                   type="button"
                   onClick={() => this.moveEarlier(option.value)}
                   title={AdminI18n.t('ui.locales.moveEarlier')}
-                  className="ms-0.5 px-1 py-1 fc-size-xs fc-tone-muted hover:text-indigo-500 transition-colors"
+                  className="ms-0.5 px-1 py-1 fc-size-xs fc-tone-muted fc-tone-hover-brand transition-colors"
                 >
                   ↑
                 </button>

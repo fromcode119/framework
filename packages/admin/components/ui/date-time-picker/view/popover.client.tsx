@@ -78,10 +78,7 @@ export class DateTimePickerPopover extends PureReactor {
               zIndex: 9999
             }}
             // The sheet every menu in this console opens in, not a blurred pane of its own.
-            className={`fc-menu-sheet border p-2 shadow-lg ${
-              theme === ThemeMode.DARK
-                ? 'bg-slate-900 border-slate-800 shadow-black/40'
-                : 'bg-white border-slate-200 shadow-slate-900/[0.08]'}`}
+            className="fc-menu-sheet p-2"
           >
             <div className="fc-cal__sum">
               <div className="min-w-0">

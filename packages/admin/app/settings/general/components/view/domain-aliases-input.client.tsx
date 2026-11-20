@@ -85,11 +85,7 @@ export class DomainAliasesInput extends Reactor {
           {value.map((alias) => (
             <span
               key={alias}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg fc-size-xs font-medium tracking-tight ${
-                isDark
-                  ? 'bg-slate-800 text-slate-200 border border-slate-700'
-                  : 'bg-slate-100 text-slate-700 border border-slate-200'
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg fc-size-xs font-medium tracking-tight fc-tone-raised fc-tone-text border fc-tone-line`}
             >
               <FrameworkIcons.Globe size={11} className="opacity-50" />
               {alias}

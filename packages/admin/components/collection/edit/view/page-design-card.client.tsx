@@ -60,7 +60,7 @@ export class PageDesignCard extends Reactor {
         </p>
         <AdminLink
           href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.PLUGINS.DETAIL(design.pluginSlug))}
-          className="mt-3 inline-block fc-size-xs font-medium fc-tone-brand hover:text-indigo-500"
+          className="mt-3 inline-block fc-size-xs font-medium fc-tone-brand fc-tone-hover-brand"
         >
           {AdminI18n.t('collection.pageDesign.open', { plugin: design.pluginName })}
         </AdminLink>

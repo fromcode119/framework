@@ -46,7 +46,7 @@ export class DashboardAttentionRow extends AdminComponent {
           <button
             type="button"
             onClick={this.handleAction}
-            className="shrink-0 fc-size-xs font-medium fc-tone-brand hover:text-indigo-500"
+            className="shrink-0 fc-size-xs font-medium fc-tone-brand fc-tone-hover-brand"
           >
             {String(item.actionLabel)}
           </button>

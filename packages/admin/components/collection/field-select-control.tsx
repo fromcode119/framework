@@ -75,11 +75,7 @@ export class FieldSelectControl extends PureReactor {
             {selectedValues.map((selected) => (
               <span
                 key={selected}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg fc-size-xs font-medium border ${
-                  theme === ThemeMode.DARK
-                    ? 'bg-slate-900 border-slate-700 text-slate-200'
-                    : 'bg-slate-50 border-slate-200 text-slate-700'
-                }`}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg fc-size-xs font-medium border fc-tone-raised fc-tone-line fc-tone-text`}
               >
                 <span>{optionValueToLabel.get(selected) || selected}</span>
                 {!isFieldReadOnly && (

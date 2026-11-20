@@ -46,11 +46,7 @@ export class DateTimePickerTimePopover extends PureReactor {
         <div
           ref={popoverRef}
           style={{ position: 'fixed', top: coords.top, left: coords.left, width: 'min(300px, calc(100vw - 32px))', maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', overflowX: 'hidden', zIndex: 9999 }}
-          className={`fc-menu-sheet border p-2 shadow-lg ${
-            dark
-              ? 'bg-slate-900 border-slate-800 shadow-black/40'
-              : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
-          }`}
+          className="fc-menu-sheet p-2"
         >
           <div className="flex items-center justify-center">
             <div className="flex shrink-0 items-end gap-1.5">

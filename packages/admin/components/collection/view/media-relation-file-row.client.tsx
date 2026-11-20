@@ -36,7 +36,7 @@ export class MediaRelationFileRow extends PureReactor {
           onClick={this.handleRemove}
           aria-label={AdminI18n.t('ui.media.remove', { name: filename })}
           title={AdminI18n.t('ui.media.remove', { name: filename })}
-          className="shrink-0 w-8 h-8 inline-flex items-center justify-center rounded fc-tone-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+          className="shrink-0 w-8 h-8 inline-flex items-center justify-center rounded fc-tone-muted fc-tone-hover-danger fc-tone-hover-danger-soft"
         >
           <FrameworkIcons.X size={14} />
         </button>

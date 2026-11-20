@@ -36,13 +36,13 @@ export class FilterChips extends PureReactor {
               type="button"
               onClick={() => filter.reset()}
               aria-label={AdminI18n.t('ui.listToolbar.removeFilter', { label: filter.label })}
-              className="w-5 h-5 rounded-full inline-flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-500/25"
+              className="w-5 h-5 rounded-full inline-flex items-center justify-center fc-tone-hover-brand-soft"
             >
               <FrameworkIcons.X size={12} />
             </button>
           </span>
         ))}
-        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap fc-size-xs font-medium fc-tone-muted hover:text-indigo-600">
+        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap fc-size-xs font-medium fc-tone-muted fc-tone-hover-brand">
           {AdminI18n.t('ui.listToolbar.clearFilters')}
         </button>
       </div>

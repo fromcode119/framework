@@ -112,7 +112,7 @@ export class SidebarNotifications extends AdminComponent {
           {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium fc-tone-brand transition-colors hover:text-indigo-700 dark:hover:text-indigo-300">
+          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium fc-tone-brand transition-colors fc-tone-hover-brand">
             {AdminI18n.t('shell.notifications.markAllRead')}
           </button>
         ) : null}

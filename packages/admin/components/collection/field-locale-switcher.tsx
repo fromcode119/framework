@@ -46,11 +46,7 @@ export class FieldLocaleSwitcher extends PureReactor {
           <div
             role="menu"
             // The sheet every other menu in this console opens in, at the card's corner.
-            className={`fc-menu-sheet absolute end-0 mt-2 min-w-[220px] border shadow-lg z-30 ${
-              theme === ThemeMode.DARK
-                ? 'bg-slate-900 border-slate-800 shadow-black/40'
-                : 'bg-white border-slate-200 shadow-slate-900/[0.08]'
-            }`}
+            className="fc-menu-sheet absolute end-0 mt-2 min-w-[220px] z-30"
           >
             {localeRegistry.length ? null : (
               // A site with no languages configured still saves text under a fallback code, so the chip

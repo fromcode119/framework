@@ -1436,6 +1436,11 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-panel__list { display: flex; flex-direction: column; gap: 1px; }
 .fc-nav-panel .fc-nav-sub__item { min-height: var(--fc-nav-row); padding-inline: 10px; }
 .fc-nav-panel .fc-nav-sub__item--active { background: var(--fc-nav-active); }
+/* A link row in the secondary panel: the nav's own hover and current-page treatment, not a fill of its own. */
+.fc-panel-link { color: var(--fc-nav-text); }
+.fc-panel-link:hover { background: var(--fc-nav-hover); }
+.fc-panel-link--on, .fc-panel-link--on:hover { background: var(--fc-nav-active); box-shadow: var(--fc-card-shadow); }
+.fc-panel-link__icon, .fc-panel-link__hint { color: var(--fc-text-muted); }
 .fc-nav-panel__group { display: flex; flex-direction: column; gap: 1px; margin-top: 8px; }
 .fc-nav-panel__group-title { margin: 0 0 2px; padding-inline: 10px; font-size: 11px; font-weight: var(--fc-weight-strong); color: var(--fc-nav-muted); }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
@@ -3742,6 +3747,13 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-tone-hover:hover { background-color: var(--fc-surface-muted); }
 .fc-tone-hover-text:hover { color: var(--fc-text); }
 .fc-tone-hover-danger:hover { color: var(--fc-danger); }
+.fc-tone-hover-danger-soft:hover { background-color: var(--fc-danger-soft); }
+.fc-tone-hover-brand:hover, .group:hover .fc-tone-group-brand { color: var(--fc-brand); }
+html.dark .fc-tone-hover-brand:hover, html.dark .group:hover .fc-tone-group-brand { color: color-mix(in srgb, var(--fc-brand) 55%, #fff); }
+.fc-tone-hover-brand-soft:hover { background-color: color-mix(in srgb, var(--fc-brand) 10%, transparent); }
+.fc-tone-hover-brand-line:hover { border-color: color-mix(in srgb, var(--fc-brand) 35%, transparent); }
+.fc-tone-hover-brand-strong:hover { background-color: color-mix(in srgb, var(--fc-brand) 85%, #000); }
+.group:hover .fc-tone-group-brand-solid { background-color: var(--fc-brand); color: var(--fc-brand-contrast); }
 /* The console's type steps for hand-laid markup, so a size is a token rather than a number per screen. */
 .fc-size-xs { font-size: var(--fc-text-xs); }
 .fc-size-sm { font-size: var(--fc-text-sm); }
