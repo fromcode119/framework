@@ -20,10 +20,14 @@ import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
+import { NotificationContextStore } from '@/components/view/notification-context-store.client';
+import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { CollectionEditControllerBuilder } from '@/components/collection/edit/view/collection-edit-controller-builder.client';
 import { RecordSkeleton } from '@/components/collection/edit/view/record-skeleton.client';
 
 export class CollectionEditPageView extends Reactor {
+  static contextType = NotificationContextStore.context;
+  declare context: INotificationContextType | undefined;
   @prop declare pluginSlug: string;
   @prop declare slug: string;
   @prop declare id: string;
@@ -46,6 +50,20 @@ export class CollectionEditPageView extends Reactor {
   @state showDeleteConfirm = false;
   /** Form vs JSON view. Owned here; switched from the header's record menu. */
   @state advancedView = false;
+
+  /**
+   * Says something worked (a save, a restore, an unlock). The console's own record page says it in a notice in the corner that leaves by
+   * itself; it was a bar in the page that pushed the record down and stayed there. An appearance that draws its
+   * own editor shows `notice` where it chooses, so it still gets the message as the page's status.
+   */
+  announce(message: string): void {
+    if (AdminPageRegistry.shared.resolve(this.appearanceId, AdminPageKeys.COLLECTION_EDIT)) {
+      this.status = { type: NotificationType.SUCCESS, message };
+      return;
+    }
+    this.status = null;
+    this.context?.notify(NotificationType.SUCCESS, AdminI18n.t('common.success'), message);
+  }
 
   @bound private setAdvancedView(next: boolean): void {
     this.advancedView = next;

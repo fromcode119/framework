@@ -114,8 +114,8 @@ export class CollectionEditPageHandlers {
         readOnlyOverrideFields: {},
         readOnlyOverrideGrant: '',
         ...(saved ? { formData: saved, pristineFormData: saved } : { pristineFormData: { ...self.state.formData } }),
-        status: { type: NotificationType.SUCCESS, message: AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated') },
       });
+      self.announce(AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated'));
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
       return result;
@@ -197,7 +197,8 @@ export class CollectionEditPageHandlers {
     self.setState({ restoringPermanently: true });
     try {
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, self.props.id, version), {});
-      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), status: { type: NotificationType.SUCCESS, message: AdminI18n.t('collection.edit.hardRestored', { version }) }, selectedRevision: null });
+      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), selectedRevision: null });
+      self.announce(AdminI18n.t('collection.edit.hardRestored', { version }));
       CollectionEditPageHandlers.fetchRevisions(self, 1);
     } catch (err: any) {
       console.error('Hard restore failed:', err);
@@ -281,9 +282,9 @@ export class CollectionEditPageHandlers {
       self.setState({
         readOnlyOverrideGrant: grant,
         readOnlyOverrideFields: unlocked,
-        status: { type: NotificationType.SUCCESS, message: count > 1 ? AdminI18n.t('collection.edit.unlockedMany', { count }) : AdminI18n.t('collection.edit.unlockedOne', { label: target.label }) },
         readOnlyOverridePasswordTarget: null,
       });
+      self.announce(count > 1 ? AdminI18n.t('collection.edit.unlockedMany', { count }) : AdminI18n.t('collection.edit.unlockedOne', { label: target.label }));
     } catch (err: any) {
       self.setState({ status: { type: NotificationType.ERROR, message: err?.message || AdminI18n.t('collection.edit.passwordFailed') } });
     } finally {
