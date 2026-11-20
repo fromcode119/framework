@@ -3,13 +3,14 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ChangeEvent, ReactNode } from 'react';
 import { Reactor, prop, bound, ref } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
-import { Search, Upload, Loader2 } from 'lucide-react';
+import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
-import { Input } from '@/components/ui/view/input.client';
+import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { PageBar } from '@/components/ui/view/page-bar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { AdminTypography } from '@/lib/typography';
 
-/** Search box plus the upload control, including the hidden file input it drives. */
+/** Search on the left, upload on the right — the library's own bar — with the hidden file input it drives. */
 export class MediaPickerToolbar extends Reactor {
   @prop declare search: string;
   @prop declare onSearchChange: (value: string) => void;
@@ -24,10 +25,6 @@ export class MediaPickerToolbar extends Reactor {
 
   @ref declare fileInputRef: Ref<HTMLInputElement>;
 
-  @bound private handleSearchChange(event: ChangeEvent<HTMLInputElement>): void {
-    this.onSearchChange(event.target.value);
-  }
-
   @bound private openFilePicker(): void {
     this.fileInputRef.current?.click();
   }
@@ -35,35 +32,21 @@ export class MediaPickerToolbar extends Reactor {
   @bound private handleFileChange(event: ChangeEvent<HTMLInputElement>): void {
     const file = event.target.files?.[0];
     if (file) this.onFile(file);
+    event.target.value = '';
   }
 
   render(): ReactNode {
-    const { search, uploading, canUpload, uploadAccept, filterLabel } = this;
-
     return (
-      <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
-        <SearchField className="flex-1 min-w-[12rem]" placeholder={AdminI18n.t('mediaPicker.searchMedia')} value={search} onChange={this.onSearchChange} />
-        <input
-          type="file"
-          ref={this.fileInputRef}
-          className="hidden"
-          onChange={this.handleFileChange}
-          accept={uploadAccept}
-        />
-        {filterLabel ? (
-          <span className={`shrink-0 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 ${AdminTypography.TYPOGRAPHY.LABEL}`}>
-            {AdminI18n.t('mediaPicker.showingOnly', { types: filterLabel })}
-          </span>
+      <PageBar lead={<SearchField placeholder={AdminI18n.t('mediaPicker.searchMedia')} value={this.search} onChange={this.onSearchChange} />}>
+        {this.filterLabel ? <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('mediaPicker.showingOnly', { types: this.filterLabel })}</Badge> : null}
+        <input type="file" ref={this.fileInputRef} hidden onChange={this.handleFileChange} accept={this.uploadAccept} />
+        {this.canUpload ? (
+          <Button variant={ButtonVariant.SECONDARY} onClick={this.openFilePicker} isLoading={this.uploading} disabled={this.uploading}>
+            <FrameworkIcons.Upload size={14} />
+            {AdminI18n.t('mediaPicker.uploadNew')}
+          </Button>
         ) : null}
-        <Button
-          variant={ButtonVariant.PRIMARY}
-          onClick={this.openFilePicker}
-          disabled={uploading || !canUpload}
-        >
-          {uploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-          {AdminI18n.t('mediaPicker.uploadNew')}
-        </Button>
-      </div>
+      </PageBar>
     );
   }
 }

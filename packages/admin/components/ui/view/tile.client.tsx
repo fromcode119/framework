@@ -23,6 +23,8 @@ export class Tile extends PureReactor {
   @prop declare facts?: string;
   /** The picture's address. Without one — or when it cannot be loaded — `icon` stands in its place. */
   @prop declare picture?: string;
+  /** A video's address: drawn as its first frame, muted, where a picture would stand. */
+  @prop declare video?: string;
   @prop declare icon?: ReactNode;
   /** Badges drawn on the picture: what the thing is marked as. */
   @prop declare marks?: ReactNode;
@@ -45,7 +47,9 @@ export class Tile extends PureReactor {
           {this.onSelect ? <Checkbox checked={Boolean(this.selected)} onChange={this.onSelect} className={`${tile}__tick`} /> : null}
           {this.picture
             ? <img src={this.picture} alt="" onError={this.onPictureError} />
-            : <span className={`${tile}__icon`}>{this.icon}</span>}
+            : this.video
+              ? <video src={this.video} muted playsInline preload="metadata" onError={this.onPictureError} />
+              : <span className={`${tile}__icon`}>{this.icon}</span>}
           {this.marks ? <span className={`${tile}__marks`}>{this.marks}</span> : null}
         </div>
         <div className={`${tile}__foot`}>

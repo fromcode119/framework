@@ -33,6 +33,10 @@ export class FocusModal extends PureReactor {
   @prop declare cancelLabel?: string;
   @prop declare confirmDisabled?: boolean;
   @prop declare saving?: boolean;
+  /** What the buttons will act on, drawn at the start of the foot ("hero.jpg"). */
+  @prop declare footNote?: ReactNode;
+  /** For a grid of pictures rather than a form: the column takes up to 1120px instead of 720. */
+  @prop declare wide?: boolean;
   @prop declare children: ReactNode;
 
   componentDidMount(): void {
@@ -91,10 +95,11 @@ export class FocusModal extends PureReactor {
           </div>
           <div className={`${focus}__body`}>
             <div className={`${focus}__scroll`}>
-              <div className={`${focus}__form`}>{this.children}</div>
+              <div className={`${focus}__form${this.wide ? ` ${focus}__form--wide` : ''}`}>{this.children}</div>
             </div>
           </div>
           <div className={`${focus}__foot`}>
+            {this.footNote ? <span className={`${focus}__note`}>{this.footNote}</span> : null}
             <Button type="button" variant={ButtonVariant.OUTLINE} onClick={this.close} disabled={this.saving}>
               {this.cancelLabel ?? AdminI18n.t('common.cancel')}
             </Button>

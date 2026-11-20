@@ -57,6 +57,8 @@ export class OverlaysKit {
           { name: 'Dialog wide, foot', type: 'boolean, ReactNode', does: 'A wider box; the buttons.' },
           { name: 'EditSheet onSave, error, foot', type: 'function, string, ReactNode', does: 'Saving, what went wrong, a foot of its own.' },
           { name: 'FocusModal tabs, activeTab, onTab, confirmDisabled', type: 'steps', does: 'Steps across its head and whether it may be confirmed yet.' },
+          { name: 'FocusModal footNote', type: 'ReactNode', does: 'What the buttons will act on, at the start of the foot: the file chosen.' },
+          { name: 'FocusModal wide', type: 'boolean', initial: 'false', does: 'A grid of pictures rather than a form: the column takes up to 1120px instead of 720.' },
         ],
       },
       {

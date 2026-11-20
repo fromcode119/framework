@@ -994,6 +994,11 @@ html.dark {
   display: flex; flex-direction: column; gap: 32px; padding: 32px 24px; }
 .fc-focus__foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: none;
   padding: 16px; border-top: 1px solid var(--fc-border); background: var(--fc-surface); }
+/* What the buttons will act on, at the start of the foot: the file chosen, the rows ticked. */
+.fc-focus__note { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 13px; line-height: 20px; color: var(--fc-text-muted); }
+/* A focus modal whose content is a grid of pictures, not a form: it takes the width it is given. */
+.fc-focus__form--wide { max-width: 1120px; }
 @media (max-width: 640px) {
   .fc-focus__panel { inset: 0; border-radius: 0; }
   .fc-focus__form { padding: 24px 16px; }
@@ -3729,7 +3734,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
   position: relative; display: flex; align-items: center; justify-content: center;
   aspect-ratio: 1; overflow: hidden; background: var(--fc-surface-muted);
 }
-.fc-tile__picture img { width: 100%; height: 100%; object-fit: cover; }
+.fc-tile__picture img, .fc-tile__picture video { width: 100%; height: 100%; object-fit: cover; }
 .fc-tile__open { position: absolute; inset: 0; z-index: 0; cursor: pointer; }
 .fc-tile__open:focus-visible { outline: 2px solid var(--fc-text); outline-offset: -2px; }
 .fc-tile__icon { display: flex; color: var(--fc-text-faint); }

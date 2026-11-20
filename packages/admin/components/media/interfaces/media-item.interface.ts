@@ -1,6 +1,8 @@
 export interface IMediaItem {
   id: string;
   filename: string;
+  /** The name the file was uploaded under; `filename` is the stored one, with its unique suffix. */
+  originalName?: string;
   url: string;
   mimeType: string;
   /**
@@ -8,10 +10,12 @@ export interface IMediaItem {
    * defaulted to 0: a stand-in number reads as a measurement nobody took, and "0 B" is indistinguishable
    * from a genuinely empty file. Unknown size renders as nothing at all.
    */
-  filesize?: number;
+  fileSize?: number;
   width?: number;
   height?: number;
   alt?: string;
+  /** `private` files have no public address; their preview goes through the admin's guarded route. */
+  visibility?: string;
   /**
    * Set ONLY for assets that ship inside the active theme: the path relative to the theme's `ui/`
    * directory (`images/hero.jpg`). A field that stores a path should store THIS rather than `url`,

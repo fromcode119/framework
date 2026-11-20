@@ -38,7 +38,7 @@ export class MediaPageController {
       mimeType: asset.mimeType,
       // The listing reports the file's real size; 0 stood in for "not asked" and printed as "0 B",
       // which is indistinguishable from an empty file.
-      fileSize: Number((asset as any).filesize) || 0,
+      fileSize: Number(asset.fileSize) || 0,
       url: asset.url,
       relativePath: asset.relativePath,
       folderId: null,

@@ -91,6 +91,7 @@ export class SmallKit {
           { name: 'title', type: 'string', does: 'The thing’s name, cut with an ellipsis when it is longer than the tile.' },
           { name: 'facts', type: 'string', does: 'One quiet line under the name.' },
           { name: 'picture', type: 'string', does: 'The picture’s address; without one the icon stands in its place.' },
+          { name: 'video', type: 'string', does: 'A video’s address, drawn as its first frame where a picture would stand.' },
           { name: 'icon', type: 'ReactNode', does: 'Drawn when there is no picture.' },
           { name: 'marks', type: 'ReactNode', does: 'Badges on the picture: what the thing is marked as.' },
           { name: 'selected', type: 'boolean', does: 'Chosen: the tile is outlined and its tick stays.' },
