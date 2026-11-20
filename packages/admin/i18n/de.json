@@ -161,7 +161,12 @@
       "noGroup": "Keine Gruppe",
       "reorderHandle": "Zum Umsortieren ziehen – oder fokussieren und die Pfeiltasten verwenden",
       "reorderEnable": "Zeigen Sie die Liste in ihrer eigenen Reihenfolge an, um sie umzusortieren",
-      "reorderFailed": "Die neue Reihenfolge konnte nicht gespeichert werden"
+      "reorderFailed": "Die neue Reihenfolge konnte nicht gespeichert werden",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}} importieren?",
+      "importConfirmDescription": "Einträge in der Datei: {{count}}. Jeder wird als neuer Eintrag angelegt. IDs aus der Datei werden nicht übernommen, eine aus dieser Liste exportierte Datei erzeugt also Kopien.",
+      "importNoRecords": "{{file}} enthält keine Liste von Einträgen zum Importieren."
     },
     "edit": {
       "sectionShow": "Einblenden",

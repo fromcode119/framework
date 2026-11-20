@@ -161,7 +161,12 @@
       "noGroup": "Ingen gruppe",
       "reorderHandle": "Dra for å endre rekkefølgen – eller sett fokus og bruk piltastene",
       "reorderEnable": "Vis listen i egen rekkefølge for å endre rekkefølgen",
-      "reorderFailed": "Den nye rekkefølgen kunne ikke lagres"
+      "reorderFailed": "Den nye rekkefølgen kunne ikke lagres",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importere {{file}}?",
+      "importConfirmDescription": "Poster i filen: {{count}}. Hver opprettes som en ny post. ID-er i filen beholdes ikke, så en fil eksportert fra denne listen lager kopier.",
+      "importNoRecords": "{{file}} inneholder ingen liste over poster å importere."
     },
     "edit": {
       "sectionShow": "Vis",

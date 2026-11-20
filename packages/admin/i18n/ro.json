@@ -161,7 +161,12 @@
       "noGroup": "Fără grup",
       "reorderHandle": "Trageți pentru a reordona — sau focalizați și folosiți tastele săgeți",
       "reorderEnable": "Afișați lista în ordinea proprie pentru a o reordona",
-      "reorderFailed": "Noua ordine nu a putut fi salvată"
+      "reorderFailed": "Noua ordine nu a putut fi salvată",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importați {{file}}?",
+      "importConfirmDescription": "Înregistrări în fișier: {{count}}. Fiecare este creată ca înregistrare nouă. ID-urile din fișier nu se păstrează, așa că un fișier exportat din această listă creează copii.",
+      "importNoRecords": "{{file}} nu conține o listă de înregistrări de importat."
     },
     "edit": {
       "sectionShow": "Afișează",

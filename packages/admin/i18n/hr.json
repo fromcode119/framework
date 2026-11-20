@@ -161,7 +161,12 @@
       "noGroup": "Bez grupe",
       "reorderHandle": "Povucite za promjenu redoslijeda ili fokusirajte i koristite tipke sa strelicama",
       "reorderEnable": "Prikažite popis prema vlastitom redoslijedu kako biste ga mogli preurediti",
-      "reorderFailed": "Novi redoslijed nije moguće spremiti"
+      "reorderFailed": "Novi redoslijed nije moguće spremiti",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Uvesti {{file}}?",
+      "importConfirmDescription": "Zapisi u datoteci: {{count}}. Svaki se stvara kao novi zapis. ID-ovi iz datoteke se ne zadržavaju, pa datoteka izvezena iz ovog popisa stvara kopije.",
+      "importNoRecords": "{{file}} ne sadrži popis zapisa za uvoz."
     },
     "edit": {
       "sectionShow": "Prikaži",

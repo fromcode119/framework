@@ -161,7 +161,12 @@
       "noGroup": "그룹 없음",
       "reorderHandle": "드래그하여 순서 변경 — 또는 포커스한 후 화살표 키 사용",
       "reorderEnable": "순서를 변경하려면 목록을 기본 순서로 표시하세요",
-      "reorderFailed": "새 순서를 저장할 수 없습니다"
+      "reorderFailed": "새 순서를 저장할 수 없습니다",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}}을(를) 가져올까요?",
+      "importConfirmDescription": "파일의 레코드: {{count}}. 각각 새 레코드로 생성됩니다. 파일의 ID는 유지되지 않으므로 이 목록에서 내보낸 파일은 사본을 만듭니다.",
+      "importNoRecords": "{{file}}에 가져올 레코드 목록이 없습니다."
     },
     "edit": {
       "sectionShow": "표시",

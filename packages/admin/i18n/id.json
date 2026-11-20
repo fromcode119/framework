@@ -161,7 +161,12 @@
       "noGroup": "Tanpa grup",
       "reorderHandle": "Seret untuk mengubah urutan — atau fokuskan lalu gunakan tombol panah",
       "reorderEnable": "Tampilkan daftar dalam urutannya sendiri untuk mengubah urutannya",
-      "reorderFailed": "Urutan baru tidak dapat disimpan"
+      "reorderFailed": "Urutan baru tidak dapat disimpan",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Impor {{file}}?",
+      "importConfirmDescription": "Catatan dalam file: {{count}}. Masing-masing dibuat sebagai catatan baru. ID dalam file tidak dipertahankan, jadi file yang diekspor dari daftar ini membuat salinan.",
+      "importNoRecords": "{{file}} tidak berisi daftar catatan untuk diimpor."
     },
     "edit": {
       "sectionShow": "Tampilkan",

@@ -161,7 +161,12 @@
       "noGroup": "Grup yok",
       "reorderHandle": "Yeniden sıralamak için sürükleyin ya da odaklanıp ok tuşlarını kullanın",
       "reorderEnable": "Yeniden sıralamak için listeyi kendi sırasıyla gösterin",
-      "reorderFailed": "Yeni sıralama kaydedilemedi"
+      "reorderFailed": "Yeni sıralama kaydedilemedi",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}} içe aktarılsın mı?",
+      "importConfirmDescription": "Dosyadaki kayıtlar: {{count}}. Her biri yeni bir kayıt olarak oluşturulur. Dosyadaki kimlikler korunmaz, bu yüzden bu listeden dışa aktarılan bir dosya kopyalar oluşturur.",
+      "importNoRecords": "{{file}} içe aktarılacak bir kayıt listesi içermiyor."
     },
     "edit": {
       "sectionShow": "Göster",

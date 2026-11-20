@@ -161,7 +161,12 @@
       "noGroup": "Bez skupiny",
       "reorderHandle": "Presunutím zmeníte poradie — alebo označte a použite klávesy so šípkami",
       "reorderEnable": "Ak chcete zmeniť poradie, zobrazte zoznam vo vlastnom poradí",
-      "reorderFailed": "Nové poradie sa nepodarilo uložiť"
+      "reorderFailed": "Nové poradie sa nepodarilo uložiť",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importovať {{file}}?",
+      "importConfirmDescription": "Záznamy v súbore: {{count}}. Každý sa vytvorí ako nový záznam. ID zo súboru sa nezachovajú, takže súbor exportovaný z tohto zoznamu vytvorí kópie.",
+      "importNoRecords": "{{file}} neobsahuje zoznam záznamov na import."
     },
     "edit": {
       "sectionShow": "Zobraziť",

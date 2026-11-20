@@ -17,7 +17,7 @@ export class CollectionListPageProps {
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
-      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access,
+      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, importRecords, notifyError, frontendUrl, pageSize, access,
       arrangement, arranged, handleArrange, enterArrangeMode
     } = state;
 
@@ -36,7 +36,7 @@ export class CollectionListPageProps {
         selectedIds, statusOptions, collection, slotSlug, resolvedSlug, access,
         archivable, showArchived,
         handleBulkArchive: () => handleArchive([...selectedIds], !showArchived),
-        handleBulkStatusChange: (newStatus: string) => CollectionListPageActions.handleBulkStatusChange({ resolvedSlug, selectedIds, newStatus, page, setLoading, setSelectedIds, fetchData }),
+        handleBulkStatusChange: (newStatus: string) => CollectionListPageActions.handleBulkStatusChange({ resolvedSlug, selectedIds, newStatus, page, setLoading, setSelectedIds, fetchData, notifyError }),
         handleExport,
         handleBulkDelete: () => selectedIds.length && setDeleteDialogState({ mode: 'bulk', ids: [...selectedIds] }),
         setSelectedIds
@@ -70,8 +70,7 @@ export class CollectionListPageProps {
     };
 
     const footerProps = {
-      slug, resolvedSlug, handleExport, canCreate: access.canCreate,
-      handleImport: (event: React.ChangeEvent<HTMLInputElement>) => CollectionListPageActions.handleImport(event, resolvedSlug)
+      slug, resolvedSlug, handleExport, importRecords, canCreate: access.canCreate,
     };
 
     const deleteDialogProps = {
@@ -81,7 +80,7 @@ export class CollectionListPageProps {
       },
       onConfirm: () => CollectionListPageActions.handleDeleteConfirm({
         deleteDialogState, resolvedSlug, total, page, pageSize, quickEditExpandedId, setDeleteLoading,
-        setDeleteDialogState, setSelectedIds, setQuickEditExpandedId, setQuickEditStatus, setPage, fetchData
+        setDeleteDialogState, setSelectedIds, setQuickEditExpandedId, setQuickEditStatus, setPage, fetchData, notifyError
       })
     };
 

@@ -161,7 +161,12 @@
       "noGroup": "Aucun groupe",
       "reorderHandle": "Faites glisser pour réordonner, ou placez le focus et utilisez les flèches du clavier",
       "reorderEnable": "Affichez la liste dans son ordre propre pour la réordonner",
-      "reorderFailed": "Le nouvel ordre n’a pas pu être enregistré"
+      "reorderFailed": "Le nouvel ordre n’a pas pu être enregistré",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Importer {{file}} ?",
+      "importConfirmDescription": "Enregistrements dans le fichier : {{count}}. Chacun est créé comme un nouvel enregistrement. Les identifiants du fichier ne sont pas conservés : un fichier exporté depuis cette liste crée donc des copies.",
+      "importNoRecords": "{{file}} ne contient aucune liste d'enregistrements à importer."
     },
     "edit": {
       "sectionShow": "Afficher",

@@ -47,9 +47,8 @@ export class RecordOperations {
     return (await AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${pluginSlug}/settings`)) || {};
   }
 
-  static async importRecordsFromText(resolvedSlug: string, content: string): Promise<any> {
-    const payload = JSON.parse(content);
-    return AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.IMPORT(resolvedSlug), payload);
+  static async importRecords(resolvedSlug: string, records: unknown[]): Promise<any> {
+    return AdminApi.post(AdminConstants.ENDPOINTS.COLLECTIONS.IMPORT(resolvedSlug), records);
   }
 
   /**

@@ -161,7 +161,12 @@
       "noGroup": "Bez grupy",
       "reorderHandle": "Przeciągnij, aby zmienić kolejność — lub zaznacz i użyj klawiszy strzałek",
       "reorderEnable": "Wyświetl listę w jej własnej kolejności, aby móc ją zmieniać",
-      "reorderFailed": "Nie udało się zapisać nowej kolejności"
+      "reorderFailed": "Nie udało się zapisać nowej kolejności",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Zaimportować {{file}}?",
+      "importConfirmDescription": "Rekordy w pliku: {{count}}. Każdy jest tworzony jako nowy rekord. Identyfikatory z pliku nie są zachowywane, więc plik wyeksportowany z tej listy tworzy kopie.",
+      "importNoRecords": "{{file}} nie zawiera listy rekordów do zaimportowania."
     },
     "edit": {
       "sectionShow": "Pokaż",

@@ -161,7 +161,12 @@
       "noGroup": "Geen groep",
       "reorderHandle": "Sleep om de volgorde te wijzigen — of geef focus en gebruik de pijltjestoetsen",
       "reorderEnable": "Toon de lijst in de eigen volgorde om deze te wijzigen",
-      "reorderFailed": "De nieuwe volgorde kon niet worden opgeslagen"
+      "reorderFailed": "De nieuwe volgorde kon niet worden opgeslagen",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "{{file}} importeren?",
+      "importConfirmDescription": "Records in het bestand: {{count}}. Elk wordt als nieuw record aangemaakt. ID's in het bestand blijven niet behouden, dus een bestand dat uit deze lijst is geëxporteerd maakt kopieën.",
+      "importNoRecords": "{{file}} bevat geen lijst met records om te importeren."
     },
     "edit": {
       "sectionShow": "Tonen",

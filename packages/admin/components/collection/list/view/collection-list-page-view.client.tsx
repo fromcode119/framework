@@ -228,7 +228,26 @@ export class CollectionListPageView extends Reactor {
     try {
       await RecordOperations.exportRecords(resolvedSlug, format, ids);
     } catch (error: any) {
-      alert(AdminI18n.t('collection.list.exportFailed', { message: error?.message || AdminI18n.t('common.unknownError') }));
+      this.context?.notify(NotificationType.ERROR, AdminI18n.t('collection.list.exportFailed', {
+        message: error?.message || AdminI18n.t('common.unknownError'),
+      }), '');
+    }
+  }
+
+  /** Creates the records of an import the operator confirmed, says how it went, and shows them in the list. */
+  async importRecords(records: unknown[]): Promise<void> {
+    const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
+    const resolvedSlug = collection?.slug || this.slug;
+    try {
+      const result = await RecordOperations.importRecords(resolvedSlug, records);
+      const errors: Array<{ error?: string }> = result?.errors || [];
+      const summary = AdminI18n.t('collection.list.importDone', { count: result?.success ?? 0, errors: errors.length });
+      this.context?.notify(errors.length ? NotificationType.ERROR : NotificationType.SUCCESS, summary, errors[0]?.error || '');
+      await this.fetchData(1);
+    } catch (error: any) {
+      this.context?.notify(NotificationType.ERROR, AdminI18n.t('collection.list.importFailed', {
+        message: error?.message || AdminI18n.t('common.unknownError'),
+      }), '');
     }
   }
 

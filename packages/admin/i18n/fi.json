@@ -161,7 +161,12 @@
       "noGroup": "Ei ryhmää",
       "reorderHandle": "Järjestä vetämällä – tai kohdista ja käytä nuolinäppäimiä",
       "reorderEnable": "Näytä luettelo omassa järjestyksessään, jotta voit järjestää sen uudelleen",
-      "reorderFailed": "Uutta järjestystä ei voitu tallentaa"
+      "reorderFailed": "Uutta järjestystä ei voitu tallentaa",
+      "exportCsv": "CSV",
+      "exportJsonFile": "JSON",
+      "importConfirmTitle": "Tuodaanko {{file}}?",
+      "importConfirmDescription": "Tietueita tiedostossa: {{count}}. Jokainen luodaan uutena tietueena. Tiedoston tunnisteita ei säilytetä, joten tästä luettelosta viety tiedosto luo kopioita.",
+      "importNoRecords": "{{file}} ei sisällä tuotavien tietueiden luetteloa."
     },
     "edit": {
       "sectionShow": "Näytä",
