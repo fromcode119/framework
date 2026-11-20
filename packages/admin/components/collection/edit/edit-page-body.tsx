@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
+import { RecordReloadContext } from '@/components/collection/edit/record-reload-context.client';
 import { RecordDeclaredFields } from '@/components/collection/edit/record-declared-fields';
 import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
@@ -53,7 +54,7 @@ export class EditPageBody extends PureReactor {
     } = edit;
 
     // A new record can offer none of the correlation keys, so there is no question to ask yet.
-    const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
+    const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id), edit.recordReads);
     const navigate = (href: string) => edit.router?.push(href);
     /**
      * Opening a section only adds it to the address; the page must not move. `push` scrolls to the top
@@ -117,6 +118,7 @@ export class EditPageBody extends PureReactor {
         <form> is block-level like the <div> it replaces, so layout is unaffected.
       */}
       <form onSubmit={(event) => event.preventDefault()}>
+      <RecordReloadContext.context.Provider value={isNew ? null : edit.reloadRecord}>
         {status && (
           <Alert
             tone={status.type === NotificationType.SUCCESS ? 'success' : 'danger'}
@@ -281,6 +283,7 @@ export class EditPageBody extends PureReactor {
 
         <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
+      </RecordReloadContext.context.Provider>
       </form>
     </div>
     );

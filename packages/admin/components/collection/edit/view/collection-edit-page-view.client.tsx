@@ -96,6 +96,8 @@ export class CollectionEditPageView extends Reactor {
    * loads, which is why a failed load claims no unsaved changes.
    */
   @state pristineFormData: Record<string, any> | null = null;
+  /** Counts the times the saved record was read again after a write, so what is drawn from it asks again. */
+  @state recordReads: number = 0;
   @state saving = false;
   @state fieldErrors: Record<string, string[]> = {};
   @state slugManuallyEdited = false;

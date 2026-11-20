@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { EditSheet } from '@/components/ui/view/edit-sheet.client';
 import { RecordSectionFields } from '@/components/collection/edit/record-section-fields';
+import { RecordReloadContext } from '@/components/collection/edit/record-reload-context.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -86,6 +87,19 @@ export abstract class RecordSectionCardEditing extends Reactor {
     }
   }
 
+  /**
+   * The page's reload, with what it brings back also taken as what the sheet was opened on: those values
+   * are saved already, so Cancel must not put the old ones back over them.
+   */
+  private reloadKeepingSaved(reload: (() => Promise<Record<string, any>>) | null): (() => Promise<Record<string, any>>) | null {
+    if (!reload) return null;
+    return async () => {
+      const changed = await reload();
+      for (const name of Object.keys(changed)) if (name in this.before) this.before[name] = changed[name];
+      return changed;
+    };
+  }
+
   /** On a phone a sheet over the page; on a wider screen the fields in place of the rows they edit. */
   protected renderSheet(title: string): ReactNode {
     const row = this.rowKey;
@@ -100,6 +114,8 @@ export abstract class RecordSectionCardEditing extends Reactor {
         saving={this.saving}
         error={this.failed ? this.saveError : ''}
       >
+        <RecordReloadContext.context.Consumer>{(reload) => (
+        <RecordReloadContext.context.Provider value={this.reloadKeepingSaved(reload)}>
         <div className={AdminClass.of('sheet__group')}>
           <div className="fc-edit-fields"><div className="fc-edit-fields__grid">
             {row && rowField
@@ -109,6 +125,8 @@ export abstract class RecordSectionCardEditing extends Reactor {
               ))}
           </div></div>
         </div>
+        </RecordReloadContext.context.Provider>
+        )}</RecordReloadContext.context.Consumer>
       </EditSheet>
     );
   }

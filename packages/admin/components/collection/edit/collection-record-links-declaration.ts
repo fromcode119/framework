@@ -16,10 +16,12 @@ export class CollectionRecordLinksDeclaration {
     readonly emptyHint: string,
     private readonly parts: Record<string, { section: string; sectionKey?: string; after?: string; empty?: string; emptyUnless?: string[]; menu?: boolean }>,
     private readonly formData: Record<string, any>,
+    /** How many times the record was read again after a write: what was drawn from the old one asks again. */
+    readonly reads: number = 0,
   ) {}
 
   /** Null when the collection declares nothing, or this record can offer none of the keys yet. */
-  static of(collection: any, formData: Record<string, any>, recordId: string): CollectionRecordLinksDeclaration | null {
+  static of(collection: any, formData: Record<string, any>, recordId: string, reads = 0): CollectionRecordLinksDeclaration | null {
     const declared = collection?.admin?.recordLinks;
     const kind = String(declared?.kind || '').trim();
     if (!kind || !declared?.keys) return null;
@@ -33,7 +35,7 @@ export class CollectionRecordLinksDeclaration {
       if (value) keys[String(keyName)] = value;
     }
     if (!Object.keys(keys).length) return null;
-    return new CollectionRecordLinksDeclaration(kind, recordId, keys, String(declared.title || ''), String(declared.emptyHint || ''), declared.parts || {}, formData || {});
+    return new CollectionRecordLinksDeclaration(kind, recordId, keys, String(declared.title || ''), String(declared.emptyHint || ''), declared.parts || {}, formData || {}, reads);
   }
 
   get url(): string {
@@ -42,7 +44,7 @@ export class CollectionRecordLinksDeclaration {
 
   /** Changes whenever the question does. */
   get reloadKey(): string {
-    return `${this.kind}:${this.recordId}:${Object.values(this.keys).join('|')}`;
+    return `${this.kind}:${this.recordId}:${Object.values(this.keys).join('|')}:${this.reads}`;
   }
 
   /**

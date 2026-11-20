@@ -1,5 +1,6 @@
 import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
 import { CollectionEditPageHandlers } from '@/components/collection/edit/view/collection-edit-page-handlers.client';
+import { CollectionEditRecordReload } from '@/components/collection/edit/view/collection-edit-record-reload.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 
 /**
@@ -43,6 +44,8 @@ export class CollectionEditPageViewModelBuilder {
       }),
       handleSubmit: (e, summary) => CollectionEditPageHandlers.handleSubmit(self, e, summary),
       commitStatus: (value) => CollectionEditPageHandlers.commitStatus(self, value),
+      reloadRecord: () => CollectionEditRecordReload.reload(self),
+      recordReads: s.recordReads,
       saving: s.saving, fieldErrors: s.fieldErrors,
       resolvedTitleValue: d.resolvedTitleValue, titleFieldName: d.sourceField, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,
       activeTab: s.activeTab, setActiveTab: (v) => self.updateState('activeTab', v),

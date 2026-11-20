@@ -25,7 +25,7 @@ export class CollectionEditPageHandlers {
     return String(summary ?? '').trim() || '-';
   }
 
-  private static context(self: any): { collection: any; resolvedSlug: string; isNew: boolean } {
+  static context(self: any): { collection: any; resolvedSlug: string; isNew: boolean } {
     const collection = AdminCollectionUtils.resolveCollection(self.props.collections, self.props.pluginSlug, self.props.slug);
     return { collection, resolvedSlug: collection?.slug || self.props.slug, isNew: self.props.id === 'new' };
   }
@@ -114,6 +114,7 @@ export class CollectionEditPageHandlers {
         readOnlyOverrideFields: {},
         readOnlyOverrideGrant: '',
         ...(saved ? { formData: saved, pristineFormData: saved } : { pristineFormData: { ...self.state.formData } }),
+        recordReads: (self.state.recordReads || 0) + 1,
       });
       self.announce(AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated'));
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
@@ -130,7 +131,7 @@ export class CollectionEditPageHandlers {
   }
 
   /** The saved record as the page loads it, or null when it cannot be read back (the form keeps its copy). */
-  private static async reloadSaved(collection: any, url: string): Promise<Record<string, any> | null> {
+  static async reloadSaved(collection: any, url: string): Promise<Record<string, any> | null> {
     try {
       const entry = await AdminApi.get(url);
       if (!entry?.id) return null;
