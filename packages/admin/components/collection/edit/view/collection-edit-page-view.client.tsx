@@ -40,7 +40,7 @@ export class CollectionEditPageView extends Reactor {
   /** The bound site's storefront, for the Preview link; '' until known. See SiteStorefrontClient. */
   @state siteStorefrontUrl = '';
   @state pluginSettingsSchema: Record<string, any> = {};
-  @state status: { type: NotificationType; message: string } | null = null;
+  @state status: { type: NotificationType; message: string; deleteRefused?: boolean } | null = null;
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
   @state showDeleteConfirm = false;
@@ -212,7 +212,7 @@ export class CollectionEditPageView extends Reactor {
             collection={collection} theme={edit.theme} isNew={edit.isNew} discardHref={`/${pluginSlug}/${slug}`}
             handleSubmit={edit.handleSubmit} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} saving={edit.saving}
             router={edit.router} isDirty={edit.isDirty}
-            saveError={edit.status?.type === NotificationType.ERROR ? edit.status.message : ''}
+            saveError={edit.status?.type === NotificationType.ERROR && !edit.status.deleteRefused ? edit.status.message : ''}
           />
         )}
 

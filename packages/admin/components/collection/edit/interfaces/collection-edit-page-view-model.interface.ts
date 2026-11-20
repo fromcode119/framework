@@ -9,7 +9,7 @@ export interface ICollectionEditPageViewModel {
   isNew: boolean;
   pluginSettings: Record<string, any>;
   pluginSettingsSchema: Record<string, any>;
-  status: { type: NotificationType; message: string } | null;
+  status: { type: NotificationType; message: string; deleteRefused?: boolean } | null;
   setStatus: (value: { type: NotificationType; message: string } | null) => void;
   deleting: boolean;
   showDeleteConfirm: boolean;

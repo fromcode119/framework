@@ -223,7 +223,9 @@ export class CollectionEditPageHandlers {
       await AdminApi.delete(`${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${resolvedSlug}/${self.props.id}`);
       self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}`);
     } catch (err: any) {
-      self.setState({ status: { type: NotificationType.ERROR, message: err.message }, deleting: false, showDeleteConfirm: false });
+      // Refused: the banner says why. It is not a refused SAVE, so the save bar — "Unsaved changes",
+      // "Not saved: …" — stays out of it; nothing on the record was edited.
+      self.setState({ status: { type: NotificationType.ERROR, message: err.message, deleteRefused: true }, deleting: false, showDeleteConfirm: false });
     }
   }
 
