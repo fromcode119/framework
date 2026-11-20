@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Instalowanie aktualizacji...",
       "applySystemUpdate": "Zainstalować aktualizację systemu?",
       "youAreAboutToUpdate": "Zamierzasz zaktualizować {{PRODUCT_NAME}} z wersji v{{installedVersion}} do v{{latestVersion}}. Przed rozpoczęciem zostanie automatycznie utworzona pełna kopia zapasowa systemu. Proces ten nadpisze pliki systemowe i może spowodować chwilową niedostępność usługi podczas ponownego uruchamiania serwera.",
+      "youAreAboutToUpdateBesideRunning": "Zamierzasz zaktualizować {{PRODUCT_NAME}} z v{{installedVersion}} do v{{latestVersion}}. Nowa wersja uruchamia się obok działającej; jeśli się nie uruchomi, poprzednia wersja działa dalej. Kopia zapasowa nie jest tworzona automatycznie — utwórz ją wcześniej, jeśli jej potrzebujesz.",
       "noNotesWereWrittenFor": "Dla tego wydania nie napisano informacji o zmianach.",
       "recommendedUpdate": "v{{version}} – zalecana aktualizacja",
       "installCore": "Zainstaluj rdzeń v{{version}}",

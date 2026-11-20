@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Nuashonrú á chur i bhfeidhm...",
       "applySystemUpdate": "An bhfuil fonn ort an nuashonrú córais a chur i bhfeidhm?",
       "youAreAboutToUpdate": "Tá tú ar tí {{PRODUCT_NAME}} a nuashonrú ó v{{installedVersion}} go v{{latestVersion}}. Cruthófar cúltaca iomlán den chóras go huathoibríoch roimh dul ar aghaidh. Scríobhfaidh an próiseas seo thar chomhaid an chórais agus d'fhéadfadh sé cur isteach sealadach a dhéanamh ar an tseirbhís fad a atosaíonn an freastalaí.",
+      "youAreAboutToUpdateBesideRunning": "Tá tú ar tí {{PRODUCT_NAME}} a nuashonrú ó v{{installedVersion}} go v{{latestVersion}}. Tosaíonn an leagan nua taobh leis an gceann atá ar siúl; mura dtosaíonn sé, leanann an leagan roimhe ag obair. Ní chruthaítear cúltaca go huathoibríoch — cruthaigh ceann ar dtús más gá duit é.",
       "noNotesWereWrittenFor": "Níor scríobhadh aon nótaí don eisiúint seo.",
       "recommendedUpdate": "v{{version}} Nuashonrú Molta",
       "installCore": "Suiteáil an Croí v{{version}}",

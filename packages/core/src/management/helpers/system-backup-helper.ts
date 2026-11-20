@@ -123,8 +123,29 @@ export class SystemBackupHelper {
     return includedSections;
   }
 
+  private static readonly TEMPORARY_DATABASE_PREFIX = 'database-backup-';
+
+  /**
+   * The path, relative to the project root, the archive takes the database dump from.
+   *
+   * A dump already inside the project root (the backups folder normally is) is archived where it lies.
+   * It used to be copied into the root first, and on an installation that runs from a published image
+   * the root is not writable by the server's user — so the copy failed and every archive was written
+   * without its database. Only a dump kept outside the root still needs the copy.
+   */
+  static databaseArchiveEntry(rootDir: string, dbDumpPath: string, timestamp: string): string {
+    const relative = path.relative(rootDir, dbDumpPath);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+      return relative.split(path.sep).join('/');
+    }
+    const temporary = `${SystemBackupHelper.TEMPORARY_DATABASE_PREFIX}${timestamp}${path.extname(dbDumpPath)}`;
+    fs.copyFileSync(dbDumpPath, path.join(rootDir, temporary));
+    return temporary;
+  }
+
+  /** Removes the copy `databaseArchiveEntry` made in the root — never a dump archived where it lay. */
   static cleanupTemporaryDatabaseEntry(rootDir: string, tempDbFile: string | null): void {
-    if (!tempDbFile) {
+    if (!tempDbFile || tempDbFile.includes('/') || !tempDbFile.startsWith(SystemBackupHelper.TEMPORARY_DATABASE_PREFIX)) {
       return;
     }
 

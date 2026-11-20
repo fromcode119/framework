@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Po zbatohet përditësimi...",
       "applySystemUpdate": "Të zbatohet përditësimi i sistemit?",
       "youAreAboutToUpdate": "Jeni duke përditësuar {{PRODUCT_NAME}} nga v{{installedVersion}} në v{{latestVersion}}. Para se të vazhdohet, do të krijohet automatikisht një kopje rezervë e plotë e sistemit. Ky proces do të mbishkruajë skedarët e sistemit dhe mund të shkaktojë një ndërprerje të përkohshme të shërbimit gjatë rinisjes së serverit.",
+      "youAreAboutToUpdateBesideRunning": "Jeni gati të përditësoni {{PRODUCT_NAME}} nga v{{installedVersion}} në v{{latestVersion}}. Versioni i ri niset përkrah atij që po punon; nëse nuk niset, versioni i mëparshëm vazhdon të punojë. Nuk krijohet kopje rezervë automatikisht — krijoni një më parë nëse ju nevojitet.",
       "noNotesWereWrittenFor": "Nuk janë shkruar shënime për këtë version.",
       "recommendedUpdate": "v{{version}} Përditësim i rekomanduar",
       "installCore": "Instalo bërthamën v{{version}}",

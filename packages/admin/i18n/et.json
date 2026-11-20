@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Uuenduse rakendamine...",
       "applySystemUpdate": "Kas rakendada süsteemiuuendus?",
       "youAreAboutToUpdate": "Olete uuendamas toodet {{PRODUCT_NAME}} versioonilt v{{installedVersion}} versioonile v{{latestVersion}}. Enne jätkamist luuakse automaatselt täielik süsteemi varukoopia. See protsess kirjutab süsteemifailid üle ja võib serveri taaskäivitumise ajal põhjustada ajutise teenusekatkestuse.",
+      "youAreAboutToUpdateBesideRunning": "Olete uuendamas toodet {{PRODUCT_NAME}} versioonilt v{{installedVersion}} versioonile v{{latestVersion}}. Uus versioon käivitub töötava kõrval; kui see ei käivitu, jätkab tööd eelmine versioon. Varukoopiat automaatselt ei looda — vajadusel looge see enne.",
       "noNotesWereWrittenFor": "Selle väljalaske kohta pole märkmeid kirjutatud.",
       "recommendedUpdate": "v{{version}} Soovitatav uuendus",
       "installCore": "Paigalda tuum v{{version}}",

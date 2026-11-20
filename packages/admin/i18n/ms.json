@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Menggunakan Kemas Kini...",
       "applySystemUpdate": "Gunakan Kemas Kini Sistem?",
       "youAreAboutToUpdate": "Anda akan mengemas kini {{PRODUCT_NAME}} daripada v{{installedVersion}} ke v{{latestVersion}}. Sandaran sistem lengkap akan dicipta secara automatik sebelum diteruskan. Proses ini akan menulis ganti fail sistem dan mungkin menyebabkan gangguan perkhidmatan sementara semasa pelayan dimulakan semula.",
+      "youAreAboutToUpdateBesideRunning": "Anda akan mengemas kini {{PRODUCT_NAME}} daripada v{{installedVersion}} kepada v{{latestVersion}}. Versi baharu dimulakan di sebelah versi yang sedang berjalan; jika ia tidak bermula, versi sebelumnya terus berjalan. Sandaran tidak dibuat secara automatik — buat satu dahulu jika anda memerlukannya.",
       "noNotesWereWrittenFor": "Tiada nota ditulis untuk keluaran ini.",
       "recommendedUpdate": "v{{version}} Kemas Kini Disyorkan",
       "installCore": "Pasang Teras v{{version}}",

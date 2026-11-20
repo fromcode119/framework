@@ -2999,6 +2999,7 @@
       "applyingUpdate": "正在应用更新...",
       "applySystemUpdate": "应用系统更新？",
       "youAreAboutToUpdate": "您即将把 {{PRODUCT_NAME}} 从 v{{installedVersion}} 更新至 v{{latestVersion}}。继续之前将自动创建完整的系统备份。此过程将覆盖系统文件，服务器重启期间可能导致服务暂时中断。",
+      "youAreAboutToUpdateBesideRunning": "您即将把 {{PRODUCT_NAME}} 从 v{{installedVersion}} 更新到 v{{latestVersion}}。新版本会在正在运行的版本旁启动；如果未能启动，之前的版本将继续运行。系统不会自动创建备份——如有需要，请先创建。",
       "noNotesWereWrittenFor": "此版本没有发布说明。",
       "recommendedUpdate": "v{{version}} 推荐更新",
       "installCore": "安装核心 v{{version}}",

@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Installerer opdatering...",
       "applySystemUpdate": "Installer systemopdatering?",
       "youAreAboutToUpdate": "Du er ved at opdatere {{PRODUCT_NAME}} fra v{{installedVersion}} til v{{latestVersion}}. Der oprettes automatisk en komplet systembackup, før der fortsættes. Processen overskriver systemfiler og kan medføre en midlertidig driftsforstyrrelse, mens serveren genstarter.",
+      "youAreAboutToUpdateBesideRunning": "Du er ved at opdatere {{PRODUCT_NAME}} fra v{{installedVersion}} til v{{latestVersion}}. Den nye version starter ved siden af den kørende; hvis den ikke starter, fortsætter den forrige version. Der oprettes ikke automatisk en sikkerhedskopi — opret en først, hvis du har brug for den.",
       "noNotesWereWrittenFor": "Der er ikke skrevet noter til denne udgivelse.",
       "recommendedUpdate": "v{{version}} Anbefalet opdatering",
       "installCore": "Installer kerne v{{version}}",

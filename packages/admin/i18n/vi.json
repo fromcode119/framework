@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Đang áp dụng cập nhật...",
       "applySystemUpdate": "Áp dụng cập nhật hệ thống?",
       "youAreAboutToUpdate": "Bạn sắp cập nhật {{PRODUCT_NAME}} từ v{{installedVersion}} lên v{{latestVersion}}. Một bản sao lưu toàn bộ hệ thống sẽ được tạo tự động trước khi tiến hành. Quá trình này sẽ ghi đè các tệp hệ thống và có thể gây gián đoạn dịch vụ tạm thời trong lúc máy chủ khởi động lại.",
+      "youAreAboutToUpdateBesideRunning": "Bạn sắp cập nhật {{PRODUCT_NAME}} từ v{{installedVersion}} lên v{{latestVersion}}. Phiên bản mới khởi động bên cạnh phiên bản đang chạy; nếu không khởi động được, phiên bản trước vẫn tiếp tục chạy. Bản sao lưu không được tạo tự động — hãy tạo trước nếu bạn cần.",
       "noNotesWereWrittenFor": "Không có ghi chú nào cho bản phát hành này.",
       "recommendedUpdate": "Bản cập nhật khuyến nghị v{{version}}",
       "installCore": "Cài đặt lõi v{{version}}",

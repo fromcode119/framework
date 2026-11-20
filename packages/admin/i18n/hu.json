@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Frissítés alkalmazása...",
       "applySystemUpdate": "Alkalmazza a rendszerfrissítést?",
       "youAreAboutToUpdate": "A(z) {{PRODUCT_NAME}} frissítésére készül a v{{installedVersion}} verzióról a v{{latestVersion}} verzióra. A folytatás előtt automatikusan teljes rendszermentés készül. A folyamat felülírja a rendszerfájlokat, és a szerver újraindítása alatt átmeneti szolgáltatáskiesést okozhat.",
+      "youAreAboutToUpdateBesideRunning": "A(z) {{PRODUCT_NAME}} frissítésére készül v{{installedVersion}} verzióról v{{latestVersion}} verzióra. Az új verzió a futó mellett indul el; ha nem indul el, az előző verzió fut tovább. Biztonsági mentés nem készül automatikusan — ha szüksége van rá, előbb készítsen egyet.",
       "noNotesWereWrittenFor": "Ehhez a kiadáshoz nem készült kiadási megjegyzés.",
       "recommendedUpdate": "v{{version}} – ajánlott frissítés",
       "installCore": "Mag v{{version}} telepítése",

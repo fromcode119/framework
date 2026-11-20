@@ -2999,6 +2999,7 @@
       "applyingUpdate": "正在套用更新...",
       "applySystemUpdate": "要套用系統更新嗎？",
       "youAreAboutToUpdate": "您即將把 {{PRODUCT_NAME}} 從 v{{installedVersion}} 更新至 v{{latestVersion}}。繼續之前會自動建立完整的系統備份。此程序將覆寫系統檔案，伺服器重新啟動期間服務可能暫時中斷。",
+      "youAreAboutToUpdateBesideRunning": "您即將把 {{PRODUCT_NAME}} 從 v{{installedVersion}} 更新到 v{{latestVersion}}。新版本會在執行中的版本旁啟動；若未能啟動，先前的版本會繼續執行。系統不會自動建立備份——如有需要，請先建立。",
       "noNotesWereWrittenFor": "此版本沒有版本說明。",
       "recommendedUpdate": "v{{version}} 建議更新",
       "installCore": "安裝核心 v{{version}}",

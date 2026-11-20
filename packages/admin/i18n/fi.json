@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Asennetaan päivitystä...",
       "applySystemUpdate": "Asennetaanko järjestelmäpäivitys?",
       "youAreAboutToUpdate": "Olet päivittämässä {{PRODUCT_NAME}}:n versiosta v{{installedVersion}} versioon v{{latestVersion}}. Täydellinen järjestelmän varmuuskopio luodaan automaattisesti ennen jatkamista. Toiminto korvaa järjestelmätiedostoja ja voi aiheuttaa tilapäisen palvelukatkon palvelimen käynnistyessä uudelleen.",
+      "youAreAboutToUpdateBesideRunning": "Olet päivittämässä tuotetta {{PRODUCT_NAME}} versiosta v{{installedVersion}} versioon v{{latestVersion}}. Uusi versio käynnistyy käynnissä olevan rinnalle; jos se ei käynnisty, edellinen versio jatkaa toimintaa. Varmuuskopiota ei luoda automaattisesti — luo se ensin, jos tarvitset sitä.",
       "noNotesWereWrittenFor": "Tälle julkaisulle ei ole kirjoitettu julkaisutietoja.",
       "recommendedUpdate": "v{{version}} – suositeltu päivitys",
       "installCore": "Asenna ydin v{{version}}",

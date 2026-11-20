@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Lieto atjauninājumu...",
       "applySystemUpdate": "Lietot sistēmas atjauninājumu?",
       "youAreAboutToUpdate": "Jūs gatavojaties atjaunināt {{PRODUCT_NAME}} no v{{installedVersion}} uz v{{latestVersion}}. Pirms turpināšanas automātiski tiks izveidota pilna sistēmas rezerves kopija. Šis process pārrakstīs sistēmas failus un var izraisīt īslaicīgu pakalpojuma pārtraukumu, kamēr serveris tiek restartēts.",
+      "youAreAboutToUpdateBesideRunning": "Jūs gatavojaties atjaunināt {{PRODUCT_NAME}} no v{{installedVersion}} uz v{{latestVersion}}. Jaunā versija tiek palaista blakus strādājošajai; ja tā nepalaižas, turpina darboties iepriekšējā versija. Dublējums netiek izveidots automātiski — ja tas nepieciešams, vispirms izveidojiet to.",
       "noNotesWereWrittenFor": "Šim laidienam piezīmes nav sagatavotas.",
       "recommendedUpdate": "v{{version}} Ieteicamais atjauninājums",
       "installCore": "Instalēt kodolu v{{version}}",

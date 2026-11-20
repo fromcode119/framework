@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Applicazione dell'aggiornamento...",
       "applySystemUpdate": "Applicare l'aggiornamento di sistema?",
       "youAreAboutToUpdate": "Stai per aggiornare {{PRODUCT_NAME}} dalla v{{installedVersion}} alla v{{latestVersion}}. Prima di procedere verrà creato automaticamente un backup completo del sistema. Questa operazione sovrascriverà i file di sistema e potrebbe causare un'interruzione temporanea del servizio durante il riavvio del server.",
+      "youAreAboutToUpdateBesideRunning": "Stai per aggiornare {{PRODUCT_NAME}} da v{{installedVersion}} a v{{latestVersion}}. La nuova versione si avvia accanto a quella in esecuzione; se non si avvia, la versione precedente continua a funzionare. Non viene creato alcun backup automaticamente — creane uno prima, se ti serve.",
       "noNotesWereWrittenFor": "Non sono state scritte note per questa versione.",
       "recommendedUpdate": "v{{version}} Aggiornamento consigliato",
       "installCore": "Installa core v{{version}}",

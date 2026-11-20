@@ -2999,6 +2999,7 @@
       "applyingUpdate": "מחיל עדכון...",
       "applySystemUpdate": "להחיל את עדכון המערכת?",
       "youAreAboutToUpdate": "פעולה זו תעדכן את {{PRODUCT_NAME}} מגרסה v{{installedVersion}} לגרסה v{{latestVersion}}. לפני ההמשך ייווצר אוטומטית גיבוי מלא של המערכת. התהליך ידרוס קובצי מערכת ועלול לגרום להפרעה זמנית בשירות בזמן שהשרת מופעל מחדש.",
+      "youAreAboutToUpdateBesideRunning": "אתם עומדים לעדכן את {{PRODUCT_NAME}} מ-v{{installedVersion}} ל-v{{latestVersion}}. הגרסה החדשה מופעלת לצד הגרסה הפועלת; אם היא לא תופעל, הגרסה הקודמת תמשיך לפעול. גיבוי אינו נוצר אוטומטית — צרו גיבוי מראש אם אתם זקוקים לו.",
       "noNotesWereWrittenFor": "לא נכתבו הערות לגרסה זו.",
       "recommendedUpdate": "v{{version}} עדכון מומלץ",
       "installCore": "התקנת ליבה v{{version}}",

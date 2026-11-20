@@ -105,4 +105,26 @@ describe('BackupService', () => {
       fs.chmodSync(locked, 0o755);
     }
   });
+
+  it('archives the database dump from the backups folder, without writing into the project root', async () => {
+    const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-service-db-entry-'));
+    temporaryDirectories.push(sandbox);
+    process.env.FROMCODE_PROJECT_ROOT = sandbox;
+    fs.writeFileSync(path.join(sandbox, 'package.json'), JSON.stringify({ name: '@fromcode119/framework' }), 'utf8');
+    const dumpPath = path.join(BackupService.getBackupsDirectory('database'), 'db-dump-2026-11-20.sql');
+    fs.mkdirSync(path.dirname(dumpPath), { recursive: true });
+    fs.writeFileSync(dumpPath, 'dump', 'utf8');
+    vi.spyOn(BackupService, 'backupDatabase').mockResolvedValue(dumpPath);
+    const copies = vi.spyOn(fs, 'copyFileSync');
+
+    const result = await BackupService.createSystemBackupBundle({ sections: [BackupSectionKey.CORE, BackupSectionKey.DATABASE] });
+
+    expect(copies).not.toHaveBeenCalled();
+    expect(result.includedSections).toContain(BackupSectionKey.DATABASE);
+    expect(result.warnings).toEqual([]);
+    const archived: string[] = [];
+    await tar.list({ file: result.backupPath, onentry: (entry) => { archived.push(entry.path); } });
+    expect(archived).toContain(path.relative(sandbox, dumpPath).split(path.sep).join('/'));
+    expect(fs.existsSync(dumpPath)).toBe(true);
+  });
 });

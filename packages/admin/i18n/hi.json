@@ -2999,6 +2999,7 @@
       "applyingUpdate": "अपडेट लागू हो रहा है...",
       "applySystemUpdate": "सिस्टम अपडेट लागू करें?",
       "youAreAboutToUpdate": "आप {{PRODUCT_NAME}} को v{{installedVersion}} से v{{latestVersion}} पर अपडेट करने वाले हैं। आगे बढ़ने से पहले अपने-आप एक पूर्ण सिस्टम बैकअप बनाया जाएगा। यह प्रक्रिया सिस्टम फ़ाइलों को ओवरराइट करेगी और सर्वर रीस्टार्ट होने के दौरान सेवा अस्थायी रूप से बाधित हो सकती है।",
+      "youAreAboutToUpdateBesideRunning": "आप {{PRODUCT_NAME}} को v{{installedVersion}} से v{{latestVersion}} पर अपडेट करने वाले हैं। नया संस्करण चल रहे संस्करण के साथ शुरू होता है; यदि वह शुरू नहीं होता, तो पिछला संस्करण चलता रहता है। बैकअप अपने आप नहीं बनता — ज़रूरत हो तो पहले एक बना लें।",
       "noNotesWereWrittenFor": "इस रिलीज़ के लिए कोई नोट नहीं लिखे गए।",
       "recommendedUpdate": "v{{version}} अनुशंसित अपडेट",
       "installCore": "कोर v{{version}} इंस्टॉल करें",

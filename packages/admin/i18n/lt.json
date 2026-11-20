@@ -2999,6 +2999,7 @@
       "applyingUpdate": "Diegiamas naujinys...",
       "applySystemUpdate": "Įdiegti sistemos naujinį?",
       "youAreAboutToUpdate": "Ketinate atnaujinti {{PRODUCT_NAME}} iš v{{installedVersion}} į v{{latestVersion}}. Prieš tęsiant automatiškai bus sukurta visa sistemos atsarginė kopija. Šis procesas perrašys sistemos failus ir, serveriui persikraunant, gali laikinai sutrikdyti paslaugos veikimą.",
+      "youAreAboutToUpdateBesideRunning": "Ketinate atnaujinti {{PRODUCT_NAME}} iš v{{installedVersion}} į v{{latestVersion}}. Nauja versija paleidžiama šalia veikiančios; jei ji nepasileidžia, toliau veikia ankstesnė versija. Atsarginė kopija automatiškai nekuriama — jei jos reikia, pirmiausia ją sukurkite.",
       "noNotesWereWrittenFor": "Šiai versijai pastabų neparašyta.",
       "recommendedUpdate": "v{{version}} Rekomenduojamas naujinys",
       "installCore": "Įdiegti branduolį v{{version}}",
