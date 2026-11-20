@@ -199,7 +199,10 @@ export class Select extends Reactor {
 
     return (
     <div className={`fc-field-stack w-full ${className}`}>
-      {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
+      {/* Clicking the label focuses the field, as a native select's label does. Wrapping would not do here:
+          a click anywhere inside a label is forwarded to its control, so picking an option would also press
+          the trigger. */}
+      {label && <label className={UiFieldUtils.TEXT.LABEL} onClick={() => this.triggerRef.current?.querySelector('button')?.focus()}>{label}</label>}
       <div className="relative w-full" ref={this.triggerRef}>
         <button
           type="button"

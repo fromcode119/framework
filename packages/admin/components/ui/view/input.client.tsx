@@ -43,16 +43,26 @@ export class Input extends PureReactor {
     const size = this.size ?? FieldSize.MD;
     const error = this.error;
 
+    const input = (
+      <input
+        ref={this.elementRef}
+        {...this.rest}
+        value={this.normalizedValue}
+        className={`${UiFieldUtils.getFieldClasses(size, inputClassName)}
+          ${error ? '!border-rose-500 focus:!border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
+      />
+    );
+
+    // The label wraps the field, so clicking it focuses the field and a screen reader names the field by it.
+    // Beside it, with no id between them, the label belonged to nothing.
     return (
       <div className={`fc-field-stack w-full ${className}`}>
-        {this.label && <label className={UiFieldUtils.TEXT.LABEL}>{this.label}</label>}
-        <input
-          ref={this.elementRef}
-          {...this.rest}
-          value={this.normalizedValue}
-          className={`${UiFieldUtils.getFieldClasses(size, inputClassName)}
-            ${error ? '!border-rose-500 focus:!border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 animate-shake shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
-        />
+        {this.label ? (
+          <label className="fc-field-stack">
+            <span className={UiFieldUtils.TEXT.LABEL}>{this.label}</span>
+            {input}
+          </label>
+        ) : input}
         {error && (
           <div className="flex items-center gap-2 px-1 animate-fade-in-up">
             <span className={UiFieldUtils.TEXT.ERROR}>
