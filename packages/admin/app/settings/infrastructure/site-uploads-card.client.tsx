@@ -1,11 +1,11 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -32,7 +32,15 @@ export class SiteUploadsCard extends AdminComponent {
   @state loaded = false;
   @state saving = false;
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ themeMaxMb: this.themeMaxMb, themeMaxCount: this.themeMaxCount, pluginsEnabled: this.pluginsEnabled, pluginMaxMb: this.pluginMaxMb, pluginMaxCount: this.pluginMaxCount }),
+      () => this.save(),
+      (values) => { this.themeMaxMb = values.themeMaxMb; this.themeMaxCount = values.themeMaxCount; this.pluginsEnabled = values.pluginsEnabled; this.pluginMaxMb = values.pluginMaxMb; this.pluginMaxCount = values.pluginMaxCount; },
+    );
     try {
       const settings = await AdminSystemSettingsClient.getAll();
       this.themeMaxMb = SiteUploadsCard.toMegabytes(settings?.[SystemConstants.META_KEY.TENANT_THEME_MAX_BYTES]);
@@ -42,6 +50,7 @@ export class SiteUploadsCard extends AdminComponent {
       this.pluginMaxMb = SiteUploadsCard.toMegabytes(settings?.[SystemConstants.META_KEY.TENANT_PLUGIN_MAX_BYTES]);
       this.pluginMaxCount = String(settings?.[SystemConstants.META_KEY.TENANT_PLUGIN_MAX_COUNT] ?? '');
       this.loaded = true;
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.siteUploadLimitsUnavailable'), err?.message || AdminI18n.t('settings.infrastructure.theLimitsCouldNotBe'));
     }
@@ -76,10 +85,19 @@ export class SiteUploadsCard extends AdminComponent {
       });
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.theSiteUploadLimitsApply'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || AdminI18n.t('settings.infrastructure.theLimitsCouldNotBe2'));
     } finally {
       this.saving = false;
     }
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -134,9 +152,6 @@ export class SiteUploadsCard extends AdminComponent {
             <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={1} step={1} value={this.pluginMaxCount} onChange={this.onPluginMaxCount} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default4', { TENANT_PLUGIN_MAX_COUNT_DEFAULT: SystemConstants.TENANT_PLUGIN_MAX_COUNT_DEFAULT })} />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>
-              {AdminI18n.t('settings.infrastructure.save')}
-            </Button>
           </div>
         </SettingRow>
       </Card>

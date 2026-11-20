@@ -1,3 +1,5 @@
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PlatformOnlyPanel } from '@/components/view/platform-only-panel.client';
@@ -26,7 +28,18 @@ import { FrameworkIcons } from '@fromcode119/react';
  * saves and the state live in the links below — see `InfrastructureSettingsPageState`.
  */
 export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards {
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pendingSsr?.dispose();
+    this.pendingLogs?.dispose();
+    this.pendingAudit?.dispose();
+  }
+
   async componentDidMount() {
+    this.startPending();
     if (!this.canManagePlatform) {
       this.isLoading = false;
       return;
@@ -109,6 +122,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
         </div>
+        <PendingSavesBar />
         </div>
       </div>
     );

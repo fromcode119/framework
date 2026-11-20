@@ -1,3 +1,5 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
@@ -40,14 +42,23 @@ export class MonitoringCard extends AdminComponent {
   @state status: { incidents: any[]; providers: string[]; alerting?: boolean; platformMail?: boolean; emailRecipients?: string[]; targets: Array<{ url: string }> } | null = null;
   @state loaded = false;
   @state saving = false;
+
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
   @state checking = false;
 
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ thresholds: this.thresholds }),
+      () => this.save(),
+      (values) => { this.thresholds = values.thresholds; },
+    );
     try {
       const [settings, status] = await Promise.all([AdminSystemSettingsClient.getAll(), AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.MONITORING)]);
       this.thresholds = Object.fromEntries(MonitoringCard.THRESHOLDS.map(({ key }) => [key, String(settings?.[key] ?? '')]));
       this.status = status;
       this.loaded = true;
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.monitoringUnavailable'), err?.message || '');
     }
@@ -62,6 +73,7 @@ export class MonitoringCard extends AdminComponent {
       await AdminSystemSettingsClient.update(this.thresholds);
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.monitoringSaved'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || '');
     } finally {
       this.saving = false;
@@ -113,6 +125,14 @@ export class MonitoringCard extends AdminComponent {
       : <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoEmailRecipients')}</p>;
   }
 
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
+  }
+
   render(): ReactNode {
     const providers = (this.status?.providers ?? []).join(', ');
     const watched = (this.status?.targets ?? []).map((target) => target.url).join(', ');
@@ -140,11 +160,6 @@ export class MonitoringCard extends AdminComponent {
             </div>
           </SettingRow>
         ))}
-        <div className="flex justify-end pt-2">
-          <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>
-            {AdminI18n.t('settings.infrastructure.save')}
-          </Button>
-        </div>
       </Card>
     );
   }

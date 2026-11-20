@@ -1,8 +1,8 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Button } from '@/components/ui/view/button.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -17,10 +17,19 @@ export class JobRunRetentionRow extends AdminComponent {
   @state private days = '';
   @state private saving = false;
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ days: this.days }),
+      () => this.save(),
+      (values) => { this.days = values.days; },
+    );
     try {
       const settings = await AdminSystemSettingsClient.getAll();
       this.days = String(settings?.job_run_retention_days ?? '');
+      this.pending?.mark();
     } catch {
       // The card above reports an unreadable settings store; this row stays blank rather than guess.
     }
@@ -42,10 +51,19 @@ export class JobRunRetentionRow extends AdminComponent {
         type: NotificationType.INFO,
       });
     } catch (err: any) {
+      this.pending?.failed();
       addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToSaveJobRunRetention'), type: NotificationType.ERROR });
     } finally {
       this.saving = false;
     }
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -60,9 +78,6 @@ export class JobRunRetentionRow extends AdminComponent {
           <div className="fc-settings-short fc-settings-short--narrow">
             <NumberStepper min={0} step={1} value={this.days} onChange={this.onChange} placeholder={AdminI18n.t('settings.infrastructure.keepForever')} />
           </div>
-          <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />}>
-            {AdminI18n.t('settings.infrastructure.save')}
-          </Button>
         </div>
       </SettingRow>
     );

@@ -1,11 +1,11 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
@@ -23,11 +23,20 @@ export class ApiResponseCacheCard extends AdminComponent {
   @state loaded = false;
   @state saving = false;
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ seconds: this.seconds }),
+      () => this.save(),
+      (values) => { this.seconds = values.seconds; },
+    );
     try {
       const settings = await AdminSystemSettingsClient.getAll();
       this.seconds = String(settings?.[SystemConstants.META_KEY.API_RESPONSE_CACHE_SECONDS] ?? '');
       this.loaded = true;
+      this.pending?.mark();
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.apiResponseCacheUnavailable'), err?.message || '');
     }
@@ -42,10 +51,19 @@ export class ApiResponseCacheCard extends AdminComponent {
       await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.API_RESPONSE_CACHE_SECONDS]: this.seconds });
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.apiResponseCacheSaved'));
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || '');
     } finally {
       this.saving = false;
     }
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   render(): ReactNode {
@@ -61,9 +79,6 @@ export class ApiResponseCacheCard extends AdminComponent {
             <div className="fc-settings-short fc-settings-short--narrow">
               <NumberStepper min={0} step={10} value={this.seconds} onChange={this.onSeconds} disabled={!this.loaded} />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />}>
-              {AdminI18n.t('settings.infrastructure.save')}
-            </Button>
           </div>
         </SettingRow>
       </Card>

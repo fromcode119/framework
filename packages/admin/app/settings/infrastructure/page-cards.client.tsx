@@ -4,8 +4,6 @@ import { bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
@@ -105,13 +103,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               <div className="fc-settings-short fc-settings-short--narrow">
                 <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={AdminI18n.t('settings.infrastructure.default7', { SSR_RENDER_TIMEOUT_MS_DEFAULT: SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT })} />
               </div>
-              <Button
-                onClick={this.saveSsrCap}
-                isLoading={this.isSavingSsrCap}
-                icon={<FrameworkIcons.Save size={13} />}
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
         </Card>
@@ -146,13 +137,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
-              <Button
-                onClick={this.saveRetention}
-                isLoading={this.isSavingRetention}
-                icon={<FrameworkIcons.Save size={13} />}
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
 
@@ -183,13 +167,6 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
-              <Button
-                onClick={this.saveAuditRetention}
-                isLoading={this.isSavingAuditRetention}
-                icon={<FrameworkIcons.Save size={13} />}
-              >
-                {AdminI18n.t('settings.infrastructure.save')}
-              </Button>
             </div>
           </SettingRow>
 

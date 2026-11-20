@@ -1,3 +1,5 @@
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
 import type { ChangeEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
 import { AcmeDirectory, ThemeMode } from '@fromcode119/core/client';
@@ -36,12 +38,29 @@ export class CertificatesSettingsCard extends AdminComponent {
   @state private isSavingCloudflareToken = false;
   @state private cloudflareTokenMessage = '';
 
+  /** What the page's one save bar reads and writes for this card; made once the card is mounted. */
+  private pending: PendingSave | null = null;
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
+  }
+
   async componentDidMount(): Promise<void> {
+    this.pending = new PendingSave(
+      () => ({ directory: this.directory, contactEmail: this.contactEmail, addresses: this.addresses }),
+      () => this.save(),
+      (values) => { this.directory = values.directory; this.contactEmail = values.contactEmail; this.addresses = values.addresses; },
+    );
     const settings = await AdminSystemSettingsClient.getAll().catch(() => ({} as Record<string, any>));
     this.directory = String(settings?.certificate_acme_directory ?? '');
     this.contactEmail = String(settings?.certificate_acme_contact_email ?? '');
     this.addresses = String(settings?.certificate_platform_addresses ?? '');
     this.isLoaded = true;
+    this.pending?.mark();
     this.candidates = await CertificatesClient.detectPlatformAddresses();
     const automation = (await CertificatesClient.list().catch(() => null))?.automation;
     this.isCloudflareConfigured = automation?.isCloudflareConfigured === true;
@@ -115,6 +134,7 @@ export class CertificatesSettingsCard extends AdminComponent {
         type: 'info' as any,
       });
     } catch (err: any) {
+      this.pending?.failed();
       addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCertificate'), type: 'error' as any });
     } finally {
       this.isSaving = false;
@@ -163,9 +183,6 @@ export class CertificatesSettingsCard extends AdminComponent {
           </div>
         </div>
 
-        <div className="mt-5 flex justify-end">
-          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('settings.infrastructure.save')}</Button>
-        </div>
 
         <div className={`mt-6 pt-5 border-t ${dark ? 'border-white/10' : 'border-slate-200'}`}>
           <label className={label}>{AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')}</label>
