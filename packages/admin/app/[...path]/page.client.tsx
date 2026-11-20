@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react';
-import { ThemeMode } from '@fromcode119/core/client';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { prop, state } from '@fromcode119/react-class-components';
@@ -9,6 +8,10 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { StatePage } from '@/components/ui/view/state-page.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Alert } from '@/components/ui/view/alert.client';
 
 export class DynamicPluginPage extends AdminComponent {
   @prop declare params: Promise<{ path: string[] }>;
@@ -66,7 +69,6 @@ export class DynamicPluginPage extends AdminComponent {
     if (!this.resolved) return null;
 
     const { pathname, segments: effectivePath } = this.resolvedPath;
-    const theme = this.theme;
     const pluginSlug = this.activeItem?.pluginSlug || effectivePath[0];
     const pageSlot = `admin.plugin.${pluginSlug}.page.${effectivePath.join('.')}`;
 
@@ -75,24 +77,17 @@ export class DynamicPluginPage extends AdminComponent {
         <div className="space-y-8">
           <Slot name={pageSlot} errorFallback={PluginMountErrorFallback.render} fallback={
              <div className="space-y-8">
-               <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                 <FrameworkIcons.Package size={14} />
-                 <AdminRichText k="shell.pluginPage.defaultView" vars={{ plugin: pluginSlug, slot: pageSlot }} />
-               </div>
+               <Alert tone="info">
+                 <AdminRichText k="shell.pluginPage.defaultView" vars={{ plugin: pluginSlug, slot: pageSlot }} classes={{ code: 'fc-mono' }} />
+               </Alert>
 
                <Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} fallback={
-                 <div className="min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
-                    <FrameworkIcons.Info className="text-slate-300 dark:text-slate-700 mb-4" size={48} />
-                    <h3 className={`text-lg font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
-                       {AdminI18n.t('shell.pluginPage.workspace', { name: effectivePath[effectivePath.length - 1].replace(/-/g, ' ') })}
-                    </h3>
-                    <p className="text-slate-500 text-sm max-w-sm mt-2">
-                       <AdminRichText k="shell.pluginPage.noComponent" vars={{ path: pathname, plugin: pluginSlug }} classes={{ code: 'text-indigo-500 font-mono' }} />
-                    </p>
-                    <AdminLink href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium shadow-lg shadow-indigo-600/20">
-                       {AdminI18n.t('shell.pluginPage.backToMarketplace')}
-                    </AdminLink>
-                 </div>
+                 <StatePage
+                    icon={<FrameworkIcons.Info size={18} />}
+                    title={AdminI18n.t('shell.pluginPage.workspace', { name: effectivePath[effectivePath.length - 1].replace(/-/g, ' ') })}
+                    hint={<AdminRichText k="shell.pluginPage.noComponent" vars={{ path: pathname, plugin: pluginSlug }} classes={{ code: 'fc-mono' }} />}
+                    actions={<Button variant={ButtonVariant.PRIMARY} as={AdminLink} href="/plugins">{AdminI18n.t('shell.pluginPage.backToMarketplace')}</Button>}
+                 />
                }/>
              </div>
           }/>
