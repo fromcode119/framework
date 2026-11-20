@@ -20,11 +20,23 @@ export class PostgresPoolFactory {
     // `platform` for the DDL pool (markAsPlatformConnection) — decided when it connects, so the mark set
     // after construction still applies. Unsigned, a connection sees nothing (TenantBindingSql).
     pool.on('connect', (client: any) => {
+      // A checked-out client is not covered by the pool's listener below. Without its own, a connection
+      // the server closes while a request holds it between two statements crashes the process.
+      client.on('error', PostgresPoolFactory.connectionLost);
       PreparedStatements.install(client);
       PostgresTenantSession.markResting(client, PlatformPool.marks(pool));
     });
+    // An idle connection the server closes (a Postgres restart, an administrator's terminate) is reported
+    // here. With no listener `pg` rethrows it as an uncaught exception and the whole process exits — one
+    // restarted database used to take the api down with it, and any backup it was writing. The pool
+    // drops that connection and opens a fresh one on the next query; there is nothing else to do.
+    pool.on('error', PostgresPoolFactory.connectionLost);
     // Counted from the start, so a request queued for a connection can be seen (DatabasePoolWatch).
     DatabasePoolRegistry.add(pool);
     return pool;
+  }
+
+  private static connectionLost(error: Error): void {
+    console.warn(`[database] A database connection was closed by the server and will be replaced: ${error?.message || error}`);
   }
 }
