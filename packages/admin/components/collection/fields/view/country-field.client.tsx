@@ -48,7 +48,7 @@ export class CountryField extends PureReactor {
           theme={theme}
         />
         {inherits && !value && (
-          <p className="mt-1.5 text-xs text-slate-500">
+          <p className="mt-1.5 text-xs fc-tone-muted">
             {AdminI18n.t('ui.country.inEffect', { description: PlatformCountryDescription.describe(platform) })}{' '}
             <AdminLink className="underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>{AdminI18n.t('ui.country.settingsLink')}</AdminLink>
           </p>

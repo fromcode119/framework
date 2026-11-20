@@ -35,14 +35,14 @@ export class FieldBooleanRow extends PureReactor {
           <span className="flex min-w-0 items-center gap-1">
           <span
             onClick={this.toggle}
-            className={`fc-bool-row__label block text-[13px] font-medium text-slate-800 dark:text-slate-100 ${this.disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer select-none'}`}
+            className={`fc-bool-row__label block text-[13px] font-medium fc-tone-text ${this.disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer select-none'}`}
           >
             {this.label}
             {this.required ? <span className="ms-0.5 text-rose-500">*</span> : null}
           </span>
           {this.help}
           </span>
-          {this.description ? <p className={`fc-bool-row__desc mt-0.5 text-[12px] leading-snug text-slate-500 dark:text-slate-400${this.clamp ? ' fc-field-summary--clamp' : ''}`} title={this.clamp ? this.description : undefined}>{this.description}</p> : null}
+          {this.description ? <p className={`fc-bool-row__desc mt-0.5 text-[12px] leading-snug fc-tone-muted${this.clamp ? ' fc-field-summary--clamp' : ''}`} title={this.clamp ? this.description : undefined}>{this.description}</p> : null}
         </div>
         <Switch checked={this.checked} onChange={this.onChange} disabled={this.disabled} className="shrink-0" />
       </div>

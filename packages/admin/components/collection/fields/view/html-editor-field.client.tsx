@@ -45,7 +45,7 @@ export class HtmlEditorField extends Reactor {
             title={AdminI18n.t('collection.edit.preview')}
             sandbox=""
             srcDoc={html}
-            className="h-[480px] w-full rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800"
+            className="h-[480px] w-full rounded-lg border fc-tone-line fc-tone-surface shadow-sm"
           />
         </div>
       </div>

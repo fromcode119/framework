@@ -52,7 +52,7 @@ export class PageDesignCard extends Reactor {
     const blank = PageDesignCard.isBlank(this.content);
     return (
       <Card title={AdminI18n.t('collection.pageDesign.title')}>
-        <p className="text-sm text-slate-500 leading-relaxed">
+        <p className="text-sm fc-tone-muted leading-relaxed">
           {AdminI18n.t('collection.pageDesign.defaultOf', { page, plugin: design.pluginName })}{' '}
           {blank
             ? AdminI18n.t('collection.pageDesign.blank', { plugin: design.pluginName })

@@ -123,7 +123,7 @@ export class EditPageBody extends PureReactor {
               <p className="font-medium text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
               <p className="text-sm opacity-90">{status.message}</p>
             </div>
-            <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={() => setStatus(null)} className="fc-tone-muted hover:text-slate-600 transition-colors">
               <FrameworkIcons.Close size={18} />
             </button>
           </div>

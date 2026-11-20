@@ -71,8 +71,8 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
               <FrameworkIcons.User size={40} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.account.yours')}</h1>
-              <p className="text-sm font-medium leading-relaxed text-slate-500">
+              <h1 className="text-2xl font-medium tracking-tight fc-tone-text">{AdminI18n.t('shell.account.yours')}</h1>
+              <p className="text-sm font-medium leading-relaxed fc-tone-muted">
                 <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-medium text-indigo-500' }} />
               </p>
             </div>
@@ -87,7 +87,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
                 AuthUtils.purgeAuth();
                 authState.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
               }}
-              className="w-full text-[12px] font-medium tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
+              className="w-full text-[12px] font-medium tracking-wide fc-tone-muted transition-colors fc-tone-hover-text"
             >
               {AdminI18n.t('shell.account.signOut')}
             </button>

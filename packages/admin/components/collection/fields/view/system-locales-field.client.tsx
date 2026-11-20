@@ -83,7 +83,7 @@ export class SystemLocalesField extends Reactor {
     const selected = this.selected;
 
     if (!loaded) {
-      return <div className="text-xs text-slate-400 py-2">{AdminI18n.t('ui.locales.loading')}</div>;
+      return <div className="text-xs fc-tone-muted py-2">{AdminI18n.t('ui.locales.loading')}</div>;
     }
 
     return (
@@ -112,7 +112,7 @@ export class SystemLocalesField extends Reactor {
                   type="button"
                   onClick={() => this.moveEarlier(option.value)}
                   title={AdminI18n.t('ui.locales.moveEarlier')}
-                  className="ms-0.5 px-1 py-1 text-[12px] text-slate-400 hover:text-indigo-500 transition-colors"
+                  className="ms-0.5 px-1 py-1 text-[12px] fc-tone-muted hover:text-indigo-500 transition-colors"
                 >
                   ↑
                 </button>
@@ -120,7 +120,7 @@ export class SystemLocalesField extends Reactor {
             </span>
           );
         })}
-        {!options.length && <span className="text-xs text-slate-400">{AdminI18n.t('ui.locales.none')}</span>}
+        {!options.length && <span className="text-xs fc-tone-muted">{AdminI18n.t('ui.locales.none')}</span>}
       </div>
     );
   }

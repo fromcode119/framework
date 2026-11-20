@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
@@ -103,11 +102,10 @@ export class SiteDomainsCard extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
 
     return (
       <Card title={AdminI18n.t('sites.domains')}>
-        <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`text-sm mb-3 fc-tone-muted`}>
           {AdminI18n.t('sites.theDomainsThisSiteAnswers')}
         </p>
 
@@ -116,7 +114,7 @@ export class SiteDomainsCard extends AdminComponent {
         ) : null}
 
         {this.isLoading ? (
-          <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('sites.loading')}</p>
+          <p className={`text-sm fc-tone-muted`}>{AdminI18n.t('sites.loading')}</p>
         ) : (
           <CertificateHostTable
             entries={this.entries}

@@ -140,10 +140,10 @@ export class SiteOwnPlugins extends AdminComponent {
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <input type="file" ref={(element) => { this.fileInput = element; }} onChange={this.onFile} className="hidden" accept=".zip,application/zip" />
             <Button variant={ButtonVariant.OUTLINE} onClick={this.pickFile} isLoading={this.busy === 'upload'} disabled={this.busy !== null}>{AdminI18n.t('plugins.list.uploadForThisSite')}</Button>
-            {this.uploadPercent !== null ? <span className="text-xs text-slate-500">{AdminI18n.t('plugins.list.uploadingPercent', { percent: this.uploadPercent })}</span> : null}
+            {this.uploadPercent !== null ? <span className="text-xs fc-tone-muted">{AdminI18n.t('plugins.list.uploadingPercent', { percent: this.uploadPercent })}</span> : null}
           </div>
         ) : null}
-        {this.own.length === 0 ? (quota ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.thisSiteHasNoPlugins')}</p> : null) : (
+        {this.own.length === 0 ? (quota ? <p className="text-xs fc-tone-muted">{AdminI18n.t('plugins.list.thisSiteHasNoPlugins')}</p> : null) : (
           <div className="space-y-4">
             {this.own.map((plugin) => (
               <div key={plugin.slug} className="flex items-start justify-between gap-4">

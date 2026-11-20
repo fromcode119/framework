@@ -12,7 +12,7 @@ export class MarketplaceDetailLoading extends PureReactor {
     return (
       <div className="flex flex-col items-center justify-center h-96 gap-4">
         <span className="fc-loader__ring fc-loader__ring--page" aria-hidden="true" />
-        <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`text-sm font-medium fc-tone-muted`}>
           {AdminI18n.t('plugins.list.loadingPluginDetails')}
         </p>
       </div>

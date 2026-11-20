@@ -27,7 +27,7 @@ export class DashboardQuickActions extends PureReactor {
             <span className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors dark:bg-indigo-500/10 dark:text-indigo-400 [&_svg]:h-4 [&_svg]:w-4">
               <Icon name={a.icon} size={16} />
             </span>
-            <span className="text-xs font-medium tracking-tight text-slate-700 dark:text-slate-200 truncate">{a.label}</span>
+            <span className="text-xs font-medium tracking-tight fc-tone-text truncate">{a.label}</span>
           </button>
         ))}
       </div>

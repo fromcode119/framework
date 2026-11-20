@@ -47,7 +47,7 @@ export class CollectionListRowActions extends PureReactor {
   /** The card: the plugin's row actions, quick edit, edit and the menu — open-on-site and duplicate move into the menu. */
   @prop declare compact?: boolean;
 
-  private static readonly ICON = 'inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-500 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400';
+  private static readonly ICON = 'inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors fc-tone-muted hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400';
 
   private get rowId(): string {
     return String(this.row?.id ?? '');

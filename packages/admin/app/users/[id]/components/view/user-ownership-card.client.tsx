@@ -77,7 +77,7 @@ export class UserOwnershipCard extends AdminComponent {
     const dark = this.theme === ThemeMode.DARK;
     return (
       <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
-        <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+        <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.handOwnership', { name: this.targetName })}
         </p>
         {this.confirming ? (
@@ -102,7 +102,7 @@ export class UserOwnershipCard extends AdminComponent {
     const dark = this.theme === ThemeMode.DARK;
     return (
       <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
-        <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+        <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.thisAccountOwnsThePlatform')}
         </p>
       </Card>

@@ -85,7 +85,7 @@ export class PluginIsolationCard extends AdminComponent {
     return (
       <Card title={AdminI18n.t('settings.infrastructure.pluginIsolation')}>
         <SettingRow theme={theme} title={AdminI18n.t('settings.infrastructure.wherePluginsRun')} stacked description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}>
-          <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
+          <p className="text-xs fc-tone-muted">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
         </SettingRow>
         {PluginIsolationCard.LIMITS.map((limit, index) => (
           <SettingRow key={limit.key} theme={theme} title={limit.title()} stacked description={limit.description()}>

@@ -64,10 +64,10 @@ export class DashboardSitesPanel extends AdminComponent {
           {this.sites.map((site) => (
             <div key={String(site.id)} className="flex items-center gap-2.5 px-3 py-2">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${this.stateDot(site)}`} />
-              <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
+              <span className="min-w-0 flex-1 truncate text-[12px] fc-tone-text">
                 {String(site.host || site.slug)}
               </span>
-              <span className="shrink-0 text-[12px] text-slate-500">{this.statusText(site)}</span>
+              <span className="shrink-0 text-[12px] fc-tone-muted">{this.statusText(site)}</span>
               {site.state && site.state !== 'active' ? (
                 <Badge variant={BadgeVariant.WARNING} className="shrink-0">
                   {AdminI18n.optional(`sites.stateValue.${site.state}`) || String(site.state)}

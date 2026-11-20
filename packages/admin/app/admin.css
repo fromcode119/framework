@@ -3729,6 +3729,18 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-text--large { font-size: 16px; line-height: 28px; }
 .fc-text--plus { font-weight: 500; }
 .fc-text--muted { color: var(--fc-text-muted); }
+
+/* Neutral ink, lines and surfaces for hand-laid markup. They replace the palette greys that each
+   screen used to pick for itself (and pair again for dark), so every screen follows the tokens and a
+   theme change reaches them too. Declared after the utilities, so they win over a stray utility. */
+.fc-tone-text { color: var(--fc-text); }
+.fc-tone-muted { color: var(--fc-text-muted); }
+.fc-tone-line { border-color: var(--fc-border); }
+.fc-tone-divide > * + * { border-color: var(--fc-border); }
+.fc-tone-surface { background-color: var(--fc-surface); }
+.fc-tone-raised { background-color: var(--fc-surface-muted); }
+.fc-tone-hover:hover { background-color: var(--fc-surface-muted); }
+.fc-tone-hover-text:hover { color: var(--fc-text); }
 .fc-label { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-label__optional { font-weight: 400; color: var(--fc-text-muted); }
 .fc-hint { display: inline-flex; align-items: flex-start; gap: 6px; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }

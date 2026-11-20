@@ -82,8 +82,8 @@ export class DeploymentsCard extends AdminComponent {
     return (
       <div className="mt-3 space-y-1 text-xs">
         <p className={`font-medium ${tone}`}>{headline}</p>
-        <p className="text-slate-500">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
-        <p className="text-slate-500">
+        <p className="fc-tone-muted">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
+        <p className="fc-tone-muted">
           {AdminI18n.t('settings.infrastructure.eitherModeAReleaseWith')}
         </p>
       </div>

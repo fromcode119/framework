@@ -51,7 +51,7 @@ export class CollectionListReorderHandle extends PureReactor {
         onPointerDown={this.press}
         onClick={this.click}
         onKeyDown={this.key}
-        className={`fc-reorder-handle inline-flex items-center justify-center w-7 h-7 -my-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800 ${this.enabled ? 'cursor-grab active:cursor-grabbing' : 'opacity-50 cursor-pointer'}`}
+        className={`fc-reorder-handle inline-flex items-center justify-center w-7 h-7 -my-1 rounded-md fc-tone-muted fc-tone-hover-text fc-tone-hover ${this.enabled ? 'cursor-grab active:cursor-grabbing' : 'opacity-50 cursor-pointer'}`}
       >
         <GripVertical size={16} />
       </button>

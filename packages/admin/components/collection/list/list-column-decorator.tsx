@@ -130,7 +130,7 @@ export class ListColumnDecorator {
         if (value === null || value === undefined || value === '') continue;
         parts.push(
           <span key={name} className="truncate">
-            {layout.valueLabels[name] ? <span className="text-slate-300 dark:text-slate-600">{layout.valueLabels[name]} </span> : null}
+            {layout.valueLabels[name] ? <span className="fc-tone-muted">{layout.valueLabels[name]} </span> : null}
             {metaCells!.get(name)!(row)}
           </span>,
         );
@@ -142,16 +142,16 @@ export class ListColumnDecorator {
             ? (MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length
               ? <CollectionListMediaCellValue raw={row[layout.mediaField]} />
               : (
-                <span title={AdminI18n.t('ui.structured.noImage')} className="w-10 h-10 rounded-md shrink-0 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400">
+                <span title={AdminI18n.t('ui.structured.noImage')} className="w-10 h-10 rounded-md shrink-0 border fc-tone-line fc-tone-raised inline-flex items-center justify-center fc-tone-muted">
                   <FrameworkIcons.Image size={16} />
                 </span>
               ))
             : null}
           <div className="min-w-0">
-            <div className="truncate font-medium text-slate-900 dark:text-slate-100">{accessor(row)}</div>
+            <div className="truncate font-medium fc-tone-text">{accessor(row)}</div>
             {parts.length ? (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12px] font-medium text-slate-400 dark:text-slate-500">
-                {parts.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="text-slate-300 dark:text-slate-600">·</span>, part] : [part]))}
+              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12px] font-medium fc-tone-muted">
+                {parts.flatMap((part, index) => (index ? [<span key={`dot-${index}`} className="fc-tone-muted">·</span>, part] : [part]))}
               </div>
             ) : null}
           </div>

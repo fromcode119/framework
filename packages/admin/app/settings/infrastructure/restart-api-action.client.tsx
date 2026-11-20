@@ -76,7 +76,7 @@ export class RestartApiAction extends AdminComponent {
 
   render(): ReactNode {
     if (this.restartable === null) return null;
-    if (!this.restartable) return <p className="text-xs text-slate-500">{this.blockedReason}</p>;
+    if (!this.restartable) return <p className="text-xs fc-tone-muted">{this.blockedReason}</p>;
     const copy = RestartAppCopy.for(ApplicationUrlUtils.API_APP);
     return (
       <>

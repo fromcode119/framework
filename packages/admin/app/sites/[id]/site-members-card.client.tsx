@@ -134,19 +134,19 @@ export class SiteMembersCard extends AdminComponent {
             same `--card` background as the card it sits in, so in light theme one member rendered as an
             empty white rectangle framed inside another white rectangle. A list inside a card needs
             separators, not a frame of its own. */}
-        <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
+        <div className={`overflow-hidden divide-y mt-3 fc-tone-divide`}>
           {this.loading ? <p className="fc-sites__none px-3 py-4">{AdminI18n.t('sites.loadingMembers')}</p> : null}
           {!this.loading && this.members.length === 0
             ? <p className="fc-sites__none px-3 py-4">{this.search ? AdminI18n.t('sites.noMemberMatchesThatEmail') : AdminI18n.t('sites.nobodyCanEnterThisSite')}</p>
             : null}
           {this.members.map((member) => (
-            <div key={member.userId} className={`group flex items-center gap-3 px-3 py-2 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+            <div key={member.userId} className={`group flex items-center gap-3 px-3 py-2 transition-colors fc-tone-hover`}>
               <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-[12px] font-medium ${this.isDark ? 'bg-slate-800 text-slate-300 ring-1 ring-white/10' : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'}`}>
                 {SiteMembersCard.initial(member.email)}
               </div>
               <div className="flex-1 min-w-0">
-                <span className={`text-[13px] font-medium tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {member.email || <em className="font-normal text-slate-500">{AdminI18n.t('sites.deletedAccount', { id: member.userId })}</em>}
+                <span className={`text-[13px] font-medium tracking-tight truncate fc-tone-text`}>
+                  {member.email || <em className="font-normal fc-tone-muted">{AdminI18n.t('sites.deletedAccount', { id: member.userId })}</em>}
                 </span>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">

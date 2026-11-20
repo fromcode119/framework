@@ -38,7 +38,7 @@ export class SecondarySidebarMobile extends PureReactor {
         aria-expanded={this.isOpen}
         aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
         onClick={this.onOpen}
-        className={`fixed z-[170] ${AdminClass.SURFACE} text-slate-700 dark:text-slate-200 hover:border-indigo-400/70 transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 end-6 h-12 w-12' : 'bottom-6 start-[84px] h-10 w-10'}`}
+        className={`fixed z-[170] ${AdminClass.SURFACE} fc-tone-text hover:border-indigo-400/70 transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 end-6 h-12 w-12' : 'bottom-6 start-[84px] h-10 w-10'}`}
       >
         <FrameworkIcons.Right size={18} />
       </button>
@@ -56,12 +56,12 @@ export class SecondarySidebarMobile extends PureReactor {
             onKeyDown={this.onOverlayKeyDown}
           >
             <div className="flex min-w-0 flex-1 flex-col">
-            <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 fc-canvas dark:border-slate-800 ">
-              <h2 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('shell.nav.secondaryTitle')}</h2>
+            <div className="h-16 px-4 flex items-center justify-between border-b fc-tone-line fc-canvas ">
+              <h2 className="text-[13px] font-medium fc-tone-text">{AdminI18n.t('shell.nav.secondaryTitle')}</h2>
               <button
                 type="button"
                 onClick={this.onClose}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-lg fc-tone-muted fc-tone-hover"
                 aria-label={AdminI18n.t('shell.nav.closeSecondary')}
               >
                 <FrameworkIcons.Close size={16} />

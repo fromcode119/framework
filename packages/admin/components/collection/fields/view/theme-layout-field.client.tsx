@@ -125,7 +125,7 @@ export class ThemeLayoutField extends Reactor {
           theme={theme}
           placeholder={AdminI18n.t('ui.layout.auto')}
         />
-        <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <p className={`text-[12px] font-medium fc-tone-muted`}>
           {AdminI18n.t('ui.layout.hint')}
         </p>
 
@@ -141,12 +141,12 @@ export class ThemeLayoutField extends Reactor {
           </div>
         ) : (
           <div className={`rounded-xl border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
-            <p className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('ui.layout.renders')}</p>
-            <p className={`mt-1 text-xs font-medium ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{effectiveLabel} ({effectiveValue})</p>
-            <p className={`mt-1 text-[12px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <p className={`text-[12px] font-medium fc-tone-muted`}>{AdminI18n.t('ui.layout.renders')}</p>
+            <p className={`mt-1 text-xs font-medium fc-tone-text`}>{effectiveLabel} ({effectiveValue})</p>
+            <p className={`mt-1 text-[12px] leading-relaxed fc-tone-muted`}>
               {AdminI18n.t(isAutoMode ? 'ui.layout.autoMode' : 'ui.layout.explicitMode')}
             </p>
-            {effectiveDescription ? <p className="mt-1 text-[12px] leading-relaxed text-slate-500">{effectiveDescription}</p> : null}
+            {effectiveDescription ? <p className="mt-1 text-[12px] leading-relaxed fc-tone-muted">{effectiveDescription}</p> : null}
           </div>
         )}
       </div>

@@ -22,8 +22,8 @@ export class PlatformOnlyPanel extends PureReactor {
     return (
       <div className="py-6 w-full">
         <div className={`${AdminClass.SURFACE} p-6`}>
-          <h1 className="text-[13px] font-medium text-slate-900 dark:text-white">{AdminI18n.t('ui.view.thisIsAPlatformScreen')}</h1>
-          <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed text-slate-500">{this.detail}</p>
+          <h1 className="text-[13px] font-medium fc-tone-text">{AdminI18n.t('ui.view.thisIsAPlatformScreen')}</h1>
+          <p className="mt-1.5 max-w-2xl text-[12px] leading-relaxed fc-tone-muted">{this.detail}</p>
         </div>
       </div>
     );

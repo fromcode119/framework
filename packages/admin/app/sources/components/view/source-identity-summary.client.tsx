@@ -24,23 +24,23 @@ export class SourceIdentitySummary extends PureReactor {
   private get icon(): ReactNode {
     if (this.reading) return <Spinner className="fc-spinner--muted" />;
     if (this.detected) return <CheckCircle size={16} className="text-emerald-500" />;
-    return <Info size={16} className="text-slate-400" />;
+    return <Info size={16} className="fc-tone-muted" />;
   }
 
   render(): ReactNode {
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="flex items-start gap-3 rounded-xl border fc-tone-line fc-tone-raised px-3 py-2.5">
         <span className="mt-0.5 shrink-0">{this.icon}</span>
         {this.detected ? (
           <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-900 dark:text-white">
+            <p className="text-sm font-medium fc-tone-text">
               {this.slug}
-              <span className="ms-2 text-xs font-medium text-slate-500 dark:text-slate-400">{this.kind} · {this.vendor}</span>
+              <span className="ms-2 text-xs font-medium fc-tone-muted">{this.kind} · {this.vendor}</span>
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.readFromTheManifest')}</p>
+            <p className="text-xs fc-tone-muted">{AdminI18n.t('sources.readFromTheManifest')}</p>
           </div>
         ) : (
-          <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">{this.message}</p>
+          <p className="text-xs leading-5 fc-tone-muted">{this.message}</p>
         )}
       </div>
     );

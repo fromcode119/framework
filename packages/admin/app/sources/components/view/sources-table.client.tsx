@@ -49,8 +49,8 @@ export class SourcesTable extends PureReactor {
   private static renderSource(row: SourceRow): ReactNode {
     return (
       <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-        <span className="text-slate-900 dark:text-white">{row.slug}</span>
-        <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{SourcesTable.kind(row.type)}</span>
+        <span className="fc-tone-text">{row.slug}</span>
+        <span className="text-[12px] font-medium fc-tone-muted">{SourcesTable.kind(row.type)}</span>
       </span>
     );
   }
@@ -58,8 +58,8 @@ export class SourcesTable extends PureReactor {
   private static renderVersion(row: SourceRow): ReactNode {
     return (
       <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-        <span>{row.version ? `v${row.version}` : <span className="font-medium text-slate-400">{AdminI18n.t('sources.noBuildYetShort')}</span>}</span>
-        <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{row.branch}</span>
+        <span>{row.version ? `v${row.version}` : <span className="font-medium fc-tone-muted">{AdminI18n.t('sources.noBuildYetShort')}</span>}</span>
+        <span className="text-[12px] font-medium fc-tone-muted">{row.branch}</span>
       </span>
     );
   }
@@ -76,7 +76,7 @@ export class SourcesTable extends PureReactor {
   /** Nothing when no build recorded a change, so a phone card leaves the line off instead of an empty label. */
   private static renderLastChange(row: SourceRow): ReactNode {
     if (!row.lastChange) return '';
-    return <span className="block truncate font-medium text-slate-500 dark:text-slate-400" title={row.lastChange}>{row.lastChange}</span>;
+    return <span className="block truncate font-medium fc-tone-muted" title={row.lastChange}>{row.lastChange}</span>;
   }
 
   /** The kind in the admin's language when it has words for it, else as the server names it. */

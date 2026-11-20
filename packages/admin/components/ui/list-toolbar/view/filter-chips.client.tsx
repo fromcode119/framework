@@ -42,7 +42,7 @@ export class FilterChips extends PureReactor {
             </button>
           </span>
         ))}
-        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap text-[12px] font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400">
+        <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap text-[12px] font-medium fc-tone-muted hover:text-indigo-600">
           {AdminI18n.t('ui.listToolbar.clearFilters')}
         </button>
       </div>

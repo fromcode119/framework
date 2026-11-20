@@ -13,12 +13,12 @@ export class PageHeading extends PureReactor {
 
   get titleClassName(): string {
     return (this.props as { titleClassName?: string }).titleClassName
-      ?? 'text-xl font-medium text-slate-900 dark:text-white tracking-tight leading-tight';
+      ?? 'text-xl font-medium fc-tone-text tracking-tight leading-tight';
   }
 
   get subtitleClassName(): string {
     return (this.props as { subtitleClassName?: string }).subtitleClassName
-      ?? 'text-xs font-medium text-slate-500 dark:text-slate-500 tracking-tight mt-0.5';
+      ?? 'text-xs font-medium fc-tone-muted tracking-tight mt-0.5';
   }
 
   render(): ReactNode {

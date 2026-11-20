@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { bound, prop } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -37,12 +36,11 @@ export class PlatformAddressSuggestion extends AdminComponent {
 
   render(): ReactNode {
     if (!this.candidates.length || !this.addresses.length) return null;
-    const dark = this.theme === ThemeMode.DARK;
-    const muted = dark ? 'text-slate-500' : 'text-slate-400';
+    const muted = 'fc-tone-muted';
 
     return (
-      <div className={`rounded-lg border px-3 py-2.5 mb-2 ${dark ? 'border-white/10 bg-slate-800/40' : 'border-slate-200 bg-slate-50'}`}>
-        <p className={`text-[12px] font-medium mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+      <div className={`rounded-lg border px-3 py-2.5 mb-2 fc-tone-line fc-tone-raised`}>
+        <p className={`text-[12px] font-medium mb-1 fc-tone-muted`}>
           {AdminI18n.t('settings.infrastructure.resolvedFromThisPlatformS')}
         </p>
         {this.candidates.map((candidate) => (

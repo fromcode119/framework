@@ -62,7 +62,7 @@ export class PermalinkField extends PureReactor {
         disabled={disabled}
         className={`flex items-center gap-2.5 w-full text-start select-none text-[12px] font-medium transition-colors ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-        } ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
+        } fc-tone-muted`}
       >
         <div
           className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${
@@ -74,7 +74,7 @@ export class PermalinkField extends PureReactor {
           }`}
         >
           <span
-            className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${
+            className={`absolute top-0.5 w-3.5 h-3.5 rounded-full fc-tone-surface shadow transition-transform ${
               isDisabled ? 'left-[calc(100%-14px-2px)]' : 'left-0.5'
             }`}
           />

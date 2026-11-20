@@ -71,18 +71,18 @@ export class WorkspaceConsoleExitBar extends AdminComponent {
     if (!WorkspaceConsoleExitBar.applies || !current) return null;
     const canLeave = PlatformAccess.canManagePlatform(this.auth.user);
     return (
-      <div role="region" aria-label={AdminI18n.t('shell.workspaceConsole.label')} className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-slate-200 bg-slate-50 px-6 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 lg:px-8">
+      <div role="region" aria-label={AdminI18n.t('shell.workspaceConsole.label')} className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b fc-tone-line fc-tone-raised px-6 py-2 text-xs fc-tone-muted lg:px-8">
         <span className="flex min-w-0 items-center gap-2 font-medium">
           <FrameworkIcons.Eye size={14} />
           <span className="truncate">{AdminI18n.t('shell.workspaceConsole.viewing', { name: current.label })}</span>
         </span>
         <span className="ms-auto flex items-center gap-2">
-          <button type="button" onClick={() => { void this.configure(); }} className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1 font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+          <button type="button" onClick={() => { void this.configure(); }} className="inline-flex items-center gap-1.5 rounded-md border fc-tone-line fc-tone-surface px-2.5 py-1 font-medium fc-tone-text transition-colors fc-tone-hover">
             <FrameworkIcons.Settings size={13} />
             {AdminI18n.t('shell.workspaceConsole.configure')}
           </button>
           {canLeave ? (
-            <button type="button" onClick={() => { void this.leave(); }} className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1 font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+            <button type="button" onClick={() => { void this.leave(); }} className="inline-flex items-center gap-1.5 rounded-md border fc-tone-line fc-tone-surface px-2.5 py-1 font-medium fc-tone-text transition-colors fc-tone-hover">
               <FrameworkIcons.ArrowLeft size={13} />
               {AdminI18n.t('shell.workspaceConsole.platform')}
             </button>

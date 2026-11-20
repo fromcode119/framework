@@ -55,7 +55,7 @@ export class PersonFieldEditor extends Reactor {
   private words(label: string, value: Record<string, string>, onChange: (next: Record<string, string>) => void): ReactNode {
     return (
       <div className="space-y-2">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500">{label}</span>
+        <span className="block text-[12px] font-medium tracking-tight fc-tone-muted">{label}</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {this.locales.map((locale) => (
             <Input key={locale.value} label={locale.label} value={value[locale.value] ?? ''} disabled={this.saving}
@@ -72,7 +72,7 @@ export class PersonFieldEditor extends Reactor {
       this.change({ options: options.map((option, at) => (at === index ? { ...option, ...change } : option)) });
     return (
       <div className="space-y-3">
-        <span className="block text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.fields.options')}</span>
+        <span className="block text-[12px] font-medium tracking-tight fc-tone-muted">{AdminI18n.t('users.fields.options')}</span>
         {options.map((option, index) => (
           <div key={index} className="flex flex-wrap items-end gap-3">
             <Input label={AdminI18n.t('users.fields.optionKey')} value={option.key} onChange={(event) => set(index, { key: event.target.value })} />
@@ -104,14 +104,14 @@ export class PersonFieldEditor extends Reactor {
             options={PersonFieldEditor.TYPES.map((type) => ({ value: type, label: AdminI18n.t(`users.fields.types.${type}`) }))}
             onChange={(type) => this.change({ type })} />
         </div>
-        <p className="-mt-3 text-[12px] text-slate-400">{AdminI18n.t('users.fields.keyHint')}</p>
+        <p className="-mt-3 text-[12px] fc-tone-muted">{AdminI18n.t('users.fields.keyHint')}</p>
         {this.words(AdminI18n.t('users.fields.label'), draft.label, (label) => this.change({ label }))}
         {this.words(AdminI18n.t('users.fields.description'), draft.description, (description) => this.change({ description }))}
         {hasOptions ? this.options() : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <label className="block"><span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.selfEditable')}</span>
+          <label className="block"><span className="block text-[12px] font-medium tracking-tight fc-tone-muted mb-1.5">{AdminI18n.t('users.fields.selfEditable')}</span>
             <BooleanToggleField checked={draft.selfEditable} theme={theme} disabled={saving} onChange={(selfEditable) => this.change({ selfEditable })} /></label>
-          <label className="block"><span className="block text-[12px] font-medium tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.sortOrder')}</span>
+          <label className="block"><span className="block text-[12px] font-medium tracking-tight fc-tone-muted mb-1.5">{AdminI18n.t('users.fields.sortOrder')}</span>
             <NumberStepper step={1} value={draft.sortOrder} disabled={saving}
               onChange={(value) => this.change({ sortOrder: Number(value) || 0 })} /></label>
         </div>

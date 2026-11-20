@@ -36,19 +36,19 @@ export class BuildChangelog extends AdminComponent {
     const remaining = lines.length - shown.length;
 
     return (
-      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/60">
-        <p className="text-[12px] font-medium text-slate-600 dark:text-slate-400">
+      <div className="mt-2 rounded-lg border fc-tone-line fc-tone-raised px-3 py-2">
+        <p className="text-[12px] font-medium fc-tone-muted">
           {this.version ? AdminI18n.t('sources.whatChangedInV', { version: this.version }) : AdminI18n.t('sources.whatChanged')}
         </p>
         <ul className="mt-1 space-y-0.5">
           {shown.map((line) => (
-            <li key={line} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+            <li key={line} className="text-xs leading-relaxed fc-tone-muted">
               {line}
             </li>
           ))}
         </ul>
         {remaining > 0 ? (
-          <p className="mt-1 text-[12px] text-slate-600 dark:text-slate-400">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
+          <p className="mt-1 text-[12px] fc-tone-muted">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
         ) : null}
       </div>
     );

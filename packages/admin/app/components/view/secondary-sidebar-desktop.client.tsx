@@ -80,7 +80,7 @@ export class SecondarySidebarDesktop extends PureReactor {
         <button
           type="button"
           onClick={this.onClose}
-          className="absolute end-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          className="absolute end-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg fc-tone-muted transition-colors fc-tone-hover fc-tone-hover-text"
           aria-label={AdminI18n.t('shell.nav.minimize')}
         >
           <FrameworkIcons.Left size={14} />

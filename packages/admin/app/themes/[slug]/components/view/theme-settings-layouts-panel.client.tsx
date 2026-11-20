@@ -28,7 +28,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
       <div className="space-y-6">
         <div>
           <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('themes.defaultLayout')}</label>
-          <p className="mb-2 text-xs text-slate-500">{AdminI18n.t('themes.layoutForPagesThatDo')}</p>
+          <p className="mb-2 text-xs fc-tone-muted">{AdminI18n.t('themes.layoutForPagesThatDo')}</p>
           <div className="flex max-w-md flex-col">
             <Select
               value={tempDefaultLayout}
@@ -43,14 +43,14 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               className="w-full"
             />
             {LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale) ? (
-              <p className="text-[12px] text-slate-500 mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
+              <p className="text-[12px] fc-tone-muted mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
             ) : null}
             {isUnavailable ? (
               <p className="text-[12px] text-amber-600 mt-2">
                 {AdminI18n.t('themes.layoutNoLongerProvided', { layout: tempDefaultLayout })}
               </p>
             ) : null}
-            <p className="text-[12px] text-slate-500 mt-2">
+            <p className="text-[12px] fc-tone-muted mt-2">
               {AdminI18n.t('themes.aPageThatPicksA')}
             </p>
           </div>
@@ -59,7 +59,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
         {themeDetail.overrides && themeDetail.overrides.length > 0 && (
           <div>
             <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('themes.uiOverrides')}</label>
-            <p className="mb-2 text-xs text-slate-500">{AdminI18n.t('themes.componentsHardCodedForReplacement')}</p>
+            <p className="mb-2 text-xs fc-tone-muted">{AdminI18n.t('themes.componentsHardCodedForReplacement')}</p>
             <div className="flex flex-wrap gap-x-6 gap-y-1">
               {themeDetail.overrides.map((o) => (
                 <code key={o.name} className={`text-[13px] ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-700'}`}>{o.name}</code>
