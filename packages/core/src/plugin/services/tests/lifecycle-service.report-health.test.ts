@@ -45,6 +45,20 @@ describe('PluginBootHealthReporter.summarizeHeldPlugins', () => {
 });
 
 describe('PluginHealthNotificationTemplateService.render', () => {
+  it('says a plugin held for a too-old core waits for a platform update, not for an approval', () => {
+    const data = PluginBootHealthReporter.summarizeHeldPlugins(new Map<string, any>([
+      ['shop', { manifest: { slug: 'shop' }, state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CORE_TOO_OLD }],
+      ['drift', { manifest: { slug: 'drift' }, state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT }],
+    ]))!;
+    expect(data.plugins.map((p) => p.coreTooOld)).toEqual([true, false]);
+    const { text, html } = PluginHealthNotificationTemplateService.render(data);
+    const shopLine = text.split('\n').find((line) => line.includes('shop:'))!;
+    expect(shopLine).toContain('newer platform version');
+    expect(shopLine).not.toContain('nobody approved');
+    expect(text.split('\n').find((line) => line.includes('drift:'))).toContain('nobody approved');
+    expect(html).toContain('newer platform version');
+  });
+
   it('renders subject/text/html from the Handlebars template files', () => {
     const data = PluginBootHealthReporter.summarizeHeldPlugins(heldMap())!;
     const message = PluginHealthNotificationTemplateService.render(data);

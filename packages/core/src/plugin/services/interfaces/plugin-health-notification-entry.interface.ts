@@ -6,6 +6,8 @@ export interface IPluginHealthNotificationEntry {
   held: boolean;
   /** Why it's held. Absent → the template words it generically. */
   reason?: PluginHeldReason;
+  /** Held because the build needs a newer core: approving does nothing until the core is updated. */
+  coreTooOld: boolean;
   /** The registration error. Absent → the template words it generically. */
   error?: string;
 }
