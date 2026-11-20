@@ -56,6 +56,15 @@ describe('AdminSchemaLocalizer', () => {
     expect([url.label, url.admin.patternNote, url.admin.pattern]).toEqual(['Връзка', 'Не е връзка, която плеърът приема.', '^https?://']);
   });
 
+  it('translates what a number field says for a stored 0', () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.usageLimit.zeroLabel': 'Без лимит' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog',
+      fields: [{ name: 'usageLimit', type: 'number', label: 'Usage Limit', admin: { zeroLabel: 'No limit' } }],
+    });
+    expect(out.fields[0].admin.zeroLabel).toBe('Без лимит');
+  });
+
   it("translates the related-records panel's title and empty hint", () => {
     const words = { ...dictionary, 'shop.admin.collections.catalog.recordLinks.title': 'Свързани записи' };
     const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {

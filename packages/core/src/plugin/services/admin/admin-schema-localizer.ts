@@ -16,7 +16,7 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *                                                      (`overview` for the plugin's root path)
  *   admin.collections.<collection>.label               a collection's name (also its menu entry)
  *   admin.collections.<collection>.tabs.<name>         admin tabs / sections (`.sections.<name>.label|description`)
- *   admin.collections.<collection>.fields.<field>.label | description | placeholder | patternNote
+ *   admin.collections.<collection>.fields.<field>.label | description | placeholder | patternNote | zeroLabel
  *   admin.collections.<collection>.fields.<field>.options.<value>
  *   admin.collections.<collection>.fields.<field>.confirm.<value>         what choosing a status option does
  *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names (dictionary only)
@@ -209,6 +209,7 @@ export class AdminSchemaLocalizer {
           // operator like a description, so it is translated like one; left in the schema's English it
           // was the one English sentence on a Bulgarian form, and only where something had gone wrong.
           ...(field.admin.patternNote ? { patternNote: this.text(pluginSlug, `${key}.patternNote`, field.admin.patternNote) } : {}),
+          ...(field.admin.zeroLabel ? { zeroLabel: this.text(pluginSlug, `${key}.zeroLabel`, field.admin.zeroLabel) } : {}),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
           ...(Array.isArray(field.admin.tableLayout) ? {
             tableLayout: field.admin.tableLayout.map((column: any) => (column?.empty

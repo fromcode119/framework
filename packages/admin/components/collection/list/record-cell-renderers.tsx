@@ -34,6 +34,9 @@ export class RecordCellRenderers {
     raw: any;
     row?: Record<string, any>;
   }): ReactNode {
+    // A number whose 0 is a setting says what the setting is, before any cell formats it as an amount.
+    const zero = this.zeroLabel(field, raw);
+    if (zero) return zero;
     // A field that names its own display component (`admin.cell`) is drawn by it — a price in its
     // currency is its plugin's to format, not the list's. The plain rendering stays as its fallback.
     if (field?.admin?.cell && row) {
@@ -120,6 +123,13 @@ export class RecordCellRenderers {
    * The label the field declares for a stored option value — the words the operator picked in the
    * editor, in the console's language — or '' when the value is not one of its options.
    */
+  /** The words a number field declares for a stored 0 (`admin.zeroLabel`), or '' when the value is not 0. */
+  static zeroLabel(field: any, raw: any): string {
+    const label = field?.admin?.zeroLabel;
+    if (!label || field?.type !== 'number' || raw === null || raw === undefined || raw === '') return '';
+    return Number(raw) === 0 ? AdminServices.getInstance().localization.resolveLabelText(label) : '';
+  }
+
   /** The tone a select option declares for this value (`success`, `warning`, `danger`, `info`, `default`), or ''. */
   static optionTone(field: any, raw: any): string {
     const value = String(raw ?? '').trim();

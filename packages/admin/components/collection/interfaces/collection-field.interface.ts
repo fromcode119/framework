@@ -86,6 +86,11 @@ export interface ICollectionField {
      */
     pattern?: string;
     patternNote?: string;
+    /**
+     * What a stored 0 MEANS, for a number whose 0 is a setting rather than an amount — `'No limit'` on a
+     * usage limit. The list and the record read it instead of a bare "0", which reads as "none allowed".
+     */
+    zeroLabel?: string;
     sourceCollection?: string;
     sourceField?: string;
     autofill?: Record<string, string | readonly string[]>;
