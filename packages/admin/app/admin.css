@@ -1016,8 +1016,15 @@ html.dark {
 .fc-cal__sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 8px; }
 .fc-cal__sum-label { font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
 .fc-cal__sum-value { font-size: var(--fc-control-text); line-height: 20px; font-weight: 500; color: var(--fc-text); }
-.fc-cal__bar { display: grid; grid-template-columns: var(--fc-control-h) minmax(0, 1fr) var(--fc-control-h);
-  align-items: center; gap: 8px; margin-bottom: 8px; }
+/* Month navigation is ONE bar: previous · month · next inside a single field, not three buttons. */
+.fc-cal__bar { display: grid; grid-template-columns: 28px minmax(0, 1fr) 28px; align-items: center; gap: 4px;
+  padding: 2px; margin-bottom: 8px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius);
+  background: var(--fc-surface-muted); }
+.fc-cal__nav, .fc-cal__title { display: inline-flex; align-items: center; justify-content: center; height: 28px;
+  border-radius: calc(var(--fc-control-radius) - 2px); color: var(--fc-text); background: transparent; }
+.fc-cal__nav { width: 28px; color: var(--fc-text-muted); }
+.fc-cal__title { gap: 6px; font-size: var(--fc-control-text); line-height: 20px; font-weight: 500; }
+.fc-cal__nav:hover, .fc-cal__title:hover { background: var(--fc-surface); color: var(--fc-text); }
 .fc-cal__cell { width: 32px; height: 32px; padding: 0; text-align: center; vertical-align: middle; }
 .fc-cal__weekday { height: 24px; width: 32px; padding: 0; text-align: center; vertical-align: middle;
   font-size: 11px; line-height: 16px; font-weight: 500; color: var(--fc-text-muted); }
@@ -3249,6 +3256,10 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-tab:hover { color: var(--fc-text); }
 .fc-tab:disabled { color: var(--fc-text-faint); cursor: default; }
 .fc-tab--on { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-card-shadow); }
+/* Choices of one value (a period): one track holds them, so they read as a single control. */
+.fc-tabs--segmented { display: inline-flex; flex-wrap: nowrap; gap: 2px; padding: 2px;
+  border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); }
+.fc-tabs--segmented > .fc-tab { padding: 2px 10px; border-radius: calc(var(--fc-control-radius) - 2px); }
 
 /* ---------- The drawer, by the dialogs' own measurements ----------
    A title reads 16/24 like every other card's name, the line under it 13/20.8 like every value, and

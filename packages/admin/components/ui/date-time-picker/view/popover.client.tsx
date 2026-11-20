@@ -6,7 +6,6 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { DayPicker } from 'react-day-picker';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
-import { TimezoneUtils } from '@/lib/timezone';
 import { DateTimePickerConstants } from '@/components/ui/date-time-picker/constants/date-time-picker.constants';
 import { DateTimePickerDayClassNames } from '@/components/ui/date-time-picker/day-classnames';
 import { DateTimePickerJumpView } from '@/components/ui/date-time-picker/view/jump-view.client';
@@ -18,16 +17,12 @@ export class DateTimePickerPopover extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare showTime: boolean;
   @prop declare timezone: string;
-  @prop declare placeholder: string;
-  @prop declare value?: string;
   @prop declare coords: IDateTimePickerCoords;
   @prop declare visibleMonth: Date;
   @prop declare isJumpViewOpen: boolean;
-  @prop declare utcDate: Date | null;
   @prop declare zonedParts: any;
   @prop declare pickerDate?: Date;
   @prop declare popoverRef: Ref<HTMLDivElement>;
-  @prop declare onJumpToSelected: () => void;
   @prop declare onShiftMonth: (offset: number) => void;
   @prop declare onToggleJumpView: () => void;
   @prop declare onShiftYear: (offset: number) => void;
@@ -41,22 +36,11 @@ export class DateTimePickerPopover extends PureReactor {
 
   render(): ReactNode {
     const {
-      theme, showTime, timezone, placeholder, value, coords, visibleMonth, isJumpViewOpen,
-      utcDate, zonedParts, pickerDate, popoverRef,
-      onJumpToSelected, onShiftMonth, onToggleJumpView, onShiftYear, onJumpMonthSelect,
+      theme, showTime, timezone, coords, visibleMonth, isJumpViewOpen,
+      zonedParts, pickerDate, popoverRef,
+      onShiftMonth, onToggleJumpView, onShiftYear, onJumpMonthSelect,
       onSelect, onVisibleMonthChange, onTimeChange, onQuickAction, onClear, onClose,
     } = this;
-
-    const selectedSummary = value && utcDate
-      ? TimezoneUtils.formatSystemDate(
-          // The RAW value, not the pre-parsed Date: a literal `YYYY-MM-DD` must be
-          // recognized and rendered as that calendar day, not shifted through a timezone.
-          value,
-          showTime ? { dateStyle: 'full', timeStyle: 'short' } : { dateStyle: 'full' },
-          placeholder,
-          timezone,
-        )
-      : AdminI18n.t('ui.date.none');
 
     return (
         <RootFramework>
@@ -80,40 +64,31 @@ export class DateTimePickerPopover extends PureReactor {
             // The sheet every menu in this console opens in, not a blurred pane of its own.
             className="fc-menu-sheet p-2"
           >
-            <div className="fc-cal__sum">
-              <div className="min-w-0">
-                <p className="fc-cal__sum-label">{AdminI18n.t('ui.date.selected')}</p>
-                <p className="fc-cal__sum-value truncate">{selectedSummary}</p>
-              </div>
-              <button type="button" onClick={onJumpToSelected} className="fc-btn shrink-0">
-                {AdminI18n.t(pickerDate ? 'ui.date.jump' : 'ui.date.today')}
-              </button>
-            </div>
             <div className="fc-cal__bar">
               <button
                 type="button"
                 onClick={() => onShiftMonth(-1)}
-                className="fc-btn fc-btn--icon fc-btn--raised"
+                className="fc-cal__nav"
                 aria-label={AdminI18n.t('ui.date.previousMonth')}
               >
-                <FrameworkIcons.Left size={15} />
+                <FrameworkIcons.Left size={14} />
               </button>
               <button
                 type="button"
                 onClick={onToggleJumpView}
-                className="fc-btn w-full justify-center gap-2"
+                className="fc-cal__title"
                 aria-label={AdminI18n.t('ui.date.chooseMonth')}
               >
                 <span>{DateTimePickerConstants.monthLabels()[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
-                <FrameworkIcons.ChevronDown size={15} className={`transition-transform duration-150 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
+                <FrameworkIcons.ChevronDown size={13} className={`transition-transform duration-150 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
               </button>
               <button
                 type="button"
                 onClick={() => onShiftMonth(1)}
-                className="fc-btn fc-btn--icon fc-btn--raised"
+                className="fc-cal__nav"
                 aria-label={AdminI18n.t('ui.date.nextMonth')}
               >
-                <FrameworkIcons.Right size={15} />
+                <FrameworkIcons.Right size={14} />
               </button>
             </div>
             {isJumpViewOpen ? (
