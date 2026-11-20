@@ -119,6 +119,13 @@ export interface IField {
       readonly badge?: boolean;
       /** Use the values of a nested group as the display text, falling back to the named key. */
       readonly join?: { readonly from: string; readonly separator: string };
+      /**
+       * What an EMPTY cell of this column means, when empty is a value the runtime uses and not a gap.
+       * Without it an empty cell reads "Not recorded" — which, for a variant that keeps no stock of its
+       * own and so sells from its product's, says the opposite of what the storefront does. Translated
+       * from `fields.<field>.tableEmpty.<key>` in the plugin's dictionary.
+       */
+      readonly empty?: string;
     }[];
     /**
      * Where a row of a structured data table LEADS, as a path with `{key}` standing for that row's

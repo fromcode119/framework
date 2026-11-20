@@ -210,6 +210,11 @@ export class AdminSchemaLocalizer {
           // was the one English sentence on a Bulgarian form, and only where something had gone wrong.
           ...(field.admin.patternNote ? { patternNote: this.text(pluginSlug, `${key}.patternNote`, field.admin.patternNote) } : {}),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
+          ...(Array.isArray(field.admin.tableLayout) ? {
+            tableLayout: field.admin.tableLayout.map((column: any) => (column?.empty
+              ? { ...column, empty: this.text(pluginSlug, `${key}.tableEmpty.${column.key}`, column.empty) }
+              : column)),
+          } : {}),
         };
       }
       // A structured field's keys are named in the plugin's dictionary alone; the schema lists none.

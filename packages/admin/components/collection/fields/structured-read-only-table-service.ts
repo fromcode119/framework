@@ -55,6 +55,10 @@ export class StructuredReadOnlyTableService {
           .filter(Boolean).join(join.separator);
         if (title) values[key] = { kind: StructuredNodeKind.SCALAR, scalarValue: title };
       }
+      // An empty cell the schema says means something reads as what it means, not as "Not recorded".
+      for (const { key, empty } of layout) {
+        if (empty && !StructuredReadOnlyTableService.cellText(values[key]).trim()) values[key] = { kind: StructuredNodeKind.SCALAR, scalarValue: empty };
+      }
       return values;
     });
     return { ...node, tableColumns: columns, tableRows: rows, tableMediaColumns: media, tableBadgeColumns: badges, tableEmptyColumns: [] };

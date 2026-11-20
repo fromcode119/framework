@@ -109,6 +109,16 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[1].admin).toBeUndefined();
   });
 
+  it("translates what an empty table cell means, and leaves a column that declares none alone", () => {
+    const words = { 'shop.admin.collections.catalog.fields.variants.tableEmpty.stock': 'От продукта' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products',
+      shortSlug: 'catalog',
+      fields: [{ name: 'variants', admin: { tableLayout: [{ key: 'sku' }, { key: 'stock', empty: 'From the product' }] } }],
+    });
+    expect(out.fields[0].admin.tableLayout).toEqual([{ key: 'sku' }, { key: 'stock', empty: 'От продукта' }]);
+  });
+
   it('leaves text a dictionary lacks exactly as declared, and adds nothing that was not declared', () => {
     const field = { name: 'sku', type: 'text' };
     const out = new AdminSchemaLocalizer(() => '').collection('other', { slug: 'x', fields: [field] });
