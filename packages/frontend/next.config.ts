@@ -21,7 +21,10 @@ const nextConfig = {
   // Listing `client.tsx`/`client.ts` here makes Next recognize `page.client.tsx` as the route `page`, so no
   // one-line re-export wrapper file is needed. A dir has EITHER page.tsx OR page.client.tsx, never both.
   pageExtensions: ['client.tsx', 'client.ts', 'tsx', 'ts', 'jsx', 'js'],
-  experimental: {},
+  // Turbopack keeps its dev cache on disk by default, with no size bound: one console that had
+  // been edited for two days held 33 GB in .next/dev/cache and filled the whole disk. Kept in
+  // memory instead — a restarted dev server compiles again, nothing else changes.
+  experimental: { turbopackFileSystemCacheForDev: false },
   // serverExternalPackages intentionally omitted — all server-only @fromcode119/* packages
   // are replaced with no-op stubs via webpack aliases below, so no external resolution needed.
   transpilePackages: ['@fromcode119/core', '@fromcode119/react', '@fromcode119/sdk'],
