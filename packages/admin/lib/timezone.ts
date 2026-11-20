@@ -88,9 +88,7 @@ export class TimezoneUtils {
 
   static getTimezoneOptions(preferred?: string): ITimezoneOption[] {
       const knownTimezones = new Set<string>(TimezoneUtils.readSupportedTimezoneValues());
-      // UTC is the default and the zone an unset site runs in, but browsers list only named regions, so
-      // without this a site moved to another zone could never be put back on UTC.
-      knownTimezones.add(TimezoneUtils.DEFAULT_TIMEZONE);
+      knownTimezones.add(TimezoneUtils.DEFAULT_TIMEZONE); // not in the browser's list: without it no site could return to UTC
       const explicit = String(preferred || '').trim();
       if (explicit && TimezoneUtils.isValidTimezone(explicit)) {
         knownTimezones.add(explicit);

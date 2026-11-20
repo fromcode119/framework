@@ -106,13 +106,8 @@ export class Select extends Reactor {
     }
   }
 
-  /**
-   * Whether the list opens with a search box. Unless the caller says, only when there is something to search:
-   * a long list, a list the owner searches itself, or one that takes a new option typed in. Draft/Published and
-   * three payment methods each opened a search box above two or three rows.
-   */
   private get offersSearch(): boolean {
-    return this.searchable ?? (Boolean(this.onSearchChange) || Boolean(this.onCreateOption) || (this.options?.length ?? 0) > SelectUtils.SEARCH_FROM);
+    return SelectUtils.offersSearch(this.searchable, Boolean(this.onSearchChange || this.onCreateOption), this.options?.length ?? 0);
   }
 
   @bound handleCreate(label: string): void {
@@ -122,10 +117,7 @@ export class Select extends Reactor {
 
   @bound handleClickOutside(event: MouseEvent): void {
     const target = event.target as Node;
-    if (
-      this.triggerRef.current && !this.triggerRef.current.contains(target) &&
-      this.menuRef.current && !this.menuRef.current.contains(target)
-    ) {
+    if (this.triggerRef.current && !this.triggerRef.current.contains(target) && this.menuRef.current && !this.menuRef.current.contains(target)) {
       this.isOpen = false;
     }
   }
@@ -208,9 +200,7 @@ export class Select extends Reactor {
 
     return (
     <div className={`fc-field-stack w-full ${className}`}>
-      {/* Clicking the label focuses the field, as a native select's label does. Wrapping would not do here:
-          a click anywhere inside a label is forwarded to its control, so picking an option would also press
-          the trigger. */}
+      {/* The label focuses the field like a native one; wrapping would forward option clicks to the trigger. */}
       {label && <label className={UiFieldUtils.TEXT.LABEL} onClick={() => this.triggerRef.current?.querySelector('button')?.focus()}>{label}</label>}
       <div className="relative w-full" ref={this.triggerRef}>
         <button
