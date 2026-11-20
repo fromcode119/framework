@@ -1,14 +1,11 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop, state } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AdminLink } from '@/components/view/admin-link.client';
+import { Crumbs } from '@/components/ui/view/crumbs.client';
 import { AdminServices } from '@/lib/admin-services';
-import { AdminClass } from '@/lib/admin-class';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Where a record sits: a back button to its list, then list › record. It stands above both columns, so
- * the header card can share the first row with the side column. The look is `admin.css` (`fc-record-crumbs*`).
+ * the header card can share the first row with the side column. Drawn by the kit's `Crumbs`.
  */
 export class EditRecordCrumbs extends PureReactor {
   @prop declare pluginSlug: string;
@@ -24,17 +21,6 @@ export class EditRecordCrumbs extends PureReactor {
   }
 
   render(): ReactNode {
-    const crumbs = AdminClass.of('record-crumbs');
-    const listHref = this.listHref || `/${this.pluginSlug}/${this.slug}`;
-    return (
-      <nav className={crumbs} aria-label={AdminI18n.t('collection.edit.breadcrumb')}>
-        <AdminLink href={listHref} className={`${crumbs}__back`} aria-label={AdminI18n.t('common.back')} title={AdminI18n.t('common.back')}>
-          <FrameworkIcons.Left size={16} />
-        </AdminLink>
-        <AdminLink href={listHref} className={`${crumbs}__link`}>{this.listLabel}</AdminLink>
-        <span className={`${crumbs}__sep`} aria-hidden="true">›</span>
-        <span className={`${crumbs}__current`} aria-current="page">{this.title}</span>
-      </nav>
-    );
+    return <Crumbs href={this.listHref || `/${this.pluginSlug}/${this.slug}`} listLabel={this.listLabel} title={this.title} />;
   }
 }

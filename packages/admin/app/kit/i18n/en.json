@@ -1034,6 +1034,28 @@
       "stockKeepingUnitTheShop": "Stock keeping unit: the shop’s own code for the product.",
       "above": "Above",
       "under": "Under"
+    },
+    "record-pieces": {
+      "layout": "Layout",
+      "valueRowIntro": "One fact of a record: its name, its value, and an optional small action at the end. The same row a saved record draws, so a plugin's values read like the console's own.",
+      "rowsInACard": "Rows in a card",
+      "package": "Package",
+      "width": "Width",
+      "height": "Height",
+      "size": "Size",
+      "open": "Open",
+      "theNameOfTheValue": "The name of the value",
+      "theValue": "The value",
+      "aControlAtTheEnd": "A control at the end of the row",
+      "mutedForAnAbsentValue": "Drawn muted, for a value that says it is absent",
+      "crumbsIntro": "Where a page sits: a back button to its list, then list › page.",
+      "overAPage": "Over a page",
+      "orders": "Orders",
+      "newOrder": "New order",
+      "theListThePageBelongsTo": "The list the page belongs to",
+      "theListName": "The list's name",
+      "thisPage": "This page",
+      "widthValue": "20 cm"
     }
   },
   "page": {
