@@ -64,7 +64,8 @@ export class IntegrationManager {
     this.projectRoot = projectRoot;
     this.logger = logger || new Logger({ namespace: 'integration-manager' });
     this.registry = new IntegrationRegistry(db, this.logger);
-    this.configReader = new IntegrationConfigReadService(this.registry, (type: string) => this.normalizeKey(type));
+    this.configReader = new IntegrationConfigReadService(this.registry, (type: string) => this.normalizeKey(type),
+      (type: string, source: unknown) => this.tenantResolver.routeFor(type, source));
     this.configWriter = new IntegrationConfigWriteService(
       this.registry,
       (type: string) => this.normalizeKey(type),

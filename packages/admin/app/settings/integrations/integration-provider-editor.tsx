@@ -20,6 +20,7 @@ import type { IIntegrationProvider } from '@/app/settings/integrations/interface
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { EmailDeliveryRoute } from '@fromcode119/core/client';
 
 /**
  * A provider's form, submitted by the page header's Save.
@@ -101,7 +102,20 @@ export class IntegrationProviderEditor extends PureReactor {
       : source === 'env'
         ? AdminI18n.t('settings.integrations.sourceEnv')
         : AdminI18n.t('settings.integrations.sourceDefault');
-    return AdminI18n.t('settings.integrations.statusInUse', { provider: label, source: sourceText });
+    return this.routeText() || AdminI18n.t('settings.integrations.statusInUse', { provider: label, source: sourceText });
+  }
+
+  /**
+   * Inside a site, where its mail actually goes when that is not its own provider. Without it the line
+   * read "Mock Driver is in use — set in the server environment" while every message the site sent was
+   * refused, and nothing on the page said so; only the api's log did.
+   */
+  private routeText(): string {
+    const route = EmailDeliveryRoute.fromValue(String(this.activeIntegration.active?.route ?? ''));
+    if (route === EmailDeliveryRoute.NONE) return AdminI18n.t('settings.integrations.routeNone');
+    if (route === EmailDeliveryRoute.PLATFORM_UNAVAILABLE) return AdminI18n.t('settings.integrations.routePlatformUnavailable');
+    if (route === EmailDeliveryRoute.PLATFORM) return AdminI18n.t('settings.integrations.routePlatform');
+    return '';
   }
 
   private renderStatus(): ReactNode {

@@ -12,7 +12,8 @@ export interface IIntegrationRecord {
   /** Who registered the type: a plugin's slug and name, or empty strings for the framework. */
   owner: { slug: string; label: string };
   providers: IIntegrationProvider[];
-  active?: { provider: string; source: string; config: Record<string, any> } | null;
+  /** `route`: where a site's work actually goes when it is not its own provider (`EmailDeliveryRoute`); null otherwise. */
+  active?: { provider: string; source: string; route?: string | null; config: Record<string, any> } | null;
   stored?: { providerKey: string; config: Record<string, any> } | null;
   storedProviders?: IStoredProvider[] | null;
 }
