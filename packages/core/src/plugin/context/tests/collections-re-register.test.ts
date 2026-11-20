@@ -49,15 +49,19 @@ describe('a plugin re-registering its own collection', () => {
     expect(manager.registeredCollections.get('fcp_shop_products').collection.fields).not.toBe(before);
   });
 
-  it('keeps a field the release no longer declares — another plugin may have extended the collection', () => {
+  it('drops a field the OWNER no longer declares — a release that removed a control removes it from the console too', () => {
     const manager = buildManager();
     const collections = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'shop' } } as any, manager, logger, security);
     collections.register(products(true, [{ name: 'giftNote', type: 'text' }]) as any);
     collections.register(products(false) as any);
 
     const names = manager.registeredCollections.get('fcp_shop_products').collection.fields.map((field: any) => field.name);
-    expect(names).toContain('giftNote');
+    expect(names).not.toContain('giftNote');
+    expect(names).toEqual(['title', 'variantOptions']);
+    // A field another plugin contributed is NOT the owner's to drop: PluginEntityRegistrationService's
+    // own tests cover that side, where the extension arrives through mergeCollectionFields.
   });
+
 
   it('takes the new access and hooks — the old ones call a process that is gone', () => {
     const manager = buildManager();
