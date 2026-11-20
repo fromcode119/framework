@@ -42,7 +42,7 @@ export abstract class BackupCreateCardDropZone extends AdminComponent {
     }
 
     const normalizedName = String(file.name || '').trim().toLowerCase();
-    const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.db');
+    const isSupportedArchive = normalizedName.endsWith('.tar.gz') || normalizedName.endsWith('.sql') || normalizedName.endsWith('.sql.gz') || normalizedName.endsWith('.db');
     if (!isSupportedArchive) {
       this.importError = AdminI18n.t('settings.components.chooseATarGzSql');
       return;

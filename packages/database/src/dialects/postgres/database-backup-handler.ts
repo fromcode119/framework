@@ -16,6 +16,8 @@ import type { IDatabaseBackupHandler } from '@database/dialects/interfaces/datab
  * - **One table the connecting role cannot read does not cost the whole dump.** `pg_dump` locks every
  *   table before it writes anything, so a single table made by hand under another role refused the
  *   lot. Such relations are left out and each one is named in a warning.
+ * - **The dump is written compressed** (`.sql.gz`, plain SQL inside). Uncompressed it was ten times the
+ *   size, and five kept copies took as much disk as the rest of the server.
  * - **A dump that still fails says why.** The first line `pg_dump` wrote is reported, so the backup
  *   screen shows the cause instead of "no snapshot available".
  */
@@ -41,7 +43,7 @@ export class PostgresDatabaseBackupHandler implements IDatabaseBackupHandler {
       return null;
     }
 
-    const dumpPath = path.join(context.backupsPath, `db-dump-${context.timestamp}.sql`);
+    const dumpPath = path.join(context.backupsPath, `db-dump-${context.timestamp}.sql.gz`);
     const options = { env: { ...process.env, PGPASSWORD: target.password }, maxBuffer: 1024 * 1024 * 64 };
     const unreadable = await PostgresDatabaseBackupHandler.unreadableRelations(target.connection, options);
 
@@ -49,6 +51,8 @@ export class PostgresDatabaseBackupHandler implements IDatabaseBackupHandler {
       await PostgresDatabaseBackupHandler.execFileAsync('pg_dump', [
         `--dbname=${target.connection}`,
         `--file=${dumpPath}`,
+        // Plain SQL, gzip-compressed: a tenth of the size, and still restored with `gunzip -c | psql`.
+        '--compress=6',
         ...unreadable.map((relation) => `--exclude-table=${relation}`),
       ], options);
     } catch (error: any) {

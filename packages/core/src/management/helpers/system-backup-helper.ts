@@ -160,7 +160,7 @@ export class SystemBackupHelper {
 
     const files = fs.readdirSync(databaseDir)
       .filter((fileName) =>
-        (fileName.startsWith('db-dump-') && fileName.endsWith('.sql'))
+        (fileName.startsWith('db-dump-') && (fileName.endsWith('.sql') || fileName.endsWith('.sql.gz')))
         || (fileName.startsWith('db-copy-') && fileName.endsWith('.db')),
       )
       .map((fileName) => ({
