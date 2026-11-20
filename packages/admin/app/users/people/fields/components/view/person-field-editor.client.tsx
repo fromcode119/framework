@@ -96,7 +96,7 @@ export class PersonFieldEditor extends Reactor {
     const hasOptions = draft.type === 'choice' || draft.type === 'choices';
     return (
       <div className={`${AdminClass.SURFACE} p-8 space-y-5 ${dark ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-        {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 fc-size-xs font-medium dark:bg-rose-500/10">{this.error}</div> : null}
+        {this.error ? <div className="rounded-xl fc-tone-danger-soft fc-tone-danger px-4 py-2.5 fc-size-xs font-medium">{this.error}</div> : null}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Input label={AdminI18n.t('users.fields.key')} value={draft.key} disabled={saving || Boolean(this.field)}
             onChange={(event) => this.change({ key: event.target.value })} />

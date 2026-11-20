@@ -67,13 +67,13 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
       return (
         <div className="flex min-h-screen items-center justify-center fc-canvas">
           <div className="max-w-md space-y-6 p-12 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-500 shadow-xl shadow-indigo-500/10">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-indigo-500/10 fc-tone-brand shadow-xl shadow-indigo-500/10">
               <FrameworkIcons.User size={40} />
             </div>
             <div className="space-y-2">
               <h1 className="text-2xl font-medium tracking-tight fc-tone-text">{AdminI18n.t('shell.account.yours')}</h1>
               <p className="text-sm font-medium leading-relaxed fc-tone-muted">
-                <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-medium text-indigo-500' }} />
+                <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-medium fc-tone-brand' }} />
               </p>
             </div>
             <button

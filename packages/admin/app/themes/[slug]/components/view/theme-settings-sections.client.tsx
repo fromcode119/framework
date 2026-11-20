@@ -1,4 +1,5 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { Tabs } from '@/components/ui/view/tabs.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ThemeSettingsTab } from '@/app/themes/[slug]/enums/theme-settings-tab.enum';
@@ -28,21 +29,12 @@ export class ThemeSettingsSections extends PureReactor {
   }
 
   render(): ReactNode {
-    const { sections, currentSection, adminTheme } = this.model;
-    const dark = adminTheme === ThemeMode.DARK;
+    const { sections, currentSection } = this.model;
     return (
       <>
-        <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 fc-size-sm ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
-          {sections.map((section) => (
-            <button type="button" key={section.id} onClick={() => this.page.handleTabChange(ThemeSettingsTab.SETTINGS, section.id)}
-              aria-current={section === currentSection ? 'page' : undefined}
-              className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${section === currentSection
-                ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
-                : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
-              {section.label}
-            </button>
-          ))}
-        </div>
+        <Tabs variant="second" label={AdminI18n.t('themes.settings')} value={currentSection.id}
+          tabs={sections.map((section) => ({ id: section.id, label: section.label }))}
+          onChange={(id: string) => this.page.handleTabChange(ThemeSettingsTab.SETTINGS, id)} />
         <div className="w-full py-6">
           <section className="rounded-2xl border fc-tone-line fc-tone-surface p-6 shadow-sm fc-page-stack">
             <h2 className={`text-base font-medium fc-tone-text`}>{currentSection.label}</h2>

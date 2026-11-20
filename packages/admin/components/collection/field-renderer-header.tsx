@@ -47,7 +47,7 @@ export class FieldRendererHeader extends PureReactor {
         <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
-          {field.required && <span className="text-rose-500 ms-1 font-medium font-sans">*</span>}
+          {field.required && <span className="fc-tone-danger ms-1 font-medium font-sans">*</span>}
         </label>
         {this.help}
         </span>

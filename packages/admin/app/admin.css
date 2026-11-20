@@ -3746,6 +3746,33 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-size-sm { font-size: var(--fc-text-sm); }
 .fc-size-md { font-size: var(--fc-text-md); }
 .fc-size-lg { font-size: var(--fc-text-lg); }
+/* Meaning, not hue: a state's ink, its tint, its edge and its solid fill, from the same tokens the
+   kit's Badge and Alert read, so dark mode and a theme's own colours reach hand-laid markup too. */
+.fc-tone-success { color: var(--fc-success); }
+html.dark .fc-tone-success { color: var(--fc-success-strong); }
+.fc-tone-success-soft { background-color: var(--fc-success-soft); }
+.fc-tone-success-line { border-color: var(--fc-success-soft-border); }
+.fc-tone-success-solid { background-color: var(--fc-success); }
+.fc-tone-warning { color: var(--fc-warning); }
+html.dark .fc-tone-warning { color: var(--fc-warning-strong); }
+.fc-tone-warning-soft { background-color: var(--fc-warning-soft); }
+.fc-tone-warning-line { border-color: var(--fc-warning-soft-border); }
+.fc-tone-warning-solid { background-color: var(--fc-warning); }
+.fc-tone-danger { color: var(--fc-danger); }
+html.dark .fc-tone-danger { color: var(--fc-danger-strong); }
+.fc-tone-danger-soft { background-color: var(--fc-danger-soft); }
+.fc-tone-danger-line { border-color: var(--fc-danger-soft-border); }
+.fc-tone-danger-solid { background-color: var(--fc-danger); }
+.fc-tone-info { color: var(--fc-info); }
+html.dark .fc-tone-info { color: var(--fc-info-strong); }
+.fc-tone-info-soft { background-color: var(--fc-info-soft); }
+.fc-tone-info-line { border-color: var(--fc-info-soft-border); }
+.fc-tone-info-solid { background-color: var(--fc-info); }
+.fc-tone-brand { color: var(--fc-brand); }
+html.dark .fc-tone-brand { color: color-mix(in srgb, var(--fc-brand) 55%, #fff); }
+.fc-tone-brand-soft { background-color: color-mix(in srgb, var(--fc-brand) 10%, transparent); }
+.fc-tone-brand-line { border-color: color-mix(in srgb, var(--fc-brand) 35%, transparent); }
+.fc-tone-brand-solid { background-color: var(--fc-brand); }
 .fc-label { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fc-control-text); line-height: 20px; font-weight: var(--fc-weight-strong); color: var(--fc-text); }
 .fc-label__optional { font-weight: 400; color: var(--fc-text-muted); }
 .fc-hint { display: inline-flex; align-items: flex-start; gap: 6px; font-size: var(--fc-control-text); line-height: 20px; color: var(--fc-text-muted); }

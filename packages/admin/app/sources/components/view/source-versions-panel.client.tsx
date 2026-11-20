@@ -80,7 +80,7 @@ export class SourceVersionsPanel extends SourceVersionsActions {
           description={AdminI18n.t('sources.replaceTheRunningVersionWhenever')}
         />
         {this.renderInstall()}
-        {this.versionError ? <span className="text-rose-600 dark:text-rose-400">{this.versionError}</span> : null}
+        {this.versionError ? <span className="fc-tone-danger">{this.versionError}</span> : null}
       </div>
     );
   }

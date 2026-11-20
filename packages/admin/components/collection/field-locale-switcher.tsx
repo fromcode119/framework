@@ -57,7 +57,7 @@ export class FieldLocaleSwitcher extends PureReactor {
               // stays; the menu says why it has nothing to switch to and where that is set.
               <p className={`px-2.5 py-2 text-xs font-medium leading-relaxed fc-tone-muted`}>
                 {AdminI18n.t('ui.locale.noneConfigured')}{' '}
-                <AdminLink className="font-medium text-indigo-600 underline dark:text-indigo-300" href={AdminPathUtils.toAdminPath('/settings/localization')}>
+                <AdminLink className="font-medium fc-tone-brand underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>
                   {AdminI18n.t('ui.locale.configure')}
                 </AdminLink>
               </p>

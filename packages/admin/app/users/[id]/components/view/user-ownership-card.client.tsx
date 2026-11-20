@@ -76,7 +76,7 @@ export class UserOwnershipCard extends AdminComponent {
 
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="fc-tone-warning" />}>
         <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.handOwnership', { name: this.targetName })}
         </p>
@@ -101,7 +101,7 @@ export class UserOwnershipCard extends AdminComponent {
   private renderCurrentOwner(): ReactElement {
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="fc-tone-warning" />}>
         <p className={`text-sm py-2 fc-tone-muted`}>
           {AdminI18n.t('users.thisAccountOwnsThePlatform')}
         </p>

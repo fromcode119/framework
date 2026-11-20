@@ -20,7 +20,7 @@ export class PeopleColumns {
     {
       header: AdminI18n.t('users.loginAccount'), id: 'linked',
       accessor: (p: IPerson) => (p.userId != null && p.userId !== '')
-        ? <span className="font-medium text-emerald-500 fc-size-xs tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
+        ? <span className="font-medium fc-tone-success fc-size-xs tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
         : <span className="font-medium fc-tone-muted fc-size-xs tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
     },
     {

@@ -14,7 +14,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class AdminRichText extends PureReactor {
   @prop declare k: string;
   @prop declare vars?: Record<string, unknown>;
-  /** A class for each tag, when the screen styles the marked words (`{ strong: 'text-amber-600' }`). */
+  /** A class for each tag, when the screen styles the marked words (`{ strong: 'fc-tone-warning' }`). */
   @prop declare classes?: Partial<Record<'code' | 'strong' | 'em', string>>;
 
   private static readonly TAGS: Record<string, string> = { code: 'code', strong: 'strong', em: 'em', b: 'strong' };

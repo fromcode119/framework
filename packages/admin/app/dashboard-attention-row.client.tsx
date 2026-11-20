@@ -13,8 +13,8 @@ export class DashboardAttentionRow extends AdminComponent {
   @prop declare item: Record<string, any>;
 
   private static readonly DOT_BY_SEVERITY: Record<string, string> = {
-    critical: 'bg-rose-500',
-    warning: 'bg-amber-500',
+    critical: 'fc-tone-danger-solid',
+    warning: 'fc-tone-warning-solid',
     info: 'bg-slate-400 dark:bg-slate-600',
   };
 
@@ -46,7 +46,7 @@ export class DashboardAttentionRow extends AdminComponent {
           <button
             type="button"
             onClick={this.handleAction}
-            className="shrink-0 fc-size-xs font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+            className="shrink-0 fc-size-xs font-medium fc-tone-brand hover:text-indigo-500"
           >
             {String(item.actionLabel)}
           </button>

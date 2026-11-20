@@ -64,7 +64,7 @@ export class DashboardCollectionsGrid extends PureReactor {
 
           return (
             <div key={s.slug} className={`p-3 ${AdminClass.SURFACE} flex items-center gap-3 transition-colors hover:border-indigo-200 group cursor-pointer dark:hover:border-indigo-500/40`} onClick={() => this.onNavigate(adminPath)}>
-              <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg transition-colors bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/10 dark:text-indigo-400 [&_svg]:h-4 [&_svg]:w-4">
+              <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg transition-colors fc-tone-brand-soft fc-tone-brand group-hover:bg-indigo-600 group-hover:text-white [&_svg]:h-4 [&_svg]:w-4">
                 <DynamicIcon name={s.icon || 'Database'} size={16} />
               </div>
               <div className="min-w-0 flex-1">

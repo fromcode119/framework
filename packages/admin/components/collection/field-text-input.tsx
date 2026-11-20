@@ -92,7 +92,7 @@ export class FieldTextInput extends PureReactor {
           <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>
         )}
         {field.name === 'slug' && slugWarning && (
-          <div className="absolute top-full start-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">
+          <div className="absolute top-full start-0 mt-2 flex items-center gap-2 text-xs font-medium fc-tone-warning animate-in fade-in slide-in-from-top-1 px-1">
             <FrameworkIcons.Alert size={12} />
             <span>{slugWarning}</span>
           </div>

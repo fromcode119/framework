@@ -130,9 +130,9 @@ export class ThemeLayoutField extends Reactor {
         </p>
 
         {selectedLayoutMissing ? (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-500/40 dark:bg-amber-500/10">
-            <p className="fc-size-xs font-medium text-amber-600 dark:text-amber-400">{AdminI18n.t('ui.layout.missingTitle')}</p>
-            <p className="mt-1 fc-size-xs font-medium leading-relaxed text-amber-700 dark:text-amber-300">
+          <div className="rounded-xl border fc-tone-warning-line fc-tone-warning-soft px-3 py-2.5">
+            <p className="fc-size-xs font-medium fc-tone-warning">{AdminI18n.t('ui.layout.missingTitle')}</p>
+            <p className="mt-1 fc-size-xs font-medium leading-relaxed fc-tone-warning">
               {AdminI18n.t('ui.layout.missingText', { layout: explicitValue, effective: `${effectiveLabel} (${effectiveValue})` })}
             </p>
             <div className="mt-2">

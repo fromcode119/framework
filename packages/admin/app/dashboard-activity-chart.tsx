@@ -62,7 +62,7 @@ export class DashboardActivityChart extends PureReactor {
 
   private errorSuffix(errors: number): ReactNode {
     if (!errors) return null;
-    return <span className="text-rose-500 font-medium"> · {errors === 1 ? AdminI18n.t('dashboard.errorOne') : AdminI18n.t('dashboard.errorMany', { count: errors })}</span>;
+    return <span className="fc-tone-danger font-medium"> · {errors === 1 ? AdminI18n.t('dashboard.errorOne') : AdminI18n.t('dashboard.errorMany', { count: errors })}</span>;
   }
 
   render(): ReactNode {

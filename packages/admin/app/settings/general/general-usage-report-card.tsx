@@ -76,7 +76,7 @@ export class GeneralUsageReportCard extends AdminComponent {
     if (!status) return <p className="text-xs opacity-70">{AdminI18n.t('settings.general.usageReportNeverSent')}</p>;
     const when = new Date(status.at).toLocaleString();
     return (
-      <p className={`text-xs font-medium ${status.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+      <p className={`text-xs font-medium ${status.ok ? 'fc-tone-success' : 'fc-tone-danger'}`}>
         {AdminI18n.t(status.ok ? 'settings.general.usageReportLastOk' : 'settings.general.usageReportLastFailed', { when, message: status.message })}
       </p>
     );

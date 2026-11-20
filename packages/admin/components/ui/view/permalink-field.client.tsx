@@ -67,7 +67,7 @@ export class PermalinkField extends PureReactor {
         <div
           className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${
             isDisabled
-              ? 'bg-rose-500'
+              ? 'fc-tone-danger-solid'
               : theme === ThemeMode.DARK
                 ? 'bg-slate-700'
                 : 'bg-slate-200'

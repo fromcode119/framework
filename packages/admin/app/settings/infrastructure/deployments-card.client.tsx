@@ -75,7 +75,7 @@ export class DeploymentsCard extends AdminComponent {
     if (this.loadError) return <p className="text-xs text-[var(--destructive)]">{this.loadError}</p>;
     if (!this.capacity) return null;
     const rolling = this.mode === DeployMode.ROLLING.value;
-    const tone = this.capacity.fits ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400';
+    const tone = this.capacity.fits ? 'fc-tone-success' : 'fc-tone-warning';
     const headline = this.capacity.fits
       ? AdminI18n.t('settings.infrastructure.rollingFits')
       : rolling ? AdminI18n.t('settings.infrastructure.rollingWillRestart') : AdminI18n.t('settings.infrastructure.rollingNoRoom');

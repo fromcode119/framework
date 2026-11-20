@@ -46,7 +46,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
                   data-secondary-link="true"
                   aria-current={isActive ? 'page' : undefined}
                   onClick={() => this.onItemActivate?.(item)}
-                  className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'}`}
+                  className={`flex items-start gap-3 rounded-lg px-3 py-2 transition-colors ${isActive ? 'fc-tone-brand-solid text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-slate-200'}`}
                 >
                   <span className={`${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'} pt-0.5`}>
                     <Icon name={item.icon || 'Circle'} size={16} />

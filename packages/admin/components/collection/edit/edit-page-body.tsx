@@ -1,5 +1,4 @@
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -17,7 +16,7 @@ import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versi
 import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 import { EditMoreSectionsCard } from '@/components/collection/edit/view/edit-more-sections-card.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
-import { AdminClass } from '@/lib/admin-class';
+import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditPageBody extends PureReactor {
@@ -115,8 +114,8 @@ export class EditPageBody extends PureReactor {
       */}
       <form onSubmit={(event) => event.preventDefault()}>
         {status && (
-          <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-rose-50 border-rose-100 text-rose-600'}`}>
-            <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'}`}>
+          <div className={`mb-8 p-4 rounded-xl flex items-start gap-4 border animate-in slide-in-from-top-2 ${status.type === NotificationType.SUCCESS ? 'fc-tone-success-soft fc-tone-success-line fc-tone-success' : 'fc-tone-danger-soft fc-tone-danger-line fc-tone-danger'}`}>
+            <div className={`p-2 rounded-xl ${status.type === NotificationType.SUCCESS ? 'fc-tone-success-solid text-white shadow-lg shadow-emerald-500/20' : 'fc-tone-danger-solid text-white shadow-lg shadow-rose-500/20'}`}>
               {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
             </div>
             <div className="flex-1">
@@ -132,21 +131,8 @@ export class EditPageBody extends PureReactor {
 
 
         {collection.admin?.tabs && collection.admin.tabs.length > 0 && (
-          <div className={`flex items-center gap-2 mb-8 p-1.5 ${AdminClass.SURFACE} w-fit ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
-            {collection.admin.tabs.map((tab: any) => (
-              <button
-                key={tab.name}
-                onClick={() => setActiveTab(tab.name)}
-                className={`px-6 py-2.5 rounded-xl fc-size-xs font-medium transition-all ${
-                  activeTab === tab.name
-                    ? (theme === ThemeMode.DARK ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-indigo-600 shadow-sm')
-                    : (theme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <Tabs className="mb-8" value={activeTab} onChange={setActiveTab}
+            tabs={collection.admin.tabs.map((tab: any) => ({ id: tab.name, label: tab.label }))} />
         )}
 
         {this.crumbs}

@@ -100,7 +100,7 @@ export class SystemLocalesField extends Reactor {
                 aria-pressed={isSelected}
                 className={`px-2.5 py-1 fc-size-xs font-medium rounded-lg border transition-colors ${
                   isSelected
-                    ? isDark ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-200' : 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                    ? 'fc-tone-brand-soft fc-tone-brand-line fc-tone-brand'
                     : isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-500 hover:text-slate-800'
                 } ${this.isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               >

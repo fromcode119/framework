@@ -63,7 +63,7 @@ export class DataTableCard<T extends { id: any }> extends PureReactor {
     const actions = this.actions?.(this.row);
     return (
       <div
-        className={`flex gap-3 ps-3 pe-4 py-3 border-t fc-tone-line first:border-t-0 ${this.onRowClick ? 'cursor-pointer' : ''} ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`}
+        className={`flex gap-3 ps-3 pe-4 py-3 border-t fc-tone-line first:border-t-0 ${this.onRowClick ? 'cursor-pointer' : ''} ${this.selected ? 'fc-tone-brand-soft' : ''}`}
         onClick={this.open}
       >
         {this.selectable ? (

@@ -36,12 +36,12 @@ export class DashboardSitesPanel extends AdminComponent {
   }
 
   private stateDot(site: Record<string, any>): string {
-    if (Number(site.errors24h || 0) > 0) return 'bg-rose-500';
+    if (Number(site.errors24h || 0) > 0) return 'fc-tone-danger-solid';
     // Not published outranks "no theme": a site nobody can reach is the more surprising fact, and it
     // is the one an operator forgets. Amber, not red — it is a state somebody chose, not a fault.
-    if (site.visibility && site.visibility !== 'public') return 'bg-amber-500';
-    if (!site.themeSlug) return 'bg-amber-500';
-    return 'bg-emerald-500';
+    if (site.visibility && site.visibility !== 'public') return 'fc-tone-warning-solid';
+    if (!site.themeSlug) return 'fc-tone-warning-solid';
+    return 'fc-tone-success-solid';
   }
 
   /** What is WRONG, in the fewest words — or what is serving, when nothing is. */

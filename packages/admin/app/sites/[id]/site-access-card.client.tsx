@@ -184,7 +184,7 @@ export class SiteAccessCard extends AdminComponent {
               const dormant = plugin.runnable === false && !blocked;
               return (
                 <div key={plugin.slug} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors fc-tone-hover`}>
-                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+                  <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'fc-tone-brand-soft fc-tone-brand ring-1 ring-indigo-100'}`}>
                     <Icon name={plugin.icon || 'Box'} size={18} strokeWidth={1.5} />
                   </div>
 
@@ -192,7 +192,7 @@ export class SiteAccessCard extends AdminComponent {
                     <span className={`text-sm font-medium tracking-tight fc-tone-text`}>{plugin.name}</span>
                     <p className={`text-xs leading-snug truncate fc-tone-muted`}>
                       {blocked
-                        ? <AdminLink className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
+                        ? <AdminLink className="fc-tone-warning no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
                         : (plugin.description || AdminI18n.t('sites.runsOnThisSiteWhen'))}
                     </p>
                   </div>

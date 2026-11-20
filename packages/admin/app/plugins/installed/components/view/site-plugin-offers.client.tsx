@@ -52,7 +52,7 @@ export class SitePluginOffers extends AdminComponent {
     return (
       <Card className="mb-3" title={AdminI18n.t('plugins.list.availableToThisSite')} description={AdminI18n.t('plugins.list.pluginsThePlatformOffersTo')}>
         {this.loading ? <p className="text-xs fc-tone-muted">{AdminI18n.t('plugins.list.loading')}</p>
-          : this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p>
+          : this.loadError ? <p className="text-xs fc-tone-danger">{this.loadError}</p>
           : (
             <div className="space-y-4">
               {this.offers.map((offer) => (

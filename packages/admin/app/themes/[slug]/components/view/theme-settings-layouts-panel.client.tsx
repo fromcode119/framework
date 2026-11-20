@@ -46,7 +46,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
               <p className="fc-size-xs fc-tone-muted mt-2">{LocalizationUtils.resolveLabelText(selected?.description, AdminI18n.locale)}</p>
             ) : null}
             {isUnavailable ? (
-              <p className="fc-size-xs text-amber-600 mt-2">
+              <p className="fc-size-xs fc-tone-warning mt-2">
                 {AdminI18n.t('themes.layoutNoLongerProvided', { layout: tempDefaultLayout })}
               </p>
             ) : null}

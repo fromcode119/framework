@@ -30,7 +30,7 @@ export class CustomFieldErrorBoundary extends Reactor {
       'div',
       {
         className:
-          'p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2',
+          'p-4 rounded-xl fc-tone-warning-soft border fc-tone-warning-line fc-tone-warning text-xs font-medium tracking-wide flex items-center gap-2',
       },
       React.createElement('span', null, AdminI18n.t('ui.field.componentFailed', { name }))
     );

@@ -47,7 +47,7 @@ export class SiteExportsCard extends PureReactor {
           <div className={`overflow-hidden divide-y mt-3 fc-tone-divide`}>
             {exports.map((entry) => (
               <div key={entry.id} className={`group flex items-center gap-3 px-3 py-2.5 transition-colors fc-tone-hover`}>
-                <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+                <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${this.isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'fc-tone-brand-soft fc-tone-brand ring-1 ring-indigo-100'}`}>
                   <FrameworkIcons.Package size={18} strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">

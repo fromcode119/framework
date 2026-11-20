@@ -23,7 +23,7 @@ export class SourceIdentitySummary extends PureReactor {
 
   private get icon(): ReactNode {
     if (this.reading) return <Spinner className="fc-spinner--muted" />;
-    if (this.detected) return <CheckCircle size={16} className="text-emerald-500" />;
+    if (this.detected) return <CheckCircle size={16} className="fc-tone-success" />;
     return <Info size={16} className="fc-tone-muted" />;
   }
 

@@ -27,7 +27,7 @@ export class PluginDetailPermissions extends PureReactor {
         {summary.entries.length > 0 ? (
           <>
             {summary.requiresApproval ? (
-              <p className="mb-4 fc-size-sm text-amber-700 dark:text-amber-300">{AdminI18n.t('plugins.detail.requiresYourApproval')}</p>
+              <p className="mb-4 fc-size-sm fc-tone-warning">{AdminI18n.t('plugins.detail.requiresYourApproval')}</p>
             ) : null}
             <PluginConsentEntries entries={summary.entries} anyHostReason={summary.anyHostReason} />
           </>

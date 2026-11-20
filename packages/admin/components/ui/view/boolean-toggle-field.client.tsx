@@ -28,7 +28,7 @@ export class BooleanToggleField extends PureReactor {
           isDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white'
         } ${disabled ? 'opacity-70' : ''}`}
       >
-        <span className={`text-xs font-medium ${checked ? 'text-indigo-500' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <span className={`text-xs font-medium ${checked ? 'fc-tone-brand' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           {AdminI18n.t(checked ? 'common.yes' : 'common.no')}
         </span>
         <Switch checked={checked} onChange={onChange} disabled={disabled} />

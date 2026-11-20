@@ -24,15 +24,15 @@ export class SiteStatStrip extends PureReactor {
     const site = this.site;
 
     const stats: Array<{ label: string; value: string | number; tone: string }> = [
-      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
+      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'fc-tone-success' : 'fc-tone-warning' },
       { label: AdminI18n.t('sites.members'), value: site.memberCount, tone: strong },
       { label: AdminI18n.t('sites.plugins'), value: site.plugins.length, tone: strong },
     ];
     if (site.isWorkspace) {
       stats.push({ label: AdminI18n.t('sites.appearance'), value: site.appearance || 'none', tone: site.appearance ? strong : muted });
     } else {
-      stats.push({ label: AdminI18n.t('sites.theme'), value: site.theme ?? 'none', tone: site.theme ? strong : 'text-amber-500' });
-      stats.push({ label: AdminI18n.t('sites.pages'), value: site.pageCount, tone: site.pageCount ? strong : 'text-amber-500' });
+      stats.push({ label: AdminI18n.t('sites.theme'), value: site.theme ?? 'none', tone: site.theme ? strong : 'fc-tone-warning' });
+      stats.push({ label: AdminI18n.t('sites.pages'), value: site.pageCount, tone: site.pageCount ? strong : 'fc-tone-warning' });
     }
     return stats;
   }

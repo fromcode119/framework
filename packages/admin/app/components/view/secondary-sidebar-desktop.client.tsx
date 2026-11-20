@@ -56,9 +56,9 @@ export class SecondarySidebarDesktop extends PureReactor {
             aria-expanded="false"
             aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
             onClick={this.onOpen}
-            className="group absolute start-0 top-20 z-50 inline-flex flex-col items-center gap-2 rounded-e-xl border border-s-0 border-indigo-200 fc-canvas py-3 ps-1 pe-1.5 text-indigo-600 shadow-[6px_0_20px_-10px_rgba(79,70,229,0.45)] transition-all hover:bg-indigo-50 hover:pe-2.5 dark:border-indigo-500/40  dark:text-indigo-300 dark:hover:bg-indigo-500/10"
+            className="group absolute start-0 top-20 z-50 inline-flex flex-col items-center gap-2 rounded-e-xl border border-s-0 fc-tone-brand-line fc-canvas py-3 ps-1 pe-1.5 fc-tone-brand shadow-[6px_0_20px_-10px_rgba(79,70,229,0.45)] transition-all hover:bg-indigo-50 hover:pe-2.5  dark:hover:bg-indigo-500/10"
           >
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/15 dark:text-indigo-300">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg fc-tone-brand-soft fc-tone-brand transition-colors group-hover:bg-indigo-600 group-hover:text-white">
               <FrameworkIcons.Right size={14} />
             </span>
             <span className="fc-size-xs font-medium [writing-mode:vertical-rl]">{collapsedLabel}</span>

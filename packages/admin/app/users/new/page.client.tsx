@@ -137,7 +137,7 @@ export class NewUserPage extends AdminComponent {
               />
 
               {errors.global && (
-                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-medium flex items-center gap-3 tracking-tight">
+                 <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 fc-tone-danger text-sm font-medium flex items-center gap-3 tracking-tight">
                     <FrameworkIcons.Warning size={18} />
                     {errors.global}
                  </div>

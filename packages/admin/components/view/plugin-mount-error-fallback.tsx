@@ -14,7 +14,7 @@ export class PluginMountErrorFallback {
     const name = String(identity.componentName || identity.pluginSlug || 'unknown');
 
     return (
-      <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2">
+      <div className="p-4 rounded-xl fc-tone-warning-soft border fc-tone-warning-line fc-tone-warning text-xs font-medium tracking-wide flex items-center gap-2">
         <span>{AdminI18n.t('ui.view.componentFailedToRender', { name: name })}</span>
       </div>
     );

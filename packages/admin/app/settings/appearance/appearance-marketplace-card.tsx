@@ -22,7 +22,7 @@ export class AppearanceMarketplaceCard extends PureReactor {
         {this.entries.map((it) => (
           <div key={it.slug} className={`py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 fc-tone-line`}>
             <div className="flex items-start gap-4">
-              <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+              <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'fc-tone-brand-soft fc-tone-brand'}`}>
                 <FrameworkIcons.Palette size={18} />
               </span>
               <div>

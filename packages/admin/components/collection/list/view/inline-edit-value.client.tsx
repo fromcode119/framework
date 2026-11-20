@@ -141,12 +141,12 @@ export class InlineEditValue extends PureReactor {
               record={this.record}
             />
           )}
-          {this.error ? <p className="mt-2 fc-size-xs font-medium text-rose-600">{this.error}</p> : null}
+          {this.error ? <p className="mt-2 fc-size-xs font-medium fc-tone-danger">{this.error}</p> : null}
           {this.choices.length && !this.loading ? null : <div className="mt-3 flex items-center justify-end gap-2">
             <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border fc-size-xs font-medium fc-tone-line fc-tone-muted fc-tone-hover">
               {AdminI18n.t('common.cancel')}
             </button>
-            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg fc-size-xs font-medium inline-flex items-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
+            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg fc-size-xs font-medium inline-flex items-center gap-1.5 fc-tone-brand-solid text-white hover:bg-indigo-700 disabled:opacity-60">
               <FrameworkIcons.Check size={13} />
               {AdminI18n.t(this.saving ? 'collection.quickEdit.saving' : 'common.save')}
             </button>
@@ -172,7 +172,7 @@ export class InlineEditValue extends PureReactor {
               aria-pressed={choice.value === current}
               className={`h-9 px-3 rounded-lg text-start fc-size-sm font-medium inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
                 choice.value === current
-                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
+                  ? 'fc-tone-brand-soft fc-tone-brand'
                   : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
               }`}
             >
@@ -195,7 +195,7 @@ export class InlineEditValue extends PureReactor {
           title={AdminI18n.t('collection.list.inlineEditHint', { label: this.field.label || this.field.name })}
           className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
             this.open
-              ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-500/10'
+              ? 'border-indigo-400 fc-tone-brand-soft'
               : 'border-transparent hover:border-indigo-300 hover:bg-indigo-50/60 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10'
           }`}
         >

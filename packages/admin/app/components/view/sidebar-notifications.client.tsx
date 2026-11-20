@@ -112,7 +112,7 @@ export class SidebarNotifications extends AdminComponent {
           {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium fc-tone-brand transition-colors hover:text-indigo-700 dark:hover:text-indigo-300">
             {AdminI18n.t('shell.notifications.markAllRead')}
           </button>
         ) : null}
@@ -141,7 +141,7 @@ export class SidebarNotifications extends AdminComponent {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>
           <FrameworkIcons.Bell size={18} className="fc-tone-muted" />
-          {this.unread ? <span className="absolute end-2 top-0.5 h-2 w-2 rounded-full bg-indigo-600" /> : null}
+          {this.unread ? <span className="absolute end-2 top-0.5 h-2 w-2 rounded-full fc-tone-brand-solid" /> : null}
         </span>
       );
     }

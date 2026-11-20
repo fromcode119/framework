@@ -135,7 +135,7 @@ export class SiteOwnPlugins extends AdminComponent {
     if (!canUpload && this.own.length === 0 && !this.loadError && !this.consentSlugs.length) return null;
     return (
       <Card className="mb-3" title={AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')} description={quota ? this.uploadNote(quota) : undefined}>
-        {this.loadError ? <p className="mb-3 text-xs text-rose-500">{this.loadError}</p> : null}
+        {this.loadError ? <p className="mb-3 text-xs fc-tone-danger">{this.loadError}</p> : null}
         {canUpload ? (
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <input type="file" ref={(element) => { this.fileInput = element; }} onChange={this.onFile} className="hidden" accept=".zip,application/zip" />
@@ -155,9 +155,9 @@ export class SiteOwnPlugins extends AdminComponent {
                   description={plugin.running ? plugin.description : plugin.needsApproval ? AdminI18n.t('plugins.list.waitsForYourApproval') : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
                 />
                 {plugin.needsApproval ? (
-                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
+                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium fc-tone-brand hover:text-indigo-700 disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
                 ) : null}
-                <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium text-rose-500 hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
+                <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium fc-tone-danger hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
               </div>
             ))}
           </div>

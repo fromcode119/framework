@@ -23,24 +23,24 @@ export class DashboardPageHeader extends PureReactor {
     if (!health) return null;
 
     if (health.error > 0) {
-      return <span className="text-rose-500">{health.error === 1 ? AdminI18n.t('dashboard.pluginErrorOne') : AdminI18n.t('dashboard.pluginErrorMany', { count: health.error })}</span>;
+      return <span className="fc-tone-danger">{health.error === 1 ? AdminI18n.t('dashboard.pluginErrorOne') : AdminI18n.t('dashboard.pluginErrorMany', { count: health.error })}</span>;
     }
     if (health.held > 0) {
-      return <span className="text-amber-500">{health.held === 1 ? AdminI18n.t('dashboard.pluginHeldOne') : AdminI18n.t('dashboard.pluginHeldMany', { count: health.held })}</span>;
+      return <span className="fc-tone-warning">{health.held === 1 ? AdminI18n.t('dashboard.pluginHeldOne') : AdminI18n.t('dashboard.pluginHeldMany', { count: health.held })}</span>;
     }
     // Nothing is broken, but this screen is serving an older build than the one installed, and no
     // other surface says so. Production ran a whole release behind for over an hour with every
     // version signal reading correct.
     if (health.restartPending > 0) {
       return (
-        <span className="text-sky-500">
+        <span className="fc-tone-info">
           {health.restartPending === 1
             ? AdminI18n.t('dashboard.restartPendingOne')
             : AdminI18n.t('dashboard.restartPendingMany', { count: health.restartPending })}
         </span>
       );
     }
-    return <span className="text-emerald-500">{AdminI18n.t('dashboard.pluginsActive', { active: health.active, total: health.total })}</span>;
+    return <span className="fc-tone-success">{AdminI18n.t('dashboard.pluginsActive', { active: health.active, total: health.total })}</span>;
   }
 
   render(): ReactNode {
