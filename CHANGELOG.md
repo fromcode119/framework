@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.619] - 2026-11-20
+
+### Fixed
+
+- **integrations**: say where a site's mail actually goes ([#1558](https://github.com/fromcode119/framework/pull/1558))
+- **admin**: one-bar calendar, one-track period choice, sub-menu open on its overview ([#1559](https://github.com/fromcode119/framework/pull/1559))
+
 ## [0.2.618] - 2026-11-20
 
 ### Added
