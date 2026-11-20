@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { prop, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * One line: a dot for how bad it is, what it is, where it belongs, and the one thing to do.
@@ -15,7 +17,7 @@ export class DashboardAttentionRow extends AdminComponent {
   private static readonly DOT_BY_SEVERITY: Record<string, string> = {
     critical: 'fc-tone-danger-solid',
     warning: 'fc-tone-warning-solid',
-    info: 'bg-slate-400 dark:bg-slate-600',
+    info: 'fc-tone-faint-solid',
   };
 
   private get dotClass(): string {
@@ -43,13 +45,9 @@ export class DashboardAttentionRow extends AdminComponent {
           </span>
         ) : null}
         {item.actionLabel && item.actionPath ? (
-          <button
-            type="button"
-            onClick={this.handleAction}
-            className="shrink-0 fc-size-xs font-medium fc-tone-brand fc-tone-hover-brand"
-          >
+          <Button type="button" variant={ButtonVariant.GHOST} className="shrink-0" onClick={this.handleAction}>
             {String(item.actionLabel)}
-          </button>
+          </Button>
         ) : null}
       </div>
     );

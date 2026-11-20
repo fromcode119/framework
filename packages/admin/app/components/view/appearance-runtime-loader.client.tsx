@@ -18,6 +18,8 @@ import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-l
 import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-choice';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SystemConstants } from '@fromcode119/core/client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * Loads the active external appearance's runtime bundle BEFORE rendering the admin tree, so the
@@ -175,13 +177,9 @@ export class AppearanceRuntimeLoader extends Reactor {
           <p className="mt-2 text-sm fc-tone-muted">
             {AdminI18n.t('shell.workspace.unavailableText')}
           </p>
-          <button
-            type="button"
-            onClick={this.reload}
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
-          >
+          <Button type="button" variant={ButtonVariant.PRIMARY} className="mt-6" onClick={this.reload}>
             {AdminI18n.t('common.reload')}
-          </button>
+          </Button>
         </div>
       </div>
       );

@@ -361,7 +361,8 @@
     "reset": "Resetuj",
     "notScheduledYet": "jeszcze nie zaplanowano",
     "more": "Więcej działań",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Usuń"
   },
   "ui": {
     "table": {

@@ -361,7 +361,8 @@
     "reset": "รีเซ็ต",
     "notScheduledYet": "ยังไม่ได้กำหนดเวลา",
     "more": "การดำเนินการเพิ่มเติม",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "ลบ"
   },
   "ui": {
     "table": {

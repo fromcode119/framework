@@ -361,7 +361,8 @@
     "reset": "Palauta",
     "notScheduledYet": "ei vielä ajoitettu",
     "more": "Lisää toimintoja",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Poista"
   },
   "ui": {
     "table": {

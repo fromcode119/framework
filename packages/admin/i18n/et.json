@@ -361,7 +361,8 @@
     "reset": "Lähtesta",
     "notScheduledYet": "pole veel ajastatud",
     "more": "Rohkem toiminguid",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Eemalda"
   },
   "ui": {
     "table": {

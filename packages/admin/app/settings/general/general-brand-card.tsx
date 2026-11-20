@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/view/input.client';
 import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
-import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { FrameworkReleaseDefaults, MarketplaceDefaults } from '@fromcode119/core/client';
@@ -16,6 +15,7 @@ import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { GeneralEmailLogoRow } from '@/app/settings/general/general-email-logo-row';
 import { GeneralSiteIconRow } from '@/app/settings/general/general-site-icon-row';
 import { GeneralSourcesRows } from '@/app/settings/general/general-sources-rows';
+import { Tabs } from '@/components/ui/view/tabs.client';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -264,15 +264,12 @@ export class GeneralBrandCard extends PureReactor {
           description={AdminI18n.t('settings.general.chooseTheVisualStyleOf')}
           width={SettingRowWidth.AUTO}
         >
-          {/* The same two-way switch as a section's page tabs. */}
-          <div className={AdminClass.of('page-tabs')} role="group">
-            <button type="button" onClick={this.selectLight} aria-pressed={theme === ThemeMode.LIGHT} className={AdminClass.of('page-tabs__tab')}>
-              {AdminI18n.t('settings.general.light')}
-            </button>
-            <button type="button" onClick={this.selectDark} aria-pressed={theme === ThemeMode.DARK} className={AdminClass.of('page-tabs__tab')}>
-              {AdminI18n.t('settings.general.dark')}
-            </button>
-          </div>
+          <Tabs
+            label={AdminI18n.t('settings.general.visualCore')}
+            value={theme === ThemeMode.DARK ? 'dark' : 'light'}
+            onChange={(id: string) => (id === 'dark' ? this.selectDark() : this.selectLight())}
+            tabs={[{ id: 'light', label: AdminI18n.t('settings.general.light') }, { id: 'dark', label: AdminI18n.t('settings.general.dark') }]}
+          />
         </SettingRow>
       </Card>
     );

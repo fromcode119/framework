@@ -5,6 +5,9 @@ import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { MenuAction } from '@/components/ui/view/menu-action.client';
 
 /**
  * A list value that becomes its own control when clicked: the price, the stock, the status.
@@ -88,8 +91,8 @@ export class InlineEditValue extends PureReactor {
     return field.options.map((option: any) => ({ label: String(option?.label ?? option?.value ?? option), value: String(option?.value ?? option) }));
   }
 
-  @bound private pick(event: MouseEvent): void {
-    this.value = (event.currentTarget as HTMLButtonElement).value;
+  @bound private pick(value: string): void {
+    this.value = value;
     void this.save();
   }
 
@@ -125,7 +128,7 @@ export class InlineEditValue extends PureReactor {
           onClick={this.stop}
           onKeyDown={this.handleKey}
           style={{ position: 'fixed', top: this.coords.top, left: this.coords.left, width: this.choices.length ? 240 : 300 }}
-          className="z-[9998] rounded-xl border p-3 shadow-xl fc-tone-surface fc-tone-line shadow-slate-900/10"
+          className="fc-menu-sheet z-[9998] rounded-xl p-3"
         >
           {this.loading ? (
             <p className="py-3 text-center fc-size-xs font-medium fc-tone-muted">{AdminI18n.t('collection.quickEdit.loading')}</p>
@@ -143,13 +146,12 @@ export class InlineEditValue extends PureReactor {
           )}
           {this.error ? <p className="mt-2 fc-size-xs font-medium fc-tone-danger">{this.error}</p> : null}
           {this.choices.length && !this.loading ? null : <div className="mt-3 flex items-center justify-end gap-2">
-            <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border fc-size-xs font-medium fc-tone-line fc-tone-muted fc-tone-hover">
+            <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.close}>
               {AdminI18n.t('common.cancel')}
-            </button>
-            <button type="button" onClick={this.save} disabled={this.loading || this.saving} className="h-8 px-3 rounded-lg fc-size-xs font-medium inline-flex items-center gap-1.5 fc-tone-brand-solid text-white fc-tone-hover-brand-strong disabled:opacity-60">
-              <FrameworkIcons.Check size={13} />
-              {AdminI18n.t(this.saving ? 'collection.quickEdit.saving' : 'common.save')}
-            </button>
+            </Button>
+            <Button type="button" variant={ButtonVariant.PRIMARY} isLoading={this.saving} disabled={this.loading} onClick={this.save}>
+              {AdminI18n.t('common.save')}
+            </Button>
           </div>}
         </div>
       </RootFramework>
@@ -161,24 +163,16 @@ export class InlineEditValue extends PureReactor {
     return (
       <div>
         <p className="mb-2 fc-size-xs font-medium fc-tone-muted">{this.field.label || this.field.name}</p>
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col">
           {this.choices.map((choice) => (
-            <button
+            <MenuAction
               key={choice.value}
-              type="button"
-              value={choice.value}
-              onClick={this.pick}
-              disabled={this.saving}
-              aria-pressed={choice.value === current}
-              className={`h-9 px-3 rounded-lg text-start fc-size-sm font-medium inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
-                choice.value === current
-                  ? 'fc-tone-brand-soft fc-tone-brand'
-                  : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
-            >
-              {choice.label}
-              {choice.value === current ? <FrameworkIcons.Check size={14} /> : null}
-            </button>
+              label={String(choice.label)}
+              current={choice.value === current}
+              isLoading={this.saving && choice.value === this.value}
+              end={choice.value === current ? <FrameworkIcons.Check size={14} /> : null}
+              onClick={() => this.pick(choice.value)}
+            />
           ))}
         </div>
       </div>
@@ -195,7 +189,7 @@ export class InlineEditValue extends PureReactor {
           title={AdminI18n.t('collection.list.inlineEditHint', { label: this.field.label || this.field.name })}
           className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
             this.open
-              ? 'border-indigo-400 fc-tone-brand-soft'
+              ? 'fc-tone-brand-edge fc-tone-brand-soft'
               : 'border-transparent fc-tone-hover-brand-line fc-tone-hover-brand-soft'
           }`}
         >

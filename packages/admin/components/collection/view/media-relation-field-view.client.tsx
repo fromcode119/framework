@@ -10,6 +10,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminClass } from '@/lib/admin-class';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * A media field. One file: an image shows as a picture, anything else as a named file — a PDF handed to
@@ -68,10 +69,9 @@ export class MediaRelationFieldView extends PureReactor {
     return (
       <div className="relative w-full aspect-video rounded-[var(--fc-control-radius)] overflow-hidden border fc-tone-line">
         <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className={`w-full h-full ${this.wholeImage ? 'object-contain p-3' : 'object-cover'}`} />
-        <button type="button" onClick={this.handleRemoveSingle} aria-label={label} title={label}
-          className="absolute top-2 end-2 w-8 h-8 inline-flex items-center justify-center rounded-full fc-tone-surface fc-tone-muted fc-tone-hover-danger shadow">
+        <Button type="button" variant={ButtonVariant.SECONDARY} size={FieldSize.ICON} className="fc-btn--raised absolute top-2 end-2" onClick={this.handleRemoveSingle} aria-label={label} title={label}>
           <FrameworkIcons.X size={14} />
-        </button>
+        </Button>
       </div>
     );
   }

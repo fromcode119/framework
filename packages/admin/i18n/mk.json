@@ -361,7 +361,8 @@
     "reset": "Ресетирај",
     "notScheduledYet": "сè уште не е закажано",
     "more": "Повеќе дејства",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Отстрани"
   },
   "ui": {
     "table": {

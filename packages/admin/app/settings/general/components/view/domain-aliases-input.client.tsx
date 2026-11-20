@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 export class DomainAliasesInput extends Reactor {
   @prop declare value: string[];
@@ -19,9 +20,6 @@ export class DomainAliasesInput extends Reactor {
   /** `ref` on a class component yields the instance — Input exposes its own focus(). */
   @ref declare inputRef: Ref<Input>;
 
-  private get isDark(): boolean {
-    return (this.theme ?? ThemeMode.LIGHT) === ThemeMode.DARK;
-  }
 
   @bound
   private addAlias(): void {
@@ -57,7 +55,6 @@ export class DomainAliasesInput extends Reactor {
   render(): ReactNode {
     const value = this.value;
     const draft = this.draft;
-    const isDark = this.isDark;
 
     return (
     <div className="flex flex-col gap-3 w-full md:w-96">
@@ -89,16 +86,17 @@ export class DomainAliasesInput extends Reactor {
             >
               <FrameworkIcons.Globe size={11} className="opacity-50" />
               {alias}
-              <button
+              <Button
+                type="button"
+                variant={ButtonVariant.GHOST}
+                className="fc-btn--glyph"
                 data-alias={alias}
+                aria-label={AdminI18n.t('common.remove')}
                 onClick={this.handleRemoveClick}
                 disabled={this.disabled}
-                className={`ms-0.5 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                  'fc-tone-muted fc-tone-hover-danger'
-                }`}
               >
                 <FrameworkIcons.X size={11} strokeWidth={3} />
-              </button>
+              </Button>
             </span>
           ))}
         </div>

@@ -398,7 +398,8 @@
     "reset": "Нулиране",
     "notScheduledYet": "още не е насрочено",
     "more": "Още действия",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Премахни"
   },
   "ui": {
     "table": {

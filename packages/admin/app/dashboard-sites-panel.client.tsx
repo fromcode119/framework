@@ -60,7 +60,7 @@ export class DashboardSitesPanel extends AdminComponent {
     return (
       <div className="space-y-2">
         <DashboardSectionHeading label={AdminI18n.t('shell.account.sites')} count={this.sites.length} />
-        <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
+        <div className={`${AdminClass.SURFACE} divide-y fc-tone-divide`}>
           {this.sites.map((site) => (
             <div key={String(site.id)} className="flex items-center gap-2.5 px-3 py-2">
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${this.stateDot(site)}`} />

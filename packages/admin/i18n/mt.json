@@ -361,7 +361,8 @@
     "reset": "Irrisettja",
     "notScheduledYet": "għadu mhux skedat",
     "more": "Aktar azzjonijiet",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Neħħi"
   },
   "ui": {
     "table": {

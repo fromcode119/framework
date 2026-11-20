@@ -11,6 +11,8 @@ import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-cho
 import { SidebarSiteItems } from '@/app/components/view/sidebar-site-items';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * The way back out of a workspace a platform admin opened AS ITS OWN CONSOLE on the shared admin host.
@@ -77,15 +79,13 @@ export class WorkspaceConsoleExitBar extends AdminComponent {
           <span className="truncate">{AdminI18n.t('shell.workspaceConsole.viewing', { name: current.label })}</span>
         </span>
         <span className="ms-auto flex items-center gap-2">
-          <button type="button" onClick={() => { void this.configure(); }} className="inline-flex items-center gap-1.5 rounded-md border fc-tone-line fc-tone-surface px-2.5 py-1 font-medium fc-tone-text transition-colors fc-tone-hover">
-            <FrameworkIcons.Settings size={13} />
+          <Button type="button" variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Settings size={13} />} onClick={() => { void this.configure(); }}>
             {AdminI18n.t('shell.workspaceConsole.configure')}
-          </button>
+          </Button>
           {canLeave ? (
-            <button type="button" onClick={() => { void this.leave(); }} className="inline-flex items-center gap-1.5 rounded-md border fc-tone-line fc-tone-surface px-2.5 py-1 font-medium fc-tone-text transition-colors fc-tone-hover">
-              <FrameworkIcons.ArrowLeft size={13} />
+            <Button type="button" variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.ArrowLeft size={13} />} onClick={() => { void this.leave(); }}>
               {AdminI18n.t('shell.workspaceConsole.platform')}
-            </button>
+            </Button>
           ) : null}
         </span>
       </div>

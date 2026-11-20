@@ -361,7 +361,8 @@
     "reset": "Visszaállítás",
     "notScheduledYet": "még nincs ütemezve",
     "more": "További műveletek",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Eltávolítás"
   },
   "ui": {
     "table": {

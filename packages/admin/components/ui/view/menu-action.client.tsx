@@ -17,17 +17,22 @@ export class MenuAction extends PureReactor {
   @prop declare detail?: string;
   @prop declare isLoading?: boolean;
   @prop declare danger?: boolean;
+  /** The row that is the present choice, in a menu that picks one value. */
+  @prop declare current?: boolean;
+  /** Drawn at the row's end: a code, a shortcut. */
+  @prop declare end?: ReactNode;
 
   render(): ReactNode {
     const row = AdminClass.of('menu-action');
     return (
-      <button type="button" className={row} data-danger={this.danger ? 'true' : undefined}
+      <button type="button" className={row} data-danger={this.danger ? 'true' : undefined} aria-current={this.current ? 'true' : undefined}
         onClick={this.onClick} disabled={this.isLoading} aria-busy={this.isLoading || undefined} title={this.label}>
-        <span className={`${row}__icon`}>{this.isLoading ? <FrameworkIcons.Loader size={15} /> : this.icon}</span>
+        {this.isLoading || this.icon ? <span className={`${row}__icon`}>{this.isLoading ? <FrameworkIcons.Loader size={15} /> : this.icon}</span> : null}
         <span className={`${row}__text`}>
           <span className={`${row}__label`}>{this.label}</span>
           {this.detail ? <span className={`${row}__detail`}>{this.detail}</span> : null}
         </span>
+        {this.end ? <span className={`${row}__end`}>{this.end}</span> : null}
       </button>
     );
   }

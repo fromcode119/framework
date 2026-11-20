@@ -37,8 +37,7 @@ export class DateTimePickerTimePopover extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, coords, popoverRef, minuteStep, onClear, onClose } = this;
-    const dark = theme === ThemeMode.DARK;
+    const { coords, popoverRef, minuteStep, onClear, onClose } = this;
     const parts = TimeOfDayUtils.parse(this.value);
 
     return (

@@ -31,7 +31,7 @@ export class FieldTextInput extends PureReactor {
   render(): ReactNode {
     const {
       field, currentValue, resolvedCurrentText, updateValue, isFieldReadOnly, isNew, errors,
-      label, slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
+      slugWarning, slugManuallyEdited, isLocalizedField, shouldInlineLocaleSwitcher,
       localeSwitcher, wrapWithReadOnlyOverride, resolvedFieldDescription
     } = this;
     // A field the operator cannot edit is shown as a VALUE, not as a disabled input. A disabled input
@@ -86,7 +86,7 @@ export class FieldTextInput extends PureReactor {
           placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : field.placeholder}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
-          inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}
+          inputClassName={`${field.name === 'slug' && slugWarning ? 'fc-tone-warning-edge ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pe-16' : ''}`}
         />
         {isLocalizedField && shouldInlineLocaleSwitcher && (
           <div className="absolute end-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher()}</div>

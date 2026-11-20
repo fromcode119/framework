@@ -361,7 +361,8 @@
     "reset": "Reimposta",
     "notScheduledYet": "non ancora pianificato",
     "more": "Altre azioni",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Rimuovi"
   },
   "ui": {
     "table": {

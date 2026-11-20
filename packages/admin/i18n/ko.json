@@ -361,7 +361,8 @@
     "reset": "초기화",
     "notScheduledYet": "아직 예약되지 않음",
     "more": "추가 작업",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "제거"
   },
   "ui": {
     "table": {

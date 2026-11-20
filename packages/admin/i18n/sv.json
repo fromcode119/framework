@@ -361,7 +361,8 @@
     "reset": "Återställ",
     "notScheduledYet": "inte schemalagd än",
     "more": "Fler åtgärder",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Ta bort"
   },
   "ui": {
     "table": {

@@ -361,7 +361,8 @@
     "reset": "Ponastavi",
     "notScheduledYet": "še ni načrtovano",
     "more": "Več dejanj",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Odstrani"
   },
   "ui": {
     "table": {

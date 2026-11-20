@@ -361,7 +361,8 @@
     "reset": "Atstatyti",
     "notScheduledYet": "dar nesuplanuota",
     "more": "Daugiau veiksmų",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Pašalinti"
   },
   "ui": {
     "table": {

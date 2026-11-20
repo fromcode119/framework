@@ -361,7 +361,8 @@
     "reset": "リセット",
     "notScheduledYet": "未スケジュール",
     "more": "その他の操作",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "削除"
   },
   "ui": {
     "table": {

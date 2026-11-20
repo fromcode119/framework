@@ -361,7 +361,8 @@
     "reset": "I-reset",
     "notScheduledYet": "hindi pa naka-iskedyul",
     "more": "Iba pang aksyon",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Alisin"
   },
   "ui": {
     "table": {

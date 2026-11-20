@@ -54,7 +54,7 @@ export class SelectMenu extends PureReactor {
 
   render(): React.ReactNode {
     const {
-      theme, searchable, searchValue, coords, filteredOptions, groupedFilteredOptions,
+      searchable, searchValue, coords, filteredOptions, groupedFilteredOptions,
       showGroupHeaders, selectedOption, menuRef, searchInputRef, onSearchChange, onSelect, onCreate,
       menuNote, searching,
     } = this;

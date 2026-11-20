@@ -361,7 +361,8 @@
     "reset": "Athshocraigh",
     "notScheduledYet": "gan sceideal fós",
     "more": "Tuilleadh gníomhartha",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Bain"
   },
   "ui": {
     "table": {

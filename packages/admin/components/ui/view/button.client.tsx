@@ -2,12 +2,12 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { AdminLink } from '@/components/view/admin-link.client';
 import type { ButtonHTMLAttributes } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class Button extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<Button, 'variant' | 'size' | 'children' | 'className' | 'isLoading' | 'icon' | 'as' | 'href' | 'target' | 'block'>
+  declare props: Pick<Button, 'variant' | 'size' | 'children' | 'className' | 'isLoading' | 'icon' | 'as' | 'href' | 'target' | 'block' | 'elementRef'>
     & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'className'>;
 
   @prop declare variant?: ButtonVariant;
@@ -27,6 +27,8 @@ export class Button extends PureReactor {
   @prop declare target?: string;
   /** As wide as its container — the one way to widen a button, since the button's own width outranks a utility class. */
   @prop declare block?: boolean;
+  /** The rendered element, for a caller that returns focus to the button (a panel it opened). */
+  @prop declare elementRef?: Ref<HTMLElement>;
 
   render(): ReactNode {
     const {
@@ -38,6 +40,7 @@ export class Button extends PureReactor {
       icon: _icon,
       as: _as,
       block: _block,
+      elementRef: _elementRef,
       ...props
     } = this.props as Record<string, any>;
   const variant = ButtonVariant.resolve(this.variant ?? ButtonVariant.PRIMARY);
@@ -79,6 +82,7 @@ export class Button extends PureReactor {
     <Component
       className={`fc-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]}${this.block ? ' fc-btn--block' : ''} ${className}`}
       {...props}
+      ref={this.elementRef}
       // A button that is carrying something out takes no second press: a save pressed twice saved twice.
       disabled={Boolean((props as any).disabled) || Boolean(isLoading)}
       aria-busy={isLoading || undefined}

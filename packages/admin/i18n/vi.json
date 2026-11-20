@@ -361,7 +361,8 @@
     "reset": "Đặt lại",
     "notScheduledYet": "chưa được lên lịch",
     "more": "Thao tác khác",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Gỡ bỏ"
   },
   "ui": {
     "table": {

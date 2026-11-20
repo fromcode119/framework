@@ -1038,6 +1038,7 @@ html.dark {
 .fc-menu-action[aria-busy="true"] .fc-menu-action__icon svg { animation: fc-menu-action-spin 1s linear infinite; }
 @keyframes fc-menu-action-spin { to { transform: rotate(360deg); } }
 .fc-menu-action__text { min-width: 0; flex: 1; display: grid; }
+.fc-menu-action__end { flex-shrink: 0; display: inline-flex; font-size: 12px; color: var(--fc-text-muted); }
 .fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
 /* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
@@ -3746,6 +3747,10 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-tone-raised { background-color: var(--fc-surface-muted); }
 .fc-tone-hover:hover { background-color: var(--fc-surface-muted); }
 .fc-tone-hover-text:hover { color: var(--fc-text); }
+.fc-tone-faint-solid { background-color: var(--fc-text-faint); }
+.fc-tone-scrim { background: var(--fc-sheet-backdrop); }
+.fc-tone-brand-edge { border-color: var(--fc-brand); }
+.fc-tone-warning-edge { border-color: var(--fc-warning); }
 .fc-tone-hover-danger:hover { color: var(--fc-danger); }
 .fc-tone-hover-danger-soft:hover { background-color: var(--fc-danger-soft); }
 .fc-tone-hover-brand:hover, .group:hover .fc-tone-group-brand { color: var(--fc-brand); }

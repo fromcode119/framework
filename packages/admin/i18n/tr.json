@@ -361,7 +361,8 @@
     "reset": "Sıfırla",
     "notScheduledYet": "henüz zamanlanmadı",
     "more": "Diğer işlemler",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Kaldır"
   },
   "ui": {
     "table": {

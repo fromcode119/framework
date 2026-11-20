@@ -1,5 +1,4 @@
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
-import { AdminLink } from '@/components/view/admin-link.client';
 import type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
@@ -9,6 +8,8 @@ import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-regis
 import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearance-shell-user.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * Rendered in place of an appearance shell when the current route is NOT in the active appearance's surface
@@ -57,13 +58,13 @@ export class AppearanceRouteBlockedShell extends AdminComponent {
             {AdminI18n.t('shell.blocked.body', { label })}
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            <AdminLink href={AppPathConstants.ADMIN.ROOT} className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+            <Button variant={ButtonVariant.PRIMARY} href={AppPathConstants.ADMIN.ROOT}>
               {AdminI18n.t('shell.blocked.back', { label })}
-            </AdminLink>
+            </Button>
             {this.isSuperAdmin && !WorkspaceAppearanceLock.locked && (
-              <AdminLink href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE} className="inline-flex items-center justify-center rounded-lg border fc-tone-line px-4 py-2 text-sm font-medium fc-tone-muted transition fc-tone-hover">
+              <Button variant={ButtonVariant.SECONDARY} href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE}>
                 {AdminI18n.t('shell.blocked.switch')}
-              </AdminLink>
+              </Button>
             )}
           </div>
         </div>

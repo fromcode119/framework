@@ -361,7 +361,8 @@
     "reset": "איפוס",
     "notScheduledYet": "טרם תוזמן",
     "more": "פעולות נוספות",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "הסרה"
   },
   "ui": {
     "table": {

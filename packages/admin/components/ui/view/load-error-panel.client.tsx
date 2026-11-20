@@ -25,7 +25,7 @@ export class LoadErrorPanel extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className={`${AdminClass.SURFACE} m-6 p-4 border-rose-500/40 bg-rose-500/5`}>
+      <div className={`${AdminClass.SURFACE} m-6 p-4 fc-tone-danger-soft`}>
         <div className="flex items-start gap-3">
           <FrameworkIcons.Warning size={16} className="mt-0.5 shrink-0 fc-tone-danger" />
           <div className="min-w-0 flex-1">

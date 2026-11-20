@@ -6,6 +6,9 @@ import { DashboardWidgetSize } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { IDashboardWidgetDefinition } from '@/lib/dashboard/interfaces/dashboard-widget-definition.interface';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * One widget on the dashboard grid. Outside Customize it is only the widget, at its width; a widget that
@@ -143,9 +146,9 @@ export class DashboardWidgetFrame extends PureReactor {
 
   private iconButton(icon: ReactNode, label: string, onClick: () => void, disabled: boolean): ReactNode {
     return (
-      <button type="button" onClick={onClick} disabled={disabled} title={label} aria-label={label} className="fc-btn fc-btn--icon">
+      <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={onClick} disabled={disabled} title={label} aria-label={label}>
         {icon}
-      </button>
+      </Button>
     );
   }
 }

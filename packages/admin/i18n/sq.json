@@ -361,7 +361,8 @@
     "reset": "Rivendos",
     "notScheduledYet": "ende i paplanifikuar",
     "more": "Më shumë veprime",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Hiq"
   },
   "ui": {
     "table": {

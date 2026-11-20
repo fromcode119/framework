@@ -361,7 +361,8 @@
     "reset": "रीसेट करें",
     "notScheduledYet": "अभी शेड्यूल नहीं किया गया",
     "more": "और कार्रवाइयाँ",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "हटाएँ"
   },
   "ui": {
     "table": {

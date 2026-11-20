@@ -361,7 +361,8 @@
     "reset": "重置",
     "notScheduledYet": "尚未安排",
     "more": "更多操作",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "移除"
   },
   "ui": {
     "table": {

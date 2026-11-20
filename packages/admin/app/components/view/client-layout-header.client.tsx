@@ -6,6 +6,9 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 /**
  * What is left of the top header: nothing, while all is well.
@@ -72,14 +75,9 @@ export class ClientLayoutHeader extends AdminComponent {
     return (
       <>
         <header className="fc-phone-bar fc-canvas lg:hidden">
-          <button
-            type="button"
-            onClick={this.onMenuClick}
-            aria-label={AdminI18n.t('shell.openMenu')}
-            className="fc-btn fc-btn--icon"
-          >
+          <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={this.onMenuClick} aria-label={AdminI18n.t('shell.openMenu')}>
             <FrameworkIcons.Menu size={20} />
-          </button>
+          </Button>
         </header>
         {this.warning}
       </>

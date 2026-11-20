@@ -361,7 +361,8 @@
     "reset": "Set semula",
     "notScheduledYet": "belum dijadualkan",
     "more": "Lagi tindakan",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Alih keluar"
   },
   "ui": {
     "table": {

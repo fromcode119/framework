@@ -16,6 +16,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * The console's notifications — what plugins and the framework tell the signed-in person
@@ -112,9 +114,9 @@ export class SidebarNotifications extends AdminComponent {
           {this.unread ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('shell.notifications.unread', { count: this.unread })}</span> : null}
         </div>
         {this.unread ? (
-          <button type="button" onClick={this.readAll} className="fc-size-xs font-medium fc-tone-brand transition-colors fc-tone-hover-brand">
+          <Button type="button" variant={ButtonVariant.GHOST} className="fc-btn--mini" onClick={this.readAll}>
             {AdminI18n.t('shell.notifications.markAllRead')}
-          </button>
+          </Button>
         ) : null}
       </div>
     );
@@ -159,7 +161,7 @@ export class SidebarNotifications extends AdminComponent {
       return <Dropdown ref={this.dropdown} placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />;
     }
     return (
-      <div className="border-t border-slate-200/80 p-2 dark:border-slate-800/80">
+      <div className="border-t fc-tone-line p-2">
         <Dropdown ref={this.dropdown} block placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />
       </div>
     );

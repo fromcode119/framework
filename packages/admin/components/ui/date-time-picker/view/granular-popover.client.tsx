@@ -57,7 +57,7 @@ export class DateTimePickerGranularPopover extends PureReactor {
   }
 
   render(): ReactNode {
-    const { theme, granularity, coords, popoverRef } = this;
+    const { granularity, coords, popoverRef } = this;
     const isYearMode = granularity === DateTimePickerGranularity.YEAR;
     const years = Array.from({ length: 12 }, (_, index) => this.pageStart + index);
 

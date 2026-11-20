@@ -155,9 +155,9 @@ export class SiteOwnPlugins extends AdminComponent {
                   description={plugin.running ? plugin.description : plugin.needsApproval ? AdminI18n.t('plugins.list.waitsForYourApproval') : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
                 />
                 {plugin.needsApproval ? (
-                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium fc-tone-brand fc-tone-hover-brand disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
+                  <Button type="button" variant={ButtonVariant.SECONDARY} onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null}>{AdminI18n.t('plugins.list.reviewAndApprove')}</Button>
                 ) : null}
-                <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-medium fc-tone-danger fc-tone-hover-danger disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
+                <Button type="button" variant={ButtonVariant.GHOST} onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null}>{AdminI18n.t('plugins.list.remove')}</Button>
               </div>
             ))}
           </div>

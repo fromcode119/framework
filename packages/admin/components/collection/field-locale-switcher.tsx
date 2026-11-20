@@ -7,6 +7,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminLink } from '@/components/view/admin-link.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { MenuAction } from '@/components/ui/view/menu-action.client';
 
 export class FieldLocaleSwitcher extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -19,7 +22,7 @@ export class FieldLocaleSwitcher extends PureReactor {
   @prop declare menuRef: Ref<HTMLDivElement>;
 
   render(): ReactNode {
-    const { theme, activeLocale, activeLocaleCode, localeRegistry, isOpen, onToggle, onSelect, menuRef } = this;
+    const { activeLocale, activeLocaleCode, localeRegistry, isOpen, onToggle, onSelect, menuRef } = this;
     return (
       // Raise the switcher's own stacking context while the menu is open. The wrapper that positions it
       // over the input is `absolute … z-20`, and the menu is `z-30` INSIDE that context — so against a
@@ -27,17 +30,11 @@ export class FieldLocaleSwitcher extends PureReactor {
       // the open menu paints underneath the next field. Lifting it only while open keeps the closed
       // state out of the way of everything else.
       <div className={`relative ${isOpen ? 'z-50' : ''}`} ref={menuRef}>
-        <button
-          type="button"
-          onClick={onToggle}
-          // The console has ONE pressable shape. This chip drew its own: a 1px border, 12px text and
-          // an indigo hover, so beside a 13/20 .fc-btn in the same drawer it read as a different kit.
-          className="fc-btn fc-btn--mini"
-        >
+        <Button type="button" variant={ButtonVariant.SECONDARY} className="fc-btn--mini" onClick={onToggle}>
           <FrameworkIcons.Globe size={11} />
           <span>{(activeLocaleCode || activeLocale || 'en').toUpperCase()}</span>
           <FrameworkIcons.ChevronDown size={11} className={`${isOpen ? 'rotate-180' : ''} transition-transform`} />
-        </button>
+        </Button>
 
         {isOpen && (
           // `role="menu"` also lifts the input's switcher wrapper above the next field while open
@@ -61,16 +58,13 @@ export class FieldLocaleSwitcher extends PureReactor {
             {localeRegistry.map((locale) => {
               const isActive = locale.code === activeLocale;
               return (
-                <button
+                <MenuAction
                   key={locale.code}
-                  type="button"
+                  label={locale.label}
+                  current={isActive}
+                  end={locale.code.toUpperCase()}
                   onClick={() => onSelect(locale.code)}
-                  className="fc-menu-action justify-between"
-                  aria-current={isActive ? 'true' : undefined}
-                >
-                  <span className="truncate">{locale.label}</span>
-                  <span className="fc-menu-action__detail ms-2">{locale.code.toUpperCase()}</span>
-                </button>
+                />
               );
             })}
           </div>

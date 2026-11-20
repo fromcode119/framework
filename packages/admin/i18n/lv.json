@@ -361,7 +361,8 @@
     "reset": "Atiestatīt",
     "notScheduledYet": "vēl nav ieplānots",
     "more": "Citas darbības",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Noņemt"
   },
   "ui": {
     "table": {

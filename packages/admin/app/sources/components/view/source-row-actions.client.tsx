@@ -97,9 +97,9 @@ export class SourceRowActions extends PureReactor {
         </Button>
         <Dropdown
           trigger={(
-            <button type="button" aria-label={AdminI18n.t('sources.moreActions')} className="h-8 w-8 flex items-center justify-center rounded-lg fc-tone-muted fc-tone-hover fc-tone-hover-text">
+            <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('sources.moreActions')}>
               <FrameworkIcons.MoreVertical size={16} />
-            </button>
+            </Button>
           )}
           items={this.items}
         />

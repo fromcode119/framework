@@ -361,7 +361,8 @@
     "reset": "إعادة تعيين",
     "notScheduledYet": "لم تتم الجدولة بعد",
     "more": "إجراءات أخرى",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "إزالة"
   },
   "ui": {
     "table": {

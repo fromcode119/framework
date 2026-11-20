@@ -361,7 +361,8 @@
     "reset": "Сбросить",
     "notScheduledYet": "ещё не запланировано",
     "more": "Другие действия",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Удалить"
   },
   "ui": {
     "table": {

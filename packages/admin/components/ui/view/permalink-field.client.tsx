@@ -11,10 +11,6 @@ export class PermalinkField extends PureReactor {
   @prop declare theme?: ThemeMode;
   @prop declare disabled?: boolean;
 
-  private get resolvedTheme(): ThemeMode {
-    return this.theme ?? ThemeMode.LIGHT;
-  }
-
   private get isFieldDisabled(): boolean {
     return this.disabled ?? false;
   }
@@ -40,7 +36,6 @@ export class PermalinkField extends PureReactor {
   }
 
   render(): ReactNode {
-    const theme = this.resolvedTheme;
     const disabled = this.isFieldDisabled;
     const custom = this.custom;
     const isDisabled = this.isDisabled;

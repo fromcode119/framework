@@ -361,7 +361,8 @@
     "reset": "Obnovit výchozí",
     "notScheduledYet": "zatím nenaplánováno",
     "more": "Další akce",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Odebrat"
   },
   "ui": {
     "table": {

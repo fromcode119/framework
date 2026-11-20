@@ -23,6 +23,8 @@ import { ReadOnlyAccessNotice } from '@/app/components/view/read-only-access-not
 import { SiteChangedElsewhereBar } from '@/app/components/view/site-changed-elsewhere-bar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -67,7 +69,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
       return (
         <div className="flex min-h-screen items-center justify-center fc-canvas">
           <div className="max-w-md space-y-6 p-12 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl bg-indigo-500/10 fc-tone-brand shadow-xl shadow-indigo-500/10">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-xl fc-tone-brand-soft fc-tone-brand">
               <FrameworkIcons.User size={40} />
             </div>
             <div className="space-y-2">
@@ -76,21 +78,20 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
                 <AdminRichText k="shell.account.signedInStaff" vars={{ email: authState.user.email }} classes={{ strong: 'font-medium fc-tone-brand' }} />
               </p>
             </div>
-            <button
-              onClick={() => { window.location.href = accountUrl; }}
-              className="w-full rounded-lg bg-slate-900 py-4 fc-size-xs font-medium tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
-            >
+            <Button type="button" variant={ButtonVariant.PRIMARY} block onClick={() => { window.location.href = accountUrl; }}>
               {AdminI18n.t('shell.account.goToMine')}
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant={ButtonVariant.GHOST}
+              block
               onClick={() => {
                 AuthUtils.purgeAuth();
                 authState.router.push(AdminConstants.ROUTES.AUTH.LOGIN);
               }}
-              className="w-full fc-size-xs font-medium tracking-wide fc-tone-muted transition-colors fc-tone-hover-text"
             >
               {AdminI18n.t('shell.account.signOut')}
-            </button>
+            </Button>
           </div>
         </div>
       );
@@ -147,7 +148,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
       <div className="flex min-h-screen flex-col fc-canvas font-sans transition-all duration-300 ease-in-out  lg:flex-row" style={{ '--secondary-sidebar-width': `${AdminConstants.SECONDARY_SIDEBAR.WIDTH_PX}px` } as React.CSSProperties}>
         <PluginLoader />
         <AdminExtensionLoader />
-        {navigationState.isSidebarOpen ? <div className="fixed inset-0 z-[150] animate-in bg-slate-900/50 backdrop-blur-sm duration-300 lg:hidden" onClick={() => navigationState.setSidebarOpen(false)} /> : null}
+        {navigationState.isSidebarOpen ? <div className="fixed inset-0 z-[150] animate-in fc-tone-scrim duration-300 lg:hidden" onClick={() => navigationState.setSidebarOpen(false)} /> : null}
         <Sidebar
           isOpen={navigationState.isSidebarOpen}
           onClose={() => navigationState.setSidebarOpen(false)}

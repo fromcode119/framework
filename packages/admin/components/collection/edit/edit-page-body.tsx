@@ -18,6 +18,9 @@ import { EditMoreSectionsCard } from '@/components/collection/edit/view/edit-mor
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 
 export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
@@ -122,9 +125,9 @@ export class EditPageBody extends PureReactor {
               <p className="font-medium text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
               <p className="text-sm opacity-90">{status.message}</p>
             </div>
-            <button onClick={() => setStatus(null)} className="fc-tone-muted hover:text-slate-600 transition-colors">
-              <FrameworkIcons.Close size={18} />
-            </button>
+            <Button type="button" variant={ButtonVariant.GHOST} size={FieldSize.ICON} aria-label={AdminI18n.t('common.close')} onClick={() => setStatus(null)}>
+              <FrameworkIcons.Close size={16} />
+            </Button>
           </div>
         )}
 

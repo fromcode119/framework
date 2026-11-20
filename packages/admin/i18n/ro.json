@@ -361,7 +361,8 @@
     "reset": "Resetează",
     "notScheduledYet": "încă neprogramat",
     "more": "Mai multe acțiuni",
-    "escKey": "esc"
+    "escKey": "esc",
+    "remove": "Elimină"
   },
   "ui": {
     "table": {

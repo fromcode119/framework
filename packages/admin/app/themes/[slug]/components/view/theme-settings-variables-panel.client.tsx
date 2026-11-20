@@ -82,7 +82,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                             className="flex-1"
                           />
                           {value && (
-                            <img src={value} className="h-8 w-8 rounded-lg object-cover ring-2 ring-indigo-500/20" alt={AdminI18n.t('themes.preview')} />
+                            <img src={value} className="h-8 w-8 rounded-lg object-cover border fc-tone-line" alt={AdminI18n.t('themes.preview')} />
                           )}
                         </div>
                       ) : type === ThemeSettingType.NUMBER ? (
