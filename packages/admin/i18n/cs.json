@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Nová položka menu",
-      "structure": "Struktura menu",
-      "add": "Přidat položku menu"
+      "add": "Přidat položku menu",
+      "indent": "Vnořit pod položku výše",
+      "outdent": "Vysunout o úroveň výš"
     },
     "field": {
       "notSet": "Nenastaveno",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Přidat: {{label}}",
-      "item": "Položka"
+      "item": "Položka",
+      "moveUp": "Posunout nahoru",
+      "moveDown": "Posunout dolů"
     },
     "stepper": {
       "increment": "Zvýšit",

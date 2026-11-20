@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "新選單項目",
-      "structure": "選單結構",
-      "add": "新增選單項目"
+      "add": "新增選單項目",
+      "indent": "嵌套到上方項目之下",
+      "outdent": "移出一層"
     },
     "field": {
       "notSet": "未設定",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "新增{{label}}",
-      "item": "項目"
+      "item": "項目",
+      "moveUp": "上移",
+      "moveDown": "下移"
     },
     "stepper": {
       "increment": "增加",

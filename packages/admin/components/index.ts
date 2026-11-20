@@ -25,6 +25,7 @@ export * from '@/components/ui/view/empty-state.client';
 export * from '@/components/ui/view/admin-panel.client';
 export * from '@/components/ui/view/admin-fact-grid.client';
 export type { IAdminFact } from '@/components/ui/interfaces/admin-fact.interface';
+export type { IRepeatRowField } from '@/components/ui/interfaces/repeat-row-field.interface';
 export * from '@/components/ui/view/badge.client';
 export * from '@/components/ui/view/menu-action.client';
 export * from '@/components/ui/view/state-badge.client';
@@ -81,6 +82,7 @@ export { TimeOfDayUtils } from '@/components/ui/date-time-picker/time-of-day-uti
 export * from '@/components/ui/view/color-picker.client';
 export * from '@/components/ui/view/code-editor.client';
 export * from '@/components/ui/view/visual-menu-field.client';
+export * from '@/components/ui/view/repeat-row.client';
 export * from '@/components/view/icon.client';
 export * from '@/components/view/theme-context.client';
 export * from '@/components/view/theme-context-store.client';

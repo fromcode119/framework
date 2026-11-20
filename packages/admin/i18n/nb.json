@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Nytt menyelement",
-      "structure": "Menystruktur",
-      "add": "Legg til menyelement"
+      "add": "Legg til menyelement",
+      "indent": "Legg under elementet over",
+      "outdent": "Flytt ett nivå ut"
     },
     "field": {
       "notSet": "Ikke angitt",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Legg til {{label}}",
-      "item": "Element"
+      "item": "Element",
+      "moveUp": "Flytt opp",
+      "moveDown": "Flytt ned"
     },
     "stepper": {
       "increment": "Øk",

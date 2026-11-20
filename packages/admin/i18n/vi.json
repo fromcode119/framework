@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Mục menu mới",
-      "structure": "Cấu trúc menu",
-      "add": "Thêm mục menu"
+      "add": "Thêm mục menu",
+      "indent": "Lồng dưới mục phía trên",
+      "outdent": "Đưa ra một cấp"
     },
     "field": {
       "notSet": "Chưa đặt",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Thêm {{label}} mới",
-      "item": "Mục"
+      "item": "Mục",
+      "moveUp": "Di chuyển lên",
+      "moveDown": "Di chuyển xuống"
     },
     "stepper": {
       "increment": "Tăng",

@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Új menüpont",
-      "structure": "Menüszerkezet",
-      "add": "Menüpont hozzáadása"
+      "add": "Menüpont hozzáadása",
+      "indent": "Beágyazás a fenti elem alá",
+      "outdent": "Egy szinttel kijjebb"
     },
     "field": {
       "notSet": "Nincs beállítva",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Új {{label}} hozzáadása",
-      "item": "Elem"
+      "item": "Elem",
+      "moveUp": "Mozgatás fel",
+      "moveDown": "Mozgatás le"
     },
     "stepper": {
       "increment": "Növelés",

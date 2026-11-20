@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Neuer Menüeintrag",
-      "structure": "Menüstruktur",
-      "add": "Menüeintrag hinzufügen"
+      "add": "Menüeintrag hinzufügen",
+      "indent": "Unter den Eintrag darüber einrücken",
+      "outdent": "Eine Ebene ausrücken"
     },
     "field": {
       "notSet": "Nicht festgelegt",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "{{label}} hinzufügen",
-      "item": "Eintrag"
+      "item": "Eintrag",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten"
     },
     "stepper": {
       "increment": "Erhöhen",

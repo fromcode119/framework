@@ -8,6 +8,10 @@ import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 import { DropArea } from '@/components/ui/view/drop-area.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { RepeatRow } from '@/components/ui/view/repeat-row.client';
+import { VisualMenuField } from '@/components/ui/view/visual-menu-field.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
+import { FrameworkIcons } from '@fromcode119/react';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
 import type { KitDoc } from '@/app/kit/kit-doc';
 
@@ -92,6 +96,50 @@ export class FieldsRichKit {
           { name: 'DropArea title, action', type: 'ReactNode', does: 'What to do, and the button for those who do not drag.' },
           { name: 'DropArea over', type: 'boolean', does: 'Something is held over it.' },
           { name: 'DropArea onDragEnter/Over/Leave, onDrop', type: 'handlers', does: 'The page’s own drag handling.' },
+        ],
+      },
+      {
+        slug: 'repeat-row', name: 'RepeatRow and VisualMenuField', group: 'Forms',
+        intro: 'One row of a group that repeats, when each row holds several fields: a raised card with each field’s words on the left of its control, and the row’s tools (reorder, remove) on the right. A group whose rows hold one line each is a table instead. VisualMenuField is a menu built from these rows, nested by depth.',
+        from: "import { RepeatRow, VisualMenuField } from '@fromcode119/sdk/admin';",
+        examples: [
+          {
+            title: 'Rows in a list',
+            text: 'The rows go in `<ul className="fc-repeat__rows">` inside `.fc-repeat`, with the Add button after them. Tools are `.fc-repeat__tool` buttons, each with a label.',
+            demo: (
+              <div className="fc-kitdoc__cell--wide fc-repeat">
+                <ul className="fc-repeat__rows">
+                  <RepeatRow
+                    fields={[
+                      { key: 'from', label: 'From quantity', control: <NumberStepper value={10} onChange={() => undefined} /> },
+                      { key: 'price', label: 'Unit price', control: <NumberStepper value={8.5} onChange={() => undefined} /> },
+                    ]}
+                    tools={<button type="button" className="fc-repeat__tool" aria-label="Delete" title="Delete"><FrameworkIcons.Close size={14} /></button>}
+                  />
+                </ul>
+                <Button variant={ButtonVariant.SECONDARY} icon={<FrameworkIcons.Plus size={13} />}>Add quantity price</Button>
+              </div>
+            ),
+            code: '<ul className="fc-repeat__rows">\n  <RepeatRow\n    fields={[{ key: \'from\', label: \'From quantity\', control: <NumberStepper … /> }]}\n    tools={<button className="fc-repeat__tool" aria-label="Delete">…</button>} />\n</ul>',
+          },
+          {
+            title: 'VisualMenuField',
+            text: 'Each item can be moved, nested under the one above, or moved back out.',
+            demo: (
+              <div className="fc-kitdoc__cell--wide">
+                <KitPlay initial={[{ label: 'Shop', url: '/shop', depth: 0 }, { label: 'T-shirts', url: '/shop/t-shirts', depth: 1 }, { label: 'About', url: '/about', depth: 0 }]}>
+                  {(value, set) => <VisualMenuField value={value} onChange={set} collectionSlug="menus" field={{ fields: [{ name: 'label', type: 'text', label: 'Label' }, { name: 'url', type: 'text', label: 'Address' }] }} />}
+                </KitPlay>
+              </div>
+            ),
+            code: "<VisualMenuField value={items} onChange={setItems} collectionSlug=\"menus\"\n  field={{ fields: [{ name: 'label', type: 'text', label: 'Label' }, { name: 'url', type: 'text', label: 'Address' }] }} />",
+          },
+        ],
+        options: [
+          { name: 'fields', type: '{ key, label?, control }[]', does: 'The row’s fields, each with its words and its control.' },
+          { name: 'tools', type: 'ReactNode', does: 'The row’s buttons; two or more stand two by two.' },
+          { name: 'depth', type: 'number', initial: '0', does: 'How far the row is nested (24px a level).' },
+          { name: 'dragging, draggable, onDrag…', type: 'boolean, handlers', does: 'Reordering by dragging the row.' },
         ],
       },
     ];

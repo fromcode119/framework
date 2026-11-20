@@ -7,10 +7,14 @@ import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { RepeatRow } from '@/components/ui/view/repeat-row.client';
 
 /**
- * Visual Menu Builder Component.
- * Supports hierarchical menu structures with visual indentation and easy ordering.
+ * A menu built row by row: each item is a RepeatRow moved in by its depth, with its own reorder, nest and
+ * remove tools.
  */
 export class VisualMenuField extends PureReactor {
   @prop declare field: any;
@@ -91,139 +95,74 @@ export class VisualMenuField extends PureReactor {
   renderFieldInput(f: any, item: any, index: number): ReactNode {
     let val = item[f.name];
 
-    // Safety check: if we have an object where a string is expected (e.g. relationship field stored as object)
+    // A relationship stored as an object where a string is expected.
     if (val && typeof val === 'object' && !Array.isArray(val)) {
-       val = val.value || val.slug || val.id || val.label || '';
+      val = val.value || val.slug || val.id || val.label || '';
     }
 
-    const fieldProps = {
-      value: val,
-      onChange: (v: any) => {
-        const value = v?.target ? v.target.value : v;
-        this.handleUpdateItem(index, f.name, value);
-      },
-      theme: this.theme,
-      placeholder: f.placeholder,
-    };
+    const onChange = (v: any) => this.handleUpdateItem(index, f.name, v?.target ? v.target.value : v);
 
     if (f.type === 'relationship') {
-       return (
-        <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
-          <TagField
-            {...fieldProps}
-            collectionSlug={this.collectionSlug}
-            fieldName={f.name}
-            sourceCollection={f.admin?.sourceCollection || f.relationTo}
-            sourceField={f.admin?.sourceField || 'slug'}
-            hasMany={false}
-            allowCreate={false}
-          />
-        </div>
-       );
-    }
-
-    if (f.type === 'select') {
       return (
-        <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
-          <Select {...fieldProps} options={f.options || []} />
-        </div>
+        <TagField
+          value={val}
+          onChange={onChange}
+          theme={this.theme}
+          collectionSlug={this.collectionSlug}
+          fieldName={f.name}
+          sourceCollection={f.admin?.sourceCollection || f.relationTo}
+          sourceField={f.admin?.sourceField || 'slug'}
+          hasMany={false}
+          allowCreate={false}
+        />
       );
     }
 
+    if (f.type === 'select') {
+      return <Select value={val} onChange={onChange} options={f.options || []} placeholder={f.placeholder} />;
+    }
+
+    return <Input value={val} onChange={onChange} placeholder={f.placeholder} type="text" />;
+  }
+
+  private tools(item: any, index: number): ReactNode {
+    const depth = item.depth || 0;
+    const tool = (label: string, icon: ReactNode, onClick: () => void, disabled = false) => (
+      <button type="button" className="fc-repeat__tool" onClick={onClick} disabled={disabled} title={label} aria-label={label}>{icon}</button>
+    );
     return (
-      <div className="flex flex-col gap-0.5">
-        {f.label && <label className="text-[12px] font-medium text-slate-400 tracking-wide">{f.label}</label>}
-        <Input {...fieldProps} type="text" inputClassName="font-medium h-8 text-xs" />
-      </div>
+      <>
+        {tool(AdminI18n.t('ui.array.moveUp'), <FrameworkIcons.ChevronUp size={14} />, () => this.handleMoveUp(index), index === 0)}
+        {tool(AdminI18n.t('common.delete'), <FrameworkIcons.Close size={14} />, () => this.handleRemoveItem(index))}
+        {tool(AdminI18n.t('ui.array.moveDown'), <FrameworkIcons.ChevronDown size={14} />, () => this.handleMoveDown(index), index === this.items.length - 1)}
+        {tool(AdminI18n.t('ui.menuField.indent'), <FrameworkIcons.Right size={14} />, () => this.handleIndent(index, HorizontalAlign.RIGHT), index === 0 || (this.items[index - 1].depth || 0) < depth)}
+        {tool(AdminI18n.t('ui.menuField.outdent'), <FrameworkIcons.Left size={14} />, () => this.handleIndent(index, HorizontalAlign.LEFT), depth === 0)}
+      </>
     );
   }
 
   render(): ReactNode {
-    const { field, theme } = this;
-    const items = this.items;
-
+    const subFields = (this.field?.fields || []) as any[];
     return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between mb-1">
-         <div className="flex items-center gap-2">
-            <div className={`p-1.5 rounded-lg border ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-indigo-400' : 'bg-slate-50 border-slate-100 text-indigo-600'}`}>
-                <FrameworkIcons.Layout size={14} />
-            </div>
-            <div>
-                <span className={`text-[12px] font-medium tracking-wide ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('ui.menuField.structure')}</span>
-            </div>
-         </div>
-      </div>
-
-      <div className="space-y-1.5">
-        {items.map((item, index) => (
-            <div
+      <div className="fc-repeat">
+        {this.items.length ? (
+          <ul className="fc-repeat__rows">
+            {this.items.map((item, index) => (
+              <RepeatRow
                 key={index}
-                className={`relative group flex gap-3 transition-all duration-300 animate-in fade-in slide-in-from-left-2`}
-                style={{ paddingInlineStart: `${(item.depth || 0) * 24}px` }}
-            >
-                {/* Visual Branch Line */}
-                {(item.depth || 0) > 0 && (
-                    <div className="absolute start-0 top-0 bottom-0 flex items-center" style={{ width: `${(item.depth || 0) * 24}px` }}>
-                         <div className={`absolute start-3 top-1/2 -translate-y-1/2 w-3 h-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                         <div className={`absolute start-3 top-0 bottom-1/2 w-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'} ${index === 0 ? 'hidden' : ''}`} />
-                    </div>
-                )}
-
-                <div className={`flex-1 p-2 rounded-xl border flex items-center gap-2 transition-all ${
-                    theme === ThemeMode.DARK
-                        ? 'bg-slate-900/40 border-slate-800 group-hover:border-indigo-500/30'
-                        : 'bg-white border-slate-200 group-hover:border-indigo-500/30 shadow-sm'
-                }`}>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-6 gap-2">
-                        {field.fields.filter((f: any) => !f.admin?.condition || f.admin.condition({}, item)).map((f: any) => (
-                            <div key={f.name} className={f.name === 'label' ? 'md:col-span-2' : 'md:col-span-1'}>
-                                {this.renderFieldInput(f, item, index)}
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center gap-0.5 opacity-20 group-hover:opacity-100 transition-opacity">
-                        <button
-                            onClick={() => this.handleIndent(index, HorizontalAlign.LEFT)}
-                            disabled={(item.depth || 0) === 0}
-                            className={`p-1.5 rounded-lg transition-all ${theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500'} disabled:opacity-0`}
-                        >
-                            <FrameworkIcons.Left size={12} />
-                        </button>
-                        <button
-                            onClick={() => this.handleIndent(index, HorizontalAlign.RIGHT)}
-                            className={`p-1.5 rounded-lg transition-all ${theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500'}`}
-                        >
-                            <FrameworkIcons.Right size={12} />
-                        </button>
-                        <div className={`w-[1px] h-3 mx-0.5 ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                        <button
-                            onClick={() => this.handleRemoveItem(index)}
-                            className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-rose-500/40 transition-all ms-0.5"
-                        >
-                            <FrameworkIcons.Trash size={12} />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        ))}
+                depth={item.depth || 0}
+                fields={subFields
+                  .filter((f: any) => !f.admin?.condition || f.admin.condition({}, item))
+                  .map((f: any) => ({ key: f.name, label: f.label, control: this.renderFieldInput(f, item, index) }))}
+                tools={this.tools(item, index)}
+              />
+            ))}
+          </ul>
+        ) : null}
+        <Button type="button" variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.handleAddItem} icon={<FrameworkIcons.Plus size={13} />}>
+          {AdminI18n.t('ui.menuField.add')}
+        </Button>
       </div>
-
-      <button
-        onClick={this.handleAddItem}
-        className={`w-full py-2.5 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all group ${
-          theme === ThemeMode.DARK
-            ? 'border-slate-800 hover:border-indigo-500/40 bg-slate-900/5 hover:bg-indigo-500/5 text-slate-600 hover:text-indigo-400'
-            : 'border-slate-100 hover:border-indigo-200 bg-slate-50/30 hover:bg-indigo-50 text-slate-400 hover:text-indigo-500'
-        }`}
-      >
-        <FrameworkIcons.Plus size={14} />
-        <span className="text-[12px] font-medium tracking-wide">{AdminI18n.t('ui.menuField.add')}</span>
-      </button>
-    </div>
     );
   }
 }

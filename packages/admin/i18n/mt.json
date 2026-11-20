@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Element Ġdid tal-Menu",
-      "structure": "Struttura tal-Menu",
-      "add": "Żid Element tal-Menu"
+      "add": "Żid Element tal-Menu",
+      "indent": "Daħħal taħt l-oġġett ta' fuq",
+      "outdent": "Oħroġ livell wieħed"
     },
     "field": {
       "notSet": "Mhux issettjat",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Żid {{label}} Ġdid",
-      "item": "Element"
+      "item": "Element",
+      "moveUp": "Ċaqlaq 'il fuq",
+      "moveDown": "Ċaqlaq 'l isfel"
     },
     "stepper": {
       "increment": "Żid",

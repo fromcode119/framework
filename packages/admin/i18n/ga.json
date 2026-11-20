@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Mír Roghchláir Nua",
-      "structure": "Struchtúr an Roghchláir",
-      "add": "Cuir Mír Roghchláir Leis"
+      "add": "Cuir Mír Roghchláir Leis",
+      "indent": "Neadaigh faoin mír thuas",
+      "outdent": "Bog amach leibhéal amháin"
     },
     "field": {
       "notSet": "Gan socrú",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Cuir {{label}} Nua Leis",
-      "item": "Mír"
+      "item": "Mír",
+      "moveUp": "Bog suas",
+      "moveDown": "Bog síos"
     },
     "stepper": {
       "increment": "Méadaigh",

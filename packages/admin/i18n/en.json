@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "New Menu Item",
-      "structure": "Menu Structure",
-      "add": "Add Menu Item"
+      "add": "Add Menu Item",
+      "indent": "Nest under the item above",
+      "outdent": "Move out one level"
     },
     "field": {
       "notSet": "Not set",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Add New {{label}}",
-      "item": "Item"
+      "item": "Item",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
     },
     "stepper": {
       "increment": "Increment",

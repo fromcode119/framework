@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Nieuw menu-item",
-      "structure": "Menustructuur",
-      "add": "Menu-item toevoegen"
+      "add": "Menu-item toevoegen",
+      "indent": "Onder het item erboven plaatsen",
+      "outdent": "Eén niveau terug"
     },
     "field": {
       "notSet": "Niet ingesteld",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Nieuw {{label}} toevoegen",
-      "item": "Item"
+      "item": "Item",
+      "moveUp": "Omhoog",
+      "moveDown": "Omlaag"
     },
     "stepper": {
       "increment": "Verhogen",

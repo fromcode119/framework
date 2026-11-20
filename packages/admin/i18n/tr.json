@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Yeni Menü Öğesi",
-      "structure": "Menü Yapısı",
-      "add": "Menü Öğesi Ekle"
+      "add": "Menü Öğesi Ekle",
+      "indent": "Üstteki öğenin altına yerleştir",
+      "outdent": "Bir düzey dışarı al"
     },
     "field": {
       "notSet": "Ayarlanmadı",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Yeni {{label}} Ekle",
-      "item": "Öğe"
+      "item": "Öğe",
+      "moveUp": "Yukarı taşı",
+      "moveDown": "Aşağı taşı"
     },
     "stepper": {
       "increment": "Artır",

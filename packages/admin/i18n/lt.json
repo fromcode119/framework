@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Naujas meniu punktas",
-      "structure": "Meniu struktūra",
-      "add": "Pridėti meniu punktą"
+      "add": "Pridėti meniu punktą",
+      "indent": "Įdėti po aukščiau esančiu elementu",
+      "outdent": "Iškelti vienu lygiu"
     },
     "field": {
       "notSet": "Nenustatyta",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Pridėti naują: {{label}}",
-      "item": "Elementas"
+      "item": "Elementas",
+      "moveUp": "Perkelti aukštyn",
+      "moveDown": "Perkelti žemyn"
     },
     "stepper": {
       "increment": "Padidinti",

@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Item Menu Baru",
-      "structure": "Struktur Menu",
-      "add": "Tambah Item Menu"
+      "add": "Tambah Item Menu",
+      "indent": "Masukkan di bawah item di atasnya",
+      "outdent": "Keluarkan satu tingkat"
     },
     "field": {
       "notSet": "Belum diatur",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Tambah {{label}} Baru",
-      "item": "Item"
+      "item": "Item",
+      "moveUp": "Pindah ke atas",
+      "moveDown": "Pindah ke bawah"
     },
     "stepper": {
       "increment": "Tambah",

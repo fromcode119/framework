@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Bagong Menu Item",
-      "structure": "Istruktura ng Menu",
-      "add": "Magdagdag ng Menu Item"
+      "add": "Magdagdag ng Menu Item",
+      "indent": "Ilagay sa ilalim ng item sa itaas",
+      "outdent": "Ilabas nang isang antas"
     },
     "field": {
       "notSet": "Hindi nakatakda",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Magdagdag ng Bagong {{label}}",
-      "item": "Item"
+      "item": "Item",
+      "moveUp": "Ilipat pataas",
+      "moveDown": "Ilipat pababa"
     },
     "stepper": {
       "increment": "Dagdagan",

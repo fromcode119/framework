@@ -436,8 +436,9 @@
     },
     "menuField": {
       "newItem": "Element i ri menuje",
-      "structure": "Struktura e menysë",
-      "add": "Shto element menuje"
+      "add": "Shto element menuje",
+      "indent": "Fute nën elementin sipër",
+      "outdent": "Nxirre një nivel"
     },
     "field": {
       "notSet": "E pacaktuar",
@@ -458,7 +459,9 @@
     },
     "array": {
       "addNew": "Shto {{label}} të ri",
-      "item": "Element"
+      "item": "Element",
+      "moveUp": "Lëviz lart",
+      "moveDown": "Lëviz poshtë"
     },
     "stepper": {
       "increment": "Rrit",
