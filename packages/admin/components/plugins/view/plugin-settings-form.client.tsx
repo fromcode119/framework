@@ -1,7 +1,6 @@
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { Alert } from '@/components/ui/view/alert.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
 import { PluginSettingsFormActions } from '@/components/plugins/view/plugin-settings-form-actions.client';
@@ -11,6 +10,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { Card } from '@/components/ui/view/card.client';
 import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 import { PluginSettingsSections } from '@/components/plugins/plugin-settings-sections';
+import { Loader } from '@/components/ui/view/loader.client';
 
 /**
  * A plugin's settings, rendered from the schema the plugin itself declares — as the same rows every
@@ -84,11 +84,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
 
     if (this.loading) {
       return (
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin text-indigo-500">
-             <FrameworkIcons.Loader size={32} />
-          </div>
-        </div>
+        <Loader />
       );
     }
 

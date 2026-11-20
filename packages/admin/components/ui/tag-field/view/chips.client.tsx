@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { TagFieldDataService } from '@/components/ui/tag-field/data-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 export class TagFieldChips extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -99,7 +100,7 @@ export class TagFieldChips extends PureReactor {
                 className="fc-chip-input__entry w-full"
                 />
             )}
-            {isCreating && <FrameworkIcons.Loader size={12} className="animate-spin" />}
+            {isCreating && <Spinner small className="fc-spinner--muted" />}
         </div>
       </div>
     );

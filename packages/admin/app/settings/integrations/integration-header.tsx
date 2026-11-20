@@ -7,6 +7,7 @@ import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 /**
  * The page's header — the same compact header every settings page has. Saving is the Save bar at the
@@ -26,7 +27,7 @@ export class IntegrationHeader extends PureReactor {
       <div className="flex items-center gap-2">
         <Dropdown align={HorizontalAlign.RIGHT} items={[{
           label: AdminI18n.t('settings.integrations.resetStaleJs'),
-          icon: this.resettingStaleJs ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Refresh size={14} />,
+          icon: this.resettingStaleJs ? <Spinner /> : <FrameworkIcons.Refresh size={14} />,
           onClick: this.onResetStaleJs,
         }]} trigger={
           <span aria-label={AdminI18n.t('settings.integrations.more')} className="fc-toolbar-btn fc-toolbar-btn--icon">

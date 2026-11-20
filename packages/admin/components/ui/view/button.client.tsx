@@ -74,9 +74,6 @@ export class Button extends PureReactor {
     icon: 'fc-btn--icon',
   };
 
-  const spinnerColor = variant === ButtonVariant.PRIMARY || variant === ButtonVariant.DANGER
-    ? 'border-white/20 border-t-white'
-    : 'border-[color-mix(in_srgb,var(--primary)_20%,transparent)] border-t-[var(--primary)]';
 
   return (
     <Component
@@ -90,7 +87,7 @@ export class Button extends PureReactor {
           width and still says what it is doing. It used to be replaced by the spinner alone and shrank to
           a square. */}
       {isLoading
-        ? <span className={`fc-btn__spinner border-2 rounded-full animate-spin ${spinnerColor}`} aria-hidden="true" />
+        ? <span className="fc-spinner fc-btn__spinner" aria-hidden="true" />
         : icon ? <span className="flex-shrink-0">{icon}</span> : null}
       {children}
     </Component>

@@ -33,7 +33,7 @@ export class BuildOverview extends SourcesPageActions {
     const buildLabel = this.triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll');
     return (
       <div className="flex items-center gap-2">
-        <Button disabled={this.checking} icon={<RefreshCw size={14} className={this.checking ? 'animate-spin' : ''} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE} title={checkLabel} aria-label={checkLabel} className="whitespace-nowrap">
+        <Button isLoading={this.checking} icon={<RefreshCw size={14} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE} title={checkLabel} aria-label={checkLabel} className="whitespace-nowrap">
           <span className="hidden sm:inline">{checkLabel}</span>
         </Button>
         <Button disabled={this.triggering} icon={<Play size={14} />} onClick={this.buildAll} variant={ButtonVariant.SECONDARY} title={buildLabel} aria-label={buildLabel} className="whitespace-nowrap">

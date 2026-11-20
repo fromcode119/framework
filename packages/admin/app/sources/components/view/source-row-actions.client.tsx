@@ -89,9 +89,9 @@ export class SourceRowActions extends PureReactor {
         <Button
           size={FieldSize.SM}
           variant={ButtonVariant.OUTLINE}
-          disabled={this.building}
+          isLoading={this.building}
           onClick={this.build}
-          icon={<Play size={12} className={this.building ? 'animate-spin' : ''} />}
+          icon={<Play size={12} />}
         >
           {this.building ? AdminI18n.t('sources.building') : AdminI18n.t('sources.build')}
         </Button>

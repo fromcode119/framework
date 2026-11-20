@@ -9,6 +9,7 @@ export * from '@/components/ui/view/text-area.client';
 export * from '@/components/ui/view/localized-field.client';
 export * from '@/components/ui/tag-field/view/index.client';
 export * from '@/components/ui/view/loader.client';
+export * from '@/components/ui/view/spinner.client';
 export * from '@/components/ui/view/switch.client';
 export * from '@/components/ui/view/checkbox.client';
 export * from '@/components/ui/view/file-dropzone.client';

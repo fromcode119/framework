@@ -11,6 +11,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
+import { Spinner } from '@/components/ui/view/spinner.client';
 export class MoveDialog extends AdminComponent {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
@@ -109,7 +110,7 @@ export class MoveDialog extends AdminComponent {
         {this.crumbs}
         <div className="fc-move__list">
           {this.loading
-            ? <div className="fc-move__loading"><FrameworkIcons.Loader className="animate-spin" size={20} /></div>
+            ? <div className="fc-move__loading"><Spinner /></div>
             : this.folders.length === 0
               ? <EmptyState inline title={AdminI18n.t('ui.move.empty')} />
               : this.folders.map((folder) => (

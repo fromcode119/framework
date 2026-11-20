@@ -120,8 +120,8 @@ export class MediaToolbar extends PureReactor {
                 <Button
                   className="whitespace-nowrap"
                   onClick={this.openFilePicker}
-                  disabled={uploading}
-                  icon={uploading ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Upload size={15} strokeWidth={3} />}
+                  isLoading={uploading}
+                  icon={<FrameworkIcons.Upload size={15} strokeWidth={3} />}
                 >
                   {uploading ? AdminI18n.t('media.synching') : AdminI18n.t('media.uploadAsset')}
                 </Button>

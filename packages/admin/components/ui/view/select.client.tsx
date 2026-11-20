@@ -11,6 +11,7 @@ import type { IOption } from '@/components/ui/interfaces/option.interface';
 import { ThemeContext } from '@/components/view/theme-context-store.client';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 export class Select extends Reactor {
   /**
@@ -223,7 +224,7 @@ export class Select extends Reactor {
               other. Padding moved the wrong element. */}
           <span className="relative z-10 ms-2 flex flex-shrink-0 items-center">
             {isLoading ? (
-              <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
+              <Spinner small className="fc-spinner--muted" />
             ) : (
               <span className={chevronThemeClasses}>
                 <FrameworkIcons.ChevronsUpDown size={14} />

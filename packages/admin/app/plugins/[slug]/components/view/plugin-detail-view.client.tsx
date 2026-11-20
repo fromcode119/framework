@@ -1,4 +1,4 @@
-import { PluginState, ThemeMode } from '@fromcode119/core/client';
+import { PluginState } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 
@@ -28,6 +28,10 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Button } from '@/components/ui/view/button.client';
+import { Alert } from '@/components/ui/view/alert.client';
 
 export class PluginDetailView extends AdminComponent {
   @prop declare activeTab: PluginDetailTab;
@@ -95,32 +99,20 @@ export class PluginDetailView extends AdminComponent {
         <PluginDetailHeader activeTab={activeTab} onOpenDefinition={this.onOpenDefinition} platformActions={this.platformHere} plugin={plugin} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} />
         <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
         {plugin.error ? (
-          <div className={`mx-6 mt-6 rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-            <div className="flex items-start gap-4">
-              <div className={`rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
-                <FrameworkIcons.Alert size={18} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className="text-[12px] font-medium text-rose-500">{AdminI18n.t('plugins.detail.pluginStartupError')}</h3>
-                  <button
-                    type="button"
-                    onClick={() => void this.copyPluginError()}
-                    disabled={isCopyingError}
-                    className={`inline-flex items-center gap-2 ${AdminClass.SURFACE} px-3 py-2 text-[12px] font-medium transition-all ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-slate-950/40 text-rose-200 hover:bg-slate-900/60 disabled:opacity-60' : 'border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:opacity-60'}`}
-                  >
-                    {isCopyingError ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Copy size={12} />}
-                    <span>{AdminI18n.t('plugins.detail.copyError')}</span>
-                  </button>
-                </div>
-                <p className={`mt-2 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-rose-100/90' : 'text-rose-700'}`}>
-                  {AdminI18n.t('plugins.detail.thisPluginIsInstalledBut')}
-                </p>
-                <pre className={`mt-4 overflow-x-auto whitespace-pre-wrap ${AdminClass.SURFACE} px-4 py-3 text-xs font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'bg-slate-950/50 text-rose-100' : 'bg-white text-rose-700 shadow-inner shadow-rose-100/60'}`}>
-                  {plugin.error}
-                </pre>
-              </div>
-            </div>
+          // The plugin's own words under the alert, as written: the operator copies them to whoever fixes it.
+          <div className="fc-plugin-error">
+            <Alert
+              tone="danger"
+              title={AdminI18n.t('plugins.detail.pluginStartupError')}
+              action={(
+                <Button size={FieldSize.SM} variant={ButtonVariant.SECONDARY} isLoading={isCopyingError} icon={<FrameworkIcons.Copy size={14} />} onClick={() => void this.copyPluginError()}>
+                  {AdminI18n.t('plugins.detail.copyError')}
+                </Button>
+              )}
+            >
+              {AdminI18n.t('plugins.detail.thisPluginIsInstalledBut')}
+            </Alert>
+            <pre className="fc-plugin-error__trace">{plugin.error}</pre>
           </div>
         ) : null}
           {activeTab === PluginDetailTab.SETTINGS ? (

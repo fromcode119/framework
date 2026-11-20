@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { KitPlay } from '@/app/kit/view/kit-play.client';
 import { Loader } from '@/components/ui/view/loader.client';
+import { Spinner } from '@/components/ui/view/spinner.client';
 import { CopyValue } from '@/components/ui/view/copy-value.client';
 import { CodeBlock } from '@/components/ui/view/code-block.client';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
@@ -128,6 +129,20 @@ export class SmallKit {
         options: [
           { name: 'label', type: 'string', does: 'What is being waited for.' },
           { name: 'fullPage', type: 'boolean', initial: 'false', does: 'Centred in the whole page.' },
+        ],
+      },
+      {
+        slug: 'spinner', name: 'Spinner', group: 'Feedback',
+        intro: 'Something happening right here, inline: beside a word, in a badge, in a field. It takes the colour of the text around it. A button that is working uses its own `isLoading`; a part of a page still loading is `Loader`.',
+        from: "import { Spinner } from '@fromcode119/sdk/admin';",
+        examples: [
+          { title: 'Inline, small, in a badge', demo: <><span className="fc-hint fc-kitdoc__inline"><Spinner small label="Reading the repository" />Reading the repository</span><Spinner /><Badge variant={BadgeVariant.INFO}><Spinner small className="me-1" />Building</Badge></>, code: '<Spinner small label="Reading the repository" />\n<Spinner />\n<Badge variant={BadgeVariant.INFO}><Spinner small className="me-1" />Building</Badge>' },
+          { title: 'A button at work', text: 'The button keeps its icon until it works, then the spinner takes the icon’s place and the words stay.', demo: <KitPlay initial={false}>{(busy, set) => <Button isLoading={busy} icon={<FrameworkIcons.Upload size={14} />} onClick={() => { set(true); setTimeout(() => set(false), 1500); }}>Upload</Button>}</KitPlay>, code: '<Button isLoading={uploading} icon={<Upload size={14} />}>Upload</Button>' },
+        ],
+        options: [
+          { name: 'small', type: 'boolean', initial: 'false', does: '12px instead of 16px, for a badge or small text.' },
+          { name: 'label', type: 'string', does: 'What is happening, for a screen reader.' },
+          { name: 'className', type: 'string', does: '`fc-spinner--muted` for the quiet colour.' },
         ],
       },
       {

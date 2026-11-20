@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Loader2 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 /**
  * A source's last build, as the admin's own Badge.
@@ -33,7 +34,7 @@ export class BuildStatusBadge extends PureReactor {
   render(): ReactNode {
     return (
       <Badge variant={this.variant}>
-        {this.status === 'building' ? <Loader2 size={11} className="me-1 inline animate-spin" /> : null}
+        {this.status === 'building' ? <Spinner small className="me-1" /> : null}
         {this.label}
       </Badge>
     );

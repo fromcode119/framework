@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { CheckCircle, Loader2, Info } from 'lucide-react';
+import { CheckCircle, Info } from 'lucide-react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 /**
  * What the repository says it is — name, kind and vendor — read from its own manifest and shown as
@@ -21,7 +22,7 @@ export class SourceIdentitySummary extends PureReactor {
   @prop declare message: string;
 
   private get icon(): ReactNode {
-    if (this.reading) return <Loader2 size={16} className="animate-spin text-slate-400" />;
+    if (this.reading) return <Spinner className="fc-spinner--muted" />;
     if (this.detected) return <CheckCircle size={16} className="text-emerald-500" />;
     return <Info size={16} className="text-slate-400" />;
   }

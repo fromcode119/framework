@@ -6,6 +6,7 @@ import { CommandBarCommand } from '@/components/ui/view/command-bar-command.clie
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Spinner } from '@/components/ui/view/spinner.client';
 
 export class EditFooter extends PureReactor {
   @prop declare collection: any;
@@ -86,7 +87,7 @@ export class EditFooter extends PureReactor {
         <CommandBarCommand label={AdminI18n.t('collection.edit.discard')} onClick={this.onDiscard} />
         <CommandBarCommand
           label={AdminI18n.t(this.isNew ? 'common.create' : 'common.save')}
-          icon={this.saving ? <FrameworkIcons.Loader size={15} className="animate-spin" /> : <FrameworkIcons.Save size={15} />}
+          icon={this.saving ? <Spinner /> : <FrameworkIcons.Save size={15} />}
           disabled={this.saving}
           onClick={this.onCommit}
         />
