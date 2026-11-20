@@ -10,6 +10,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
+- customer account round 3 ([#1563](https://github.com/fromcode119/framework/pull/1563))
 - **admin**: one colour for a record's state in the list, the header and its menu ([#1564](https://github.com/fromcode119/framework/pull/1564))
 
 ## [0.2.620] - 2026-11-20
