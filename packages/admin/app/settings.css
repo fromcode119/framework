@@ -196,7 +196,8 @@
 .fc-settings-savebar {
   position: sticky; bottom: 12px; z-index: 30;
   display: flex; align-items: center; gap: 8px;
-  max-width: 620px; margin: 16px auto 0; padding: 8px 8px 8px 16px;
+  /* Its own width up to the cap: inside a flex column (a site's page) auto margins alone shrank it to its words. */
+  width: 100%; max-width: 620px; margin: 16px auto 0; padding: 8px 8px 8px 16px;
   border-radius: 12px; background: var(--fc-settings-bar-bg); color: var(--fc-settings-bar-text);
   box-shadow: var(--fc-settings-bar-shadow);
 }
@@ -327,3 +328,7 @@
   .fc-settings-row--wide:has(> .fc-settings-row__control > :only-child:is(.fc-stepper, .fc-settings-group, .fc-settings-short)) > .fc-settings-row__control { width: 100%; max-width: none; }
   .fc-settings-row--wide > .fc-settings-row__control > .fc-settings-group:only-child { width: 100%; }
 }
+
+/* Lines of code a thing declared (routes, hooks, tools), one per line, under the row that names them. */
+.fc-code-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.fc-code-list > li { font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; line-height: 18px; color: var(--fc-text-muted); overflow-wrap: anywhere; }

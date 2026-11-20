@@ -23,14 +23,13 @@ export interface IPluginDetailPageModel {
   siteScope: boolean;
   fetchLogs: () => Promise<void>;
   handleDelete: () => Promise<void>;
-  handleSaveSandbox: () => Promise<void>;
+  handleSaveSandbox: () => Promise<boolean>;
   handleTabChange: (tabId: PluginDetailTab, group?: string, section?: string) => void;
   handleToggle: () => Promise<void>;
   handleUpdate: () => Promise<void>;
   isDeleting: boolean;
   /** The effective platform default (Settings → Infrastructure → Plugin Isolation), or `null` until fetched. */
   isolationDefaults: { memoryMb: number; timeoutMs: number } | null;
-  isSaving: boolean;
   isUpdating: boolean;
   installOperation: IPluginInstallOperation | null;
   loading: boolean;

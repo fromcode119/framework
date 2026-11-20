@@ -24,6 +24,9 @@ import { SiteMembersCard } from '@/app/sites/[id]/site-members-card.client';
 import { SiteDangerCard } from '@/app/sites/[id]/site-danger-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { PendingSave } from '@/lib/settings/pending-save';
+import { PendingSaves } from '@/lib/settings/pending-saves';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 
 /** One site: identity and state, its members, its exports, and the one irreversible action. */
 export class SiteDetailPageClient extends AdminComponent {
@@ -31,7 +34,6 @@ export class SiteDetailPageClient extends AdminComponent {
   @state values: SiteFormValues = SiteFormValues.empty();
   @state loading = true;
   @state error: string | null = null;
-  @state saving = false;
   @state exporting = false;
   @state entering = false;
   @state previewing = false;
@@ -81,8 +83,20 @@ export class SiteDetailPageClient extends AdminComponent {
     return String(this.runtimeParams?.id ?? '');
   }
 
+  /** The form's edits (overview and access), as the page's one save bar reads, writes and puts back. */
+  private pending: PendingSave | null = null;
+
   componentDidMount(): void {
+    this.pending = new PendingSave(() => this.values, () => this.save(), (values) => { this.values = SiteFormValues.empty().with(values); });
     this.load();
+  }
+
+  componentDidUpdate(): void {
+    PendingSaves.changed();
+  }
+
+  componentWillUnmount(): void {
+    this.pending?.dispose();
   }
 
   @bound async load(): Promise<void> {
@@ -112,24 +126,24 @@ export class SiteDetailPageClient extends AdminComponent {
     }
   }
 
+  /** The site as stored: the form shows it, and the save bar compares edits against it. */
   @bound apply(site: SiteRecord): void {
     this.site = site;
     this.values = SiteFormValues.fromSite(site);
+    this.pending?.mark();
   }
 
   @bound onChange(values: SiteFormValues): void {
     this.values = values;
   }
 
-  @bound async save(): Promise<void> {
-    this.saving = true;
+  /** Written from the page's save bar; a refusal is said and leaves the edits unsaved. */
+  private async save(): Promise<void> {
     try {
       this.apply(await SitesClient.update(this.id, this.values.toUpdatePayload()));
-      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteSaved'), message: AdminI18n.t('sites.routingFollowsImmediatelyNoRestart'), type: NotificationType.INFO });
     } catch (err: any) {
+      this.pending?.failed();
       this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notSaved'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe2'), type: NotificationType.ERROR });
-    } finally {
-      this.saving = false;
     }
   }
 
@@ -184,8 +198,8 @@ export class SiteDetailPageClient extends AdminComponent {
           actions={site ? (
             <SiteActionBar
               site={site}
-              entering={this.entering} previewing={this.previewing} exporting={this.exporting} saving={this.saving}
-              onEnter={this.enterSite} onVisit={this.visitSite} onExport={this.exportSite} onSave={this.save}
+              entering={this.entering} previewing={this.previewing} exporting={this.exporting}
+              onEnter={this.enterSite} onVisit={this.visitSite} onExport={this.exportSite}
             />
           ) : null}
         />
@@ -207,6 +221,7 @@ export class SiteDetailPageClient extends AdminComponent {
             {this.tab.value === SiteTab.DANGER.value ? <SiteDangerCard site={site} onDeleted={this.onDeleted} /> : null}
           </div>
         ) : null}
+        <PendingSavesBar />
         </div>
       </div>
     );

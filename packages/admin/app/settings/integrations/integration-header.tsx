@@ -22,7 +22,6 @@ export class IntegrationHeader extends PureReactor {
   @prop declare onResetStaleJs: () => void;
 
   private renderActions(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex items-center gap-2">
         <Dropdown align={HorizontalAlign.RIGHT} items={[{
@@ -30,7 +29,7 @@ export class IntegrationHeader extends PureReactor {
           icon: this.resettingStaleJs ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Refresh size={14} />,
           onClick: this.onResetStaleJs,
         }]} trigger={
-          <span aria-label={AdminI18n.t('settings.integrations.more')} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border ${dark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+          <span aria-label={AdminI18n.t('settings.integrations.more')} className="fc-toolbar-btn fc-toolbar-btn--icon">
             <FrameworkIcons.More size={16} />
           </span>
         } />

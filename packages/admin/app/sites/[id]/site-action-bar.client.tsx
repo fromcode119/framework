@@ -7,23 +7,22 @@ import { SiteRecord } from '@/lib/tenants/site-record';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The four things you can do to a site from its own page, in the order you reach for them.
+ * The three things you can do to a site from its own page, in the order you reach for them. Edits
+ * to the site are saved from the page's save bar, not from here.
  *
  * "Open this site" enters it, so every ordinary admin page then acts on THIS site — the one thing
  * this page offers that nothing else does. The rest lead somewhere else or write something.
  */
 export class SiteActionBar extends PureReactor {
-  declare props: Pick<SiteActionBar, 'site' | 'entering' | 'previewing' | 'exporting' | 'saving' | 'onEnter' | 'onVisit' | 'onExport' | 'onSave'>;
+  declare props: Pick<SiteActionBar, 'site' | 'entering' | 'previewing' | 'exporting' | 'onEnter' | 'onVisit' | 'onExport'>;
 
   @prop declare site: SiteRecord;
   @prop declare entering: boolean;
   @prop declare previewing: boolean;
   @prop declare exporting: boolean;
-  @prop declare saving: boolean;
   @prop declare onEnter: () => void;
   @prop declare onVisit: () => void;
   @prop declare onExport: () => void;
-  @prop declare onSave: () => void;
 
   /**
    * A workspace has no storefront, so there is nothing to open.
@@ -51,7 +50,6 @@ export class SiteActionBar extends PureReactor {
         <Button onClick={this.onEnter} isLoading={this.entering} icon={<FrameworkIcons.ArrowRight size={14} />}>{AdminI18n.t('sites.openThisSite')}</Button>
         {this.renderStorefront()}
         <Button variant={ButtonVariant.OUTLINE} onClick={this.onExport} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>{AdminI18n.t('sites.export')}</Button>
-        <Button onClick={this.onSave} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('sites.save')}</Button>
       </div>
     );
   }

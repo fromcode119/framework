@@ -40,7 +40,6 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         settingsGroup={model.settingsGroup}
         settingsSection={model.settingsSection}
         isDeleting={model.isDeleting}
-        isSaving={model.isSaving}
         isUpdating={model.isUpdating}
         installOperation={model.installOperation}
         isolationDefaults={model.isolationDefaults}

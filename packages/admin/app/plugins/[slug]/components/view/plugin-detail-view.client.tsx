@@ -22,6 +22,7 @@ import { PluginDetailTabs } from '@/app/plugins/[slug]/components/view/plugin-de
 import { PluginManifestModal } from '@/app/plugins/[slug]/components/view/plugin-manifest-modal.client';
 import type { IPluginLogEntry } from '@/app/plugins/[slug]/interfaces/plugin-log-entry.interface';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
+import { PendingSavesBar } from '@/components/ui/view/pending-saves-bar.client';
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 import { AdminClass } from '@/lib/admin-class';
@@ -34,7 +35,6 @@ export class PluginDetailView extends AdminComponent {
   @prop declare settingsGroup: string;
   @prop declare settingsSection: string;
   @prop declare isDeleting: boolean;
-  @prop declare isSaving: boolean;
   @prop declare isUpdating: boolean;
   @prop declare installOperation: IPluginInstallOperation | null;
   @prop declare isolationDefaults: { memoryMb: number; timeoutMs: number } | null;
@@ -45,7 +45,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare onOpenDefinition: () => void;
   @prop declare onOpenDeleteConfirm: () => void;
   @prop declare onRefreshLogs: () => void;
-  @prop declare onSaveSandbox: () => void;
+  @prop declare onSaveSandbox: () => Promise<boolean>;
   @prop declare onSandboxSettingsChange: (value: IPluginSandboxSettings) => void;
   @prop declare onSettingsStateChange: (dirty: boolean, saving: boolean, hasFields: boolean) => void;
   @prop declare onTabChange: (tabId: PluginDetailTab, group?: string, section?: string) => void;
@@ -87,11 +87,12 @@ export class PluginDetailView extends AdminComponent {
 
   render(): ReactNode {
     const { plugin, theme, activeTab, isCopyingError } = this;
+    const bare = activeTab === PluginDetailTab.OVERVIEW || activeTab === PluginDetailTab.RESOURCES;
 
     return (
       <div className="w-full pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
-        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} theme={theme} />
+        <PluginDetailHeader activeTab={activeTab} onOpenDefinition={this.onOpenDefinition} platformActions={this.platformHere} plugin={plugin} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} />
         <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
         {plugin.error ? (
           <div className={`mx-6 mt-6 rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
@@ -132,7 +133,8 @@ export class PluginDetailView extends AdminComponent {
                 waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange} />
             </PlatformScopeGate>
           ) : (
-            <div className="w-full py-6"><section className={activeTab === PluginDetailTab.OVERVIEW ? '' : `overflow-hidden ${AdminClass.SURFACE}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
+            // Overview and Resources are made of cards of their own; only Security is one panel on a surface.
+            <div className="w-full py-6"><section className={bare ? '' : `overflow-hidden ${AdminClass.SURFACE}`}><div className={bare ? '' : 'p-6'}>
               {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview isUpdating={this.isUpdating} loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onOpenSecurity={() => this.onTabChange(PluginDetailTab.PERMISSIONS)} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} siteScope={this.siteScope} theme={theme} />}
               {activeTab === PluginDetailTab.PERMISSIONS && (
                 <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSSecurityThe')}>
@@ -142,8 +144,9 @@ export class PluginDetailView extends AdminComponent {
               {activeTab === PluginDetailTab.RESOURCES && (
                 <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSResourceLimits')}>
                   <div className="space-y-5">
-                    <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} sandboxSettings={this.sandboxSettings} theme={theme} />
+                    <PluginDetailResources isolationDefaults={this.isolationDefaults} onSandboxSettingsChange={this.onSandboxSettingsChange} onSave={this.onSaveSandbox} sandboxSettings={this.sandboxSettings} theme={theme} />
                     {this.platformHere && <PluginProcessCard slug={this.slug} />}
+                    <PendingSavesBar />
                   </div>
                 </PlatformScopeGate>
               )}
