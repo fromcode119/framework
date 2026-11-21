@@ -24,6 +24,7 @@ import { MotionKit } from '@/app/kit/docs/motion.kit';
 import { PageHeaderKit } from '@/app/kit/docs/page-header.kit';
 import { PagePiecesKit } from '@/app/kit/docs/page-pieces.kit';
 import { RecordPiecesKit } from '@/app/kit/docs/record-pieces.kit';
+import { PartsLineKit } from '@/app/kit/docs/parts-line.kit';
 
 /** Every component's page in the kit, and the order the groups stand in. */
 export class KitCatalog {
@@ -35,7 +36,7 @@ export class KitCatalog {
       KitCatalog.cache = [
         ButtonKit.doc(),
         InputKit.doc(), TextAreaKit.doc(), SelectKit.doc(), CheckboxKit.doc(), SwitchKit.doc(), RadioGroupKit.doc(), SearchFieldKit.doc(), ...FieldsMoreKit.docs(),
-        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(),
+        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(), PartsLineKit.doc(),
         ...TabsKit.docs(), ...SurfacesKit.docs(), PageHeaderKit.doc(), PagePiecesKit.doc(), ...RecordPiecesKit.docs(), ...OverlaysKit.docs(),
         ...FieldsRichKit.docs(), ...ShellKit.docs(), ...PanelsKit.docs(), ...NewPiecesKit.docs(), MotionKit.doc(),
       ];
