@@ -12,7 +12,7 @@ import { FilterChips } from '@/components/ui/list-toolbar/view/filter-chips.clie
  * gets the same toolbar, so a filtered list reads the same everywhere and never looks like the whole.
  */
 export class ListToolbar extends PureReactor {
-  declare props: Pick<ListToolbar, 'search' | 'onSearch' | 'placeholder' | 'theme' | 'filters' | 'total' | 'children'>;
+  declare props: Pick<ListToolbar, 'search' | 'onSearch' | 'placeholder' | 'theme' | 'filters' | 'total' | 'children' | 'onScan'>;
 
   @prop declare search: string;
   @prop declare onSearch: (value: string) => void;
@@ -21,6 +21,8 @@ export class ListToolbar extends PureReactor {
   @prop declare filters: readonly ListFilter[];
   /** Rows the search and filters currently match. */
   @prop declare total: number;
+  /** Turns on the search's scan button. */
+  @prop declare onScan?: (code: string) => void;
   /** The list's own controls, after the Filters button. */
   @prop declare children?: ReactNode;
 
@@ -35,7 +37,7 @@ export class ListToolbar extends PureReactor {
           {this.filters.length ? <FiltersButton filters={this.filters} total={this.total} /> : null}
         </div>
         <div className="fc-list-toolbar__tools">
-          <ListSearchInput value={this.search} onSearch={this.onSearch} placeholder={this.placeholder} theme={this.theme} />
+          <ListSearchInput value={this.search} onSearch={this.onSearch} placeholder={this.placeholder} theme={this.theme} onScan={this.onScan} />
           {this.children}
         </div>
         {this.filters.some((filter) => filter.isActive) ? (

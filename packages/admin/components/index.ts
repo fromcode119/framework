@@ -78,6 +78,7 @@ export * from '@/components/ui/view/data-table.client';
 // type it must pass and fell back to `unknown[]` — which type-checks nothing and is what let two
 // plugin tables declare column lists the table could never accept.
 export { Column } from '@/components/ui/column';
+export * from '@/components/ui/view/dialog.client';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
 export * from '@/components/ui/view/edit-sheet.client';
