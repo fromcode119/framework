@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.628] - 2026-11-21
+
+### Added
+
+- **admin**: PartsLine kit component ([#1581](https://github.com/fromcode119/framework/pull/1581))
+
+### Fixed
+
+- a plugin that needs a newer core is not installed until the core is updated ([#1573](https://github.com/fromcode119/framework/pull/1573))
+
 ## [0.2.627] - 2026-11-21
 
 ### Added
@@ -22,15 +32,15 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **admin**: no Import on a collection whose records are not created by hand ([#1574](https://github.com/fromcode119/framework/pull/1574))
 - **admin**: the cannot-reach-server warning goes as soon as the server answers ([#1575](https://github.com/fromcode119/framework/pull/1575))
+- **admin**: no Import on a collection whose records are not created by hand ([#1574](https://github.com/fromcode119/framework/pull/1574))
 
 ## [0.2.624] - 2026-11-21
 
 ### Fixed
 
-- **admin**: use a collection's declared singular label for New and Create ([#1570](https://github.com/fromcode119/framework/pull/1570))
 - a plugin held for an old core comes back once the core is updated ([#1571](https://github.com/fromcode119/framework/pull/1571))
+- **admin**: use a collection's declared singular label for New and Create ([#1570](https://github.com/fromcode119/framework/pull/1570))
 
 ## [0.2.623] - 2026-11-20
 
@@ -48,21 +58,21 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- customer account round 3 ([#1563](https://github.com/fromcode119/framework/pull/1563))
 - **admin**: one colour for a record's state in the list, the header and its menu ([#1564](https://github.com/fromcode119/framework/pull/1564))
+- customer account round 3 ([#1563](https://github.com/fromcode119/framework/pull/1563))
 
 ## [0.2.620] - 2026-11-20
 
 ### Fixed
 
-- **admin**: full-width record pages, one scroller in menus, notifications header that fits ([#1561](https://github.com/fromcode119/framework/pull/1561))
+- **admin**: full-width records, one scroller per menu, notification bar, unclipped table fields ([#1561](https://github.com/fromcode119/framework/pull/1561))
 
 ## [0.2.619] - 2026-11-20
 
 ### Fixed
 
-- **integrations**: say where a site's mail actually goes ([#1558](https://github.com/fromcode119/framework/pull/1558))
 - **admin**: one-bar calendar, one-track period choice, sub-menu open on its overview ([#1559](https://github.com/fromcode119/framework/pull/1559))
+- **integrations**: say where a site's mail actually goes ([#1558](https://github.com/fromcode119/framework/pull/1558))
 
 ## [0.2.618] - 2026-11-20
 
@@ -75,6 +85,10 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Added
 
 - **admin**: one console design — kit components, tokens, sheets, page bars ([#1553](https://github.com/fromcode119/framework/pull/1553))
+
+### Fixed
+
+- **core**: a plugin held for a too-old core says the platform needs updating ([#1554](https://github.com/fromcode119/framework/pull/1554))
 
 ## [0.2.616] - 2026-11-20
 
