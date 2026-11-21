@@ -1,6 +1,6 @@
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { LoadedPluginHydration } from '@fromcode119/core/client';
-import { PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
+import { PluginHeldReason, PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
@@ -110,9 +110,16 @@ export class InstalledPluginsPageController {
     return InstalledPluginsPageController.heldSlugs(plugins).length;
   }
 
-  /** The plugins waiting on an approval, in list order. */
+  /**
+   * The plugins waiting on an approval, in list order. One held because it needs a newer platform is
+   * not among them: no approval turns it on, its row says what it needs, and it comes back by itself
+   * once the platform is updated.
+   */
   static heldSlugs(plugins: ILoadedPlugin[]): string[] {
-    return plugins.filter((plugin) => plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason)).map((plugin) => plugin.manifest.slug);
+    return plugins
+      .filter((plugin) => plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason))
+      .filter((plugin) => PluginHeldReason.resolve(plugin.heldReason) !== PluginHeldReason.CORE_TOO_OLD)
+      .map((plugin) => plugin.manifest.slug);
   }
 
   static hasUpdate(plugin: ILoadedPlugin, marketplaceData: IInstalledPluginMarketplaceItem[]): boolean {

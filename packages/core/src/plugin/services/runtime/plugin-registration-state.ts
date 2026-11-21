@@ -73,6 +73,14 @@ export class PluginRegistrationState {
     // non-active rows; enable()/clearPluginHeld nulls held_reason on re-approval so it won't re-apply.
     let heldReason: PluginHeldReason | undefined = state !== PluginState.ACTIVE ? saved?.heldReason : undefined;
 
+    // A plugin held because it needed a newer core was on its way to being enabled when it was held, so
+    // it comes back as wanted-active: enable() checks the core again and holds it again if the core is
+    // still too old. Without this, updating the core left it off until somebody noticed and enabled it.
+    if (state !== PluginState.ACTIVE && PluginHeldReason.resolve(heldReason) === PluginHeldReason.CORE_TOO_OLD) {
+      state = PluginState.ACTIVE;
+      heldReason = undefined;
+    }
+
     /**
      * The capability gate exists because a plugin that quietly grows new powers between versions is
      * how a supply-chain compromise looks. A BUNDLED extension has no such supply chain: it is built
