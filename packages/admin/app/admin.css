@@ -3772,6 +3772,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-kitdoc__demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 24px; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); }
 .fc-kitdoc__demo--flush { display: block; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .fc-kitdoc__cell { width: 240px; max-width: 100%; }
+.fc-kitdoc__sheet { width: 420px; max-width: 100%; aspect-ratio: 210 / 297; border: 1px solid var(--fc-border); border-radius: 4px; background: #fff; }
 .fc-kitdoc__cell--wide { width: 100%; }
 .fc-kitdoc__stack { display: flex; flex-direction: column; gap: 8px; }
 .fc-kitdoc__inline { display: inline-flex; align-items: center; gap: 8px; }

@@ -1117,6 +1117,25 @@
       "optTitle": "The heading; \"Scan a code\" when not given.",
       "optDescription": "The line under the heading.",
       "optOnScan": "On SearchField: turns on the scan button and receives the code after onChange."
+    },
+    "label-sheet": {
+      "intro": "Prints labels — product stickers, box labels, shelf tags — on A4, laid out the way label paper is. Each label is markup the caller writes; the sheet places it and opens the print dialog.",
+      "preview": "Preview of the printed sheet",
+      "a4x24": "24 on a sheet",
+      "a4x24Text": "70 × 37 mm, three across: the common product-sticker paper. Fine on plain paper too — the dashed lines are for cutting.",
+      "print": "Print",
+      "a4x10": "10 on a sheet",
+      "a4x10Text": "105 × 57 mm, two across: big enough to read across a room, for boxes.",
+      "own": "Any paper",
+      "ownText": "Give the columns, rows and label size of the paper in the drawer.",
+      "optPrint": "Lays the labels out page by page and opens the print dialog; the page is removed afterwards.",
+      "optHtml": "The same document as a string, for a preview.",
+      "optLayouts": "The common A4 papers: 24 stickers, 10 box labels, one label per page.",
+      "optGrid": "How many labels across and down one page.",
+      "optSize": "One label's size in millimetres.",
+      "optTop": "Space above the first row.",
+      "optCut": "Dashed cut lines around each label.",
+      "optEscape": "Makes text safe to put into a label. Everything the caller did not write itself goes through it."
     }
   },
   "page": {

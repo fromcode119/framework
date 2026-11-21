@@ -36,6 +36,8 @@ export * from '@/components/ui/view/kbd.client';
 export * from '@/components/ui/view/parts-line.client';
 export * from '@/components/ui/view/qr-code.client';
 export * from '@/components/ui/view/scan-dialog.client';
+export * from '@/components/ui/label-sheet';
+export type { ILabelSheetLayout } from '@/components/ui/interfaces/label-sheet-layout.interface';
 export type { IPartsLinePart } from '@/components/ui/interfaces/parts-line-part.interface';
 export * from '@/components/ui/view/tabs.client';
 export * from '@/components/ui/view/search-field.client';

@@ -27,6 +27,7 @@ import { RecordPiecesKit } from '@/app/kit/docs/record-pieces.kit';
 import { PartsLineKit } from '@/app/kit/docs/parts-line.kit';
 import { QrCodeKit } from '@/app/kit/docs/qr-code.kit';
 import { ScanKit } from '@/app/kit/docs/scan.kit';
+import { LabelSheetKit } from '@/app/kit/docs/label-sheet.kit';
 
 /** Every component's page in the kit, and the order the groups stand in. */
 export class KitCatalog {
@@ -38,7 +39,7 @@ export class KitCatalog {
       KitCatalog.cache = [
         ButtonKit.doc(),
         InputKit.doc(), TextAreaKit.doc(), SelectKit.doc(), CheckboxKit.doc(), SwitchKit.doc(), RadioGroupKit.doc(), SearchFieldKit.doc(), ...FieldsMoreKit.docs(),
-        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(), PartsLineKit.doc(), QrCodeKit.doc(), ScanKit.doc(),
+        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(), PartsLineKit.doc(), QrCodeKit.doc(), ScanKit.doc(), LabelSheetKit.doc(),
         ...TabsKit.docs(), ...SurfacesKit.docs(), PageHeaderKit.doc(), PagePiecesKit.doc(), ...RecordPiecesKit.docs(), ...OverlaysKit.docs(),
         ...FieldsRichKit.docs(), ...ShellKit.docs(), ...PanelsKit.docs(), ...NewPiecesKit.docs(), MotionKit.doc(),
       ];
