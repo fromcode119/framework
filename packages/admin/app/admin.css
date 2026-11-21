@@ -4037,7 +4037,11 @@ textarea.fc-field.fc-pem-input { min-height: 140px; font-family: ui-monospace, S
   .fc-record-card__head .fc-record-card__table-tools > .fc-btn--ghost:first-child { margin-inline-start: -8px; }
 }
 /* A card's body keeps the head's inset on a phone, so its content starts under the card's name. */
-@media (max-width: 640px) { .fc-record-card__head, .fc-record-card__body:not(:empty) { padding-inline: 16px; } }
+@media (max-width: 640px) {
+  .fc-record-card__head, .fc-record-card__body:not(:empty) { padding-inline: 16px; }
+  /* A table running to the card's edges bleeds by the padding the card has HERE, not the wide one. */
+  .fc-record-card__body .fc-sro-table { --fc-sro-inset: 16px; margin-inline: -16px; }
+}
 /* Things one under another inside a card, 12px apart: a line of text, a list, a tip, a bar. */
 .fc-stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .fc-pre-line { white-space: pre-line; }
