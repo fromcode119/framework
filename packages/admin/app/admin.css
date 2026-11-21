@@ -3321,6 +3321,15 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
 .fc-toast__close:hover { color: var(--fc-text); }
 /* A key: 20 high, at least 20 wide, the neutral tag. */
 .fc-kbd { display: inline-flex; align-items: center; justify-content: center; height: 20px; min-width: 20px; padding: 0 4px; border: 1px solid var(--fc-border); border-radius: var(--fc-control-radius); background: var(--fc-surface-muted); font-size: 12px; line-height: 18px; font-weight: 500; font-family: inherit; color: var(--fc-text-muted); }
+/* PartsLine: a whole told as its parts on one quiet line; parts wrap as whole units, spaced apart (a divider
+   would start a wrapped row). */
+.fc-parts { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 12px; row-gap: 2px; min-width: 0; font-size: 12px; line-height: 18px; color: var(--fc-text-muted); }
+.fc-parts__caption { margin-inline-end: -6px; color: var(--fc-text-muted); }
+.fc-parts__item { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.fc-parts__label { color: var(--fc-text); font-weight: 500; text-decoration: none; }
+a.fc-parts__label:hover { text-decoration: underline; }
+.fc-parts__detail { font-variant-numeric: tabular-nums; }
+.fc-parts__count { font-variant-numeric: tabular-nums; }
 
 /* ---------- Tooltip, avatar, divider, command bar ---------- */
 .fc-tooltip__anchor { display: inline-flex; }

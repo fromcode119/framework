@@ -1056,6 +1056,28 @@
       "theListName": "The list's name",
       "thisPage": "This page",
       "widthValue": "20 cm"
+    },
+    "parts-line": {
+      "intro": "A whole told as its parts on one quiet line, under the thing it describes: where an order line's units came from, which accounts a payment was split across.",
+      "sofia": "Sofia",
+      "bucharest": "Bucharest",
+      "from": "From",
+      "mug": "Mug",
+      "oneSource": "One part",
+      "oneSourceText": "With one part the line still says where it is: a single warehouse is told the same way as several.",
+      "severalSources": "Several parts",
+      "noDetail": "A part without a detail",
+      "noDetailText": "Each part shows only what it has; nothing stands in for a missing detail.",
+      "noCaption": "Without a caption",
+      "inALine": "Under a line",
+      "inALineText": "Its place: under the name of the thing it describes, beside other quiet details.",
+      "optParts": "The parts, in the order they are read. None: nothing is drawn, caption included.",
+      "optLabel": "What the part is.",
+      "optDetail": "A short qualifier after the label, quieter than it.",
+      "optCount": "How many of the whole this part holds, printed ×n.",
+      "optHref": "Makes the label a link to the part's own record.",
+      "optCaption": "A word before the parts saying what they are.",
+      "optClass": "Places the line; it never restyles it."
     }
   },
   "page": {
