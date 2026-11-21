@@ -1699,6 +1699,7 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
   cursor: pointer;
 }
 .fc-record-card__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-card__menu:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--fc-surface), 0 0 0 4px var(--primary); }
 /* The menu is portalled from a wrapper of its own, whose inline-block line box added a pixel to the
    head it sits in — two head heights down one column, for a reason nothing on screen could show. */
 .fc-record-card__head > div:has(.fc-record-card__menu),
