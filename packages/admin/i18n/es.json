@@ -243,6 +243,7 @@
       "breadcrumb": "Ruta de navegación",
       "copyTitle": "Copiar",
       "copied": "Copiado",
+      "copyFailed": "Error al copiar",
       "more": "Más",
       "moreFields": "{{count}} campos",
       "moreOneField": "{{count}} campo",

@@ -243,6 +243,7 @@
       "breadcrumb": "Navigačná cesta",
       "copyTitle": "Kopírovať",
       "copied": "Skopírované",
+      "copyFailed": "Kopírovanie zlyhalo",
       "more": "Ďalšie",
       "moreFields": "{{count}} polí",
       "moreOneField": "{{count}} pole",

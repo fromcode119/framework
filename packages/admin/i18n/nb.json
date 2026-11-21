@@ -243,6 +243,7 @@
       "breadcrumb": "Brødsmulesti",
       "copyTitle": "Kopier",
       "copied": "Kopiert",
+      "copyFailed": "Kopiering mislyktes",
       "more": "Mer",
       "moreFields": "{{count}} felt",
       "moreOneField": "{{count}} felt",

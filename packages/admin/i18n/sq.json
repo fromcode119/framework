@@ -243,6 +243,7 @@
       "breadcrumb": "Shtegu i navigimit",
       "copyTitle": "Kopjo",
       "copied": "U kopjua",
+      "copyFailed": "Kopjimi dështoi",
       "more": "Më shumë",
       "moreFields": "{{count}} fusha",
       "moreOneField": "{{count}} fushë",

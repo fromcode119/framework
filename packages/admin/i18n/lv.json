@@ -243,6 +243,7 @@
       "breadcrumb": "Navigācijas ceļš",
       "copyTitle": "Kopēt",
       "copied": "Nokopēts",
+      "copyFailed": "Kopēšana neizdevās",
       "more": "Vairāk",
       "moreFields": "{{count}} lauki",
       "moreOneField": "{{count}} lauks",

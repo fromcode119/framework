@@ -243,6 +243,7 @@
       "breadcrumb": "مسار التنقل",
       "copyTitle": "نسخ",
       "copied": "تم النسخ",
+      "copyFailed": "فشل النسخ",
       "more": "المزيد",
       "moreFields": "{{count}} حقول",
       "moreOneField": "{{count}} حقل",

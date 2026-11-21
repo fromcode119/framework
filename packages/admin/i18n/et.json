@@ -243,6 +243,7 @@
       "breadcrumb": "Navigatsioonirada",
       "copyTitle": "Kopeeri",
       "copied": "Kopeeritud",
+      "copyFailed": "Kopeerimine ebaõnnestus",
       "more": "Veel",
       "moreFields": "{{count}} välja",
       "moreOneField": "{{count}} väli",

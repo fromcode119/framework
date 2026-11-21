@@ -243,6 +243,7 @@
       "breadcrumb": "パンくずリスト",
       "copyTitle": "コピー",
       "copied": "コピーしました",
+      "copyFailed": "コピーに失敗しました",
       "more": "その他",
       "moreFields": "{{count}} 件の項目",
       "moreOneField": "{{count}} 件の項目",

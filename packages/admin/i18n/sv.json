@@ -243,6 +243,7 @@
       "breadcrumb": "Länkstig",
       "copyTitle": "Kopiera",
       "copied": "Kopierat",
+      "copyFailed": "Kopieringen misslyckades",
       "more": "Mer",
       "moreFields": "{{count}} fält",
       "moreOneField": "{{count}} fält",

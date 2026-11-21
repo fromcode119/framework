@@ -243,6 +243,7 @@
       "breadcrumb": "Conair nascleanúna",
       "copyTitle": "Cóipeáil",
       "copied": "Cóipeáilte",
+      "copyFailed": "Theip ar an gcóipeáil",
       "more": "Tuilleadh",
       "moreFields": "{{count}} réimse",
       "moreOneField": "{{count}} réimse",

@@ -243,6 +243,7 @@
       "breadcrumb": "Путања",
       "copyTitle": "Копирај",
       "copied": "Копирано",
+      "copyFailed": "Копирање није успело",
       "more": "Више",
       "moreFields": "{{count}} поља",
       "moreOneField": "{{count}} поље",

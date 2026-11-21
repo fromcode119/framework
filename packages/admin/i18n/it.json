@@ -243,6 +243,7 @@
       "breadcrumb": "Percorso",
       "copyTitle": "Copia",
       "copied": "Copiato",
+      "copyFailed": "Copia non riuscita",
       "more": "Altro",
       "moreFields": "{{count}} campi",
       "moreOneField": "{{count}} campo",

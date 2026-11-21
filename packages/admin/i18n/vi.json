@@ -243,6 +243,7 @@
       "breadcrumb": "Đường dẫn",
       "copyTitle": "Sao chép",
       "copied": "Đã sao chép",
+      "copyFailed": "Sao chép thất bại",
       "more": "Thêm",
       "moreFields": "{{count}} trường",
       "moreOneField": "{{count}} trường",

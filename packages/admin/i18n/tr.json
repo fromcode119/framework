@@ -243,6 +243,7 @@
       "breadcrumb": "İçerik haritası",
       "copyTitle": "Kopyala",
       "copied": "Kopyalandı",
+      "copyFailed": "Kopyalama Başarısız",
       "more": "Daha fazla",
       "moreFields": "{{count}} alan",
       "moreOneField": "{{count}} alan",

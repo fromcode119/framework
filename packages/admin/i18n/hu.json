@@ -243,6 +243,7 @@
       "breadcrumb": "Morzsamenü",
       "copyTitle": "Másolás",
       "copied": "Másolva",
+      "copyFailed": "A másolás nem sikerült",
       "more": "Továbbiak",
       "moreFields": "{{count}} mező",
       "moreOneField": "{{count}} mező",

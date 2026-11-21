@@ -243,6 +243,7 @@
       "breadcrumb": "Fil d’Ariane",
       "copyTitle": "Copier",
       "copied": "Copié",
+      "copyFailed": "Échec de la copie",
       "more": "Plus",
       "moreFields": "{{count}} champs",
       "moreOneField": "{{count}} champ",

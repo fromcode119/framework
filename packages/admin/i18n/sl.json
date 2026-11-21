@@ -243,6 +243,7 @@
       "breadcrumb": "Drobtinice",
       "copyTitle": "Kopiraj",
       "copied": "Kopirano",
+      "copyFailed": "Kopiranje ni uspelo",
       "more": "Več",
       "moreFields": "{{count}} polj",
       "moreOneField": "{{count}} polje",

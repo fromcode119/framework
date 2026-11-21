@@ -243,6 +243,7 @@
       "breadcrumb": "Traseu de navigare",
       "copyTitle": "Copiază",
       "copied": "Copiat",
+      "copyFailed": "Copiere eșuată",
       "more": "Mai mult",
       "moreFields": "{{count}} câmpuri",
       "moreOneField": "{{count}} câmp",
