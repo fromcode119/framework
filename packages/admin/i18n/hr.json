@@ -243,6 +243,7 @@
       "breadcrumb": "Navigacijski put",
       "copyTitle": "Kopiraj",
       "copied": "Kopirano",
+      "copyFailed": "Kopiranje nije uspjelo",
       "more": "Više",
       "moreFields": "{{count}} polja",
       "moreOneField": "{{count}} polje",

@@ -243,6 +243,7 @@
       "breadcrumb": "Murupolku",
       "copyTitle": "Kopioi",
       "copied": "Kopioitu",
+      "copyFailed": "Kopiointi epäonnistui",
       "more": "Lisää",
       "moreFields": "{{count}} kenttää",
       "moreOneField": "{{count}} kenttä",

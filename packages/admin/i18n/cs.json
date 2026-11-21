@@ -243,6 +243,7 @@
       "breadcrumb": "Drobečková navigace",
       "copyTitle": "Kopírovat",
       "copied": "Zkopírováno",
+      "copyFailed": "Kopírování se nezdařilo",
       "more": "Další",
       "moreFields": "{{count}} polí",
       "moreOneField": "{{count}} pole",

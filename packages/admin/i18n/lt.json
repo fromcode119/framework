@@ -243,6 +243,7 @@
       "breadcrumb": "Naršymo kelias",
       "copyTitle": "Kopijuoti",
       "copied": "Nukopijuota",
+      "copyFailed": "Nepavyko nukopijuoti",
       "more": "Daugiau",
       "moreFields": "{{count}} laukai",
       "moreOneField": "{{count}} laukas",

@@ -243,6 +243,7 @@
       "breadcrumb": "Jejak navigasi",
       "copyTitle": "Salin",
       "copied": "Disalin",
+      "copyFailed": "Gagal Menyalin",
       "more": "Lainnya",
       "moreFields": "{{count}} kolom",
       "moreOneField": "{{count}} kolom",

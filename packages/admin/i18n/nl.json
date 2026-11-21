@@ -243,6 +243,7 @@
       "breadcrumb": "Kruimelpad",
       "copyTitle": "Kopiëren",
       "copied": "Gekopieerd",
+      "copyFailed": "Kopiëren mislukt",
       "more": "Meer",
       "moreFields": "{{count}} velden",
       "moreOneField": "{{count}} veld",

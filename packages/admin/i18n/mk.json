@@ -243,6 +243,7 @@
       "breadcrumb": "Патека",
       "copyTitle": "Копирај",
       "copied": "Копирано",
+      "copyFailed": "Копирањето не успеа",
       "more": "Повеќе",
       "moreFields": "{{count}} полиња",
       "moreOneField": "{{count}} поле",

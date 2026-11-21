@@ -243,6 +243,7 @@
       "breadcrumb": "Brotkrümelnavigation",
       "copyTitle": "Kopieren",
       "copied": "Kopiert",
+      "copyFailed": "Kopieren fehlgeschlagen",
       "more": "Mehr",
       "moreFields": "{{count}} Felder",
       "moreOneField": "{{count}} Feld",

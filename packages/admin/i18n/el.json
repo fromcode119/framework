@@ -243,6 +243,7 @@
       "breadcrumb": "Διαδρομή",
       "copyTitle": "Αντιγραφή",
       "copied": "Αντιγράφηκε",
+      "copyFailed": "Αποτυχία αντιγραφής",
       "more": "Περισσότερα",
       "moreFields": "{{count}} πεδία",
       "moreOneField": "{{count}} πεδίο",

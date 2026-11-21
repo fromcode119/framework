@@ -243,6 +243,7 @@
       "breadcrumb": "Brødkrumme",
       "copyTitle": "Kopiér",
       "copied": "Kopieret",
+      "copyFailed": "Kopiering mislykkedes",
       "more": "Mere",
       "moreFields": "{{count}} felter",
       "moreOneField": "{{count}} felt",

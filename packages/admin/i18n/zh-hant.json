@@ -243,6 +243,7 @@
       "breadcrumb": "麵包屑導覽",
       "copyTitle": "複製",
       "copied": "已複製",
+      "copyFailed": "複製失敗",
       "more": "更多",
       "moreFields": "{{count}} 個欄位",
       "moreOneField": "{{count}} 個欄位",

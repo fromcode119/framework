@@ -243,6 +243,7 @@
       "breadcrumb": "เส้นทางนำทาง",
       "copyTitle": "คัดลอก",
       "copied": "คัดลอกแล้ว",
+      "copyFailed": "คัดลอกไม่สำเร็จ",
       "more": "เพิ่มเติม",
       "moreFields": "{{count}} ช่อง",
       "moreOneField": "{{count}} ช่อง",

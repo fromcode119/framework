@@ -1,6 +1,6 @@
 import { ThemeMode, CollectionArchive } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop, bound, state, Platform } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound, state } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
@@ -13,6 +13,7 @@ import { EditHeaderRecordFacts } from '@/components/collection/edit/view/edit-he
 import { EditHeaderMenu } from '@/components/collection/edit/view/edit-header-menu.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ClipboardCopy } from '@/lib/clipboard-copy';
 import { SitePreviewLauncher } from '@/lib/tenants/site-preview-launcher';
 
 /**
@@ -73,7 +74,7 @@ export class EditHeader extends PureReactor {
   @prop declare bare?: boolean;
   /** Edit the first section, offered as the first item of this header's ⋯ when it heads the first card. */
   @prop declare onEditDetails?: () => void;
-  @state private copied = false;
+  @state private copied = '';
   /** The status chosen from the menu, waiting for the operator to confirm it. */
   @state private askedStatus: { label: string; value: string; tone?: string; confirm?: string } | null = null;
   @state private committing = false;
@@ -128,10 +129,8 @@ export class EditHeader extends PureReactor {
   }
 
   @bound private async onCopy(): Promise<void> {
-    if (!Platform.isBrowser) return;
-    await navigator.clipboard.writeText(this.title);
-    this.copied = true;
-    window.setTimeout(() => { this.copied = false; }, 1500);
+    this.copied = await ClipboardCopy.write(this.title);
+    window.setTimeout(() => { this.copied = ''; }, ClipboardCopy.SHOWN_MS);
   }
 
   /**
@@ -168,9 +167,9 @@ export class EditHeader extends PureReactor {
             <h1 className={`${head}__title`} title={this.title}>{this.title}</h1>
             {!isNew && this.resolvedTitleValue ? (
               <button type="button" onClick={this.onCopy} className={`${head}__copy`}
-                aria-label={AdminI18n.t(this.copied ? 'collection.edit.copied' : 'collection.edit.copyTitle')}
-                title={AdminI18n.t(this.copied ? 'collection.edit.copied' : 'collection.edit.copyTitle')}>
-                {this.copied ? <FrameworkIcons.Check size={14} /> : <FrameworkIcons.Copy size={14} />}
+                aria-label={AdminI18n.t(ClipboardCopy.labelKey(this.copied))}
+                title={AdminI18n.t(ClipboardCopy.labelKey(this.copied))}>
+                {this.copied === ClipboardCopy.COPIED ? <FrameworkIcons.Check size={14} /> : <FrameworkIcons.Copy size={14} />}
               </button>
             ) : null}
             {archived ? <span className={`${head}__badge ${head}__badge--muted`}>{AdminI18n.t('collection.list.viewArchived')}</span> : null}

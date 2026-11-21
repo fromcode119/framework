@@ -243,6 +243,7 @@
       "breadcrumb": "Breadcrumb",
       "copyTitle": "Kopyahin",
       "copied": "Nakopya",
+      "copyFailed": "Hindi Nakopya",
       "more": "Higit pa",
       "moreFields": "{{count}} field",
       "moreOneField": "{{count}} field",

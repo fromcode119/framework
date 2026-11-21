@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { PureReactor, prop, state, bound, Platform } from '@fromcode119/react-class-components';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ClipboardCopy } from '@/lib/clipboard-copy';
 
 /**
  * A value someone copies elsewhere — an email, a phone, a SKU, a tracking number — with a small copy
@@ -12,23 +13,21 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class CopyValue extends PureReactor {
   @prop declare value: string;
   @prop declare children?: ReactNode;
-  @state private copied = false;
+  @state private copied = '';
 
   @bound private async copy(): Promise<void> {
-    if (!Platform.isBrowser) return;
-    await navigator.clipboard.writeText(this.value);
-    this.copied = true;
-    window.setTimeout(() => { this.copied = false; }, 1500);
+    this.copied = await ClipboardCopy.write(this.value);
+    window.setTimeout(() => { this.copied = ''; }, ClipboardCopy.SHOWN_MS);
   }
 
   render(): ReactNode {
     const box = AdminClass.of('copy-value');
-    const label = AdminI18n.t(this.copied ? 'collection.edit.copied' : 'collection.edit.copyTitle');
+    const label = AdminI18n.t(ClipboardCopy.labelKey(this.copied));
     return (
       <span className={box}>
         <span className={`${box}__text`}>{this.children ?? this.value}</span>
         <button type="button" className={`${box}__button`} onClick={this.copy} aria-label={label} title={label}>
-          {this.copied ? <FrameworkIcons.Check size={12} /> : <FrameworkIcons.Copy size={12} />}
+          {this.copied === ClipboardCopy.COPIED ? <FrameworkIcons.Check size={12} /> : <FrameworkIcons.Copy size={12} />}
         </button>
       </span>
     );

@@ -243,6 +243,7 @@
       "breadcrumb": "Mogħdija",
       "copyTitle": "Ikkopja",
       "copied": "Ikkopjat",
+      "copyFailed": "L-ikkupjar falla",
       "more": "Aktar",
       "moreFields": "{{count}} oqsma",
       "moreOneField": "{{count}} qasam",

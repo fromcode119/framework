@@ -243,6 +243,7 @@
       "breadcrumb": "ब्रेडक्रंब",
       "copyTitle": "कॉपी करें",
       "copied": "कॉपी हो गया",
+      "copyFailed": "कॉपी विफल",
       "more": "और",
       "moreFields": "{{count}} फ़ील्ड",
       "moreOneField": "{{count}} फ़ील्ड",

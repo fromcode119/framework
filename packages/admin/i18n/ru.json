@@ -243,6 +243,7 @@
       "breadcrumb": "Навигационная цепочка",
       "copyTitle": "Копировать",
       "copied": "Скопировано",
+      "copyFailed": "Не удалось скопировать",
       "more": "Ещё",
       "moreFields": "Полей: {{count}}",
       "moreOneField": "Поле: {{count}}",

@@ -243,6 +243,7 @@
       "breadcrumb": "נתיב ניווט",
       "copyTitle": "העתק",
       "copied": "הועתק",
+      "copyFailed": "ההעתקה נכשלה",
       "more": "עוד",
       "moreFields": "{{count}} שדות",
       "moreOneField": "שדה {{count}}",

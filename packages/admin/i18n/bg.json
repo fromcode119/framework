@@ -280,6 +280,7 @@
       "breadcrumb": "Път",
       "copyTitle": "Копирай",
       "copied": "Копирано",
+      "copyFailed": "Неуспешно копиране",
       "more": "Още",
       "moreFields": "още {{count}} полета",
       "moreOneField": "още {{count}} поле",

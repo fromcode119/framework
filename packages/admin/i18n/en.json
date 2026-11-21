@@ -243,6 +243,7 @@
       "breadcrumb": "Breadcrumb",
       "copyTitle": "Copy",
       "copied": "Copied",
+      "copyFailed": "Copy Failed",
       "more": "More",
       "moreFields": "{{count}} more fields",
       "moreOneField": "{{count}} more field",

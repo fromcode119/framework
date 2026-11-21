@@ -243,6 +243,7 @@
       "breadcrumb": "Ścieżka nawigacji",
       "copyTitle": "Kopiuj",
       "copied": "Skopiowano",
+      "copyFailed": "Kopiowanie nie powiodło się",
       "more": "Więcej",
       "moreFields": "{{count}} pól",
       "moreOneField": "{{count}} pole",
