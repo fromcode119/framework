@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.630] - 2026-11-21
+
+### Fixed
+- admin: a sheet or dialog opened from the selection bar covers the bar; mini buttons and list quick edit take a 32px hit area (#1587)
+- admin: the section actions menu is a real button (#1586)
+- admin: a copy button says Copy failed instead of throwing (#1585)
+
 ## [0.2.629] - 2026-11-21
 
 ### Fixed
