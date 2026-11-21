@@ -114,7 +114,9 @@ export class CollectionListHeader extends PureReactor {
             )}
           />
         ) : null}
-        {this.canCreate && this.importRecords ? (
+        {/* Importing creates records, so a collection whose records nobody creates by hand offers no import:
+            the rows would skip the writer that makes them (a ledger line no balance moved with). */}
+        {this.canCreate && !collection.admin?.disableCreate && this.importRecords ? (
           <label className="fc-btn cursor-pointer">
             <FrameworkIcons.Upload size={15} />
             {AdminI18n.t('collection.list.bulkImport')}
