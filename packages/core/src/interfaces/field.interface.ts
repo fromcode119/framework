@@ -233,6 +233,11 @@ export interface IField {
      */
     hideLabel?: boolean;
     /**
+     * A `json` field the list search reads too, as text: rows whose identifiers live inside it (variant
+     * SKUs and barcodes) are found by them. Text, number and select fields are always searched.
+     */
+    searchable?: boolean;
+    /**
      * For a `CountryField` that overrides the platform country (Settings → Localization): when the
      * value is blank the control names the country actually in effect and where it came from, so an
      * empty box never hides the value a module runs on.

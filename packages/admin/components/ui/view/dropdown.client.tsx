@@ -1,8 +1,8 @@
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { DropdownDirection } from '@/components/ui/enums/dropdown-direction.enum';
 import { Fragment } from 'react';
-import type { ReactNode } from 'react';
-import { ref, watch } from '@fromcode119/react-class-components';
+import type { MouseEvent, ReactNode } from 'react';
+import { ref, watch, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { DropdownPositioning } from '@/components/ui/view/dropdown-positioning.client';
 
@@ -79,6 +79,16 @@ export class Dropdown extends DropdownPositioning {
   @watch('isOpen') onOpenChange(next: boolean): void {
     if (next) this.addPositionListeners();
     else this.removePositionListeners();
+  }
+
+  /**
+   * A row in the footer — a `MenuAction` something outside the menu added, such as a plugin's row in a
+   * record's ⋯ menu — closes the menu like the menu's own rows do. The footer's own rows used to leave it
+   * open on top of the sheet or dialog they had just opened.
+   */
+  @bound private onFooterClick(event: MouseEvent<HTMLDivElement>): void {
+    const row = (event.target as Element | null)?.closest?.('.fc-menu-action') as HTMLButtonElement | null;
+    if (row && !row.disabled) this.isOpen = false;
   }
 
   render(): ReactNode {
@@ -219,7 +229,7 @@ export class Dropdown extends DropdownPositioning {
                 </Fragment>
               ))}
             </div>}
-            {footer ? <div className="fc-dropdown-footer">{footer}</div> : null}
+            {footer ? <div className="fc-dropdown-footer" onClick={this.onFooterClick}>{footer}</div> : null}
           </div>
         </RootFramework>
       )}
