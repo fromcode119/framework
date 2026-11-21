@@ -9,12 +9,12 @@ export class SetupStepper extends PureReactor {
   @prop declare current: SetupStep;
 
   private labelClass(step: SetupStep): string {
-    if (step.index === this.current.index) return 'text-indigo-600 dark:text-indigo-400';
-    return step.index < this.current.index ? 'text-slate-500' : 'text-slate-300 dark:text-slate-700';
+    if (step.index === this.current.index) return 'fc-tone-brand';
+    return step.index < this.current.index ? 'fc-tone-muted' : 'fc-tone-faint';
   }
 
   private barClass(step: SetupStep): string {
-    return step.index <= this.current.index ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-800';
+    return step.index <= this.current.index ? 'fc-tone-brand-solid' : 'fc-tone-faint-solid opacity-40';
   }
 
   render(): ReactNode {
@@ -23,7 +23,7 @@ export class SetupStepper extends PureReactor {
         {SetupStep.ordered.map((step) => (
           <div key={step.value} className="flex-1 space-y-2">
             <div className={`h-[3px] rounded-full transition-colors ${this.barClass(step)}`} />
-            <span className={`block text-[12px] font-medium ${this.labelClass(step)}`}>
+            <span className={`block fc-size-xs font-medium ${this.labelClass(step)}`}>
               {AdminDictionary.translate(this.locale, `setup.steps.${step.value}`)}
             </span>
           </div>

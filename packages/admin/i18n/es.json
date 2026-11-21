@@ -959,6 +959,55 @@
       "open": "Abrir",
       "loadFailed": "No se pudieron cargar los datos de este widget. Recargue la página para volver a intentarlo.",
       "quiet": "Nada pendiente: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Envío de correo",
+        "configured": "Configurado · {{provider}}",
+        "missing": "No se puede enviar nada: ni correos de pedidos ni restablecimientos de contraseña",
+        "action": "Configurar"
+      },
+      "locales": {
+        "title": "Idiomas",
+        "none": "Sin configurar",
+        "only": "Solo {{locale}}",
+        "action": "Añadir"
+      },
+      "timezone": {
+        "title": "Zona horaria",
+        "none": "Sin definir: las fechas se muestran en la zona del servidor",
+        "action": "Cambiar"
+      },
+      "secrets": {
+        "title": "Almacén de credenciales",
+        "ok": "Cifradas con la clave de esta instalación",
+        "missing": "Sin clave de cifrado: no se pueden guardar credenciales ni tokens de integraciones",
+        "details": "Detalles",
+        "fix": "Cómo solucionarlo"
+      },
+      "team": {
+        "title": "Equipo",
+        "count": "{{count}} usuarios",
+        "alone": "Eres el único usuario",
+        "action": "Invitar"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Activa un tema",
+        "install": "Instala un tema",
+        "inactive": "Instalado pero no activado: hasta que haya uno activo, la tienda sirve un documento vacío.",
+        "none": "Un tema muestra cada página que ve un visitante. Sin él, la tienda sirve un documento vacío.",
+        "activateAction": "Activar",
+        "browse": "Ver temas"
+      },
+      "plugins": {
+        "count": "{{count}} complementos instalados",
+        "addSite": "Añade los complementos que necesita este sitio",
+        "installPlatform": "Instala los complementos que necesita esta plataforma",
+        "detailSite": "Tienda, formularios, SEO: cada uno añade sus propias pantallas. Añade solo lo que usará este sitio.",
+        "detailPlatform": "Tienda, formularios, SEO: cada uno añade sus propias pantallas. Instala solo lo que usará esta instalación.",
+        "browse": "Ver complementos"
+      }
     }
   },
   "notFound": {

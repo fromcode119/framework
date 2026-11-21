@@ -959,6 +959,55 @@
       "open": "Deschide",
       "loadFailed": "Datele acestui widget nu au putut fi încărcate. Reîncărcați pagina pentru a încerca din nou.",
       "quiet": "Nimic în așteptare: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Trimitere e-mail",
+        "configured": "Configurat · {{provider}}",
+        "missing": "Nu se poate trimite nimic — nici e-mailuri de comandă, nici resetări de parolă",
+        "action": "Configurează"
+      },
+      "locales": {
+        "title": "Limbi",
+        "none": "Neconfigurat",
+        "only": "Doar {{locale}}",
+        "action": "Adaugă"
+      },
+      "timezone": {
+        "title": "Fus orar",
+        "none": "Nesetat — datele apar în fusul serverului",
+        "action": "Schimbă"
+      },
+      "secrets": {
+        "title": "Stocarea datelor de acces",
+        "ok": "Criptate cu cheia acestei instalări",
+        "missing": "Nicio cheie de criptare — datele de acces și tokenurile integrărilor nu pot fi salvate",
+        "details": "Detalii",
+        "fix": "Cum se repară"
+      },
+      "team": {
+        "title": "Echipă",
+        "count": "{{count}} utilizatori",
+        "alone": "Sunteți singurul utilizator",
+        "action": "Invită"
+      },
+      "theme": {
+        "active": "Temă: {{name}}",
+        "activate": "Activați o temă",
+        "install": "Instalați o temă",
+        "inactive": "Instalată, dar neactivată — până când una e activă, magazinul servește un document gol.",
+        "none": "O temă afișează fiecare pagină văzută de vizitator. Fără ea, magazinul servește un document gol.",
+        "activateAction": "Activează",
+        "browse": "Răsfoiește temele"
+      },
+      "plugins": {
+        "count": "{{count}} pluginuri instalate",
+        "addSite": "Adăugați pluginurile de care are nevoie acest site",
+        "installPlatform": "Instalați pluginurile de care are nevoie această platformă",
+        "detailSite": "Magazin, formulare, SEO — fiecare adaugă propriile ecrane. Adăugați doar ce va folosi acest site.",
+        "detailPlatform": "Magazin, formulare, SEO — fiecare adaugă propriile ecrane. Instalați doar ce va folosi această instalare.",
+        "browse": "Răsfoiește pluginurile"
+      }
     }
   },
   "notFound": {

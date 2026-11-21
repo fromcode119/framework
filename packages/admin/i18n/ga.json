@@ -959,6 +959,55 @@
       "open": "Oscail",
       "loadFailed": "Níorbh fhéidir figiúirí an ghiuirléid seo a lódáil. Athlódáil an leathanach chun triail eile a bhaint as.",
       "quiet": "Níl aon rud ag fanacht: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Seoladh ríomhphoist",
+        "configured": "Socraithe · {{provider}}",
+        "missing": "Ní féidir aon rud a sheoladh — gan ríomhphost ordaithe, gan athshocrú pasfhocail",
+        "action": "Socraigh"
+      },
+      "locales": {
+        "title": "Teangacha",
+        "none": "Gan socrú",
+        "only": "{{locale}} amháin",
+        "action": "Cuir leis"
+      },
+      "timezone": {
+        "title": "Crios ama",
+        "none": "Gan socrú — taispeántar dátaí i gcrios an fhreastalaí",
+        "action": "Athraigh"
+      },
+      "secrets": {
+        "title": "Stóráil dintiúr",
+        "ok": "Criptithe le heochair na suiteála seo",
+        "missing": "Gan eochair chriptithe — ní féidir dintiúir ná comharthaí comhtháthaithe a shábháil",
+        "details": "Sonraí",
+        "fix": "Conas é a réiteach"
+      },
+      "team": {
+        "title": "Foireann",
+        "count": "{{count}} úsáideoir",
+        "alone": "Is tusa an t-aon úsáideoir",
+        "action": "Tabhair cuireadh"
+      },
+      "theme": {
+        "active": "Téama: {{name}}",
+        "activate": "Gníomhachtaigh téama",
+        "install": "Suiteáil téama",
+        "inactive": "Suiteáilte ach gan gníomhachtú — go dtí go mbíonn ceann gníomhach, freastalaíonn an siopa doiciméad folamh.",
+        "none": "Taispeánann téama gach leathanach a fheiceann cuairteoir. Gan é, freastalaíonn an siopa doiciméad folamh.",
+        "activateAction": "Gníomhachtaigh",
+        "browse": "Brabhsáil téamaí"
+      },
+      "plugins": {
+        "count": "{{count}} breiseán suiteáilte",
+        "addSite": "Cuir na breiseáin atá ag teastáil ón suíomh seo leis",
+        "installPlatform": "Suiteáil na breiseáin atá ag teastáil ón ardán seo",
+        "detailSite": "Siopa, foirmeacha, SEO — cuireann gach ceann a scáileáin féin leis. Ná cuir leis ach an méid a úsáidfidh an suíomh seo.",
+        "detailPlatform": "Siopa, foirmeacha, SEO — cuireann gach ceann a scáileáin féin leis. Ná suiteáil ach an méid a úsáidfidh an tsuiteáil seo.",
+        "browse": "Brabhsáil breiseáin"
+      }
     }
   },
   "notFound": {

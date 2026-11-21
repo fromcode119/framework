@@ -959,6 +959,55 @@
       "open": "Odpri",
       "loadFailed": "Podatkov tega gradnika ni bilo mogoče naložiti. Za ponoven poskus znova naložite stran.",
       "quiet": "Nič ne čaka: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Pošiljanje e-pošte",
+        "configured": "Nastavljeno · {{provider}}",
+        "missing": "Ničesar ni mogoče poslati — ne e-pošte o naročilih ne ponastavitve gesla",
+        "action": "Nastavi"
+      },
+      "locales": {
+        "title": "Jeziki",
+        "none": "Ni nastavljeno",
+        "only": "Samo {{locale}}",
+        "action": "Dodaj"
+      },
+      "timezone": {
+        "title": "Časovni pas",
+        "none": "Ni nastavljen — datumi so v pasu strežnika",
+        "action": "Spremeni"
+      },
+      "secrets": {
+        "title": "Shramba poverilnic",
+        "ok": "Šifrirano s ključem te namestitve",
+        "missing": "Ni šifrirnega ključa — poverilnic in žetonov integracij ni mogoče shraniti",
+        "details": "Podrobnosti",
+        "fix": "Kako popraviti"
+      },
+      "team": {
+        "title": "Ekipa",
+        "count": "Uporabniki: {{count}}",
+        "alone": "Ste edini uporabnik",
+        "action": "Povabi"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktivirajte temo",
+        "install": "Namestite temo",
+        "inactive": "Nameščena, a ne aktivirana — dokler nobena ni aktivna, trgovina vrača prazen dokument.",
+        "none": "Tema izriše vsako stran, ki jo obiskovalec vidi. Brez nje trgovina vrača prazen dokument.",
+        "activateAction": "Aktiviraj",
+        "browse": "Prebrskaj teme"
+      },
+      "plugins": {
+        "count": "Nameščeni vtičniki: {{count}}",
+        "addSite": "Dodajte vtičnike, ki jih to spletno mesto potrebuje",
+        "installPlatform": "Namestite vtičnike, ki jih ta platforma potrebuje",
+        "detailSite": "Trgovina, obrazci, SEO — vsak doda svoje zaslone. Dodajte le, kar bo to mesto uporabljalo.",
+        "detailPlatform": "Trgovina, obrazci, SEO — vsak doda svoje zaslone. Namestite le, kar bo ta namestitev uporabljala.",
+        "browse": "Prebrskaj vtičnike"
+      }
     }
   },
   "notFound": {

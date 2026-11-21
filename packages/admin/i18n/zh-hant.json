@@ -959,6 +959,55 @@
       "open": "開啟",
       "loadFailed": "無法載入此小工具的數據。請重新載入頁面再試一次。",
       "quiet": "沒有待處理項目：{{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "郵件傳送",
+        "configured": "已設定 · {{provider}}",
+        "missing": "無法傳送任何內容——沒有訂單郵件，也無法重設密碼",
+        "action": "設定"
+      },
+      "locales": {
+        "title": "語言",
+        "none": "未設定",
+        "only": "僅 {{locale}}",
+        "action": "新增"
+      },
+      "timezone": {
+        "title": "時區",
+        "none": "未設定——日期依伺服器時區顯示",
+        "action": "變更"
+      },
+      "secrets": {
+        "title": "憑證儲存",
+        "ok": "已使用此安裝的金鑰加密",
+        "missing": "沒有加密金鑰——無法儲存整合的憑證和權杖",
+        "details": "詳細資料",
+        "fix": "如何修正"
+      },
+      "team": {
+        "title": "團隊",
+        "count": "{{count}} 位使用者",
+        "alone": "你是唯一的使用者",
+        "action": "邀請"
+      },
+      "theme": {
+        "active": "主題：{{name}}",
+        "activate": "啟用一個主題",
+        "install": "安裝一個主題",
+        "inactive": "已安裝但未啟用——在有啟用的主題之前，商店只回傳空白文件。",
+        "none": "主題負責呈現訪客看到的每個頁面。沒有主題，商店只回傳空白文件。",
+        "activateAction": "啟用",
+        "browse": "瀏覽主題"
+      },
+      "plugins": {
+        "count": "已安裝 {{count}} 個外掛",
+        "addSite": "新增此網站需要的外掛",
+        "installPlatform": "安裝此平台需要的外掛",
+        "detailSite": "商店、表單、SEO——每個都會新增自己的頁面。只新增此網站會用到的。",
+        "detailPlatform": "商店、表單、SEO——每個都會新增自己的頁面。只安裝此安裝會用到的。",
+        "browse": "瀏覽外掛"
+      }
     }
   },
   "notFound": {

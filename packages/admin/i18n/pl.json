@@ -959,6 +959,55 @@
       "open": "Otwórz",
       "loadFailed": "Nie udało się wczytać danych tego widżetu. Odśwież stronę, aby spróbować ponownie.",
       "quiet": "Nic nie czeka: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Wysyłka e-maili",
+        "configured": "Skonfigurowano · {{provider}}",
+        "missing": "Nic nie może zostać wysłane — ani e-maile o zamówieniach, ani reset hasła",
+        "action": "Skonfiguruj"
+      },
+      "locales": {
+        "title": "Języki",
+        "none": "Nie skonfigurowano",
+        "only": "Tylko {{locale}}",
+        "action": "Dodaj"
+      },
+      "timezone": {
+        "title": "Strefa czasowa",
+        "none": "Nie ustawiono — daty są w strefie serwera",
+        "action": "Zmień"
+      },
+      "secrets": {
+        "title": "Przechowywanie danych logowania",
+        "ok": "Zaszyfrowane kluczem tej instalacji",
+        "missing": "Brak klucza szyfrowania — nie można zapisać danych logowania ani tokenów integracji",
+        "details": "Szczegóły",
+        "fix": "Jak naprawić"
+      },
+      "team": {
+        "title": "Zespół",
+        "count": "Użytkownicy: {{count}}",
+        "alone": "Jesteś jedynym użytkownikiem",
+        "action": "Zaproś"
+      },
+      "theme": {
+        "active": "Motyw: {{name}}",
+        "activate": "Włącz motyw",
+        "install": "Zainstaluj motyw",
+        "inactive": "Zainstalowany, ale niewłączony — dopóki żaden nie jest aktywny, sklep zwraca pusty dokument.",
+        "none": "Motyw wyświetla każdą stronę, którą widzi odwiedzający. Bez niego sklep zwraca pusty dokument.",
+        "activateAction": "Włącz",
+        "browse": "Przeglądaj motywy"
+      },
+      "plugins": {
+        "count": "Zainstalowane wtyczki: {{count}}",
+        "addSite": "Dodaj wtyczki potrzebne tej witrynie",
+        "installPlatform": "Zainstaluj wtyczki potrzebne tej platformie",
+        "detailSite": "Sklep, formularze, SEO — każda dodaje własne ekrany. Dodaj tylko to, czego użyje ta witryna.",
+        "detailPlatform": "Sklep, formularze, SEO — każda dodaje własne ekrany. Zainstaluj tylko to, czego użyje ta instalacja.",
+        "browse": "Przeglądaj wtyczki"
+      }
     }
   },
   "notFound": {

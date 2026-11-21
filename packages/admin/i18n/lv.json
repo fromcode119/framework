@@ -959,6 +959,55 @@
       "open": "Atvērt",
       "loadFailed": "Šī logrīka datus neizdevās ielādēt. Pārlādējiet lapu, lai mēģinātu vēlreiz.",
       "quiet": "Nekas negaida: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-pasta sūtīšana",
+        "configured": "Iestatīts · {{provider}}",
+        "missing": "Neko nevar nosūtīt — ne pasūtījumu vēstules, ne paroles atiestatīšanu",
+        "action": "Iestatīt"
+      },
+      "locales": {
+        "title": "Valodas",
+        "none": "Nav iestatīts",
+        "only": "Tikai {{locale}}",
+        "action": "Pievienot"
+      },
+      "timezone": {
+        "title": "Laika josla",
+        "none": "Nav iestatīta — datumi tiek rādīti servera laika joslā",
+        "action": "Mainīt"
+      },
+      "secrets": {
+        "title": "Akreditācijas datu glabātuve",
+        "ok": "Šifrēti ar šīs instalācijas atslēgu",
+        "missing": "Nav šifrēšanas atslēgas — integrāciju akreditācijas datus un žetonus nevar saglabāt",
+        "details": "Sīkāk",
+        "fix": "Kā labot"
+      },
+      "team": {
+        "title": "Komanda",
+        "count": "Lietotāji: {{count}}",
+        "alone": "Jūs esat vienīgais lietotājs",
+        "action": "Uzaicināt"
+      },
+      "theme": {
+        "active": "Motīvs: {{name}}",
+        "activate": "Aktivizējiet motīvu",
+        "install": "Instalējiet motīvu",
+        "inactive": "Instalēts, bet nav aktivizēts — kamēr neviens nav aktīvs, veikals atgriež tukšu dokumentu.",
+        "none": "Motīvs attēlo katru lapu, ko redz apmeklētājs. Bez tā veikals atgriež tukšu dokumentu.",
+        "activateAction": "Aktivizēt",
+        "browse": "Pārlūkot motīvus"
+      },
+      "plugins": {
+        "count": "Instalēti spraudņi: {{count}}",
+        "addSite": "Pievienojiet spraudņus, kas vajadzīgi šai vietnei",
+        "installPlatform": "Instalējiet spraudņus, kas vajadzīgi šai platformai",
+        "detailSite": "Veikals, veidlapas, SEO — katrs pievieno savus ekrānus. Pievienojiet tikai to, ko izmantos šī vietne.",
+        "detailPlatform": "Veikals, veidlapas, SEO — katrs pievieno savus ekrānus. Instalējiet tikai to, ko izmantos šī instalācija.",
+        "browse": "Pārlūkot spraudņus"
+      }
     }
   },
   "notFound": {

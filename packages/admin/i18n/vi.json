@@ -959,6 +959,55 @@
       "open": "Mở",
       "loadFailed": "Không thể tải số liệu của tiện ích này. Hãy tải lại trang để thử lại.",
       "quiet": "Không có gì đang chờ: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Gửi email",
+        "configured": "Đã cấu hình · {{provider}}",
+        "missing": "Không gửi được gì — không có email đơn hàng, không đặt lại mật khẩu",
+        "action": "Cấu hình"
+      },
+      "locales": {
+        "title": "Ngôn ngữ",
+        "none": "Chưa cấu hình",
+        "only": "Chỉ {{locale}}",
+        "action": "Thêm"
+      },
+      "timezone": {
+        "title": "Múi giờ",
+        "none": "Chưa đặt — ngày hiển thị theo múi giờ của máy chủ",
+        "action": "Thay đổi"
+      },
+      "secrets": {
+        "title": "Lưu trữ thông tin xác thực",
+        "ok": "Được mã hóa bằng khóa của bản cài đặt này",
+        "missing": "Không có khóa mã hóa — không thể lưu thông tin xác thực và token của tích hợp",
+        "details": "Chi tiết",
+        "fix": "Cách khắc phục"
+      },
+      "team": {
+        "title": "Nhóm",
+        "count": "{{count}} người dùng",
+        "alone": "Bạn là người dùng duy nhất",
+        "action": "Mời"
+      },
+      "theme": {
+        "active": "Giao diện: {{name}}",
+        "activate": "Kích hoạt một giao diện",
+        "install": "Cài đặt một giao diện",
+        "inactive": "Đã cài nhưng chưa kích hoạt — cho đến khi có một giao diện hoạt động, cửa hàng trả về tài liệu trống.",
+        "none": "Giao diện hiển thị mọi trang khách truy cập nhìn thấy. Không có nó, cửa hàng trả về tài liệu trống.",
+        "activateAction": "Kích hoạt",
+        "browse": "Xem giao diện"
+      },
+      "plugins": {
+        "count": "Đã cài {{count}} plugin",
+        "addSite": "Thêm các plugin trang này cần",
+        "installPlatform": "Cài các plugin nền tảng này cần",
+        "detailSite": "Cửa hàng, biểu mẫu, SEO — mỗi thứ thêm màn hình riêng. Chỉ thêm những gì trang này sẽ dùng.",
+        "detailPlatform": "Cửa hàng, biểu mẫu, SEO — mỗi thứ thêm màn hình riêng. Chỉ cài những gì bản cài đặt này sẽ dùng.",
+        "browse": "Xem plugin"
+      }
     }
   },
   "notFound": {

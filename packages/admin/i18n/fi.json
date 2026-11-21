@@ -959,6 +959,55 @@
       "open": "Avaa",
       "loadFailed": "Tämän pienoisohjelman lukuja ei voitu ladata. Yritä uudelleen lataamalla sivu uudelleen.",
       "quiet": "Ei odottavia: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Sähköpostin lähetys",
+        "configured": "Määritetty · {{provider}}",
+        "missing": "Mitään ei voi lähettää — ei tilausviestejä, ei salasanan palautuksia",
+        "action": "Määritä"
+      },
+      "locales": {
+        "title": "Kielet",
+        "none": "Ei määritetty",
+        "only": "Vain {{locale}}",
+        "action": "Lisää"
+      },
+      "timezone": {
+        "title": "Aikavyöhyke",
+        "none": "Ei asetettu — päivämäärät näytetään palvelimen aikavyöhykkeellä",
+        "action": "Muuta"
+      },
+      "secrets": {
+        "title": "Tunnistetietojen säilytys",
+        "ok": "Salattu tämän asennuksen avaimella",
+        "missing": "Ei salausavainta — integraatioiden tunnistetietoja ja tunnuksia ei voi tallentaa",
+        "details": "Tiedot",
+        "fix": "Näin korjaat"
+      },
+      "team": {
+        "title": "Tiimi",
+        "count": "{{count}} käyttäjää",
+        "alone": "Olet ainoa käyttäjä",
+        "action": "Kutsu"
+      },
+      "theme": {
+        "active": "Teema: {{name}}",
+        "activate": "Ota teema käyttöön",
+        "install": "Asenna teema",
+        "inactive": "Asennettu mutta ei käytössä — kunnes jokin on käytössä, kauppa palauttaa tyhjän asiakirjan.",
+        "none": "Teema piirtää jokaisen sivun, jonka kävijä näkee. Ilman teemaa kauppa palauttaa tyhjän asiakirjan.",
+        "activateAction": "Ota käyttöön",
+        "browse": "Selaa teemoja"
+      },
+      "plugins": {
+        "count": "{{count}} lisäosaa asennettu",
+        "addSite": "Lisää tämän sivuston tarvitsemat lisäosat",
+        "installPlatform": "Asenna tämän alustan tarvitsemat lisäosat",
+        "detailSite": "Kauppa, lomakkeet, SEO — kukin tuo omat näkymänsä. Lisää vain se, mitä tämä sivusto käyttää.",
+        "detailPlatform": "Kauppa, lomakkeet, SEO — kukin tuo omat näkymänsä. Asenna vain se, mitä tämä asennus käyttää.",
+        "browse": "Selaa lisäosia"
+      }
     }
   },
   "notFound": {

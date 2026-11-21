@@ -1,10 +1,9 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
-import { AdminClass } from '@/lib/admin-class';
 import type { ISetupAccountErrors } from '@/app/setup/interfaces/setup-account-errors.interface';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * Step two: the administrator account.
@@ -74,21 +73,7 @@ export class SetupAccountStep extends PureReactor {
           error={this.errors.confirmPassword}
         />
 
-        <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-indigo-500/5`}>
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-indigo-500 text-white mt-0.5">
-              <FrameworkIcons.Shield size={16} />
-            </div>
-            <div>
-              <h4 className="text-xs font-medium mb-1 tracking-wide text-indigo-900 dark:text-indigo-300">
-                {this.text('setup.account.noticeTitle')}
-              </h4>
-              <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
-                {this.text('setup.account.noticeBody')}
-              </p>
-            </div>
-          </div>
-        </div>
+        <Alert tone="info" title={this.text('setup.account.noticeTitle')}>{this.text('setup.account.noticeBody')}</Alert>
       </div>
     );
   }

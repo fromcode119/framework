@@ -959,6 +959,55 @@
       "open": "Megnyitás",
       "loadFailed": "A modul adatait nem sikerült betölteni. Az újrapróbáláshoz töltse újra az oldalt.",
       "quiet": "Nincs teendő: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-mail-küldés",
+        "configured": "Beállítva · {{provider}}",
+        "missing": "Semmi sem küldhető — sem rendelési e-mail, sem jelszó-visszaállítás",
+        "action": "Beállítás"
+      },
+      "locales": {
+        "title": "Nyelvek",
+        "none": "Nincs beállítva",
+        "only": "Csak {{locale}}",
+        "action": "Hozzáadás"
+      },
+      "timezone": {
+        "title": "Időzóna",
+        "none": "Nincs megadva — a dátumok a szerver időzónájában jelennek meg",
+        "action": "Módosítás"
+      },
+      "secrets": {
+        "title": "Hitelesítő adatok tárolása",
+        "ok": "Titkosítva ennek a telepítésnek a kulcsával",
+        "missing": "Nincs titkosítási kulcs — az integrációk hitelesítő adatai és tokenjei nem menthetők",
+        "details": "Részletek",
+        "fix": "Hogyan javítható"
+      },
+      "team": {
+        "title": "Csapat",
+        "count": "{{count}} felhasználó",
+        "alone": "Ön az egyetlen felhasználó",
+        "action": "Meghívás"
+      },
+      "theme": {
+        "active": "Téma: {{name}}",
+        "activate": "Aktiváljon egy témát",
+        "install": "Telepítsen egy témát",
+        "inactive": "Telepítve, de nincs aktiválva — amíg nincs aktív téma, a bolt üres dokumentumot ad vissza.",
+        "none": "A téma jelenít meg minden oldalt, amit a látogató lát. Nélküle a bolt üres dokumentumot ad vissza.",
+        "activateAction": "Aktiválás",
+        "browse": "Témák böngészése"
+      },
+      "plugins": {
+        "count": "{{count}} bővítmény telepítve",
+        "addSite": "Adja hozzá a webhelyhez szükséges bővítményeket",
+        "installPlatform": "Telepítse a platformhoz szükséges bővítményeket",
+        "detailSite": "Bolt, űrlapok, SEO — mindegyik saját képernyőket hoz. Csak azt adja hozzá, amit ez a webhely használni fog.",
+        "detailPlatform": "Bolt, űrlapok, SEO — mindegyik saját képernyőket hoz. Csak azt telepítse, amit ez a telepítés használni fog.",
+        "browse": "Bővítmények böngészése"
+      }
     }
   },
   "notFound": {

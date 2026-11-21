@@ -10,6 +10,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { DashboardChecklistText } from '@/app/dashboard-checklist-text';
 
 /**
  * The first screen of an installation nobody has started using yet.
@@ -78,12 +79,12 @@ export class DashboardGettingStarted extends AdminComponent {
               <li key={String(step.key)} className="fc-setup__step" data-done={step.done ? 'true' : undefined} data-next={isNext ? 'true' : undefined}>
                 {this.marker(step, position + 1)}
                 <div className="fc-setup__text">
-                  <div className="fc-setup__title">{String(step.title)}</div>
-                  {step.done ? null : <div className="fc-setup__detail">{String(step.detail)}</div>}
+                  <div className="fc-setup__title">{DashboardChecklistText.title(step)}</div>
+                  {step.done ? null : <div className="fc-setup__detail">{DashboardChecklistText.detail(step)}</div>}
                 </div>
                 {step.done ? null : (
                   <Button size={FieldSize.SM} variant={isNext ? ButtonVariant.PRIMARY : ButtonVariant.SECONDARY} onClick={() => this.go(String(step.actionPath))}>
-                    {String(step.actionLabel)}
+                    {DashboardChecklistText.action(step)}
                   </Button>
                 )}
               </li>

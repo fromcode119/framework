@@ -959,6 +959,55 @@
       "open": "Otevřít",
       "loadFailed": "Údaje tohoto widgetu se nepodařilo načíst. Zkuste to znovu po obnovení stránky.",
       "quiet": "Nic nečeká: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Odesílání e-mailů",
+        "configured": "Nastaveno · {{provider}}",
+        "missing": "Nic nelze odeslat — žádné e-maily k objednávkám ani obnovení hesla",
+        "action": "Nastavit"
+      },
+      "locales": {
+        "title": "Jazyky",
+        "none": "Nenastaveno",
+        "only": "Pouze {{locale}}",
+        "action": "Přidat"
+      },
+      "timezone": {
+        "title": "Časové pásmo",
+        "none": "Nenastaveno — data se zobrazují v pásmu serveru",
+        "action": "Změnit"
+      },
+      "secrets": {
+        "title": "Úložiště přihlašovacích údajů",
+        "ok": "Šifrováno klíčem této instalace",
+        "missing": "Chybí šifrovací klíč — přihlašovací údaje a tokeny integrací nelze uložit",
+        "details": "Podrobnosti",
+        "fix": "Jak opravit"
+      },
+      "team": {
+        "title": "Tým",
+        "count": "Uživatelé: {{count}}",
+        "alone": "Jste jediný uživatel",
+        "action": "Pozvat"
+      },
+      "theme": {
+        "active": "Šablona: {{name}}",
+        "activate": "Aktivujte šablonu",
+        "install": "Nainstalujte šablonu",
+        "inactive": "Nainstalováno, ale neaktivováno — dokud žádná není aktivní, obchod vrací prázdný dokument.",
+        "none": "Šablona vykresluje každou stránku, kterou návštěvník vidí. Bez ní obchod vrací prázdný dokument.",
+        "activateAction": "Aktivovat",
+        "browse": "Procházet šablony"
+      },
+      "plugins": {
+        "count": "Nainstalované pluginy: {{count}}",
+        "addSite": "Přidejte pluginy, které tento web potřebuje",
+        "installPlatform": "Nainstalujte pluginy, které tato platforma potřebuje",
+        "detailSite": "Obchod, formuláře, SEO — každý přidává vlastní obrazovky. Přidejte jen to, co tento web využije.",
+        "detailPlatform": "Obchod, formuláře, SEO — každý přidává vlastní obrazovky. Instalujte jen to, co tato instalace využije.",
+        "browse": "Procházet pluginy"
+      }
     }
   },
   "notFound": {

@@ -40,7 +40,7 @@ export class SetupPlatformStep extends PureReactor {
             value={this.platformName}
             onChange={this.handleName}
           />
-          <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+          <p className="fc-size-xs fc-tone-muted font-medium leading-relaxed">
             {this.text('setup.platform.nameHelp')}
           </p>
         </div>
@@ -53,7 +53,7 @@ export class SetupPlatformStep extends PureReactor {
             options={this.timezoneOptions}
             searchable
           />
-          <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+          <p className="fc-size-xs fc-tone-muted font-medium leading-relaxed">
             {this.text('setup.platform.timezoneHelp')}
           </p>
         </div>

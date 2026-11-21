@@ -11,6 +11,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { DashboardChecklistText } from '@/app/dashboard-checklist-text';
 
 /**
  * The things that are not configured and will silently not work — email being the sharp one, since
@@ -46,11 +47,11 @@ export class DashboardMissingConfig extends AdminComponent {
           {this.items.map((item) => (
             <ListRow
               key={String(item.key)}
-              title={<button type="button" className="fc-ext-row__link" onClick={() => this.go(String(item.actionPath))}>{String(item.title)}</button>}
-              meta={String(item.detail)}
+              title={<button type="button" className="fc-ext-row__link" onClick={() => this.go(String(item.actionPath))}>{DashboardChecklistText.title(item)}</button>}
+              meta={DashboardChecklistText.detail(item)}
               actions={<>
                 {item.done ? null : <StateBadge tone="warning">{AdminI18n.t('dashboard.toDo', { count: 1 })}</StateBadge>}
-                {item.actionLabel ? <Button variant={ButtonVariant.GHOST} onClick={() => this.go(String(item.actionPath))}>{String(item.actionLabel)}</Button> : null}
+                {item.actionLabel ? <Button variant={ButtonVariant.GHOST} onClick={() => this.go(String(item.actionPath))}>{DashboardChecklistText.action(item)}</Button> : null}
               </>}
             />
           ))}

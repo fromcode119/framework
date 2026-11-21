@@ -2,7 +2,7 @@ import type { Ref } from '@fromcode119/react-class-components';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { RootFramework } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
@@ -13,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SelectMenu extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect' | 'onCreate' | 'createLabel' | 'onDelete' | 'menuNote' | 'searching'>;
+  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect' | 'onCreate' | 'createLabel' | 'onDelete' | 'menuNote' | 'searching' | 'onEscape'>;
 
   @prop declare theme: ThemeMode;
   @prop declare searchable: boolean;
@@ -32,6 +32,8 @@ export class SelectMenu extends PureReactor {
   @prop declare searchInputRef: Ref<HTMLInputElement>;
   @prop declare onSearchChange: (value: string) => void;
   @prop declare onSelect: (value: string) => void;
+  /** Escape: the owner closes the list and takes the focus back. */
+  @prop declare onEscape?: () => void;
   /** Present only when the caller allows creating an option; receives the typed text. */
   @prop declare onCreate?: (label: string) => void;
   /** Present only when the caller allows deleting its deletable options; receives the option value. */
@@ -50,6 +52,44 @@ export class SelectMenu extends PureReactor {
     const typed = this.searchValue.trim().toLowerCase();
     if (!typed) return false;
     return !this.filteredOptions.some((option) => String(option.label ?? '').trim().toLowerCase() === typed);
+  }
+
+  /**
+   * The list by keyboard. Enter in the search picks the first match (or offers the typed text when the
+   * caller allows creating), the arrows walk the rows and Up from the first row returns to the search.
+   * Without it a searchable list could be filtered but nothing in it chosen without the mouse, and an
+   * Enter inside a form submitted the form instead of picking.
+   */
+  @bound
+  private onKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+    const rows = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button.fc-menu-action'));
+    const search = event.currentTarget.querySelector<HTMLInputElement>('input');
+    const inSearch = event.target === search;
+    const at = rows.indexOf(event.target as HTMLButtonElement);
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.onEscape?.();
+      return;
+    }
+    if (event.key === 'Enter' && inSearch) {
+      event.preventDefault();
+      const first = this.filteredOptions[0];
+      if (first) this.onSelect(SelectUtils.normalizeValue(first.value));
+      else if (this.canCreate) this.onCreate?.(this.searchValue.trim());
+      return;
+    }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      rows[inSearch ? 0 : Math.min(at + 1, rows.length - 1)]?.focus();
+      return;
+    }
+    if (event.key === 'ArrowUp' && at >= 0) {
+      event.preventDefault();
+      if (at === 0 && search) search.focus();
+      else rows[Math.max(at - 1, 0)]?.focus();
+    }
   }
 
   render(): React.ReactNode {
@@ -77,6 +117,7 @@ export class SelectMenu extends PureReactor {
               // corner, a blurred translucent pane and shadow-2xl, so the list a field opened looked
               // nothing like the list the card's menu opened two rows above it.
               className="fc-menu-sheet max-h-[300px] flex flex-col overflow-hidden"
+              onKeyDown={this.onKeyDown}
             >
               {searchable && (
                 <div className="p-1 pb-2 border-b fc-tone-line">

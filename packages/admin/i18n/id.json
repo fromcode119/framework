@@ -959,6 +959,55 @@
       "open": "Buka",
       "loadFailed": "Angka widget ini tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
       "quiet": "Tidak ada yang menunggu: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Pengiriman email",
+        "configured": "Dikonfigurasi · {{provider}}",
+        "missing": "Tidak ada yang bisa dikirim — tidak ada email pesanan, tidak ada reset kata sandi",
+        "action": "Konfigurasi"
+      },
+      "locales": {
+        "title": "Bahasa",
+        "none": "Belum dikonfigurasi",
+        "only": "Hanya {{locale}}",
+        "action": "Tambah"
+      },
+      "timezone": {
+        "title": "Zona waktu",
+        "none": "Belum diatur — tanggal ditampilkan dalam zona server",
+        "action": "Ubah"
+      },
+      "secrets": {
+        "title": "Penyimpanan kredensial",
+        "ok": "Dienkripsi dengan kunci instalasi ini",
+        "missing": "Tidak ada kunci enkripsi — kredensial dan token integrasi tidak dapat disimpan",
+        "details": "Detail",
+        "fix": "Cara memperbaiki"
+      },
+      "team": {
+        "title": "Tim",
+        "count": "{{count}} pengguna",
+        "alone": "Anda satu-satunya pengguna",
+        "action": "Undang"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktifkan tema",
+        "install": "Pasang tema",
+        "inactive": "Terpasang tetapi belum aktif — sampai ada yang aktif, toko menyajikan dokumen kosong.",
+        "none": "Tema menampilkan setiap halaman yang dilihat pengunjung. Tanpanya, toko menyajikan dokumen kosong.",
+        "activateAction": "Aktifkan",
+        "browse": "Jelajahi tema"
+      },
+      "plugins": {
+        "count": "{{count}} plugin terpasang",
+        "addSite": "Tambahkan plugin yang dibutuhkan situs ini",
+        "installPlatform": "Pasang plugin yang dibutuhkan platform ini",
+        "detailSite": "Toko, formulir, SEO — masing-masing menambah layarnya sendiri. Tambahkan hanya yang akan dipakai situs ini.",
+        "detailPlatform": "Toko, formulir, SEO — masing-masing menambah layarnya sendiri. Pasang hanya yang akan dipakai instalasi ini.",
+        "browse": "Jelajahi plugin"
+      }
     }
   },
   "notFound": {

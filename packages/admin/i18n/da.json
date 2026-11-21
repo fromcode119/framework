@@ -959,6 +959,55 @@
       "open": "Åbn",
       "loadFailed": "Denne widgets tal kunne ikke indlæses. Genindlæs siden for at prøve igen.",
       "quiet": "Intet venter: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-mailafsendelse",
+        "configured": "Opsat · {{provider}}",
+        "missing": "Intet kan sendes — ingen ordremails, ingen nulstilling af adgangskode",
+        "action": "Opsæt"
+      },
+      "locales": {
+        "title": "Sprog",
+        "none": "Ikke opsat",
+        "only": "Kun {{locale}}",
+        "action": "Tilføj"
+      },
+      "timezone": {
+        "title": "Tidszone",
+        "none": "Ikke angivet — datoer vises i serverens tidszone",
+        "action": "Skift"
+      },
+      "secrets": {
+        "title": "Opbevaring af loginoplysninger",
+        "ok": "Krypteret med denne installations nøgle",
+        "missing": "Ingen krypteringsnøgle — loginoplysninger og tokens til integrationer kan ikke gemmes",
+        "details": "Detaljer",
+        "fix": "Sådan løses det"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} brugere",
+        "alone": "Du er den eneste bruger",
+        "action": "Inviter"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktivér et tema",
+        "install": "Installer et tema",
+        "inactive": "Installeret, men ikke aktiveret — indtil et er aktivt, viser butikken et tomt dokument.",
+        "none": "Et tema viser hver side, en besøgende ser. Uden et tema viser butikken et tomt dokument.",
+        "activateAction": "Aktivér",
+        "browse": "Gennemse temaer"
+      },
+      "plugins": {
+        "count": "{{count}} plugins installeret",
+        "addSite": "Tilføj de plugins, dette websted har brug for",
+        "installPlatform": "Installer de plugins, denne platform har brug for",
+        "detailSite": "Butik, formularer, SEO — hver tilføjer sine egne skærme. Tilføj kun det, dette websted vil bruge.",
+        "detailPlatform": "Butik, formularer, SEO — hver tilføjer sine egne skærme. Installer kun det, denne installation vil bruge.",
+        "browse": "Gennemse plugins"
+      }
     }
   },
   "notFound": {

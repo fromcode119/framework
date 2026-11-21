@@ -959,6 +959,55 @@
       "open": "Aç",
       "loadFailed": "Bu bileşenin verileri yüklenemedi. Tekrar denemek için sayfayı yenileyin.",
       "quiet": "Bekleyen bir şey yok: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-posta gönderimi",
+        "configured": "Yapılandırıldı · {{provider}}",
+        "missing": "Hiçbir şey gönderilemez — sipariş e-postası da parola sıfırlama da yok",
+        "action": "Yapılandır"
+      },
+      "locales": {
+        "title": "Diller",
+        "none": "Yapılandırılmadı",
+        "only": "Yalnızca {{locale}}",
+        "action": "Ekle"
+      },
+      "timezone": {
+        "title": "Saat dilimi",
+        "none": "Ayarlanmadı — tarihler sunucunun saat diliminde gösterilir",
+        "action": "Değiştir"
+      },
+      "secrets": {
+        "title": "Kimlik bilgisi depolama",
+        "ok": "Bu kurulumun anahtarıyla şifrelenmiş",
+        "missing": "Şifreleme anahtarı yok — entegrasyon kimlik bilgileri ve belirteçleri kaydedilemez",
+        "details": "Ayrıntılar",
+        "fix": "Nasıl düzeltilir"
+      },
+      "team": {
+        "title": "Ekip",
+        "count": "{{count}} kullanıcı",
+        "alone": "Tek kullanıcı sizsiniz",
+        "action": "Davet et"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Bir tema etkinleştirin",
+        "install": "Bir tema yükleyin",
+        "inactive": "Yüklendi ama etkinleştirilmedi — biri etkin olana kadar mağaza boş bir belge sunar.",
+        "none": "Tema, ziyaretçinin gördüğü her sayfayı oluşturur. Tema olmadan mağaza boş bir belge sunar.",
+        "activateAction": "Etkinleştir",
+        "browse": "Temalara göz at"
+      },
+      "plugins": {
+        "count": "{{count}} eklenti yüklü",
+        "addSite": "Bu sitenin ihtiyaç duyduğu eklentileri ekleyin",
+        "installPlatform": "Bu platformun ihtiyaç duyduğu eklentileri yükleyin",
+        "detailSite": "Mağaza, formlar, SEO — her biri kendi ekranlarını ekler. Yalnızca bu sitenin kullanacağını ekleyin.",
+        "detailPlatform": "Mağaza, formlar, SEO — her biri kendi ekranlarını ekler. Yalnızca bu kurulumun kullanacağını yükleyin.",
+        "browse": "Eklentilere göz at"
+      }
     }
   },
   "notFound": {

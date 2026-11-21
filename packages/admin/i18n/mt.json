@@ -959,6 +959,55 @@
       "open": "Iftaħ",
       "loadFailed": "Iċ-ċifri ta' dan il-widget ma setgħux jitniżżlu. Erġa' tella' l-paġna biex tipprova mill-ġdid.",
       "quiet": "Xejn ma qed jistenna: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Bgħit tal-email",
+        "configured": "Konfigurat · {{provider}}",
+        "missing": "Xejn ma jista’ jintbagħat — l-ebda email ta’ ordni, l-ebda reset tal-password",
+        "action": "Ikkonfigura"
+      },
+      "locales": {
+        "title": "Lingwi",
+        "none": "Mhux konfigurat",
+        "only": "{{locale}} biss",
+        "action": "Żid"
+      },
+      "timezone": {
+        "title": "Żona tal-ħin",
+        "none": "Mhux issettjata — id-dati jidhru fiż-żona tas-server",
+        "action": "Ibdel"
+      },
+      "secrets": {
+        "title": "Ħażna tal-kredenzjali",
+        "ok": "Ikkriptati biċ-ċavetta ta’ din l-installazzjoni",
+        "missing": "L-ebda ċavetta tal-kriptaġġ — il-kredenzjali u t-tokens tal-integrazzjonijiet ma jistgħux jiġu ssejvjati",
+        "details": "Dettalji",
+        "fix": "Kif tissolva"
+      },
+      "team": {
+        "title": "Tim",
+        "count": "{{count}} utenti",
+        "alone": "Int l-uniku utent",
+        "action": "Stieden"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Attiva tema",
+        "install": "Installa tema",
+        "inactive": "Installata iżda mhux attivata — sakemm waħda ma tkunx attiva, il-ħanut jagħti dokument vojt.",
+        "none": "Tema turi kull paġna li jara l-viżitatur. Mingħajrha, il-ħanut jagħti dokument vojt.",
+        "activateAction": "Attiva",
+        "browse": "Fittex it-temi"
+      },
+      "plugins": {
+        "count": "{{count}} plugins installati",
+        "addSite": "Żid il-plugins li jeħtieġ dan is-sit",
+        "installPlatform": "Installa l-plugins li teħtieġ din il-pjattaforma",
+        "detailSite": "Ħanut, formoli, SEO — kull wieħed iżid l-iskrins tiegħu. Żid biss dak li se juża dan is-sit.",
+        "detailPlatform": "Ħanut, formoli, SEO — kull wieħed iżid l-iskrins tiegħu. Installa biss dak li se tuża din l-installazzjoni.",
+        "browse": "Fittex il-plugins"
+      }
     }
   },
   "notFound": {

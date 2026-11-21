@@ -959,6 +959,55 @@
       "open": "Öffnen",
       "loadFailed": "Die Werte dieses Widgets konnten nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen.",
       "quiet": "Nichts offen: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-Mail-Versand",
+        "configured": "Eingerichtet · {{provider}}",
+        "missing": "Es kann nichts gesendet werden — keine Bestellmails, keine Passwort-Zurücksetzungen",
+        "action": "Einrichten"
+      },
+      "locales": {
+        "title": "Sprachen",
+        "none": "Nicht eingerichtet",
+        "only": "Nur {{locale}}",
+        "action": "Hinzufügen"
+      },
+      "timezone": {
+        "title": "Zeitzone",
+        "none": "Nicht festgelegt — Daten erscheinen in der Zeitzone des Servers",
+        "action": "Ändern"
+      },
+      "secrets": {
+        "title": "Speicher für Zugangsdaten",
+        "ok": "Mit dem Schlüssel dieser Installation verschlüsselt",
+        "missing": "Kein Verschlüsselungsschlüssel — Zugangsdaten und Tokens von Integrationen können nicht gespeichert werden",
+        "details": "Details",
+        "fix": "So beheben"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} Benutzer",
+        "alone": "Sie sind der einzige Benutzer",
+        "action": "Einladen"
+      },
+      "theme": {
+        "active": "Theme: {{name}}",
+        "activate": "Theme aktivieren",
+        "install": "Theme installieren",
+        "inactive": "Installiert, aber nicht aktiviert — solange keins aktiv ist, liefert der Shop ein leeres Dokument.",
+        "none": "Ein Theme stellt jede Seite dar, die Besucher sehen. Ohne Theme liefert der Shop ein leeres Dokument.",
+        "activateAction": "Aktivieren",
+        "browse": "Themes durchsuchen"
+      },
+      "plugins": {
+        "count": "{{count}} Plugins installiert",
+        "addSite": "Plugins hinzufügen, die diese Website braucht",
+        "installPlatform": "Plugins installieren, die diese Plattform braucht",
+        "detailSite": "Shop, Formulare, SEO — jedes bringt eigene Seiten mit. Fügen Sie nur hinzu, was diese Website nutzt.",
+        "detailPlatform": "Shop, Formulare, SEO — jedes bringt eigene Seiten mit. Installieren Sie nur, was diese Installation nutzt.",
+        "browse": "Plugins durchsuchen"
+      }
     }
   },
   "notFound": {

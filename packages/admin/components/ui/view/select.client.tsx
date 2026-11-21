@@ -116,6 +116,9 @@ export class Select extends Reactor {
     this.isOpen = false;
   }
 
+  // Escape closes the list and gives the focus back to the field, as any console menu does.
+  @bound handleEscape(): void { this.clearSearch(); this.isOpen = false; this.triggerRef.current?.querySelector('button')?.focus(); }
+
   @bound handleClickOutside(event: MouseEvent): void {
     const target = event.target as Node;
     if (this.triggerRef.current && !this.triggerRef.current.contains(target) && this.menuRef.current && !this.menuRef.current.contains(target)) {
@@ -285,6 +288,7 @@ export class Select extends Reactor {
               setIsOpen(false);
             }}
             onCreate={this.onCreateOption ? this.handleCreate : undefined}
+            onEscape={this.handleEscape}
             onDelete={this.onDeleteOption}
             createLabel={this.createOptionLabel?.(searchValue.trim())}
           />

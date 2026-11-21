@@ -959,6 +959,55 @@
       "open": "Buka",
       "loadFailed": "Angka widget ini tidak dapat dimuatkan. Muat semula halaman untuk mencuba lagi.",
       "quiet": "Tiada yang menunggu: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Penghantaran e-mel",
+        "configured": "Dikonfigurasi · {{provider}}",
+        "missing": "Tiada apa yang boleh dihantar — tiada e-mel pesanan, tiada set semula kata laluan",
+        "action": "Konfigurasi"
+      },
+      "locales": {
+        "title": "Bahasa",
+        "none": "Belum dikonfigurasi",
+        "only": "{{locale}} sahaja",
+        "action": "Tambah"
+      },
+      "timezone": {
+        "title": "Zon waktu",
+        "none": "Belum ditetapkan — tarikh dipaparkan dalam zon pelayan",
+        "action": "Tukar"
+      },
+      "secrets": {
+        "title": "Storan kelayakan",
+        "ok": "Disulitkan dengan kunci pemasangan ini",
+        "missing": "Tiada kunci penyulitan — kelayakan dan token integrasi tidak boleh disimpan",
+        "details": "Butiran",
+        "fix": "Cara membaiki"
+      },
+      "team": {
+        "title": "Pasukan",
+        "count": "{{count}} pengguna",
+        "alone": "Anda satu-satunya pengguna",
+        "action": "Jemput"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktifkan tema",
+        "install": "Pasang tema",
+        "inactive": "Dipasang tetapi belum diaktifkan — sehingga satu aktif, kedai menyajikan dokumen kosong.",
+        "none": "Tema memaparkan setiap halaman yang dilihat pelawat. Tanpanya, kedai menyajikan dokumen kosong.",
+        "activateAction": "Aktifkan",
+        "browse": "Layari tema"
+      },
+      "plugins": {
+        "count": "{{count}} pemalam dipasang",
+        "addSite": "Tambah pemalam yang diperlukan tapak ini",
+        "installPlatform": "Pasang pemalam yang diperlukan platform ini",
+        "detailSite": "Kedai, borang, SEO — setiap satu menambah skrinnya sendiri. Tambah hanya yang akan digunakan tapak ini.",
+        "detailPlatform": "Kedai, borang, SEO — setiap satu menambah skrinnya sendiri. Pasang hanya yang akan digunakan pemasangan ini.",
+        "browse": "Layari pemalam"
+      }
     }
   },
   "notFound": {
