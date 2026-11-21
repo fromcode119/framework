@@ -116,12 +116,8 @@ export class Select extends Reactor {
     this.isOpen = false;
   }
 
-  /** Escape closes the list and gives the focus back to the field, as any menu in the console does. */
-  @bound handleEscape(): void {
-    this.clearSearch();
-    this.isOpen = false;
-    this.triggerRef.current?.querySelector('button')?.focus();
-  }
+  // Escape closes the list and gives the focus back to the field, as any console menu does.
+  @bound handleEscape(): void { this.clearSearch(); this.isOpen = false; this.triggerRef.current?.querySelector('button')?.focus(); }
 
   @bound handleClickOutside(event: MouseEvent): void {
     const target = event.target as Node;
