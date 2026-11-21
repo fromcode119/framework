@@ -25,18 +25,21 @@ export class ClientLayoutHeader extends AdminComponent {
   @state apiStatus: ApiStatus = ApiStatus.LOADING;
   @state isMaintenance = false;
 
+  /** How often the api is asked while it answers, and while it does not: the warning goes as soon as it answers again. */
+  private static readonly ONLINE_CHECK_MS = 30000;
+  private static readonly OFFLINE_CHECK_MS = 5000;
+
   private mounted = false;
-  private intervalId: number | null = null;
+  private timerId: number | null = null;
 
   componentDidMount(): void {
     this.mounted = true;
-    this.checkStatus();
-    this.intervalId = window.setInterval(() => this.checkStatus(), 30000);
+    void this.checkStatus();
   }
 
   componentWillUnmount(): void {
     this.mounted = false;
-    if (this.intervalId !== null) window.clearInterval(this.intervalId);
+    if (this.timerId !== null) window.clearTimeout(this.timerId);
   }
 
   private async checkStatus(): Promise<void> {
@@ -49,6 +52,11 @@ export class ClientLayoutHeader extends AdminComponent {
     } catch {
       if (this.mounted) this.apiStatus = ApiStatus.OFFLINE;
     }
+    if (!this.mounted) return;
+    // A check made during an api restart left the warning up for the next 30 seconds, under a console
+    // that already worked; while it is up the api is asked again every few seconds instead.
+    const wait = this.apiStatus === ApiStatus.OFFLINE ? ClientLayoutHeader.OFFLINE_CHECK_MS : ClientLayoutHeader.ONLINE_CHECK_MS;
+    this.timerId = window.setTimeout(() => void this.checkStatus(), wait);
   }
 
   private get warning(): ReactElement | null {
