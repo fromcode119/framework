@@ -34,6 +34,10 @@ export * from '@/components/ui/view/state-badge.client';
 export * from '@/components/ui/view/copy-value.client';
 export * from '@/components/ui/view/kbd.client';
 export * from '@/components/ui/view/parts-line.client';
+export * from '@/components/ui/view/qr-code.client';
+export * from '@/components/ui/view/scan-dialog.client';
+export * from '@/components/ui/label-sheet';
+export type { ILabelSheetLayout } from '@/components/ui/interfaces/label-sheet-layout.interface';
 export type { IPartsLinePart } from '@/components/ui/interfaces/parts-line-part.interface';
 export * from '@/components/ui/view/tabs.client';
 export * from '@/components/ui/view/search-field.client';
@@ -74,6 +78,7 @@ export * from '@/components/ui/view/data-table.client';
 // type it must pass and fell back to `unknown[]` — which type-checks nothing and is what let two
 // plugin tables declare column lists the table could never accept.
 export { Column } from '@/components/ui/column';
+export * from '@/components/ui/view/dialog.client';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
 export * from '@/components/ui/view/edit-sheet.client';

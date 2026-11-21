@@ -637,7 +637,18 @@
       "discard": "Renunță",
       "save": "Salvează"
     },
-    "dropToInstall": "Plasați fișierul pentru a-l instala"
+    "dropToInstall": "Plasați fișierul pentru a-l instala",
+    "scan": {
+      "title": "Scanează cod",
+      "description": "Îndreptați camera spre un cod de bare sau un cod QR.",
+      "manual": "Sau introduceți codul",
+      "use": "Folosește",
+      "starting": "Se pornește camera…",
+      "noCamera": "Camera nu a putut fi pornită. Introduceți codul.",
+      "denied": "Accesul la cameră a fost refuzat. Permiteți-l în browser sau introduceți codul.",
+      "insecure": "Camera funcționează doar pe o adresă securizată (https). Introduceți codul.",
+      "open": "Scanează cod"
+    }
   },
   "shell": {
     "site": {

@@ -637,7 +637,18 @@
       "discard": "Hidh poshtë",
       "save": "Ruaj"
     },
-    "dropToInstall": "Lëshoni skedarin për ta instaluar"
+    "dropToInstall": "Lëshoni skedarin për ta instaluar",
+    "scan": {
+      "title": "Skano kodin",
+      "description": "Drejtojeni kamerën nga një barkod ose kod QR.",
+      "manual": "Ose shkruani kodin",
+      "use": "Përdor",
+      "starting": "Kamera po ndizet…",
+      "noCamera": "Kamera nuk u ndez dot. Shkruani kodin.",
+      "denied": "Qasja te kamera u refuzua. Lejojeni në shfletues ose shkruani kodin.",
+      "insecure": "Kamera punon vetëm në një adresë të sigurt (https). Shkruani kodin.",
+      "open": "Skano kodin"
+    }
   },
   "shell": {
     "site": {

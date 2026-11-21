@@ -637,7 +637,18 @@
       "discard": "Atmest",
       "save": "Saglabāt"
     },
-    "dropToInstall": "Nometiet failu, lai to instalētu"
+    "dropToInstall": "Nometiet failu, lai to instalētu",
+    "scan": {
+      "title": "Skenēt kodu",
+      "description": "Pavērsiet kameru pret svītrkodu vai QR kodu.",
+      "manual": "Vai ierakstiet kodu",
+      "use": "Izmantot",
+      "starting": "Kamera ieslēdzas…",
+      "noCamera": "Kameru neizdevās ieslēgt. Ierakstiet kodu.",
+      "denied": "Piekļuve kamerai tika liegta. Atļaujiet to pārlūkā vai ierakstiet kodu.",
+      "insecure": "Kamera darbojas tikai drošā (https) adresē. Ierakstiet kodu.",
+      "open": "Skenēt kodu"
+    }
   },
   "shell": {
     "site": {

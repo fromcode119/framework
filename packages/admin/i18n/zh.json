@@ -637,7 +637,18 @@
       "discard": "放弃",
       "save": "保存"
     },
-    "dropToInstall": "松开文件即可安装"
+    "dropToInstall": "松开文件即可安装",
+    "scan": {
+      "title": "扫描代码",
+      "description": "将摄像头对准条形码或二维码。",
+      "manual": "或输入代码",
+      "use": "使用",
+      "starting": "正在启动摄像头…",
+      "noCamera": "无法启动摄像头。请输入代码。",
+      "denied": "摄像头访问被拒绝。请在浏览器中允许，或输入代码。",
+      "insecure": "摄像头仅在安全（https）地址下可用。请输入代码。",
+      "open": "扫描代码"
+    }
   },
   "shell": {
     "site": {

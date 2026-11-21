@@ -1,7 +1,7 @@
 import { ReorderDirection } from '@/components/collection/list/enums/reorder-direction.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.client';
 import { SortMenu } from '@/components/collection/list/view/sort-menu.client';
@@ -66,6 +66,16 @@ export class FilterBar extends PureReactor {
     return filters;
   }
 
+  /**
+   * A code read into the search of a list that declares `admin.list.scan`. It is already the search;
+   * a code that is a link to this console (a printed label) opens that page instead.
+   */
+  @bound private scanned(code: string): void {
+    let url: URL | null = null;
+    try { url = new URL(code); } catch { url = null; }
+    if (url && url.origin === window.location.origin) window.location.assign(url.href);
+  }
+
   private renderColumnsButton(): ReactNode {
     return (
       <div className="fc-list-table-only shrink-0">
@@ -91,6 +101,7 @@ export class FilterBar extends PureReactor {
         theme={this.theme}
         filters={this.filters}
         total={this.total}
+        onScan={this.collection?.admin?.list?.scan ? this.scanned : undefined}
       >
         {this.renderColumnsButton()}
         <SortMenu columns={this.allColumns} sort={this.sort} onSort={this.onSort} />

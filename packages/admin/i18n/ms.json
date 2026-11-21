@@ -637,7 +637,18 @@
       "discard": "Buang",
       "save": "Simpan"
     },
-    "dropToInstall": "Lepaskan fail untuk memasangnya"
+    "dropToInstall": "Lepaskan fail untuk memasangnya",
+    "scan": {
+      "title": "Imbas kod",
+      "description": "Halakan kamera pada kod bar atau kod QR.",
+      "manual": "Atau taip kod",
+      "use": "Guna",
+      "starting": "Menghidupkan kamera…",
+      "noCamera": "Kamera tidak dapat dihidupkan. Taip kod.",
+      "denied": "Akses kamera ditolak. Benarkan dalam pelayar atau taip kod.",
+      "insecure": "Kamera hanya berfungsi pada alamat selamat (https). Taip kod.",
+      "open": "Imbas kod"
+    }
   },
   "shell": {
     "site": {

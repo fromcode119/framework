@@ -83,7 +83,7 @@ export class QueryHelper {
     if (normalizedSearch) {
       const shape = partialReader ? CollectionReadRedaction.shapeOf(collection) : null;
       const searchClauses = collection.fields
-        .filter((field) => QueryHelper.searchableFieldTypes.has(FieldType.resolve(field.type).value) && table[field.name])
+        .filter((field) => QueryHelper.isSearched(field) && table[field.name])
         .filter((field) => !shape?.staffOnly.includes(field.name))
         .map((field) => {
           const clause = QueryHelper.buildSearchClause(db, table[field.name], normalizedSearch);
@@ -126,6 +126,12 @@ export class QueryHelper {
     });
 
     return whereChunks.length > 0 ? db.and(...whereChunks) : undefined;
+  }
+
+  /** Text, number and select fields always; a `json` field only when it says `admin.searchable`. */
+  private static isSearched(field: any): boolean {
+    const type = FieldType.resolve(field.type).value;
+    return QueryHelper.searchableFieldTypes.has(type) || (type === 'json' && field.admin?.searchable === true);
   }
 
   private static buildSearchClause(db: IDatabaseManager, column: any, search: string) {

@@ -637,7 +637,18 @@
       "discard": "Atmesti",
       "save": "Išsaugoti"
     },
-    "dropToInstall": "Nutempkite failą, kad jį įdiegtumėte"
+    "dropToInstall": "Nutempkite failą, kad jį įdiegtumėte",
+    "scan": {
+      "title": "Nuskaityti kodą",
+      "description": "Nukreipkite kamerą į brūkšninį arba QR kodą.",
+      "manual": "Arba įveskite kodą",
+      "use": "Naudoti",
+      "starting": "Įjungiama kamera…",
+      "noCamera": "Kameros įjungti nepavyko. Įveskite kodą.",
+      "denied": "Prieiga prie kameros atmesta. Leiskite ją naršyklėje arba įveskite kodą.",
+      "insecure": "Kamera veikia tik saugiu (https) adresu. Įveskite kodą.",
+      "open": "Nuskaityti kodą"
+    }
   },
   "shell": {
     "site": {

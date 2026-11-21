@@ -637,7 +637,18 @@
       "discard": "Annulla",
       "save": "Salva"
     },
-    "dropToInstall": "Rilascia il file per installarlo"
+    "dropToInstall": "Rilascia il file per installarlo",
+    "scan": {
+      "title": "Scansiona codice",
+      "description": "Inquadra un codice a barre o un codice QR.",
+      "manual": "Oppure digita il codice",
+      "use": "Usa",
+      "starting": "Avvio della fotocamera…",
+      "noCamera": "Impossibile avviare la fotocamera. Digita il codice.",
+      "denied": "Accesso alla fotocamera negato. Consentilo nel browser o digita il codice.",
+      "insecure": "La fotocamera funziona solo su un indirizzo sicuro (https). Digita il codice.",
+      "open": "Scansiona codice"
+    }
   },
   "shell": {
     "site": {

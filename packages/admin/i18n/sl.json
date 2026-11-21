@@ -637,7 +637,18 @@
       "discard": "Zavrzi",
       "save": "Shrani"
     },
-    "dropToInstall": "Spustite datoteko, da jo namestite"
+    "dropToInstall": "Spustite datoteko, da jo namestite",
+    "scan": {
+      "title": "Skeniraj kodo",
+      "description": "Usmerite kamero v črtno ali QR kodo.",
+      "manual": "Ali vnesite kodo",
+      "use": "Uporabi",
+      "starting": "Kamera se vklaplja…",
+      "noCamera": "Kamere ni bilo mogoče vklopiti. Vnesite kodo.",
+      "denied": "Dostop do kamere je bil zavrnjen. Dovolite ga v brskalniku ali vnesite kodo.",
+      "insecure": "Kamera deluje le na varnem (https) naslovu. Vnesite kodo.",
+      "open": "Skeniraj kodo"
+    }
   },
   "shell": {
     "site": {

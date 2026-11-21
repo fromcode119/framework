@@ -3342,6 +3342,25 @@ a.fc-parts__label:hover { text-decoration: underline; }
 .fc-parts__detail { font-variant-numeric: tabular-nums; }
 .fc-parts__count { font-variant-numeric: tabular-nums; }
 
+/* ---------- QR code, scanner ---------- */
+.fc-qr { display: inline-grid; justify-items: center; gap: 4px; margin: 0; }
+.fc-qr svg { display: block; border-radius: 4px; }
+.fc-qr__caption { font-size: 12px; line-height: 16px; color: var(--fc-text-muted); text-align: center; max-width: 100%; }
+.fc-scan { display: grid; gap: 12px; }
+.fc-scan__frame { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 8px; background: #000; }
+.fc-scan__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fc-scan__aim { position: absolute; inset: 22% 14%; border: 2px solid rgba(255, 255, 255, .85); border-radius: 8px; box-shadow: 0 0 0 999px rgba(0, 0, 0, .25); pointer-events: none; }
+.fc-scan__status { position: absolute; inset-inline: 0; bottom: 10px; text-align: center; font-size: 12px; color: #fff; }
+.fc-scan__problem { margin: 0; font-size: 13px; line-height: 18px; color: var(--fc-text-muted); }
+.fc-search--scan .fc-field.fc-search-field { padding-inline-end: 32px; }
+.fc-search__scan {
+  position: absolute; inset-inline-end: 4px; top: 50%; transform: translateY(-50%); z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+  border: 0; border-radius: 6px; background: transparent; color: var(--fc-text-muted); cursor: pointer;
+}
+.fc-search__scan:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-search__scan:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
 /* ---------- Tooltip, avatar, divider, command bar ---------- */
 .fc-tooltip__anchor { display: inline-flex; }
 .fc-tooltip { position: fixed; z-index: 2000; width: max-content; max-width: min(320px, calc(100vw - 16px)); padding: 4px 10px; border-radius: 8px; background: var(--fc-surface); color: var(--fc-text-muted); box-shadow: var(--fc-card-shadow), 0 4px 8px 0 rgb(0 0 0 / .08); font-size: 12px; line-height: 20px; font-weight: 400; text-align: start; pointer-events: none; translate: -50% -100%; }
@@ -3753,6 +3772,7 @@ body:has(.fc-edit-footer) main { padding-bottom: 88px; }
 .fc-kitdoc__demo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px 24px; padding: 24px; border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); }
 .fc-kitdoc__demo--flush { display: block; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .fc-kitdoc__cell { width: 240px; max-width: 100%; }
+.fc-kitdoc__sheet { width: 420px; max-width: 100%; aspect-ratio: 210 / 297; border: 1px solid var(--fc-border); border-radius: 4px; background: #fff; }
 .fc-kitdoc__cell--wide { width: 100%; }
 .fc-kitdoc__stack { display: flex; flex-direction: column; gap: 8px; }
 .fc-kitdoc__inline { display: inline-flex; align-items: center; gap: 8px; }

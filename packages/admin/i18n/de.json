@@ -637,7 +637,18 @@
       "discard": "Verwerfen",
       "save": "Speichern"
     },
-    "dropToInstall": "Datei ablegen, um sie zu installieren"
+    "dropToInstall": "Datei ablegen, um sie zu installieren",
+    "scan": {
+      "title": "Code scannen",
+      "description": "Richten Sie die Kamera auf einen Barcode oder QR-Code.",
+      "manual": "Oder Code eingeben",
+      "use": "Übernehmen",
+      "starting": "Kamera wird gestartet…",
+      "noCamera": "Die Kamera konnte nicht gestartet werden. Geben Sie den Code ein.",
+      "denied": "Der Kamerazugriff wurde verweigert. Erlauben Sie ihn im Browser oder geben Sie den Code ein.",
+      "insecure": "Die Kamera funktioniert nur unter einer sicheren (https) Adresse. Geben Sie den Code ein.",
+      "open": "Code scannen"
+    }
   },
   "shell": {
     "site": {

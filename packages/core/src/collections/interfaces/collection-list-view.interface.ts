@@ -27,4 +27,10 @@ export interface ICollectionListView {
    */
   readonly order?: string;
   readonly quickEdit?: ICollectionQuickEdit;
+  /**
+   * The list's search ends in a scan button: a barcode or QR code read by the camera becomes the search.
+   * A code that is a link to this console opens that page instead. For records that carry printed codes
+   * (a SKU, a barcode, a label).
+   */
+  readonly scan?: boolean;
 }

@@ -637,7 +637,18 @@
       "discard": "Warrab",
       "save": "Salva"
     },
-    "dropToInstall": "Itlaq il-fajl biex tinstallah"
+    "dropToInstall": "Itlaq il-fajl biex tinstallah",
+    "scan": {
+      "title": "Skennja kodiċi",
+      "description": "Ipponta l-kamera lejn barcode jew kodiċi QR.",
+      "manual": "Jew ikteb il-kodiċi",
+      "use": "Uża",
+      "starting": "Il-kamera qed tibda…",
+      "noCamera": "Il-kamera ma setgħetx tibda. Ikteb il-kodiċi.",
+      "denied": "L-aċċess għall-kamera ġie rrifjutat. Ippermettih fil-browser jew ikteb il-kodiċi.",
+      "insecure": "Il-kamera taħdem biss f'indirizz sigur (https). Ikteb il-kodiċi.",
+      "open": "Skennja kodiċi"
+    }
   },
   "shell": {
     "site": {

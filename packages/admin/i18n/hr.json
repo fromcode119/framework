@@ -637,7 +637,18 @@
       "discard": "Odbaci",
       "save": "Spremi"
     },
-    "dropToInstall": "Ispustite datoteku da biste je instalirali"
+    "dropToInstall": "Ispustite datoteku da biste je instalirali",
+    "scan": {
+      "title": "Skeniraj kod",
+      "description": "Usmjerite kameru prema crtičnom ili QR kodu.",
+      "manual": "Ili upišite kod",
+      "use": "Koristi",
+      "starting": "Kamera se uključuje…",
+      "noCamera": "Kamera se nije mogla uključiti. Upišite kod.",
+      "denied": "Pristup kameri je odbijen. Dopustite ga u pregledniku ili upišite kod.",
+      "insecure": "Kamera radi samo na sigurnoj (https) adresi. Upišite kod.",
+      "open": "Skeniraj kod"
+    }
   },
   "shell": {
     "site": {

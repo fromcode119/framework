@@ -637,7 +637,18 @@
       "discard": "취소",
       "save": "저장"
     },
-    "dropToInstall": "파일을 놓아 설치하세요"
+    "dropToInstall": "파일을 놓아 설치하세요",
+    "scan": {
+      "title": "코드 스캔",
+      "description": "카메라를 바코드나 QR 코드에 맞추세요.",
+      "manual": "또는 코드 입력",
+      "use": "사용",
+      "starting": "카메라를 켜는 중…",
+      "noCamera": "카메라를 켤 수 없습니다. 코드를 입력하세요.",
+      "denied": "카메라 접근이 거부되었습니다. 브라우저에서 허용하거나 코드를 입력하세요.",
+      "insecure": "카메라는 보안(https) 주소에서만 작동합니다. 코드를 입력하세요.",
+      "open": "코드 스캔"
+    }
   },
   "shell": {
     "site": {
