@@ -3178,6 +3178,12 @@ textarea.fc-field, .fc-field[data-multiline] { height: auto; min-height: 60px; }
    20px leaves 6px each side, so the field keeps its shape and the chip sits in it. */
 .fc-btn--mini { height: 20px; padding: 0 6px; gap: 4px; font-size: 12px; line-height: 16px; }
 .fc-btn--mini > svg { width: 11px; height: 11px; }
+/* A mini button is 20px high beside a label; it is hit like a 32px control, as the glyph is. */
+.fc-btn--mini { position: relative; }
+.fc-btn--mini::before { content: ''; position: absolute; inset: -6px 0; }
+/* A list cell's value opens quick edit; the text stays its size, the target is 32px high. */
+.fc-inline-edit-trigger { position: relative; }
+.fc-inline-edit-trigger::before { content: ''; position: absolute; inset: -5px 0; }
 /* A glyph beside a label — the "what is this" mark, the lock on a read-only field. 20px, square,
    no ground of its own. They were 24px round buttons that filled with indigo on hover. */
 .fc-btn--glyph { width: 20px; height: 20px; padding: 0; background: transparent; box-shadow: none;
@@ -3358,7 +3364,9 @@ a.fc-parts__label:hover { text-decoration: underline; }
 
 /* The bar is dark in both schemes: it is the one thing on the page that floats over the content, and
    it has to read as apart from whatever row happens to be under it. */
-.fc-command-bar { position: fixed; inset-inline: 16px; bottom: 32px; z-index: 900; display: flex; justify-content: center; pointer-events: none; }
+/* Above the page and the menu (200), below what a command opens: a sheet (500) or a dialog (600) covers the bar
+   instead of leaving it clickable over its own Save. */
+.fc-command-bar { position: fixed; inset-inline: 16px; bottom: 32px; z-index: 400; display: flex; justify-content: center; pointer-events: none; }
 .fc-command-bar__bar { --fc-command-ink: rgb(255 255 255 / .88); --fc-command-ink-quiet: rgb(255 255 255 / .56); --fc-command-line: rgb(255 255 255 / .16); display: flex; align-items: center; max-width: 100%; overflow: hidden; padding: 0 4px; border-radius: 999px; background: #18181b; box-shadow: 0 0 0 1px rgb(255 255 255 / .1), 0 8px 16px 0 rgb(0 0 0 / .16), 0 16px 32px 0 rgb(0 0 0 / .16); pointer-events: auto; }
 .fc-command-bar__value { padding: 10px 12px; color: var(--fc-command-ink-quiet); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; }
 .fc-command-bar__separator { flex: none; width: 1px; height: 40px; background: var(--fc-command-line); }

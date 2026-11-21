@@ -238,7 +238,7 @@ export class InlineEditValue extends PureReactor {
           ref={this.trigger}
           onClick={this.start}
           title={AdminI18n.t('collection.list.inlineEditHint', { label: this.field.label || this.field.name })}
-          className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
+          className={`fc-inline-edit-trigger -mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
             this.open
               ? 'fc-tone-brand-edge fc-tone-brand-soft'
               : 'border-transparent fc-tone-hover-brand-line fc-tone-hover-brand-soft'
