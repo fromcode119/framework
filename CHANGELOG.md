@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.633] - 2026-11-21
+
+### Fixed
+- admin: a lone field under a long setting description runs to the row's end (#1593)
+
 ## [0.2.632] - 2026-11-21
 
 ### Added
