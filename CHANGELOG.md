@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.625] - 2026-11-21
+
+### Fixed
+
+- **admin**: no Import on a collection whose records are not created by hand ([#1574](https://github.com/fromcode119/framework/pull/1574))
+- **admin**: the cannot-reach-server warning goes as soon as the server answers ([#1575](https://github.com/fromcode119/framework/pull/1575))
+
 ## [0.2.624] - 2026-11-21
 
 ### Fixed
