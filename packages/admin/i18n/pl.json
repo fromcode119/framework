@@ -637,7 +637,18 @@
       "discard": "Odrzuć",
       "save": "Zapisz"
     },
-    "dropToInstall": "Upuść plik, aby go zainstalować"
+    "dropToInstall": "Upuść plik, aby go zainstalować",
+    "scan": {
+      "title": "Zeskanuj kod",
+      "description": "Skieruj aparat na kod kreskowy lub kod QR.",
+      "manual": "Lub wpisz kod",
+      "use": "Użyj",
+      "starting": "Uruchamianie aparatu…",
+      "noCamera": "Nie udało się uruchomić aparatu. Wpisz kod.",
+      "denied": "Odmówiono dostępu do aparatu. Zezwól w przeglądarce lub wpisz kod.",
+      "insecure": "Aparat działa tylko pod bezpiecznym (https) adresem. Wpisz kod.",
+      "open": "Zeskanuj kod"
+    }
   },
   "shell": {
     "site": {

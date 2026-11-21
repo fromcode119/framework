@@ -637,7 +637,18 @@
       "discard": "Zahodiť",
       "save": "Uložiť"
     },
-    "dropToInstall": "Pustite súbor a nainštalujte ho"
+    "dropToInstall": "Pustite súbor a nainštalujte ho",
+    "scan": {
+      "title": "Naskenovať kód",
+      "description": "Namierte kameru na čiarový alebo QR kód.",
+      "manual": "Alebo zadajte kód",
+      "use": "Použiť",
+      "starting": "Spúšťa sa kamera…",
+      "noCamera": "Kameru sa nepodarilo spustiť. Zadajte kód.",
+      "denied": "Prístup ku kamere bol zamietnutý. Povoľte ho v prehliadači alebo zadajte kód.",
+      "insecure": "Kamera funguje len na zabezpečenej (https) adrese. Zadajte kód.",
+      "open": "Naskenovať kód"
+    }
   },
   "shell": {
     "site": {

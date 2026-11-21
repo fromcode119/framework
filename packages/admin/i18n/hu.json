@@ -637,7 +637,18 @@
       "discard": "Elvetés",
       "save": "Mentés"
     },
-    "dropToInstall": "Engedje el a fájlt a telepítéshez"
+    "dropToInstall": "Engedje el a fájlt a telepítéshez",
+    "scan": {
+      "title": "Kód beolvasása",
+      "description": "Irányítsa a kamerát egy vonalkódra vagy QR-kódra.",
+      "manual": "Vagy írja be a kódot",
+      "use": "Használat",
+      "starting": "A kamera indul…",
+      "noCamera": "A kamerát nem sikerült elindítani. Írja be a kódot.",
+      "denied": "A kamerahozzáférés megtagadva. Engedélyezze a böngészőben, vagy írja be a kódot.",
+      "insecure": "A kamera csak biztonságos (https) címen működik. Írja be a kódot.",
+      "open": "Kód beolvasása"
+    }
   },
   "shell": {
     "site": {

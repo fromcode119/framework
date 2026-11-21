@@ -637,7 +637,18 @@
       "discard": "Descartar",
       "save": "Guardar"
     },
-    "dropToInstall": "Suelta el archivo para instalarlo"
+    "dropToInstall": "Suelta el archivo para instalarlo",
+    "scan": {
+      "title": "Escanear código",
+      "description": "Apunta la cámara a un código de barras o un código QR.",
+      "manual": "O escribe el código",
+      "use": "Usar",
+      "starting": "Iniciando la cámara…",
+      "noCamera": "No se pudo iniciar la cámara. Escribe el código.",
+      "denied": "Se denegó el acceso a la cámara. Permítelo en el navegador o escribe el código.",
+      "insecure": "La cámara solo funciona en una dirección segura (https). Escribe el código.",
+      "open": "Escanear código"
+    }
   },
   "shell": {
     "site": {

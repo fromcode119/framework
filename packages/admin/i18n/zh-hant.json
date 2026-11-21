@@ -637,7 +637,18 @@
       "discard": "捨棄",
       "save": "儲存"
     },
-    "dropToInstall": "放開檔案即可安裝"
+    "dropToInstall": "放開檔案即可安裝",
+    "scan": {
+      "title": "掃描代碼",
+      "description": "將相機對準條碼或 QR 碼。",
+      "manual": "或輸入代碼",
+      "use": "使用",
+      "starting": "正在啟動相機…",
+      "noCamera": "無法啟動相機。請輸入代碼。",
+      "denied": "相機存取被拒絕。請在瀏覽器中允許，或輸入代碼。",
+      "insecure": "相機僅能在安全（https）位址使用。請輸入代碼。",
+      "open": "掃描代碼"
+    }
   },
   "shell": {
     "site": {

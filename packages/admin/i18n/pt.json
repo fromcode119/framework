@@ -637,7 +637,18 @@
       "discard": "Descartar",
       "save": "Guardar"
     },
-    "dropToInstall": "Largue o ficheiro para o instalar"
+    "dropToInstall": "Largue o ficheiro para o instalar",
+    "scan": {
+      "title": "Ler código",
+      "description": "Aponte a câmara para um código de barras ou QR.",
+      "manual": "Ou escreva o código",
+      "use": "Usar",
+      "starting": "A iniciar a câmara…",
+      "noCamera": "Não foi possível iniciar a câmara. Escreva o código.",
+      "denied": "O acesso à câmara foi recusado. Permita-o no navegador ou escreva o código.",
+      "insecure": "A câmara só funciona num endereço seguro (https). Escreva o código.",
+      "open": "Ler código"
+    }
   },
   "shell": {
     "site": {

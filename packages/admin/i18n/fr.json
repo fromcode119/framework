@@ -637,7 +637,18 @@
       "discard": "Annuler",
       "save": "Enregistrer"
     },
-    "dropToInstall": "Déposez le fichier pour l’installer"
+    "dropToInstall": "Déposez le fichier pour l’installer",
+    "scan": {
+      "title": "Scanner un code",
+      "description": "Dirigez l'appareil photo vers un code-barres ou un code QR.",
+      "manual": "Ou saisissez le code",
+      "use": "Utiliser",
+      "starting": "Démarrage de la caméra…",
+      "noCamera": "Impossible de démarrer la caméra. Saisissez le code.",
+      "denied": "L'accès à la caméra a été refusé. Autorisez-le dans le navigateur ou saisissez le code.",
+      "insecure": "La caméra ne fonctionne que sur une adresse sécurisée (https). Saisissez le code.",
+      "open": "Scanner un code"
+    }
   },
   "shell": {
     "site": {

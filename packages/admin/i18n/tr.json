@@ -637,7 +637,18 @@
       "discard": "Vazgeç",
       "save": "Kaydet"
     },
-    "dropToInstall": "Yüklemek için dosyayı bırakın"
+    "dropToInstall": "Yüklemek için dosyayı bırakın",
+    "scan": {
+      "title": "Kod tara",
+      "description": "Kamerayı bir barkoda veya QR koda tutun.",
+      "manual": "Ya da kodu yazın",
+      "use": "Kullan",
+      "starting": "Kamera açılıyor…",
+      "noCamera": "Kamera açılamadı. Kodu yazın.",
+      "denied": "Kamera erişimi reddedildi. Tarayıcıda izin verin veya kodu yazın.",
+      "insecure": "Kamera yalnızca güvenli (https) bir adreste çalışır. Kodu yazın.",
+      "open": "Kod tara"
+    }
   },
   "shell": {
     "site": {

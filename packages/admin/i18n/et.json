@@ -637,7 +637,18 @@
       "discard": "Loobu",
       "save": "Salvesta"
     },
-    "dropToInstall": "Paigaldamiseks lohista fail siia"
+    "dropToInstall": "Paigaldamiseks lohista fail siia",
+    "scan": {
+      "title": "Skanni kood",
+      "description": "Suuna kaamera ribakoodile või QR-koodile.",
+      "manual": "Või sisesta kood",
+      "use": "Kasuta",
+      "starting": "Kaamera käivitub…",
+      "noCamera": "Kaamerat ei õnnestunud käivitada. Sisesta kood.",
+      "denied": "Kaamerale juurdepääs keelati. Luba see brauseris või sisesta kood.",
+      "insecure": "Kaamera töötab ainult turvalisel (https) aadressil. Sisesta kood.",
+      "open": "Skanni kood"
+    }
   },
   "shell": {
     "site": {

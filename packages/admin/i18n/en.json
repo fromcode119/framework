@@ -637,7 +637,18 @@
       "discard": "Discard",
       "save": "Save"
     },
-    "dropToInstall": "Drop the file to install it"
+    "dropToInstall": "Drop the file to install it",
+    "scan": {
+      "title": "Scan a code",
+      "description": "Point the camera at a barcode or a QR code.",
+      "manual": "Or type the code",
+      "use": "Use",
+      "starting": "Starting the camera…",
+      "noCamera": "The camera could not be started. Type the code instead.",
+      "denied": "Camera access was refused. Allow it in the browser, or type the code.",
+      "insecure": "The camera works only on a secure (https) address. Type the code instead.",
+      "open": "Scan a code"
+    }
   },
   "shell": {
     "site": {

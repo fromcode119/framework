@@ -637,7 +637,18 @@
       "discard": "Itapon",
       "save": "I-save"
     },
-    "dropToInstall": "I-drop ang file para i-install ito"
+    "dropToInstall": "I-drop ang file para i-install ito",
+    "scan": {
+      "title": "I-scan ang code",
+      "description": "Itutok ang camera sa barcode o QR code.",
+      "manual": "O i-type ang code",
+      "use": "Gamitin",
+      "starting": "Binubuksan ang camera…",
+      "noCamera": "Hindi mabuksan ang camera. I-type ang code.",
+      "denied": "Tinanggihan ang access sa camera. Payagan ito sa browser o i-type ang code.",
+      "insecure": "Gumagana lang ang camera sa secure (https) na address. I-type ang code.",
+      "open": "I-scan ang code"
+    }
   },
   "shell": {
     "site": {

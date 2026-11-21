@@ -637,7 +637,18 @@
       "discard": "Hylkää",
       "save": "Tallenna"
     },
-    "dropToInstall": "Pudota tiedosto asentaaksesi sen"
+    "dropToInstall": "Pudota tiedosto asentaaksesi sen",
+    "scan": {
+      "title": "Skannaa koodi",
+      "description": "Suuntaa kamera viivakoodiin tai QR-koodiin.",
+      "manual": "Tai kirjoita koodi",
+      "use": "Käytä",
+      "starting": "Kamera käynnistyy…",
+      "noCamera": "Kameraa ei voitu käynnistää. Kirjoita koodi.",
+      "denied": "Kameran käyttö estettiin. Salli se selaimessa tai kirjoita koodi.",
+      "insecure": "Kamera toimii vain suojatussa (https) osoitteessa. Kirjoita koodi.",
+      "open": "Skannaa koodi"
+    }
   },
   "shell": {
     "site": {

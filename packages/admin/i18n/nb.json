@@ -637,7 +637,18 @@
       "discard": "Forkast",
       "save": "Lagre"
     },
-    "dropToInstall": "Slipp filen for å installere den"
+    "dropToInstall": "Slipp filen for å installere den",
+    "scan": {
+      "title": "Skann kode",
+      "description": "Rett kameraet mot en strekkode eller QR-kode.",
+      "manual": "Eller skriv inn koden",
+      "use": "Bruk",
+      "starting": "Kameraet starter…",
+      "noCamera": "Kameraet kunne ikke startes. Skriv inn koden.",
+      "denied": "Kameratilgang ble avvist. Tillat det i nettleseren, eller skriv inn koden.",
+      "insecure": "Kameraet virker bare på en sikker (https) adresse. Skriv inn koden.",
+      "open": "Skann kode"
+    }
   },
   "shell": {
     "site": {

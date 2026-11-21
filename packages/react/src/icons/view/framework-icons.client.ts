@@ -116,6 +116,8 @@ export class FrameworkIcons {
   static readonly Mic = IconUtils.createProxyIcon('Mic');
   static readonly Video = IconUtils.createProxyIcon('Video');
   static readonly Camera = IconUtils.createProxyIcon('Camera');
+  static readonly ScanLine = IconUtils.createProxyIcon('ScanLine');
+  static readonly QrCode = IconUtils.createProxyIcon('QrCode');
   static readonly Music = IconUtils.createProxyIcon('Music');
   static readonly Play = IconUtils.createProxyIcon('Play');
   static readonly Pause = IconUtils.createProxyIcon('Pause');

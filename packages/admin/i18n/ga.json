@@ -637,7 +637,18 @@
       "discard": "Cuileáil",
       "save": "Sábháil"
     },
-    "dropToInstall": "Scaoil an comhad chun é a shuiteáil"
+    "dropToInstall": "Scaoil an comhad chun é a shuiteáil",
+    "scan": {
+      "title": "Scan cód",
+      "description": "Dírigh an ceamara ar bharrachód nó ar chód QR.",
+      "manual": "Nó clóscríobh an cód",
+      "use": "Úsáid",
+      "starting": "Tá an ceamara ag tosú…",
+      "noCamera": "Níorbh fhéidir an ceamara a thosú. Clóscríobh an cód.",
+      "denied": "Diúltaíodh rochtain ar an gceamara. Ceadaigh sa bhrabhsálaí é, nó clóscríobh an cód.",
+      "insecure": "Ní oibríonn an ceamara ach ar sheoladh slán (https). Clóscríobh an cód.",
+      "open": "Scan cód"
+    }
   },
   "shell": {
     "site": {

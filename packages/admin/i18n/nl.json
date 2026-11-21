@@ -637,7 +637,18 @@
       "discard": "Verwerpen",
       "save": "Opslaan"
     },
-    "dropToInstall": "Laat het bestand los om het te installeren"
+    "dropToInstall": "Laat het bestand los om het te installeren",
+    "scan": {
+      "title": "Code scannen",
+      "description": "Richt de camera op een barcode of QR-code.",
+      "manual": "Of typ de code",
+      "use": "Gebruiken",
+      "starting": "Camera wordt gestart…",
+      "noCamera": "De camera kon niet worden gestart. Typ de code.",
+      "denied": "Cameratoegang is geweigerd. Sta het toe in de browser of typ de code.",
+      "insecure": "De camera werkt alleen op een beveiligd (https) adres. Typ de code.",
+      "open": "Code scannen"
+    }
   },
   "shell": {
     "site": {

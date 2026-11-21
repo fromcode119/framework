@@ -637,7 +637,18 @@
       "discard": "Buang",
       "save": "Simpan"
     },
-    "dropToInstall": "Lepaskan file untuk memasangnya"
+    "dropToInstall": "Lepaskan file untuk memasangnya",
+    "scan": {
+      "title": "Pindai kode",
+      "description": "Arahkan kamera ke barcode atau kode QR.",
+      "manual": "Atau ketik kodenya",
+      "use": "Gunakan",
+      "starting": "Menyalakan kamera…",
+      "noCamera": "Kamera tidak dapat dinyalakan. Ketik kodenya.",
+      "denied": "Akses kamera ditolak. Izinkan di browser atau ketik kodenya.",
+      "insecure": "Kamera hanya berfungsi di alamat aman (https). Ketik kodenya.",
+      "open": "Pindai kode"
+    }
   },
   "shell": {
     "site": {

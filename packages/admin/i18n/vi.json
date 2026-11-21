@@ -637,7 +637,18 @@
       "discard": "Hủy bỏ",
       "save": "Lưu"
     },
-    "dropToInstall": "Thả tệp để cài đặt"
+    "dropToInstall": "Thả tệp để cài đặt",
+    "scan": {
+      "title": "Quét mã",
+      "description": "Hướng camera vào mã vạch hoặc mã QR.",
+      "manual": "Hoặc nhập mã",
+      "use": "Dùng",
+      "starting": "Đang bật camera…",
+      "noCamera": "Không thể bật camera. Hãy nhập mã.",
+      "denied": "Quyền truy cập camera bị từ chối. Cho phép trong trình duyệt hoặc nhập mã.",
+      "insecure": "Camera chỉ hoạt động trên địa chỉ bảo mật (https). Hãy nhập mã.",
+      "open": "Quét mã"
+    }
   },
   "shell": {
     "site": {

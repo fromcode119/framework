@@ -34,6 +34,8 @@ export * from '@/components/ui/view/state-badge.client';
 export * from '@/components/ui/view/copy-value.client';
 export * from '@/components/ui/view/kbd.client';
 export * from '@/components/ui/view/parts-line.client';
+export * from '@/components/ui/view/qr-code.client';
+export * from '@/components/ui/view/scan-dialog.client';
 export type { IPartsLinePart } from '@/components/ui/interfaces/parts-line-part.interface';
 export * from '@/components/ui/view/tabs.client';
 export * from '@/components/ui/view/search-field.client';

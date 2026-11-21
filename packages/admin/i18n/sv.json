@@ -637,7 +637,18 @@
       "discard": "Ignorera",
       "save": "Spara"
     },
-    "dropToInstall": "Släpp filen för att installera den"
+    "dropToInstall": "Släpp filen för att installera den",
+    "scan": {
+      "title": "Skanna kod",
+      "description": "Rikta kameran mot en streckkod eller QR-kod.",
+      "manual": "Eller skriv koden",
+      "use": "Använd",
+      "starting": "Kameran startar…",
+      "noCamera": "Kameran kunde inte startas. Skriv koden.",
+      "denied": "Kameraåtkomst nekades. Tillåt den i webbläsaren eller skriv koden.",
+      "insecure": "Kameran fungerar bara på en säker (https) adress. Skriv koden.",
+      "open": "Skanna kod"
+    }
   },
   "shell": {
     "site": {
