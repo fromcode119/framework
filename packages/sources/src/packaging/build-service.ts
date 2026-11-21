@@ -76,6 +76,7 @@ export class BuildService {
       (identity) => this.listVersions(identity),
       (identity) => this.resolvePackageArtifact(identity),
       this.builtPackageInstaller,
+      (identity) => this.buildSourceService.recordAutoUpdateFailure(identity, ''),
     );
     this.buildRunner = new SourceBuildRunner(
       db,
@@ -165,6 +166,7 @@ export class BuildService {
   async checkAndBuildUpdates(): Promise<IBuildResult[]> {
     const updates = await this.checkForUpdates();
     const changed = updates.filter(u => u.hasUpdate);
+    for (const u of updates) await this.stagedBuildOffer.offerWaiting(BuildSourceIdentity.parse(u.type, u.slug));
     if (changed.length === 0) return [];
 
     const sources = await this.buildSourceService.listSanitizedSources();
