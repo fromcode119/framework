@@ -6,11 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.632] - 2026-11-21
+
+### Added
+
+- **admin**: QR code, camera scanner and label printing in the kit ([#1591](https://github.com/fromcode119/framework/pull/1591))
+
 ## [0.2.631] - 2026-11-21
 
 ### Fixed
 
 - **core**: a plugin request carries the caller's cookies ([#1589](https://github.com/fromcode119/framework/pull/1589))
+
+## [0.2.630] - 2026-11-21
+
+### Fixed
+
 - **admin**: a sheet or dialog opened from the selection bar covers the bar ([#1587](https://github.com/fromcode119/framework/pull/1587))
 - **admin**: the section actions menu is a real button ([#1586](https://github.com/fromcode119/framework/pull/1586))
 - **admin**: a copy button says Copy failed instead of throwing ([#1585](https://github.com/fromcode119/framework/pull/1585))
