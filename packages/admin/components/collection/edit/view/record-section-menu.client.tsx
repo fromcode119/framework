@@ -36,9 +36,9 @@ export class RecordSectionMenu extends PureReactor {
         items={items}
         footer={this.offers()}
         trigger={
-          <span role="button" tabIndex={0} aria-label={label} title={label} className={`${card}__menu`}>
+          <button type="button" aria-label={label} title={label} className={`${card}__menu`}>
             <FrameworkIcons.More size={18} />
-          </span>
+          </button>
         }
       />];
   }
