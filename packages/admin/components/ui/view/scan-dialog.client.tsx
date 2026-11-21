@@ -7,9 +7,7 @@ import { Dialog } from '@/components/ui/view/dialog.client';
 import { Input } from '@/components/ui/view/input.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-
-/** What `@zxing/browser` hands back to stop a running decode. */
-interface IScanControls { stop(): void }
+import type { IScanControls } from '@/components/ui/interfaces/scan-controls.interface';
 
 /**
  * Reads a barcode or a QR code with the device's camera and hands back the text in it.

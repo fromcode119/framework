@@ -1085,7 +1085,7 @@
       "aLinkText": "Scanning it opens the address. A product, a box or a place in a warehouse gets one this way.",
       "withCaption": "With a caption",
       "withCaptionText": "One short line under the code says what it is.",
-      "box": "Box К-007",
+      "box": "Box BOX-007",
       "sizes": "Sizes",
       "forPrint": "For a printed page",
       "forPrintText": "QrCode.svg gives the same code as markup with a size in any CSS unit, for label sheets and box labels.",
