@@ -7,6 +7,7 @@ import { PermissionGrants } from '@core/utils/permission-grants';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestClientContentType } from '@core/plugin/host/plugin-guest-client-content-type';
+import { PluginGuestCookies } from '@core/plugin/host/plugin-guest-cookies';
 import type { PluginChannel } from '@core/plugin/host/plugin-channel';
 
 /**
@@ -117,11 +118,10 @@ export class PluginGuestHttp {
     this.server.disable('x-powered-by');
     this.server.use(this.enterInvocation.bind(this));
     this.server.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
-    // A browser's security-policy report: JSON under its own media types. The api forwards it only to a
-    // webhook path, where it parsed it the same way.
+    // A browser's security-policy report: JSON under its own media types, forwarded only to a webhook path.
     this.server.use(express.json({ limit: '64kb', type: PluginGuestHttp.REPORT_MEDIA_TYPES as unknown as string[], verify: PluginGuestHttp.keepRawBody }));
     this.server.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
-    this.server.use(PluginGuestClientContentType.restore);
+    this.server.use(PluginGuestClientContentType.restore, PluginGuestCookies.restore);
     this.server.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
     this.app = express.Router();
     this.server.use(this.app);
