@@ -959,6 +959,55 @@
       "open": "打开",
       "loadFailed": "无法加载此小组件的数据。请刷新页面重试。",
       "quiet": "没有待处理事项：{{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "邮件发送",
+        "configured": "已配置 · {{provider}}",
+        "missing": "无法发送任何内容——没有订单邮件，也无法重置密码",
+        "action": "配置"
+      },
+      "locales": {
+        "title": "语言",
+        "none": "未配置",
+        "only": "仅 {{locale}}",
+        "action": "添加"
+      },
+      "timezone": {
+        "title": "时区",
+        "none": "未设置——日期按服务器时区显示",
+        "action": "更改"
+      },
+      "secrets": {
+        "title": "凭据存储",
+        "ok": "已使用此安装的密钥加密",
+        "missing": "没有加密密钥——无法保存集成的凭据和令牌",
+        "details": "详情",
+        "fix": "如何修复"
+      },
+      "team": {
+        "title": "团队",
+        "count": "{{count}} 位用户",
+        "alone": "你是唯一的用户",
+        "action": "邀请"
+      },
+      "theme": {
+        "active": "主题：{{name}}",
+        "activate": "启用一个主题",
+        "install": "安装一个主题",
+        "inactive": "已安装但未启用——在有启用的主题之前，商店只返回空白文档。",
+        "none": "主题负责呈现访客看到的每个页面。没有主题，商店只返回空白文档。",
+        "activateAction": "启用",
+        "browse": "浏览主题"
+      },
+      "plugins": {
+        "count": "已安装 {{count}} 个插件",
+        "addSite": "添加此站点需要的插件",
+        "installPlatform": "安装此平台需要的插件",
+        "detailSite": "商店、表单、SEO——每个都会添加自己的页面。只添加此站点会用到的。",
+        "detailPlatform": "商店、表单、SEO——每个都会添加自己的页面。只安装此安装会用到的。",
+        "browse": "浏览插件"
+      }
     }
   },
   "notFound": {

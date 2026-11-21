@@ -80,6 +80,9 @@ export class InstallationChecklistService {
           title: 'Email delivery',
           detail: emailProvider ? `Configured · ${emailProvider}` : 'Nothing can be sent — no order mail, no password resets',
           done: Boolean(emailProvider),
+          text: emailProvider
+            ? InstallationChecklistService.text('email', 'configured', { provider: emailProvider }, 'action')
+            : InstallationChecklistService.text('email', 'missing', {}, 'action'),
           actionLabel: 'Configure',
           /**
            * The type MUST be named. The integrations screen falls back to the alphabetically first
@@ -93,6 +96,7 @@ export class InstallationChecklistService {
           title: 'Languages',
           detail: InstallationChecklistService.localeSummary(locales),
           done: InstallationChecklistService.parseLocales(locales).length > 1,
+          text: InstallationChecklistService.localeText(locales),
           actionLabel: 'Add',
           actionPath: AppPathConstants.ADMIN.SETTINGS.LOCALIZATION,
         },
@@ -101,6 +105,8 @@ export class InstallationChecklistService {
           title: 'Timezone',
           detail: timezone || 'Not set — dates render in the server’s own zone',
           done: Boolean(timezone),
+          // A set zone is its own name (`Europe/Sofia`) and needs no words around it.
+          text: InstallationChecklistService.text('timezone', timezone ? '' : 'none', {}, 'action', timezone),
           actionLabel: 'Change',
           // Timezone is a General setting; Localization owns languages and has no timezone field.
           actionPath: AppPathConstants.ADMIN.SETTINGS.GENERAL,
@@ -118,6 +124,9 @@ export class InstallationChecklistService {
             ? 'Encrypted with this installation’s key'
             : 'No encryption key — integration credentials and tokens cannot be saved',
           done: this.deps.canStoreSecrets(),
+          text: this.deps.canStoreSecrets()
+            ? InstallationChecklistService.text('secrets', 'ok', {}, 'details')
+            : InstallationChecklistService.text('secrets', 'missing', {}, 'fix'),
           // A configured row offers a look, not instructions for a problem it does not have.
           actionLabel: this.deps.canStoreSecrets() ? 'Details' : 'How to fix',
           actionPath: AppPathConstants.ADMIN.SETTINGS.INFRASTRUCTURE,
@@ -127,6 +136,9 @@ export class InstallationChecklistService {
           title: 'Team',
           detail: users > 1 ? `${users} users` : 'You are the only user',
           done: users > 1,
+          text: users > 1
+            ? InstallationChecklistService.text('team', 'count', { count: users }, 'action')
+            : InstallationChecklistService.text('team', 'alone', {}, 'action'),
           actionLabel: 'Invite',
           actionPath: AppPathConstants.ADMIN.USERS.ROOT,
         },
@@ -151,6 +163,13 @@ export class InstallationChecklistService {
           ? 'Installed but not activated — until one is active the storefront serves an empty document.'
           : 'A theme renders every page a visitor sees. Without one, the storefront serves an empty document.',
         done: Boolean(activeTheme),
+        text: {
+          title: activeTheme
+            ? { key: 'dashboard.checklist.theme.active', vars: { name: activeTheme } }
+            : { key: `dashboard.checklist.theme.${themes > 0 ? 'activate' : 'install'}`, vars: {} },
+          detail: { key: `dashboard.checklist.theme.${themes > 0 ? 'inactive' : 'none'}`, vars: {} },
+          action: { key: `dashboard.checklist.theme.${themes > 0 ? 'activateAction' : 'browse'}`, vars: {} },
+        },
         actionLabel: themes > 0 ? 'Activate' : 'Browse themes',
         actionPath: AppPathConstants.ADMIN.THEMES.ROOT,
       },
@@ -163,10 +182,39 @@ export class InstallationChecklistService {
           ? 'Commerce, forms, SEO — each adds its own screens. Add only what this site will use.'
           : 'Commerce, forms, SEO — each adds its own screens. Install only what this installation will use.',
         done: plugins > 0,
+        text: {
+          title: plugins > 0
+            ? { key: 'dashboard.checklist.plugins.count', vars: { count: plugins } }
+            : { key: `dashboard.checklist.plugins.${site ? 'addSite' : 'installPlatform'}`, vars: {} },
+          detail: { key: `dashboard.checklist.plugins.${site ? 'detailSite' : 'detailPlatform'}`, vars: {} },
+          action: { key: 'dashboard.checklist.plugins.browse', vars: {} },
+        },
         actionLabel: 'Browse plugins',
         actionPath: AppPathConstants.ADMIN.PLUGINS.ROOT,
       },
     ];
+  }
+
+  /**
+   * The same row in words the console translates: a dictionary key and its values for the title, the
+   * detail and the action. The English fields stay beside it for anything that reads them as they are.
+   * A detail that is a value rather than a sentence (a time zone, a list of languages) is sent as it
+   * stands in `literal`.
+   */
+  private static text(row: string, detail: string, vars: Record<string, unknown>, action: string, literal = ''): Record<string, unknown> {
+    const key = (part: string) => `dashboard.checklist.${row}.${part}`;
+    return {
+      title: { key: key('title'), vars: {} },
+      detail: detail ? { key: key(detail), vars } : { literal },
+      action: { key: key(action), vars: {} },
+    };
+  }
+
+  private static localeText(raw: string): Record<string, unknown> {
+    const locales = InstallationChecklistService.parseLocales(raw);
+    if (locales.length === 0) return InstallationChecklistService.text('locales', 'none', {}, 'action');
+    if (locales.length === 1) return InstallationChecklistService.text('locales', 'only', { locale: locales[0] }, 'action');
+    return InstallationChecklistService.text('locales', '', {}, 'action', locales.join(', '));
   }
 
   private static localeSummary(raw: string): string {

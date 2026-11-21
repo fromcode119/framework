@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { bound } from '@fromcode119/react-class-components';
 import { SetupStep } from '@/app/setup/enums/setup-step.enum';
 import { SetupPhase } from '@fromcode119/core/client';
@@ -25,6 +26,9 @@ export abstract class SetupPageActions extends SetupPageState {
         timezone: this.timezone,
         adminUrl: this.adminUrl.trim(),
       });
+      // The console speaks the language chosen here from its first screen, as Settings → Localization
+      // does when it changes; without it the dashboard opened in English until the next reload.
+      AdminI18n.setLocale(this.locale);
       this.auth.login(data.token, data.user);
     } catch (err: any) {
       // The API owns the password policy, so its wording is the answer — never a second rule here.

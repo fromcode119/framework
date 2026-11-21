@@ -959,6 +959,55 @@
       "open": "Ouvrir",
       "loadFailed": "Impossible de charger les données de ce widget. Rechargez la page pour réessayer.",
       "quiet": "Rien en attente : {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Envoi d’e-mails",
+        "configured": "Configuré · {{provider}}",
+        "missing": "Rien ne peut être envoyé — ni e-mails de commande, ni réinitialisations de mot de passe",
+        "action": "Configurer"
+      },
+      "locales": {
+        "title": "Langues",
+        "none": "Non configuré",
+        "only": "{{locale}} uniquement",
+        "action": "Ajouter"
+      },
+      "timezone": {
+        "title": "Fuseau horaire",
+        "none": "Non défini — les dates s’affichent dans le fuseau du serveur",
+        "action": "Modifier"
+      },
+      "secrets": {
+        "title": "Stockage des identifiants",
+        "ok": "Chiffrés avec la clé de cette installation",
+        "missing": "Aucune clé de chiffrement — les identifiants et jetons des intégrations ne peuvent pas être enregistrés",
+        "details": "Détails",
+        "fix": "Comment corriger"
+      },
+      "team": {
+        "title": "Équipe",
+        "count": "{{count}} utilisateurs",
+        "alone": "Vous êtes le seul utilisateur",
+        "action": "Inviter"
+      },
+      "theme": {
+        "active": "Thème : {{name}}",
+        "activate": "Activer un thème",
+        "install": "Installer un thème",
+        "inactive": "Installé mais pas activé — tant qu’aucun n’est actif, la boutique sert un document vide.",
+        "none": "Un thème affiche chaque page que voit un visiteur. Sans thème, la boutique sert un document vide.",
+        "activateAction": "Activer",
+        "browse": "Parcourir les thèmes"
+      },
+      "plugins": {
+        "count": "{{count}} extensions installées",
+        "addSite": "Ajouter les extensions dont ce site a besoin",
+        "installPlatform": "Installer les extensions dont cette plateforme a besoin",
+        "detailSite": "Commerce, formulaires, SEO — chacun ajoute ses propres écrans. N’ajoutez que ce que ce site utilisera.",
+        "detailPlatform": "Commerce, formulaires, SEO — chacun ajoute ses propres écrans. N’installez que ce que cette installation utilisera.",
+        "browse": "Parcourir les extensions"
+      }
     }
   },
   "notFound": {

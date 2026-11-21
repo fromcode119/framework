@@ -959,6 +959,55 @@
       "open": "Otvori",
       "loadFailed": "Podaci ovog widgeta nisu se mogli učitati. Ponovno učitajte stranicu kako biste pokušali ponovno.",
       "quiet": "Ništa ne čeka: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Slanje e-pošte",
+        "configured": "Postavljeno · {{provider}}",
+        "missing": "Ništa se ne može poslati — ni e-pošta o narudžbama ni ponovno postavljanje lozinke",
+        "action": "Postavi"
+      },
+      "locales": {
+        "title": "Jezici",
+        "none": "Nije postavljeno",
+        "only": "Samo {{locale}}",
+        "action": "Dodaj"
+      },
+      "timezone": {
+        "title": "Vremenska zona",
+        "none": "Nije postavljena — datumi se prikazuju u zoni poslužitelja",
+        "action": "Promijeni"
+      },
+      "secrets": {
+        "title": "Spremište vjerodajnica",
+        "ok": "Šifrirano ključem ove instalacije",
+        "missing": "Nema ključa za šifriranje — vjerodajnice i tokeni integracija ne mogu se spremiti",
+        "details": "Pojedinosti",
+        "fix": "Kako popraviti"
+      },
+      "team": {
+        "title": "Tim",
+        "count": "Korisnici: {{count}}",
+        "alone": "Vi ste jedini korisnik",
+        "action": "Pozovi"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktivirajte temu",
+        "install": "Instalirajte temu",
+        "inactive": "Instalirana, ali nije aktivirana — dok nijedna nije aktivna, trgovina vraća prazan dokument.",
+        "none": "Tema prikazuje svaku stranicu koju posjetitelj vidi. Bez nje trgovina vraća prazan dokument.",
+        "activateAction": "Aktiviraj",
+        "browse": "Pregledaj teme"
+      },
+      "plugins": {
+        "count": "Instalirani dodaci: {{count}}",
+        "addSite": "Dodajte dodatke koji su potrebni ovoj stranici",
+        "installPlatform": "Instalirajte dodatke koji su potrebni ovoj platformi",
+        "detailSite": "Trgovina, obrasci, SEO — svaki dodaje svoje zaslone. Dodajte samo ono što će ova stranica koristiti.",
+        "detailPlatform": "Trgovina, obrasci, SEO — svaki dodaje svoje zaslone. Instalirajte samo ono što će ova instalacija koristiti.",
+        "browse": "Pregledaj dodatke"
+      }
     }
   },
   "notFound": {

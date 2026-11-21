@@ -959,6 +959,55 @@
       "open": "Hap",
       "loadFailed": "Shifrat e këtij widget-i nuk mund të ngarkoheshin. Ringarkoni faqen për të provuar përsëri.",
       "quiet": "Asgjë në pritje: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Dërgimi i email-eve",
+        "configured": "I konfiguruar · {{provider}}",
+        "missing": "Asgjë nuk mund të dërgohet — as email porosish, as rivendosje fjalëkalimi",
+        "action": "Konfiguro"
+      },
+      "locales": {
+        "title": "Gjuhët",
+        "none": "E pakonfiguruar",
+        "only": "Vetëm {{locale}}",
+        "action": "Shto"
+      },
+      "timezone": {
+        "title": "Zona kohore",
+        "none": "E pacaktuar — datat shfaqen në zonën e serverit",
+        "action": "Ndrysho"
+      },
+      "secrets": {
+        "title": "Ruajtja e kredencialeve",
+        "ok": "Të enkriptuara me çelësin e këtij instalimi",
+        "missing": "Nuk ka çelës enkriptimi — kredencialet dhe token-at e integrimeve nuk mund të ruhen",
+        "details": "Detajet",
+        "fix": "Si të rregullohet"
+      },
+      "team": {
+        "title": "Ekipi",
+        "count": "{{count}} përdorues",
+        "alone": "Ju jeni përdoruesi i vetëm",
+        "action": "Fto"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktivizo një temë",
+        "install": "Instalo një temë",
+        "inactive": "E instaluar por jo e aktivizuar — derisa një të jetë aktive, dyqani kthen një dokument bosh.",
+        "none": "Tema shfaq çdo faqe që sheh vizitori. Pa të, dyqani kthen një dokument bosh.",
+        "activateAction": "Aktivizo",
+        "browse": "Shfleto temat"
+      },
+      "plugins": {
+        "count": "{{count}} shtojca të instaluara",
+        "addSite": "Shto shtojcat që i duhen kësaj faqeje",
+        "installPlatform": "Instalo shtojcat që i duhen kësaj platforme",
+        "detailSite": "Dyqan, formularë, SEO — secila shton ekranet e veta. Shto vetëm atë që do të përdorë kjo faqe.",
+        "detailPlatform": "Dyqan, formularë, SEO — secila shton ekranet e veta. Instalo vetëm atë që do të përdorë ky instalim.",
+        "browse": "Shfleto shtojcat"
+      }
     }
   },
   "notFound": {

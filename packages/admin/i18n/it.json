@@ -959,6 +959,55 @@
       "open": "Apri",
       "loadFailed": "Impossibile caricare i dati di questo widget. Ricarichi la pagina per riprovare.",
       "quiet": "Niente in sospeso: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Invio email",
+        "configured": "Configurato · {{provider}}",
+        "missing": "Non si può inviare nulla: niente email degli ordini, niente reimpostazione password",
+        "action": "Configura"
+      },
+      "locales": {
+        "title": "Lingue",
+        "none": "Non configurate",
+        "only": "Solo {{locale}}",
+        "action": "Aggiungi"
+      },
+      "timezone": {
+        "title": "Fuso orario",
+        "none": "Non impostato: le date seguono il fuso del server",
+        "action": "Cambia"
+      },
+      "secrets": {
+        "title": "Archivio credenziali",
+        "ok": "Cifrate con la chiave di questa installazione",
+        "missing": "Nessuna chiave di cifratura: credenziali e token delle integrazioni non possono essere salvati",
+        "details": "Dettagli",
+        "fix": "Come risolvere"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} utenti",
+        "alone": "Sei l’unico utente",
+        "action": "Invita"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Attiva un tema",
+        "install": "Installa un tema",
+        "inactive": "Installato ma non attivato: finché nessuno è attivo, il negozio serve un documento vuoto.",
+        "none": "Un tema mostra ogni pagina vista dai visitatori. Senza tema, il negozio serve un documento vuoto.",
+        "activateAction": "Attiva",
+        "browse": "Sfoglia i temi"
+      },
+      "plugins": {
+        "count": "{{count}} plugin installati",
+        "addSite": "Aggiungi i plugin che servono a questo sito",
+        "installPlatform": "Installa i plugin che servono a questa piattaforma",
+        "detailSite": "Negozio, moduli, SEO: ognuno aggiunge le proprie schermate. Aggiungi solo ciò che questo sito userà.",
+        "detailPlatform": "Negozio, moduli, SEO: ognuno aggiunge le proprie schermate. Installa solo ciò che questa installazione userà.",
+        "browse": "Sfoglia i plugin"
+      }
     }
   },
   "notFound": {

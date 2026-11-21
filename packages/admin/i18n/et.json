@@ -959,6 +959,55 @@
       "open": "Ava",
       "loadFailed": "Selle vidina andmeid ei õnnestunud laadida. Uuesti proovimiseks laadige leht uuesti.",
       "quiet": "Midagi ei oota: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-posti saatmine",
+        "configured": "Seadistatud · {{provider}}",
+        "missing": "Midagi ei saa saata — ei tellimuskirju ega parooli lähtestamist",
+        "action": "Seadista"
+      },
+      "locales": {
+        "title": "Keeled",
+        "none": "Seadistamata",
+        "only": "Ainult {{locale}}",
+        "action": "Lisa"
+      },
+      "timezone": {
+        "title": "Ajavöönd",
+        "none": "Määramata — kuupäevad kuvatakse serveri ajavööndis",
+        "action": "Muuda"
+      },
+      "secrets": {
+        "title": "Volituste hoidla",
+        "ok": "Krüptitud selle paigalduse võtmega",
+        "missing": "Krüpteerimisvõti puudub — integratsioonide volitusi ja märgiseid ei saa salvestada",
+        "details": "Üksikasjad",
+        "fix": "Kuidas parandada"
+      },
+      "team": {
+        "title": "Meeskond",
+        "count": "{{count}} kasutajat",
+        "alone": "Olete ainus kasutaja",
+        "action": "Kutsu"
+      },
+      "theme": {
+        "active": "Teema: {{name}}",
+        "activate": "Aktiveerige teema",
+        "install": "Paigaldage teema",
+        "inactive": "Paigaldatud, kuid aktiveerimata — kuni ükski pole aktiivne, tagastab pood tühja dokumendi.",
+        "none": "Teema kuvab iga lehe, mida külastaja näeb. Ilma teemata tagastab pood tühja dokumendi.",
+        "activateAction": "Aktiveeri",
+        "browse": "Sirvi teemasid"
+      },
+      "plugins": {
+        "count": "Paigaldatud pistikprogramme: {{count}}",
+        "addSite": "Lisage pistikprogrammid, mida see sait vajab",
+        "installPlatform": "Paigaldage pistikprogrammid, mida see platvorm vajab",
+        "detailSite": "Pood, vormid, SEO — igaüks lisab oma ekraanid. Lisage ainult see, mida see sait kasutab.",
+        "detailPlatform": "Pood, vormid, SEO — igaüks lisab oma ekraanid. Paigaldage ainult see, mida see paigaldus kasutab.",
+        "browse": "Sirvi pistikprogramme"
+      }
     }
   },
   "notFound": {

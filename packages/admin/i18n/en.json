@@ -959,6 +959,55 @@
       "open": "Open",
       "loadFailed": "This widget's figures could not be loaded. Reload the page to try again.",
       "quiet": "Nothing waiting: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Email delivery",
+        "configured": "Configured · {{provider}}",
+        "missing": "Nothing can be sent — no order mail, no password resets",
+        "action": "Configure"
+      },
+      "locales": {
+        "title": "Languages",
+        "none": "Not configured",
+        "only": "{{locale}} only",
+        "action": "Add"
+      },
+      "timezone": {
+        "title": "Timezone",
+        "none": "Not set — dates render in the server’s own zone",
+        "action": "Change"
+      },
+      "secrets": {
+        "title": "Credential storage",
+        "ok": "Encrypted with this installation’s key",
+        "missing": "No encryption key — integration credentials and tokens cannot be saved",
+        "details": "Details",
+        "fix": "How to fix"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} users",
+        "alone": "You are the only user",
+        "action": "Invite"
+      },
+      "theme": {
+        "active": "Theme: {{name}}",
+        "activate": "Activate a theme",
+        "install": "Install a theme",
+        "inactive": "Installed but not activated — until one is active the storefront serves an empty document.",
+        "none": "A theme renders every page a visitor sees. Without one, the storefront serves an empty document.",
+        "activateAction": "Activate",
+        "browse": "Browse themes"
+      },
+      "plugins": {
+        "count": "{{count}} plugins installed",
+        "addSite": "Add the plugins this site needs",
+        "installPlatform": "Install the plugins this platform needs",
+        "detailSite": "Commerce, forms, SEO — each adds its own screens. Add only what this site will use.",
+        "detailPlatform": "Commerce, forms, SEO — each adds its own screens. Install only what this installation will use.",
+        "browse": "Browse plugins"
+      }
     }
   },
   "notFound": {

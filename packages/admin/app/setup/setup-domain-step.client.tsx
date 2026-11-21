@@ -2,6 +2,7 @@ import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * The last step: the domain this admin will answer on.
@@ -39,11 +40,7 @@ export class SetupDomainStep extends PureReactor {
           * every install that can be reached before it is configured, and the honest response is to
           * tell the operator so they finish now rather than wander off.
           */}
-        <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 dark:border-amber-500/40 dark:bg-amber-500/10">
-          <p className="text-[12px] leading-relaxed text-amber-900 dark:text-amber-200">
-            {this.text('setup.domain.unclaimedWarning')}
-          </p>
-        </div>
+        <Alert tone="warning">{this.text('setup.domain.unclaimedWarning')}</Alert>
 
         <div>
           <Input
@@ -54,7 +51,7 @@ export class SetupDomainStep extends PureReactor {
             placeholder="https://admin.example.com"
             autoComplete="off"
           />
-          <p className="mt-1 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="mt-1 fc-size-xs leading-relaxed fc-tone-muted">
             {this.text('setup.domain.adminUrlHelp')}
           </p>
         </div>

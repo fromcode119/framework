@@ -959,6 +959,55 @@
       "open": "Öppna",
       "loadFailed": "Det gick inte att läsa in widgetens siffror. Läs in sidan igen för att försöka på nytt.",
       "quiet": "Inget väntar: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-postutskick",
+        "configured": "Konfigurerat · {{provider}}",
+        "missing": "Inget kan skickas — inga ordermejl, inga lösenordsåterställningar",
+        "action": "Konfigurera"
+      },
+      "locales": {
+        "title": "Språk",
+        "none": "Inte konfigurerat",
+        "only": "Endast {{locale}}",
+        "action": "Lägg till"
+      },
+      "timezone": {
+        "title": "Tidszon",
+        "none": "Inte angiven — datum visas i serverns tidszon",
+        "action": "Ändra"
+      },
+      "secrets": {
+        "title": "Lagring av inloggningsuppgifter",
+        "ok": "Krypterade med den här installationens nyckel",
+        "missing": "Ingen krypteringsnyckel — inloggningsuppgifter och token för integrationer kan inte sparas",
+        "details": "Detaljer",
+        "fix": "Så åtgärdar du"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} användare",
+        "alone": "Du är den enda användaren",
+        "action": "Bjud in"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktivera ett tema",
+        "install": "Installera ett tema",
+        "inactive": "Installerat men inte aktiverat — tills ett är aktivt visar butiken ett tomt dokument.",
+        "none": "Ett tema visar varje sida en besökare ser. Utan tema visar butiken ett tomt dokument.",
+        "activateAction": "Aktivera",
+        "browse": "Bläddra bland teman"
+      },
+      "plugins": {
+        "count": "{{count}} tillägg installerade",
+        "addSite": "Lägg till de tillägg den här webbplatsen behöver",
+        "installPlatform": "Installera de tillägg den här plattformen behöver",
+        "detailSite": "Butik, formulär, SEO — vart och ett lägger till egna skärmar. Lägg bara till det den här webbplatsen ska använda.",
+        "detailPlatform": "Butik, formulär, SEO — vart och ett lägger till egna skärmar. Installera bara det den här installationen ska använda.",
+        "browse": "Bläddra bland tillägg"
+      }
     }
   },
   "notFound": {

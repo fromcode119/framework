@@ -9,6 +9,7 @@ import { SetupFrame } from '@/app/setup/setup-frame.client';
 import { SetupStepper } from '@/app/setup/setup-stepper.client';
 import { SetupPhase } from '@fromcode119/core/client';
 import { SetupPageSteps } from '@/app/setup/page-steps.client';
+import { Alert } from '@/components/ui/view/alert.client';
 
 /**
  * First run — the wizard that turns a fresh deployment into a platform.
@@ -57,14 +58,12 @@ export class SetupPage extends SetupPageSteps {
         {/* No stepper during the database phase: it is not one of the four steps, and showing
             "1 of 4" for a question that restarts the deployment would misstate where you are. */}
         {this.phase !== SetupPhase.DATABASE && <SetupStepper locale={this.locale} current={this.step} />}
-        <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-4">
+        <h2 className="fc-size-md font-medium fc-tone-text mb-4">
           {this.text(this.phase === SetupPhase.DATABASE ? 'setup.database.title' : `setup.${this.step.value}.title`)}
         </h2>
 
         {this.error && (
-          <div className="mb-5 p-4 rounded-xl bg-rose-50 border border-rose-100 dark:bg-rose-500/10 dark:border-rose-500/20 text-rose-600 text-[12px] font-medium">
-            {this.error}
-          </div>
+          <Alert tone="danger" role="alert" className="mb-5">{this.error}</Alert>
         )}
 
         <form onSubmit={this.handleSubmit} className="space-y-6" noValidate>

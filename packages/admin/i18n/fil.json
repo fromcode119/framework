@@ -959,6 +959,55 @@
       "open": "Buksan",
       "loadFailed": "Hindi ma-load ang mga numero ng widget na ito. I-reload ang page para subukang muli.",
       "quiet": "Walang naghihintay: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Pagpapadala ng email",
+        "configured": "Naka-configure · {{provider}}",
+        "missing": "Walang maipapadala — walang email ng order, walang pag-reset ng password",
+        "action": "I-configure"
+      },
+      "locales": {
+        "title": "Mga wika",
+        "none": "Hindi naka-configure",
+        "only": "{{locale}} lang",
+        "action": "Idagdag"
+      },
+      "timezone": {
+        "title": "Time zone",
+        "none": "Hindi nakatakda — ipinapakita ang mga petsa sa zone ng server",
+        "action": "Baguhin"
+      },
+      "secrets": {
+        "title": "Imbakan ng credential",
+        "ok": "Naka-encrypt gamit ang key ng installation na ito",
+        "missing": "Walang encryption key — hindi mase-save ang mga credential at token ng integration",
+        "details": "Mga detalye",
+        "fix": "Paano ayusin"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} user",
+        "alone": "Ikaw lang ang user",
+        "action": "Mag-imbita"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Mag-activate ng tema",
+        "install": "Mag-install ng tema",
+        "inactive": "Naka-install pero hindi naka-activate — hangga’t walang aktibo, blangkong dokumento ang ibinibigay ng tindahan.",
+        "none": "Ipinapakita ng tema ang bawat pahinang nakikita ng bisita. Kung wala ito, blangkong dokumento ang ibinibigay ng tindahan.",
+        "activateAction": "I-activate",
+        "browse": "Tingnan ang mga tema"
+      },
+      "plugins": {
+        "count": "{{count}} plugin ang naka-install",
+        "addSite": "Idagdag ang mga plugin na kailangan ng site na ito",
+        "installPlatform": "I-install ang mga plugin na kailangan ng platform na ito",
+        "detailSite": "Commerce, form, SEO — bawat isa ay nagdadagdag ng sariling screen. Idagdag lang ang gagamitin ng site na ito.",
+        "detailPlatform": "Commerce, form, SEO — bawat isa ay nagdadagdag ng sariling screen. I-install lang ang gagamitin ng installation na ito.",
+        "browse": "Tingnan ang mga plugin"
+      }
     }
   },
   "notFound": {

@@ -9,10 +9,10 @@ export class SetupChecking extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center fc-canvas">
         <div className="flex flex-col items-center gap-6">
-          <div className="animate-spin text-indigo-600"><FrameworkIcons.Loader size={48} /></div>
-          <span className="text-[12px] font-medium text-indigo-500 tracking-wide">
+          <div className="animate-spin fc-tone-brand"><FrameworkIcons.Loader size={48} /></div>
+          <span className="fc-size-xs font-medium fc-tone-muted tracking-wide">
             {AdminDictionary.translate(this.locale, 'setup.checking')}
           </span>
         </div>

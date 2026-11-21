@@ -959,6 +959,55 @@
       "open": "Otvoriť",
       "loadFailed": "Údaje tohto miniaplikácie sa nepodarilo načítať. Skúste to znova obnovením stránky.",
       "quiet": "Nič nečaká: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Odosielanie e-mailov",
+        "configured": "Nastavené · {{provider}}",
+        "missing": "Nič sa nedá odoslať — žiadne e-maily k objednávkam ani obnovenie hesla",
+        "action": "Nastaviť"
+      },
+      "locales": {
+        "title": "Jazyky",
+        "none": "Nenastavené",
+        "only": "Iba {{locale}}",
+        "action": "Pridať"
+      },
+      "timezone": {
+        "title": "Časové pásmo",
+        "none": "Nenastavené — dátumy sa zobrazujú v pásme servera",
+        "action": "Zmeniť"
+      },
+      "secrets": {
+        "title": "Úložisko prihlasovacích údajov",
+        "ok": "Šifrované kľúčom tejto inštalácie",
+        "missing": "Chýba šifrovací kľúč — prihlasovacie údaje a tokeny integrácií nemožno uložiť",
+        "details": "Podrobnosti",
+        "fix": "Ako opraviť"
+      },
+      "team": {
+        "title": "Tím",
+        "count": "Používatelia: {{count}}",
+        "alone": "Ste jediný používateľ",
+        "action": "Pozvať"
+      },
+      "theme": {
+        "active": "Téma: {{name}}",
+        "activate": "Aktivujte tému",
+        "install": "Nainštalujte tému",
+        "inactive": "Nainštalovaná, ale neaktivovaná — kým žiadna nie je aktívna, obchod vracia prázdny dokument.",
+        "none": "Téma vykresľuje každú stránku, ktorú návštevník vidí. Bez nej obchod vracia prázdny dokument.",
+        "activateAction": "Aktivovať",
+        "browse": "Prehliadať témy"
+      },
+      "plugins": {
+        "count": "Nainštalované pluginy: {{count}}",
+        "addSite": "Pridajte pluginy, ktoré tento web potrebuje",
+        "installPlatform": "Nainštalujte pluginy, ktoré táto platforma potrebuje",
+        "detailSite": "Obchod, formuláre, SEO — každý pridáva vlastné obrazovky. Pridajte len to, čo tento web využije.",
+        "detailPlatform": "Obchod, formuláre, SEO — každý pridáva vlastné obrazovky. Inštalujte len to, čo táto inštalácia využije.",
+        "browse": "Prehliadať pluginy"
+      }
     }
   },
   "notFound": {

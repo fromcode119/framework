@@ -959,6 +959,55 @@
       "open": "Atidaryti",
       "loadFailed": "Nepavyko įkelti šio valdiklio duomenų. Norėdami bandyti dar kartą, perkraukite puslapį.",
       "quiet": "Nieko nelaukia: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "El. laiškų siuntimas",
+        "configured": "Nustatyta · {{provider}}",
+        "missing": "Nieko negalima išsiųsti — nei užsakymų laiškų, nei slaptažodžio atkūrimo",
+        "action": "Nustatyti"
+      },
+      "locales": {
+        "title": "Kalbos",
+        "none": "Nenustatyta",
+        "only": "Tik {{locale}}",
+        "action": "Pridėti"
+      },
+      "timezone": {
+        "title": "Laiko juosta",
+        "none": "Nenustatyta — datos rodomos serverio laiko juostoje",
+        "action": "Keisti"
+      },
+      "secrets": {
+        "title": "Prisijungimo duomenų saugykla",
+        "ok": "Užšifruota šio diegimo raktu",
+        "missing": "Nėra šifravimo rakto — integracijų prisijungimo duomenų ir žetonų negalima išsaugoti",
+        "details": "Išsamiau",
+        "fix": "Kaip pataisyti"
+      },
+      "team": {
+        "title": "Komanda",
+        "count": "Naudotojai: {{count}}",
+        "alone": "Jūs vienintelis naudotojas",
+        "action": "Pakviesti"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Įjunkite temą",
+        "install": "Įdiekite temą",
+        "inactive": "Įdiegta, bet neįjungta — kol nė viena neaktyvi, parduotuvė grąžina tuščią dokumentą.",
+        "none": "Tema atvaizduoja kiekvieną lankytojo matomą puslapį. Be jos parduotuvė grąžina tuščią dokumentą.",
+        "activateAction": "Įjungti",
+        "browse": "Naršyti temas"
+      },
+      "plugins": {
+        "count": "Įdiegti papildiniai: {{count}}",
+        "addSite": "Pridėkite papildinius, kurių reikia šiai svetainei",
+        "installPlatform": "Įdiekite papildinius, kurių reikia šiai platformai",
+        "detailSite": "Parduotuvė, formos, SEO — kiekvienas prideda savo ekranus. Pridėkite tik tai, ką naudos ši svetainė.",
+        "detailPlatform": "Parduotuvė, formos, SEO — kiekvienas prideda savo ekranus. Įdiekite tik tai, ką naudos šis diegimas.",
+        "browse": "Naršyti papildinius"
+      }
     }
   },
   "notFound": {

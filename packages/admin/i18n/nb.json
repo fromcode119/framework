@@ -959,6 +959,55 @@
       "open": "Åpne",
       "loadFailed": "Tallene for denne widgeten kunne ikke lastes inn. Last inn siden på nytt for å prøve igjen.",
       "quiet": "Ingenting venter: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-postutsending",
+        "configured": "Konfigurert · {{provider}}",
+        "missing": "Ingenting kan sendes — ingen ordre-e-post, ingen tilbakestilling av passord",
+        "action": "Konfigurer"
+      },
+      "locales": {
+        "title": "Språk",
+        "none": "Ikke konfigurert",
+        "only": "Bare {{locale}}",
+        "action": "Legg til"
+      },
+      "timezone": {
+        "title": "Tidssone",
+        "none": "Ikke angitt — datoer vises i serverens tidssone",
+        "action": "Endre"
+      },
+      "secrets": {
+        "title": "Lagring av påloggingsdetaljer",
+        "ok": "Kryptert med nøkkelen til denne installasjonen",
+        "missing": "Ingen krypteringsnøkkel — påloggingsdetaljer og tokener for integrasjoner kan ikke lagres",
+        "details": "Detaljer",
+        "fix": "Slik løser du det"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} brukere",
+        "alone": "Du er den eneste brukeren",
+        "action": "Inviter"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Aktiver et tema",
+        "install": "Installer et tema",
+        "inactive": "Installert, men ikke aktivert — til ett er aktivt, viser butikken et tomt dokument.",
+        "none": "Et tema viser hver side en besøkende ser. Uten tema viser butikken et tomt dokument.",
+        "activateAction": "Aktiver",
+        "browse": "Bla gjennom temaer"
+      },
+      "plugins": {
+        "count": "{{count}} programtillegg installert",
+        "addSite": "Legg til programtilleggene dette nettstedet trenger",
+        "installPlatform": "Installer programtilleggene denne plattformen trenger",
+        "detailSite": "Butikk, skjemaer, SEO — hvert legger til egne skjermer. Legg bare til det dette nettstedet skal bruke.",
+        "detailPlatform": "Butikk, skjemaer, SEO — hvert legger til egne skjermer. Installer bare det denne installasjonen skal bruke.",
+        "browse": "Bla gjennom programtillegg"
+      }
     }
   },
   "notFound": {

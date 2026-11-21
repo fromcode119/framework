@@ -959,6 +959,55 @@
       "open": "Openen",
       "loadFailed": "De cijfers van deze widget konden niet worden geladen. Laad de pagina opnieuw om het nog eens te proberen.",
       "quiet": "Niets openstaand: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "E-mailverzending",
+        "configured": "Ingesteld · {{provider}}",
+        "missing": "Er kan niets worden verzonden — geen bestelmails, geen wachtwoordherstel",
+        "action": "Instellen"
+      },
+      "locales": {
+        "title": "Talen",
+        "none": "Niet ingesteld",
+        "only": "Alleen {{locale}}",
+        "action": "Toevoegen"
+      },
+      "timezone": {
+        "title": "Tijdzone",
+        "none": "Niet ingesteld — datums verschijnen in de tijdzone van de server",
+        "action": "Wijzigen"
+      },
+      "secrets": {
+        "title": "Opslag van inloggegevens",
+        "ok": "Versleuteld met de sleutel van deze installatie",
+        "missing": "Geen versleutelingssleutel — inloggegevens en tokens van integraties kunnen niet worden opgeslagen",
+        "details": "Details",
+        "fix": "Zo los je het op"
+      },
+      "team": {
+        "title": "Team",
+        "count": "{{count}} gebruikers",
+        "alone": "Je bent de enige gebruiker",
+        "action": "Uitnodigen"
+      },
+      "theme": {
+        "active": "Thema: {{name}}",
+        "activate": "Activeer een thema",
+        "install": "Installeer een thema",
+        "inactive": "Geïnstalleerd maar niet geactiveerd — zolang er geen actief is, toont de winkel een leeg document.",
+        "none": "Een thema toont elke pagina die een bezoeker ziet. Zonder thema toont de winkel een leeg document.",
+        "activateAction": "Activeren",
+        "browse": "Thema’s bekijken"
+      },
+      "plugins": {
+        "count": "{{count}} plug-ins geïnstalleerd",
+        "addSite": "Voeg de plug-ins toe die deze site nodig heeft",
+        "installPlatform": "Installeer de plug-ins die dit platform nodig heeft",
+        "detailSite": "Winkel, formulieren, SEO — elk voegt eigen schermen toe. Voeg alleen toe wat deze site gebruikt.",
+        "detailPlatform": "Winkel, formulieren, SEO — elk voegt eigen schermen toe. Installeer alleen wat deze installatie gebruikt.",
+        "browse": "Plug-ins bekijken"
+      }
     }
   },
   "notFound": {

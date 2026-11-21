@@ -959,6 +959,55 @@
       "open": "Abrir",
       "loadFailed": "Não foi possível carregar os dados deste widget. Recarregue a página para tentar novamente.",
       "quiet": "Nada pendente: {{list}}"
+    },
+    "checklist": {
+      "email": {
+        "title": "Envio de e-mail",
+        "configured": "Configurado · {{provider}}",
+        "missing": "Nada pode ser enviado — nem e-mails de pedidos, nem redefinições de senha",
+        "action": "Configurar"
+      },
+      "locales": {
+        "title": "Idiomas",
+        "none": "Não configurado",
+        "only": "Apenas {{locale}}",
+        "action": "Adicionar"
+      },
+      "timezone": {
+        "title": "Fuso horário",
+        "none": "Não definido — as datas aparecem no fuso do servidor",
+        "action": "Alterar"
+      },
+      "secrets": {
+        "title": "Armazenamento de credenciais",
+        "ok": "Criptografadas com a chave desta instalação",
+        "missing": "Sem chave de criptografia — credenciais e tokens de integrações não podem ser salvos",
+        "details": "Detalhes",
+        "fix": "Como corrigir"
+      },
+      "team": {
+        "title": "Equipe",
+        "count": "{{count}} usuários",
+        "alone": "Você é o único usuário",
+        "action": "Convidar"
+      },
+      "theme": {
+        "active": "Tema: {{name}}",
+        "activate": "Ative um tema",
+        "install": "Instale um tema",
+        "inactive": "Instalado, mas não ativado — enquanto nenhum estiver ativo, a loja serve um documento vazio.",
+        "none": "Um tema exibe cada página que o visitante vê. Sem ele, a loja serve um documento vazio.",
+        "activateAction": "Ativar",
+        "browse": "Ver temas"
+      },
+      "plugins": {
+        "count": "{{count}} plugins instalados",
+        "addSite": "Adicione os plugins de que este site precisa",
+        "installPlatform": "Instale os plugins de que esta plataforma precisa",
+        "detailSite": "Loja, formulários, SEO — cada um traz suas próprias telas. Adicione só o que este site vai usar.",
+        "detailPlatform": "Loja, formulários, SEO — cada um traz suas próprias telas. Instale só o que esta instalação vai usar.",
+        "browse": "Ver plugins"
+      }
     }
   },
   "notFound": {
