@@ -22,12 +22,12 @@ describe('PluginRegistrationState — a plugin held for an old core', () => {
 
   it('keeps any other hold as it was', async () => {
     const result = await resolve({ state: 'inactive', heldReason: 'capability_drift', approvedCapabilities: [] });
-    expect(result.state).toBe(PluginState.INACTIVE);
+    expect(PluginState.resolve(result.state)).toBe(PluginState.INACTIVE);
     expect(PluginHeldReason.resolve(result.heldReason)).toBe(PluginHeldReason.CAPABILITY_DRIFT);
   });
 
   it('leaves a plain inactive plugin off', async () => {
     const result = await resolve({ state: 'inactive', approvedCapabilities: [] });
-    expect(result.state).toBe(PluginState.INACTIVE);
+    expect(PluginState.resolve(result.state)).toBe(PluginState.INACTIVE);
   });
 });
