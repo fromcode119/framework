@@ -51,7 +51,7 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.SETUP_COMPLETED]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemConstants.META_KEY.SITE_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true, members: true,
-      seed: { value: 'Fromcode', description: "Public site name used in emails and frontend.", group: "General" },
+      seed: { value: '', description: "Public site name used in emails and frontend. Blank until set: a name nobody chose would be printed as this site's.", group: "General" },
     },
     [SystemConstants.META_KEY.SITE_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true, members: true,
