@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.627] - 2026-11-21
+
+### Added
+
+- **admin**: setup wizard and dashboard checklist on the console components ([#1579](https://github.com/fromcode119/framework/pull/1579))
+
 ## [0.2.626] - 2026-11-21
 
 ### Fixed
