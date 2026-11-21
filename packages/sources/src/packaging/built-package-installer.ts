@@ -18,6 +18,13 @@ import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
  * automatic building any more — a manual build is still a build.
  */
 export class BuiltPackageInstaller {
+  /**
+   * What the source's row says while a built package waits for the core. It is the marker the scheduled
+   * check looks for: a build is re-offered after a core update ONLY while this is set, so a version the
+   * operator put back on purpose is never replaced behind their back.
+   */
+  static readonly WAITING_FOR_CORE = 'Waiting for a newer core — installs by itself once the core is updated. ';
+
   private readonly logger = new Logger({ namespace: 'sources:install' });
 
   constructor(
@@ -65,11 +72,21 @@ export class BuiltPackageInstaller {
         `${installed ? 'Updated' : 'Installed'} ${slug} ${source.version ? `to ${source.version}` : 'from the new build'}.`,
       );
     } catch (err: any) {
-      const message = BuildErrorRedactionService.redact(err?.message || String(err));
-      this.logger.error(`Install failed for ${identity.key}: ${message}`);
       // Recorded on the SOURCE's row (the package's slug differs for a renamed plugin, and has no row).
       const sourceSlug = String(source.slug ?? '').trim();
-      await this.recordFailure(sourceSlug ? BuildSourceIdentity.parse(identity.type, sourceSlug) : identity, message).catch(() => undefined);
+      const row = sourceSlug ? BuildSourceIdentity.parse(identity.type, sourceSlug) : identity;
+      // A build that needs a newer core than this installation runs is not a failure: it stays staged and
+      // what is installed keeps running. The row says so, and the next scheduled check installs it once the
+      // core is updated (StagedBuildOffer.offerWaiting).
+      if (err?.code === 'CORE_TOO_OLD') {
+        const message = BuildErrorRedactionService.redact(err?.message || String(err));
+        this.logger.info(`${identity.key} waits for a newer core: ${message}`);
+        await this.recordFailure(row, BuiltPackageInstaller.WAITING_FOR_CORE + message).catch(() => undefined);
+        return;
+      }
+      const message = BuildErrorRedactionService.redact(err?.message || String(err));
+      this.logger.error(`Install failed for ${identity.key}: ${message}`);
+      await this.recordFailure(row, message).catch(() => undefined);
     }
   }
 

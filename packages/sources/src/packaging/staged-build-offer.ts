@@ -22,18 +22,41 @@ export class StagedBuildOffer {
     private readonly versions: (identity: BuildSourceIdentity) => Promise<{ installed: string | null; built: string | null }>,
     private readonly artifact: (identity: BuildSourceIdentity) => Promise<IBuiltPackageArtifact | null>,
     private readonly installer: BuiltPackageInstaller,
+    /** Clears the "waiting for core" note once the package is in. */
+    private readonly clearWaiting: (identity: BuildSourceIdentity) => Promise<void> = async () => undefined,
   ) {}
 
   /** @param before the source as it was stored before the settings were saved. */
   async afterSettingsSaved(identity: BuildSourceIdentity, before: Record<string, any> | null, input: Record<string, any>): Promise<void> {
     if (!StagedBuildOffer.turnedOn(before, input)) return;
+    await this.offer(identity, false);
+  }
+
+  /**
+   * Called on every scheduled check. A build the installer refused because the core was too old waits
+   * staged with a note on its row; once the core is updated it is installed, and the note is cleared.
+   * Only a source carrying that note is touched, so a version put back on purpose stays put.
+   */
+  async offerWaiting(identity: BuildSourceIdentity): Promise<void> {
+    await this.offer(identity, true);
+  }
+
+  private async offer(identity: BuildSourceIdentity, onlyWhileWaiting: boolean): Promise<void> {
     const source = await this.rawSource(identity);
     if (!source || CoercionUtils.toString(source.lastBuildStatus ?? source.last_build_status) !== 'success') return;
     if (!BuiltPackageInstaller.readFlag(source.installAfterBuild ?? source.install_after_build)) return;
+    if (onlyWhileWaiting && !CoercionUtils.toString(source.lastError ?? source.last_error).startsWith(BuiltPackageInstaller.WAITING_FOR_CORE)) return;
 
     const { installed, built } = await this.versions(identity);
-    if (!built || (installed && !StagedBuildOffer.isNewer(built, installed))) return;
+    if (!built || (installed && !StagedBuildOffer.isNewer(built, installed))) {
+      // Nothing newer is waiting any more (installed another way, or rolled back deliberately): drop the note.
+      if (onlyWhileWaiting) await this.clearWaiting(identity);
+      return;
+    }
     await this.installer.install(identity, await this.artifact(identity), { ...source, type: identity.type, version: built });
+    if (!onlyWhileWaiting) return;
+    const after = await this.versions(identity);
+    if (after.installed && after.built && !StagedBuildOffer.isNewer(after.built, after.installed)) await this.clearWaiting(identity);
   }
 
   private static turnedOn(before: Record<string, any> | null, input: Record<string, any>): boolean {

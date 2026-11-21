@@ -76,6 +76,7 @@ export class BuildService {
       (identity) => this.listVersions(identity),
       (identity) => this.resolvePackageArtifact(identity),
       this.builtPackageInstaller,
+      (identity) => this.buildSourceService.recordAutoUpdateFailure(identity, ''),
     );
     this.buildRunner = new SourceBuildRunner(
       db,
@@ -165,6 +166,10 @@ export class BuildService {
   async checkAndBuildUpdates(): Promise<IBuildResult[]> {
     const updates = await this.checkForUpdates();
     const changed = updates.filter(u => u.hasUpdate);
+    // A staged build refused for an old core installs on the first check after the core is updated.
+    for (const update of updates) {
+      await this.stagedBuildOffer.offerWaiting(BuildSourceIdentity.parse(update.type, update.slug));
+    }
     if (changed.length === 0) return [];
 
     const sources = await this.buildSourceService.listSanitizedSources();
