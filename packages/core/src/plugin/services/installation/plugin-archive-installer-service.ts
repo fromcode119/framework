@@ -11,6 +11,8 @@ import { PluginDependencyInstallerService } from '@core/plugin/services/installa
 import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
+import { PluginCoreCompatibility } from '@core/plugin/services/runtime/plugin-core-compatibility';
+import { PluginCoreIncompatibleError } from '@core/plugin/services/installation/plugin-core-incompatible-error';
 
 /**
  * PluginArchiveInstallerService
@@ -24,6 +26,8 @@ export class PluginArchiveInstallerService {
   constructor(
     private pluginsRoot: string,
     private dependencyInstaller: PluginDependencyInstallerService,
+    /** The core version this installation runs. Lazy by default to keep the engine out of the module graph (no cycle). */
+    private readonly coreVersion: () => string | Promise<string> = async () => (await import('@core/management/system-update-service')).SystemUpdateService.installedVersion(),
   ) {}
 
   public findManifestDir(dir: string): string | null {
@@ -144,6 +148,19 @@ export class PluginArchiveInstallerService {
   }
 
   /**
+   * A package that needs a newer core than this installation runs is never written, whichever way it
+   * arrived (marketplace, upload, a Sources build). The version already installed keeps running; the
+   * newer one is installed only once the core can run it. Checked here, before anything is backed up or
+   * swapped, because this is the one place every install path passes through.
+   */
+  private async refuseIfCoreTooOld(manifest: IPluginManifest): Promise<void> {
+    if (!manifest.engines?.core) return;
+    const compatibility = PluginCoreCompatibility.check(manifest, String(await this.coreVersion()));
+    if (compatibility.ok) return;
+    throw new PluginCoreIncompatibleError(manifest.slug, compatibility, PluginCoreCompatibility.message(manifest.slug, compatibility));
+  }
+
+  /**
    * Puts a plugin content directory in place, wherever it came from.
    *
    * The half of an install that is not about archives. Shared by both entry points so they cannot
@@ -159,6 +176,7 @@ export class PluginArchiveInstallerService {
     const manifest: IPluginManifest = JSON.parse(manifestContent);
     if (options.expected) MarketplaceOfferMatch.assert('plugin', options.expected, manifest);
     PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
+    await this.refuseIfCoreTooOld(manifest);
     const targetDir = path.join(this.pluginsRoot, manifest.slug);
 
     if (fs.existsSync(targetDir)) {
