@@ -11,6 +11,7 @@ import { StackStore } from '@cli/services/stack/stack-store';
 import { StackLayout } from '@cli/services/stack/stack-layout';
 import { StackTemplate } from '@cli/services/stack/stack-template';
 import { StackTemplateRestore } from '@cli/services/stack/stack-template-restore';
+import { StackImagePackages } from '@cli/services/stack/stack-image-packages';
 
 /**
  * Brings a throwaway stack up and takes it away again.
@@ -53,8 +54,17 @@ export class StackService {
     const record = this.store.read(request.name);
     if (!record) throw new Error(`Stack "${request.name}" started but left no record at ${root}`);
 
+    await this.completeImagePackages(request.framework, root);
     await this.waitUntilServing(plan, root);
     return record;
+  }
+
+  /** Installs what the image under the stack lacks of what the worktree now imports; says what it added. */
+  private async completeImagePackages(framework: string, root: string): Promise<void> {
+    const added = await new StackImagePackages(framework, this.shell(root)).sync();
+    for (const [service, names] of Object.entries(added)) {
+      console.log(chalk.yellow(`  ${service}: the image lacked ${names.join(', ')} — installed for this stack.`));
+    }
   }
 
   /** Captures a running stack so later stacks can start from it instead of the setup wizard. */
