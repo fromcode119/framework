@@ -3357,7 +3357,9 @@ a.fc-parts__label:hover { text-decoration: underline; }
 
 /* The bar is dark in both schemes: it is the one thing on the page that floats over the content, and
    it has to read as apart from whatever row happens to be under it. */
-.fc-command-bar { position: fixed; inset-inline: 16px; bottom: 32px; z-index: 900; display: flex; justify-content: center; pointer-events: none; }
+/* Above the page and the menu (200), below what a command opens: a sheet (500) or a dialog (600) covers the bar
+   instead of leaving it clickable over its own Save. */
+.fc-command-bar { position: fixed; inset-inline: 16px; bottom: 32px; z-index: 400; display: flex; justify-content: center; pointer-events: none; }
 .fc-command-bar__bar { --fc-command-ink: rgb(255 255 255 / .88); --fc-command-ink-quiet: rgb(255 255 255 / .56); --fc-command-line: rgb(255 255 255 / .16); display: flex; align-items: center; max-width: 100%; overflow: hidden; padding: 0 4px; border-radius: 999px; background: #18181b; box-shadow: 0 0 0 1px rgb(255 255 255 / .1), 0 8px 16px 0 rgb(0 0 0 / .16), 0 16px 32px 0 rgb(0 0 0 / .16); pointer-events: auto; }
 .fc-command-bar__value { padding: 10px 12px; color: var(--fc-command-ink-quiet); font-size: 13px; line-height: 20px; font-weight: var(--fc-weight-strong); white-space: nowrap; }
 .fc-command-bar__separator { flex: none; width: 1px; height: 40px; background: var(--fc-command-line); }
