@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import { bound, state } from '@fromcode119/react-class-components';
+import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -30,12 +30,13 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  * A typed token is saved by the page's one save bar; Clear stays a button, because it is an action
  * on what is stored, not a value being edited.
  */
-export class CertificateDnsTokenCard extends AdminComponent<{
+export class CertificateDnsTokenCard extends AdminComponent {
+  declare props: Pick<CertificateDnsTokenCard, 'automation' | 'onChanged'>;
+
   /** `automation` from the certificates read — carries the scope and whether a token resolved. */
-  automation: Record<string, unknown> | null;
+  @prop declare automation: Record<string, unknown> | null;
   /** Re-read the page after a change, so the resolved scope shown here stays true. */
-  onChanged: () => Promise<void> | void;
-}> {
+  @prop declare onChanged: () => Promise<void> | void;
   @state private tokenInput = '';
   @state private isSaving = false;
   @state private message = '';
@@ -61,12 +62,12 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   }
 
   private get isConfigured(): boolean {
-    return this.props.automation?.isCloudflareConfigured === true;
+    return this.automation?.isCloudflareConfigured === true;
   }
 
   /** True when this site has none of its own and is using the platform's. */
   private get isInherited(): boolean {
-    return this.props.automation?.isCloudflareTokenInherited === true;
+    return this.automation?.isCloudflareTokenInherited === true;
   }
 
   /** True only when the site stores its own — the one case where Clear means anything here. */
@@ -109,7 +110,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
         : '';
       this.message = success + retrying;
       this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: AdminI18n.t('certificates.cloudflareTokenTitle'), message: this.message });
-      await this.props.onChanged();
+      await this.onChanged();
       return true;
     } catch (error: any) {
       this.message = String(error?.message || AdminI18n.t('certificates.couldNotSaveTheToken'));
