@@ -7,6 +7,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { ActivityColumnsFactory } from '@/app/activity/activity-columns';
 import { ListShell } from '@/components/ui/view/list-shell.client';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Tabs } from '@/components/ui/view/tabs.client';
 import { SearchField } from '@/components/ui/view/search-field.client';
 import { ActivityDetailModal } from '@/app/activity/activity-detail-modal';
@@ -116,29 +117,31 @@ export class ActivityPage extends AdminComponent {
   render(): ReactNode {
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-500">
-        <ListShell
-          title={AdminI18n.t('nav.items.activity')}
-          lead={(
-            <Tabs
-              label={AdminI18n.t('nav.items.activity')}
-              value={this.mode === ActivityMode.SYSTEM ? 'system' : 'security'}
-              onChange={this.handleModeChange}
-              tabs={[{ id: 'system', label: AdminI18n.t('activity.systemEvents') }, { id: 'security', label: AdminI18n.t('activity.securityAudit') }]}
+        <CompactPageHeader title={AdminI18n.t('nav.items.activity')} subtitle={AdminI18n.t('activity.globalLedgerOfAdministrativeActions2')} />
+        <div className="w-full py-6 fc-page-stack">
+          <ListShell
+            lead={(
+              <Tabs
+                label={AdminI18n.t('nav.items.activity')}
+                value={this.mode === ActivityMode.SYSTEM ? 'system' : 'security'}
+                onChange={this.handleModeChange}
+                tabs={[{ id: 'system', label: AdminI18n.t('activity.systemEvents') }, { id: 'security', label: AdminI18n.t('activity.securityAudit') }]}
+              />
+            )}
+            tools={<SearchField value={this.searchQuery} onChange={this.handleSearchQueryChange} placeholder={AdminI18n.t('shell.nav.search')} />}
+          >
+            <DataTable
+              columns={this.columns}
+              data={this.logs}
+              totalDocs={this.totalDocs}
+              limit={this.limit}
+              page={this.page}
+              onPageChange={this.handlePageChange}
+              onRowClick={this.handleRowClick}
+              emptyMessage={this.loading ? AdminI18n.t('activity.decryptingAuditLedger') : AdminI18n.t('activity.noAuditRecordsDocumented')}
             />
-          )}
-          tools={<SearchField value={this.searchQuery} onChange={this.handleSearchQueryChange} placeholder={AdminI18n.t('shell.nav.search')} />}
-        >
-          <DataTable
-            columns={this.columns}
-            data={this.logs}
-            totalDocs={this.totalDocs}
-            limit={this.limit}
-            page={this.page}
-            onPageChange={this.handlePageChange}
-            onRowClick={this.handleRowClick}
-            emptyMessage={this.loading ? AdminI18n.t('activity.decryptingAuditLedger') : AdminI18n.t('activity.noAuditRecordsDocumented')}
-          />
-        </ListShell>
+          </ListShell>
+        </div>
 
         {this.selectedLog && (
           <ActivityDetailModal

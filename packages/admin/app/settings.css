@@ -241,10 +241,10 @@
 .fc-ext-row__name .fc-badge { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; line-height: calc(var(--fc-badge-h) - 2px); }
 .fc-ext-row__name a { color: inherit; text-decoration: none; }
 .fc-ext-row__name a:hover { color: var(--fc-brand); }
-.fc-ext-row__link { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
+.fc-ext-row__link { position: relative; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
 .fc-ext-row__link:hover { color: var(--fc-brand); }
-.fc-ext-row__link { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
-.fc-ext-row__link:hover { color: var(--fc-brand); }
+/* The name is one line of text (20px); an invisible band above and below makes it a 32px target. */
+.fc-ext-row__link::before { content: ''; position: absolute; inset: -6px 0; }
 .fc-ext-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-ext-row__desc--error { color: var(--fc-danger); font-weight: 500; }
 .fc-ext-row__meta { flex: 0 1 auto; min-width: var(--fc-settings-meta-width); max-width: 45%; text-align: end; font-size: 11px; color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
