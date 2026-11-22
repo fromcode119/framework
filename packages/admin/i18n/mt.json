@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Is-siti ma setgħux jitgħabbew.",
+    "siteSaved": "Is-sit tqiegħed",
     "siteExported": "Is-sit ġie esportat",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} ringiela) jinsab taħt Backups → Siti.",
     "exportFailed": "L-esportazzjoni falliet",

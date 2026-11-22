@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Sajtet nuk mund të ngarkoheshin.",
+    "siteSaved": "Faqja u ruajt",
     "siteExported": "Sajti u eksportua",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rreshta) ndodhet te Kopjet rezervë → Sajtet.",
     "exportFailed": "Eksportimi dështoi",

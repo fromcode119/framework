@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Не вдалося завантажити сайти.",
+    "siteSaved": "Сайт збережено",
     "siteExported": "Сайт експортовано",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} рядків) — у розділі Резервні копії → Сайти.",
     "exportFailed": "Помилка експорту",

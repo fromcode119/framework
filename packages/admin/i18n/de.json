@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Die Websites konnten nicht geladen werden.",
+    "siteSaved": "Website gespeichert",
     "siteExported": "Website exportiert",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} Zeilen) liegt unter Backups → Websites.",
     "exportFailed": "Export fehlgeschlagen",

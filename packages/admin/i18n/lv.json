@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Neizdevās ielādēt vietnes.",
+    "siteSaved": "Vietne saglabāta",
     "siteExported": "Vietne eksportēta",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rindas) atrodas sadaļā Dublējumi → Vietnes.",
     "exportFailed": "Eksportēšana neizdevās",

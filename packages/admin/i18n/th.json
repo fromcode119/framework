@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "ไม่สามารถโหลดเว็บไซต์ได้",
+    "siteSaved": "บันทึกไซต์แล้ว",
     "siteExported": "ส่งออกเว็บไซต์แล้ว",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} แถว) อยู่ใน ข้อมูลสำรอง → เว็บไซต์",
     "exportFailed": "ส่งออกไม่สำเร็จ",

@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Siteler yüklenemedi.",
+    "siteSaved": "Site kaydedildi",
     "siteExported": "Site dışa aktarıldı",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} satır) Yedekler → Siteler altında.",
     "exportFailed": "Dışa aktarma başarısız",

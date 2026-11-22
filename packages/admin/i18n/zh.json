@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "无法加载网站。",
+    "siteSaved": "站点已保存",
     "siteExported": "网站已导出",
     "rowsIsUnderBackupsSites": "{{filename}}（{{rows}} 行）位于“备份 → 网站”中。",
     "exportFailed": "导出失败",

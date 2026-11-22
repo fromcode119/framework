@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "サイトを読み込めませんでした。",
+    "siteSaved": "サイトを保存しました",
     "siteExported": "サイトをエクスポートしました",
     "rowsIsUnderBackupsSites": "{{filename}}（{{rows}} 行）は「バックアップ → サイト」にあります。",
     "exportFailed": "エクスポートに失敗しました",

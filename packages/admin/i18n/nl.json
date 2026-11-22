@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "De sites konden niet worden geladen.",
+    "siteSaved": "Site opgeslagen",
     "siteExported": "Site geëxporteerd",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rijen) staat onder Back-ups → Sites.",
     "exportFailed": "Exporteren mislukt",

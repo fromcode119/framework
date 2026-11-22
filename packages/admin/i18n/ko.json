@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "사이트를 불러올 수 없습니다.",
+    "siteSaved": "사이트가 저장되었습니다",
     "siteExported": "사이트를 내보냈습니다",
     "rowsIsUnderBackupsSites": "{{filename}}({{rows}}개 행)은(는) 백업 → 사이트에 있습니다.",
     "exportFailed": "내보내기 실패",

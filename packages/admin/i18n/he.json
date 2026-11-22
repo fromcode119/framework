@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "לא ניתן היה לטעון את האתרים.",
+    "siteSaved": "האתר נשמר",
     "siteExported": "האתר יוצא",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} שורות) נמצא תחת גיבויים ← אתרים.",
     "exportFailed": "הייצוא נכשל",

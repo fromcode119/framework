@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Webbplatserna kunde inte läsas in.",
+    "siteSaved": "Webbplatsen sparades",
     "siteExported": "Webbplatsen har exporterats",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rader) finns under Säkerhetskopior → Webbplatser.",
     "exportFailed": "Exporten misslyckades",

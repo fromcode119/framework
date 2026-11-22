@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Weby sa nepodarilo načítať.",
+    "siteSaved": "Web uložený",
     "siteExported": "Web bol exportovaný",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} riadkov) nájdete v časti Zálohy → Weby.",
     "exportFailed": "Export zlyhal",

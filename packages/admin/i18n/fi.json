@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Sivustoja ei voitu ladata.",
+    "siteSaved": "Sivusto tallennettu",
     "siteExported": "Sivusto viety",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} riviä) löytyy kohdasta Varmuuskopiot → Sivustot.",
     "exportFailed": "Vienti epäonnistui",

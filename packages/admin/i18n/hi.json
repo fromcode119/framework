@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "साइटें लोड नहीं हो सकीं।",
+    "siteSaved": "साइट सहेजी गई",
     "siteExported": "साइट एक्सपोर्ट हुई",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} पंक्तियाँ) बैकअप → साइटें में है।",
     "exportFailed": "एक्सपोर्ट विफल",
