@@ -33,7 +33,13 @@ export class StructuredReadOnlyField extends Reactor {
   @state private filterText = '';
 
   private get parsedValue(): unknown {
-    return StructuredReadOnlyFieldService.parse(this.value);
+    return StructuredReadOnlyFieldService.relabelValues(StructuredReadOnlyFieldService.parse(this.value), this.valueLabels);
+  }
+
+  /** What the plugin's dictionary calls the words the record stores (`fields.<field>.valueLabels`), put on the field by the console's localizer. */
+  private get valueLabels(): Record<string, string> | undefined {
+    const named = this.field?.admin?.valueLabels;
+    return named && typeof named === 'object' ? named as Record<string, string> : undefined;
   }
 
   private get rootNode() {

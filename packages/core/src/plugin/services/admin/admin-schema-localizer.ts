@@ -20,6 +20,7 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *   admin.collections.<collection>.fields.<field>.options.<value>
  *   admin.collections.<collection>.fields.<field>.confirm.<value>         what choosing a status option does
  *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names (dictionary only)
+ *   admin.collections.<collection>.fields.<field>.valueLabels.<value>   the words a structured field stores, in the reader's language (dictionary only)
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
@@ -218,6 +219,8 @@ export class AdminSchemaLocalizer {
       // A structured field's keys are named in the plugin's dictionary alone; the schema lists none.
       const keyLabels = this.block(pluginSlug, `${key}.keyLabels`);
       if (Object.keys(keyLabels).length) next.admin = { ...(next.admin ?? {}), keyLabels };
+      const valueLabels = this.block(pluginSlug, `${key}.valueLabels`);
+      if (Object.keys(valueLabels).length) next.admin = { ...(next.admin ?? {}), valueLabels };
       if (Array.isArray(field.options)) {
         next.options = field.options.map((option: any) => (option && typeof option === 'object'
           ? {

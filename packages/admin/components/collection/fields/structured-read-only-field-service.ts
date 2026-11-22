@@ -35,6 +35,21 @@ export class StructuredReadOnlyFieldService {
     return CoercionUtils.parseJson(raw, raw);
   }
 
+  /**
+   * The value with its words in the owner's language: a string that is exactly one of the owner's
+   * `valueLabels` (`pending` → "Чакаща") is replaced by it, at any depth. The value stays untouched in
+   * the record; only what is read is worded. A key is never renamed here — that is `keyLabels`.
+   */
+  static relabelValues(value: unknown, valueLabels?: Record<string, string>): unknown {
+    if (!valueLabels || Object.keys(valueLabels).length === 0) return value;
+    if (typeof value === 'string') return Object.prototype.hasOwnProperty.call(valueLabels, value) && valueLabels[value] ? valueLabels[value] : value;
+    if (Array.isArray(value)) return value.map((entry) => StructuredReadOnlyFieldService.relabelValues(entry, valueLabels));
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, StructuredReadOnlyFieldService.relabelValues(entry, valueLabels)]));
+    }
+    return value;
+  }
+
   /** Classify an already-parsed value into a row-tree node. */
   static classify(value: unknown): IStructuredNode {
     if (value === null || value === undefined) return { kind: StructuredNodeKind.EMPTY };
