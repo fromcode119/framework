@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Tidak direkodkan",
       "filter": "Tapis mengikut kunci…",
+      "count": "{{count}} nilai",
+      "technical": "Teknikal",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Belum ada apa-apa direkodkan.",
       "noMatch": "Tiada yang sepadan dengan penapis itu.",

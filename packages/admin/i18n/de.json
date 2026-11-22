@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Nicht erfasst",
       "filter": "Nach Schlüssel filtern…",
+      "count": "{{count}} Werte",
+      "technical": "Technisch",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Noch nichts erfasst.",
       "noMatch": "Keine Treffer für diesen Filter.",

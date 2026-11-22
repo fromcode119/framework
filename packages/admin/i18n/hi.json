@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "दर्ज नहीं है",
       "filter": "कुंजी से फ़िल्टर करें…",
+      "count": "{{count}} मान",
+      "technical": "तकनीकी",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "अभी तक कुछ दर्ज नहीं है।",
       "noMatch": "इस फ़िल्टर से कुछ मेल नहीं खाता।",

@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Pole salvestatud",
       "filter": "Filtreeri võtme järgi…",
+      "count": "{{count}} väärtust",
+      "technical": "Tehnilised",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Midagi pole veel salvestatud.",
       "noMatch": "Filtrile ei vasta midagi.",

@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Не записано",
       "filter": "Фільтр за ключем…",
+      "count": "{{count}} значень",
+      "technical": "Технічні",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ще нічого не записано.",
       "noMatch": "Нічого не відповідає фільтру.",

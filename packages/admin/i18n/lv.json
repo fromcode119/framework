@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Nav reģistrēts",
       "filter": "Filtrēt pēc atslēgas…",
+      "count": "{{count}} vērtības",
+      "technical": "Tehniskie",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Vēl nekas nav reģistrēts.",
       "noMatch": "Filtram nekas neatbilst.",

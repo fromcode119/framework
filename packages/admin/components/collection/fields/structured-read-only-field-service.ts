@@ -252,6 +252,38 @@ export class StructuredReadOnlyFieldService {
     return StructuredReadOnlyFieldService.leafCount(node) > StructuredReadOnlyFieldService.OVERSIZED_LEAF_VALUE_THRESHOLD;
   }
 
+  /**
+   * From this many values a stored object is no longer a card's content: it is told as one row that opens
+   * a drawer (`RecordSummaryRow`). An order's record printed 166 of them and its "order data" 24 more,
+   * 3 400px of keys beside a 500px order. The number is a reading limit, not a style — a card of twelve
+   * label / value rows still fits one screen.
+   */
+  private static readonly SUMMARY_LEAF_THRESHOLD = 12;
+
+  /** Whether this value is too big for a card and is told as a summary row opening a drawer. */
+  static needsSummary(node: IStructuredNode): boolean {
+    if (node.kind !== StructuredNodeKind.OBJECT) return false;
+    return StructuredReadOnlyFieldService.leafCount(node) > StructuredReadOnlyFieldService.SUMMARY_LEAF_THRESHOLD;
+  }
+
+  /**
+   * The top level of an object split into the keys the owner has NAMED (its dictionary's `keyLabels`) and
+   * the ones it has not. Named ones are what a person reads; the rest are the system's own bookkeeping,
+   * drawn under their own heading so their number is visible instead of being mixed into the rest.
+   * Without any `keyLabels` everything is "named": nothing is hidden or reordered for a field that never
+   * declared a vocabulary.
+   */
+  static splitByLabel(node: IStructuredNode, keyLabels?: Record<string, string>): { named: IStructuredNode; technical: IStructuredNode | null } {
+    if (node.kind !== StructuredNodeKind.OBJECT || !keyLabels || Object.keys(keyLabels).length === 0) return { named: node, technical: null };
+    const entries = node.entries ?? [];
+    const named = entries.filter((entry) => typeof keyLabels[entry.key] === 'string' && keyLabels[entry.key].trim());
+    const technical = entries.filter((entry) => !named.includes(entry));
+    return {
+      named: { kind: StructuredNodeKind.OBJECT, entries: named },
+      technical: technical.length ? { kind: StructuredNodeKind.OBJECT, entries: technical } : null,
+    };
+  }
+
   static isLink(value: unknown): value is string {
     return typeof value === 'string' && /^https?:\/\//i.test(value.trim());
   }

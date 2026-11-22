@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "No registrado",
       "filter": "Filtrar por clave…",
+      "count": "{{count}} valores",
+      "technical": "Técnicos",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Todavía no hay nada registrado.",
       "noMatch": "Nada coincide con ese filtro.",

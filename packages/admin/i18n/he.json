@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "לא נרשם",
       "filter": "סינון לפי מפתח…",
+      "count": "{{count}} ערכים",
+      "technical": "טכני",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "עדיין לא נרשם דבר.",
       "noMatch": "אין תוצאות התואמות לסינון.",

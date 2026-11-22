@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Inte registrerat",
       "filter": "Filtrera efter nyckel…",
+      "count": "{{count}} värden",
+      "technical": "Tekniska",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Inget har registrerats ännu.",
       "noMatch": "Inget matchar filtret.",

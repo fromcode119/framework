@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Ikke registrert",
       "filter": "Filtrer etter nøkkel …",
+      "count": "{{count}} verdier",
+      "technical": "Tekniske",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ingenting registrert ennå.",
       "noMatch": "Ingenting samsvarer med filteret.",
