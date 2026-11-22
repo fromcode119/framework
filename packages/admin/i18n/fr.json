@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Non enregistré",
       "filter": "Filtrer par clé…",
+      "count": "{{count}} valeurs",
+      "technical": "Techniques",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Rien n’a encore été enregistré.",
       "noMatch": "Aucun résultat pour ce filtre.",

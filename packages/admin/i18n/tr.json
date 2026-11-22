@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Kaydedilmedi",
       "filter": "Anahtara göre filtrele…",
+      "count": "{{count}} değer",
+      "technical": "Teknik",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Henüz kayıt yok.",
       "noMatch": "Bu filtreyle eşleşen bir şey yok.",

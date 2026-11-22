@@ -1827,6 +1827,42 @@ body:has(.fc-record-card--editing) .fc-edit-footer { display: none; }
 .fc-sro__absent { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
 /* What this level does not print, counted. The filter above is how it is read. */
 .fc-sro__more { margin: 8px 0 0; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+
+/* ── RecordSummaryRow: a record too big to read in a card, told as one row that opens a drawer ───────
+ * The whole row is the button. The count is a quiet pill, the hint sits at the end and gives way first
+ * on a narrow screen, so the title and the count never wrap under each other. */
+.fc-rsr__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px 0;
+  background: none;
+  border: 0;
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--fc-record-text);
+  color: var(--fc-text);
+}
+.fc-rsr__row:hover .fc-rsr__go { color: var(--fc-text); }
+.fc-rsr__row:focus-visible { outline: 2px solid var(--fc-brand); outline-offset: 2px; border-radius: 6px; }
+.fc-rsr__title { font-weight: 600; flex: none; }
+.fc-rsr__count {
+  flex: none;
+  padding: 1px 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fc-text-muted);
+  background: var(--fc-canvas);
+  border: 1px solid var(--fc-border);
+  border-radius: 999px;
+}
+.fc-rsr__hint { min-width: 0; margin-inline-start: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--fc-text-muted); }
+.fc-rsr__go { flex: none; color: var(--fc-text-muted); margin-inline-start: auto; }
+.fc-rsr__hint + .fc-rsr__go { margin-inline-start: 0; }
+@media (max-width: 639px) { .fc-rsr__hint { display: none; } }
 /* A group shown by name only, while the field is too big to print. */
 .fc-sro__section--named { padding: 2px 0; }
 .fc-sro__section { border-top: var(--fc-record-rule); }

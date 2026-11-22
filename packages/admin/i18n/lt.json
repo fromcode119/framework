@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Neužfiksuota",
       "filter": "Filtruoti pagal raktą…",
+      "count": "{{count}} reikšmių",
+      "technical": "Techniniai",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Kol kas nieko neužfiksuota.",
       "noMatch": "Pagal šį filtrą nieko nerasta.",

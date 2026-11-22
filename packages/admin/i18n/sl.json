@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Ni zabeleženo",
       "filter": "Filtriraj po ključu …",
+      "count": "{{count}} vrednosti",
+      "technical": "Tehnično",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ničesar še ni zabeleženega.",
       "noMatch": "Temu filtru nič ne ustreza.",

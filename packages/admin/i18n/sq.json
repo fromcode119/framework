@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Nuk është regjistruar",
       "filter": "Filtro sipas çelësit…",
+      "count": "{{count}} vlera",
+      "technical": "Teknike",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Ende nuk është regjistruar asgjë.",
       "noMatch": "Asgjë nuk përputhet me këtë filtër.",

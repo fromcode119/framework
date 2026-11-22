@@ -25,6 +25,7 @@ import { PageHeaderKit } from '@/app/kit/docs/page-header.kit';
 import { PagePiecesKit } from '@/app/kit/docs/page-pieces.kit';
 import { RecordPiecesKit } from '@/app/kit/docs/record-pieces.kit';
 import { PartsLineKit } from '@/app/kit/docs/parts-line.kit';
+import { RecordSummaryRowKit } from '@/app/kit/docs/record-summary-row.kit';
 import { QrCodeKit } from '@/app/kit/docs/qr-code.kit';
 import { ScanKit } from '@/app/kit/docs/scan.kit';
 import { LabelSheetKit } from '@/app/kit/docs/label-sheet.kit';
@@ -39,7 +40,7 @@ export class KitCatalog {
       KitCatalog.cache = [
         ButtonKit.doc(),
         InputKit.doc(), TextAreaKit.doc(), SelectKit.doc(), CheckboxKit.doc(), SwitchKit.doc(), RadioGroupKit.doc(), SearchFieldKit.doc(), ...FieldsMoreKit.docs(),
-        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(), PartsLineKit.doc(), QrCodeKit.doc(), ScanKit.doc(), LabelSheetKit.doc(),
+        BadgeKit.doc(), AlertKit.doc(), TooltipKit.doc(), AvatarKit.doc(), ...SmallKit.docs(), PartsLineKit.doc(), RecordSummaryRowKit.doc(), QrCodeKit.doc(), ScanKit.doc(), LabelSheetKit.doc(),
         ...TabsKit.docs(), ...SurfacesKit.docs(), PageHeaderKit.doc(), PagePiecesKit.doc(), ...RecordPiecesKit.docs(), ...OverlaysKit.docs(),
         ...FieldsRichKit.docs(), ...ShellKit.docs(), ...PanelsKit.docs(), ...NewPiecesKit.docs(), MotionKit.doc(),
       ];

@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Nezaznamenáno",
       "filter": "Filtrovat podle klíče…",
+      "count": "{{count}} hodnot",
+      "technical": "Technické",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Zatím nic nezaznamenáno.",
       "noMatch": "Filtru nic neodpovídá.",

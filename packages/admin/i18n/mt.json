@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Mhux irreġistrat",
       "filter": "Iffiltra skont iċ-ċavetta…",
+      "count": "{{count}} valuri",
+      "technical": "Tekniku",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Għad m'hemm xejn irreġistrat.",
       "noMatch": "Xejn ma jaqbel ma' dak il-filtru.",

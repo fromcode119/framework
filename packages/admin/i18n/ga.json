@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Níor taifeadadh",
       "filter": "Scag de réir eochrach…",
+      "count": "{{count}} luach",
+      "technical": "Teicniúil",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Níl aon rud taifeadta fós.",
       "noMatch": "Níl aon rud a mheaitseálann an scagaire sin.",

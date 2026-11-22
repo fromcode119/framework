@@ -19,6 +19,7 @@ describe('AdminSchemaLocalizer', () => {
     'shop.admin.settings.tabs.checkout': 'Поръчване',
     'shop.admin.settings.fields.orderNumberPrefix.description': 'Пред номера.',
     'shop.admin.collections.catalog.fields.history.keyLabels.changedBy': 'Променено от',
+    'shop.admin.collections.catalog.fields.history.valueLabels.pending': 'Чакаща',
   };
   const localizer = new AdminSchemaLocalizer((plugin, key) => dictionary[`${plugin}.${key}`] || '');
 
@@ -115,6 +116,7 @@ describe('AdminSchemaLocalizer', () => {
       fields: [{ name: 'history', admin: { component: 'StructuredReadOnlyField' } }, { name: 'name' }],
     });
     expect(out.fields[0].admin.keyLabels).toEqual({ changedBy: 'Променено от' });
+    expect(out.fields[0].admin.valueLabels).toEqual({ pending: 'Чакаща' });
     expect(out.fields[1].admin).toBeUndefined();
   });
 

@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "Neînregistrat",
       "filter": "Filtrați după cheie…",
+      "count": "{{count}} valori",
+      "technical": "Tehnice",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "Nimic înregistrat încă.",
       "noMatch": "Nimic nu corespunde acestui filtru.",

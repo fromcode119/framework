@@ -539,6 +539,8 @@
     "structured": {
       "notRecorded": "기록 없음",
       "filter": "키로 필터…",
+      "count": "값 {{count}}개",
+      "technical": "기술 정보",
       "more": "{{count}} more values under these — type a key above to find one.",
       "empty": "아직 기록된 내용이 없습니다.",
       "noMatch": "필터와 일치하는 항목이 없습니다.",
