@@ -13,6 +13,9 @@ import type { IResolvedDocOrigin } from '@/lib/interfaces/resolved-doc-origin.in
  * `{ query, data }`, where `query` is exactly what was asked (sorted). The component uses the payload only
  * when it would ask the same, so a payload never paints records the component would not show.
  *
+ * An entry with a `block` applies to any page whose content holds that block — a page an operator composed
+ * has no recipe, so its plugin block still painted empty until the browser loaded it.
+ *
  * An entry with a `collection` instead applies to that plugin's own RECORD pages — a record the site
  * resolved at an address — and its route's `:field` segments take the record's own fields. A product page
  * rendered from the bare record went out without the pictures, which only its route resolves; it now starts
@@ -34,7 +37,8 @@ export class PluginPagePrefetcher {
     const recipe = String(record?.recipe ?? '').trim();
     const owner = PluginPagePrefetcher.token(origin.plugin);
     const type = PluginPagePrefetcher.token(origin.type);
-    if ((!recipe && !(owner && type)) || !Array.isArray(plugins)) return;
+    const blockTypes = PluginPagePrefetcher.blockTypesOf(record);
+    if ((!recipe && !(owner && type) && !blockTypes.size) || !Array.isArray(plugins)) return;
     const address = new URLSearchParams(requestSearch);
 
     const requests: Array<Promise<void>> = [];
@@ -48,9 +52,15 @@ export class PluginPagePrefetcher {
         const key = PluginPagePrefetcher.token(entry?.key);
         const forRecipe = String(entry?.recipe ?? '').trim();
         const forCollection = String(entry?.collection ?? '').trim();
-        // A recipe page of any plugin, or a record page of THIS plugin's own collection — never another's.
-        const applies = forRecipe ? forRecipe === recipe : Boolean(forCollection) && slug === owner && forCollection === type;
-        const path = applies && key ? PluginPagePrefetcher.routeFor(String(entry?.path ?? '').trim(), forRecipe ? null : record) : '';
+        const forBlock = String(entry?.block ?? '').trim();
+        // A recipe page of any plugin, a page holding the entry's block, or a record page of THIS plugin's own
+        // collection — never another's.
+        const applies = forRecipe
+          ? forRecipe === recipe
+          : forBlock
+            ? blockTypes.has(forBlock)
+            : Boolean(forCollection) && slug === owner && forCollection === type;
+        const path = applies && key ? PluginPagePrefetcher.routeFor(String(entry?.path ?? '').trim(), forCollection && !forRecipe && !forBlock ? record : null) : '';
         if (!path) continue;
         const query = PluginPagePrefetcher.queryOf(entry, address);
         requests.push((async () => {
@@ -99,6 +109,23 @@ export class PluginPagePrefetcher {
       filled.push(encodeURIComponent(value));
     }
     return filled.join('/');
+  }
+
+  /**
+   * The block types a page's content holds. A page an operator composed (a CMS page carrying a plugin's block)
+   * has no recipe, so an entry may name the BLOCK instead — the page then starts from the block's data too.
+   */
+  static blockTypesOf(record: Record<string, unknown> | null): Set<string> {
+    const content = record?.content;
+    const blocks = Array.isArray(content)
+      ? content
+      : (Object.values(PluginPagePrefetcher.asRecord(content) || {}).find(Array.isArray) as unknown[]) || [];
+    const types = new Set<string>();
+    for (const block of blocks) {
+      const name = String(PluginPagePrefetcher.asRecord(block)?.type ?? '').trim();
+      if (name) types.add(name);
+    }
+    return types;
   }
 
   /** A plugin slug / entry key: one path-safe token. */

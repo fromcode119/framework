@@ -41,6 +41,16 @@ describe('PluginPagePrefetcher', () => {
     expect(results).toEqual({});
   });
 
+  it('fetches for a page whose content holds the entry\'s block, and for no other page', async () => {
+    const fetchEntry = vi.spyOn(ThemeDataPrefetcher, 'fetchEntry').mockResolvedValue({ doors: [] });
+    const byBlock = [{ slug: 'shop', ui: { pagePrefetch: [{ block: 'shop-list', key: 'list', path: 'items', requestQuery: { preview: 'preview' } }] } }];
+    const results = await PageDocPrefetcher.prefetch({ content: [{ id: 'a', type: 'shop-list', data: {} }] }, { ui: {} }, byBlock, '?preview=k');
+    expect(String(fetchEntry.mock.calls[0][0])).toContain('/plugins/shop/items?preview=k');
+    expect(results['shop:list']).toEqual({ query: 'preview=k', data: { doors: [] } });
+    expect(await PageDocPrefetcher.prefetch({ content: [{ id: 'b', type: 'other', data: {} }] }, { ui: {} }, byBlock, '')).toEqual({});
+    expect(fetchEntry).toHaveBeenCalledTimes(1);
+  });
+
   describe('a plugin\'s own record page', () => {
     const owning = [{ slug: 'shop', ui: { pagePrefetch: [{ collection: 'catalog', key: 'item', path: 'items/:slug' }] } }];
 
