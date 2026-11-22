@@ -141,6 +141,7 @@ export class SiteDetailPageClient extends AdminComponent {
   private async save(): Promise<void> {
     try {
       this.apply(await SitesClient.update(this.id, this.values.toUpdatePayload()));
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteSaved'), message: this.id, type: NotificationType.SUCCESS });
     } catch (err: any) {
       this.pending?.failed();
       this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notSaved'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe2'), type: NotificationType.ERROR });

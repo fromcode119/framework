@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Stranice nije moguće učitati.",
+    "siteSaved": "Web-mjesto spremljeno",
     "siteExported": "Stranica je izvezena",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} redaka) nalazi se u Sigurnosne kopije → Stranice.",
     "exportFailed": "Izvoz nije uspio",

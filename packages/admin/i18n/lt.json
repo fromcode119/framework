@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Nepavyko įkelti svetainių.",
+    "siteSaved": "Svetainė išsaugota",
     "siteExported": "Svetainė eksportuota",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} eil.) rasite skiltyje Atsarginės kopijos → Svetainės.",
     "exportFailed": "Eksportuoti nepavyko",

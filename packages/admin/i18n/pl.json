@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Nie udało się wczytać witryn.",
+    "siteSaved": "Witryna zapisana",
     "siteExported": "Witryna wyeksportowana",
     "rowsIsUnderBackupsSites": "Plik {{filename}} (wiersze: {{rows}}) znajduje się w sekcji Kopie zapasowe → Witryny.",
     "exportFailed": "Eksport nie powiódł się",

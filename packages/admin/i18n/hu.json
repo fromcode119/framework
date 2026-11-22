@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "A webhelyeket nem sikerült betölteni.",
+    "siteSaved": "Webhely mentve",
     "siteExported": "Webhely exportálva",
     "rowsIsUnderBackupsSites": "A(z) {{filename}} ({{rows}} sor) a Biztonsági mentések → Webhelyek alatt található.",
     "exportFailed": "Sikertelen exportálás",

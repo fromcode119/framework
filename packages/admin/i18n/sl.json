@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Spletnih mest ni bilo mogoče naložiti.",
+    "siteSaved": "Spletno mesto shranjeno",
     "siteExported": "Spletno mesto izvoženo",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} vrstic) je v razdelku Varnostne kopije → Spletna mesta.",
     "exportFailed": "Izvoz ni uspel",

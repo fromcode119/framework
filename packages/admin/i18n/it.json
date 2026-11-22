@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Impossibile caricare i siti.",
+    "siteSaved": "Sito salvato",
     "siteExported": "Sito esportato",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} righe) si trova in Backup → Siti.",
     "exportFailed": "Esportazione non riuscita",

@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Không thể tải danh sách trang web.",
+    "siteSaved": "Đã lưu trang",
     "siteExported": "Đã xuất trang web",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} hàng) nằm trong Sao lưu → Trang web.",
     "exportFailed": "Xuất thất bại",

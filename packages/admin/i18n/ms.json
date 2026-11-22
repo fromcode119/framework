@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Tidak dapat memuatkan tapak.",
+    "siteSaved": "Tapak disimpan",
     "siteExported": "Tapak dieksport",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} baris) terdapat di bawah Sandaran → Tapak.",
     "exportFailed": "Eksport gagal",

@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "無法載入網站。",
+    "siteSaved": "網站已儲存",
     "siteExported": "網站已匯出",
     "rowsIsUnderBackupsSites": "{{filename}}（{{rows}} 列）位於「備份 → 網站」中。",
     "exportFailed": "匯出失敗",

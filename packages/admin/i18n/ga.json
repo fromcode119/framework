@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Níorbh fhéidir na suíomhanna a lódáil.",
+    "siteSaved": "Suíomh sábháilte",
     "siteExported": "Suíomh easpórtáilte",
     "rowsIsUnderBackupsSites": "Tá {{filename}} ({{rows}} ró) faoi Cúltacaí → Suíomhanna.",
     "exportFailed": "Theip ar an easpórtáil",

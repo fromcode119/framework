@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Не удалось загрузить сайты.",
+    "siteSaved": "Сайт сохранён",
     "siteExported": "Сайт экспортирован",
     "rowsIsUnderBackupsSites": "{{filename}} (строк: {{rows}}) находится в разделе «Резервные копии → Сайты».",
     "exportFailed": "Ошибка экспорта",

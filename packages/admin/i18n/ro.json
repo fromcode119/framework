@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Site-urile nu au putut fi încărcate.",
+    "siteSaved": "Site salvat",
     "siteExported": "Site exportat",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rânduri) se află în Backupuri → Site-uri.",
     "exportFailed": "Exportul a eșuat",

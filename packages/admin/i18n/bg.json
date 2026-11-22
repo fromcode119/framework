@@ -4203,6 +4203,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Сайтовете не можаха да бъдат заредени.",
+    "siteSaved": "Сайтът е записан",
     "siteExported": "Сайтът е експортиран",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} реда) е в Архиви → Сайтове.",
     "exportFailed": "Неуспешен експорт",

@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "تعذّر تحميل المواقع.",
+    "siteSaved": "تم حفظ الموقع",
     "siteExported": "تم تصدير الموقع",
     "rowsIsUnderBackupsSites": "يوجد {{filename}} ({{rows}} صف) ضمن النسخ الاحتياطية ← المواقع.",
     "exportFailed": "فشل التصدير",

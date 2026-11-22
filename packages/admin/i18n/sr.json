@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Није могуће учитати сајтове.",
+    "siteSaved": "Сајт је сачуван",
     "siteExported": "Сајт је извезен",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} редова) налази се у Резервне копије → Сајтови.",
     "exportFailed": "Извоз није успео",

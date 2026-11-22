@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Could not load the sites.",
+    "siteSaved": "Site saved",
     "siteExported": "Site exported",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rows) is under Backups → Sites.",
     "exportFailed": "Export failed",

@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Webstederne kunne ikke indlæses.",
+    "siteSaved": "Websted gemt",
     "siteExported": "Webstedet er eksporteret",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rækker) ligger under Sikkerhedskopier → Websteder.",
     "exportFailed": "Eksporten mislykkedes",

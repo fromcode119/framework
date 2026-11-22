@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Δεν ήταν δυνατή η φόρτωση των ιστοτόπων.",
+    "siteSaved": "Ο ιστότοπος αποθηκεύτηκε",
     "siteExported": "Ο ιστότοπος εξήχθη",
     "rowsIsUnderBackupsSites": "Το {{filename}} ({{rows}} γραμμές) βρίσκεται στα Αντίγραφα ασφαλείας → Ιστότοποι.",
     "exportFailed": "Η εξαγωγή απέτυχε",

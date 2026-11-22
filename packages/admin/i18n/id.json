@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Tidak dapat memuat situs.",
+    "siteSaved": "Situs disimpan",
     "siteExported": "Situs diekspor",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} baris) ada di Cadangan → Situs.",
     "exportFailed": "Ekspor gagal",

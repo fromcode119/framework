@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Saite ei õnnestunud laadida.",
+    "siteSaved": "Sait salvestatud",
     "siteExported": "Sait eksporditud",
     "rowsIsUnderBackupsSites": "{{filename}} ({{rows}} rida) asub jaotises Varukoopiad → Saidid.",
     "exportFailed": "Eksport ebaõnnestus",

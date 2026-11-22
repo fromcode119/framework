@@ -3747,6 +3747,7 @@
   },
   "sites": {
     "couldNotLoadTheSites": "Hindi ma-load ang mga site.",
+    "siteSaved": "Na-save ang site",
     "siteExported": "Na-export ang site",
     "rowsIsUnderBackupsSites": "Ang {{filename}} ({{rows}} na row) ay nasa Backups → Sites.",
     "exportFailed": "Nabigo ang pag-export",
