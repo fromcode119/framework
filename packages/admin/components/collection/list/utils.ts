@@ -69,7 +69,8 @@ export class CollectionListUtils {
     if (declared) return declared;
     const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
     if (/ies$/i.test(label)) return label.replace(/ies$/i, 'y');
-    if (/ses$/i.test(label)) return label.replace(/es$/i, '');
+    // "Statuses" and "Classes" lose "es"; "Courses", "Licenses" and "Warehouses" lose only the "s".
+    if (/(ss|us|is)es$/i.test(label)) return label.replace(/es$/i, '');
     if (/s$/i.test(label) && !/ss$/i.test(label)) return label.replace(/s$/i, '');
     return label;
   }
