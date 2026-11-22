@@ -11,14 +11,14 @@ import chalk from 'chalk';
  */
 export class StackCapacity {
   private static readonly GIB = 1024 ** 3;
+  private static readonly UNITS: Record<string, number> = { '': 1, k: 1024, m: 1024 ** 2, g: 1024 ** 3 };
 
   /** What one dev server may take when its limit is written as "4G", "512m" or a plain byte count. */
   static bytesOf(limit: string | null): number {
     const match = /^\s*(\d+(?:\.\d+)?)\s*([kmg]?)b?\s*$/i.exec(String(limit ?? ''));
     if (!match) return 0;
 
-    const unit = { '': 1, k: 1024, m: 1024 ** 2, g: 1024 ** 3 }[match[2].toLowerCase() as '' | 'k' | 'm' | 'g'];
-    return Math.round(Number(match[1]) * unit);
+    return Math.round(Number(match[1]) * (StackCapacity.UNITS[match[2].toLowerCase()] ?? 1));
   }
 
   /** The warning, or '' when the new stack fits next to the ones already live. */
