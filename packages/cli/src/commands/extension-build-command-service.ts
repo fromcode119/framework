@@ -24,8 +24,13 @@ export class ExtensionBuildCommandService {
     ExtensionBuildCommandService.registerChecksum(program);
   }
 
-  /** `plugins/<slug>`, `themes/<slug>` or `appearance/<slug>` under the workspace root. */
+  /**
+   * `plugins/<slug>`, `themes/<slug>` or `appearance/<slug>`. Plugins and themes live under the root their own
+   * setting names (`PLUGINS_DIR`, `THEMES_DIR`) — a theme used to be looked for beside the plugins root, so a
+   * `THEMES_DIR` pointing at a working copy was ignored and the build went to the shared checkout or nowhere.
+   */
   private static resolveDir(directoryName: string, slug: string): string {
+    if (directoryName === 'themes') return path.resolve(CliUtils.themesRoot(), slug);
     return path.resolve(path.dirname(CliUtils.getPluginsDir()), directoryName, slug);
   }
 

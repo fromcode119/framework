@@ -7,7 +7,7 @@ import { StackTemplateRestore } from '@cli/services/stack/stack-template-restore
 
 describe('StackPlan', () => {
   let framework: string;
-  let request: { name: string; framework: string; plugins: string[]; version: string; port: number };
+  let request: { name: string; framework: string; plugins: string[]; themes?: string[]; version: string; port: number };
 
   /**
    * A checkout that declares its own layout, because the plan reads it rather than assuming it:
@@ -42,6 +42,18 @@ describe('StackPlan', () => {
 
     // Without it a plugin that needs a newer core than the image's tag is held on a stack running that core.
     expect(overlay).toContain(`${path.join(framework, 'package.json')}:/srv/package.json:ro`);
+  });
+
+  it('mounts a theme worktree under its theme.json slug, where the topology says themes go', () => {
+    fs.mkdirSync(path.join(framework, 'modules', 'core', 'dist'), { recursive: true });
+    const theme = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-theme-change-'));
+    fs.writeFileSync(path.join(theme, 'theme.json'), JSON.stringify({ slug: 'shop' }));
+
+    const overlay = new StackPlan({ ...request, themes: [theme] }).overlay();
+
+    // Named for the change on disk, found by slug in the platform.
+    expect(overlay).toContain(`${theme}:/srv/themes/shop`);
+    fs.rmSync(theme, { recursive: true, force: true });
   });
 
   it('mounts a plugin where the topology says plugins go', () => {
