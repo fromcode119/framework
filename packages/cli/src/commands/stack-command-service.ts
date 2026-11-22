@@ -8,6 +8,7 @@ import { StackPlan } from '@cli/services/stack/stack-plan';
 import { StackImageTag } from '@cli/services/stack/stack-image-tag';
 import { StackTemplate } from '@cli/services/stack/stack-template';
 import { StackPluginBuild } from '@cli/services/stack/stack-plugin-build';
+import { StackThemeBuild } from '@cli/services/stack/stack-theme-build';
 
 /**
  * `fromcode stack` — a throwaway platform for one worktree.
@@ -34,6 +35,7 @@ export class StackCommandService {
       .description('Start an isolated stack running a worktree (builds no images)')
       .option('-f, --framework <path>', 'Framework worktree to run', process.cwd())
       .option('-p, --plugin <path...>', 'Plugin worktree to mount (built in place before the stack starts)', [])
+      .option('-T, --theme <path...>', 'Theme worktree to mount (built in place before the stack starts)', [])
       // NOT `--version`: commander already owns that on the program, so the flag printed the CLI's
       // own version and never started a stack.
       .option('-t, --tag <tag>', 'Released image tag to run on (default: the worktree version if it is here, else the template\'s, else the newest here)')
@@ -42,19 +44,21 @@ export class StackCommandService {
       .action(async (name: string, options: Record<string, unknown>) => {
         const service = new StackService();
         const framework = path.resolve(String(options.framework));
-        let request: { name: string; framework: string; plugins: string[]; version: string; port: number } | null = null;
+        let request: { name: string; framework: string; plugins: string[]; themes: string[]; version: string; port: number } | null = null;
 
         try {
           request = {
             name,
             framework,
             plugins: (options.plugin as string[]).map((plugin) => path.resolve(plugin)),
+            themes: (options.theme as string[]).map((theme) => path.resolve(theme)),
             version: StackCommandService.tagFor(framework, options),
             port: new StackStore().claimPort(name, options.port as number | undefined),
           };
           const plan = new StackPlan(request);
           StackCommandService.reportDependencies(plan);
           await StackPluginBuild.all(plan.changedPlugins());
+          await StackThemeBuild.all(request.themes);
           await service.up(request, options.from ? String(options.from) : undefined);
 
           console.log(chalk.green(`\nStack "${name}" is up.`));

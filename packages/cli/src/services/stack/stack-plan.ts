@@ -1,3 +1,4 @@
+import { StackThemeBuild } from '@cli/services/stack/stack-theme-build';
 import fs from 'fs';
 import path from 'path';
 import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
@@ -132,7 +133,7 @@ export class StackPlan {
       const host = path.join(this.workspacesDir(), pkg, StackPlan.PACKAGE_OUTPUT);
       mounts.push(`${host}:${this.layout.containerPackage(pkg, StackPlan.PACKAGE_OUTPUT)}`);
     }
-    mounts.push(...this.versionMount(), ...this.pluginMounts());
+    mounts.push(...this.versionMount(), ...this.extensionMounts());
     return mounts;
   }
 
@@ -161,13 +162,16 @@ export class StackPlan {
   /** The extension kind a `--plugin` belongs to, as the topology names its mount. */
   private static readonly PLUGIN_KIND = 'plugins';
 
+  /** The extension kind a `--theme` belongs to. */
+  private static readonly THEME_KIND = 'themes';
+
   /**
    * One app's overlay section: run from the worktree's source when the dev overlay describes how,
    * otherwise only its built output over the image's own build.
    */
   private appSection(app: string): string[] {
     const source = StackSourceApps.of(this.request.framework).app(app);
-    const mounts = source ? [...source.volumes, ...this.pluginMounts()] : this.appMounts(app);
+    const mounts = source ? [...source.volumes, ...this.extensionMounts()] : this.appMounts(app);
     if (!mounts.length) return [];
 
     const lines = [`  ${app}:`];
@@ -189,7 +193,7 @@ export class StackPlan {
       const host = path.join(base, output);
       if (fs.existsSync(host)) mounts.push(`${host}:${this.layout.containerPackage(app, output)}`);
     }
-    mounts.push(...this.pluginMounts());
+    mounts.push(...this.extensionMounts());
     return mounts;
   }
 
@@ -210,6 +214,24 @@ export class StackPlan {
       const writable = StackExtensions.chosenAmong(this.request.plugins, directory) && !this.extensions.isMirrored(directory);
       const mode = writable ? '' : ':ro';
       mounts.push(`${directory}:${container}${mode}`);
+    }
+    return mounts;
+  }
+
+  /** Plugins and themes, which the same apps mount. */
+  private extensionMounts(): string[] {
+    return [...this.pluginMounts(), ...this.themeMounts()];
+  }
+
+  /**
+   * A theme worktree, at the container path the topology declares for themes, writable like a plugin worktree.
+   * Mounted under its manifest slug, not its directory name.
+   */
+  private themeMounts(): string[] {
+    const mounts: string[] = [];
+    for (const directory of this.request.themes ?? []) {
+      const container = this.layout.containerExtension(StackPlan.THEME_KIND, StackThemeBuild.slugOf(directory));
+      if (container) mounts.push(`${directory}:${container}`);
     }
     return mounts;
   }
