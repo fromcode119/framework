@@ -41,6 +41,8 @@ export class InstalledThemesPageClient
   @state siteQuota: IInstalledThemesSiteQuota | null = null;
   /** In a site, the page is that site's: its uploads, its own themes. Unknown until read. */
   @state siteScope = false;
+  /** The platform scope of a platform with sites: a theme is chosen by each site, so none is activated here. */
+  @state perSite = false;
   @state scopeKnown = false;
 
   get notify(): INotificationContextType {
@@ -69,6 +71,7 @@ export class InstalledThemesPageClient
     void PlatformSettingLocks.load().then((locks) => {
       if (!this.mounted) return;
       this.siteScope = locks.isSiteScope();
+      this.perSite = locks.isPlatformScope();
       this.scopeKnown = true;
       void this.actions.fetchThemes();
     });
@@ -176,6 +179,7 @@ export class InstalledThemesPageClient
         onDeleteMine={this.onDeleteMine}
         siteQuota={this.siteQuota}
         siteScope={this.scopeKnown && this.siteScope}
+        perSite={this.scopeKnown && this.perSite}
         onUpdate={this.onUpdate}
         onNavigate={(href: string) => this.router.push(href)}
         showUploadPreview={this.showUploadPreview}

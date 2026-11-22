@@ -2,6 +2,7 @@ import fs from 'fs';
 import { execFileSync } from 'child_process';
 import path from 'path';
 import chalk from 'chalk';
+import { StackThemeBuild } from '@cli/services/stack/stack-theme-build';
 import { DeploymentTarget } from '@cli/services/deploy/deployment-target';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
 import { StackPlan } from '@cli/services/stack/stack-plan';
@@ -33,7 +34,7 @@ export class StackService {
 
     const plan = new StackPlan(request);
     const root = this.store.rootFor(request.name);
-    this.materialise(root, request.framework, plan);
+    this.materialise(root, request.framework, plan, request.themes ?? []);
     this.store.write(request.name, request.port, request.framework, request.version, request.plugins);
 
     if (template) {
@@ -244,7 +245,7 @@ export class StackService {
    * one level above it, where every stack would have shared the same ones. The isolation this
    * command exists for would have been silently absent, and the directories outlive `down`.
    */
-  private materialise(root: string, framework: string, plan: StackPlan): void {
+  private materialise(root: string, framework: string, plan: StackPlan, themes: readonly string[]): void {
     const source = path.join(framework, StackLayout.DEPLOY_DIR);
     if (!fs.existsSync(source)) throw new Error(`${framework} has no ${StackLayout.DEPLOY_DIR}/ directory`);
 
@@ -253,6 +254,9 @@ export class StackService {
     fs.cpSync(source, deploy, { recursive: true });
     fs.writeFileSync(path.join(deploy, '.env'), plan.env());
     fs.writeFileSync(path.join(deploy, 'docker-compose.stack.yml'), plan.overlay());
+    // Some services mount `../themes` read-only, and a container cannot make the mountpoint of a theme
+    // worktree inside one: the directory has to exist on the host first.
+    for (const theme of themes) fs.mkdirSync(path.join(root, 'themes', StackThemeBuild.slugOf(theme)), { recursive: true });
   }
 
   /** Compose runs here, one level inside the stack, so its `../` mounts stay inside the stack. */

@@ -36,6 +36,8 @@ export class InstalledThemesView extends PureReactor {
   @prop declare onUpdate: (slug: string) => Promise<void>;
   /** In a site: uploads go into its own directory, and its own themes can be removed there. */
   @prop declare siteScope: boolean;
+  /** Platform scope with sites: each site chooses its own theme, so none is activated from here. */
+  @prop declare perSite: boolean;
   @prop declare siteQuota: IInstalledThemesSiteQuota | null;
   @prop declare onDeleteMine: (slug: string, isActive: boolean) => Promise<void>;
   @prop declare showUploadPreview: boolean;
@@ -66,7 +68,7 @@ export class InstalledThemesView extends PureReactor {
     return (
       <InstalledThemeCard key={theme.slug} onActivate={this.onActivate} onDisable={this.onDisable} onDelete={this.onDelete}
         onDeleteMine={this.onDeleteMine} onUpdate={this.onUpdate} onNavigate={this.onNavigate} theme={theme}
-        updateVersion={this.updateVersionForTheme(theme)} canManage={this.canManage}
+        updateVersion={this.updateVersionForTheme(theme)} canManage={this.canManage} perSite={this.perSite}
         ownedBySite={this.siteScope && Boolean(theme.ownerTenantId)} />
     );
   }
@@ -105,7 +107,8 @@ export class InstalledThemesView extends PureReactor {
   private renderThemes(): ReactNode {
     const themes = this.themes;
     if (!themes.length) {
-      return <ListCard empty={AdminI18n.t('themes.noThemesInstalled')} />;
+      // A site sees only the themes assigned to it, so "none installed" would be false: the platform has them.
+      return <ListCard empty={AdminI18n.t(this.siteScope ? 'themes.noneAssignedToThisSite' : 'themes.noThemesInstalled')} />;
     }
     // `themes` is API JSON, so `state` is a raw string here — resolve before comparing to a member.
     const isActive = (theme: IInstalledThemeManifest) => ThemeState.resolve(theme.state) === ThemeState.ACTIVE;
