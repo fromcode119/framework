@@ -11,6 +11,7 @@ import { StructuredReadOnlyTable } from '@/components/collection/fields/view/str
 import { StructuredReadOnlyList } from '@/components/collection/fields/view/structured-read-only-list.client';
 import { StructuredReadOnlyTableService } from '@/components/collection/fields/structured-read-only-table-service';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
+import { StructuredReadOnlySummaryService } from '@/components/collection/fields/structured-read-only-summary-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -33,7 +34,7 @@ export class StructuredReadOnlyField extends Reactor {
   @state private filterText = '';
 
   private get parsedValue(): unknown {
-    return StructuredReadOnlyFieldService.relabelValues(StructuredReadOnlyFieldService.parse(this.value), this.valueLabels);
+    return StructuredReadOnlySummaryService.relabelValues(StructuredReadOnlyFieldService.parse(this.value), this.valueLabels);
   }
 
   /** What the plugin's dictionary calls the words the record stores (`fields.<field>.valueLabels`), put on the field by the console's localizer. */
@@ -78,7 +79,7 @@ export class StructuredReadOnlyField extends Reactor {
    */
   private renderSummary(node: IStructuredNode): ReactNode {
     const count = AdminI18n.t('ui.structured.count', { count: StructuredReadOnlyFieldService.leafCount(node) });
-    const { named, technical } = StructuredReadOnlyFieldService.splitByLabel(node, this.keyLabels);
+    const { named, technical } = StructuredReadOnlySummaryService.splitByLabel(node, this.keyLabels);
     const filter = this.filterText.trim().toLowerCase();
     const title = String(this.field?.label ?? '').trim() || AdminI18n.t('collection.structuredValue');
     return (
@@ -127,7 +128,7 @@ export class StructuredReadOnlyField extends Reactor {
     }
 
     // Too big for a card: one row that opens a drawer, whatever the object came from (JSON, metadata, a payload).
-    if (StructuredReadOnlyFieldService.needsSummary(node)) return this.renderSummary(node);
+    if (StructuredReadOnlySummaryService.needsSummary(node)) return this.renderSummary(node);
 
     // A long record (an import's whole payload) gets a filter; a short one is read at a glance.
     const isLarge = StructuredReadOnlyFieldService.isLargePayload(node);
