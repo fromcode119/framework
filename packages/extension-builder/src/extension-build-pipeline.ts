@@ -257,6 +257,14 @@ export class ExtensionBuildPipeline {
     return path.join(path.dirname(ExtensionBuildPipeline.seedOutputPath(workspace, slug)), Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT);
   }
 
+  /**
+   * Where an in-place theme build leaves its compiled seed, for a caller that runs the theme from its own
+   * directory (a stack): the theme package only carries `seed.mjs` once packed, so such a caller copies it in.
+   */
+  static builtThemeSeedPath(sourceDir: string, slug: string): string {
+    return ExtensionBuildPipeline.seedOutputPath(ExtensionWorkspace.resolve(sourceDir, ExtensionKind.THEME), slug);
+  }
+
   private static seedOutputPath(workspace: ExtensionWorkspace, slug: string): string {
     const workspaceRoot = path.dirname(path.dirname(workspace.sourceDir));
     return path.join(workspaceRoot, 'dist', 'packages', 'build', 'themes', slug, Core.ThemePackageLayout.SEED_ARTIFACT);
