@@ -6,10 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.634] - 2026-11-22
+
+### Added
+
+- **admin**: a record too big for a card is one row that opens a drawer ([#1605](https://github.com/fromcode119/framework/pull/1605))
+- **cli**: stack up warns when Docker's memory cannot hold another stack ([#1604](https://github.com/fromcode119/framework/pull/1604))
+- **cli**: stack up --theme, and build theme honours THEMES_DIR ([#1599](https://github.com/fromcode119/framework/pull/1599))
+
+### Fixed
+
+- **cli**: a theme mounted on a stack brings its seed, so a new site gets a home page ([#1603](https://github.com/fromcode119/framework/pull/1603))
+- platform themes say each site activates its own; a site with none says none is assigned; stack mounts a theme worktree ([#1602](https://github.com/fromcode119/framework/pull/1602))
+- **admin**: saving a site says it was saved ([#1601](https://github.com/fromcode119/framework/pull/1601))
+- **core**: a site's absolute link keeps the port the deployment is reached on ([#1600](https://github.com/fromcode119/framework/pull/1600))
+- **admin**: /settings/integrations/<type> opens that integration instead of a missing collection ([#1598](https://github.com/fromcode119/framework/pull/1598))
+- **ci**: extension release no longer dies of SIGPIPE when looking up the last tag ([#1597](https://github.com/fromcode119/framework/pull/1597))
+- **admin**: a table in a record card ends at the card's edge on a phone ([#1596](https://github.com/fromcode119/framework/pull/1596))
+- **cli**: a stack installs the packages its image lacks ([#1595](https://github.com/fromcode119/framework/pull/1595))
+
 ## [0.2.633] - 2026-11-21
 
 ### Fixed
-- admin: a lone field under a long setting description runs to the row's end (#1593)
+
+- **admin**: a lone field under a long setting description runs to the row's end ([#1593](https://github.com/fromcode119/framework/pull/1593))
 
 ## [0.2.632] - 2026-11-21
 
