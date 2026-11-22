@@ -38,6 +38,8 @@ export class InstalledThemeCard extends PureReactor {
   @prop declare canManage: boolean;
   /** A theme THIS site uploaded (in its own directory): the site may remove it. */
   @prop declare ownedBySite: boolean;
+  /** Platform scope with sites: the theme is activated by each site, never from here. */
+  @prop declare perSite: boolean;
   @prop declare onDeleteMine: (slug: string, isActive: boolean) => Promise<void>;
 
   private get isActive(): boolean {
@@ -83,7 +85,9 @@ export class InstalledThemeCard extends PureReactor {
         menu={this.menuItems}
         actions={isActive
           ? <Button variant={ButtonVariant.SECONDARY} onClick={() => this.onNavigate(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug))}>{AdminI18n.t('themes.settings')}</Button>
-          : <Button variant={ButtonVariant.SECONDARY} onClick={() => void this.onActivate(theme.slug)}>{AdminI18n.t('themes.activate')}</Button>}
+          : this.perSite
+            ? <span className="fc-size-xs fc-tone-muted">{AdminI18n.t('themes.activatedPerSite')}</span>
+            : <Button variant={ButtonVariant.SECONDARY} onClick={() => void this.onActivate(theme.slug)}>{AdminI18n.t('themes.activate')}</Button>}
       />
     );
   }
