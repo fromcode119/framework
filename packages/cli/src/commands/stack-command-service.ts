@@ -9,6 +9,9 @@ import { StackImageTag } from '@cli/services/stack/stack-image-tag';
 import { StackTemplate } from '@cli/services/stack/stack-template';
 import { StackPluginBuild } from '@cli/services/stack/stack-plugin-build';
 import { StackThemeBuild } from '@cli/services/stack/stack-theme-build';
+import { StackCapacity } from '@cli/services/stack/stack-capacity';
+import { StackSourceApps } from '@cli/services/stack/stack-source-apps';
+import { execFileSync } from 'child_process';
 
 /**
  * `fromcode stack` — a throwaway platform for one worktree.
@@ -56,6 +59,7 @@ export class StackCommandService {
             port: new StackStore().claimPort(name, options.port as number | undefined),
           };
           const plan = new StackPlan(request);
+          StackCommandService.reportCapacity(framework);
           StackCommandService.reportDependencies(plan);
           await StackPluginBuild.all(plan.changedPlugins());
           await StackThemeBuild.all(request.themes);
@@ -132,6 +136,19 @@ export class StackCommandService {
           console.log(chalk.green(`  removed ${record.name}`));
         }
       });
+  }
+
+  /** Says before the stack starts whether Docker's memory holds it next to the stacks already live. */
+  private static reportCapacity(framework: string): void {
+    try {
+      const dockerBytes = Number(execFileSync('docker', ['info', '--format', '{{.MemTotal}}'], { encoding: 'utf8', timeout: 15_000 }).trim());
+      const sources = StackSourceApps.of(framework);
+      const perStack = ['admin', 'frontend'].reduce((sum, app) => sum + StackCapacity.bytesOf(sources.app(app)?.memory ?? null), 0);
+      const live = new StackStore().list().filter((stack) => !stack.session.isStale).map((stack) => stack.name);
+      StackCapacity.print(StackCapacity.warning(dockerBytes, live, perStack));
+    } catch {
+      // Docker not answering is for `stack up` itself to report; this is advice, never a reason to refuse.
+    }
   }
 
   /**
