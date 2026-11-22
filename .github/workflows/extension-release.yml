@@ -45,7 +45,9 @@ jobs:
           current=$(jq -r '.version' "$file")
           case "$current" in [0-9]*.[0-9]*.[0-9]*) ;; *) echo "$file version is not a plain x.y.z version: $current" >&2; exit 1 ;; esac
 
-          last_tag=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -1)
+          # `sed -n 1p`, not `head -1`: head quits after one line, git then dies of SIGPIPE, and under pipefail the
+          # whole step failed with exit 141 on a repository with many tags.
+          last_tag=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | sed -n 1p)
           if [ -z "$last_tag" ]; then
             echo "file=$file" >> "$GITHUB_OUTPUT"; echo "version=$current" >> "$GITHUB_OUTPUT"; echo "bump=false" >> "$GITHUB_OUTPUT"; echo "release=true" >> "$GITHUB_OUTPUT"
             exit 0
