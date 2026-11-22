@@ -73,7 +73,7 @@ export class SiteBaseUrl {
     try {
       const tenant = await TenantResolverService.shared(SiteBaseUrl.database).resolveById(id);
       const host = SiteBaseUrl.hostFor(tenant, app);
-      return host ? `${scheme}://${host}` : '';
+      return host ? `${scheme}://${host}${SiteBaseUrl.declaredPort(app, host)}` : '';
     } catch (error: unknown) {
       SiteBaseUrl.logger.warn(
         `Could not resolve the base URL for site "${id}". `
@@ -219,6 +219,25 @@ export class SiteBaseUrl {
     for (const candidate of apps) {
       const scheme = SiteBaseUrl.schemeOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(candidate));
       if (scheme) return scheme;
+    }
+    return '';
+  }
+
+  /**
+   * `:8200` when the address this deployment declares for the app carries a port and the site's host does not.
+   *
+   * A tenant record holds hosts, never a port, and a deployment reached on a port of its own (a stack, a
+   * development machine) is reached on that port by every site it serves: a link without it opens nothing.
+   * A deployment on the default port declares none, so nothing is added there.
+   */
+  private static declaredPort(app: string, host: string): string {
+    if (/:\d+$/.test(host)) return '';
+    const apps = [app, ApplicationUrlUtils.FRONTEND_APP, ApplicationUrlUtils.API_APP, ApplicationUrlUtils.ADMIN_APP];
+    for (const candidate of apps) {
+      try {
+        const port = new URL(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(candidate)).port;
+        if (port) return `:${port}`;
+      } catch { /* no address declared for this app */ }
     }
     return '';
   }

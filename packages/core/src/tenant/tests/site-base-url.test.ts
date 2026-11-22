@@ -177,6 +177,14 @@ describe('a named site’s base URL, for display', () => {
     expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('http://shop.framework.local');
   });
 
+  it('keeps the port the deployment is reached on, which a site\u2019s host does not carry', async () => {
+    multiTenant();
+    withUrls('http://console.stack.localhost:8203', 'http://console.stack.localhost:8203');
+    wire(tenant('shop.stack.localhost'));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('http://shop.stack.localhost:8203');
+  });
+
   it('answers NOTHING, not the platform’s URL, when the site has no host', async () => {
     // A screen that says "this site is served at …" must not print the platform's host.
     multiTenant();
