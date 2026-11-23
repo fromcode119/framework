@@ -22,10 +22,14 @@ export class MetadataHeadView {
     const twitter = MetadataHeadView.record(page.twitter) ?? MetadataHeadView.record(site.twitter);
     const icons = MetadataHeadView.record(site.icons);
     const other = MetadataHeadView.record(page.other) ?? {};
+    const keywords = MetadataHeadView.keywords(page.keywords ?? site.keywords);
+    const verification = MetadataHeadView.record(page.verification) ?? MetadataHeadView.record(site.verification);
     return (
       <>
         {title ? <title>{title}</title> : null}
         {description ? <meta name="description" content={description} /> : null}
+        {keywords ? <meta name="keywords" content={keywords} /> : null}
+        {MetadataHeadView.verification(verification)}
         {canonical ? <link rel="canonical" href={canonical} /> : null}
         {Object.entries(languages).map(([hrefLang, href]) => (
           <link key={`alternate-${hrefLang}`} rel="alternate" hrefLang={hrefLang} href={MetadataHeadView.text(href)} />
@@ -78,6 +82,25 @@ export class MetadataHeadView {
         {MetadataHeadView.text(twitter.title) ? <meta name="twitter:title" content={MetadataHeadView.text(twitter.title)} /> : null}
         {MetadataHeadView.text(twitter.description) ? <meta name="twitter:description" content={MetadataHeadView.text(twitter.description)} /> : null}
         {images.map((image) => <meta key={`tw-image-${image}`} name="twitter:image" content={image} />)}
+      </>
+    );
+  }
+
+  /** Next's `keywords` field (a string or a list) as the one comma-joined content Next prints. */
+  private static keywords(value: unknown): string {
+    const list = Array.isArray(value) ? value : value ? [value] : [];
+    return list.map((word) => MetadataHeadView.text(word)).filter(Boolean).join(',');
+  }
+
+  /** Next's `verification` field: `google` is `google-site-verification`, `other` keeps its own tag names. */
+  private static verification(verification: Record<string, unknown> | null): ReactNode {
+    if (!verification) return null;
+    const google = MetadataHeadView.text(verification.google);
+    const other = MetadataHeadView.record(verification.other) ?? {};
+    return (
+      <>
+        {google ? <meta name="google-site-verification" content={google} /> : null}
+        {Object.entries(other).map(([name, value]) => <meta key={`verification-${name}`} name={name} content={MetadataHeadView.text(value)} />)}
       </>
     );
   }

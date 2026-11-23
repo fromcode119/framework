@@ -15,6 +15,15 @@ export interface IHeadData {
   ogImage: string;
   twitterCard: string;
   twitterHandle: string;
+  /** Comma-separated `<meta name="keywords">` words; empty or absent adds no tag. */
+  keywords?: string;
+  /** The site-ownership check codes a search engine asks for; empty or absent adds no tag. */
+  googleVerification?: string;
+  bingVerification?: string;
+  /** A social app id (`fb:app_id`); empty or absent adds no tag. */
+  facebookAppId?: string;
+  /** False when the site does not want Twitter cards; absent means it does. */
+  twitterCardsEnabled?: boolean;
   /** The page's Open Graph type (`og:type`) when the provider states one; absent means a website. */
   ogType?: string;
   // Only `title` is validated at the provider-response boundary (`headDataCache`); `schema` comes
