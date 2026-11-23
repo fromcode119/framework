@@ -1275,6 +1275,9 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-dt-th { height: var(--fc-row-h); padding: 0 24px; font-size: var(--fc-control-text); font-weight: 500; line-height: var(--fc-leading); letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: nowrap; }
 .fc-dt-th__inner { display: flex; align-items: center; gap: 4px; }
 .fc-dt-th--sortable { cursor: pointer; }
+/* A numeric column's header ends where its numbers end, so the title sits over the digits. */
+.fc-dt-th.text-end { text-align: end; }
+.fc-dt-th.text-end .fc-dt-th__inner { justify-content: flex-end; }
 .fc-dt-th--sortable:hover { color: var(--fc-text); }
 /* Doubled selectors: `.fc-dt-td` is declared further down and its own padding would win for the rows only, leaving the head box 8px left of the row boxes. */
 .fc-dt-th.fc-dt-th--check, .fc-dt-td.fc-dt-td--check { width: 15px; padding-inline: 24px 0; }
