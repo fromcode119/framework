@@ -52,4 +52,14 @@ describe('MetadataHeadView', () => {
     expect(html).not.toContain('rel="canonical"');
     expect(html).not.toContain('name="robots"');
   });
+
+  it('renders the keywords and the search-engine ownership checks from the page or the site', () => {
+    const html = render({ keywords: ['zen', 'calm'], verification: { google: 'g-123', other: { 'msvalidate.01': 'b-456' } } });
+    expect(html).toContain('<meta name="keywords" content="zen,calm"/>');
+    expect(html).toContain('<meta name="google-site-verification" content="g-123"/>');
+    expect(html).toContain('<meta name="msvalidate.01" content="b-456"/>');
+    const fromSite = renderToStaticMarkup(createElement(MetadataHeadView.render, { page: {}, site: { ...site, verification: { google: 'site-g' } } }));
+    expect(fromSite).toContain('<meta name="google-site-verification" content="site-g"/>');
+    expect(render({})).not.toContain('google-site-verification');
+  });
 });

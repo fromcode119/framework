@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { LocaleAlternateLinks } from '@/lib/locale-alternate-links';
+import { HeadSiteTags } from '@/lib/head-site-tags';
 
 export class ResolvedContentMetadata {
   static build(content: Record<string, unknown> | null, resolutionType?: string): Metadata {
@@ -44,18 +45,17 @@ export class ResolvedContentMetadata {
       record: content,
     });
     if (!head) return base;
-
     const canonical = head.canonical || undefined;
     const images = head.ogImage ? [head.ogImage] : undefined;
     const ogTitle = head.ogTitle || head.title || undefined;
     const ogDescription = head.ogDescription || head.description || undefined;
-
     return {
       ...base,
       title: head.title ? { absolute: head.title } : base.title,
       description: head.description || base.description,
       alternates: canonical ? { canonical, languages: await LocaleAlternateLinks.build(url, canonical) } : base.alternates,
       robots: ResolvedContentMetadata.parseRobots(head.robots),
+      ...HeadSiteTags.fields(head, base.other),
       openGraph: {
         title: ogTitle,
         description: ogDescription,
@@ -64,14 +64,7 @@ export class ResolvedContentMetadata {
         type: (head.ogType || 'website') as 'website',
         images,
       },
-      twitter: {
-        // The card vocabulary is Next's, taken from its own metadata type rather than restated.
-        card: (head.twitterCard || 'summary_large_image') as NonNullable<Metadata['twitter']> extends { card: infer C } ? C : never,
-        title: ogTitle,
-        description: ogDescription,
-        images,
-        site: head.twitterHandle || undefined,
-      },
+      twitter: HeadSiteTags.twitter(head, head.twitterCard, { title: ogTitle, description: ogDescription, images, site: head.twitterHandle || undefined }),
     };
   }
 
@@ -89,8 +82,9 @@ export class ResolvedContentMetadata {
     return {
       title: siteName ? { default: siteName, template: `%s | ${siteName}` } : undefined,
       description: head?.description || undefined,
+      ...HeadSiteTags.fields(head),
       openGraph: { siteName: siteName || undefined, title: siteName || undefined, description: head?.description || undefined, type: 'website', images },
-      twitter: { card: 'summary_large_image', title: siteName || undefined, description: head?.description || undefined, images },
+      twitter: HeadSiteTags.twitter(head, undefined, { title: siteName || undefined, description: head?.description || undefined, images }),
       icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/apple-touch-icon.png' },
     };
   }
