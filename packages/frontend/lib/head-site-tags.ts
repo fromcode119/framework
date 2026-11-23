@@ -33,8 +33,10 @@ export class HeadSiteTags {
     return { keywords: HeadSiteTags.keywords(head), verification: HeadSiteTags.verification(head), other: { ...other, ...HeadSiteTags.other(head) } };
   }
 
-  /** Twitter cards are on unless the provider says they are off. */
-  static twitterWanted(head: IHeadData | null): boolean {
-    return head?.twitterCardsEnabled !== false;
+  /** The Twitter card, or nothing when the provider says the site does not want one. */
+  static twitter(head: IHeadData | null, card: string | undefined, fields: { title?: string; description?: string; images?: string[]; site?: string }): Metadata['twitter'] | undefined {
+    if (head?.twitterCardsEnabled === false) return undefined;
+    // The card vocabulary is Next's, taken from its own metadata type rather than restated.
+    return { card: (card || 'summary_large_image') as NonNullable<Metadata['twitter']> extends { card: infer C } ? C : never, ...fields };
   }
 }

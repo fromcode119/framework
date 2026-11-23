@@ -64,14 +64,7 @@ export class ResolvedContentMetadata {
         type: (head.ogType || 'website') as 'website',
         images,
       },
-      twitter: !HeadSiteTags.twitterWanted(head) ? undefined : {
-        // The card vocabulary is Next's, taken from its own metadata type rather than restated.
-        card: (head.twitterCard || 'summary_large_image') as NonNullable<Metadata['twitter']> extends { card: infer C } ? C : never,
-        title: ogTitle,
-        description: ogDescription,
-        images,
-        site: head.twitterHandle || undefined,
-      },
+      twitter: HeadSiteTags.twitter(head, head.twitterCard, { title: ogTitle, description: ogDescription, images, site: head.twitterHandle || undefined }),
     };
   }
 
@@ -91,7 +84,7 @@ export class ResolvedContentMetadata {
       description: head?.description || undefined,
       ...HeadSiteTags.fields(head),
       openGraph: { siteName: siteName || undefined, title: siteName || undefined, description: head?.description || undefined, type: 'website', images },
-      twitter: !HeadSiteTags.twitterWanted(head) ? undefined : { card: 'summary_large_image', title: siteName || undefined, description: head?.description || undefined, images },
+      twitter: HeadSiteTags.twitter(head, undefined, { title: siteName || undefined, description: head?.description || undefined, images }),
       icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/apple-touch-icon.png' },
     };
   }

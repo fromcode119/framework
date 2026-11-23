@@ -7,14 +7,14 @@ describe('HeadSiteTags', () => {
     expect(HeadSiteTags.keywords(null)).toBeUndefined();
     expect(HeadSiteTags.verification({} as never)).toBeUndefined();
     expect(HeadSiteTags.other({} as never)).toEqual({});
-    expect(HeadSiteTags.twitterWanted({} as never)).toBe(true);
+    expect(HeadSiteTags.twitter({} as never, undefined, { title: 'T' })).toEqual({ card: 'summary_large_image', title: 'T' });
   });
   it('turns stated values into Next metadata', () => {
     const head = { keywords: 'zen, calm ,', googleVerification: 'g-123', bingVerification: 'b-456', facebookAppId: '999', twitterCardsEnabled: false } as never;
     expect(HeadSiteTags.keywords(head)).toEqual(['zen', 'calm']);
     expect(HeadSiteTags.verification(head)).toEqual({ google: 'g-123', other: { 'msvalidate.01': 'b-456' } });
     expect(HeadSiteTags.other(head)).toEqual({ 'fb:app_id': '999' });
-    expect(HeadSiteTags.twitterWanted(head)).toBe(false);
+    expect(HeadSiteTags.twitter(head, 'summary', { title: 'T' })).toBeUndefined();
   });
 });
 
