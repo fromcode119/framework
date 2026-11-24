@@ -98,7 +98,7 @@ export class SystemCommands {
             // Gracefully, as a deploy does: what is still in flight finishes, then Docker starts a fresh one.
             console.error(`[platform-gateway] watchdog: ${reason}; stopping so the container is restarted`);
             void gateway.stop(PlatformGateway.STOP_GRACE_MS).finally(() => process.exit(1));
-          });
+          }, undefined, undefined, undefined, undefined, () => gateway.upstreamStalled());
           watchdog.start();
         });
         // `docker stop` during a deploy: finish what is in flight while the replacement takes new

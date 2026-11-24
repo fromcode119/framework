@@ -44,6 +44,8 @@ export class GatewayWatchdog {
     private readonly limit = GatewayWatchdog.LIMIT,
     /** A file under the container's cgroup, or null when it cannot be read (no cgroup v2, no limit). */
     private readonly readCgroup: (file: string) => string | null = GatewayWatchdog.readCgroupFile,
+    /** What is wrong with the gateway's own path to the frontend (`GatewayUpstreamProbe`), or null. */
+    private readonly upstream: () => Promise<string | null> = async () => null,
   ) {}
 
   start(): void {
@@ -63,9 +65,11 @@ export class GatewayWatchdog {
     const answered = await GatewayWatchdog.answers(this.port, this.path, this.timeoutMs);
     const tookMs = Date.now() - startedAt;
     const pressure = answered && tookMs > GatewayWatchdog.SLOW_MS ? this.memoryPressure() : null;
+    // Its own health path answering says nothing about the path pages take to the frontend.
+    const stalled = answered ? await this.upstream() : null;
     this.checking = false;
     if (!this.timer) return;
-    const problem = !answered ? `no answer from its own health check in ${tookMs} ms` : pressure ? `${pressure}, and its health check took ${tookMs} ms` : null;
+    const problem = !answered ? `no answer from its own health check in ${tookMs} ms` : stalled ? stalled : pressure ? `${pressure}, and its health check took ${tookMs} ms` : null;
     if (!problem) { this.failures = 0; return; }
     this.failures += 1;
     console.warn(`[platform-gateway] watchdog: ${problem} (${this.failures}/${this.limit})`);

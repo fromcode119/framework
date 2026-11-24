@@ -9,6 +9,8 @@ import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
 import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
+import { GatewayUpstreamProbe } from '@cli/services/gateway/gateway-upstream-probe';
+import { GatewayAbandonedResponse } from '@cli/services/gateway/gateway-abandoned-response';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
@@ -56,6 +58,7 @@ export class PlatformGateway {
 
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly retries = new GatewayRetryPolicy();
+  private readonly abandoned = new GatewayAbandonedResponse();
   private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
   private readonly mountOf = new WeakMap<http.IncomingMessage, string>(); // a console on a site path
   // Health and the reload push are internal calls a watchdog makes every few seconds — not traffic.
@@ -70,6 +73,7 @@ export class PlatformGateway {
     [GatewayTarget.ADMIN.value]: process.env.ADMIN_TARGET_URL || 'http://admin:3000',
     [GatewayTarget.FRONTEND.value]: String(process.env.FRONTEND_TARGET_URL || '').trim(),
   };
+  private readonly upstreamProbe = new GatewayUpstreamProbe(this.targets[GatewayTarget.FRONTEND.value], this.agent);
 
   /** The listening server, so a caller (and the tests) can reach and close it. */
   server: http.Server | null = null;
@@ -89,6 +93,8 @@ export class PlatformGateway {
 
   start(): void {
     this.proxy.on('error', (error, req, res) => {
+      // The visitor left and the request to the app was let go on purpose: nobody to retry for or answer.
+      if (res && 'writeHead' in res && GatewayAbandonedResponse.gone(res)) return;
       const target = this.targetOf.get(req);
       this.addresses.noteRefused(error as NodeJS.ErrnoException);
       if (target && this.retries.allows(error as NodeJS.ErrnoException, req, res)) {
@@ -116,9 +122,10 @@ export class PlatformGateway {
       proxyReq.once('upgrade', () => this.accessLog.upgradeAnswered(req, 101));
       proxyReq.once('response', (upstream) => this.accessLog.upgradeAnswered(req, upstream.statusCode || 0));
     });
-    this.proxy.on('proxyReq', (proxyReq, req) => {
+    this.proxy.on('proxyReq', (proxyReq, req, res) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
+      this.abandoned.watch(proxyReq, res as http.ServerResponse);
     });
 
     const server = http.createServer((req, res) => {
@@ -156,6 +163,11 @@ export class PlatformGateway {
    * Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`). `edge`
    * sends new connections to the gateway replacing this one, so a deploy fails no request.
    */
+  /** What the watchdog asks besides the health path: does a page request reach the frontend? */
+  upstreamStalled(): Promise<string | null> {
+    return this.upstreamProbe.stalled();
+  }
+
   async stop(graceMs: number): Promise<void> {
     await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
     this.agent.destroy();
