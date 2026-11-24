@@ -34,6 +34,8 @@ export class SecuritySettingsKeys {
     SystemConstants.META_KEY.EDGE_BLOCK_ATTACK_PATTERNS,
     SystemConstants.META_KEY.EDGE_BLOCKED_PATHS,
     SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS,
+    SystemConstants.META_KEY.EDGE_SCANNER_BAN_AFTER,
+    SystemConstants.META_KEY.EDGE_SCANNER_BAN_MINUTES,
     SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES,
     SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES,
     SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES,

@@ -8,7 +8,7 @@ import { EdgeSiteRules } from '@core/security/edge/edge-site-rules';
  * platform's own hosts. The rest describes the check itself, the same for every site.
  */
 export class EdgeProtection {
-  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0, false, [], [], []);
+  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0, false, [], [], [], 0, 0);
 
   constructor(
     readonly underAttack: ReadonlyArray<string | null>,
@@ -24,6 +24,10 @@ export class EdgeProtection {
     readonly blockedAgents: readonly string[] = [],
     /** Country and address rules: the platform's entry (tenantId null) and any site's own. */
     readonly siteRules: readonly EdgeSiteRules[] = [],
+    /** Refusals for an attack, blocked path or tool within ten minutes before an address is stopped; 0 = never. */
+    readonly scannerBanAfter: number = 0,
+    /** Minutes a stopped address is refused on every site. */
+    readonly scannerBanMinutes: number = 0,
   ) {}
 
   /** The rules for this site: its own entry, else the platform's, else none. */
@@ -56,6 +60,8 @@ export class EdgeProtection {
       blockedPaths: [...this.blockedPaths],
       blockedAgents: [...this.blockedAgents],
       siteRules: this.siteRules.map((rules) => rules.toJSON()),
+      scannerBanAfter: this.scannerBanAfter,
+      scannerBanMinutes: this.scannerBanMinutes,
     };
   }
 
@@ -64,6 +70,7 @@ export class EdgeProtection {
     const list = (entry: unknown): unknown[] => (Array.isArray(entry) ? entry : []);
     const minutes = Number(value.clearanceMinutes);
     const limit = Number(value.rateLimitPerMinute);
+    const positive = (entry: unknown): number => (Number.isFinite(Number(entry)) && Number(entry) > 0 ? Math.floor(Number(entry)) : 0);
     return new EdgeProtection(
       list(value.underAttack).map((id) => (id === null ? null : String(id))),
       Number.isFinite(minutes) && minutes > 0 ? minutes : 0,
@@ -75,6 +82,8 @@ export class EdgeProtection {
       list(value.blockedPaths).map((path) => String(path)),
       list(value.blockedAgents).map((agent) => String(agent)),
       list(value.siteRules).map((rules) => EdgeSiteRules.fromJson(rules)),
+      positive(value.scannerBanAfter),
+      positive(value.scannerBanMinutes),
     );
   }
 }

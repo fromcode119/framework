@@ -57,7 +57,15 @@ export class EdgeProtectionReader {
       this.lines(SystemConstants.META_KEY.EDGE_BLOCKED_PATHS),
       this.lines(SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS),
       siteRules,
+      this.count(SystemConstants.META_KEY.EDGE_SCANNER_BAN_AFTER),
+      this.count(SystemConstants.META_KEY.EDGE_SCANNER_BAN_MINUTES),
     );
+  }
+
+  /** A whole-number setting; anything not above zero is 0 (off). */
+  private count(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): number {
+    const value = Number.parseInt(this.platform(key), 10);
+    return Number.isFinite(value) && value > 0 ? value : 0;
   }
 
   /** A list setting: one entry per line (or comma), blanks dropped. */
