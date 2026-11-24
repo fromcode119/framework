@@ -7,6 +7,7 @@ import { DynamicContentClient } from '@/app/components/view/dynamic-content-clie
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { QueryParamUtils } from '@/lib/query-param-utils';
+import { ThemedRouteMetadata } from '@/lib/themed-route-metadata';
 
 /**
  * The page a share-link recipient lands on.
@@ -30,6 +31,16 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
 export class FileSharePageRoute {
   /** The content slug a theme seeds to brand this route — the same constant the emailed link is built from. */
   static readonly PAGE_SLUG = FileSharePageSlug.CONTENT_PAGE_SLUG;
+
+  /**
+   * The themed page's head, never indexed: the token in the address is the credential to someone's
+   * file, so no search engine may list it, and any token answers here, valid or not.
+   */
+  static async generateMetadata({ searchParams }: { searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>) } = {}) {
+    await connection();
+    const themed = await ThemedRouteMetadata.build(FileSharePageRoute.PAGE_SLUG, searchParams);
+    return { ...themed, robots: { index: false, follow: false } };
+  }
 
   static async render({
     searchParams,
