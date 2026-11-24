@@ -13,10 +13,10 @@ describe('GatewayUpstreamProbe', () => {
     return `http://127.0.0.1:${(server.address() as net.AddressInfo).port}`;
   };
 
-  /** An agent whose pool is full of live requests that never finish, so the next one waits for a socket. */
+  /** An agent whose one socket is taken by a request that never finishes, so the next one waits for a socket. */
   const fullPool = (target: string): http.Agent => {
     const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
-    http.get(new URL('/', target), { agent }).on('error', () => undefined);
+    http.get(new URL('/', target), { agent }, (res) => res.resume()).on('error', () => undefined);
     closes.push(() => agent.destroy());
     return agent;
   };
@@ -40,9 +40,23 @@ describe('GatewayUpstreamProbe', () => {
     expect(problem).toMatch(/pooled requests to the frontend get no answer in 300 ms/);
   });
 
-  it('does not blame the gateway for a pool full of live connections, however long the probe waits', async () => {
+  it('blames the gateway for a pool full of connections that move nothing (sockets held for nobody)', async () => {
     let held = 0;
     const target = await listen(http.createServer((_req, res) => { if (held++ > 0) res.end('ok'); }));
+    const agent = fullPool(target);
+    await new Promise((resolve) => setTimeout(resolve, 100)); // the held request has been sent and is now silent
+    expect(await new GatewayUpstreamProbe(target, agent, 300).stalled()).toMatch(/pooled requests to the frontend/);
+  });
+
+  it('does not blame the gateway for a pool full of connections that are still moving bytes', async () => {
+    let held = 0;
+    const target = await listen(http.createServer((_req, res) => {
+      if (held++ > 0) { res.end('ok'); return; }
+      res.writeHead(200);
+      const trickle = setInterval(() => res.write('.'), 50);
+      res.on('close', () => clearInterval(trickle));
+      closes.push(() => clearInterval(trickle));
+    }));
     expect(await new GatewayUpstreamProbe(target, fullPool(target), 300).stalled()).toBeNull();
   });
 
