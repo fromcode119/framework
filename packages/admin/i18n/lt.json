@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktiniai duomenys",
       "hideContactDetails": "Slėpti el. pašto adresus ir telefono numerius nuo rinkėjų",
-      "hideContactDetailsDescription": "Kiekvienas puslapis pateikiamas su užkoduotais el. pašto adresais ir tarptautiniais telefono numeriais (bei bet kurios tel: nuorodos tekstu), todėl juos iš HTML renkantys robotai nieko neranda. Lankytojai juos mato ir spusteli kaip įprastai, o puslapis vis tiek įkeliamas kaip sugeneruotas serveryje. Pakeičia CDN el. pašto užmaskavimą, kurį reikėtų palikti išjungtą."
+      "hideContactDetailsDescription": "Kiekvienas puslapis pateikiamas su užkoduotais el. pašto adresais ir tarptautiniais telefono numeriais (bei bet kurios tel: nuorodos tekstu), todėl juos iš HTML renkantys robotai nieko neranda. Lankytojai juos mato ir spusteli kaip įprastai, o puslapis vis tiek įkeliamas kaip sugeneruotas serveryje. Pakeičia CDN el. pašto užmaskavimą, kurį reikėtų palikti išjungtą.",
+      "stoppedAddresses": "Sustabdyti adresai",
+      "stoppedAddressesSubtitle": "Skeneriai, kuriuos gateway sustabdė visose svetainėse — dabar sustabdyta: {{active}}",
+      "noStoppedAddresses": "Nė vienas adresas nebuvo sustabdytas.",
+      "stoppedAddressesLoadFailed": "Nepavyko įkelti sustabdytų adresų.",
+      "stopActiveUntil": "Sustabdytas iki {{until}}",
+      "stopBlockedForGood": "Visam laikui užblokuotas",
+      "stopReleased": "Paleistas",
+      "stopEnded": "Baigtas",
+      "stopStoppedAt": "Sustabdytas {{at}}",
+      "stopSites": "svetainės: {{sites}}",
+      "stopAskedFor": "prašyta: {{paths}}",
+      "stopRefused": "atmesta užklausų: {{count}}",
+      "stopRelease": "Paleisti",
+      "stopBlock": "Blokuoti visam laikui",
+      "stopReleaseConfirmTitle": "Paleisti {{address}}?",
+      "stopReleaseConfirmText": "Jo užklausos vėl iš karto pasiekia svetaines. Jei toliau bandys, bus vėl sustabdytas.",
+      "stopBlockConfirmTitle": "Blokuoti {{address}} visam laikui?",
+      "stopBlockConfirmText": "Jis įtraukiamas į Kraštinė apsauga → Užblokuoti adresai ir atmetamas visose svetainėse, kol kas nors jį ten pašalins.",
+      "stopReleasedTitle": "Adresas paleistas",
+      "stopReleasedMessage": "{{address}} vėl gali pasiekti svetaines.",
+      "stopBlockedTitle": "Adresas užblokuotas",
+      "stopBlockedMessage": "{{address}} pridėtas prie užblokuotų adresų.",
+      "stopActionFailed": "Pakeitimas neatliktas"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Nepavyko pasiekti karkaso registro.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Svetainės stebėsena",
         "description": "Jūsų svetainė ar paslauga neveikia arba veikia netinkamai, taip pat kai ji atsigauna."
+      },
+      "edgeSecurity": {
+        "label": "Pakraščio apsauga",
+        "description": "Gateway sustabdė skenerį arba paleido save iš naujo, nes nustojo atsakinėti."
       }
     }
   },

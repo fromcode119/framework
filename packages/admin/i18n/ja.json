@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "連絡先情報",
       "hideContactDetails": "メールアドレスと電話番号を収集ボットから隠す",
-      "hideContactDetailsDescription": "すべてのページで、メールアドレスと国際電話番号（および tel: リンクのテキスト）をエンコードして配信するため、HTML から収集するボットには見つかりません。訪問者には通常どおり表示され、クリックもでき、ページはサーバーレンダリングのまま読み込まれます。CDN のメール難読化機能の代わりとなるため、そちらはオフのままにしてください。"
+      "hideContactDetailsDescription": "すべてのページで、メールアドレスと国際電話番号（および tel: リンクのテキスト）をエンコードして配信するため、HTML から収集するボットには見つかりません。訪問者には通常どおり表示され、クリックもでき、ページはサーバーレンダリングのまま読み込まれます。CDN のメール難読化機能の代わりとなるため、そちらはオフのままにしてください。",
+      "stoppedAddresses": "停止中のアドレス",
+      "stoppedAddressesSubtitle": "gatewayがすべてのサイトで停止したスキャナー — 現在 {{active}} 件停止中",
+      "noStoppedAddresses": "停止されたアドレスはありません。",
+      "stoppedAddressesLoadFailed": "停止中のアドレスを読み込めませんでした。",
+      "stopActiveUntil": "{{until}} まで停止",
+      "stopBlockedForGood": "永久ブロック",
+      "stopReleased": "解除済み",
+      "stopEnded": "終了",
+      "stopStoppedAt": "{{at}} に停止",
+      "stopSites": "サイト: {{sites}}",
+      "stopAskedFor": "要求されたパス: {{paths}}",
+      "stopRefused": "{{count}} 件のリクエストを拒否",
+      "stopRelease": "解除",
+      "stopBlock": "永久にブロック",
+      "stopReleaseConfirmTitle": "{{address}} を解除しますか？",
+      "stopReleaseConfirmText": "そのアドレスのリクエストはすぐにサイトへ届くようになります。再びスキャンを続ければ、また停止されます。",
+      "stopBlockConfirmTitle": "{{address}} を永久にブロックしますか？",
+      "stopBlockConfirmText": "エッジ保護 → ブロック対象アドレス に追加され、そこから削除されるまで、すべてのサイトで拒否されます。",
+      "stopReleasedTitle": "アドレスを解除しました",
+      "stopReleasedMessage": "{{address}} はサイトに再びアクセスできます。",
+      "stopBlockedTitle": "アドレスをブロックしました",
+      "stopBlockedMessage": "{{address}} をブロック対象アドレスに追加しました。",
+      "stopActionFailed": "変更は行われませんでした"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "フレームワークのレジストリに接続できませんでした。",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "サイト監視",
         "description": "サイトまたはサービスが停止または不安定になったとき、および復旧したとき。"
+      },
+      "edgeSecurity": {
+        "label": "エッジセキュリティ",
+        "description": "gatewayがスキャナーを停止したか、応答が止まったため自身を再起動しました。"
       }
     }
   },

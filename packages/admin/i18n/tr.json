@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "İletişim Bilgileri",
       "hideContactDetails": "E-posta adreslerini ve telefon numaralarını toplayıcı botlardan gizle",
-      "hideContactDetailsDescription": "Her sayfa, e-posta adresleri ve uluslararası telefon numaraları (ve tüm tel: bağlantılarının metni) kodlanmış olarak sunulur. Böylece bunları HTML'den toplayan botlar hiçbirini bulamaz. Ziyaretçiler bunları her zamanki gibi görür ve tıklar, sayfa da sunucu tarafında oluşturulmuş olarak yüklenmeye devam eder. Bir CDN'in e-posta gizleme özelliğinin yerini alır, o özellik kapalı kalmalıdır."
+      "hideContactDetailsDescription": "Her sayfa, e-posta adresleri ve uluslararası telefon numaraları (ve tüm tel: bağlantılarının metni) kodlanmış olarak sunulur. Böylece bunları HTML'den toplayan botlar hiçbirini bulamaz. Ziyaretçiler bunları her zamanki gibi görür ve tıklar, sayfa da sunucu tarafında oluşturulmuş olarak yüklenmeye devam eder. Bir CDN'in e-posta gizleme özelliğinin yerini alır, o özellik kapalı kalmalıdır.",
+      "stoppedAddresses": "Durdurulan adresler",
+      "stoppedAddressesSubtitle": "gateway'in tüm sitelerde durdurduğu tarayıcılar — şu anda durdurulan: {{active}}",
+      "noStoppedAddresses": "Durdurulan adres yok.",
+      "stoppedAddressesLoadFailed": "Durdurulan adresler yüklenemedi.",
+      "stopActiveUntil": "{{until}} tarihine kadar durduruldu",
+      "stopBlockedForGood": "Kalıcı olarak engellendi",
+      "stopReleased": "Serbest bırakıldı",
+      "stopEnded": "Sona erdi",
+      "stopStoppedAt": "{{at}} tarihinde durduruldu",
+      "stopSites": "siteler: {{sites}}",
+      "stopAskedFor": "istenen: {{paths}}",
+      "stopRefused": "{{count}} istek reddedildi",
+      "stopRelease": "Serbest bırak",
+      "stopBlock": "Kalıcı engelle",
+      "stopReleaseConfirmTitle": "{{address}} serbest bırakılsın mı?",
+      "stopReleaseConfirmText": "Adresin istekleri hemen yeniden sitelere ulaşır. Taramaya devam ederse yeniden durdurulur.",
+      "stopBlockConfirmTitle": "{{address}} kalıcı olarak engellensin mi?",
+      "stopBlockConfirmText": "Uç Koruması → Engellenen Adresler bölümüne eklenir ve orada biri kaldırana kadar tüm sitelerde reddedilir.",
+      "stopReleasedTitle": "Adres serbest bırakıldı",
+      "stopReleasedMessage": "{{address}} sitelere yeniden erişebilir.",
+      "stopBlockedTitle": "Adres engellendi",
+      "stopBlockedMessage": "{{address}} engellenen adreslere eklendi.",
+      "stopActionFailed": "Değişiklik yapılmadı"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Çatı kayıt deposuna ulaşılamadı.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Site izleme",
         "description": "Siteniz veya bir hizmet çalışmıyor ya da sağlıksız durumda; ayrıca düzeldiğinde."
+      },
+      "edgeSecurity": {
+        "label": "Uç güvenliği",
+        "description": "gateway bir tarayıcıyı durdurdu veya yanıt vermeyi bıraktığı için kendini yeniden başlattı."
       }
     }
   },

@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Mga Detalye ng Contact",
       "hideContactDetails": "Itago ang mga email address at numero ng telepono mula sa mga harvester",
-      "hideContactDetailsDescription": "Ine-encode ang mga email address at internasyonal na numero ng telepono (at ang text ng anumang tel: link) sa bawat page, kaya walang makikita ang mga bot na kumukuha ng mga ito mula sa HTML. Normal pa rin itong nakikita at nakiki-click ng mga bisita, at server-rendered pa rin ang pag-load ng page. Pinapalitan nito ang email obfuscation ng CDN, na dapat manatiling naka-off."
+      "hideContactDetailsDescription": "Ine-encode ang mga email address at internasyonal na numero ng telepono (at ang text ng anumang tel: link) sa bawat page, kaya walang makikita ang mga bot na kumukuha ng mga ito mula sa HTML. Normal pa rin itong nakikita at nakiki-click ng mga bisita, at server-rendered pa rin ang pag-load ng page. Pinapalitan nito ang email obfuscation ng CDN, na dapat manatiling naka-off.",
+      "stoppedAddresses": "Mga napigilang address",
+      "stoppedAddressesSubtitle": "Mga scanner na pinigilan ng gateway sa bawat site — {{active}} ang napigilan ngayon",
+      "noStoppedAddresses": "Walang address na napigilan.",
+      "stoppedAddressesLoadFailed": "Hindi ma-load ang mga napigilang address.",
+      "stopActiveUntil": "Napigilan hanggang {{until}}",
+      "stopBlockedForGood": "Permanenteng naka-block",
+      "stopReleased": "Pinalaya",
+      "stopEnded": "Natapos",
+      "stopStoppedAt": "Napigilan {{at}}",
+      "stopSites": "mga site: {{sites}}",
+      "stopAskedFor": "hiniling: {{paths}}",
+      "stopRefused": "{{count}} na request ang tinanggihan",
+      "stopRelease": "Palayain",
+      "stopBlock": "I-block nang permanente",
+      "stopReleaseConfirmTitle": "Palayain ang {{address}}?",
+      "stopReleaseConfirmText": "Agad na makakarating ang mga request nito sa mga site. Kung patuloy itong nagpo-probe, muli itong mapipigilan.",
+      "stopBlockConfirmTitle": "I-block nang permanente ang {{address}}?",
+      "stopBlockConfirmText": "Idadagdag ito sa Proteksyon sa Edge → Mga Naka-block na Address at tatanggihan sa bawat site hangga't may magtatanggal nito roon.",
+      "stopReleasedTitle": "Napalaya ang address",
+      "stopReleasedMessage": "Muling maaabot ng {{address}} ang mga site.",
+      "stopBlockedTitle": "Na-block ang address",
+      "stopBlockedMessage": "Idinagdag ang {{address}} sa mga naka-block na address.",
+      "stopActionFailed": "Hindi naisagawa ang pagbabago"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Hindi maabot ang framework registry.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Pagsubaybay sa site",
         "description": "Down o hindi maayos ang iyong site o isang serbisyo, at kapag bumalik na ito."
+      },
+      "edgeSecurity": {
+        "label": "Seguridad sa Edge",
+        "description": "Pinigilan ng gateway ang isang scanner, o nag-restart ito dahil huminto itong sumagot."
       }
     }
   },

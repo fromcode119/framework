@@ -21,6 +21,8 @@ export class FrameworkAdminAlerts {
   static readonly CERTIFICATE_EXPIRY = 'admin-certificate-expiry';
   /** The platform's own uptime and health monitor. */
   static readonly MONITORING = 'admin-monitoring';
+  /** The gateway stopped a scanner, or its watchdog restarted it. */
+  static readonly EDGE_SECURITY = 'admin-edge-security';
 
   static register(registry: EmailCategoryRegistry): void {
     const declare = (key: string, name: string, locked = false) => registry.register({
@@ -35,5 +37,6 @@ export class FrameworkAdminAlerts {
     declare(FrameworkAdminAlerts.PLUGIN_APPROVAL, 'pluginApproval');
     declare(FrameworkAdminAlerts.CERTIFICATE_EXPIRY, 'certificateExpiry', true);
     declare(FrameworkAdminAlerts.MONITORING, 'monitoring');
+    declare(FrameworkAdminAlerts.EDGE_SECURITY, 'edgeSecurity');
   }
 }

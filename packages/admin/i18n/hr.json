@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Podaci za kontakt",
       "hideContactDetails": "Sakrij adrese e-pošte i telefonske brojeve od prikupljača",
-      "hideContactDetailsDescription": "Svaka se stranica isporučuje s kodiranim adresama e-pošte i međunarodnim telefonskim brojevima (te tekstom svake tel: poveznice), pa ih botovi koji ih prikupljaju iz HTML-a ne pronalaze. Posjetitelji ih vide i klikću normalno, a stranica se i dalje učitava kao renderirana na poslužitelju. Zamjenjuje zamagljivanje e-pošte CDN-a, koje treba ostati isključeno."
+      "hideContactDetailsDescription": "Svaka se stranica isporučuje s kodiranim adresama e-pošte i međunarodnim telefonskim brojevima (te tekstom svake tel: poveznice), pa ih botovi koji ih prikupljaju iz HTML-a ne pronalaze. Posjetitelji ih vide i klikću normalno, a stranica se i dalje učitava kao renderirana na poslužitelju. Zamjenjuje zamagljivanje e-pošte CDN-a, koje treba ostati isključeno.",
+      "stoppedAddresses": "Zaustavljene adrese",
+      "stoppedAddressesSubtitle": "Skeneri koje je gateway zaustavio na svim stranicama — trenutno zaustavljeno: {{active}}",
+      "noStoppedAddresses": "Nijedna adresa nije zaustavljena.",
+      "stoppedAddressesLoadFailed": "Zaustavljene adrese nisu se mogle učitati.",
+      "stopActiveUntil": "Zaustavljeno do {{until}}",
+      "stopBlockedForGood": "Trajno blokirano",
+      "stopReleased": "Oslobođeno",
+      "stopEnded": "Završeno",
+      "stopStoppedAt": "Zaustavljeno {{at}}",
+      "stopSites": "stranice: {{sites}}",
+      "stopAskedFor": "traženo: {{paths}}",
+      "stopRefused": "{{count}} zahtjeva odbijeno",
+      "stopRelease": "Oslobodi",
+      "stopBlock": "Trajno blokiraj",
+      "stopReleaseConfirmTitle": "Osloboditi {{address}}?",
+      "stopReleaseConfirmText": "Njegovi zahtjevi odmah ponovno dopiru do stranica. Ako nastavi s pretraživanjem, ponovno će biti zaustavljen.",
+      "stopBlockConfirmTitle": "Trajno blokirati {{address}}?",
+      "stopBlockConfirmText": "Dodaje se u Zaštita na rubu → Blokirane adrese i odbija se na svim stranicama dok ga netko ondje ne ukloni.",
+      "stopReleasedTitle": "Adresa oslobođena",
+      "stopReleasedMessage": "{{address}} ponovno može doći do stranica.",
+      "stopBlockedTitle": "Adresa blokirana",
+      "stopBlockedMessage": "{{address}} dodana je među blokirane adrese.",
+      "stopActionFailed": "Promjena nije provedena"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registar okvira nije dostupan.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Praćenje stranice",
         "description": "Vaša stranica ili usluga ne radi ili je u lošem stanju, kao i kada se oporavi."
+      },
+      "edgeSecurity": {
+        "label": "Zaštita ruba",
+        "description": "Gateway je zaustavio skener ili se sam ponovno pokrenuo jer je prestao odgovarati."
       }
     }
   },

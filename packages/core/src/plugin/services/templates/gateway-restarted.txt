@@ -1,0 +1,6 @@
+The gateway in front of every site stopped answering and its watchdog restarted it at {{at}}.
+
+Why: {{reason}}
+
+While it was stuck, pages on the sites did not load. Docker started a fresh gateway at once; if this
+message comes again soon, the cause is still there - read the gateway's log around the time above.

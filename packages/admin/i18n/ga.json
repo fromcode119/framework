@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Sonraí Teagmhála",
       "hideContactDetails": "Folaigh seoltaí ríomhphoist agus uimhreacha gutháin ó bhailitheoirí",
-      "hideContactDetailsDescription": "Seoltar gach leathanach agus a sheoltaí ríomhphoist agus a uimhreacha gutháin idirnáisiúnta (agus téacs aon nasc tel:) ionchódaithe, ionas nach n-aimsíonn róbait a bhailíonn iad ón HTML aon cheann. Feiceann agus cliceálann cuairteoirí orthu mar is gnách, agus lódáiltear an leathanach fós mar leathanach rindreáilte ar an bhfreastalaí. Tagann sé in áit doiléiriú ríomhphoist CDN, ar cheart é a fhágáil múchta."
+      "hideContactDetailsDescription": "Seoltar gach leathanach agus a sheoltaí ríomhphoist agus a uimhreacha gutháin idirnáisiúnta (agus téacs aon nasc tel:) ionchódaithe, ionas nach n-aimsíonn róbait a bhailíonn iad ón HTML aon cheann. Feiceann agus cliceálann cuairteoirí orthu mar is gnách, agus lódáiltear an leathanach fós mar leathanach rindreáilte ar an bhfreastalaí. Tagann sé in áit doiléiriú ríomhphoist CDN, ar cheart é a fhágáil múchta.",
+      "stoppedAddresses": "Seoltaí stopta",
+      "stoppedAddressesSubtitle": "Scanóirí a stop an gateway ar gach suíomh — {{active}} stoptha faoi láthair",
+      "noStoppedAddresses": "Níor stopadh seoladh ar bith.",
+      "stoppedAddressesLoadFailed": "Níorbh fhéidir na seoltaí stoptha a lódáil.",
+      "stopActiveUntil": "Stoptha go dtí {{until}}",
+      "stopBlockedForGood": "Bactha go deo",
+      "stopReleased": "Scaoilte",
+      "stopEnded": "Críochnaithe",
+      "stopStoppedAt": "Stoptha {{at}}",
+      "stopSites": "suíomhanna: {{sites}}",
+      "stopAskedFor": "iarradh: {{paths}}",
+      "stopRefused": "{{count}} iarratas diúltaithe",
+      "stopRelease": "Scaoil",
+      "stopBlock": "Bac go deo",
+      "stopReleaseConfirmTitle": "Scaoil {{address}}?",
+      "stopReleaseConfirmText": "Sroicheann a iarratais na suíomhanna arís láithreach. Má leanann sé ag tástáil, stopfar arís é.",
+      "stopBlockConfirmTitle": "Bac {{address}} go deo?",
+      "stopBlockConfirmText": "Cuirfear le Cosaint Imill → Seoltaí Blocáilte é agus diúltófar dó ar gach suíomh go dtí go mbainfidh duine éigin as sin é.",
+      "stopReleasedTitle": "Seoladh scaoilte",
+      "stopReleasedMessage": "Is féidir le {{address}} na suíomhanna a shroicheadh arís.",
+      "stopBlockedTitle": "Seoladh bactha",
+      "stopBlockedMessage": "Cuireadh {{address}} leis na seoltaí bactha.",
+      "stopActionFailed": "Ní dhearnadh an t-athrú"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Níorbh fhéidir teagmháil a dhéanamh le clárlann an chreata.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monatóireacht suímh",
         "description": "Tá do shuíomh nó seirbhís as feidhm nó neamhshláintiúil, agus nuair a thagann sé ar ais."
+      },
+      "edgeSecurity": {
+        "label": "Slándáil imill",
+        "description": "Stop an gateway scanóir, nó atosaigh sé é féin toisc gur stop sé ag freagairt."
       }
     }
   },

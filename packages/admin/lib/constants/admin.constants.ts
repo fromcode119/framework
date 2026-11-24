@@ -137,6 +137,10 @@ export class AdminConstants {
     TENANTS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANTS),
     /** A one-time link that opens one site while it is still private. See SitePreviewRouter. */
     SITE_PREVIEW_SESSION: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.SITE_PREVIEW_SESSION, { id })),
+    /** Settings → Security → Stopped addresses — platform admins only. */
+    EDGE_STOPS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_EDGE_STOPS),
+    EDGE_STOP_RELEASE: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_EDGE_STOP_RELEASE, { id })),
+    EDGE_STOP_BLOCK: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_EDGE_STOP_BLOCK, { id })),
     CERTIFICATES: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES),
     CERTIFICATE_PLATFORM_ADDRESSES: `${AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATES)}/platform-addresses`,
     CERTIFICATE: (host: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),

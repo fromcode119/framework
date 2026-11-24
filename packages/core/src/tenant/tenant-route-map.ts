@@ -1,5 +1,6 @@
 import { GatewayTarget } from '@core/tenant/gateway-target';
 import { EdgeProtection } from '@core/security/edge/edge-protection';
+import { EdgeStop } from '@core/security/edge/edge-stop';
 import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantRoute } from '@core/tenant/tenant-route';
 import type { TenantRecord } from '@core/tenant/tenant-record';
@@ -28,22 +29,36 @@ export class TenantRouteMap {
   readonly relays: readonly string[];
   /** What the gateway enforces in front of each site (Settings → Security → Edge protection). */
   readonly protection: EdgeProtection;
+  /**
+   * The addresses stopped as scanners and not released (Settings → Security → Stopped addresses). The
+   * gateway refuses each until its end; one an operator released is simply absent.
+   */
+  readonly stops: readonly EdgeStop[];
+  /** Stops an operator released early: each entry's `until` is WHEN it was released. */
+  readonly released: readonly EdgeStop[];
 
-  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = [], protection: EdgeProtection = EdgeProtection.NONE) {
+  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = [], protection: EdgeProtection = EdgeProtection.NONE, stops: readonly EdgeStop[] = [], released: readonly EdgeStop[] = []) {
     for (const route of routes) this.byHost.set(route.host, route);
     this.setup = setup === true;
     this.relays = [...relays];
     this.protection = protection;
+    this.stops = [...stops];
+    this.released = [...released];
   }
 
   /** This map, with the relays the operator declared. */
   withRelays(relays: readonly string[]): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, relays, this.protection);
+    return new TenantRouteMap(this.byHost.values(), this.setup, relays, this.protection, this.stops, this.released);
   }
 
   /** This map, with the edge protection the operator set. */
   withProtection(protection: EdgeProtection): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection);
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection, this.stops, this.released);
+  }
+
+  /** This map, with the addresses currently stopped and the stops released early. */
+  withStops(stops: readonly EdgeStop[], released: readonly EdgeStop[] = []): TenantRouteMap {
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, this.protection, stops, released);
   }
 
   static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string; aliases?: readonly string[] }, setup = false): TenantRouteMap {
@@ -97,6 +112,8 @@ export class TenantRouteMap {
       (raw as any)?.setup === true,
       Array.isArray((raw as any)?.relays) ? (raw as any).relays.map((entry: unknown) => String(entry)) : [],
       EdgeProtection.fromJson((raw as any)?.protection),
+      EdgeStop.listFromJson((raw as any)?.stops),
+      EdgeStop.listFromJson((raw as any)?.released),
     );
   }
 
@@ -118,7 +135,7 @@ export class TenantRouteMap {
   }
 
   toJSON(): Record<string, unknown> {
-    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays], protection: this.protection.toJSON() };
+    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays], protection: this.protection.toJSON(), stops: this.stops.map((stop) => stop.toJSON()), released: this.released.map((stop) => stop.toJSON()) };
   }
 
   /** A public app URL or bare host → bare host. */

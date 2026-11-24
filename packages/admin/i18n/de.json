@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktdaten",
       "hideContactDetails": "E-Mail-Adressen und Telefonnummern vor Sammelbots verbergen",
-      "hideContactDetailsDescription": "Jede Seite wird mit kodierten E-Mail-Adressen und internationalen Telefonnummern (sowie dem Text jedes tel:-Links) ausgeliefert, sodass Bots, die diese aus dem HTML sammeln, nichts finden. Besucher sehen und klicken sie wie gewohnt, und die Seite wird weiterhin serverseitig gerendert geladen. Ersetzt die E-Mail-Verschleierung eines CDN, die deaktiviert bleiben sollte."
+      "hideContactDetailsDescription": "Jede Seite wird mit kodierten E-Mail-Adressen und internationalen Telefonnummern (sowie dem Text jedes tel:-Links) ausgeliefert, sodass Bots, die diese aus dem HTML sammeln, nichts finden. Besucher sehen und klicken sie wie gewohnt, und die Seite wird weiterhin serverseitig gerendert geladen. Ersetzt die E-Mail-Verschleierung eines CDN, die deaktiviert bleiben sollte.",
+      "stoppedAddresses": "Gestoppte Adressen",
+      "stoppedAddressesSubtitle": "Vom Gateway auf allen Websites gestoppte Scanner — {{active}} gerade gestoppt",
+      "noStoppedAddresses": "Keine Adresse wurde gestoppt.",
+      "stoppedAddressesLoadFailed": "Die gestoppten Adressen konnten nicht geladen werden.",
+      "stopActiveUntil": "Gestoppt bis {{until}}",
+      "stopBlockedForGood": "Dauerhaft gesperrt",
+      "stopReleased": "Freigegeben",
+      "stopEnded": "Beendet",
+      "stopStoppedAt": "Gestoppt {{at}}",
+      "stopSites": "Websites: {{sites}}",
+      "stopAskedFor": "angefragt: {{paths}}",
+      "stopRefused": "{{count}} Anfragen abgelehnt",
+      "stopRelease": "Freigeben",
+      "stopBlock": "Dauerhaft sperren",
+      "stopReleaseConfirmTitle": "{{address}} freigeben?",
+      "stopReleaseConfirmText": "Seine Anfragen erreichen die Websites sofort wieder. Sucht er weiter, wird er erneut gestoppt.",
+      "stopBlockConfirmTitle": "{{address}} dauerhaft sperren?",
+      "stopBlockConfirmText": "Er wird zu Edge-Schutz → Gesperrte Adressen hinzugefügt und auf allen Websites abgelehnt, bis ihn dort jemand entfernt.",
+      "stopReleasedTitle": "Adresse freigegeben",
+      "stopReleasedMessage": "{{address}} kann die Websites wieder erreichen.",
+      "stopBlockedTitle": "Adresse gesperrt",
+      "stopBlockedMessage": "{{address}} wurde zu den gesperrten Adressen hinzugefügt.",
+      "stopActionFailed": "Die Änderung wurde nicht vorgenommen"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Die Framework-Registry ist nicht erreichbar.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Website-Überwachung",
         "description": "Ihre Website oder ein Dienst ist ausgefallen oder gestört, sowie wenn sie wieder läuft."
+      },
+      "edgeSecurity": {
+        "label": "Edge-Sicherheit",
+        "description": "Das Gateway hat einen Scanner gestoppt oder sich neu gestartet, weil es nicht mehr antwortete."
       }
     }
   },

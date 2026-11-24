@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Dados de contacto",
       "hideContactDetails": "Ocultar endereços de email e números de telefone de recolhedores automáticos",
-      "hideContactDetailsDescription": "Todas as páginas são servidas com os endereços de email e números de telefone internacionais (e o texto de qualquer ligação tel:) codificados, para que os bots que os recolhem do HTML não encontrem nenhum. Os visitantes veem-nos e clicam neles normalmente, e a página continua a ser renderizada no servidor. Substitui a ofuscação de email de uma CDN, que deve permanecer desativada."
+      "hideContactDetailsDescription": "Todas as páginas são servidas com os endereços de email e números de telefone internacionais (e o texto de qualquer ligação tel:) codificados, para que os bots que os recolhem do HTML não encontrem nenhum. Os visitantes veem-nos e clicam neles normalmente, e a página continua a ser renderizada no servidor. Substitui a ofuscação de email de uma CDN, que deve permanecer desativada.",
+      "stoppedAddresses": "Endereços parados",
+      "stoppedAddressesSubtitle": "Scanners que o gateway parou em todos os sites — {{active}} parados neste momento",
+      "noStoppedAddresses": "Nenhum endereço foi parado.",
+      "stoppedAddressesLoadFailed": "Não foi possível carregar os endereços parados.",
+      "stopActiveUntil": "Parado até {{until}}",
+      "stopBlockedForGood": "Bloqueado para sempre",
+      "stopReleased": "Liberado",
+      "stopEnded": "Encerrado",
+      "stopStoppedAt": "Parado {{at}}",
+      "stopSites": "sites: {{sites}}",
+      "stopAskedFor": "pediu: {{paths}}",
+      "stopRefused": "{{count}} pedidos recusados",
+      "stopRelease": "Liberar",
+      "stopBlock": "Bloquear para sempre",
+      "stopReleaseConfirmTitle": "Liberar {{address}}?",
+      "stopReleaseConfirmText": "Os pedidos dele voltam a chegar aos sites de imediato. Se continuar a sondar, volta a ser parado.",
+      "stopBlockConfirmTitle": "Bloquear {{address}} para sempre?",
+      "stopBlockConfirmText": "É adicionado a Proteção no edge → Endereços bloqueados e recusado em todos os sites até alguém o remover de lá.",
+      "stopReleasedTitle": "Endereço liberado",
+      "stopReleasedMessage": "{{address}} já pode chegar aos sites novamente.",
+      "stopBlockedTitle": "Endereço bloqueado",
+      "stopBlockedMessage": "{{address}} foi adicionado aos endereços bloqueados.",
+      "stopActionFailed": "A alteração não foi feita"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Não foi possível contactar o registo da framework.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitoramento do site",
         "description": "Seu site ou um serviço está fora do ar ou com problemas, e quando se recupera."
+      },
+      "edgeSecurity": {
+        "label": "Segurança de edge",
+        "description": "O gateway parou um scanner ou reiniciou-se porque deixou de responder."
       }
     }
   },

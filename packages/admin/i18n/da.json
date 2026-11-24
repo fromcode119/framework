@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktoplysninger",
       "hideContactDetails": "Skjul e-mailadresser og telefonnumre for høstere",
-      "hideContactDetailsDescription": "Alle sider leveres med deres e-mailadresser og internationale telefonnumre (og teksten i tel:-links) kodet, så bots, der indsamler dem fra HTML'en, ikke finder nogen. Besøgende ser og klikker på dem som normalt, og siden indlæses stadig server-renderet. Erstatter et CDN's e-mailsløring, som bør forblive slået fra."
+      "hideContactDetailsDescription": "Alle sider leveres med deres e-mailadresser og internationale telefonnumre (og teksten i tel:-links) kodet, så bots, der indsamler dem fra HTML'en, ikke finder nogen. Besøgende ser og klikker på dem som normalt, og siden indlæses stadig server-renderet. Erstatter et CDN's e-mailsløring, som bør forblive slået fra.",
+      "stoppedAddresses": "Stoppede adresser",
+      "stoppedAddressesSubtitle": "Scannere gatewayen stoppede på alle sites — {{active}} stoppet lige nu",
+      "noStoppedAddresses": "Ingen adresse er blevet stoppet.",
+      "stoppedAddressesLoadFailed": "De stoppede adresser kunne ikke indlæses.",
+      "stopActiveUntil": "Stoppet indtil {{until}}",
+      "stopBlockedForGood": "Blokeret permanent",
+      "stopReleased": "Frigivet",
+      "stopEnded": "Afsluttet",
+      "stopStoppedAt": "Stoppet {{at}}",
+      "stopSites": "sites: {{sites}}",
+      "stopAskedFor": "efterspurgt: {{paths}}",
+      "stopRefused": "{{count}} forespørgsler afvist",
+      "stopRelease": "Frigiv",
+      "stopBlock": "Bloker permanent",
+      "stopReleaseConfirmTitle": "Frigiv {{address}}?",
+      "stopReleaseConfirmText": "Dens forespørgsler når sites igen med det samme. Fortsætter den med at prøve, stoppes den igen.",
+      "stopBlockConfirmTitle": "Bloker {{address}} permanent?",
+      "stopBlockConfirmText": "Den tilføjes under Edge-beskyttelse → Blokerede adresser og afvises på alle sites, indtil nogen fjerner den der.",
+      "stopReleasedTitle": "Adresse frigivet",
+      "stopReleasedMessage": "{{address}} kan igen nå sites.",
+      "stopBlockedTitle": "Adresse blokeret",
+      "stopBlockedMessage": "{{address}} blev tilføjet til de blokerede adresser.",
+      "stopActionFailed": "Ændringen blev ikke foretaget"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Frameworkets register kunne ikke nås.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Overvågning af websted",
         "description": "Dit websted eller en tjeneste er nede eller fungerer ikke korrekt, og når det er oppe igen."
+      },
+      "edgeSecurity": {
+        "label": "Edge-sikkerhed",
+        "description": "Gatewayen stoppede en scanner, eller genstartede sig selv, fordi den holdt op med at svare."
       }
     }
   },

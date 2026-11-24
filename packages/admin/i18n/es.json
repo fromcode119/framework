@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Datos de contacto",
       "hideContactDetails": "Ocultar direcciones de correo y números de teléfono a los recolectores",
-      "hideContactDetailsDescription": "Todas las páginas se sirven con sus direcciones de correo y números de teléfono internacionales (y el texto de cualquier enlace tel:) codificados, de modo que los bots que los recopilan del HTML no encuentran ninguno. Los visitantes los ven y pulsan con normalidad, y la página se sigue cargando renderizada en el servidor. Sustituye a la ofuscación de correos de una CDN, que debe permanecer desactivada."
+      "hideContactDetailsDescription": "Todas las páginas se sirven con sus direcciones de correo y números de teléfono internacionales (y el texto de cualquier enlace tel:) codificados, de modo que los bots que los recopilan del HTML no encuentran ninguno. Los visitantes los ven y pulsan con normalidad, y la página se sigue cargando renderizada en el servidor. Sustituye a la ofuscación de correos de una CDN, que debe permanecer desactivada.",
+      "stoppedAddresses": "Direcciones detenidas",
+      "stoppedAddressesSubtitle": "Escáneres que el gateway detuvo en todos los sitios: {{active}} detenidos ahora mismo",
+      "noStoppedAddresses": "No se ha detenido ninguna dirección.",
+      "stoppedAddressesLoadFailed": "No se pudieron cargar las direcciones detenidas.",
+      "stopActiveUntil": "Detenida hasta {{until}}",
+      "stopBlockedForGood": "Bloqueada para siempre",
+      "stopReleased": "Liberada",
+      "stopEnded": "Terminada",
+      "stopStoppedAt": "Detenida {{at}}",
+      "stopSites": "sitios: {{sites}}",
+      "stopAskedFor": "pidió: {{paths}}",
+      "stopRefused": "{{count}} solicitudes rechazadas",
+      "stopRelease": "Liberar",
+      "stopBlock": "Bloquear para siempre",
+      "stopReleaseConfirmTitle": "¿Liberar {{address}}?",
+      "stopReleaseConfirmText": "Sus solicitudes llegan de nuevo a los sitios de inmediato. Si sigue sondeando, vuelve a detenerse.",
+      "stopBlockConfirmTitle": "¿Bloquear {{address}} para siempre?",
+      "stopBlockConfirmText": "Se añade a Protección perimetral → Direcciones bloqueadas y se rechaza en todos los sitios hasta que alguien la quite de allí.",
+      "stopReleasedTitle": "Dirección liberada",
+      "stopReleasedMessage": "{{address}} puede volver a llegar a los sitios.",
+      "stopBlockedTitle": "Dirección bloqueada",
+      "stopBlockedMessage": "{{address}} se añadió a las direcciones bloqueadas.",
+      "stopActionFailed": "No se realizó el cambio"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "No se pudo conectar con el registro del framework.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Supervisión del sitio",
         "description": "Tu sitio o un servicio está caído o en mal estado, y cuándo se recupera."
+      },
+      "edgeSecurity": {
+        "label": "Seguridad perimetral",
+        "description": "El gateway detuvo un escáner o se reinició porque dejó de responder."
       }
     }
   },

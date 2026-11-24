@@ -139,6 +139,10 @@ export class RouteAuthSegments {
   ADMIN_CERTIFICATES: '/admin/certificates',
   /** One host's certificate. A hostname is a safe path segment; the store normalises what arrives. */
   CERTIFICATES_HOST: '/:host',
+  /** `/system/admin/edge-stops` — the addresses the gateway stopped as scanners, and what to do with each. */
+  ADMIN_EDGE_STOPS: '/admin/edge-stops',
+  EDGE_STOP_RELEASE: '/:id/release',
+  EDGE_STOP_BLOCK: '/:id/block',
   /** Who is responsible for a host's certificate — the operator, or the platform. */
   CERTIFICATES_HOST_SOURCE: '/:host/source',
   /**
@@ -179,6 +183,10 @@ export class RouteAuthSegments {
    * it must never be published through the edge, and it answers nothing without the internal secret.
    */
   INTERNAL_CERTIFICATES: '/internal/certificates',
+  /** The gateway reports an address it stopped, and how many requests it refused from stopped ones. Secret-only. */
+  INTERNAL_EDGE_STOPS: '/internal/edge/stops',
+  /** The gateway reports something an operator must hear about (its watchdog restarting it). Secret-only. */
+  INTERNAL_EDGE_EVENTS: '/internal/edge/events',
   /**
    * Where a certificate authority asks us to prove a host is ours. Fixed by the ACME protocol, and
    * served over PLAIN HTTP at the ROOT of the host — not under the api's versioned base, because the

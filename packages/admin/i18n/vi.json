@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Thông tin liên hệ",
       "hideContactDetails": "Ẩn địa chỉ email và số điện thoại khỏi các công cụ thu thập",
-      "hideContactDetailsDescription": "Mọi trang đều được phục vụ với địa chỉ email và số điện thoại quốc tế (cùng văn bản của mọi liên kết tel:) đã được mã hóa, nên bot thu thập từ HTML sẽ không tìm thấy gì. Khách truy cập vẫn thấy và nhấp vào như bình thường, và trang vẫn được kết xuất từ máy chủ. Tính năng này thay thế việc che email của CDN, vốn nên được tắt."
+      "hideContactDetailsDescription": "Mọi trang đều được phục vụ với địa chỉ email và số điện thoại quốc tế (cùng văn bản của mọi liên kết tel:) đã được mã hóa, nên bot thu thập từ HTML sẽ không tìm thấy gì. Khách truy cập vẫn thấy và nhấp vào như bình thường, và trang vẫn được kết xuất từ máy chủ. Tính năng này thay thế việc che email của CDN, vốn nên được tắt.",
+      "stoppedAddresses": "Địa chỉ đã dừng",
+      "stoppedAddressesSubtitle": "Trình quét mà gateway đã dừng trên mọi trang — hiện đang dừng {{active}} địa chỉ",
+      "noStoppedAddresses": "Chưa có địa chỉ nào bị dừng.",
+      "stoppedAddressesLoadFailed": "Không thể tải danh sách địa chỉ đã dừng.",
+      "stopActiveUntil": "Dừng đến {{until}}",
+      "stopBlockedForGood": "Chặn vĩnh viễn",
+      "stopReleased": "Đã gỡ chặn",
+      "stopEnded": "Đã kết thúc",
+      "stopStoppedAt": "Dừng lúc {{at}}",
+      "stopSites": "trang: {{sites}}",
+      "stopAskedFor": "yêu cầu: {{paths}}",
+      "stopRefused": "Đã từ chối {{count}} yêu cầu",
+      "stopRelease": "Gỡ chặn",
+      "stopBlock": "Chặn vĩnh viễn",
+      "stopReleaseConfirmTitle": "Gỡ chặn {{address}}?",
+      "stopReleaseConfirmText": "Các yêu cầu của địa chỉ này sẽ đến trang ngay lập tức. Nếu tiếp tục dò quét, địa chỉ sẽ lại bị dừng.",
+      "stopBlockConfirmTitle": "Chặn {{address}} vĩnh viễn?",
+      "stopBlockConfirmText": "Địa chỉ được thêm vào Bảo vệ tại biên → Địa chỉ bị chặn và bị từ chối trên mọi trang cho đến khi ai đó gỡ khỏi đó.",
+      "stopReleasedTitle": "Đã gỡ chặn địa chỉ",
+      "stopReleasedMessage": "{{address}} có thể truy cập các trang trở lại.",
+      "stopBlockedTitle": "Đã chặn địa chỉ",
+      "stopBlockedMessage": "{{address}} đã được thêm vào danh sách địa chỉ bị chặn.",
+      "stopActionFailed": "Chưa thực hiện thay đổi"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Không thể kết nối tới kho framework.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Giám sát trang web",
         "description": "Trang web hoặc một dịch vụ của bạn ngừng hoạt động hoặc không ổn định, và khi nó phục hồi."
+      },
+      "edgeSecurity": {
+        "label": "Bảo mật biên",
+        "description": "gateway đã dừng một trình quét, hoặc tự khởi động lại vì ngừng phản hồi."
       }
     }
   },

@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, EdgeProtectionReader, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, EdgeProtectionReader, EdgeStopStore, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 import { SetupMode } from '@fromcode119/core';
 
@@ -20,6 +20,8 @@ export class RoutingRouter {
     private readonly settingsCache: Map<string, string> = new Map(),
     /** Settings → Security → Edge protection, read per site; null on a server with no database yet. */
     private readonly protection: EdgeProtectionReader | null = null,
+    /** Settings → Security → Stopped addresses: carried so a stop outlives a gateway restart. */
+    private readonly stops: EdgeStopStore | null = null,
   ) {
     this.router.get(RouteConstants.SEGMENTS.INTERNAL_ROUTING, (req, res) => { void this.map(req, res); });
   }
@@ -36,7 +38,8 @@ export class RoutingRouter {
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
       aliases: ApplicationDomainSettingsUtils.parseDomainAliases(this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES)),
     }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
-    const map = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
+    const protectedMap = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
+    const map = this.stops ? protectedMap.withStops(await this.stops.stops(), await this.stops.released()) : protectedMap;
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

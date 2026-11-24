@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} md",
       "contactDetails": "Detail Kontak",
       "hideContactDetails": "Sembunyikan alamat email dan nomor telepon dari pengumpul data",
-      "hideContactDetailsDescription": "Setiap halaman disajikan dengan alamat email dan nomor telepon internasional (serta teks tautan tel:) dalam bentuk terenkode, sehingga bot yang mengumpulkannya dari HTML tidak menemukan apa pun. Pengunjung tetap melihat dan mengekliknya seperti biasa, dan halaman tetap dimuat sebagai hasil render server. Menggantikan obfuskasi email dari CDN, yang sebaiknya tetap dinonaktifkan."
+      "hideContactDetailsDescription": "Setiap halaman disajikan dengan alamat email dan nomor telepon internasional (serta teks tautan tel:) dalam bentuk terenkode, sehingga bot yang mengumpulkannya dari HTML tidak menemukan apa pun. Pengunjung tetap melihat dan mengekliknya seperti biasa, dan halaman tetap dimuat sebagai hasil render server. Menggantikan obfuskasi email dari CDN, yang sebaiknya tetap dinonaktifkan.",
+      "stoppedAddresses": "Alamat yang dihentikan",
+      "stoppedAddressesSubtitle": "Pemindai yang dihentikan gateway di setiap situs — {{active}} sedang dihentikan",
+      "noStoppedAddresses": "Belum ada alamat yang dihentikan.",
+      "stoppedAddressesLoadFailed": "Alamat yang dihentikan tidak dapat dimuat.",
+      "stopActiveUntil": "Dihentikan sampai {{until}}",
+      "stopBlockedForGood": "Diblokir permanen",
+      "stopReleased": "Dilepaskan",
+      "stopEnded": "Berakhir",
+      "stopStoppedAt": "Dihentikan {{at}}",
+      "stopSites": "situs: {{sites}}",
+      "stopAskedFor": "diminta: {{paths}}",
+      "stopRefused": "{{count}} permintaan ditolak",
+      "stopRelease": "Lepaskan",
+      "stopBlock": "Blokir permanen",
+      "stopReleaseConfirmTitle": "Lepaskan {{address}}?",
+      "stopReleaseConfirmText": "Permintaannya langsung kembali mencapai situs. Jika terus memindai, alamat ini akan dihentikan lagi.",
+      "stopBlockConfirmTitle": "Blokir {{address}} secara permanen?",
+      "stopBlockConfirmText": "Alamat ini ditambahkan ke Perlindungan Edge → Alamat yang Diblokir dan ditolak di setiap situs sampai ada yang menghapusnya di sana.",
+      "stopReleasedTitle": "Alamat dilepaskan",
+      "stopReleasedMessage": "{{address}} dapat kembali mengakses situs.",
+      "stopBlockedTitle": "Alamat diblokir",
+      "stopBlockedMessage": "{{address}} ditambahkan ke alamat yang diblokir.",
+      "stopActionFailed": "Perubahan tidak dilakukan"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registri framework tidak dapat dijangkau.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Pemantauan situs",
         "description": "Situs atau layanan Anda tidak aktif atau bermasalah, dan saat sudah pulih."
+      },
+      "edgeSecurity": {
+        "label": "Keamanan Edge",
+        "description": "Gateway menghentikan sebuah pemindai, atau memulai ulang dirinya sendiri karena berhenti merespons."
       }
     }
   },

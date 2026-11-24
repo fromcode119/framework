@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktuppgifter",
       "hideContactDetails": "Dölj e-postadresser och telefonnummer för insamlare",
-      "hideContactDetailsDescription": "Varje sida levereras med sina e-postadresser och internationella telefonnummer (och texten i alla tel:-länkar) kodade, så att botar som samlar in dem från HTML-koden inte hittar några. Besökare ser och klickar på dem som vanligt, och sidan läses fortfarande in serverrenderad. Ersätter ett CDN:s e-postdöljning, som bör vara avstängd."
+      "hideContactDetailsDescription": "Varje sida levereras med sina e-postadresser och internationella telefonnummer (och texten i alla tel:-länkar) kodade, så att botar som samlar in dem från HTML-koden inte hittar några. Besökare ser och klickar på dem som vanligt, och sidan läses fortfarande in serverrenderad. Ersätter ett CDN:s e-postdöljning, som bör vara avstängd.",
+      "stoppedAddresses": "Stoppade adresser",
+      "stoppedAddressesSubtitle": "Skannrar som gatewayen stoppade på alla webbplatser — {{active}} stoppade just nu",
+      "noStoppedAddresses": "Ingen adress har stoppats.",
+      "stoppedAddressesLoadFailed": "De stoppade adresserna kunde inte läsas in.",
+      "stopActiveUntil": "Stoppad till {{until}}",
+      "stopBlockedForGood": "Blockerad för gott",
+      "stopReleased": "Frigiven",
+      "stopEnded": "Avslutad",
+      "stopStoppedAt": "Stoppad {{at}}",
+      "stopSites": "webbplatser: {{sites}}",
+      "stopAskedFor": "begärde: {{paths}}",
+      "stopRefused": "{{count}} förfrågningar nekade",
+      "stopRelease": "Frigör",
+      "stopBlock": "Blockera för gott",
+      "stopReleaseConfirmTitle": "Frigöra {{address}}?",
+      "stopReleaseConfirmText": "Dess förfrågningar når webbplatserna igen direkt. Fortsätter den att söka, stoppas den igen.",
+      "stopBlockConfirmTitle": "Blockera {{address}} för gott?",
+      "stopBlockConfirmText": "Den läggs till under Edge-skydd → Blockerade adresser och nekas på alla webbplatser tills någon tar bort den där.",
+      "stopReleasedTitle": "Adress frigiven",
+      "stopReleasedMessage": "{{address}} kan nå webbplatserna igen.",
+      "stopBlockedTitle": "Adress blockerad",
+      "stopBlockedMessage": "{{address}} lades till bland de blockerade adresserna.",
+      "stopActionFailed": "Ändringen gjordes inte"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Det gick inte att nå ramverksregistret.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Webbplatsövervakning",
         "description": "Din webbplats eller en tjänst ligger nere eller fungerar dåligt, och när den är tillbaka."
+      },
+      "edgeSecurity": {
+        "label": "Edge-säkerhet",
+        "description": "Gatewayen stoppade en skanner, eller startade om sig själv eftersom den slutade svara."
       }
     }
   },

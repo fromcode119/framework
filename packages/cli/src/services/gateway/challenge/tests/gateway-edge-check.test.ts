@@ -2,6 +2,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import http from 'http';
 import { EdgeProtection, TenantRouteMap } from '@fromcode119/core';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
+import { GatewayChallenge } from '@cli/services/gateway/challenge/gateway-challenge';
+import { GatewayRateLimit } from '@cli/services/gateway/challenge/gateway-rate-limit';
+import { GatewayVisitorRules } from '@cli/services/gateway/challenge/gateway-visitor-rules';
+import { GatewayRefusalLog } from '@cli/services/gateway/challenge/gateway-refusal-log';
+import { GatewayScannerBan } from '@cli/services/gateway/challenge/gateway-scanner-ban';
+import { GatewayEdgeReporter } from '@cli/services/gateway/challenge/gateway-edge-reporter';
 
 /** The gateway's edge check in front of a stub app, with a routing map that knows one site. */
 describe('GatewayEdgeCheck — requests per visitor', () => {
@@ -102,5 +108,55 @@ describe('GatewayEdgeCheck — stopping a scanner', () => {
   it('never stops the platform\'s own servers', async () => {
     for (let i = 0; i < 5; i += 1) expect((await get('shop.test', '10.0.0.8', '/.env')).status).toBe(403);
     expect((await get('shop.test', '10.0.0.8', '/')).status).toBe(200);
+  });
+});
+
+/** What the console is told: the stop with what it asked for, then how much was refused after it. */
+describe('GatewayEdgeCheck — reporting a stop', () => {
+  class Recorder extends GatewayEdgeReporter {
+    readonly stops: Array<{ stop: unknown; reason: string }> = [];
+    readonly refusedFromList: string[] = [];
+    override stopped(stop: { address: string; until: string; strikes: number; hosts: string[]; paths: string[] }, reason: string): void { this.stops.push({ stop, reason }); }
+    override refusedFrom(address: string): void { this.refusedFromList.push(address); }
+  }
+  const map = TenantRouteMap.fromJson({
+    routes: [{ host: 'shop.test', target: 'frontend', tenantId: 'shop' }],
+    protection: new EdgeProtection([], 0, [], '', '', 0, true, ['/.env'], [], [], 2, 60).toJSON(),
+    stops: [{ address: '198.51.100.40', until: new Date(Date.now() + 3_600_000).toISOString() }],
+  });
+  const reporter = new Recorder();
+  const check = new GatewayEdgeCheck(async () => map, (req) => String(req.headers.host || ''), new GatewayChallenge(), new GatewayRateLimit(), new GatewayVisitorRules(), new GatewayRefusalLog(), new GatewayScannerBan(), reporter);
+  let server: http.Server;
+
+  beforeAll(async () => {
+    server = http.createServer((req, res) => {
+      Object.defineProperty(req.socket, 'remoteAddress', { value: String(req.headers['x-test-visitor']), configurable: true });
+      void check.handle(req, res).then((answered) => { if (!answered) res.end('through'); });
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  });
+  afterAll(() => server.close());
+
+  const get = (visitor: string, path = '/'): Promise<number> => new Promise((resolve, reject) => {
+    const port = (server.address() as { port: number }).port;
+    http.get({ host: '127.0.0.1', port, path, headers: { host: 'shop.test', 'x-test-visitor': visitor } }, (res) => {
+      res.resume();
+      res.on('end', () => resolve(res.statusCode ?? 0));
+    }).on('error', reject);
+  });
+
+  it('reports the stop once, with the site and what it asked for, and counts what is refused after it', async () => {
+    expect(await get('198.51.100.41', '/.env')).toBe(403);
+    expect(await get('198.51.100.41', '/.env?x=1')).toBe(403);
+    expect(reporter.stops).toHaveLength(1);
+    expect(reporter.stops[0].reason).toBe(GatewayEdgeCheck.SCANNER);
+    expect(reporter.stops[0].stop).toMatchObject({ address: '198.51.100.41', strikes: 2, hosts: ['shop.test'], paths: ['/.env'] });
+    expect(await get('198.51.100.41', '/')).toBe(403);
+    expect(reporter.refusedFromList).toEqual(['198.51.100.41']);
+  });
+
+  it('refuses an address the routing map carries as stopped — a stop made before a restart', async () => {
+    expect(await get('198.51.100.40', '/')).toBe(403);
+    expect(await get('198.51.100.42', '/')).toBe(200);
   });
 });

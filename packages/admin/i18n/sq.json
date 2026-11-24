@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Të dhënat e kontaktit",
       "hideContactDetails": "Fshih adresat e email-it dhe numrat e telefonit nga mbledhësit automatikë",
-      "hideContactDetailsDescription": "Çdo faqe shërbehet me adresat e email-it dhe numrat ndërkombëtarë të telefonit (si dhe tekstin e çdo lidhjeje tel:) të koduara, kështu që robotët që i mbledhin nga HTML-ja nuk gjejnë asnjë. Vizitorët i shohin dhe i klikojnë normalisht, dhe faqja ngarkohet përsëri e gjeneruar nga serveri. Zëvendëson errësimin e email-eve nga një CDN, i cili duhet të mbetet i çaktivizuar."
+      "hideContactDetailsDescription": "Çdo faqe shërbehet me adresat e email-it dhe numrat ndërkombëtarë të telefonit (si dhe tekstin e çdo lidhjeje tel:) të koduara, kështu që robotët që i mbledhin nga HTML-ja nuk gjejnë asnjë. Vizitorët i shohin dhe i klikojnë normalisht, dhe faqja ngarkohet përsëri e gjeneruar nga serveri. Zëvendëson errësimin e email-eve nga një CDN, i cili duhet të mbetet i çaktivizuar.",
+      "stoppedAddresses": "Adresat e ndaluara",
+      "stoppedAddressesSubtitle": "Skanerë të ndalur nga gateway në çdo sit — {{active}} të ndaluar tani",
+      "noStoppedAddresses": "Asnjë adresë nuk është ndaluar.",
+      "stoppedAddressesLoadFailed": "Adresat e ndaluara nuk mund të ngarkoheshin.",
+      "stopActiveUntil": "E ndaluar deri më {{until}}",
+      "stopBlockedForGood": "E bllokuar përgjithmonë",
+      "stopReleased": "E liruar",
+      "stopEnded": "E përfunduar",
+      "stopStoppedAt": "E ndaluar {{at}}",
+      "stopSites": "sitet: {{sites}}",
+      "stopAskedFor": "kërkoi: {{paths}}",
+      "stopRefused": "{{count}} kërkesa të refuzuara",
+      "stopRelease": "Liro",
+      "stopBlock": "Blloko përgjithmonë",
+      "stopReleaseConfirmTitle": "Të lirohet {{address}}?",
+      "stopReleaseConfirmText": "Kërkesat e saj arrijnë menjëherë përsëri te sitet. Nëse vazhdon të sondojë, ndalohet përsëri.",
+      "stopBlockConfirmTitle": "Të bllokohet {{address}} përgjithmonë?",
+      "stopBlockConfirmText": "Shtohet te Mbrojtja në edge → Adresat e bllokuara dhe refuzohet në çdo sit derisa dikush ta heqë aty.",
+      "stopReleasedTitle": "Adresa u lirua",
+      "stopReleasedMessage": "{{address}} mund t'i arrijë sitet përsëri.",
+      "stopBlockedTitle": "Adresa u bllokua",
+      "stopBlockedMessage": "{{address}} u shtua te adresat e bllokuara.",
+      "stopActionFailed": "Ndryshimi nuk u krye"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Regjistri i framework-ut nuk mund të arrihej.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitorimi i faqes",
         "description": "Faqja juaj ose një shërbim është jashtë funksionit ose në gjendje të keqe, dhe kur rikuperohet."
+      },
+      "edgeSecurity": {
+        "label": "Siguria në edge",
+        "description": "Gateway ndaloi një skaner ose u rinis vetë sepse pushoi së përgjigjuri."
       }
     }
   },

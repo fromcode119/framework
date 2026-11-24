@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Butiran Hubungan",
       "hideContactDetails": "Sembunyikan alamat e-mel dan nombor telefon daripada penuai data",
-      "hideContactDetailsDescription": "Setiap halaman disajikan dengan alamat e-mel dan nombor telefon antarabangsanya (serta teks mana-mana pautan tel:) dikodkan, supaya bot yang mengumpulnya daripada HTML tidak menemui apa-apa. Pelawat melihat dan mengkliknya seperti biasa, dan halaman masih dimuatkan secara dipaparkan pelayan. Menggantikan pengaburan e-mel CDN, yang harus kekal dimatikan."
+      "hideContactDetailsDescription": "Setiap halaman disajikan dengan alamat e-mel dan nombor telefon antarabangsanya (serta teks mana-mana pautan tel:) dikodkan, supaya bot yang mengumpulnya daripada HTML tidak menemui apa-apa. Pelawat melihat dan mengkliknya seperti biasa, dan halaman masih dimuatkan secara dipaparkan pelayan. Menggantikan pengaburan e-mel CDN, yang harus kekal dimatikan.",
+      "stoppedAddresses": "Alamat yang dihentikan",
+      "stoppedAddressesSubtitle": "Pengimbas yang dihentikan gateway di semua tapak — {{active}} dihentikan sekarang",
+      "noStoppedAddresses": "Tiada alamat telah dihentikan.",
+      "stoppedAddressesLoadFailed": "Alamat yang dihentikan tidak dapat dimuatkan.",
+      "stopActiveUntil": "Dihentikan sehingga {{until}}",
+      "stopBlockedForGood": "Disekat selamanya",
+      "stopReleased": "Dilepaskan",
+      "stopEnded": "Tamat",
+      "stopStoppedAt": "Dihentikan {{at}}",
+      "stopSites": "tapak: {{sites}}",
+      "stopAskedFor": "diminta: {{paths}}",
+      "stopRefused": "{{count}} permintaan ditolak",
+      "stopRelease": "Lepaskan",
+      "stopBlock": "Sekat selamanya",
+      "stopReleaseConfirmTitle": "Lepaskan {{address}}?",
+      "stopReleaseConfirmText": "Permintaannya terus sampai ke tapak. Jika ia terus mengimbas, ia akan dihentikan semula.",
+      "stopBlockConfirmTitle": "Sekat {{address}} selamanya?",
+      "stopBlockConfirmText": "Ia ditambah ke Perlindungan Tepi → Alamat Disekat dan ditolak di semua tapak sehingga seseorang mengeluarkannya di sana.",
+      "stopReleasedTitle": "Alamat dilepaskan",
+      "stopReleasedMessage": "{{address}} boleh mencapai tapak semula.",
+      "stopBlockedTitle": "Alamat disekat",
+      "stopBlockedMessage": "{{address}} telah ditambah ke alamat yang disekat.",
+      "stopActionFailed": "Perubahan tidak dibuat"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Pendaftaran rangka kerja tidak dapat dihubungi.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Pemantauan tapak",
         "description": "Tapak atau perkhidmatan anda tidak berfungsi atau bermasalah, dan apabila ia pulih."
+      },
+      "edgeSecurity": {
+        "label": "Keselamatan Tepi",
+        "description": "Gateway menghentikan pengimbas, atau memulakan semula kerana ia berhenti menjawab."
       }
     }
   },

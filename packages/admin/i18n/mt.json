@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Dettalji ta' kuntatt",
       "hideContactDetails": "Aħbi l-indirizzi tal-email u n-numri tat-telefon minn min jiġborhom",
-      "hideContactDetailsDescription": "Kull paġna tintbagħat bl-indirizzi tal-email u n-numri tat-telefon internazzjonali tagħha (u t-test ta' kull link tel:) kodifikati, biex il-bots li jiġbruhom mill-HTML ma jsibu xejn. Il-viżitaturi jarawhom u jikklikkjawhom bħas-soltu, u l-paġna xorta titgħabba rrenderjata mis-server. Tieħu post l-oskurament tal-email ta' CDN, li għandu jibqa' mitfi."
+      "hideContactDetailsDescription": "Kull paġna tintbagħat bl-indirizzi tal-email u n-numri tat-telefon internazzjonali tagħha (u t-test ta' kull link tel:) kodifikati, biex il-bots li jiġbruhom mill-HTML ma jsibu xejn. Il-viżitaturi jarawhom u jikklikkjawhom bħas-soltu, u l-paġna xorta titgħabba rrenderjata mis-server. Tieħu post l-oskurament tal-email ta' CDN, li għandu jibqa' mitfi.",
+      "stoppedAddresses": "Indirizzi mwaqqfa",
+      "stoppedAddressesSubtitle": "Scanners li l-gateway waqqaf fuq is-siti kollha — {{active}} imwaqqfa issa",
+      "noStoppedAddresses": "Ebda indirizz ma ġie mwaqqaf.",
+      "stoppedAddressesLoadFailed": "L-indirizzi mwaqqfa ma setgħux jitgħabbew.",
+      "stopActiveUntil": "Imwaqqaf sa {{until}}",
+      "stopBlockedForGood": "Imblukkat għal dejjem",
+      "stopReleased": "Ġie rilaxxat",
+      "stopEnded": "Intemm",
+      "stopStoppedAt": "Imwaqqaf {{at}}",
+      "stopSites": "siti: {{sites}}",
+      "stopAskedFor": "talab: {{paths}}",
+      "stopRefused": "{{count}} talbiet imwarrba",
+      "stopRelease": "Rilaxxa",
+      "stopBlock": "Blokka għal dejjem",
+      "stopReleaseConfirmTitle": "Tirrilaxxa {{address}}?",
+      "stopReleaseConfirmText": "It-talbiet tiegħu jilħqu s-siti mill-ġdid minnufih. Jekk ikompli jfittex, jerga' jitwaqqaf.",
+      "stopBlockConfirmTitle": "Tiblokka {{address}} għal dejjem?",
+      "stopBlockConfirmText": "Tiżdied ma' Protezzjoni tal-Edge → Indirizzi Imblukkati u tiġi miċħuda fuq is-siti kollha sakemm xi ħadd jneħħiha minn hemm.",
+      "stopReleasedTitle": "L-indirizz ġie rilaxxat",
+      "stopReleasedMessage": "{{address}} jista' jilħaq is-siti mill-ġdid.",
+      "stopBlockedTitle": "L-indirizz ġie mblukkat",
+      "stopBlockedMessage": "{{address}} ġie miżjud mal-indirizzi mblukkati.",
+      "stopActionFailed": "Il-bidla ma saritx"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Ir-reġistru tal-framework ma setax jintlaħaq.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitoraġġ tas-sit",
         "description": "Is-sit tiegħek jew servizz mhuwiex qed jaħdem jew mhuwiex f'saħħtu, u meta jirkupra."
+      },
+      "edgeSecurity": {
+        "label": "Sigurtà tal-Edge",
+        "description": "Il-gateway waqqaf scanner, jew reġa' nieda lilu nnifsu għax waqaf milli jwieġeb."
       }
     }
   },

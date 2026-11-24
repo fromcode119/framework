@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ملّي ثانية",
       "contactDetails": "بيانات الاتصال",
       "hideContactDetails": "إخفاء عناوين البريد الإلكتروني وأرقام الهواتف عن برامج جمع البيانات",
-      "hideContactDetailsDescription": "تُقدَّم كل صفحة مع ترميز عناوين البريد الإلكتروني وأرقام الهواتف الدولية فيها (ونص أي رابط tel:)، فلا تجد الروبوتات التي تجمعها من HTML أيًّا منها. يراها الزوار وينقرون عليها كالمعتاد، وتظل الصفحة تُحمَّل مُصيَّرة من الخادم. يحل هذا محل ميزة إخفاء البريد الإلكتروني في شبكة CDN، والتي ينبغي أن تبقى معطّلة."
+      "hideContactDetailsDescription": "تُقدَّم كل صفحة مع ترميز عناوين البريد الإلكتروني وأرقام الهواتف الدولية فيها (ونص أي رابط tel:)، فلا تجد الروبوتات التي تجمعها من HTML أيًّا منها. يراها الزوار وينقرون عليها كالمعتاد، وتظل الصفحة تُحمَّل مُصيَّرة من الخادم. يحل هذا محل ميزة إخفاء البريد الإلكتروني في شبكة CDN، والتي ينبغي أن تبقى معطّلة.",
+      "stoppedAddresses": "العناوين الموقوفة",
+      "stoppedAddressesSubtitle": "الماسحات التي أوقفها gateway على كل المواقع — {{active}} موقوف الآن",
+      "noStoppedAddresses": "لم يُوقَف أي عنوان.",
+      "stoppedAddressesLoadFailed": "تعذّر تحميل العناوين الموقوفة.",
+      "stopActiveUntil": "موقوف حتى {{until}}",
+      "stopBlockedForGood": "محظور نهائياً",
+      "stopReleased": "أُفرج عنه",
+      "stopEnded": "انتهى",
+      "stopStoppedAt": "أُوقف {{at}}",
+      "stopSites": "المواقع: {{sites}}",
+      "stopAskedFor": "طلب: {{paths}}",
+      "stopRefused": "رُفض {{count}} طلباً",
+      "stopRelease": "إفراج",
+      "stopBlock": "حظر نهائي",
+      "stopReleaseConfirmTitle": "هل تفرج عن {{address}}؟",
+      "stopReleaseConfirmText": "تصل طلباته إلى المواقع من جديد فوراً. إن واصل الاستكشاف يُوقف مجدداً.",
+      "stopBlockConfirmTitle": "هل تحظر {{address}} نهائياً؟",
+      "stopBlockConfirmText": "يُضاف إلى حماية الحافة → العناوين المحظورة ويُرفض على كل المواقع حتى يزيله أحد من هناك.",
+      "stopReleasedTitle": "أُفرج عن العنوان",
+      "stopReleasedMessage": "يمكن لـ{{address}} الوصول إلى المواقع من جديد.",
+      "stopBlockedTitle": "تم حظر العنوان",
+      "stopBlockedMessage": "أُضيف {{address}} إلى العناوين المحظورة.",
+      "stopActionFailed": "لم يُجرَ التغيير"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "تعذّر الوصول إلى سجل إطار العمل.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "مراقبة الموقع",
         "description": "موقعك أو إحدى الخدمات متوقفة أو غير سليمة، وعند عودتها للعمل."
+      },
+      "edgeSecurity": {
+        "label": "أمان الحافة",
+        "description": "أوقف gateway ماسحاً، أو أعاد تشغيل نفسه لأنه توقف عن الاستجابة."
       }
     }
   },

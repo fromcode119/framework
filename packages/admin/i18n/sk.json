@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktné údaje",
       "hideContactDetails": "Skryť e-mailové adresy a telefónne čísla pred zberačmi",
-      "hideContactDetailsDescription": "Každá stránka sa odosiela so zakódovanými e-mailovými adresami a medzinárodnými telefónnymi číslami (aj textom odkazov tel:), takže roboty, ktoré ich zbierajú z HTML, nenájdu nič. Návštevníci ich vidia a klikajú na ne ako zvyčajne a stránka sa stále načíta vykreslená na serveri. Nahrádza zahmlievanie e-mailov v CDN, ktoré by malo zostať vypnuté."
+      "hideContactDetailsDescription": "Každá stránka sa odosiela so zakódovanými e-mailovými adresami a medzinárodnými telefónnymi číslami (aj textom odkazov tel:), takže roboty, ktoré ich zbierajú z HTML, nenájdu nič. Návštevníci ich vidia a klikajú na ne ako zvyčajne a stránka sa stále načíta vykreslená na serveri. Nahrádza zahmlievanie e-mailov v CDN, ktoré by malo zostať vypnuté.",
+      "stoppedAddresses": "Zastavené adresy",
+      "stoppedAddressesSubtitle": "Skenery, ktoré gateway zastavil na všetkých weboch — práve zastavených: {{active}}",
+      "noStoppedAddresses": "Žiadna adresa nebola zastavená.",
+      "stoppedAddressesLoadFailed": "Zastavené adresy sa nepodarilo načítať.",
+      "stopActiveUntil": "Zastavený do {{until}}",
+      "stopBlockedForGood": "Natrvalo zablokovaný",
+      "stopReleased": "Uvoľnený",
+      "stopEnded": "Ukončený",
+      "stopStoppedAt": "Zastavený {{at}}",
+      "stopSites": "weby: {{sites}}",
+      "stopAskedFor": "žiadal: {{paths}}",
+      "stopRefused": "odmietnutých požiadaviek: {{count}}",
+      "stopRelease": "Uvoľniť",
+      "stopBlock": "Natrvalo zablokovať",
+      "stopReleaseConfirmTitle": "Uvoľniť {{address}}?",
+      "stopReleaseConfirmText": "Jeho požiadavky sa na weby okamžite vrátia. Ak bude ďalej skúšať, bude znovu zastavený.",
+      "stopBlockConfirmTitle": "Natrvalo zablokovať {{address}}?",
+      "stopBlockConfirmText": "Pridá sa do Ochrana na okraji siete → Blokované adresy a bude odmietnutý na všetkých weboch, kým ho tam niekto neodstráni.",
+      "stopReleasedTitle": "Adresa uvoľnená",
+      "stopReleasedMessage": "{{address}} sa znovu môže dostať na weby.",
+      "stopBlockedTitle": "Adresa zablokovaná",
+      "stopBlockedMessage": "{{address}} bola pridaná medzi zablokované adresy.",
+      "stopActionFailed": "Zmena nebola vykonaná"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Register frameworku nie je dostupný.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitorovanie webu",
         "description": "Váš web alebo služba nefunguje alebo má problémy, a keď sa obnoví."
+      },
+      "edgeSecurity": {
+        "label": "Zabezpečenie okraja",
+        "description": "Gateway zastavil skener alebo sa reštartoval, pretože prestal odpovedať."
       }
     }
   },

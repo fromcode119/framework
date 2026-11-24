@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}}ms",
       "contactDetails": "연락처 정보",
       "hideContactDetails": "수집 봇으로부터 이메일 주소와 전화번호 숨기기",
-      "hideContactDetailsDescription": "모든 페이지의 이메일 주소와 국제 전화번호(및 tel: 링크의 텍스트)를 인코딩하여 제공하므로, HTML에서 이를 수집하는 봇은 아무것도 찾을 수 없습니다. 방문자에게는 평소처럼 보이고 클릭할 수 있으며, 페이지는 계속 서버 렌더링 방식으로 로드됩니다. CDN의 이메일 난독화 기능을 대체하므로 해당 기능은 꺼 두어야 합니다."
+      "hideContactDetailsDescription": "모든 페이지의 이메일 주소와 국제 전화번호(및 tel: 링크의 텍스트)를 인코딩하여 제공하므로, HTML에서 이를 수집하는 봇은 아무것도 찾을 수 없습니다. 방문자에게는 평소처럼 보이고 클릭할 수 있으며, 페이지는 계속 서버 렌더링 방식으로 로드됩니다. CDN의 이메일 난독화 기능을 대체하므로 해당 기능은 꺼 두어야 합니다.",
+      "stoppedAddresses": "중지된 주소",
+      "stoppedAddressesSubtitle": "gateway가 모든 사이트에서 중지한 스캐너 — 현재 {{active}}개 중지됨",
+      "noStoppedAddresses": "중지된 주소가 없습니다.",
+      "stoppedAddressesLoadFailed": "중지된 주소를 불러올 수 없습니다.",
+      "stopActiveUntil": "{{until}}까지 중지됨",
+      "stopBlockedForGood": "영구 차단됨",
+      "stopReleased": "해제됨",
+      "stopEnded": "종료됨",
+      "stopStoppedAt": "{{at}} 중지됨",
+      "stopSites": "사이트: {{sites}}",
+      "stopAskedFor": "요청한 경로: {{paths}}",
+      "stopRefused": "요청 {{count}}건 거부됨",
+      "stopRelease": "해제",
+      "stopBlock": "영구 차단",
+      "stopReleaseConfirmTitle": "{{address}}을(를) 해제하시겠습니까?",
+      "stopReleaseConfirmText": "이 주소의 요청이 즉시 다시 사이트에 도달합니다. 계속 탐색하면 다시 중지됩니다.",
+      "stopBlockConfirmTitle": "{{address}}을(를) 영구 차단하시겠습니까?",
+      "stopBlockConfirmText": "엣지 보호 → 차단된 주소에 추가되며, 누군가 그곳에서 제거하기 전까지 모든 사이트에서 거부됩니다.",
+      "stopReleasedTitle": "주소 해제됨",
+      "stopReleasedMessage": "{{address}}이(가) 다시 사이트에 접속할 수 있습니다.",
+      "stopBlockedTitle": "주소 차단됨",
+      "stopBlockedMessage": "{{address}}이(가) 차단된 주소에 추가되었습니다.",
+      "stopActionFailed": "변경되지 않았습니다"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "프레임워크 레지스트리에 연결할 수 없습니다.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "사이트 모니터링",
         "description": "사이트 또는 서비스가 중단되었거나 상태가 좋지 않을 때와 복구되었을 때."
+      },
+      "edgeSecurity": {
+        "label": "엣지 보안",
+        "description": "gateway가 스캐너를 중지했거나, 응답을 멈춰서 스스로 재시작했습니다."
       }
     }
   },

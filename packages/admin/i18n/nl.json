@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Contactgegevens",
       "hideContactDetails": "E-mailadressen en telefoonnummers verbergen voor harvesters",
-      "hideContactDetailsDescription": "Elke pagina wordt geleverd met gecodeerde e-mailadressen en internationale telefoonnummers (en de tekst van elke tel:-link), zodat bots die ze uit de HTML verzamelen niets vinden. Bezoekers zien ze en kunnen er gewoon op klikken, en de pagina wordt nog steeds server-side gerenderd. Vervangt de e-mailverhulling van een CDN, die uitgeschakeld moet blijven."
+      "hideContactDetailsDescription": "Elke pagina wordt geleverd met gecodeerde e-mailadressen en internationale telefoonnummers (en de tekst van elke tel:-link), zodat bots die ze uit de HTML verzamelen niets vinden. Bezoekers zien ze en kunnen er gewoon op klikken, en de pagina wordt nog steeds server-side gerenderd. Vervangt de e-mailverhulling van een CDN, die uitgeschakeld moet blijven.",
+      "stoppedAddresses": "Gestopte adressen",
+      "stoppedAddressesSubtitle": "Scanners die de gateway op alle sites heeft gestopt — nu {{active}} gestopt",
+      "noStoppedAddresses": "Er is geen adres gestopt.",
+      "stoppedAddressesLoadFailed": "De gestopte adressen konden niet worden geladen.",
+      "stopActiveUntil": "Gestopt tot {{until}}",
+      "stopBlockedForGood": "Permanent geblokkeerd",
+      "stopReleased": "Vrijgegeven",
+      "stopEnded": "Beëindigd",
+      "stopStoppedAt": "Gestopt {{at}}",
+      "stopSites": "sites: {{sites}}",
+      "stopAskedFor": "gevraagd: {{paths}}",
+      "stopRefused": "{{count}} verzoeken geweigerd",
+      "stopRelease": "Vrijgeven",
+      "stopBlock": "Permanent blokkeren",
+      "stopReleaseConfirmTitle": "{{address}} vrijgeven?",
+      "stopReleaseConfirmText": "De verzoeken bereiken de sites direct weer. Blijft het sonderen, dan wordt het opnieuw gestopt.",
+      "stopBlockConfirmTitle": "{{address}} permanent blokkeren?",
+      "stopBlockConfirmText": "Het wordt toegevoegd aan Edge-beveiliging → Geblokkeerde adressen en op alle sites geweigerd tot iemand het daar verwijdert.",
+      "stopReleasedTitle": "Adres vrijgegeven",
+      "stopReleasedMessage": "{{address}} kan de sites weer bereiken.",
+      "stopBlockedTitle": "Adres geblokkeerd",
+      "stopBlockedMessage": "{{address}} is toegevoegd aan de geblokkeerde adressen.",
+      "stopActionFailed": "De wijziging is niet doorgevoerd"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Het framework-register kon niet worden bereikt.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Sitebewaking",
         "description": "Je site of een dienst is offline of werkt niet goed, en wanneer dit is hersteld."
+      },
+      "edgeSecurity": {
+        "label": "Edge-beveiliging",
+        "description": "De gateway heeft een scanner gestopt, of zichzelf opnieuw gestart omdat hij niet meer reageerde."
       }
     }
   },
