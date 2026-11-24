@@ -1,0 +1,41 @@
+# An edge, configured by this one file. Copy it to edge.yaml beside docker-compose.yml and change it:
+# nothing about an edge is decided in code — ports, servers, addresses and rules are all here.
+# Check it before starting:  fromcode system edge check edge.yaml
+
+listeners:
+  - { port: 80, protocol: http }
+  - { port: 443, protocol: tls }
+  # A relay of your own in front of this edge may send the visitor's address in a PROXY header;
+  # only the addresses listed here are believed. Anyone else sending one is refused.
+  # - { port: 443, protocol: tls, acceptProxyFrom: [203.0.113.10] }
+
+origins:
+  # Any server: nginx, HAProxy, another edge. TLS passes through untouched (chosen by SNI on 443,
+  # by Host on 80). proxyProtocol: true adds a PROXY v2 header naming the visitor — turn it on only
+  # when that server reads it, and let that server accept connections from this edge alone.
+  - name: shop
+    hosts: [shop.example.com, www.shop.example.com]
+    transport: tcp
+    address: 10.0.0.5
+    ports: { http: 80, tls: 443 }
+    proxyProtocol: true
+    health: { type: http, path: /health }   # or { type: tcp }, or { type: none }
+
+  # A Fromcode platform this edge joined (Settings → Security → Edges → Add edge prints the join
+  # command). Traffic goes over mutual TLS; the platform knows this edge by its certificate.
+  - name: platform
+    hosts: ["*"]
+    transport: fromcode
+
+# Which addresses to refuse at connect:
+#   { source: fromcode }                          — the stopped addresses of the platform joined
+#   { source: file, path: /etc/fromcode-edge/rules.yaml }   — your own list: "stops:" and "blocked:"
+#   { source: none }
+rules: { source: fromcode }
+
+# Where `fromcode system edge join` keeps this edge's key (mode 0600), certificate and last rules.
+fromcode: { state: /var/lib/fromcode-edge }
+
+# /health (the process is up) and /ready (servers reachable, rules current, certificate valid).
+# Keep it on this machine.
+status: { address: 127.0.0.1, port: 9901 }

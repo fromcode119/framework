@@ -3,6 +3,7 @@ import path from 'path';
 import { Command } from 'commander';
 import { EdgeConfig } from '@cli/services/edge/config/edge-config';
 import { EdgeFactory } from '@cli/services/edge/edge-factory';
+import { EdgeHandoverCheck } from '@cli/services/edge/edge-handover-check';
 import { EdgeStatusServer } from '@cli/services/edge/edge-status-server';
 import { EdgeIdentityStore } from '@cli/services/edge/platform/edge-identity-store';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
@@ -31,6 +32,8 @@ export class EdgeCommand {
       try {
         const config = EdgeConfig.load(path.resolve(file));
         console.log(`Valid: ${config.listeners.length} listener(s), ${config.origins.length} server(s), rules from ${config.rules.source}.`);
+        const handover = EdgeHandoverCheck.problem();
+        if (handover) console.log(`Note: ${handover}`);
       } catch (error: any) {
         console.error(error?.message || error);
         process.exitCode = 1;
@@ -67,6 +70,8 @@ export class EdgeCommand {
       edge = PlatformEdge.fromEnvironment();
     }
     await edge.start();
+    const handover = EdgeHandoverCheck.problem();
+    if (handover) console.warn(`[edge] ${handover}`);
     for (const signal of ['SIGTERM', 'SIGINT'] as const) {
       process.once(signal, () => {
         console.log(`[edge] ${signal}: closing the ports; open connections have ${PlatformEdge.STOP_GRACE_MS / 1000} s`);

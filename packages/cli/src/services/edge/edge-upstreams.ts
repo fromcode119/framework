@@ -84,7 +84,7 @@ export class EdgeUpstreams {
   refused(address: string): void {
     if (!this.healthy.includes(address)) return;
     this.healthy = this.healthy.filter((entry) => entry !== address);
-    console.log(`[edge] gateway ${address} refused a connection (stopping?); out of rotation until it answers again — answering: ${this.healthy.length ? this.healthy.join(', ') : 'none'}`);
+    console.log(`[edge] server ${address} refused a connection (stopping?); out of rotation until it answers again — answering: ${this.healthy.length ? this.healthy.join(', ') : 'none'}`);
   }
 
   private lastResort(): string[] {
@@ -123,7 +123,7 @@ export class EdgeUpstreams {
     const next = answering.length ? answering : accepting;
     const before = this.healthy.join(',');
     this.healthy = next;
-    if (next.join(',') !== before) console.log(`[edge] gateways answering: ${next.length ? next.join(', ') : 'none'}${answering.length || !next.length ? '' : ' (accepting only — none answered its health check)'}`);
+    if (next.join(',') !== before) console.log(`[edge] servers answering: ${next.length ? next.join(', ') : 'none'}${answering.length || !next.length ? '' : ' (accepting only — none answered its health check)'}`);
   }
 
   /** Whether the port took the connection, and whether the health path then came back 200 in time. */

@@ -144,6 +144,24 @@ read, because anyone could make it. **Set it before pointing any traffic at the 
 relay's address is listed, the gateway does not read the relay's header and every connection through
 it fails.
 
+### An edge configured by a file, in front of any site
+
+`deploy/edge/standalone/` runs the same edge from one file, `edge.yaml` (start from
+`edge.example.yaml`): which ports it holds, which servers it passes each host to (by SNI on 443, by
+Host on 80), whether each gets a PROXY header, how each is health-checked, and where the addresses to
+refuse come from — the Fromcode platform it joined, a file of your own, or nowhere. It needs no
+Fromcode platform behind it; `fromcode system edge check edge.yaml` lists every problem in a file.
+
+In front of a Fromcode platform it joins once: Settings → Security → Edges → **Add edge** prints the
+command, with a one-time token and the SHA-256 of the platform's root. From then on it proves itself
+with its own certificate over mutual TLS, renewed by itself every 12 hours; **Remove** cuts it off.
+The platform needs a control address and port (Settings → Security) and its API URL (Settings →
+General) before an edge can be added.
+
+Two copies can hand the ports over with no connection lost — both listen with `SO_REUSEPORT` — on a
+host with `net.ipv4.tcp_migrate_req = 1`, which `protection/90-edge.conf` sets. Without it the
+connections still queued on the copy that closes are reset; the edge says so when it starts.
+
 ### Protecting the relay
 
 The relay passes traffic on still encrypted, so it protects the platform where that needs no
