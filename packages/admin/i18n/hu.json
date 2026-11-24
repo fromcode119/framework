@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge-tanúsítvány érvényessége (óra)",
       "edgeCertificateHoursHelp": "Minden edge ennek az időnek a felénél megújítja a tanúsítványát. Az eltávolított edge-et azonnal elutasítják; a tanúsítványa ezen az időn belül így is lejár.",
       "edgeCaDays": "Aláíró tanúsítvány cseréje (nap)",
-      "edgeCaDaysHelp": "Milyen gyakran cseréli le a platform azt a tanúsítványt, amellyel az edge-tanúsítványokat aláírja. Az előző megbízható marad, amíg minden, amit aláírt, le nem jár."
+      "edgeCaDaysHelp": "Milyen gyakran cseréli le a platform azt a tanúsítványt, amellyel az edge-tanúsítványokat aláírja. Az előző megbízható marad, amíg minden, amit aláírt, le nem jár.",
+      "edgeApiUrlMissing": "Az edge-ek a platform API-címe alatt kapnak identitást. Először állítsa be az API URL-t az általános beállításokban.",
+      "edgeOpenGeneral": "Általános beállítások megnyitása"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "A keretrendszer-regisztrációs adatbázis nem érhető el.",

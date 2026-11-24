@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge sertifikāta derīgums (stundas)",
       "edgeCertificateHoursHelp": "Katrs edge atjauno savu sertifikātu pēc puses no šī laika. Noņemts edge tiek noraidīts uzreiz; tā sertifikāts tāpat beidzas šajā laikā.",
       "edgeCaDays": "Parakstīšanas sertifikāta rotācija (dienas)",
-      "edgeCaDaysHelp": "Cik bieži platforma nomaina sertifikātu, ar kuru paraksta edge sertifikātus. Iepriekšējais paliek uzticams, līdz beidzas viss, ko tas parakstījis."
+      "edgeCaDaysHelp": "Cik bieži platforma nomaina sertifikātu, ar kuru paraksta edge sertifikātus. Iepriekšējais paliek uzticams, līdz beidzas viss, ko tas parakstījis.",
+      "edgeApiUrlMissing": "Edge saņem identitāti zem platformas API adreses. Vispirms iestatiet API URL vispārīgajos iestatījumos.",
+      "edgeOpenGeneral": "Atvērt vispārīgos iestatījumus"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Neizdevās sasniegt ietvara reģistru.",

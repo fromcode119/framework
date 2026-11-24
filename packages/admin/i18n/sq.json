@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Vlefshmëria e certifikatës së edge-it (orë)",
       "edgeCertificateHoursHelp": "Çdo edge e rinovon certifikatën e vet në gjysmën e kësaj kohe. Një edge i hequr refuzohet menjëherë; certifikata e tij skadon gjithsesi brenda kësaj kohe.",
       "edgeCaDays": "Rrotullimi i certifikatës së nënshkrimit (ditë)",
-      "edgeCaDaysHelp": "Sa shpesh e zëvendëson platforma certifikatën me të cilën nënshkruan certifikatat e edge-ve. E mëparshmja mbetet e besuar derisa të skadojë gjithçka që ka nënshkruar."
+      "edgeCaDaysHelp": "Sa shpesh e zëvendëson platforma certifikatën me të cilën nënshkruan certifikatat e edge-ve. E mëparshmja mbetet e besuar derisa të skadojë gjithçka që ka nënshkruar.",
+      "edgeApiUrlMissing": "Edge-t marrin një identitet nën adresën API të platformës. Vendosni fillimisht API URL te cilësimet e përgjithshme.",
+      "edgeOpenGeneral": "Hap cilësimet e përgjithshme"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Regjistri i framework-ut nuk mund të arrihej.",

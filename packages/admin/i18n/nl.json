@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Geldigheid edge-certificaat (uren)",
       "edgeCertificateHoursHelp": "Elke edge vernieuwt zijn certificaat na de helft van deze tijd. Een verwijderde edge wordt direct geweigerd; zijn certificaat verloopt sowieso binnen deze tijd.",
       "edgeCaDays": "Rotatie van het ondertekeningscertificaat (dagen)",
-      "edgeCaDaysHelp": "Hoe vaak het platform het certificaat vervangt waarmee het edge-certificaten ondertekent. Het vorige blijft vertrouwd tot alles wat het ondertekende is verlopen."
+      "edgeCaDaysHelp": "Hoe vaak het platform het certificaat vervangt waarmee het edge-certificaten ondertekent. Het vorige blijft vertrouwd tot alles wat het ondertekende is verlopen.",
+      "edgeApiUrlMissing": "Edges krijgen een identiteit onder het API-adres van het platform. Stel eerst de API URL in bij de algemene instellingen.",
+      "edgeOpenGeneral": "Algemene instellingen openen"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Het framework-register kon niet worden bereikt.",

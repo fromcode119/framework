@@ -11,6 +11,7 @@ import { RecordCard } from '@/components/ui/view/record-card.client';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { StateBadge } from '@/components/ui/view/state-badge.client';
 import { Alert } from '@/components/ui/view/alert.client';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Button } from '@/components/ui/view/button.client';
 import { CodeBlock } from '@/components/ui/view/code-block.client';
 import { Dialog } from '@/components/ui/view/dialog.client';
@@ -138,9 +139,17 @@ export class SecurityEdges extends AdminComponent {
     const problem = this.data?.controlProblem;
     if (!problem) return null;
     return (
-      <Alert tone={problem === 'invalid' ? 'danger' : 'info'} action={<Button variant={ButtonVariant.SECONDARY} onClick={this.onOpenSettings}>{AdminI18n.t('settings.security.edgeOpenSettings')}</Button>}>
-        {AdminI18n.t(problem === 'invalid' ? 'settings.security.edgeControlInvalid' : 'settings.security.edgeControlMissing')}
-      </Alert>
+      problem === 'api_url'
+        ? (
+          <Alert tone="info" action={<Button variant={ButtonVariant.SECONDARY} as={AdminLink} href={AdminConstants.ROUTES.SETTINGS.GENERAL}>{AdminI18n.t('settings.security.edgeOpenGeneral')}</Button>}>
+            {AdminI18n.t('settings.security.edgeApiUrlMissing')}
+          </Alert>
+        )
+        : (
+          <Alert tone={problem === 'invalid' ? 'danger' : 'info'} action={<Button variant={ButtonVariant.SECONDARY} onClick={this.onOpenSettings}>{AdminI18n.t('settings.security.edgeOpenSettings')}</Button>}>
+            {AdminI18n.t(problem === 'invalid' ? 'settings.security.edgeControlInvalid' : 'settings.security.edgeControlMissing')}
+          </Alert>
+        )
     );
   }
 

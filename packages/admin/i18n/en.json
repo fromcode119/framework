@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge certificate lifetime (hours)",
       "edgeCertificateHoursHelp": "Each edge renews its certificate at half this time. A removed edge is refused at once; its certificate runs out within this time anyway.",
       "edgeCaDays": "Signing certificate rotation (days)",
-      "edgeCaDaysHelp": "How often the platform replaces the certificate it signs edge certificates with. The previous one stays trusted until everything it signed has run out."
+      "edgeCaDaysHelp": "How often the platform replaces the certificate it signs edge certificates with. The previous one stays trusted until everything it signed has run out.",
+      "edgeApiUrlMissing": "Edges are issued an identity under the platform's API address. Set the API URL in General settings first.",
+      "edgeOpenGeneral": "Open General settings"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "The framework registry could not be reached.",

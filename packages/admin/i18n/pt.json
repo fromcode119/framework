@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Validade do certificado do edge (horas)",
       "edgeCertificateHoursHelp": "Cada edge renova o seu certificado a meio deste tempo. Um edge removido é recusado de imediato; o seu certificado expira de qualquer forma dentro deste prazo.",
       "edgeCaDays": "Rotação do certificado de assinatura (dias)",
-      "edgeCaDaysHelp": "Com que frequência a plataforma substitui o certificado com que assina os certificados dos edges. O anterior continua fiável até expirar tudo o que assinou."
+      "edgeCaDaysHelp": "Com que frequência a plataforma substitui o certificado com que assina os certificados dos edges. O anterior continua fiável até expirar tudo o que assinou.",
+      "edgeApiUrlMissing": "Os edges recebem uma identidade sob o endereço API da plataforma. Defina primeiro a API URL nas definições gerais.",
+      "edgeOpenGeneral": "Abrir definições gerais"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Não foi possível contactar o registo da framework.",

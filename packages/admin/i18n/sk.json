@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Platnosť certifikátu edge (hodiny)",
       "edgeCertificateHoursHelp": "Každý edge obnoví svoj certifikát po uplynutí polovice tohto času. Odstránený edge je odmietnutý okamžite; jeho certifikát aj tak vyprší v rámci tohto času.",
       "edgeCaDays": "Rotácia podpisového certifikátu (dni)",
-      "edgeCaDaysHelp": "Ako často platforma vymieňa certifikát, ktorým podpisuje certifikáty edge. Predchádzajúci zostáva dôveryhodný, kým nevyprší všetko, čo podpísal."
+      "edgeCaDaysHelp": "Ako často platforma vymieňa certifikát, ktorým podpisuje certifikáty edge. Predchádzajúci zostáva dôveryhodný, kým nevyprší všetko, čo podpísal.",
+      "edgeApiUrlMissing": "Edge uzly dostávajú identitu pod adresou API platformy. Najprv nastavte API URL vo všeobecných nastaveniach.",
+      "edgeOpenGeneral": "Otvoriť všeobecné nastavenia"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Register frameworku nie je dostupný.",

@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Levetid for edge-sertifikat (timer)",
       "edgeCertificateHoursHelp": "Hver edge fornyer sertifikatet sitt etter halvparten av denne tiden. En fjernet edge avvises med en gang; sertifikatet utløper uansett innen denne tiden.",
       "edgeCaDays": "Rotasjon av signeringssertifikat (dager)",
-      "edgeCaDaysHelp": "Hvor ofte plattformen bytter ut sertifikatet den signerer edge-sertifikater med. Det forrige forblir klarert til alt det har signert, er utløpt."
+      "edgeCaDaysHelp": "Hvor ofte plattformen bytter ut sertifikatet den signerer edge-sertifikater med. Det forrige forblir klarert til alt det har signert, er utløpt.",
+      "edgeApiUrlMissing": "Edges får en identitet under plattformens API-adresse. Angi først API URL i de generelle innstillingene.",
+      "edgeOpenGeneral": "Åpne generelle innstillinger"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Fikk ikke kontakt med rammeverksregisteret.",

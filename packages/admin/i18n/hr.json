@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Valjanost certifikata edgea (sati)",
       "edgeCertificateHoursHelp": "Svaki edge obnavlja svoj certifikat nakon polovice ovog vremena. Uklonjeni edge odbija se odmah; njegov certifikat ionako istječe unutar ovog vremena.",
       "edgeCaDays": "Rotacija potpisnog certifikata (dani)",
-      "edgeCaDaysHelp": "Koliko često platforma mijenja certifikat kojim potpisuje certifikate edgea. Prethodni ostaje pouzdan dok ne istekne sve što je potpisao."
+      "edgeCaDaysHelp": "Koliko često platforma mijenja certifikat kojim potpisuje certifikate edgea. Prethodni ostaje pouzdan dok ne istekne sve što je potpisao.",
+      "edgeApiUrlMissing": "Edgeovi dobivaju identitet pod API adresom platforme. Najprije postavite API URL u općim postavkama.",
+      "edgeOpenGeneral": "Otvori opće postavke"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registar okvira nije dostupan.",

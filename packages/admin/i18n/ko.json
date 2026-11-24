@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "엣지 인증서 유효 시간(시간)",
       "edgeCertificateHoursHelp": "각 엣지는 이 시간의 절반이 지나면 인증서를 갱신합니다. 제거된 엣지는 즉시 거부되며, 어차피 인증서도 이 시간 안에 만료됩니다.",
       "edgeCaDays": "서명 인증서 교체 주기(일)",
-      "edgeCaDaysHelp": "플랫폼이 엣지 인증서에 서명하는 인증서를 교체하는 주기입니다. 이전 인증서는 그것이 서명한 모든 인증서가 만료될 때까지 신뢰됩니다."
+      "edgeCaDaysHelp": "플랫폼이 엣지 인증서에 서명하는 인증서를 교체하는 주기입니다. 이전 인증서는 그것이 서명한 모든 인증서가 만료될 때까지 신뢰됩니다.",
+      "edgeApiUrlMissing": "엣지는 플랫폼의 API 주소 아래에서 ID를 발급받습니다. 먼저 일반 설정에서 API URL을 설정하세요.",
+      "edgeOpenGeneral": "일반 설정 열기"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "프레임워크 레지스트리에 연결할 수 없습니다.",

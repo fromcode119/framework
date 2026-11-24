@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Thời hạn chứng chỉ edge (giờ)",
       "edgeCertificateHoursHelp": "Mỗi edge gia hạn chứng chỉ khi đã qua một nửa thời gian này. Edge bị gỡ bị từ chối ngay; chứng chỉ của nó vẫn hết hạn trong khoảng thời gian này.",
       "edgeCaDays": "Luân chuyển chứng chỉ ký (ngày)",
-      "edgeCaDaysHelp": "Nền tảng thay chứng chỉ dùng để ký chứng chỉ edge bao lâu một lần. Chứng chỉ trước vẫn được tin cậy cho đến khi mọi thứ nó đã ký hết hạn."
+      "edgeCaDaysHelp": "Nền tảng thay chứng chỉ dùng để ký chứng chỉ edge bao lâu một lần. Chứng chỉ trước vẫn được tin cậy cho đến khi mọi thứ nó đã ký hết hạn.",
+      "edgeApiUrlMissing": "Các edge được cấp danh tính theo địa chỉ API của nền tảng. Hãy đặt API URL trong cài đặt chung trước.",
+      "edgeOpenGeneral": "Mở cài đặt chung"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Không thể kết nối tới kho framework.",

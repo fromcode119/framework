@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge'i sertifikaadi kehtivus (tundi)",
       "edgeCertificateHoursHelp": "Iga edge uuendab oma sertifikaati poole selle aja möödudes. Eemaldatud edge lükatakse kohe tagasi; selle sertifikaat aegub niikuinii selle aja jooksul.",
       "edgeCaDays": "Allkirjastamissertifikaadi vahetus (päeva)",
-      "edgeCaDaysHelp": "Kui sageli platvorm vahetab sertifikaati, millega edge'ide sertifikaate allkirjastab. Eelmine jääb usaldusväärseks, kuni kõik, mille ta allkirjastas, on aegunud."
+      "edgeCaDaysHelp": "Kui sageli platvorm vahetab sertifikaati, millega edge'ide sertifikaate allkirjastab. Eelmine jääb usaldusväärseks, kuni kõik, mille ta allkirjastas, on aegunud.",
+      "edgeApiUrlMissing": "Edge'id saavad identiteedi platvormi API aadressi all. Määrake esmalt üldseadetes API URL.",
+      "edgeOpenGeneral": "Ava üldseaded"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Raamistiku registriga ei õnnestunud ühendust saada.",

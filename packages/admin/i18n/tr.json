@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Uç sertifikasının ömrü (saat)",
       "edgeCertificateHoursHelp": "Her uç sertifikasını bu sürenin yarısında yeniler. Kaldırılan uç hemen reddedilir; sertifikasının süresi zaten bu süre içinde dolar.",
       "edgeCaDays": "İmzalama sertifikası değişimi (gün)",
-      "edgeCaDaysHelp": "Platformun uç sertifikalarını imzaladığı sertifikayı ne sıklıkla değiştirdiği. Öncekinin imzaladığı her şeyin süresi dolana kadar o güvenilir kalır."
+      "edgeCaDaysHelp": "Platformun uç sertifikalarını imzaladığı sertifikayı ne sıklıkla değiştirdiği. Öncekinin imzaladığı her şeyin süresi dolana kadar o güvenilir kalır.",
+      "edgeApiUrlMissing": "Uçlara platformun API adresi altında bir kimlik verilir. Önce genel ayarlarda API URL'yi belirleyin.",
+      "edgeOpenGeneral": "Genel ayarları aç"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Çatı kayıt deposuna ulaşılamadı.",

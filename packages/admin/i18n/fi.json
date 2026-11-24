@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge-varmenteen voimassaoloaika (tuntia)",
       "edgeCertificateHoursHelp": "Jokainen edge uusii varmenteensa puolen tämän ajan kuluttua. Poistettu edge hylätään heti; sen varmenne vanhenee joka tapauksessa tämän ajan kuluessa.",
       "edgeCaDays": "Allekirjoitusvarmenteen kierto (päivää)",
-      "edgeCaDaysHelp": "Kuinka usein alusta vaihtaa varmenteen, jolla se allekirjoittaa edge-varmenteet. Edellinen pysyy luotettuna, kunnes kaikki sen allekirjoittama on vanhentunut."
+      "edgeCaDaysHelp": "Kuinka usein alusta vaihtaa varmenteen, jolla se allekirjoittaa edge-varmenteet. Edellinen pysyy luotettuna, kunnes kaikki sen allekirjoittama on vanhentunut.",
+      "edgeApiUrlMissing": "Edget saavat identiteetin alustan API-osoitteen alle. Aseta ensin API URL yleisissä asetuksissa.",
+      "edgeOpenGeneral": "Avaa yleiset asetukset"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Kehyksen rekisteriin ei saatu yhteyttä.",

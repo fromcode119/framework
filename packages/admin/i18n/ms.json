@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Tempoh sah sijil edge (jam)",
       "edgeCertificateHoursHelp": "Setiap edge memperbaharui sijilnya pada separuh masa ini. Edge yang dibuang ditolak serta-merta; sijilnya tetap tamat tempoh dalam masa ini.",
       "edgeCaDays": "Putaran sijil penandatanganan (hari)",
-      "edgeCaDaysHelp": "Kekerapan platform menukar sijil yang digunakan untuk menandatangani sijil edge. Sijil sebelumnya kekal dipercayai sehingga semua yang ditandatanganinya tamat tempoh."
+      "edgeCaDaysHelp": "Kekerapan platform menukar sijil yang digunakan untuk menandatangani sijil edge. Sijil sebelumnya kekal dipercayai sehingga semua yang ditandatanganinya tamat tempoh.",
+      "edgeApiUrlMissing": "Edge diberi identiti di bawah alamat API platform. Tetapkan API URL dalam tetapan umum dahulu.",
+      "edgeOpenGeneral": "Buka tetapan umum"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Pendaftaran rangka kerja tidak dapat dihubungi.",

@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "邊緣節點憑證有效期限（小時）",
       "edgeCertificateHoursHelp": "每個邊緣節點在這段時間的一半時續期其憑證。已移除的邊緣節點會被立即拒絕；其憑證無論如何都會在這段時間內過期。",
       "edgeCaDays": "簽署憑證輪替週期（天）",
-      "edgeCaDaysHelp": "平台多久更換一次用於簽發邊緣節點憑證的憑證。舊憑證在其簽發的所有憑證都過期之前仍受信任。"
+      "edgeCaDaysHelp": "平台多久更換一次用於簽發邊緣節點憑證的憑證。舊憑證在其簽發的所有憑證都過期之前仍受信任。",
+      "edgeApiUrlMissing": "邊緣節點在平台的 API 位址下取得身分。請先在一般設定中設定 API URL。",
+      "edgeOpenGeneral": "開啟一般設定"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "無法連線至框架登錄庫。",

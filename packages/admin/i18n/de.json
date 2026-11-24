@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Gültigkeit des Edge-Zertifikats (Stunden)",
       "edgeCertificateHoursHelp": "Jeder Edge-Knoten erneuert sein Zertifikat nach der Hälfte dieser Zeit. Ein entfernter Edge-Knoten wird sofort abgelehnt; sein Zertifikat läuft ohnehin innerhalb dieser Zeit ab.",
       "edgeCaDays": "Rotation des Signaturzertifikats (Tage)",
-      "edgeCaDaysHelp": "Wie oft die Plattform das Zertifikat ersetzt, mit dem sie Edge-Zertifikate signiert. Das vorherige bleibt vertrauenswürdig, bis alles, was es signiert hat, abgelaufen ist."
+      "edgeCaDaysHelp": "Wie oft die Plattform das Zertifikat ersetzt, mit dem sie Edge-Zertifikate signiert. Das vorherige bleibt vertrauenswürdig, bis alles, was es signiert hat, abgelaufen ist.",
+      "edgeApiUrlMissing": "Edge-Knoten erhalten eine Identität unter der API-Adresse der Plattform. Legen Sie zuerst die API URL in den allgemeinen Einstellungen fest.",
+      "edgeOpenGeneral": "Allgemeine Einstellungen öffnen"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Die Framework-Registry ist nicht erreichbar.",

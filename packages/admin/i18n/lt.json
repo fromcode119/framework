@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Edge sertifikato galiojimas (valandos)",
       "edgeCertificateHoursHelp": "Kiekvienas edge atnaujina savo sertifikatą praėjus pusei šio laiko. Pašalintas edge atmetamas iš karto; jo sertifikatas vis tiek nustoja galioti per šį laiką.",
       "edgeCaDays": "Pasirašymo sertifikato rotacija (dienos)",
-      "edgeCaDaysHelp": "Kaip dažnai platforma pakeičia sertifikatą, kuriuo pasirašo edge sertifikatus. Ankstesnis lieka patikimas, kol nustos galioti viskas, ką jis pasirašė."
+      "edgeCaDaysHelp": "Kaip dažnai platforma pakeičia sertifikatą, kuriuo pasirašo edge sertifikatus. Ankstesnis lieka patikimas, kol nustos galioti viskas, ką jis pasirašė.",
+      "edgeApiUrlMissing": "Edge gauna tapatybę pagal platformos API adresą. Pirmiausia nustatykite API URL bendruosiuose nustatymuose.",
+      "edgeOpenGeneral": "Atidaryti bendruosius nustatymus"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Nepavyko pasiekti karkaso registro.",

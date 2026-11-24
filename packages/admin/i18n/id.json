@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Masa berlaku sertifikat edge (jam)",
       "edgeCertificateHoursHelp": "Setiap edge memperbarui sertifikatnya pada separuh waktu ini. Edge yang dihapus langsung ditolak; sertifikatnya tetap kedaluwarsa dalam waktu ini.",
       "edgeCaDays": "Rotasi sertifikat penandatanganan (hari)",
-      "edgeCaDaysHelp": "Seberapa sering platform mengganti sertifikat yang dipakai menandatangani sertifikat edge. Sertifikat sebelumnya tetap dipercaya hingga semua yang ditandatanganinya kedaluwarsa."
+      "edgeCaDaysHelp": "Seberapa sering platform mengganti sertifikat yang dipakai menandatangani sertifikat edge. Sertifikat sebelumnya tetap dipercaya hingga semua yang ditandatanganinya kedaluwarsa.",
+      "edgeApiUrlMissing": "Edge diberi identitas di bawah alamat API platform. Atur API URL di pengaturan umum terlebih dahulu.",
+      "edgeOpenGeneral": "Buka pengaturan umum"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registri framework tidak dapat dijangkau.",

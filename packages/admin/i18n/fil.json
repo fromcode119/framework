@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Haba ng bisa ng certificate ng edge (oras)",
       "edgeCertificateHoursHelp": "Pinapanibago ng bawat edge ang certificate nito sa kalahati ng oras na ito. Agad na tinatanggihan ang inalis na edge; mag-e-expire pa rin ang certificate nito sa loob ng oras na ito.",
       "edgeCaDays": "Pag-ikot ng signing certificate (araw)",
-      "edgeCaDaysHelp": "Gaano kadalas pinapalitan ng platform ang certificate na ginagamit nito sa pagpirma ng mga certificate ng edge. Nananatiling pinagkakatiwalaan ang nauna hanggang sa mag-expire ang lahat ng pinirmahan nito."
+      "edgeCaDaysHelp": "Gaano kadalas pinapalitan ng platform ang certificate na ginagamit nito sa pagpirma ng mga certificate ng edge. Nananatiling pinagkakatiwalaan ang nauna hanggang sa mag-expire ang lahat ng pinirmahan nito.",
+      "edgeApiUrlMissing": "Ang mga edge ay binibigyan ng pagkakakilanlan sa ilalim ng API address ng platform. Itakda muna ang API URL sa General settings.",
+      "edgeOpenGeneral": "Buksan ang General settings"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Hindi maabot ang framework registry.",

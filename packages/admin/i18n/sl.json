@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Veljavnost potrdila edge (ure)",
       "edgeCertificateHoursHelp": "Vsak edge obnovi svoje potrdilo ob polovici tega časa. Odstranjen edge je zavrnjen takoj; njegovo potrdilo vseeno poteče v tem času.",
       "edgeCaDays": "Rotacija podpisnega potrdila (dnevi)",
-      "edgeCaDaysHelp": "Kako pogosto platforma zamenja potrdilo, s katerim podpisuje potrdila edge. Prejšnje ostane zaupanja vredno, dokler ne poteče vse, kar je podpisalo."
+      "edgeCaDaysHelp": "Kako pogosto platforma zamenja potrdilo, s katerim podpisuje potrdila edge. Prejšnje ostane zaupanja vredno, dokler ne poteče vse, kar je podpisalo.",
+      "edgeApiUrlMissing": "Edgi dobijo identiteto pod naslovom API platforme. Najprej nastavite API URL v splošnih nastavitvah.",
+      "edgeOpenGeneral": "Odpri splošne nastavitve"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registra ogrodja ni bilo mogoče doseči.",

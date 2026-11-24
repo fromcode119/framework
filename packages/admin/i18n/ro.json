@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Valabilitatea certificatului edge (ore)",
       "edgeCertificateHoursHelp": "Fiecare edge își reînnoiește certificatul la jumătatea acestui timp. Un edge eliminat este refuzat imediat; certificatul său expiră oricum în acest interval.",
       "edgeCaDays": "Rotația certificatului de semnare (zile)",
-      "edgeCaDaysHelp": "Cât de des înlocuiește platforma certificatul cu care semnează certificatele edge-urilor. Cel anterior rămâne de încredere până când expiră tot ce a semnat."
+      "edgeCaDaysHelp": "Cât de des înlocuiește platforma certificatul cu care semnează certificatele edge-urilor. Cel anterior rămâne de încredere până când expiră tot ce a semnat.",
+      "edgeApiUrlMissing": "Edge-urile primesc o identitate sub adresa API a platformei. Setați mai întâi API URL în setările generale.",
+      "edgeOpenGeneral": "Deschide setările generale"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registrul framework-ului nu a putut fi accesat.",

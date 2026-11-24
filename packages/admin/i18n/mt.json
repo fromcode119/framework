@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Validità taċ-ċertifikat tal-edge (sigħat)",
       "edgeCertificateHoursHelp": "Kull edge iġedded iċ-ċertifikat tiegħu f'nofs dan il-ħin. Edge imneħħi jiġi miċħud mill-ewwel; iċ-ċertifikat tiegħu jiskadi xorta f'dan il-ħin.",
       "edgeCaDays": "Rotazzjoni taċ-ċertifikat tal-iffirmar (jiem)",
-      "edgeCaDaysHelp": "Kemm-il darba l-pjattaforma tbiddel iċ-ċertifikat li biha tiffirma ċ-ċertifikati tal-edges. Dak ta' qabel jibqa' fdat sakemm jiskadi kull ma kien iffirma."
+      "edgeCaDaysHelp": "Kemm-il darba l-pjattaforma tbiddel iċ-ċertifikat li biha tiffirma ċ-ċertifikati tal-edges. Dak ta' qabel jibqa' fdat sakemm jiskadi kull ma kien iffirma.",
+      "edgeApiUrlMissing": "L-edges jingħataw identità taħt l-indirizz API tal-pjattaforma. L-ewwel issettja l-API URL fis-settings ġenerali.",
+      "edgeOpenGeneral": "Iftaħ is-settings ġenerali"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Ir-reġistru tal-framework ma setax jintlaħaq.",

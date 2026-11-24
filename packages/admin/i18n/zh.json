@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "边缘节点证书有效期（小时）",
       "edgeCertificateHoursHelp": "每个边缘节点在这段时间的一半时续期其证书。已移除的边缘节点会被立即拒绝；其证书无论如何都会在这段时间内过期。",
       "edgeCaDays": "签名证书轮换周期（天）",
-      "edgeCaDaysHelp": "平台多久更换一次用于签发边缘节点证书的证书。旧证书在其签发的所有证书都过期之前仍受信任。"
+      "edgeCaDaysHelp": "平台多久更换一次用于签发边缘节点证书的证书。旧证书在其签发的所有证书都过期之前仍受信任。",
+      "edgeApiUrlMissing": "边缘节点在平台的 API 地址下获得身份。请先在常规设置中设置 API URL。",
+      "edgeOpenGeneral": "打开常规设置"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "无法连接框架注册中心。",

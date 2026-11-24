@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Ważność certyfikatu edge (godziny)",
       "edgeCertificateHoursHelp": "Każdy edge odnawia certyfikat po upływie połowy tego czasu. Usunięty edge jest odrzucany natychmiast; jego certyfikat i tak wygasa w tym czasie.",
       "edgeCaDays": "Rotacja certyfikatu podpisującego (dni)",
-      "edgeCaDaysHelp": "Jak często platforma wymienia certyfikat, którym podpisuje certyfikaty edge. Poprzedni pozostaje zaufany, dopóki nie wygaśnie wszystko, co podpisał."
+      "edgeCaDaysHelp": "Jak często platforma wymienia certyfikat, którym podpisuje certyfikaty edge. Poprzedni pozostaje zaufany, dopóki nie wygaśnie wszystko, co podpisał.",
+      "edgeApiUrlMissing": "Edge otrzymują tożsamość pod adresem API platformy. Najpierw ustaw API URL w ustawieniach ogólnych.",
+      "edgeOpenGeneral": "Otwórz ustawienia ogólne"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Nie udało się połączyć z rejestrem frameworka.",

@@ -3108,7 +3108,9 @@
       "edgeCertificateHours": "Bailíocht teastais an imill (uaireanta)",
       "edgeCertificateHoursHelp": "Athnuachanaíonn gach imeall a theastas ag leath an ama seo. Diúltaítear láithreach d'imeall bainte; éagann a theastas ar aon nós laistigh den am seo.",
       "edgeCaDays": "Rothlú an teastais shíniúcháin (laethanta)",
-      "edgeCaDaysHelp": "Cé chomh minic a athraíonn an t-ardán an teastas lena sínníonn sé teastais na n-imill. Fanann an ceann roimhe sin iontaofa go dtí go n-éagann gach rud a shínigh sé."
+      "edgeCaDaysHelp": "Cé chomh minic a athraíonn an t-ardán an teastas lena sínníonn sé teastais na n-imill. Fanann an ceann roimhe sin iontaofa go dtí go n-éagann gach rud a shínigh sé.",
+      "edgeApiUrlMissing": "Faigheann imill aitheantas faoi sheoladh API an ardáin. Socraigh an API URL sna socruithe ginearálta ar dtús.",
+      "edgeOpenGeneral": "Oscail socruithe ginearálta"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Níorbh fhéidir teagmháil a dhéanamh le clárlann an chreata.",
