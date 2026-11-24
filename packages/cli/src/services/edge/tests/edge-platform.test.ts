@@ -7,7 +7,7 @@ import path from 'node:path';
 import tls from 'node:tls';
 import express from 'express';
 import { DatabaseFactory } from '@fromcode119/database';
-import { ApiPathUtils, EdgeControlEndpoint, EdgeIdentity, EdgeStop, EdgeX509, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApiPathUtils, CertificateBundle, EdgeControlEndpoint, EdgeIdentity, EdgeStop, EdgeX509, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import { EdgeIdentityMigration } from '@core/database/migrations/074_edge_identity';
 import { EdgeIdentityInternalRouter } from '@api/routes/edge-identity-internal-router';
 import { GatewayControlApi } from '@cli/services/gateway/control/gateway-control-api';
@@ -15,6 +15,8 @@ import { GatewayControlChannel } from '@cli/services/gateway/control/gateway-con
 import { GatewayTunnel } from '@cli/services/gateway/control/gateway-tunnel';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
+import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
+import type { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { EdgeConfig } from '@cli/services/edge/config/edge-config';
 import { EdgeTcpOrigin } from '@cli/services/edge/origins/edge-tcp-origin';
 import { EdgeTunnelOrigin } from '@cli/services/edge/origins/edge-tunnel-origin';
@@ -56,9 +58,17 @@ describe('edge in front of a platform and another server', () => {
     // The platform's HTTP side, as the gateway serves it: who the visitor is, as the gateway sees it.
     const site = http.createServer((req, res) => { seenByPlatform.push(String(req.socket.remoteAddress)); res.end(`platform:${req.headers.host}`); });
     const plain = new GatewayListener(site);
+    // The platform's TLS side, as the gateway terminates it: its own listener, a certificate for the site.
+    const siteKeys = await EdgeX509.generateKeyPair();
+    const issued = new Date();
+    const siteCert = await EdgeX509.certificate({ serial: EdgeX509.serial(), subject: 'shop.example.test', issuer: 'shop.example.test', notBefore: issued, notAfter: new Date(issued.getTime() + 3_600_000), publicKey: siteKeys.publicKey, signingKey: siteKeys.privateKey, serverAuth: true, dnsNames: ['shop.example.test'] });
+    const bundle = CertificateBundle.fromJson({ certificates: [{ host: 'shop.example.test', certificatePem: siteCert, privateKeyPem: await EdgeX509.exportPrivateKey(siteKeys.privateKey) }] });
+    const secure = new GatewayTlsListener(0, { current: bundle, resolve: async () => bundle } as unknown as CertificateBundleClient);
+    secure.start({ request: (req, res) => { seenByPlatform.push(String(req.socket.remoteAddress)); res.end(`platform-tls:${req.headers.host}:${req.httpVersion}`); }, upgrade: (_req, socket) => socket.destroy() });
+    closers.push(() => secure.stop(0));
     // Port 0: whatever is free, read back below — a port picked in advance can be taken by a test running beside this one.
     map = new TenantRouteMap([]).withControl(new EdgeControlEndpoint('127.0.0.1', 0));
-    const channel = new GatewayControlChannel(() => map, (socket, from) => new GatewayTunnel(() => plain, () => null).accept(socket, from), new GatewayControlApi(`http://127.0.0.1:${(api.address() as net.AddressInfo).port}`));
+    const channel = new GatewayControlChannel(() => map, (socket, from) => new GatewayTunnel(() => plain, () => secure.listener).accept(socket, from), new GatewayControlApi(`http://127.0.0.1:${(api.address() as net.AddressInfo).port}`));
     await channel.check();
     closers.push(() => channel.stop());
     const controlPort = channel.listeningPort;
@@ -125,6 +135,35 @@ describe('edge in front of a platform and another server', () => {
     const text = await get((edge as any).httpPort, 'shop.example.test');
     expect(text).toContain('platform:shop.example.test');
     expect(seenByPlatform.at(-1)).toMatch(/127\.0\.0\.1$/);
+  });
+
+  it('carries HTTPS for a platform site through the tunnel to the gateway, which terminates it for the real visitor', async () => {
+    const said = await new Promise<string>((resolve, reject) => {
+      const socket = tls.connect({ host: '127.0.0.1', port: edgePort, servername: 'shop.example.test', rejectUnauthorized: false, ALPNProtocols: ['http/1.1'] }, () => {
+        expect(socket.getPeerCertificate().subject.CN).toBe('shop.example.test');
+        socket.write('GET / HTTP/1.1\r\nHost: shop.example.test\r\nConnection: close\r\n\r\n');
+      });
+      let text = '';
+      socket.on('data', (chunk) => { text += chunk; });
+      socket.on('close', () => resolve(text));
+      socket.on('error', reject);
+    });
+    expect(said).toContain('platform-tls:shop.example.test:1.1');
+    expect(seenByPlatform.at(-1)).toMatch(/127\.0\.0\.1$/);
+  });
+
+  it('serves HTTP/2 through the tunnel, as browsers ask for it', async () => {
+    const http2 = await import('node:http2');
+    const body = await new Promise<string>((resolve, reject) => {
+      const session = http2.connect(`https://shop.example.test:${edgePort}`, { createConnection: () => tls.connect({ host: '127.0.0.1', port: edgePort, servername: 'shop.example.test', rejectUnauthorized: false, ALPNProtocols: ['h2'] }) });
+      session.on('error', reject);
+      const request = session.request({ ':path': '/' });
+      let text = '';
+      request.on('data', (chunk) => { text += chunk; });
+      request.on('end', () => { session.close(); resolve(text); });
+      request.end();
+    });
+    expect(body).toMatch(/^platform-tls:shop\.example\.test:\d+:2\.0$/);
   });
 
   it('sends a host another server owns to that server by SNI, untouched', async () => {
