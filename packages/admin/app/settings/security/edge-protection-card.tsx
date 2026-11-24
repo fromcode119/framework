@@ -123,6 +123,28 @@ export class EdgeProtectionCard extends PureReactor {
           theme={this.theme}
           settings={this.settings}
           setSettings={this.setSettings}
+          settingKey={keys.EDGE_SCANNER_BAN_AFTER}
+          title={AdminI18n.t('settings.security.stopScannerAfter')}
+          description={AdminI18n.t('settings.security.stopScannerAfterHelp')}
+          min={0}
+          max={1000}
+        />
+
+        <SettingNumberRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_SCANNER_BAN_MINUTES}
+          title={AdminI18n.t('settings.security.stopScannerMinutes')}
+          description={AdminI18n.t('settings.security.stopScannerMinutesHelp')}
+          min={0}
+          max={43200}
+        />
+
+        <SettingNumberRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
           settingKey={keys.EDGE_RATE_LIMIT_PER_MINUTE}
           title={AdminI18n.t('settings.security.visitorRequestsPerMinute')}
           description={AdminI18n.t('settings.security.visitorRequestsPerMinuteHelp')}

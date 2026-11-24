@@ -49,3 +49,58 @@ describe('GatewayEdgeCheck — requests per visitor', () => {
     expect((await get('shop.test', '203.0.113.30', '/')).status).toBe(200);
   });
 });
+
+/** A scanner: refused for what it asks for until its address is stopped on every site. */
+describe('GatewayEdgeCheck — stopping a scanner', () => {
+  const map = TenantRouteMap.fromJson({
+    routes: [{ host: 'shop.test', target: 'frontend', tenantId: 'shop' }, { host: 'blog.test', target: 'frontend', tenantId: 'blog' }],
+    protection: new EdgeProtection([], 0, [], '', '', 0, true, ['/.env', '/.git/'], [], [], 3, 60).toJSON(),
+  });
+  const check = new GatewayEdgeCheck(async () => map, (req) => String(req.headers.host || ''));
+  let server: http.Server;
+
+  beforeAll(async () => {
+    server = http.createServer((req, res) => {
+      Object.defineProperty(req.socket, 'remoteAddress', { value: String(req.headers['x-test-visitor']), configurable: true });
+      void check.handle(req, res).then((answered) => { if (!answered) res.end('through'); });
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  });
+  afterAll(() => server.close());
+
+  const get = (host: string, visitor: string, path = '/', extra: Record<string, string> = {}): Promise<{ status: number; body: string }> => new Promise((resolve, reject) => {
+    const port = (server.address() as { port: number }).port;
+    http.get({ host: '127.0.0.1', port, path, headers: { host, 'x-test-visitor': visitor, ...extra } }, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, body }));
+    }).on('error', reject);
+  });
+
+  it('stops the address on every site after the configured number of probes', async () => {
+    expect((await get('shop.test', '198.51.100.4', '/.env')).status).toBe(403);
+    expect((await get('shop.test', '198.51.100.4', '/')).status).toBe(200);
+    expect((await get('shop.test', '198.51.100.4', '/.git/HEAD')).status).toBe(403);
+    expect((await get('shop.test', '198.51.100.4', '/.env.local')).status).toBe(403);
+    const home = await get('blog.test', '198.51.100.4', '/');
+    expect(home.status).toBe(403);
+    expect(home.body).toContain(GatewayEdgeCheck.SCANNER);
+  });
+
+  it('never stops a visitor for pages that simply pass, nor anyone else', async () => {
+    for (let i = 0; i < 10; i += 1) expect((await get('shop.test', '198.51.100.5', `/missing-${i}`)).status).toBe(200);
+    expect((await get('shop.test', '198.51.100.6', '/')).status).toBe(200);
+  });
+
+  it('never stops a visitor whose browser was made to fetch a probe by another site', async () => {
+    for (const site of ['cross-site', 'same-site']) {
+      for (let i = 0; i < 5; i += 1) expect((await get('shop.test', '198.51.100.7', '/.env', { 'sec-fetch-site': site })).status).toBe(403);
+    }
+    expect((await get('shop.test', '198.51.100.7', '/')).status).toBe(200);
+  });
+
+  it('never stops the platform\'s own servers', async () => {
+    for (let i = 0; i < 5; i += 1) expect((await get('shop.test', '10.0.0.8', '/.env')).status).toBe(403);
+    expect((await get('shop.test', '10.0.0.8', '/')).status).toBe(200);
+  });
+});

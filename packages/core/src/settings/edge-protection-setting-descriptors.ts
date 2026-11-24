@@ -39,6 +39,14 @@ export class EdgeProtectionSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: 'sqlmap\nnikto\nnuclei\nmasscan\nzgrab\nnmap\nacunetix\nwpscan\ngobuster\ndirbuster\nffuf', description: "Attack tools refused by the name they send (User-Agent, any part, any case), one per line, while attack blocking is on.", group: "security" },
     },
+    [SystemConstants.META_KEY.EDGE_SCANNER_BAN_AFTER]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '5', description: "While attack blocking is on: an address refused this many times within ten minutes for an attack, a blocked path or a blocked tool is a scanner, and every request it makes to any site is refused (403) for the minutes below. Pages that do not exist never count. 0 = never stop an address.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_SCANNER_BAN_MINUTES]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '60', description: "Minutes a scanner's address is refused on every site. 0 = never stop an address.", group: "security" },
+    },
     [SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES]: {
       scope: SettingScope.INHERITED, writable: true, exposed: true,
       seed: { value: '', description: "Visitors from these countries are refused (403), by two-letter code, one per line or comma separated (e.g. KP, RU). Found from the visitor's address with the platform's geo database. On the platform it applies to every site that has not set its own. Empty: none.", group: "security" },
