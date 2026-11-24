@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { CollectionListUtils } from '@/components/collection/list/utils';
 
 /**
  * A field the operator may not edit, shown as a VALUE on the recessed surface — not as an input.
@@ -58,6 +59,21 @@ export class ReadOnlyFieldValue extends PureReactor {
       const match = options.find((option: any) => String(option?.value ?? option) === String(value ?? ''));
       const label = match?.label ?? match?.value ?? match;
       return label === undefined || label === null ? String(value ?? '') : String(label);
+    }
+
+    /**
+     * A related record is named by its own title, as the list names it. A bare id says nothing a reader can
+     * use ("1 · Progress 0" under an enrollment), and an object must never be printed as one: it read
+     * "[object Object]" in a record's heading. A related record that was not loaded has no name here, so
+     * the line leaves it out — the field itself, below, shows it.
+     */
+    if (type === 'relationship' || (value !== null && typeof value === 'object')) {
+      const entries = Array.isArray(value) ? value : [value];
+      return entries
+        .filter((entry) => entry !== null && typeof entry === 'object')
+        .map((entry) => CollectionListUtils.resolveRelationDisplayLabel(entry))
+        .filter(Boolean)
+        .join(', ');
     }
 
     return value === null || value === undefined ? '' : String(value);

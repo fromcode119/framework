@@ -149,17 +149,15 @@ export class CollectionListUtils {
         if (typeof item === 'string' || typeof item === 'number') return String(item);
         if (item && typeof item === 'object') {
           if (loc.isLocaleMap(item)) return loc.resolveAnyString(item);
-          const objectItem = item as Record<string, unknown>;
-          return String(objectItem.title || objectItem.name || objectItem.label || objectItem.slug || objectItem.id || '[item]');
+          return CollectionListUtils.resolveRelationDisplayLabel(item);
         }
         return String(item);
-      });
-      return sample.join(', ') + (raw.length > 3 ? '…' : '');
+      }).filter(Boolean);
+      return (sample.join(', ') || '-') + (raw.length > 3 ? '…' : '');
     }
     if (typeof raw === 'object') {
       if (loc.isLocaleMap(raw)) return loc.resolveAnyString(raw) || '-';
-      const objectRaw = raw as Record<string, unknown>;
-      return String(objectRaw.title || objectRaw.name || objectRaw.label || objectRaw.slug || objectRaw.id || '[Object]');
+      return CollectionListUtils.resolveRelationDisplayLabel(raw) || '-';
     }
     return String(raw);
   }
@@ -181,10 +179,10 @@ export class CollectionListUtils {
     }
     if (Array.isArray(value)) return '';
     if (typeof value === 'object') {
-      return String(
-        value.title || value.name || value.label || value.slug || 
-        value.email || value.username || value.id || ''
-      ).trim();
+      // The first part that is plain text or a number — a part that is itself an object is skipped, never printed.
+      const part = [value.title, value.name, value.label, value.slug, value.email, value.username, value.id]
+        .find((candidate) => (typeof candidate === 'string' && candidate.trim()) || typeof candidate === 'number');
+      return part === undefined ? '' : String(part).trim();
     }
     return '';
   }
@@ -206,7 +204,9 @@ export class CollectionListUtils {
     }
     if (typeof value === 'boolean') return '';
     if (typeof value === 'object') {
-      return String(value.id ?? value._id ?? value.value ?? value.slug ?? '').trim();
+      const part = [value.id, value._id, value.value, value.slug]
+        .find((candidate) => (typeof candidate === 'string' && candidate.trim()) || typeof candidate === 'number');
+      return part === undefined ? '' : String(part).trim();
     }
     return String(value).trim();
   }
