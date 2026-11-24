@@ -4,6 +4,7 @@ import { UsageReportMetaKeys } from '@core/constants/usage-report-meta-keys.cons
 import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
+import { EdgeIdentityMetaKeys } from '@core/constants/edge-identity-meta-keys.constants';
 import { CustomerAccountMetaKeys } from '@core/constants/customer-account-meta-keys.constants';
 import { LocalizationMetaKeys } from '@core/constants/localization-meta-keys.constants';
 import { AdminLookMetaKeys } from '@core/constants/admin-look-meta-keys.constants';
@@ -122,6 +123,7 @@ export class SystemMetaKeys {
   CERTIFICATE_ACME_CLOUDFLARE_TOKEN: 'certificate_acme_cloudflare_token',
   ...RetentionMetaKeys.ALL,
   ...EdgeMetaKeys.ALL,
+  ...EdgeIdentityMetaKeys.ALL,
   ...CustomerAccountMetaKeys.ALL,
   /**
    * Whether the platform keeps an IP-location database (DB-IP City Lite, CC BY 4.0) and answers
