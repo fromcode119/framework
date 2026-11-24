@@ -5,6 +5,7 @@ import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.inte
 import { StackLayout } from '@cli/services/stack/stack-layout';
 import { StackExtensions } from '@cli/services/stack/stack-extensions';
 import { StackSourceApps } from '@cli/services/stack/stack-source-apps';
+import { StackPackageMounts } from '@cli/services/stack/stack-package-mounts';
 
 /**
  * The files a local stack runs from.
@@ -37,6 +38,13 @@ export class StackPlan {
   /** Services whose container path must come from the worktree rather than the image. */
   private static readonly RUNTIME_SERVICES = ['api', 'extension-host', 'site-extension-host'];
 
+  /**
+   * Services that run the platform's own code but no extension: the gateway, the edge, the updater.
+   * Until these were mounted, a stack ran the worktree's api behind the IMAGE's gateway, so a change
+   * to the gateway or the edge could not be seen on a stack at all.
+   */
+  private static readonly PLATFORM_SERVICES = ['gateway', 'edge', 'updater'];
+
   /** The Next apps that serve a baked build unless they are run from the worktree's source. */
   private static readonly SOURCE_APPS = ['admin', 'frontend'];
 
@@ -46,9 +54,13 @@ export class StackPlan {
   /** Resolves a plugin's dependencies from the checkouts beside the framework. */
   private readonly extensions: StackExtensions;
 
+  /** The worktree's built packages, mounted over the image's. */
+  private readonly packages: StackPackageMounts;
+
   constructor(private readonly request: IStackRequest) {
     this.layout = StackLayout.of(request.framework);
     this.extensions = StackExtensions.of(request.framework, StackPlan.PLUGIN_KIND);
+    this.packages = new StackPackageMounts(request.framework, this.layout);
   }
 
   /**
@@ -113,51 +125,26 @@ export class StackPlan {
       for (const mount of runtime) lines.push(`      - ${mount}`);
     }
 
+    const platform = this.packages.mounts();
+    if (platform.length) {
+      for (const service of StackPlan.PLATFORM_SERVICES) {
+        lines.push(`  ${service}:`, '    volumes:');
+        for (const mount of platform) lines.push(`      - ${mount}`);
+      }
+    }
+
     for (const app of StackPlan.SOURCE_APPS) lines.push(...this.appSection(app));
 
     lines.push('');
     return lines.join('\n');
   }
 
-  /**
-   * Built framework packages, plus every named plugin.
-   *
-   * `dist` rather than `src`: these containers run the released image, which starts compiled
-   * output. Mounting sources over it would change nothing, which is the kind of "verified" that is
-   * worse than not checking at all.
-   */
+  /** Built framework packages (see StackPackageMounts), plus every named plugin. */
   private runtimeMounts(): string[] {
-    const mounts: string[] = [];
-
-    for (const pkg of this.builtPackages()) {
-      const host = path.join(this.workspacesDir(), pkg, StackPlan.PACKAGE_OUTPUT);
-      mounts.push(`${host}:${this.layout.containerPackage(pkg, StackPlan.PACKAGE_OUTPUT)}`);
-    }
-    mounts.push(...this.versionMount(), ...this.extensionMounts());
-    return mounts;
+    return [...this.packages.mounts(), ...this.extensionMounts()];
   }
-
-  /** The root manifest: the one file that says which version of the platform is running. */
-  private static readonly ROOT_MANIFEST = 'package.json';
-
-  /**
-   * The worktree's root manifest over the image's.
-   *
-   * The platform reads its own version from that file. Without this the containers run the worktree's
-   * code and report the IMAGE's version, so every plugin that declares it needs a newer core than the
-   * image's tag is held as "needs a newer platform" — on a stack that is running exactly that core.
-   * Read-only: a container must never rewrite a worktree's manifest.
-   */
-  private versionMount(): string[] {
-    const host = path.join(this.request.framework, StackPlan.ROOT_MANIFEST);
-    return fs.existsSync(host) ? [`${host}:${this.layout.containerRoot}/${StackPlan.ROOT_MANIFEST}:ro`] : [];
-  }
-
   /** A Next app serves its build, so these are what a worktree has to supply for one. */
   private static readonly APP_OUTPUTS = ['.next', 'public'];
-
-  /** A compiled workspace package serves this. */
-  private static readonly PACKAGE_OUTPUT = 'dist';
 
   /** The extension kind a `--plugin` belongs to, as the topology names its mount. */
   private static readonly PLUGIN_KIND = 'plugins';
@@ -187,7 +174,7 @@ export class StackPlan {
 
   private appMounts(app: string): string[] {
     const mounts: string[] = [];
-    const base = path.join(this.workspacesDir(), app);
+    const base = path.join(this.packages.workspaces, app);
 
     for (const output of StackPlan.APP_OUTPUTS) {
       const host = path.join(base, output);
@@ -255,23 +242,6 @@ export class StackPlan {
   get extensionMirror(): string | null {
     return this.extensions.mirror;
   }
-
-  /** The workspace folder of this worktree, as its own package.json declares it. */
-  private workspacesDir(): string {
-    return path.join(this.request.framework, this.layout.workspaces);
-  }
-
-  /** Every workspace package this worktree has actually built. */
-  private builtPackages(): string[] {
-    const packages = this.workspacesDir();
-    if (!fs.existsSync(packages)) return [];
-
-    return fs
-      .readdirSync(packages)
-      .filter((name) => fs.existsSync(path.join(packages, name, StackPlan.PACKAGE_OUTPUT)))
-      .sort();
-  }
-
   /**
    * The TLS port that goes with an http port.
    *

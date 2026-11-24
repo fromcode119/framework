@@ -37,6 +37,14 @@ export class SystemTables {
      * until when, what they asked for. Platform-level like certificates — a stop covers every site.
      */
     EDGE_STOPS: '_system_edge_stops',
+    /** The platform's authority for edges: its root and working certificates, keys encrypted. */
+    EDGE_CA: '_system_edge_ca',
+    /** Edges added to the platform (Settings → Security → Edges): identity, state, last contact. */
+    EDGES: '_system_edges',
+    /** One-time tokens for adding an edge — only their hash, with expiry and use. */
+    EDGE_ENROLLMENTS: '_system_edge_enrollments',
+    /** Every certificate issued to an edge, so a removed edge's certificates can be refused. */
+    EDGE_CERTIFICATES: '_system_edge_certificates',
     /**
      * The account the platform holds with a certificate authority, one per directory URL.
      *

@@ -85,10 +85,10 @@ export class EdgeStopStore {
    * from the window {@link list} shows — a wave of newer stops must not push an older one out of force.
    */
   async active(): Promise<IEdgeStopRecord[]> {
-    const rows = await this.db.queryRaw(
-      `SELECT * FROM "${EdgeStopStore.TABLE}" WHERE "released_at" IS NULL AND "until_at" > $1 ORDER BY "id" DESC`,
-      [new Date(this.now()).toISOString()],
-    );
+    const rows = await this.db.find(EdgeStopStore.TABLE, {
+      where: { released_at: null, until_at: { gt: new Date(this.now()).toISOString() } },
+      orderBy: { id: 'desc' },
+    });
     return (rows || []).map((row: any) => this.toRecord(row));
   }
 
@@ -103,10 +103,10 @@ export class EdgeStopStore {
    * (its report was lost) is never ended this way.
    */
   async released(): Promise<EdgeStop[]> {
-    const rows = await this.db.queryRaw(
-      `SELECT "address", "released_at" FROM "${EdgeStopStore.TABLE}" WHERE "released_at" > $1 ORDER BY "id" DESC`,
-      [new Date(this.now() - EdgeStopStore.RELEASED_WINDOW_MS).toISOString()],
-    );
+    const rows = await this.db.find(EdgeStopStore.TABLE, {
+      where: { released_at: { gt: new Date(this.now() - EdgeStopStore.RELEASED_WINDOW_MS).toISOString() } },
+      orderBy: { id: 'desc' },
+    });
     return (rows || []).map((row: any) => new EdgeStop(String(row.address ?? ''), Date.parse(EdgeStopStore.iso(row.released_at))));
   }
 

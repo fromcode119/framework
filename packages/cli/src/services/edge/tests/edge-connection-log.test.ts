@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { EdgeTcpOrigin } from '@cli/services/edge/origins/edge-tcp-origin';
 import http from 'http';
 import { Logger } from '@fromcode119/core';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
@@ -38,7 +39,7 @@ describe('EdgeConnectionLog — what only the edge can log', () => {
   it('writes nothing for a connection a gateway took — that gateway logs it', async () => {
     const gateway = await startGateway();
     const upstreams = new EdgeUpstreams('gateways', gateway.port, 60_000, async () => ['127.0.0.1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => gateway.stop(0));
     const lines = new EdgeLines();
@@ -53,7 +54,7 @@ describe('EdgeConnectionLog — what only the edge can log', () => {
     const gateway = await startGateway();
     const deadPort = gateway.port;
     const upstreams = new EdgeUpstreams('gateways', deadPort, 60_000, async () => ['127.0.0.1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: deadPort }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: deadPort }]);
     const [edgePort] = await edge.start();
     await gateway.stop(0);
     stops.push(() => edge.stop(0));
@@ -67,11 +68,11 @@ describe('EdgeConnectionLog — what only the edge can log', () => {
   it('logs a visitor that got through only after a refusal as retried', async () => {
     const gateway = await startGateway();
     const upstreams = new EdgeUpstreams('gateways', gateway.port, 60_000, async () => ['127.0.0.1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => gateway.stop(0));
-    const open = (PlatformEdge as any).open.bind(PlatformEdge);
-    vi.spyOn(PlatformEdge as any, 'open').mockImplementationOnce(async () => null).mockImplementation(open);
+    const open = (EdgeTcpOrigin as any).open.bind(EdgeTcpOrigin);
+    vi.spyOn(EdgeTcpOrigin as any, 'open').mockImplementationOnce(async () => null).mockImplementation(open);
     const lines = new EdgeLines();
 
     expect(await get(edgePort)).toBe('ok');

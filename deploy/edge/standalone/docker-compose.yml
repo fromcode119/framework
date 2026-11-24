@@ -1,0 +1,36 @@
+# A standalone edge in front of any servers, configured by edge.yaml beside this file (start from
+# edge.example.yaml). For a Fromcode platform, join first, once:
+#
+#   docker compose run --rm edge node packages/cli/dist/bin.js system edge join \
+#     --control <as printed> --token <as printed> --root <as printed> --state /var/lib/fromcode-edge
+#
+# A second copy can take the ports over with no connection lost (both listen with SO_REUSEPORT) when
+# the host sets net.ipv4.tcp_migrate_req = 1 — see deploy/edge/relay/protection/90-edge.conf.
+#
+# .env beside this file:
+#   VERSION=<the platform's version>
+services:
+  edge:
+    image: ghcr.io/fromcode119/framework-gateway:${VERSION:?set VERSION in .env}
+    command: node packages/cli/dist/bin.js system edge --config /etc/fromcode-edge/edge.yaml
+    volumes:
+      - ./edge.yaml:/etc/fromcode-edge/edge.yaml:ro
+      - /var/lib/fromcode-edge:/var/lib/fromcode-edge
+    # The visitor's own address must reach the edge, on IPv4 and IPv6, and a handover needs the
+    # host's own ports.
+    network_mode: host
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9901/ready').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

@@ -1,7 +1,10 @@
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { EdgeAlerts, EdgeStopStore } from '@fromcode119/core';
+import { ApplicationUrlUtils, EdgeAlerts, EdgeIdentity, EdgeStopStore } from '@fromcode119/core';
 import { EdgeInternalRouter } from '@api/routes/edge-internal-router';
+import { EdgeIdentityInternalRouter } from '@api/routes/edge-identity-internal-router';
+import { EdgeAdminRouter } from '@api/routes/edge-admin-router';
+import { EdgeAdminService } from '@api/services/security/edge-admin-service';
 import { EdgeStopAdminRouter } from '@api/routes/edge-stop-admin-router';
 import { EdgeStopAdminService } from '@api/services/security/edge-stop-admin-service';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
@@ -9,19 +12,45 @@ import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 /**
  * The routes around the addresses the gateway stopped as scanners, over one store: Settings → Security →
  * Stopped addresses (platform admins only), and what the gateway reports — a stop, refusals, its
- * watchdog restarting it (secret-only). The store is also what the routing map carries back to the gateway.
+ * watchdog restarting it (secret-only) — and edge identity: what the gateway forwards from the control
+ * channel (secret-only). The store is also what the routing map carries back to the gateway.
  */
 export class EdgeRoutesMount {
+  static readonly EXPIRY_WARNING_DAYS = [30, 14];
+  private static readonly EXPIRY_CHECK_MS = 6 * 3_600_000;
   readonly stops: EdgeStopStore;
+  readonly identity: EdgeIdentity;
 
-  constructor(private readonly manager: any, private readonly auth: AuthManager, private readonly platformAdmin: PlatformAdminGuard) {
+  constructor(private readonly manager: any, private readonly auth: AuthManager, private readonly platformAdmin: PlatformAdminGuard, private readonly settingsCache: Map<string, string>) {
     this.stops = new EdgeStopStore(manager.db);
+    this.identity = new EdgeIdentity(manager.db, settingsCache, () => EdgeRoutesMount.apiHost());
   }
 
-  /** Both route sets, the admin's under `adminPath`; returns the store the routing map reads. */
-  mount(api: express.Router, adminPath: string): EdgeStopStore {
-    api.use(adminPath, new EdgeStopAdminRouter(new EdgeStopAdminService(this.manager, this.stops), this.auth, this.platformAdmin).router);
-    api.use(new EdgeInternalRouter(this.stops, new EdgeAlerts(this.manager)).router);
+  /** The route sets, the admin's under `stopsPath` and `edgesPath`; returns the store the routing map reads. */
+  mount(api: express.Router, stopsPath: string, edgesPath: string): EdgeStopStore {
+    api.use(stopsPath, new EdgeStopAdminRouter(new EdgeStopAdminService(this.manager, this.stops), this.auth, this.platformAdmin).router);
+    api.use(edgesPath, new EdgeAdminRouter(new EdgeAdminService(this.manager, this.identity, this.settingsCache), this.auth, this.platformAdmin).router);
+    const alerts = new EdgeAlerts(this.manager);
+    api.use(new EdgeInternalRouter(this.stops, alerts).router);
+    this.watchAuthority(alerts);
+    api.use(new EdgeIdentityInternalRouter(this.manager, this.identity).router);
     return this.stops;
+  }
+
+  /** Warns 30 and 14 days before the root every edge is checked against runs out; checked every six hours. */
+  private watchAuthority(alerts: EdgeAlerts): void {
+    const check = (): void => {
+      void this.identity.authority.claimExpiryWarning(EdgeRoutesMount.EXPIRY_WARNING_DAYS)
+        .then((due) => (due ? alerts.authorityExpiring(due.notAfter, due.daysLeft) : undefined))
+        .catch(() => undefined);
+    };
+    setInterval(check, EdgeRoutesMount.EXPIRY_CHECK_MS).unref();
+    check();
+  }
+
+  /** The platform's API host — what edge identities are issued under. Empty until the API URL is set. */
+  private static apiHost(): string {
+    const base = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    try { return base ? new URL(base).hostname : ''; } catch { return ''; }
   }
 }

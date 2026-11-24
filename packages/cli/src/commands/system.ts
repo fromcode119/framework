@@ -7,7 +7,7 @@ import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bu
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { GatewayEdgeReporter } from '@cli/services/gateway/challenge/gateway-edge-reporter';
 import { PlatformGateway } from '@cli/services/platform-gateway';
-import { PlatformEdge } from '@cli/services/edge/platform-edge';
+import { EdgeCommand } from '@cli/services/edge/edge-command';
 import { GatewayWatchdog } from '@cli/services/gateway/gateway-watchdog';
 import { UpdaterService } from '@cli/services/updater/updater-service';
 import { BootstrapSecretsService } from '@fromcode119/core';
@@ -127,18 +127,6 @@ export class SystemCommands {
         }
       });
 
-    system
-      .command('edge')
-      .description('The platform edge: holds the public ports and passes connections to a running gateway, so the gateway can be replaced with no gap (container entrypoint)')
-      .action(async () => {
-        const edge = PlatformEdge.fromEnvironment();
-        await edge.start();
-        for (const signal of ['SIGTERM', 'SIGINT'] as const) {
-          process.once(signal, () => {
-            console.log(`[edge] ${signal}: closing the ports; open connections have ${PlatformEdge.STOP_GRACE_MS / 1000} s`);
-            void edge.stop(PlatformEdge.STOP_GRACE_MS).then(() => process.exit(0));
-          });
-        }
-      });
+    EdgeCommand.register(system);
   }
 }

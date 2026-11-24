@@ -23,6 +23,16 @@ export class GatewayListener {
   private stopping = false;
   // Declared BEFORE `listening`: field initialisers run in order, and one after it would overwrite the resolver.
   private markListening: () => void = () => undefined;
+  private readonly adoptConnection: (socket: net.Socket) => void;
+
+  /**
+   * A connection that arrived some other way — through an edge's tunnel — whose visitor is already known,
+   * served like one accepted here, and finished like one when this listener stops.
+   */
+  adopt(socket: net.Socket): void {
+    if (this.stopping) { socket.destroy(); return; }
+    this.adoptConnection(socket);
+  }
 
   constructor(
     /** What the accepted connections are served by — an HTTP server, or the TLS listener's connections. */
@@ -44,6 +54,12 @@ export class GatewayListener {
         else { deliver(fromEdge); fromEdge.resume(); }
       }, { resume: false });
     });
+    this.adoptConnection = (socket) => {
+      this.open.add(socket);
+      socket.once('close', () => this.open.delete(socket));
+      deliver(socket);
+      socket.resume();
+    };
     this.acceptor.on('error', (error) => console.error('[platform-gateway] listener error:', error.message));
     // A response written after stopping must not invite the client to reuse this connection.
     server.on('request', (_req: http.IncomingMessage, res: http.ServerResponse) => { if (this.stopping) res.shouldKeepAlive = false; });

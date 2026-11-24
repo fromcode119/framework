@@ -6,6 +6,7 @@ import { LocalizationSettingDescriptors } from '@core/settings/localization-sett
 import { SignupEmailSettingDescriptors } from '@core/settings/signup-email-setting-descriptors';
 import { ApiFirewallSettingDescriptors } from '@core/settings/api-firewall-setting-descriptors';
 import { EdgeProtectionSettingDescriptors } from '@core/settings/edge-protection-setting-descriptors';
+import { EdgeIdentitySettingDescriptors } from '@core/settings/edge-identity-setting-descriptors';
 import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-cache-setting-descriptors';
 import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
@@ -251,8 +252,9 @@ export class SystemSettingDescriptors {
     },
     // Settings → Security → API Firewall — see ApiFirewallSettingDescriptors.
     ...ApiFirewallSettingDescriptors.ALL,
-    // Settings → Security → Edge protection — see EdgeProtectionSettingDescriptors.
+    // Settings → Security → Edge protection and Edges — see EdgeProtection/EdgeIdentitySettingDescriptors.
     ...EdgeProtectionSettingDescriptors.ALL,
+    ...EdgeIdentitySettingDescriptors.ALL,
     // Settings → Infrastructure → API response cache — see ApiResponseCacheSettingDescriptors.
     ...ApiResponseCacheSettingDescriptors.ALL,
     // Settings → Infrastructure → Database connections — see DatabasePoolSettingDescriptors.
@@ -295,6 +297,4 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.SOURCES_KEEP_BUILDS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true, seed: { value: '3', description: "Built versions of each extension Sources keeps.", group: "Settings" } },
     [SystemConstants.META_KEY.SOURCES_CHECK_INTERVAL_MINUTES]: { scope: SettingScope.PLATFORM, writable: true, exposed: true, seed: { value: '15', description: "Minutes between Sources checks for new commits; 0 turns them off.", group: "Settings" } },
   };
-
-
 }

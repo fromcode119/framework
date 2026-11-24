@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { EdgeTcpOrigin } from '@cli/services/edge/origins/edge-tcp-origin';
 import http from 'http';
 import net from 'net';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
@@ -41,7 +42,7 @@ describe('PlatformEdge', () => {
     const port = a.port;
     const b = await GatewayFixture.start('b', '::1', port);
     const upstreams = new EdgeUpstreams('gateways', port, 200, async () => ['127.0.0.1', '::1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: port }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => b.stop(0));
 
@@ -74,7 +75,7 @@ describe('PlatformEdge', () => {
 
   it('refuses the visitor only when no gateway answers at all', async () => {
     const upstreams = new EdgeUpstreams('gateways', 1, 200, async () => []);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: 1 }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: 1 }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0));
     await expect(new Promise((resolve, reject) => http.get({ host: '127.0.0.1', port: edgePort, path: '/' }, resolve).on('error', reject))).rejects.toThrow();
@@ -85,7 +86,7 @@ describe('PlatformEdge', () => {
     const gateway = await GatewayFixture.start('only', '127.0.0.1', 0);
     const check = await GatewayFixture.start('check', '127.0.0.1', 0);
     const upstreams = new EdgeUpstreams('gateways', check.port, 60_000, async () => ['127.0.0.1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => gateway.stop(0));
     await check.stop(0);
@@ -105,12 +106,12 @@ describe('PlatformEdge', () => {
   it('tries its only gateway again when a connection to it is lost, instead of refusing the visitor', async () => {
     const gateway = await GatewayFixture.start('only', '127.0.0.1', 0);
     const upstreams = new EdgeUpstreams('gateways', gateway.port, 60_000, async () => ['127.0.0.1']);
-    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const edge = PlatformEdge.legacy(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => gateway.stop(0));
     // The first connection is lost on the way, as a dropped SYN would be; the next gets through.
-    const open = (PlatformEdge as any).open.bind(PlatformEdge);
-    const spy = vi.spyOn(PlatformEdge as any, 'open').mockImplementationOnce(async () => null).mockImplementation(open);
+    const open = (EdgeTcpOrigin as any).open.bind(EdgeTcpOrigin);
+    const spy = vi.spyOn(EdgeTcpOrigin as any, 'open').mockImplementationOnce(async () => null).mockImplementation(open);
 
     const body = await new Promise<string>((resolve, reject) => {
       http.get({ host: '127.0.0.1', port: edgePort, path: '/', agent: false }, (res) => {

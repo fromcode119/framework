@@ -17,6 +17,9 @@ import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path'
 import { GatewayConsoleMount } from '@cli/services/gateway/gateway-console-mount';
 import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
 import { GatewayAccessLog } from '@cli/services/gateway/gateway-access-log';
+import { GatewayHealthAccess } from '@cli/services/gateway/gateway-health-access';
+import { GatewayControlChannel } from '@cli/services/gateway/control/gateway-control-channel';
+import { GatewayTunnel } from '@cli/services/gateway/control/gateway-tunnel';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -88,6 +91,9 @@ export class PlatformGateway {
   private readonly edge = new GatewayEdgeCheck(() => this.routing.resolveMap(), (req) => PlatformGateway.hostOf(req));
   private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates, () => this.routing.current?.relays ?? []);
   private readonly plainPolicy = new GatewayPlainListenerPolicy(this.tlsPort !== null);
+  private readonly healthAccess = new GatewayHealthAccess(() => this.routing.current?.relays ?? []);
+  /** Settings → Security → Edges: the port edges reach the platform on; opened only when configured. */
+  readonly control = new GatewayControlChannel(() => this.routing.current, (socket, edge) => new GatewayTunnel(() => this.listener, () => this.tls?.listener ?? null).accept(socket, edge));
 
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
@@ -145,7 +151,7 @@ export class PlatformGateway {
     this.server = server;
     this.listener = new GatewayListener(server, undefined, () => this.routing.current?.relays ?? []); // Trusted relays
     this.listener.listen(this.port, () => {
-      void this.routing.refresh().then(() => this.logStartup());
+      void this.routing.refresh().then(() => { this.logStartup(); this.control.start(); });
     });
 
     // Only when this deployment asked for it. The TLS listener serves the SAME handler, so a request
@@ -159,17 +165,14 @@ export class PlatformGateway {
     }
   }
 
-  /**
-   * Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`). `edge`
-   * sends new connections to the gateway replacing this one, so a deploy fails no request.
-   */
   /** What the watchdog asks besides the health path: does a page request reach the frontend? */
   upstreamStalled(): Promise<string | null> {
     return this.upstreamProbe.stalled();
   }
 
+  /** Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`); `edge` sends new connections to the replacement. */
   async stop(graceMs: number): Promise<void> {
-    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
+    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs), this.control.stop()]);
     this.agent.destroy();
   }
 
@@ -191,7 +194,7 @@ export class PlatformGateway {
    */
   private async handlePlain(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     const url = req.url || '/';
-    const internal = url === PlatformGateway.HEALTH_PATH || url === PlatformGateway.RELOAD_PATH;
+    const internal = (url === PlatformGateway.HEALTH_PATH && this.healthAccess.allowed(req)) || url === PlatformGateway.RELOAD_PATH;
     const redirect = internal ? null : this.plainPolicy.redirectFor(req);
     if (redirect) {
       res.writeHead(301, { Location: redirect, 'Content-Type': 'text/plain; charset=utf-8' });
@@ -203,7 +206,7 @@ export class PlatformGateway {
 
   private async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     const url = req.url || '/';
-    if (url === PlatformGateway.HEALTH_PATH) return this.health(res);
+    if (url === PlatformGateway.HEALTH_PATH && this.healthAccess.allowed(req)) return this.health(req, res);
     if (url === PlatformGateway.RELOAD_PATH && req.method === 'POST') return this.reload(req, res);
     // A certificate authority proving a host is ours, before that host has a certificate — and
     // therefore before it has a route. Answered for ANY hostname, including one the routing map has
@@ -261,9 +264,10 @@ export class PlatformGateway {
     res.end(JSON.stringify({ ok: true, hosts: map?.size ?? 0, certificates: bundle?.size ?? 0 }));
   }
 
-  private health(res: http.ServerResponse): void {
+  private health(req: http.IncomingMessage, res: http.ServerResponse): void {
     const map = this.routing.current;
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    if (!this.healthAccess.detailed(req)) { res.end(JSON.stringify({ ok: true })); return; }
     res.end(JSON.stringify({
       ok: true,
       mode: this.routing.enabled ? 'host-routing' : 'single-domain',

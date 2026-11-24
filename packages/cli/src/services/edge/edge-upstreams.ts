@@ -49,6 +49,8 @@ export class EdgeUpstreams {
     private readonly intervalMs = 1_000,
     private readonly resolve: (host: string) => Promise<string[]> = async (name) => (await dns.promises.lookup(name, { all: true })).map((entry) => entry.address),
     private readonly now: () => number = Date.now,
+    /** How a server is checked: `http` asks `path` for a 200, `tcp` only connects, `none` trusts the lookup. */
+    private readonly health: { type: string; path: string } = { type: 'http', path: EdgeUpstreams.HEALTH_PATH },
   ) {}
 
   start(): void {
@@ -82,7 +84,7 @@ export class EdgeUpstreams {
   refused(address: string): void {
     if (!this.healthy.includes(address)) return;
     this.healthy = this.healthy.filter((entry) => entry !== address);
-    console.log(`[edge] gateway ${address} refused a connection (stopping?); out of rotation until it answers again — answering: ${this.healthy.length ? this.healthy.join(', ') : 'none'}`);
+    console.log(`[edge] server ${address} refused a connection (stopping?); out of rotation until it answers again — answering: ${this.healthy.length ? this.healthy.join(', ') : 'none'}`);
   }
 
   private lastResort(): string[] {
@@ -109,7 +111,7 @@ export class EdgeUpstreams {
     } catch {
       addresses = [];
     }
-    const results = await Promise.all(addresses.map(async (address) => ({ address, ...(await EdgeUpstreams.probe(address, this.checkPort)) })));
+    const results = await Promise.all(addresses.map(async (address) => ({ address, ...(await this.probe(address)) })));
     const answering = results.filter((result) => result.answered).map((result) => result.address).sort();
     const accepting = results.filter((result) => result.accepted).map((result) => result.address).sort();
     for (const address of accepting) this.lastAccepted.set(address, this.now());
@@ -121,14 +123,17 @@ export class EdgeUpstreams {
     const next = answering.length ? answering : accepting;
     const before = this.healthy.join(',');
     this.healthy = next;
-    if (next.join(',') !== before) console.log(`[edge] gateways answering: ${next.length ? next.join(', ') : 'none'}${answering.length || !next.length ? '' : ' (accepting only — none answered its health check)'}`);
+    if (next.join(',') !== before) console.log(`[edge] servers answering: ${next.length ? next.join(', ') : 'none'}${answering.length || !next.length ? '' : ' (accepting only — none answered its health check)'}`);
   }
 
   /** Whether the port took the connection, and whether the health path then came back 200 in time. */
-  private static probe(address: string, port: number): Promise<{ accepted: boolean; answered: boolean }> {
+  private probe(address: string): Promise<{ accepted: boolean; answered: boolean }> {
+    if (this.health.type === 'none') return Promise.resolve({ accepted: true, answered: true });
+    if (this.health.type === 'tcp') return EdgeUpstreams.connects(address, this.checkPort);
+    const port = this.checkPort;
     return new Promise((resolve) => {
       let connected = false;
-      const request = http.get({ host: address, port, path: EdgeUpstreams.HEALTH_PATH, agent: false });
+      const request = http.get({ host: address, port, path: this.health.path, agent: false });
       const finish = (answered: boolean): void => { clearTimeout(timer); request.destroy(); resolve({ accepted: connected, answered }); };
       const timer = setTimeout(() => finish(false), EdgeUpstreams.ANSWER_TIMEOUT_MS);
       request.once('socket', (socket: net.Socket) => {
@@ -138,6 +143,17 @@ export class EdgeUpstreams {
       });
       request.once('response', (res) => { res.resume(); finish(res.statusCode === 200); });
       request.on('error', () => finish(false));
+    });
+  }
+
+  /** A server checked by connecting only: it answers when it accepts. */
+  private static connects(address: string, port: number): Promise<{ accepted: boolean; answered: boolean }> {
+    return new Promise((resolve) => {
+      const socket = net.connect({ host: address, port });
+      const finish = (accepted: boolean): void => { clearTimeout(timer); socket.destroy(); resolve({ accepted, answered: accepted }); };
+      const timer = setTimeout(() => finish(false), EdgeUpstreams.CONNECT_TIMEOUT_MS);
+      socket.once('connect', () => finish(true));
+      socket.once('error', () => finish(false));
     });
   }
 }
