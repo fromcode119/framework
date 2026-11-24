@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, EdgeProtectionReader, EdgeStopStore, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, EdgeControlEndpoint, EdgeProtectionReader, EdgeStopStore, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 import { SetupMode } from '@fromcode119/core';
 
@@ -39,7 +39,9 @@ export class RoutingRouter {
       aliases: ApplicationDomainSettingsUtils.parseDomainAliases(this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES)),
     }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
     const protectedMap = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
-    const map = this.stops ? protectedMap.withStops(await this.stops.stops(), await this.stops.released()) : protectedMap;
+    const stopped = this.stops ? protectedMap.withStops(await this.stops.stops(), await this.stops.released()) : protectedMap;
+    const keys = SystemConstants.META_KEY;
+    const map = stopped.withControl(EdgeControlEndpoint.from(this.settingsCache.get(keys.EDGE_CONTROL_ADDRESS), this.settingsCache.get(keys.EDGE_CONTROL_PORT)));
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

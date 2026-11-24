@@ -1,6 +1,7 @@
 import { GatewayTarget } from '@core/tenant/gateway-target';
 import { EdgeProtection } from '@core/security/edge/edge-protection';
 import { EdgeStop } from '@core/security/edge/edge-stop';
+import { EdgeControlEndpoint } from '@core/security/edge/identity/edge-control-endpoint';
 import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantRoute } from '@core/tenant/tenant-route';
 import type { TenantRecord } from '@core/tenant/tenant-record';
@@ -36,29 +37,37 @@ export class TenantRouteMap {
   readonly stops: readonly EdgeStop[];
   /** Stops an operator released early: each entry's `until` is WHEN it was released. */
   readonly released: readonly EdgeStop[];
+  /** Where edges reach the control channel (Settings → Security → Edges); null: the gateway opens none. */
+  readonly control: EdgeControlEndpoint | null;
 
-  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = [], protection: EdgeProtection = EdgeProtection.NONE, stops: readonly EdgeStop[] = [], released: readonly EdgeStop[] = []) {
+  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = [], protection: EdgeProtection = EdgeProtection.NONE, stops: readonly EdgeStop[] = [], released: readonly EdgeStop[] = [], control: EdgeControlEndpoint | null = null) {
     for (const route of routes) this.byHost.set(route.host, route);
     this.setup = setup === true;
     this.relays = [...relays];
     this.protection = protection;
     this.stops = [...stops];
     this.released = [...released];
+    this.control = control;
   }
 
   /** This map, with the relays the operator declared. */
   withRelays(relays: readonly string[]): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, relays, this.protection, this.stops, this.released);
+    return new TenantRouteMap(this.byHost.values(), this.setup, relays, this.protection, this.stops, this.released, this.control);
   }
 
   /** This map, with the edge protection the operator set. */
   withProtection(protection: EdgeProtection): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection, this.stops, this.released);
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection, this.stops, this.released, this.control);
   }
 
   /** This map, with the addresses currently stopped and the stops released early. */
   withStops(stops: readonly EdgeStop[], released: readonly EdgeStop[] = []): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, this.protection, stops, released);
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, this.protection, stops, released, this.control);
+  }
+
+  /** This map, with where edges reach the control channel. */
+  withControl(control: EdgeControlEndpoint | null): TenantRouteMap {
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, this.protection, this.stops, this.released, control);
   }
 
   static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string; aliases?: readonly string[] }, setup = false): TenantRouteMap {
@@ -114,6 +123,7 @@ export class TenantRouteMap {
       EdgeProtection.fromJson((raw as any)?.protection),
       EdgeStop.listFromJson((raw as any)?.stops),
       EdgeStop.listFromJson((raw as any)?.released),
+      EdgeControlEndpoint.fromJson((raw as any)?.control),
     );
   }
 
@@ -123,6 +133,11 @@ export class TenantRouteMap {
 
   get size(): number {
     return this.byHost.size;
+  }
+
+  /** Every site the map routes to, and null for the platform's own hosts when any are routed. */
+  routedTenants(): Array<string | null> {
+    return [...new Set([...this.byHost.values()].map((route) => route.tenantId ?? null))];
   }
 
   /** One host for each site the frontend serves — what a new frontend renders once before it takes visitors. */
@@ -135,7 +150,7 @@ export class TenantRouteMap {
   }
 
   toJSON(): Record<string, unknown> {
-    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays], protection: this.protection.toJSON(), stops: this.stops.map((stop) => stop.toJSON()), released: this.released.map((stop) => stop.toJSON()) };
+    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays], protection: this.protection.toJSON(), stops: this.stops.map((stop) => stop.toJSON()), released: this.released.map((stop) => stop.toJSON()), control: this.control?.toJSON() ?? null };
   }
 
   /** A public app URL or bare host → bare host. */

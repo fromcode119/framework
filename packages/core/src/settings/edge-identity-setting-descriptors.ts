@@ -22,5 +22,13 @@ export class EdgeIdentitySettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '30', description: "Days the platform signs edge certificates with one working certificate before replacing it. The previous one stays trusted until every certificate it signed has run out.", group: "security" },
     },
+    [SystemConstants.META_KEY.EDGE_CONTROL_ADDRESS]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '', description: "The host name or IP address edges dial to reach the platform. The gateway's certificate for the control channel is issued for it. Empty: no control channel, and no edge can be added.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_CONTROL_PORT]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '', description: "The port the gateway opens for edges: their rules, reports, certificate renewals and visitor traffic, all over mutual TLS. Empty: the gateway opens no port for edges.", group: "security" },
+    },
   };
 }

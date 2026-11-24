@@ -143,6 +143,10 @@ export class RouteAuthSegments {
   ADMIN_EDGE_STOPS: '/admin/edge-stops',
   EDGE_STOP_RELEASE: '/:id/release',
   EDGE_STOP_BLOCK: '/:id/block',
+  /** `/system/admin/edges` — the edges added to the platform; `/:id/revoke`, `/:id/token` act on one. */
+  ADMIN_EDGES: '/admin/edges',
+  EDGE_REVOKE: '/:id/revoke',
+  EDGE_TOKEN: '/:id/token',
   /** Who is responsible for a host's certificate — the operator, or the platform. */
   CERTIFICATES_HOST_SOURCE: '/:host/source',
   /**
@@ -187,6 +191,11 @@ export class RouteAuthSegments {
   INTERNAL_EDGE_STOPS: '/internal/edge/stops',
   /** The gateway reports something an operator must hear about (its watchdog restarting it). Secret-only. */
   INTERNAL_EDGE_EVENTS: '/internal/edge/events',
+  /** What the gateway forwards from the control channel, and its own certificate for it. Secret-only. */
+  INTERNAL_EDGE_ENROLL: '/internal/edge/identity/enroll',
+  INTERNAL_EDGE_RENEW: '/internal/edge/identity/renew',
+  INTERNAL_EDGE_VERIFY: '/internal/edge/identity/verify',
+  INTERNAL_EDGE_CONTROL_CERTIFICATE: '/internal/edge/identity/control-certificate',
   /**
    * Where a certificate authority asks us to prove a host is ours. Fixed by the ACME protocol, and
    * served over PLAIN HTTP at the ROOT of the host — not under the api's versioned base, because the

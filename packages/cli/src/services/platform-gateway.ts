@@ -18,6 +18,7 @@ import { GatewayConsoleMount } from '@cli/services/gateway/gateway-console-mount
 import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
 import { GatewayAccessLog } from '@cli/services/gateway/gateway-access-log';
 import { GatewayHealthAccess } from '@cli/services/gateway/gateway-health-access';
+import { GatewayControlChannel } from '@cli/services/gateway/control/gateway-control-channel';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -90,6 +91,8 @@ export class PlatformGateway {
   private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates, () => this.routing.current?.relays ?? []);
   private readonly plainPolicy = new GatewayPlainListenerPolicy(this.tlsPort !== null);
   private readonly healthAccess = new GatewayHealthAccess(() => this.routing.current?.relays ?? []);
+  /** Settings → Security → Edges: the port edges reach the platform on; opened only when configured. */
+  readonly control = new GatewayControlChannel(() => this.routing.current);
 
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
@@ -147,7 +150,7 @@ export class PlatformGateway {
     this.server = server;
     this.listener = new GatewayListener(server, undefined, () => this.routing.current?.relays ?? []); // Trusted relays
     this.listener.listen(this.port, () => {
-      void this.routing.refresh().then(() => this.logStartup());
+      void this.routing.refresh().then(() => { this.logStartup(); this.control.start(); });
     });
 
     // Only when this deployment asked for it. The TLS listener serves the SAME handler, so a request
@@ -161,17 +164,14 @@ export class PlatformGateway {
     }
   }
 
-  /**
-   * Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`). `edge`
-   * sends new connections to the gateway replacing this one, so a deploy fails no request.
-   */
   /** What the watchdog asks besides the health path: does a page request reach the frontend? */
   upstreamStalled(): Promise<string | null> {
     return this.upstreamProbe.stalled();
   }
 
+  /** Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`); `edge` sends new connections to the replacement. */
   async stop(graceMs: number): Promise<void> {
-    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
+    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs), this.control.stop()]);
     this.agent.destroy();
   }
 
