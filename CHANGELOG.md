@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.639] - 2026-11-24
+
+### Fixed
+
+- **react**: refresh a lifted default stylesheet older than the running bundle ([#1619](https://github.com/fromcode119/framework/pull/1619))
+- **admin**: never print a related record as an object ([#1618](https://github.com/fromcode119/framework/pull/1618))
+
 ## [0.2.638] - 2026-11-24
 
 ### Added
