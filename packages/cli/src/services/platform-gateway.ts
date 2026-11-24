@@ -19,6 +19,7 @@ import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
 import { GatewayAccessLog } from '@cli/services/gateway/gateway-access-log';
 import { GatewayHealthAccess } from '@cli/services/gateway/gateway-health-access';
 import { GatewayControlChannel } from '@cli/services/gateway/control/gateway-control-channel';
+import { GatewayTunnel } from '@cli/services/gateway/control/gateway-tunnel';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -92,7 +93,7 @@ export class PlatformGateway {
   private readonly plainPolicy = new GatewayPlainListenerPolicy(this.tlsPort !== null);
   private readonly healthAccess = new GatewayHealthAccess(() => this.routing.current?.relays ?? []);
   /** Settings → Security → Edges: the port edges reach the platform on; opened only when configured. */
-  readonly control = new GatewayControlChannel(() => this.routing.current);
+  readonly control = new GatewayControlChannel(() => this.routing.current, (socket, edge) => new GatewayTunnel(() => this.listener, () => this.tls?.listener ?? null).accept(socket, edge));
 
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 

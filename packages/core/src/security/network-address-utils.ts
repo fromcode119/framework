@@ -113,6 +113,16 @@ export class NetworkAddressUtils {
     return patterns.some((pattern) => NetworkAddressUtils.matches(address, pattern));
   }
 
+  /** True for an IP address, or a block written `address/prefix` with a prefix that fits its family. */
+  static isAddressOrBlock(value: unknown): boolean {
+    const [address, prefix, ...rest] = String(value ?? '').trim().split('/');
+    const family = isIP(address);
+    if (!family || rest.length) return false;
+    if (prefix === undefined) return true;
+    const bits = Number(prefix);
+    return /^\d{1,3}$/.test(prefix) && bits >= 0 && bits <= (family === 4 ? 32 : 128);
+  }
+
   /** True when the address is loopback or in an RFC1918 range. */
   static isPrivate(address: unknown): boolean {
     return NetworkAddressUtils.matchesAny(address, NetworkAddressUtils.PRIVATE_RANGES);

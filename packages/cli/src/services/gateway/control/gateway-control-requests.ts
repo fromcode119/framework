@@ -10,7 +10,7 @@ import { GatewayEdgeVerifier } from '@cli/services/gateway/control/gateway-edge-
  * certificate, read the rules that hold everywhere, and report what it refused — nothing else. Never a
  * site's certificate, never a setting, never another edge's anything.
  *
- * Only `enroll` is answered without a certificate, and it gives nothing for a wrong token but a 403.
+ * Only `trust` (the public root) and `enroll` are answered without a certificate, and `enroll` gives nothing for a wrong token but a 403.
  * Attempts are limited per address so a token cannot be guessed at speed (it is 256 random bits anyway).
  */
 export class GatewayControlRequests {
@@ -25,6 +25,8 @@ export class GatewayControlRequests {
     private readonly api: GatewayControlApi,
     private readonly verifier: GatewayEdgeVerifier,
     private readonly map: () => TenantRouteMap | null,
+    /** The platform's root (public, like any CA certificate); empty until the channel has its certificate. */
+    private readonly trust: () => string,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -34,6 +36,7 @@ export class GatewayControlRequests {
     const url = new URL(req.url || '/', 'https://control.invalid');
     const version = String(req.headers['user-agent'] ?? '').slice(0, 40);
     if (req.method === 'POST' && url.pathname === EdgeControlPaths.ENROLL) return this.enroll(req, res, socket, version);
+    if (req.method === 'GET' && url.pathname === EdgeControlPaths.TRUST) return GatewayControlRequests.send(res, this.trust() ? 200 : 503, { trustPem: this.trust() });
 
     const edge = await this.verifier.edgeOf(socket, version);
     if (!edge) return GatewayControlRequests.send(res, 403, { error: 'refused' });

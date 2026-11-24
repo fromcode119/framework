@@ -33,7 +33,7 @@ export class GatewayControlChannel {
   ) {
     this.verifier = new GatewayEdgeVerifier(api);
     this.identity = new GatewayControlIdentity(api, () => this.applyIdentity());
-    const requests = new GatewayControlRequests(api, this.verifier, map);
+    const requests = new GatewayControlRequests(api, this.verifier, map, () => this.identity.material?.ca ?? '');
     this.http = http.createServer((req, res) => {
       res.on('error', () => undefined);
       void requests.handle(req, res).catch((error) => {
