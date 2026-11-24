@@ -6,6 +6,7 @@ import { PortableColumnTypes } from '@core/database/helpers/portable-column-type
  *
  * - `_system_edge_ca` — the platform's authority for edges: one root, and the working certificates it
  *   signs edge certificates with. Private keys are encrypted, like every key the platform holds.
+ *   `alerted_days` is the last "runs out in N days" warning sent for it, so each goes out once.
  * - `_system_edges` — each edge added to the platform: its name, identity, state and last contact.
  * - `_system_edge_enrollments` — one-time tokens for adding an edge. Only a hash is kept; a token is
  *   used once and expires.
@@ -32,7 +33,8 @@ export class EdgeIdentityMigration extends BaseMigration {
         not_before ${type.timestamp},
         not_after ${type.timestamp},
         created_at ${type.timestamp} DEFAULT ${type.now},
-        retired_at ${type.timestamp}
+        retired_at ${type.timestamp},
+        alerted_days INTEGER
       )`,
     ));
     await db.execute(Sql.raw(

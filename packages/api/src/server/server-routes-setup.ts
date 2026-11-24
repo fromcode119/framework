@@ -182,7 +182,7 @@ export class ServerRoutesSetup {
         platformAdmin,
       ).router,
     );
-    const edgeStops = new EdgeRoutesMount(this.manager, this.auth, platformAdmin, this.settingsCache).mount(vApi, `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EDGE_STOPS}`);
+    const edgeStops = new EdgeRoutesMount(this.manager, this.auth, platformAdmin, this.settingsCache).mount(vApi, `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EDGE_STOPS}`, `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EDGES}`);
     // The platform's IP-location database (Settings → Infrastructure). Platform admins only.
     vApi.use(
       `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_GEO}`,

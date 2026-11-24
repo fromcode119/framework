@@ -63,15 +63,15 @@ describe('GatewayControlChannel', () => {
     const db: any = DatabaseFactory.create(`sqlite:${file}`);
     await db.connect();
     await new EdgeIdentityMigration().up(db);
-    const port = await new Promise<number>((resolve) => { const probe = net.createServer().listen(0, () => { const { port: free } = probe.address() as net.AddressInfo; probe.close(() => resolve(free)); }); });
     settings.set(SystemConstants.META_KEY.EDGE_CONTROL_ADDRESS, '127.0.0.1');
-    settings.set(SystemConstants.META_KEY.EDGE_CONTROL_PORT, String(port));
+    settings.set(SystemConstants.META_KEY.EDGE_CONTROL_PORT, '1');
     identity = new EdgeIdentity(db, settings, () => 'platform.test');
     const app = express();
     app.use(express.json());
     app.use(ApiPathUtils.versioned(''), new EdgeIdentityInternalRouter({ audit: { logAction: async () => undefined } }, identity).router);
     api = await new Promise((resolve) => { const server = app.listen(0, () => resolve(server)); });
-    map = new TenantRouteMap([]).withControl(identity.control()).withStops([new EdgeStop('203.0.113.50', Date.now() + 600_000)]);
+    // Port 0: whatever is free — a port picked in advance can be taken by a test running beside this one.
+    map = new TenantRouteMap([]).withControl(new EdgeControlEndpoint('127.0.0.1', 0)).withStops([new EdgeStop('203.0.113.50', Date.now() + 600_000)]);
     channel = new GatewayControlChannel(() => map, (socket, edge) => { tunnels.push(edge.id); socket.end('tunnel-ok'); }, new GatewayControlApi(`http://127.0.0.1:${(api.address() as net.AddressInfo).port}`));
     await channel.check();
   });
@@ -86,7 +86,7 @@ describe('GatewayControlChannel', () => {
   const edge = async () => new TestEdge(channel.listeningPort, await identity.authority.trustBundle());
 
   it('listens only once configured, presenting a certificate for the control address', async () => {
-    expect(channel.listeningPort).toBe(Number(settings.get(SystemConstants.META_KEY.EDGE_CONTROL_PORT)));
+    expect(channel.listeningPort).toBeGreaterThan(0);
     const socket = await (await edge()).connect(EdgeControlPaths.CONTROL, null);
     expect(socket.getProtocol()).toBe('TLSv1.3');
     expect(socket.getPeerCertificate().subjectaltname).toBe('IP Address:127.0.0.1');

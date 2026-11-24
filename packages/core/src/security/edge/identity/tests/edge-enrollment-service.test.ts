@@ -126,6 +126,19 @@ describe('EdgeEnrollmentService', () => {
   it('refuses a policy whose working certificate would not outlive two edge certificates', () => {
     expect(() => EdgeIdentityPolicy.from(new Map([['edge_certificate_hours', '24'], ['edge_ca_intermediate_days', '1']]), 'platform.test')).toThrow(/twice/);
     expect(() => EdgeIdentityPolicy.from(new Map(), '')).toThrow(/API/);
+    expect(() => EdgeIdentityPolicy.from(new Map([['edge_certificate_hours', '500']]), 'platform.test')).toThrow(/certificateHours must be from 1 to 168/);
     expect(EdgeIdentityPolicy.from(new Map(), 'Platform.Test')).toMatchObject({ trustDomain: 'platform.test', tokenMinutes: 10, certificateHours: 24, intermediateDays: 30 });
+  });
+  it('warns once at 30 days and once at 14 before the root runs out, however many processes ask', async () => {
+    const { authority } = services();
+    await authority.trustBundle();
+    expect(await authority.claimExpiryWarning([30, 14])).toBeNull();
+    now += (10 * 365 - 29) * 86_400_000;
+    const [first, second] = await Promise.all([authority.claimExpiryWarning([30, 14]), services().authority.claimExpiryWarning([30, 14])]);
+    expect([first, second].filter(Boolean)).toHaveLength(1);
+    expect(await authority.claimExpiryWarning([30, 14])).toBeNull();
+    now += 16 * 86_400_000;
+    expect((await authority.claimExpiryWarning([30, 14]))?.daysLeft).toBeLessThanOrEqual(14);
+    expect(await authority.claimExpiryWarning([30, 14])).toBeNull();
   });
 });

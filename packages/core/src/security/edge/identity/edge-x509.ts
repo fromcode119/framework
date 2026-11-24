@@ -1,4 +1,4 @@
-import { createHash, randomBytes, webcrypto } from 'crypto';
+import { createHash, randomBytes, webcrypto, X509Certificate } from 'crypto';
 import { isIPv4, isIPv6 } from 'net';
 import * as asn1js from 'asn1js';
 import * as pkijs from 'pkijs';
@@ -127,6 +127,24 @@ export class EdgeX509 {
   static keyIdOf(certificatePem: string): ArrayBuffer {
     EdgeX509.engine();
     return EdgeX509.keyId(pkijs.Certificate.fromBER(EdgeX509.der(certificatePem)).subjectPublicKeyInfo);
+  }
+
+  /**
+   * The one certificate `pem` holds, re-encoded from what was parsed — or null when it holds none, more than
+   * one, or anything else. A reader that takes the FIRST block of a bundle would check one certificate and
+   * let the rest be trusted with it.
+   */
+  static single(pem: string): string | null {
+    const text = String(pem ?? '');
+    const blocks = text.match(/-----BEGIN [A-Z0-9 ]+-----/g) ?? [];
+    if (blocks.length !== 1 || blocks[0] !== '-----BEGIN CERTIFICATE-----') return null;
+    try { return new X509Certificate(text).toString(); } catch { return null; }
+  }
+
+  /** `sha256:<hex>` of the one certificate in `pem` — what an edge is given to pin the platform's root. Empty when it is not exactly one. */
+  static fingerprint(pem: string): string {
+    const single = EdgeX509.single(pem);
+    return single ? `sha256:${createHash('sha256').update(new X509Certificate(single).raw).digest('hex')}` : '';
   }
 
   static pem(label: string, der: Uint8Array): string {

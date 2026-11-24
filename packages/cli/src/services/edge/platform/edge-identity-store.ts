@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { createHash, X509Certificate } from 'crypto';
 import { EdgeControlPaths, EdgeX509 } from '@fromcode119/core';
 import { EdgeControlClient } from '@cli/services/edge/platform/edge-control-client';
 
@@ -25,7 +24,7 @@ export class EdgeIdentityStore {
 
   /** The SHA-256 of a certificate's DER, as `sha256:<hex>` — what the console's join command carries. */
   static fingerprint(certificatePem: string): string {
-    return `sha256:${createHash('sha256').update(new X509Certificate(certificatePem).raw).digest('hex')}`;
+    return EdgeX509.fingerprint(certificatePem);
   }
 
   /** Joins a platform. Throws with the reason, for the operator running the command. */
@@ -34,15 +33,18 @@ export class EdgeIdentityStore {
     if (!address) throw new Error(`"${control}" is not host:port.`);
     const client = new EdgeControlClient(address.host, address.port, this.version);
     const trusted = await client.request('GET', EdgeControlPaths.TRUST, undefined, { insecure: true });
-    const trust = String(trusted.body?.trustPem ?? '');
-    if (trusted.status !== 200 || !trust) throw new Error(`${control} did not answer as a Fromcode control channel (HTTP ${trusted.status || 'none'}).`);
-    if (EdgeIdentityStore.fingerprint(trust) !== String(rootHash).trim().toLowerCase()) {
+    if (trusted.status !== 200) throw new Error(`${control} did not answer as a Fromcode control channel (HTTP ${trusted.status || 'none'}).`);
+    // Exactly one certificate, and from here on only the copy that was checked: a bundle with the real
+    // root first and another certificate after it must not get the second one trusted.
+    const trust = EdgeX509.single(String(trusted.body?.trustPem ?? ''));
+    const wanted = String(rootHash ?? '').trim().toLowerCase();
+    if (!trust || !wanted || EdgeX509.fingerprint(trust) !== wanted) {
       throw new Error(`The platform at ${control} presented a root that does not match ${rootHash}. Nothing was sent. Check the address, or copy the command again from the console.`);
     }
     const keys = await EdgeX509.generateKeyPair();
     const answer = await client.request('POST', EdgeControlPaths.ENROLL, { token, request: await EdgeX509.request('edge', keys) }, { ca: trust });
     if (answer.status !== 200) throw new Error(answer.status === 429 ? 'Too many attempts from this address; wait ten minutes.' : 'The token was refused: it is wrong, already used, or expired. Make a new one in the console.');
-    this.write(control, await EdgeX509.exportPrivateKey(keys.privateKey), answer.body);
+    this.write(control, await EdgeX509.exportPrivateKey(keys.privateKey), answer.body, trust);
     return { edgeId: String(answer.body.edgeId), notAfter: String(answer.body.notAfter) };
   }
 
@@ -107,7 +109,8 @@ export class EdgeIdentityStore {
       console.warn(`[edge] certificate renewal refused (HTTP ${answer.status || 'none'}); valid until ${new Date(loaded.notAfter).toISOString()}`);
       return false;
     }
-    this.write(loaded.control, await EdgeX509.exportPrivateKey(keys.privateKey), answer.body);
+    // The root stays the one pinned at join: a renewal never changes what this edge trusts.
+    this.write(loaded.control, await EdgeX509.exportPrivateKey(keys.privateKey), answer.body, loaded.trust);
     console.log(`[edge] certificate renewed, valid until ${answer.body.notAfter}`);
     return true;
   }
@@ -122,12 +125,12 @@ export class EdgeIdentityStore {
   }
 
   /** Writes the new identity beside the old, then swaps each file in one rename. */
-  private write(control: string, key: string, issued: Record<string, any>): void {
+  private write(control: string, key: string, issued: Record<string, any>, trust: string): void {
     fs.mkdirSync(this.directory, { recursive: true, mode: 0o700 });
     const files: Array<[string, string, number]> = [
       ['key.pem', key, 0o600],
       ['certificate.pem', `${issued.certificatePem}${issued.chainPem}`, 0o644],
-      ['trust.pem', String(issued.trustPem), 0o644],
+      ['trust.pem', trust, 0o644],
       // Last: the file `load` starts from, so a crash part-way leaves the previous identity in use.
       ['edge.json', `${JSON.stringify({ control, edgeId: issued.edgeId, issuedAt: new Date(this.now()).toISOString(), notAfter: issued.notAfter }, null, 2)}\n`, 0o644],
     ];

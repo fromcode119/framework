@@ -79,4 +79,13 @@ describe('EdgeX509', () => {
       expect(first).toBeLessThan(0x80);
     }
   });
+  it('pins exactly one certificate: a bundle with another after the real one is refused, not half-read', async () => {
+    const one = await chain();
+    const single = EdgeX509.single(one.root);
+    expect(single).not.toBeNull();
+    expect(EdgeX509.fingerprint(one.root)).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(EdgeX509.single(`${one.root}${one.mid}`)).toBeNull();
+    expect(EdgeX509.fingerprint(`${one.root}${one.mid}`)).toBe('');
+    expect(EdgeX509.single('-----BEGIN PRIVATE KEY-----\nAAAA\n-----END PRIVATE KEY-----\n')).toBeNull();
+  });
 });

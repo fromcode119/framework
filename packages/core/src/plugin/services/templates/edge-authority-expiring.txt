@@ -1,0 +1,4 @@
+The root certificate every edge of this platform is checked against runs out on {{notAfter}}, in {{daysLeft}} days.
+
+On that day the platform makes a new root by itself, and edges joined under the old one can no longer renew or reach it.
+Once it has, open Settings → Security → Edges, choose "New token" for each edge, and run the command it gives on that edge.

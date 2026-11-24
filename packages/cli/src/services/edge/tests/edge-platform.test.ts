@@ -7,7 +7,7 @@ import path from 'node:path';
 import tls from 'node:tls';
 import express from 'express';
 import { DatabaseFactory } from '@fromcode119/database';
-import { ApiPathUtils, EdgeIdentity, EdgeStop, EdgeX509, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApiPathUtils, EdgeControlEndpoint, EdgeIdentity, EdgeStop, EdgeX509, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import { EdgeIdentityMigration } from '@core/database/migrations/074_edge_identity';
 import { EdgeIdentityInternalRouter } from '@api/routes/edge-identity-internal-router';
 import { GatewayControlApi } from '@cli/services/gateway/control/gateway-control-api';
@@ -16,15 +16,11 @@ import { GatewayTunnel } from '@cli/services/gateway/control/gateway-tunnel';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
 import { EdgeConfig } from '@cli/services/edge/config/edge-config';
-import { EdgeFactory } from '@cli/services/edge/edge-factory';
+import { EdgeTcpOrigin } from '@cli/services/edge/origins/edge-tcp-origin';
+import { EdgeTunnelOrigin } from '@cli/services/edge/origins/edge-tunnel-origin';
+import { EdgePlatformRules } from '@cli/services/edge/rules/edge-platform-rules';
+import { PlatformEdge as Edge } from '@cli/services/edge/platform-edge';
 import { EdgeIdentityStore } from '@cli/services/edge/platform/edge-identity-store';
-import type { PlatformEdge } from '@cli/services/edge/platform-edge';
-
-class Free {
-  static port(): Promise<number> {
-    return new Promise((resolve) => { const probe = net.createServer().listen(0, () => { const { port } = probe.address() as net.AddressInfo; probe.close(() => resolve(port)); }); });
-  }
-}
 
 /**
  * An edge as an operator runs one: a configuration file, joined to a platform with the console's command,
@@ -37,7 +33,7 @@ describe('edge in front of a platform and another server', () => {
   const closers: Array<() => unknown> = [];
   let identity: EdgeIdentity;
   let map: TenantRouteMap;
-  let edge: PlatformEdge;
+  let edge: Edge;
   let edgePort = 0;
   let otherPort = 0;
   const seenByPlatform: string[] = [];
@@ -48,9 +44,8 @@ describe('edge in front of a platform and another server', () => {
     const db: any = DatabaseFactory.create(`sqlite:${path.join(dir, 'db.sqlite')}`);
     await db.connect();
     await new EdgeIdentityMigration().up(db);
-    const controlPort = await Free.port();
     settings.set(SystemConstants.META_KEY.EDGE_CONTROL_ADDRESS, '127.0.0.1');
-    settings.set(SystemConstants.META_KEY.EDGE_CONTROL_PORT, String(controlPort));
+    settings.set(SystemConstants.META_KEY.EDGE_CONTROL_PORT, '1');
     identity = new EdgeIdentity(db, settings, () => 'platform.test');
     const app = express();
     app.use(express.json());
@@ -61,10 +56,12 @@ describe('edge in front of a platform and another server', () => {
     // The platform's HTTP side, as the gateway serves it: who the visitor is, as the gateway sees it.
     const site = http.createServer((req, res) => { seenByPlatform.push(String(req.socket.remoteAddress)); res.end(`platform:${req.headers.host}`); });
     const plain = new GatewayListener(site);
-    map = new TenantRouteMap([]).withControl(identity.control());
+    // Port 0: whatever is free, read back below — a port picked in advance can be taken by a test running beside this one.
+    map = new TenantRouteMap([]).withControl(new EdgeControlEndpoint('127.0.0.1', 0));
     const channel = new GatewayControlChannel(() => map, (socket, from) => new GatewayTunnel(() => plain, () => null).accept(socket, from), new GatewayControlApi(`http://127.0.0.1:${(api.address() as net.AddressInfo).port}`));
     await channel.check();
     closers.push(() => channel.stop());
+    const controlPort = channel.listeningPort;
 
     // An ordinary TLS server that is not a Fromcode platform.
     const keys = await EdgeX509.generateKeyPair();
@@ -83,10 +80,9 @@ describe('edge in front of a platform and another server', () => {
     await new EdgeIdentityStore(state, 'fromcode-edge/test').join(`127.0.0.1:${controlPort}`, token, root);
     expect((fs.statSync(path.join(state, 'key.pem')).mode & 0o777).toString(8)).toBe('600');
 
-    edgePort = await Free.port();
-    const httpPort = await Free.port();
+    // The configuration as an operator writes it; the listeners then bound on free ports for the test.
     const config = EdgeConfig.parse({
-      listeners: [{ port: edgePort, protocol: 'tls' }, { port: httpPort, protocol: 'http' }],
+      listeners: [{ port: 443, protocol: 'tls' }, { port: 80, protocol: 'http' }],
       origins: [
         { name: 'other', hosts: ['other.test'], transport: 'tcp', address: '127.0.0.1', ports: { tls: otherPort, http: otherPort }, proxyProtocol: false, health: { type: 'tcp' } },
         { name: 'platform', hosts: ['*'], transport: 'fromcode' },
@@ -94,8 +90,12 @@ describe('edge in front of a platform and another server', () => {
       rules: { source: 'fromcode' },
       fromcode: { state },
     });
-    ({ edge } = EdgeFactory.build(config, 'fromcode-edge/test'));
-    await edge.start();
+    const store = new EdgeIdentityStore(state, 'fromcode-edge/test');
+    expect(store.load()).toBe(true);
+    const origins = config.origins.map((origin) => (origin.transport === 'fromcode' ? new EdgeTunnelOrigin(origin, store) : new EdgeTcpOrigin(origin)));
+    edge = new Edge(config.listeners.map((listener) => ({ ...listener, port: 0 })), origins, new EdgePlatformRules(store, state, 'fromcode-edge/test'));
+    const [tlsPort, httpPort] = await edge.start();
+    edgePort = tlsPort;
     closers.push(() => edge.stop(0));
     (edge as any).httpPort = httpPort;
   }, 30_000);

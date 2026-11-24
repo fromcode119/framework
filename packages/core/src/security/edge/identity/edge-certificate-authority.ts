@@ -60,6 +60,22 @@ export class EdgeCertificateAuthority {
     return { certificatePem, chainPem: working.certificatePem, serial, notAfter };
   }
 
+  /**
+   * The root's "runs out soon" warning, at most once per threshold across every api process: the first to
+   * move `alerted_days` down to a threshold sends it. Null when there is no root yet or nothing is due.
+   */
+  async claimExpiryWarning(thresholds: readonly number[]): Promise<{ notAfter: Date; daysLeft: number } | null> {
+    const row = (await this.rows(EdgeCertificateAuthority.ROOT))[0];
+    if (!row) return null;
+    const notAfter = new Date(row.not_after);
+    const daysLeft = Math.ceil((notAfter.getTime() - this.now()) / 86_400_000);
+    const due = [...thresholds].sort((a, b) => a - b).find((days) => daysLeft <= days);
+    const last = row.alerted_days === null || row.alerted_days === undefined ? null : Number(row.alerted_days);
+    if (due === undefined || (last !== null && last <= due)) return null;
+    const claimed = await this.db.update(EdgeCertificateAuthority.TABLE, { id: row.id, alerted_days: last }, { alerted_days: due });
+    return claimed ? { notAfter, daysLeft } : null;
+  }
+
   /** The authority's state for the console: when each certificate runs out. Never a key. */
   async describe(): Promise<{ rootNotAfter: string; workingNotAfter: string; workingSince: string }> {
     const root = await this.root();

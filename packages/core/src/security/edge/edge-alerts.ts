@@ -17,6 +17,7 @@ export class EdgeAlerts {
   static readonly WINDOW_MS = 60 * 60_000;
   private static readonly SCANNER_TEMPLATE = 'edge-scanner-stopped';
   private static readonly RESTART_TEMPLATE = 'gateway-restarted';
+  private static readonly AUTHORITY_TEMPLATE = 'edge-authority-expiring';
   /** Stops named in one message; the rest are counted. */
   private static readonly LISTED = 20;
 
@@ -44,6 +45,11 @@ export class EdgeAlerts {
 
   async gatewayRestarted(reason: string, at: string): Promise<void> {
     await this.deliver(EdgeAlerts.RESTART_TEMPLATE, { reason: reason || 'not given', at });
+  }
+
+  /** The root every edge is checked against runs out soon (30 and 14 days ahead). */
+  async authorityExpiring(notAfter: Date, daysLeft: number): Promise<void> {
+    await this.deliver(EdgeAlerts.AUTHORITY_TEMPLATE, { notAfter: notAfter.toISOString().slice(0, 10), daysLeft });
   }
 
   /** Sends what is gathered, if anything. */
