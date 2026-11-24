@@ -44,7 +44,7 @@ export class GatewayEdgeCheck {
     if (attack) {
       this.refusals.record(req, attack);
       // Only what a request asked for counts towards stopping its address, never who it came from.
-      if (probe && this.scanners.strike(req.socket.remoteAddress, protection.scannerBanAfter, protection.scannerBanMinutes)) {
+      if (probe && GatewayEdgeCheck.askedForItself(req) && this.scanners.strike(req.socket.remoteAddress, protection.scannerBanAfter, protection.scannerBanMinutes)) {
         this.refusals.record(req, GatewayEdgeCheck.SCANNER);
       }
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -69,6 +69,17 @@ export class GatewayEdgeCheck {
     const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
     return visitor.action !== GatewayVisitorRules.REFUSE && !GatewayAttackFilter.reasonFor(req, site.map.protection)
       && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId, visitor.action === GatewayVisitorRules.CHECK);
+  }
+
+  /**
+   * Whether the visitor asked for this address itself, rather than a browser fetching it because
+   * another site told it to. A page anywhere can embed `<img src="https://shop/.env">` and make every
+   * one of its readers request it; counting those would let that page get innocent visitors stopped
+   * on every site. Browsers name such requests in `Sec-Fetch-Site`; a scanner sends none.
+   */
+  private static askedForItself(req: http.IncomingMessage): boolean {
+    const site = String(req.headers['sec-fetch-site'] || '').toLowerCase();
+    return site === '' || site === 'none' || site === 'same-origin';
   }
 
   private async site(req: http.IncomingMessage) {

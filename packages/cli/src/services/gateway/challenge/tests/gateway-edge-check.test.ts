@@ -68,9 +68,9 @@ describe('GatewayEdgeCheck — stopping a scanner', () => {
   });
   afterAll(() => server.close());
 
-  const get = (host: string, visitor: string, path = '/'): Promise<{ status: number; body: string }> => new Promise((resolve, reject) => {
+  const get = (host: string, visitor: string, path = '/', extra: Record<string, string> = {}): Promise<{ status: number; body: string }> => new Promise((resolve, reject) => {
     const port = (server.address() as { port: number }).port;
-    http.get({ host: '127.0.0.1', port, path, headers: { host, 'x-test-visitor': visitor } }, (res) => {
+    http.get({ host: '127.0.0.1', port, path, headers: { host, 'x-test-visitor': visitor, ...extra } }, (res) => {
       let body = '';
       res.on('data', (chunk) => { body += chunk; });
       res.on('end', () => resolve({ status: res.statusCode ?? 0, body }));
@@ -90,6 +90,13 @@ describe('GatewayEdgeCheck — stopping a scanner', () => {
   it('never stops a visitor for pages that simply pass, nor anyone else', async () => {
     for (let i = 0; i < 10; i += 1) expect((await get('shop.test', '198.51.100.5', `/missing-${i}`)).status).toBe(200);
     expect((await get('shop.test', '198.51.100.6', '/')).status).toBe(200);
+  });
+
+  it('never stops a visitor whose browser was made to fetch a probe by another site', async () => {
+    for (const site of ['cross-site', 'same-site']) {
+      for (let i = 0; i < 5; i += 1) expect((await get('shop.test', '198.51.100.7', '/.env', { 'sec-fetch-site': site })).status).toBe(403);
+    }
+    expect((await get('shop.test', '198.51.100.7', '/')).status).toBe(200);
   });
 
   it('never stops the platform\'s own servers', async () => {
