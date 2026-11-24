@@ -1,12 +1,15 @@
 import express from 'express';
 import { CoercionUtils, EdgeAlerts, EdgeStopStore, InternalServiceAuth, Logger, RouteConstants } from '@fromcode119/core';
+import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 
 /**
  * What the gateway reports about what it did on its own. Secret-only, like the routing map: no secret
  * configured, nothing answers.
  *
  * - `POST /internal/edge/stops` `{ stop }` — it stopped an address as a scanner; recorded, and the
- *   administrators told (`EdgeAlerts`). `{ refused: { address: n } }` — requests it refused from stopped
+ *   administrators told (`EdgeAlerts`), and the gateway asked to reload its routing map at once, so the
+ *   edges in front of it refuse the address within seconds rather than at the map's next refresh.
+ *   `{ refused: { address: n } }` — requests it refused from stopped
  *   addresses since its last report.
  * - `POST /internal/edge/events` `{ kind: 'gateway_restarted', reason }` — its watchdog is restarting it.
  */
@@ -15,7 +18,11 @@ export class EdgeInternalRouter {
   readonly router = express.Router();
   private readonly logger = new Logger({ namespace: 'edge-internal' });
 
-  constructor(private readonly stops: EdgeStopStore, private readonly alerts: EdgeAlerts) {
+  constructor(
+    private readonly stops: EdgeStopStore,
+    private readonly alerts: EdgeAlerts,
+    private readonly gateway: GatewayReloadClient = new GatewayReloadClient(),
+  ) {
     this.router.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_STOPS, (req, res) => { void this.report(req, res); });
     this.router.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_EVENTS, (req, res) => { void this.event(req, res); });
   }
@@ -43,7 +50,10 @@ export class EdgeInternalRouter {
           paths: Array.isArray(raw.paths) ? raw.paths.map(String) : [],
         });
         recorded = stop !== null;
-        if (stop?.isNew) void this.alerts.scannerStopped(stop);
+        if (stop?.isNew) {
+          void this.alerts.scannerStopped(stop);
+          void this.gateway.notify();
+        }
       }
       const refused = body.refused && typeof body.refused === 'object' ? body.refused as Record<string, unknown> : null;
       if (refused) await this.stops.addRefused(refused);
