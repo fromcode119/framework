@@ -8,12 +8,14 @@ import { SecuritySettingsPageUtils } from '@/app/settings/security/security-sett
 import { SecurityProtectionSummary } from '@/app/settings/security/security-protection-summary';
 import { SecurityProcessLimits } from '@/app/settings/security/security-process-limits';
 import { SecuritySuspiciousActivity } from '@/app/settings/security/security-suspicious-activity';
+import { SecurityStoppedAddresses } from '@/app/settings/security/security-stopped-addresses.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Security → Dashboard: what protects the platform (from the saved settings), how its plugins are held
  * apart (from the running processes), and what the monitor recorded. In a site scope the API withholds
  * the process list and host memory — they describe the shared box — and those cards are not shown.
+ * The stopped addresses (scanners the gateway refused on every site) are listed under them.
  */
 export class SecurityDashboard extends PureReactor {
   declare props: Pick<SecurityDashboard, 'stats' | 'settings' | 'onOpenSettings'>;
@@ -44,6 +46,7 @@ export class SecurityDashboard extends PureReactor {
             <SecuritySuspiciousActivity plugins={Array.isArray(stats.monitor?.suspiciousPlugins) ? stats.monitor.suspiciousPlugins : []} />
           </div>
         </Columns>
+        <SecurityStoppedAddresses />
       </div>
     );
   }

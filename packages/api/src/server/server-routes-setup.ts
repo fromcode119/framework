@@ -1,5 +1,4 @@
 /** ServerRoutesSetup — registers API routes. Extracted from APIServer (ARC-007). */
-
 import express from 'express';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
@@ -34,6 +33,7 @@ import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
 import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
+import { EdgeRoutesMount } from '@api/server/edge-routes-mount';
 import { UpdaterRouter } from '@api/routes/updater-router';
 import { UpdaterStatusStore } from '@api/services/system/updater-status-store';
 import { SetupStatusRouter } from '@api/routes/setup-status-router';
@@ -182,6 +182,7 @@ export class ServerRoutesSetup {
         platformAdmin,
       ).router,
     );
+    const edgeStops = new EdgeRoutesMount(this.manager, this.auth, platformAdmin).mount(vApi, `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EDGE_STOPS}`);
     // The platform's IP-location database (Settings → Infrastructure). Platform admins only.
     vApi.use(
       `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_GEO}`,
@@ -223,7 +224,7 @@ export class ServerRoutesSetup {
 
     // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
     const tenantRegistry = new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db));
-    vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache, new EdgeProtectionReader((this.manager as any).db, this.settingsCache)).router);
+    vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache, new EdgeProtectionReader((this.manager as any).db, this.settingsCache), edgeStops).router);
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
     vApi.use(new HostPermitRouter(tenantRegistry, this.settingsCache).router);

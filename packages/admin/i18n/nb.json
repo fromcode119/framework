@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktopplysninger",
       "hideContactDetails": "Skjul e-postadresser og telefonnumre for innsamlere",
-      "hideContactDetailsDescription": "Alle sider leveres med e-postadresser og internasjonale telefonnumre (og teksten i eventuelle tel:-lenker) kodet, slik at roboter som samler dem inn fra HTML-koden, ikke finner noen. Besøkende ser og klikker på dem som vanlig, og siden lastes fortsatt som servergjengitt. Erstatter e-posttilsløring fra et CDN, som bør være slått av."
+      "hideContactDetailsDescription": "Alle sider leveres med e-postadresser og internasjonale telefonnumre (og teksten i eventuelle tel:-lenker) kodet, slik at roboter som samler dem inn fra HTML-koden, ikke finner noen. Besøkende ser og klikker på dem som vanlig, og siden lastes fortsatt som servergjengitt. Erstatter e-posttilsløring fra et CDN, som bør være slått av.",
+      "stoppedAddresses": "Stoppede adresser",
+      "stoppedAddressesSubtitle": "Skannere gatewayen stoppet på alle nettsteder — {{active}} stoppet akkurat nå",
+      "noStoppedAddresses": "Ingen adresse er stoppet.",
+      "stoppedAddressesLoadFailed": "De stoppede adressene kunne ikke lastes.",
+      "stopActiveUntil": "Stoppet til {{until}}",
+      "stopBlockedForGood": "Blokkert for godt",
+      "stopReleased": "Frigitt",
+      "stopEnded": "Avsluttet",
+      "stopStoppedAt": "Stoppet {{at}}",
+      "stopSites": "nettsteder: {{sites}}",
+      "stopAskedFor": "ba om: {{paths}}",
+      "stopRefused": "{{count}} forespørsler avvist",
+      "stopRelease": "Frigi",
+      "stopBlock": "Blokker for godt",
+      "stopReleaseConfirmTitle": "Frigi {{address}}?",
+      "stopReleaseConfirmText": "Forespørslene når nettstedene igjen med én gang. Fortsetter den å lete, stoppes den igjen.",
+      "stopBlockConfirmTitle": "Blokker {{address}} for godt?",
+      "stopBlockConfirmText": "Den legges til under Edge-beskyttelse → Blokkerte adresser og avvises på alle nettsteder til noen fjerner den der.",
+      "stopReleasedTitle": "Adresse frigitt",
+      "stopReleasedMessage": "{{address}} kan nå nettstedene igjen.",
+      "stopBlockedTitle": "Adresse blokkert",
+      "stopBlockedMessage": "{{address}} ble lagt til blokkerte adresser.",
+      "stopActionFailed": "Endringen ble ikke gjort"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Fikk ikke kontakt med rammeverksregisteret.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Overvåking av nettstedet",
         "description": "Nettstedet ditt eller en tjeneste er nede eller fungerer dårlig, og når det er tilbake."
+      },
+      "edgeSecurity": {
+        "label": "Edge-sikkerhet",
+        "description": "Gatewayen stoppet en skanner, eller startet seg selv på nytt fordi den sluttet å svare."
       }
     }
   },

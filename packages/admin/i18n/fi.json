@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Yhteystiedot",
       "hideContactDetails": "Piilota sähköpostiosoitteet ja puhelinnumerot keräilijöiltä",
-      "hideContactDetailsDescription": "Jokaisen sivun sähköpostiosoitteet ja kansainväliset puhelinnumerot (sekä tel:-linkkien tekstit) toimitetaan koodattuina, joten niitä HTML:stä keräävät botit eivät löydä mitään. Kävijät näkevät ne ja voivat napsauttaa niitä tavalliseen tapaan, ja sivu latautuu edelleen palvelimella renderöitynä. Korvaa CDN:n sähköpostiosoitteiden hämärtämisen, joka kannattaa pitää pois päältä."
+      "hideContactDetailsDescription": "Jokaisen sivun sähköpostiosoitteet ja kansainväliset puhelinnumerot (sekä tel:-linkkien tekstit) toimitetaan koodattuina, joten niitä HTML:stä keräävät botit eivät löydä mitään. Kävijät näkevät ne ja voivat napsauttaa niitä tavalliseen tapaan, ja sivu latautuu edelleen palvelimella renderöitynä. Korvaa CDN:n sähköpostiosoitteiden hämärtämisen, joka kannattaa pitää pois päältä.",
+      "stoppedAddresses": "Pysäytetyt osoitteet",
+      "stoppedAddressesSubtitle": "Gatewayn pysäyttämät skannerit kaikilla sivustoilla — pysäytettyinä juuri nyt: {{active}}",
+      "noStoppedAddresses": "Yhtään osoitetta ei ole pysäytetty.",
+      "stoppedAddressesLoadFailed": "Pysäytettyjä osoitteita ei voitu ladata.",
+      "stopActiveUntil": "Pysäytetty {{until}} asti",
+      "stopBlockedForGood": "Estetty pysyvästi",
+      "stopReleased": "Vapautettu",
+      "stopEnded": "Päättynyt",
+      "stopStoppedAt": "Pysäytetty {{at}}",
+      "stopSites": "sivustot: {{sites}}",
+      "stopAskedFor": "pyydetty: {{paths}}",
+      "stopRefused": "{{count}} pyyntöä hylätty",
+      "stopRelease": "Vapauta",
+      "stopBlock": "Estä pysyvästi",
+      "stopReleaseConfirmTitle": "Vapautetaanko {{address}}?",
+      "stopReleaseConfirmText": "Sen pyynnöt pääsevät sivustoille heti uudelleen. Jos se jatkaa koputtelua, se pysäytetään uudelleen.",
+      "stopBlockConfirmTitle": "Estetäänkö {{address}} pysyvästi?",
+      "stopBlockConfirmText": "Se lisätään kohtaan Reunasuojaus → Estetyt osoitteet ja sitä hylätään kaikilla sivustoilla, kunnes joku poistaa sen sieltä.",
+      "stopReleasedTitle": "Osoite vapautettu",
+      "stopReleasedMessage": "{{address}} pääsee taas sivustoille.",
+      "stopBlockedTitle": "Osoite estetty",
+      "stopBlockedMessage": "{{address}} lisättiin estettyihin osoitteisiin.",
+      "stopActionFailed": "Muutosta ei tehty"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Kehyksen rekisteriin ei saatu yhteyttä.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Sivuston valvonta",
         "description": "Sivustosi tai palvelu on alhaalla tai toimii huonosti, sekä kun se palautuu."
+      },
+      "edgeSecurity": {
+        "label": "Reunan suojaus",
+        "description": "Gateway pysäytti skannerin tai käynnisti itsensä uudelleen, koska se lakkasi vastaamasta."
       }
     }
   },

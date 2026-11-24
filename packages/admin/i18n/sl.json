@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktni podatki",
       "hideContactDetails": "Skrij e-poštne naslove in telefonske številke pred zbiralniki",
-      "hideContactDetailsDescription": "Vsaka stran se pošlje s kodiranimi e-poštnimi naslovi in mednarodnimi telefonskimi številkami (ter besedilom povezav tel:), zato roboti, ki jih zbirajo iz HTML-ja, ne najdejo ničesar. Obiskovalci jih vidijo in kliknejo kot običajno, stran pa se še vedno naloži kot upodobljena na strežniku. Nadomešča zakrivanje e-pošte v CDN-ju, ki naj ostane izklopljeno."
+      "hideContactDetailsDescription": "Vsaka stran se pošlje s kodiranimi e-poštnimi naslovi in mednarodnimi telefonskimi številkami (ter besedilom povezav tel:), zato roboti, ki jih zbirajo iz HTML-ja, ne najdejo ničesar. Obiskovalci jih vidijo in kliknejo kot običajno, stran pa se še vedno naloži kot upodobljena na strežniku. Nadomešča zakrivanje e-pošte v CDN-ju, ki naj ostane izklopljeno.",
+      "stoppedAddresses": "Ustavljeni naslovi",
+      "stoppedAddressesSubtitle": "Skenerji, ki jih je gateway ustavil na vseh straneh — trenutno ustavljenih: {{active}}",
+      "noStoppedAddresses": "Noben naslov ni bil ustavljen.",
+      "stoppedAddressesLoadFailed": "Ustavljenih naslovov ni bilo mogoče naložiti.",
+      "stopActiveUntil": "Ustavljen do {{until}}",
+      "stopBlockedForGood": "Trajno blokiran",
+      "stopReleased": "Sproščen",
+      "stopEnded": "Končano",
+      "stopStoppedAt": "Ustavljen {{at}}",
+      "stopSites": "strani: {{sites}}",
+      "stopAskedFor": "zahtevano: {{paths}}",
+      "stopRefused": "zavrnjenih zahtevkov: {{count}}",
+      "stopRelease": "Sprosti",
+      "stopBlock": "Trajno blokiraj",
+      "stopReleaseConfirmTitle": "Sprostiti {{address}}?",
+      "stopReleaseConfirmText": "Njegovi zahtevki se takoj znova pošiljajo na strani. Če še naprej preiskuje, bo znova ustavljen.",
+      "stopBlockConfirmTitle": "Trajno blokirati {{address}}?",
+      "stopBlockConfirmText": "Doda se v Zaščita na robu → Blokirani naslovi in se na vseh straneh zavrne, dokler ga nekdo tam ne odstrani.",
+      "stopReleasedTitle": "Naslov sproščen",
+      "stopReleasedMessage": "{{address}} lahko znova doseže strani.",
+      "stopBlockedTitle": "Naslov blokiran",
+      "stopBlockedMessage": "{{address}} je dodan med blokirane naslove.",
+      "stopActionFailed": "Sprememba ni bila izvedena"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registra ogrodja ni bilo mogoče doseči.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Spremljanje spletnega mesta",
         "description": "Vaše spletno mesto ali storitev ne deluje ali je v slabem stanju, in ko se obnovi."
+      },
+      "edgeSecurity": {
+        "label": "Varnost na robu",
+        "description": "Gateway je ustavil skener ali se ponovno zagnal, ker je nehal odgovarjati."
       }
     }
   },

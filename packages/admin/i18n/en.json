@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Contact Details",
       "hideContactDetails": "Hide email addresses and phone numbers from harvesters",
-      "hideContactDetailsDescription": "Every page is served with its email addresses and international phone numbers (and the text of any tel: link) encoded, so bots that collect them from the HTML find none. Visitors see and click them as normal, and the page still loads as server-rendered. Replaces a CDN's email obfuscation, which should stay off."
+      "hideContactDetailsDescription": "Every page is served with its email addresses and international phone numbers (and the text of any tel: link) encoded, so bots that collect them from the HTML find none. Visitors see and click them as normal, and the page still loads as server-rendered. Replaces a CDN's email obfuscation, which should stay off.",
+      "stoppedAddresses": "Stopped addresses",
+      "stoppedAddressesSubtitle": "Scanners the gateway stopped on every site — {{active}} stopped right now",
+      "noStoppedAddresses": "No address has been stopped.",
+      "stoppedAddressesLoadFailed": "The stopped addresses could not be loaded.",
+      "stopActiveUntil": "Stopped until {{until}}",
+      "stopBlockedForGood": "Blocked for good",
+      "stopReleased": "Released",
+      "stopEnded": "Ended",
+      "stopStoppedAt": "Stopped {{at}}",
+      "stopSites": "sites: {{sites}}",
+      "stopAskedFor": "asked for: {{paths}}",
+      "stopRefused": "{{count}} requests refused",
+      "stopRelease": "Release",
+      "stopBlock": "Block for good",
+      "stopReleaseConfirmTitle": "Release {{address}}?",
+      "stopReleaseConfirmText": "Its requests reach the sites again at once. If it keeps probing, it is stopped again.",
+      "stopBlockConfirmTitle": "Block {{address}} for good?",
+      "stopBlockConfirmText": "It is added to Edge protection → Blocked addresses and refused on every site until someone removes it there.",
+      "stopReleasedTitle": "Address released",
+      "stopReleasedMessage": "{{address}} can reach the sites again.",
+      "stopBlockedTitle": "Address blocked",
+      "stopBlockedMessage": "{{address}} was added to the blocked addresses.",
+      "stopActionFailed": "The change was not made"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "The framework registry could not be reached.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Site monitoring",
         "description": "Your site or a service is down or unhealthy, and when it recovers."
+      },
+      "edgeSecurity": {
+        "label": "Edge security",
+        "description": "The gateway stopped a scanner, or restarted itself because it stopped answering."
       }
     }
   },

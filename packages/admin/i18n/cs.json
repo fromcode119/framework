@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktní údaje",
       "hideContactDetails": "Skrýt e-mailové adresy a telefonní čísla před sběrači",
-      "hideContactDetailsDescription": "Každá stránka se odesílá se zakódovanými e-mailovými adresami a mezinárodními telefonními čísly (včetně textu odkazů tel:), takže boti, kteří je sbírají z HTML, žádné nenajdou. Návštěvníci je vidí a mohou na ně klikat jako obvykle a stránka se stále načítá vykreslená na serveru. Nahrazuje maskování e-mailů v CDN, které by mělo zůstat vypnuté."
+      "hideContactDetailsDescription": "Každá stránka se odesílá se zakódovanými e-mailovými adresami a mezinárodními telefonními čísly (včetně textu odkazů tel:), takže boti, kteří je sbírají z HTML, žádné nenajdou. Návštěvníci je vidí a mohou na ně klikat jako obvykle a stránka se stále načítá vykreslená na serveru. Nahrazuje maskování e-mailů v CDN, které by mělo zůstat vypnuté.",
+      "stoppedAddresses": "Zastavené adresy",
+      "stoppedAddressesSubtitle": "Skenery, které gateway zastavil na všech webech — právě zastaveno: {{active}}",
+      "noStoppedAddresses": "Žádná adresa nebyla zastavena.",
+      "stoppedAddressesLoadFailed": "Zastavené adresy se nepodařilo načíst.",
+      "stopActiveUntil": "Zastaveno do {{until}}",
+      "stopBlockedForGood": "Trvale zablokováno",
+      "stopReleased": "Propuštěno",
+      "stopEnded": "Skončilo",
+      "stopStoppedAt": "Zastaveno {{at}}",
+      "stopSites": "weby: {{sites}}",
+      "stopAskedFor": "žádáno: {{paths}}",
+      "stopRefused": "{{count}} požadavků odmítnuto",
+      "stopRelease": "Propustit",
+      "stopBlock": "Trvale zablokovat",
+      "stopReleaseConfirmTitle": "Propustit {{address}}?",
+      "stopReleaseConfirmText": "Jeho požadavky se na weby okamžitě vrátí. Pokud bude dál zkoušet, bude znovu zastaven.",
+      "stopBlockConfirmTitle": "Trvale zablokovat {{address}}?",
+      "stopBlockConfirmText": "Přidá se do Ochrana na okraji sítě → Blokované adresy a bude odmítnut na všech webech, dokud ho tam někdo neodebere.",
+      "stopReleasedTitle": "Adresa propuštěna",
+      "stopReleasedMessage": "{{address}} se opět může dostat na weby.",
+      "stopBlockedTitle": "Adresa zablokována",
+      "stopBlockedMessage": "{{address}} byla přidána mezi blokované adresy.",
+      "stopActionFailed": "Změna nebyla provedena"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registr frameworku není dostupný.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitorování webu",
         "description": "Váš web nebo služba nefunguje či má potíže a také když se obnoví."
+      },
+      "edgeSecurity": {
+        "label": "Zabezpečení okraje",
+        "description": "Gateway zastavil skener nebo se restartoval, protože přestal odpovídat."
       }
     }
   },

@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} 毫秒",
       "contactDetails": "聯絡資訊",
       "hideContactDetails": "對收集程式隱藏電子郵件地址與電話號碼",
-      "hideContactDetailsDescription": "每個頁面中的電子郵件地址與國際電話號碼（以及任何 tel: 連結的文字）都會經過編碼後再提供，讓從 HTML 收集這些資訊的機器人無從取得。訪客仍可正常檢視與點按，頁面也仍以伺服器端渲染載入。此功能可取代 CDN 的電子郵件混淆功能，後者應保持關閉。"
+      "hideContactDetailsDescription": "每個頁面中的電子郵件地址與國際電話號碼（以及任何 tel: 連結的文字）都會經過編碼後再提供，讓從 HTML 收集這些資訊的機器人無從取得。訪客仍可正常檢視與點按，頁面也仍以伺服器端渲染載入。此功能可取代 CDN 的電子郵件混淆功能，後者應保持關閉。",
+      "stoppedAddresses": "停止的位址",
+      "stoppedAddressesSubtitle": "gateway 在所有網站上停止的掃描器 — 目前已停止 {{active}} 個",
+      "noStoppedAddresses": "沒有任何位址被停止。",
+      "stoppedAddressesLoadFailed": "無法載入已停止的位址。",
+      "stopActiveUntil": "停止至 {{until}}",
+      "stopBlockedForGood": "永久封鎖",
+      "stopReleased": "已解除",
+      "stopEnded": "已結束",
+      "stopStoppedAt": "{{at}} 停止",
+      "stopSites": "網站：{{sites}}",
+      "stopAskedFor": "請求路徑：{{paths}}",
+      "stopRefused": "已拒絕 {{count}} 次請求",
+      "stopRelease": "解除",
+      "stopBlock": "永久封鎖",
+      "stopReleaseConfirmTitle": "要解除 {{address}} 嗎？",
+      "stopReleaseConfirmText": "其請求會立即再次送達網站。若持續探測，將再次被停止。",
+      "stopBlockConfirmTitle": "要永久封鎖 {{address}} 嗎？",
+      "stopBlockConfirmText": "會加入「邊緣防護 → 封鎖位址」，並在所有網站上被拒絕，直到有人從那裡移除為止。",
+      "stopReleasedTitle": "位址已解除",
+      "stopReleasedMessage": "{{address}} 可以再次連上網站。",
+      "stopBlockedTitle": "位址已封鎖",
+      "stopBlockedMessage": "{{address}} 已加入封鎖位址。",
+      "stopActionFailed": "未完成變更"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "無法連線至框架登錄庫。",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "網站監控",
         "description": "您的網站或某項服務停止運作或狀況不佳，以及恢復正常時。"
+      },
+      "edgeSecurity": {
+        "label": "邊緣安全",
+        "description": "gateway 停止了一個掃描器，或因停止回應而自行重新啟動。"
       }
     }
   },

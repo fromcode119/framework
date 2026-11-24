@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktandmed",
       "hideContactDetails": "Peida e-posti aadressid ja telefoninumbrid kogujate eest",
-      "hideContactDetailsDescription": "Iga lehe e-posti aadressid ja rahvusvahelised telefoninumbrid (ning iga tel: lingi tekst) edastatakse kodeerituna, nii et HTML-ist neid koguvad robotid ei leia midagi. Külastajad näevad ja klõpsavad neid tavapäraselt ning leht laaditakse endiselt serveris renderdatuna. Asendab CDN-i e-posti varjamise, mis peaks jääma välja lülitatuks."
+      "hideContactDetailsDescription": "Iga lehe e-posti aadressid ja rahvusvahelised telefoninumbrid (ning iga tel: lingi tekst) edastatakse kodeerituna, nii et HTML-ist neid koguvad robotid ei leia midagi. Külastajad näevad ja klõpsavad neid tavapäraselt ning leht laaditakse endiselt serveris renderdatuna. Asendab CDN-i e-posti varjamise, mis peaks jääma välja lülitatuks.",
+      "stoppedAddresses": "Peatatud aadressid",
+      "stoppedAddressesSubtitle": "Gateway peatas skannerid kõigil saitidel — praegu peatatud: {{active}}",
+      "noStoppedAddresses": "Ükski aadress pole peatatud.",
+      "stoppedAddressesLoadFailed": "Peatatud aadresse ei õnnestunud laadida.",
+      "stopActiveUntil": "Peatatud kuni {{until}}",
+      "stopBlockedForGood": "Jäädavalt blokeeritud",
+      "stopReleased": "Vabastatud",
+      "stopEnded": "Lõppenud",
+      "stopStoppedAt": "Peatatud {{at}}",
+      "stopSites": "saidid: {{sites}}",
+      "stopAskedFor": "küsiti: {{paths}}",
+      "stopRefused": "{{count}} päringut keelduti",
+      "stopRelease": "Vabasta",
+      "stopBlock": "Blokeeri jäädavalt",
+      "stopReleaseConfirmTitle": "Vabastada {{address}}?",
+      "stopReleaseConfirmText": "Selle päringud jõuavad saitideni kohe uuesti. Kui ta jätkab sondeerimist, peatatakse ta uuesti.",
+      "stopBlockConfirmTitle": "Blokeerida {{address}} jäädavalt?",
+      "stopBlockConfirmText": "See lisatakse jaotisse Servakaitse → Blokeeritud aadressid ja keeldutakse sellest kõigil saitidel, kuni keegi selle sealt eemaldab.",
+      "stopReleasedTitle": "Aadress vabastatud",
+      "stopReleasedMessage": "{{address}} pääseb saitidele taas ligi.",
+      "stopBlockedTitle": "Aadress blokeeritud",
+      "stopBlockedMessage": "{{address}} lisati blokeeritud aadressidele.",
+      "stopActionFailed": "Muudatust ei tehtud"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Raamistiku registriga ei õnnestunud ühendust saada.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Saidi jälgimine",
         "description": "Sinu sait või teenus on maas või talitlushäiretega ning millal see taastub."
+      },
+      "edgeSecurity": {
+        "label": "Serva turvalisus",
+        "description": "Gateway peatas skanneri või taaskäivitas end, kuna see lakkas vastamast."
       }
     }
   },

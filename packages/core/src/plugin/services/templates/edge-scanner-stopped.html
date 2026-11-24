@@ -1,0 +1,15 @@
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a">
+  {{#if isSingle}}
+    <p style="margin:0 0 12px"><strong>The gateway stopped {{address}}</strong>: it kept asking for things no visitor asks for (an attack, a blocked path or a blocked tool).</p>
+  {{else}}
+    <p style="margin:0 0 12px"><strong>The gateway stopped {{count}} addresses</strong> in the last {{windowMinutes}} minutes: each kept asking for things no visitor asks for (an attack, a blocked path or a blocked tool).</p>
+  {{/if}}
+  <p style="margin:0 0 12px">Every request from a stopped address is refused on every site until its stop ends.</p>
+  <table style="border-collapse:collapse;margin:0 0 12px">
+    <tr><td style="padding:2px 12px 2px 0;color:#667085">Address</td><td style="padding:2px 12px 2px 0;color:#667085">Until</td><td style="padding:2px 12px 2px 0;color:#667085">Sites</td><td style="padding:2px 0;color:#667085">Asked for</td></tr>
+    {{#each stops}}
+    <tr><td style="padding:2px 12px 2px 0"><code>{{address}}</code></td><td style="padding:2px 12px 2px 0">{{until}}</td><td style="padding:2px 12px 2px 0">{{hosts}}</td><td style="padding:2px 0"><code>{{paths}}</code></td></tr>
+    {{/each}}
+  </table>
+  <p style="margin:0;color:#667085">See them, release one, or block one for good in the admin, under Settings &rarr; Security &rarr; Stopped addresses. At most one of these messages is sent every {{windowMinutes}} minutes; the list in the admin is always complete.</p>
+</div>

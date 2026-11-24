@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Kontaktinformācija",
       "hideContactDetails": "Slēpt e-pasta adreses un tālruņa numurus no vācējiem",
-      "hideContactDetailsDescription": "Katra lapa tiek pasniegta ar kodētām e-pasta adresēm un starptautiskajiem tālruņa numuriem (un jebkuras tel: saites tekstu), tāpēc boti, kas tos vāc no HTML, neko neatrod. Apmeklētāji tos redz un var noklikšķināt kā parasti, un lapa joprojām tiek ielādēta kā servera renderēta. Aizstāj CDN e-pastu maskēšanu, kurai jāpaliek izslēgtai."
+      "hideContactDetailsDescription": "Katra lapa tiek pasniegta ar kodētām e-pasta adresēm un starptautiskajiem tālruņa numuriem (un jebkuras tel: saites tekstu), tāpēc boti, kas tos vāc no HTML, neko neatrod. Apmeklētāji tos redz un var noklikšķināt kā parasti, un lapa joprojām tiek ielādēta kā servera renderēta. Aizstāj CDN e-pastu maskēšanu, kurai jāpaliek izslēgtai.",
+      "stoppedAddresses": "Apturētās adreses",
+      "stoppedAddressesSubtitle": "Skeneri, ko gateway apturēja visās vietnēs — tagad apturēti: {{active}}",
+      "noStoppedAddresses": "Neviena adrese nav apturēta.",
+      "stoppedAddressesLoadFailed": "Apturēto adrešu nevarēja ielādēt.",
+      "stopActiveUntil": "Apturēts līdz {{until}}",
+      "stopBlockedForGood": "Bloķēts uz visiem laikiem",
+      "stopReleased": "Atbrīvots",
+      "stopEnded": "Beidzies",
+      "stopStoppedAt": "Apturēts {{at}}",
+      "stopSites": "vietnes: {{sites}}",
+      "stopAskedFor": "pieprasīts: {{paths}}",
+      "stopRefused": "noraidīti pieprasījumi: {{count}}",
+      "stopRelease": "Atbrīvot",
+      "stopBlock": "Bloķēt uz visiem laikiem",
+      "stopReleaseConfirmTitle": "Atbrīvot {{address}}?",
+      "stopReleaseConfirmText": "Tā pieprasījumi uzreiz atkal sasniedz vietnes. Ja tā turpina zondēt, tā tiks atkal apturēta.",
+      "stopBlockConfirmTitle": "Bloķēt {{address}} uz visiem laikiem?",
+      "stopBlockConfirmText": "Tā tiek pievienota sadaļai Malas aizsardzība → Bloķētās adreses un tiek noraidīta visās vietnēs, līdz kāds to tur noņem.",
+      "stopReleasedTitle": "Adrese atbrīvota",
+      "stopReleasedMessage": "{{address}} atkal var piekļūt vietnēm.",
+      "stopBlockedTitle": "Adrese bloķēta",
+      "stopBlockedMessage": "{{address}} pievienota bloķētajām adresēm.",
+      "stopActionFailed": "Izmaiņas netika veiktas"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Neizdevās sasniegt ietvara reģistru.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Vietnes uzraudzība",
         "description": "Jūsu vietne vai pakalpojums nedarbojas vai darbojas kļūdaini, kā arī kad tas atjaunojas."
+      },
+      "edgeSecurity": {
+        "label": "Malas drošība",
+        "description": "Gateway apturēja skeneri vai restartējās, jo pārtrauca atbildēt."
       }
     }
   },

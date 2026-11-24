@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} 毫秒",
       "contactDetails": "联系方式",
       "hideContactDetails": "对采集程序隐藏电子邮件地址和电话号码",
-      "hideContactDetailsDescription": "所有页面中的电子邮件地址和国际电话号码（以及 tel: 链接的文本）都会经过编码后再输出，因此从 HTML 中采集信息的机器人将一无所获。访客仍可正常查看和点击，页面也仍以服务端渲染方式加载。此功能可替代 CDN 的电子邮件混淆功能，后者应保持关闭。"
+      "hideContactDetailsDescription": "所有页面中的电子邮件地址和国际电话号码（以及 tel: 链接的文本）都会经过编码后再输出，因此从 HTML 中采集信息的机器人将一无所获。访客仍可正常查看和点击，页面也仍以服务端渲染方式加载。此功能可替代 CDN 的电子邮件混淆功能，后者应保持关闭。",
+      "stoppedAddresses": "已停止的地址",
+      "stoppedAddressesSubtitle": "gateway 在所有站点上停止的扫描器 — 当前已停止 {{active}} 个",
+      "noStoppedAddresses": "尚无地址被停止。",
+      "stoppedAddressesLoadFailed": "无法加载已停止的地址。",
+      "stopActiveUntil": "停止至 {{until}}",
+      "stopBlockedForGood": "永久封禁",
+      "stopReleased": "已解除",
+      "stopEnded": "已结束",
+      "stopStoppedAt": "{{at}} 停止",
+      "stopSites": "站点：{{sites}}",
+      "stopAskedFor": "请求路径：{{paths}}",
+      "stopRefused": "已拒绝 {{count}} 次请求",
+      "stopRelease": "解除",
+      "stopBlock": "永久封禁",
+      "stopReleaseConfirmTitle": "确定解除 {{address}} 吗？",
+      "stopReleaseConfirmText": "其请求会立即重新抵达站点。若继续探测，将再次被停止。",
+      "stopBlockConfirmTitle": "确定永久封禁 {{address}} 吗？",
+      "stopBlockConfirmText": "它会被加入「边缘防护 → 拦截的地址」，并在所有站点被拒绝，直到有人从那里将其移除。",
+      "stopReleasedTitle": "地址已解除",
+      "stopReleasedMessage": "{{address}} 可以重新访问站点了。",
+      "stopBlockedTitle": "地址已封禁",
+      "stopBlockedMessage": "{{address}} 已添加到封禁地址中。",
+      "stopActionFailed": "未作出更改"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "无法连接框架注册中心。",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "站点监控",
         "description": "您的站点或某项服务宕机或运行异常，以及恢复正常时。"
+      },
+      "edgeSecurity": {
+        "label": "边缘安全",
+        "description": "gateway 停止了一个扫描器，或因停止响应而自行重启。"
       }
     }
   },

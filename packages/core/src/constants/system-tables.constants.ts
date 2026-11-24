@@ -33,6 +33,11 @@ export class SystemTables {
      */
     CERTIFICATES: '_system_certificates',
     /**
+     * Addresses the gateway stopped as scanners (Settings → Security → Stopped addresses): who, why,
+     * until when, what they asked for. Platform-level like certificates — a stop covers every site.
+     */
+    EDGE_STOPS: '_system_edge_stops',
+    /**
      * The account the platform holds with a certificate authority, one per directory URL.
      *
      * Registered once and reused forever. That is not an optimisation: authorities cap how many new

@@ -297,3 +297,4 @@ export { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-impor
 export { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
 export { DeployMode } from '@core/management/enums/deploy-mode.enum';
 export { FrameworkPageRecipe } from '@core/constants/framework-page-recipe.constants';
+export type { IEdgeStopRecord } from '@core/security/edge/interfaces/edge-stop-record.interface';

@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Elérhetőségek",
       "hideContactDetails": "E-mail-címek és telefonszámok elrejtése az adatgyűjtők elől",
-      "hideContactDetailsDescription": "Minden oldal kódolt e-mail-címekkel és nemzetközi telefonszámokkal (valamint a tel: hivatkozások szövegével) jelenik meg, így a HTML-ből adatot gyűjtő botok nem találnak semmit. A látogatók a szokásos módon látják és kattinthatják őket, és az oldal továbbra is szerveroldalon renderelve töltődik be. Kiváltja a CDN e-mail-elrejtését, amelyet kikapcsolva kell hagyni."
+      "hideContactDetailsDescription": "Minden oldal kódolt e-mail-címekkel és nemzetközi telefonszámokkal (valamint a tel: hivatkozások szövegével) jelenik meg, így a HTML-ből adatot gyűjtő botok nem találnak semmit. A látogatók a szokásos módon látják és kattinthatják őket, és az oldal továbbra is szerveroldalon renderelve töltődik be. Kiváltja a CDN e-mail-elrejtését, amelyet kikapcsolva kell hagyni.",
+      "stoppedAddresses": "Leállított címek",
+      "stoppedAddressesSubtitle": "A gateway által minden oldalon leállított szkennerek — most {{active}} leállítva",
+      "noStoppedAddresses": "Még nincs leállított cím.",
+      "stoppedAddressesLoadFailed": "A leállított címeket nem sikerült betölteni.",
+      "stopActiveUntil": "Leállítva eddig: {{until}}",
+      "stopBlockedForGood": "Végleg letiltva",
+      "stopReleased": "Feloldva",
+      "stopEnded": "Véget ért",
+      "stopStoppedAt": "Leállítva: {{at}}",
+      "stopSites": "oldalak: {{sites}}",
+      "stopAskedFor": "kért: {{paths}}",
+      "stopRefused": "{{count}} kérés elutasítva",
+      "stopRelease": "Feloldás",
+      "stopBlock": "Végleges letiltás",
+      "stopReleaseConfirmTitle": "Feloldja a(z) {{address}} címet?",
+      "stopReleaseConfirmText": "Kérései azonnal újra eljutnak az oldalakig. Ha tovább próbálkozik, ismét leáll.",
+      "stopBlockConfirmTitle": "Véglegesen letiltja a(z) {{address}} címet?",
+      "stopBlockConfirmText": "Hozzáadódik a következőhöz: Peremvédelem → Blokkolt címek, és minden oldalon elutasításra kerül, amíg valaki ki nem veszi onnan.",
+      "stopReleasedTitle": "A cím feloldva",
+      "stopReleasedMessage": "A(z) {{address}} újra elérheti az oldalakat.",
+      "stopBlockedTitle": "A cím letiltva",
+      "stopBlockedMessage": "A(z) {{address}} hozzáadva a letiltott címekhez.",
+      "stopActionFailed": "A módosítás nem történt meg"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "A keretrendszer-regisztrációs adatbázis nem érhető el.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Webhelyfigyelés",
         "description": "A webhelye vagy egy szolgáltatás nem elérhető vagy hibás, valamint amikor helyreáll."
+      },
+      "edgeSecurity": {
+        "label": "Peremvédelmi biztonság",
+        "description": "A gateway leállított egy szkennert, vagy újraindította magát, mert nem válaszolt tovább."
       }
     }
   },

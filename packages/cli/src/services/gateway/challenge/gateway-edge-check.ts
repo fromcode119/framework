@@ -6,6 +6,7 @@ import { GatewayAttackFilter } from '@cli/services/gateway/challenge/gateway-att
 import { GatewayVisitorRules } from '@cli/services/gateway/challenge/gateway-visitor-rules';
 import { GatewayRefusalLog } from '@cli/services/gateway/challenge/gateway-refusal-log';
 import { GatewayScannerBan } from '@cli/services/gateway/challenge/gateway-scanner-ban';
+import { GatewayEdgeReporter } from '@cli/services/gateway/challenge/gateway-edge-reporter';
 
 /**
  * Settings → Security → Edge protection, applied by the gateway before it routes: the request's
@@ -25,7 +26,11 @@ export class GatewayEdgeCheck {
     private readonly visitors: GatewayVisitorRules = new GatewayVisitorRules(),
     private readonly refusals: GatewayRefusalLog = new GatewayRefusalLog(),
     private readonly scanners: GatewayScannerBan = new GatewayScannerBan(),
+    private readonly reporter: GatewayEdgeReporter = new GatewayEdgeReporter(),
   ) {}
+
+  /** The map whose stops were last applied, so each fetched map is applied once. */
+  private synced: TenantRouteMap | null = null;
 
   /** True when the check answered the request itself: an attack, too many requests, or the browser check. */
   async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> {
@@ -34,6 +39,7 @@ export class GatewayEdgeCheck {
     const protection = site.map.protection;
     if (this.scanners.isBanned(req.socket.remoteAddress)) {
       this.refusals.record(req, GatewayEdgeCheck.SCANNER);
+      this.reporter.refusedFrom(String(req.socket.remoteAddress ?? ''));
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'blocked', reason: GatewayEdgeCheck.SCANNER }));
       return true;
@@ -44,8 +50,10 @@ export class GatewayEdgeCheck {
     if (attack) {
       this.refusals.record(req, attack);
       // Only what a request asked for counts towards stopping its address, never who it came from.
-      if (probe && GatewayEdgeCheck.askedForItself(req) && this.scanners.strike(req.socket.remoteAddress, protection.scannerBanAfter, protection.scannerBanMinutes)) {
+      if (probe && GatewayEdgeCheck.askedForItself(req) && this.scanners.strike(req.socket.remoteAddress, protection.scannerBanAfter, protection.scannerBanMinutes, this.hostOf(req), String(req.url || '').split('?')[0])) {
         this.refusals.record(req, GatewayEdgeCheck.SCANNER);
+        const stop = this.scanners.describe(req.socket.remoteAddress);
+        if (stop) this.reporter.stopped(stop, GatewayEdgeCheck.SCANNER);
       }
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'blocked', reason: attack }));
@@ -84,6 +92,10 @@ export class GatewayEdgeCheck {
 
   private async site(req: http.IncomingMessage) {
     const map = await this.routingMap();
+    if (map && map !== this.synced) {
+      this.synced = map;
+      this.scanners.sync(map.stops);
+    }
     const route = map?.resolve(this.hostOf(req));
     return map && route ? { map, tenantId: route.tenantId } : null;
   }

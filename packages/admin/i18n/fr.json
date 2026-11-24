@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Coordonnées",
       "hideContactDetails": "Masquer les adresses e-mail et numéros de téléphone aux robots collecteurs",
-      "hideContactDetailsDescription": "Chaque page est servie avec ses adresses e-mail et ses numéros de téléphone internationaux (ainsi que le texte de tout lien tel:) encodés, de sorte que les robots qui les collectent dans le HTML n'en trouvent aucun. Les visiteurs les voient et cliquent dessus normalement, et la page reste rendue côté serveur. Cette option remplace l'obfuscation des e-mails d'un CDN, qui doit rester désactivée."
+      "hideContactDetailsDescription": "Chaque page est servie avec ses adresses e-mail et ses numéros de téléphone internationaux (ainsi que le texte de tout lien tel:) encodés, de sorte que les robots qui les collectent dans le HTML n'en trouvent aucun. Les visiteurs les voient et cliquent dessus normalement, et la page reste rendue côté serveur. Cette option remplace l'obfuscation des e-mails d'un CDN, qui doit rester désactivée.",
+      "stoppedAddresses": "Adresses arrêtées",
+      "stoppedAddressesSubtitle": "Scanners arrêtés par la gateway sur tous les sites — {{active}} arrêtés en ce moment",
+      "noStoppedAddresses": "Aucune adresse n'a été arrêtée.",
+      "stoppedAddressesLoadFailed": "Impossible de charger les adresses arrêtées.",
+      "stopActiveUntil": "Arrêtée jusqu'au {{until}}",
+      "stopBlockedForGood": "Bloquée définitivement",
+      "stopReleased": "Libérée",
+      "stopEnded": "Terminée",
+      "stopStoppedAt": "Arrêtée {{at}}",
+      "stopSites": "sites : {{sites}}",
+      "stopAskedFor": "demandé : {{paths}}",
+      "stopRefused": "{{count}} requêtes refusées",
+      "stopRelease": "Libérer",
+      "stopBlock": "Bloquer définitivement",
+      "stopReleaseConfirmTitle": "Libérer {{address}} ?",
+      "stopReleaseConfirmText": "Ses requêtes atteignent à nouveau les sites immédiatement. S'il continue de sonder, il sera de nouveau arrêté.",
+      "stopBlockConfirmTitle": "Bloquer définitivement {{address}} ?",
+      "stopBlockConfirmText": "Elle est ajoutée à Protection en périphérie → Adresses bloquées et refusée sur tous les sites jusqu'à ce que quelqu'un la retire de là.",
+      "stopReleasedTitle": "Adresse libérée",
+      "stopReleasedMessage": "{{address}} peut à nouveau atteindre les sites.",
+      "stopBlockedTitle": "Adresse bloquée",
+      "stopBlockedMessage": "{{address}} a été ajoutée aux adresses bloquées.",
+      "stopActionFailed": "La modification n'a pas été effectuée"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Impossible de joindre le registre du framework.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Surveillance du site",
         "description": "Votre site ou un service est hors service ou en mauvais état, ainsi que son rétablissement."
+      },
+      "edgeSecurity": {
+        "label": "Sécurité périmétrique",
+        "description": "La gateway a arrêté un scanner, ou s'est redémarrée parce qu'elle ne répondait plus."
       }
     }
   },

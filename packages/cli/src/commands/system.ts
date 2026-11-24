@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import { CliUtils } from '@cli/utils';
 import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bundle-command-service';
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
+import { GatewayEdgeReporter } from '@cli/services/gateway/challenge/gateway-edge-reporter';
 import { PlatformGateway } from '@cli/services/platform-gateway';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
 import { GatewayWatchdog } from '@cli/services/gateway/gateway-watchdog';
@@ -97,7 +98,10 @@ export class SystemCommands {
           watchdog = new GatewayWatchdog(gateway.listener?.port ?? 0, PlatformGateway.HEALTH_PATH, (reason) => {
             // Gracefully, as a deploy does: what is still in flight finishes, then Docker starts a fresh one.
             console.error(`[platform-gateway] watchdog: ${reason}; stopping so the container is restarted`);
-            void gateway.stop(PlatformGateway.STOP_GRACE_MS).finally(() => process.exit(1));
+            // The administrators hear of it (the "Edge security" alert) — the sites were not loading.
+            void new GatewayEdgeReporter().restarting(reason)
+              .finally(() => gateway.stop(PlatformGateway.STOP_GRACE_MS))
+              .finally(() => process.exit(1));
           }, undefined, undefined, undefined, undefined, () => gateway.upstreamStalled());
           watchdog.start();
         });

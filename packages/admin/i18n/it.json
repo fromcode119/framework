@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Dati di contatto",
       "hideContactDetails": "Nascondi indirizzi email e numeri di telefono ai raccoglitori automatici",
-      "hideContactDetailsDescription": "Ogni pagina viene servita con indirizzi email e numeri di telefono internazionali (e il testo di qualsiasi link tel:) codificati, così i bot che li raccolgono dall'HTML non ne trovano nessuno. I visitatori li vedono e li cliccano normalmente e la pagina continua a essere renderizzata lato server. Sostituisce l'offuscamento delle email di una CDN, che va lasciato disattivato."
+      "hideContactDetailsDescription": "Ogni pagina viene servita con indirizzi email e numeri di telefono internazionali (e il testo di qualsiasi link tel:) codificati, così i bot che li raccolgono dall'HTML non ne trovano nessuno. I visitatori li vedono e li cliccano normalmente e la pagina continua a essere renderizzata lato server. Sostituisce l'offuscamento delle email di una CDN, che va lasciato disattivato.",
+      "stoppedAddresses": "Indirizzi fermati",
+      "stoppedAddressesSubtitle": "Scanner fermati dal gateway su tutti i siti — {{active}} fermati in questo momento",
+      "noStoppedAddresses": "Nessun indirizzo è stato fermato.",
+      "stoppedAddressesLoadFailed": "Impossibile caricare gli indirizzi fermati.",
+      "stopActiveUntil": "Fermato fino al {{until}}",
+      "stopBlockedForGood": "Bloccato per sempre",
+      "stopReleased": "Rilasciato",
+      "stopEnded": "Terminato",
+      "stopStoppedAt": "Fermato {{at}}",
+      "stopSites": "siti: {{sites}}",
+      "stopAskedFor": "richiesto: {{paths}}",
+      "stopRefused": "{{count}} richieste rifiutate",
+      "stopRelease": "Rilascia",
+      "stopBlock": "Blocca per sempre",
+      "stopReleaseConfirmTitle": "Rilasciare {{address}}?",
+      "stopReleaseConfirmText": "Le sue richieste tornano subito ai siti. Se continua a sondare, viene di nuovo fermato.",
+      "stopBlockConfirmTitle": "Bloccare {{address}} per sempre?",
+      "stopBlockConfirmText": "Viene aggiunto a Protezione edge → Indirizzi bloccati e rifiutato su tutti i siti finché qualcuno non lo rimuove da lì.",
+      "stopReleasedTitle": "Indirizzo rilasciato",
+      "stopReleasedMessage": "{{address}} può di nuovo raggiungere i siti.",
+      "stopBlockedTitle": "Indirizzo bloccato",
+      "stopBlockedMessage": "{{address}} è stato aggiunto agli indirizzi bloccati.",
+      "stopActionFailed": "La modifica non è stata effettuata"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Impossibile raggiungere il registro del framework.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitoraggio del sito",
         "description": "Il tuo sito o un servizio non è raggiungibile o non funziona correttamente, e quando torna operativo."
+      },
+      "edgeSecurity": {
+        "label": "Sicurezza edge",
+        "description": "Il gateway ha fermato uno scanner, oppure si è riavviato perché aveva smesso di rispondere."
       }
     }
   },

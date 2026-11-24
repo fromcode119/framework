@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Dane kontaktowe",
       "hideContactDetails": "Ukrywaj adresy e-mail i numery telefonów przed botami zbierającymi dane",
-      "hideContactDetailsDescription": "Każda strona jest wysyłana z zakodowanymi adresami e-mail i międzynarodowymi numerami telefonów (oraz tekstem linków tel:), dzięki czemu boty zbierające je z kodu HTML nic nie znajdą. Odwiedzający widzą je i klikają normalnie, a strona nadal jest renderowana po stronie serwera. Zastępuje zaciemnianie adresów e-mail przez CDN, które powinno pozostać wyłączone."
+      "hideContactDetailsDescription": "Każda strona jest wysyłana z zakodowanymi adresami e-mail i międzynarodowymi numerami telefonów (oraz tekstem linków tel:), dzięki czemu boty zbierające je z kodu HTML nic nie znajdą. Odwiedzający widzą je i klikają normalnie, a strona nadal jest renderowana po stronie serwera. Zastępuje zaciemnianie adresów e-mail przez CDN, które powinno pozostać wyłączone.",
+      "stoppedAddresses": "Zatrzymane adresy",
+      "stoppedAddressesSubtitle": "Skanery zatrzymane przez gateway na wszystkich stronach — zatrzymanych teraz: {{active}}",
+      "noStoppedAddresses": "Żaden adres nie został zatrzymany.",
+      "stoppedAddressesLoadFailed": "Nie udało się wczytać zatrzymanych adresów.",
+      "stopActiveUntil": "Zatrzymany do {{until}}",
+      "stopBlockedForGood": "Zablokowany na stałe",
+      "stopReleased": "Zwolniony",
+      "stopEnded": "Zakończony",
+      "stopStoppedAt": "Zatrzymany {{at}}",
+      "stopSites": "strony: {{sites}}",
+      "stopAskedFor": "żądane: {{paths}}",
+      "stopRefused": "odrzucone żądania: {{count}}",
+      "stopRelease": "Zwolnij",
+      "stopBlock": "Zablokuj na stałe",
+      "stopReleaseConfirmTitle": "Zwolnić {{address}}?",
+      "stopReleaseConfirmText": "Jego żądania od razu znów trafiają na strony. Jeśli dalej będzie sprawdzać, zostanie ponownie zatrzymany.",
+      "stopBlockConfirmTitle": "Zablokować {{address}} na stałe?",
+      "stopBlockConfirmText": "Zostanie dodany do Ochrona brzegowa → Zablokowane adresy i odrzucany na wszystkich stronach, dopóki ktoś go stamtąd nie usunie.",
+      "stopReleasedTitle": "Adres zwolniony",
+      "stopReleasedMessage": "{{address}} znów może docierać do stron.",
+      "stopBlockedTitle": "Adres zablokowany",
+      "stopBlockedMessage": "{{address}} został dodany do zablokowanych adresów.",
+      "stopActionFailed": "Zmiana nie została wykonana"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Nie udało się połączyć z rejestrem frameworka.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitorowanie witryny",
         "description": "Twoja witryna lub usługa nie działa albo działa nieprawidłowo, a także kiedy wróci do normy."
+      },
+      "edgeSecurity": {
+        "label": "Bezpieczeństwo brzegowe",
+        "description": "Gateway zatrzymał skaner albo uruchomił się ponownie, bo przestał odpowiadać."
       }
     }
   },

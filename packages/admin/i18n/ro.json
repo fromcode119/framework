@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} ms",
       "contactDetails": "Date de contact",
       "hideContactDetails": "Ascunde adresele de e-mail și numerele de telefon de colectori",
-      "hideContactDetailsDescription": "Fiecare pagină este livrată cu adresele de e-mail și numerele de telefon internaționale (și textul oricărui link tel:) codificate, astfel încât roboții care le colectează din HTML nu găsesc nimic. Vizitatorii le văd și le pot accesa normal, iar pagina se încarcă în continuare randată pe server. Înlocuiește ofuscarea e-mailurilor oferită de CDN, care ar trebui să rămână dezactivată."
+      "hideContactDetailsDescription": "Fiecare pagină este livrată cu adresele de e-mail și numerele de telefon internaționale (și textul oricărui link tel:) codificate, astfel încât roboții care le colectează din HTML nu găsesc nimic. Vizitatorii le văd și le pot accesa normal, iar pagina se încarcă în continuare randată pe server. Înlocuiește ofuscarea e-mailurilor oferită de CDN, care ar trebui să rămână dezactivată.",
+      "stoppedAddresses": "Adrese oprite",
+      "stoppedAddressesSubtitle": "Scanere oprite de gateway pe toate site-urile — {{active}} oprite chiar acum",
+      "noStoppedAddresses": "Nicio adresă nu a fost oprită.",
+      "stoppedAddressesLoadFailed": "Adresele oprite nu au putut fi încărcate.",
+      "stopActiveUntil": "Oprit până la {{until}}",
+      "stopBlockedForGood": "Blocat definitiv",
+      "stopReleased": "Eliberat",
+      "stopEnded": "Încheiat",
+      "stopStoppedAt": "Oprit {{at}}",
+      "stopSites": "site-uri: {{sites}}",
+      "stopAskedFor": "a cerut: {{paths}}",
+      "stopRefused": "{{count}} cereri refuzate",
+      "stopRelease": "Eliberează",
+      "stopBlock": "Blochează definitiv",
+      "stopReleaseConfirmTitle": "Eliberați {{address}}?",
+      "stopReleaseConfirmText": "Cererile sale ajung din nou la site-uri imediat. Dacă continuă să sondeze, va fi oprit din nou.",
+      "stopBlockConfirmTitle": "Blocați {{address}} definitiv?",
+      "stopBlockConfirmText": "Se adaugă la Protecție edge → Adrese blocate și este refuzat pe toate site-urile până o scoate cineva de acolo.",
+      "stopReleasedTitle": "Adresă eliberată",
+      "stopReleasedMessage": "{{address}} poate ajunge din nou la site-uri.",
+      "stopBlockedTitle": "Adresă blocată",
+      "stopBlockedMessage": "{{address}} a fost adăugată la adresele blocate.",
+      "stopActionFailed": "Modificarea nu a fost făcută"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "Registrul framework-ului nu a putut fi accesat.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "Monitorizarea site-ului",
         "description": "Site-ul tău sau un serviciu este oprit sau nefuncțional, și când își revine."
+      },
+      "edgeSecurity": {
+        "label": "Securitate edge",
+        "description": "Gateway-ul a oprit un scaner sau s-a repornit pentru că nu mai răspundea."
       }
     }
   },

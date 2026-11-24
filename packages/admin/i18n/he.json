@@ -3041,7 +3041,30 @@
       "milliseconds": "{{value}} אלפיות שנייה",
       "contactDetails": "פרטי קשר",
       "hideContactDetails": "הסתרת כתובות דוא\"ל ומספרי טלפון מאוספי נתונים",
-      "hideContactDetailsDescription": "כל דף מוגש כשכתובות הדוא\"ל ומספרי הטלפון הבינלאומיים שבו (וגם הטקסט של כל קישור tel:) מקודדים, כך שבוטים שאוספים אותם מה-HTML לא ימצאו דבר. המבקרים רואים אותם ולוחצים עליהם כרגיל, והדף עדיין נטען כמעובד בשרת. תכונה זו מחליפה את הסוואת הדוא\"ל של ה-CDN, שצריכה להישאר כבויה."
+      "hideContactDetailsDescription": "כל דף מוגש כשכתובות הדוא\"ל ומספרי הטלפון הבינלאומיים שבו (וגם הטקסט של כל קישור tel:) מקודדים, כך שבוטים שאוספים אותם מה-HTML לא ימצאו דבר. המבקרים רואים אותם ולוחצים עליהם כרגיל, והדף עדיין נטען כמעובד בשרת. תכונה זו מחליפה את הסוואת הדוא\"ל של ה-CDN, שצריכה להישאר כבויה.",
+      "stoppedAddresses": "כתובות שנעצרו",
+      "stoppedAddressesSubtitle": "סורקים ש-gateway עצר בכל האתרים — {{active}} עצורים כרגע",
+      "noStoppedAddresses": "לא נעצרה אף כתובת.",
+      "stoppedAddressesLoadFailed": "לא ניתן לטעון את הכתובות שנעצרו.",
+      "stopActiveUntil": "עצורה עד {{until}}",
+      "stopBlockedForGood": "נחסמה לתמיד",
+      "stopReleased": "שוחררה",
+      "stopEnded": "הסתיימה",
+      "stopStoppedAt": "נעצרה {{at}}",
+      "stopSites": "אתרים: {{sites}}",
+      "stopAskedFor": "ביקשה: {{paths}}",
+      "stopRefused": "{{count}} בקשות נדחו",
+      "stopRelease": "שחרר",
+      "stopBlock": "חסום לתמיד",
+      "stopReleaseConfirmTitle": "לשחרר את {{address}}?",
+      "stopReleaseConfirmText": "הבקשות שלה מגיעות שוב לאתרים מיד. אם היא ממשיכה לבדוק, היא תיעצר שוב.",
+      "stopBlockConfirmTitle": "לחסום את {{address}} לתמיד?",
+      "stopBlockConfirmText": "היא תתווסף אל הגנת קצה → כתובות חסומות ותידחה בכל האתרים עד שמישהו יסיר אותה משם.",
+      "stopReleasedTitle": "הכתובת שוחררה",
+      "stopReleasedMessage": "{{address}} יכולה להגיע שוב לאתרים.",
+      "stopBlockedTitle": "הכתובת נחסמה",
+      "stopBlockedMessage": "{{address}} נוספה לכתובות החסומות.",
+      "stopActionFailed": "השינוי לא בוצע"
     },
     "updates": {
       "theFrameworkRegistryCouldNot": "לא ניתן להתחבר למאגר המסגרת.",
@@ -4899,6 +4922,10 @@
       "monitoring": {
         "label": "ניטור האתר",
         "description": "האתר שלכם או שירות אינם זמינים או אינם תקינים, וגם כשהם חוזרים לפעול."
+      },
+      "edgeSecurity": {
+        "label": "אבטחת קצה",
+        "description": "ה-gateway עצר סורק, או הפעיל את עצמו מחדש כי הפסיק להגיב."
       }
     }
   },
