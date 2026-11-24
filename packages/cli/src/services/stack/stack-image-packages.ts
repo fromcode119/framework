@@ -1,33 +1,47 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
 
 /**
  * The packages a worktree needs that the image under its stack does not have.
  *
- * A stack runs a released image already on the machine and mounts the worktree's source over it,
- * and that image is usually many releases behind. When a release since then added a dependency,
- * the mounted source imports a package the image never installed, and the console answers 500 with
- * "Cannot find module": 2026-11-21, `@zxing/browser` (the QR scanner) on an image from 0.2.588.
- * Nothing in the worktree shows it, because its own `node_modules` is not the one the container
- * resolves from. So the stack asks the container, and installs exactly what it lacks.
+ * A stack runs a released image already on the machine and mounts the worktree's built packages over
+ * it, and that image is usually many releases behind. When a release since then added a dependency,
+ * the mounted code imports a package the image never installed: the console answered 500 with "Cannot
+ * find module" on 2026-11-21 (`@zxing/browser`), and on 2026-11-24 the api crashed on start because
+ * core had gained `pkijs`. Nothing in the worktree shows it, because its own `node_modules` is not the
+ * one the container resolves from.
+ *
+ * So for every service that runs the mounted code, the stack takes what its app declares AND what every
+ * workspace package it uses declares, asks the image which of those it lacks, installs exactly those in a
+ * one-off container of the same image (so a native module is built for that image), and copies them into
+ * the service — which works even while the service is crashing for want of them — then restarts it.
  */
 export class StackImagePackages {
-  /** The apps that run from source in a stack, and the folder of each under the image's /app. */
-  private static readonly APPS: Record<string, string> = { admin: 'packages/admin', frontend: 'packages/frontend' };
+  /** The services that run the mounted code, and the workspace package each starts from. */
+  private static readonly SERVICES: Record<string, string> = {
+    admin: 'admin', frontend: 'frontend', api: 'api', 'extension-host': 'api', 'site-extension-host': 'api', gateway: 'cli', edge: 'cli', updater: 'cli',
+  };
+  private static readonly SCOPE = '@fromcode119/';
 
-  /** What an app's package.json asks for from the registry — workspace packages come from the mount. */
-  static declaredBy(framework: string, folder: string): string[] {
-    const file = path.join(framework, folder, 'package.json');
+  /** What `workspace` and every workspace package it uses ask for from the registry, as `name@range`. */
+  static declaredBy(framework: string, workspace: string, seen = new Set<string>()): string[] {
+    if (seen.has(workspace)) return [];
+    seen.add(workspace);
+    const file = path.join(framework, 'packages', workspace, 'package.json');
     if (!fs.existsSync(file)) return [];
-
     const manifest = JSON.parse(fs.readFileSync(file, 'utf8')) as { dependencies?: Record<string, string> };
-    return Object.entries(manifest.dependencies ?? {})
-      .filter(([name, range]) => !name.startsWith('@fromcode119/') && !/^(workspace|file|link):/.test(range))
-      .map(([name, range]) => `${name}@${range}`);
+    const own: string[] = [];
+    const nested: string[] = [];
+    for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
+      if (name.startsWith(StackImagePackages.SCOPE)) nested.push(...StackImagePackages.declaredBy(framework, name.slice(StackImagePackages.SCOPE.length), seen));
+      else if (!/^(workspace|file|link):/.test(range)) own.push(`${name}@${range}`);
+    }
+    return [...new Set([...own, ...nested])];
   }
 
-  /** The declared packages whose folder is in neither of the two places Node looks. */
+  /** The declared packages whose folder the image does not have. */
   static missing(declared: string[], present: Set<string>): string[] {
     return declared.filter((spec) => !present.has(StackImagePackages.nameOf(spec)));
   }
@@ -40,33 +54,64 @@ export class StackImagePackages {
 
   constructor(private readonly framework: string, private readonly shell: RemoteShell) {}
 
-  /** Installs what each running app lacks and restarts it; returns what was installed, per service. */
+  /** Installs what each running service lacks and restarts it; returns what was installed, per service. */
   async sync(): Promise<Record<string, string[]>> {
     const installed: Record<string, string[]> = {};
-
-    for (const [service, folder] of Object.entries(StackImagePackages.APPS)) {
-      const declared = StackImagePackages.declaredBy(this.framework, folder);
-      if (!declared.length) continue;
-
-      const present = await this.presentIn(service, folder, declared);
-      const lacking = StackImagePackages.missing(declared, present);
-      if (!lacking.length) continue;
-
-      const install = await this.shell.run(
-        `docker compose exec -T ${service} sh -c "cd ${folder} && npm install --no-save --ignore-scripts --no-audit --no-fund ${lacking.map((spec) => `'${spec}'`).join(' ')}"`,
-      );
-      if (install.code !== 0) throw new Error(`Could not install ${lacking.join(', ')} into the ${service} container: ${install.stderr.trim()}`);
-
-      await this.shell.runOrThrow(`docker compose restart ${service}`);
-      installed[service] = lacking;
+    const images = await this.images();
+    const built = new Map<string, string>();
+    try {
+      for (const [service, workspace] of Object.entries(StackImagePackages.SERVICES)) {
+        const image = images[service];
+        if (!image) continue;
+        const declared = StackImagePackages.declaredBy(this.framework, workspace);
+        if (!declared.length) continue;
+        const lacking = StackImagePackages.missing(declared, await this.presentIn(image, declared));
+        if (!lacking.length) continue;
+        const key = `${image} ${lacking.join(' ')}`;
+        if (!built.has(key)) built.set(key, await this.install(image, lacking));
+        const container = (await this.shell.runOrThrow(`docker compose ps -a -q ${service}`)).trim();
+        if (!container) continue;
+        await this.shell.runOrThrow(`docker cp "${path.join(built.get(key)!, 'node_modules')}/." ${container}:/app/node_modules/`);
+        await this.shell.runOrThrow(`docker compose restart ${service}`);
+        installed[service] = lacking;
+      }
+    } finally {
+      for (const out of built.values()) fs.rmSync(out, { recursive: true, force: true });
     }
     return installed;
   }
 
-  private async presentIn(service: string, folder: string, declared: string[]): Promise<Set<string>> {
-    const names = declared.map((spec) => StackImagePackages.nameOf(spec));
-    const probe = names.map((name) => `{ [ -d node_modules/${name} ] || [ -d ${folder}/node_modules/${name} ]; } && echo ${name}`).join('; ');
-    const result = await this.shell.run(`docker compose exec -T ${service} sh -c "${probe}"`);
+  /** The image each service of the stack runs, by service name. */
+  private async images(): Promise<Record<string, string>> {
+    const config = JSON.parse(await this.shell.runOrThrow('docker compose config --format json')) as { services?: Record<string, { image?: string }> };
+    return Object.fromEntries(Object.entries(config.services ?? {}).filter(([, spec]) => spec.image).map(([name, spec]) => [name, String(spec.image)]));
+  }
+
+  /**
+   * Asked of the image in a container of its own: a crashing service cannot be asked, and a stack's
+   * services may sit on an internal network with no way to the registry.
+   */
+  private async presentIn(image: string, declared: string[]): Promise<Set<string>> {
+    const probe = declared.map((spec) => StackImagePackages.nameOf(spec)).map((name) => `[ -d /app/node_modules/${name} ] && echo ${name}`).join('; ');
+    const result = await this.shell.run(`docker run --rm ${await this.platformOf(image)} --entrypoint sh ${image} -c "${probe}; true"`);
     return new Set(result.stdout.split('\n').map((line) => line.trim()).filter(Boolean));
+  }
+
+  /** Installs `lacking` with the image's own node and npm, so a native module is built for it; returns the folder. */
+  private async install(image: string, lacking: string[]): Promise<string> {
+    const out = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-stack-packages-'));
+    const specs = lacking.map((spec) => `'${spec}'`).join(' ');
+    const built = await this.shell.run(`docker run --rm ${await this.platformOf(image)} -v "${out}:/out" --entrypoint sh ${image} -c "cd /out && npm install --no-save --no-package-lock --ignore-scripts --no-audit --no-fund ${specs}"`);
+    if (built.code !== 0) {
+      fs.rmSync(out, { recursive: true, force: true });
+      throw new Error(`Could not install ${lacking.join(', ')} with ${image}: ${built.stderr.trim()}`);
+    }
+    return out;
+  }
+
+  /** `--platform os/arch` of a local image, so an image built for another machine runs as itself. */
+  private async platformOf(image: string): Promise<string> {
+    const platform = (await this.shell.run(`docker image inspect --format "{{.Os}}/{{.Architecture}}" ${image}`)).stdout.trim();
+    return platform ? `--platform ${platform}` : '';
   }
 }
