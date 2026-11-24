@@ -88,4 +88,18 @@ describe('GatewayWatchdog', () => {
     expect(reasons).toHaveLength(1);
     expect(reasons[0]).toMatch(/^14 MiB in swap, and its health check took \d+ ms, 2 checks in a row$/);
   }, 10_000);
+
+  it('ends a gateway whose path to the frontend is stalled even though its health path answers', async () => {
+    const port = await listen(http.createServer((_req, res) => res.end('ok')));
+    const reasons: string[] = [];
+    const watchdog = new GatewayWatchdog(port, '/healthz', (reason) => reasons.push(reason), 60_000, 100, 2,
+      () => null, async () => 'its pooled requests to the frontend get no answer in 5000 ms while a new connection is answered');
+    watchdog.start();
+
+    await watchdog.check();
+    await watchdog.check();
+
+    expect(reasons).toHaveLength(1);
+    expect(reasons[0]).toMatch(/^its pooled requests to the frontend.*, 2 checks in a row$/);
+  });
 });

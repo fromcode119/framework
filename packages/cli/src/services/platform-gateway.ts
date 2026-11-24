@@ -9,6 +9,7 @@ import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
 import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
+import { GatewayUpstreamProbe } from '@cli/services/gateway/gateway-upstream-probe';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
@@ -70,6 +71,7 @@ export class PlatformGateway {
     [GatewayTarget.ADMIN.value]: process.env.ADMIN_TARGET_URL || 'http://admin:3000',
     [GatewayTarget.FRONTEND.value]: String(process.env.FRONTEND_TARGET_URL || '').trim(),
   };
+  private readonly upstreamProbe = new GatewayUpstreamProbe(this.targets[GatewayTarget.FRONTEND.value], this.agent);
 
   /** The listening server, so a caller (and the tests) can reach and close it. */
   server: http.Server | null = null;
@@ -156,6 +158,11 @@ export class PlatformGateway {
    * Stops gracefully: accepts nothing more, lets what is in flight finish (up to `graceMs`). `edge`
    * sends new connections to the gateway replacing this one, so a deploy fails no request.
    */
+  /** What the watchdog asks besides the health path: does a page request reach the frontend? */
+  upstreamStalled(): Promise<string | null> {
+    return this.upstreamProbe.stalled();
+  }
+
   async stop(graceMs: number): Promise<void> {
     await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
     this.agent.destroy();
