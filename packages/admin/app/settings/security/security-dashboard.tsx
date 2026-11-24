@@ -9,6 +9,7 @@ import { SecurityProtectionSummary } from '@/app/settings/security/security-prot
 import { SecurityProcessLimits } from '@/app/settings/security/security-process-limits';
 import { SecuritySuspiciousActivity } from '@/app/settings/security/security-suspicious-activity';
 import { SecurityStoppedAddresses } from '@/app/settings/security/security-stopped-addresses.client';
+import { SecurityEdges } from '@/app/settings/security/security-edges.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -47,6 +48,7 @@ export class SecurityDashboard extends PureReactor {
           </div>
         </Columns>
         <SecurityStoppedAddresses />
+        <SecurityEdges onOpenSettings={this.onOpenSettings} />
       </div>
     );
   }

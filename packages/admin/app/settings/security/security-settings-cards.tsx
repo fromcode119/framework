@@ -8,6 +8,7 @@ import { LoginProtectionCard } from '@/app/settings/security/login-protection-ca
 import { RecoveryLinksCard } from '@/app/settings/security/recovery-links-card';
 import { ApiFirewallCard } from '@/app/settings/security/api-firewall-card';
 import { EdgeProtectionCard } from '@/app/settings/security/edge-protection-card';
+import { EdgeIdentityCard } from '@/app/settings/security/edge-identity-card';
 import { AuditTrailCard } from '@/app/settings/security/audit-trail-card';
 import { ContactProtectionCard } from '@/app/settings/security/contact-protection-card';
 
@@ -34,6 +35,7 @@ export class SecuritySettingsCards extends PureReactor {
         <RecoveryLinksCard settings={settings} setSettings={setSettings} theme={theme} />
         <ApiFirewallCard settings={settings} setSettings={setSettings} theme={theme} />
         <EdgeProtectionCard settings={settings} setSettings={setSettings} theme={theme} />
+        <EdgeIdentityCard settings={settings} setSettings={setSettings} theme={theme} />
         <AuditTrailCard settings={settings} setSettings={setSettings} theme={theme} />
         <ContactProtectionCard settings={settings} setSettings={setSettings} theme={theme} />
       </>
