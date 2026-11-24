@@ -115,6 +115,12 @@ describe('edge in front of a platform and another server', () => {
     socket.on('error', () => resolve(text));
   });
 
+  it('is ready moments after it starts, even when the rules it starts with are already current', async () => {
+    let ready = false;
+    for (let i = 0; i < 20 && !ready; i += 1) { await new Promise((resolve) => setTimeout(resolve, 100)); ready = edge.ready; }
+    expect(ready).toBe(true);
+  });
+
   it('carries a visitor through the tunnel, and the platform sees the real visitor', async () => {
     const text = await get((edge as any).httpPort, 'shop.example.test');
     expect(text).toContain('platform:shop.example.test');

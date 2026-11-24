@@ -52,7 +52,11 @@ export class EdgePlatformRules implements IEdgeRuleSource {
 
   private async loop(): Promise<void> {
     while (this.running) {
-      const answer = await this.call('GET', `${EdgeControlPaths.RULES}?known=${encodeURIComponent(this.current.version)}`, undefined);
+      // The first question names no version, so it is answered at once: naming the one it started with
+      // (empty, or kept on disk) would hold an unchanged answer for the whole long poll, and the edge
+      // would report itself not ready for that long after every start.
+      const known = this.lastContact ? `?known=${encodeURIComponent(this.current.version)}` : '';
+      const answer = await this.call('GET', `${EdgeControlPaths.RULES}${known}`, undefined);
       if (answer && (answer.status === 200 || answer.status === 204)) {
         this.lastContact = this.now();
         this.backoff = 1_000;
