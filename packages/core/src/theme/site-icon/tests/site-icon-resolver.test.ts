@@ -48,6 +48,13 @@ describe('the site icon', () => {
     expect(icon.appleTouchIcon.file).toBe('apple-touch-icon.png');
   });
 
+  it("uses the theme's favicon for the apple icon when the theme ships no apple file — never the platform's mark", async () => {
+    const icon = await SiteIconResolver.resolve(db({}), themeWith('favicon.ico'));
+    expect(icon.appleTouchIcon.source).toBe(SiteIconSource.THEME);
+    expect(icon.appleTouchIcon.file).toBe('favicon.ico');
+    expect(icon.appleTouchIcon.isPlatform).toBe(false);
+  });
+
   it('falls through a picked file that is gone or private, rather than serving a broken icon', async () => {
     const icon = await SiteIconResolver.resolve(
       db({ '_system_meta:site_icon': { value: '9' }, 'media:9': { id: 9, path: 'secret.png', visibility: 'private' } }),

@@ -11,7 +11,9 @@ import { SiteIcon } from '@core/theme/site-icon/site-icon';
  * Which file a site serves as its icon, in this order:
  *
  *   1. the file picked in Settings → General → Site icon (`site_icon`) — used for both icons;
- *   2. the first of the active theme's own icon files that exists in its `ui/`;
+ *   2. the first of the active theme's own icon files that exists in its `ui/` — for the apple icon,
+ *      its own apple file, else the theme's favicon (a theme that ships only a favicon still has an icon of its
+ *      own; the platform's mark must not stand in for it, because search engines prefer the larger apple icon);
  *   3. nothing — the storefront serves the platform's mark (`SiteIconSource.PLATFORM`).
  *
  * Decided on the api, which can see the theme's files, so the storefront fetches one known path and
@@ -32,7 +34,8 @@ export class SiteIconResolver {
       const choice = new SiteIconChoice(SiteIconSource.SETTING, picked, '');
       return new SiteIcon(choice, choice, themeFavicon);
     }
-    return new SiteIcon(themeFavicon, SiteIconResolver.themeFile(theme, SiteIconResolver.APPLE_TOUCH_ICON_FILES), themeFavicon);
+    const themeApple = SiteIconResolver.themeFile(theme, SiteIconResolver.APPLE_TOUCH_ICON_FILES);
+    return new SiteIcon(themeFavicon, themeApple.isPlatform ? themeFavicon : themeApple, themeFavicon);
   }
 
   private static themeFile(theme: { slug: string; uiDirectory: string } | null, files: string[]): SiteIconChoice {
