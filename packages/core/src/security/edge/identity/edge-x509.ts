@@ -40,10 +40,13 @@ export class EdgeX509 {
     return webcrypto.subtle.generateKey(EdgeX509.ALGORITHM, true, ['sign', 'verify']) as Promise<CryptoKeyPair>;
   }
 
-  /** A random, positive 128-bit serial number, as hex. */
+  /**
+   * A random, positive 128-bit serial number, as hex. The first byte is 0x01–0x7f: positive, and never a
+   * leading zero, which DER forbids — a serial starting 0x00 is a certificate verifiers refuse.
+   */
   static serial(): string {
     const bytes = randomBytes(16);
-    bytes[0] &= 0x7f;
+    bytes[0] = (bytes[0] & 0x7f) || 0x01;
     return bytes.toString('hex');
   }
 
@@ -59,7 +62,7 @@ export class EdgeX509 {
   static async request(commonName: string, keys: CryptoKeyPair): Promise<string> {
     EdgeX509.engine();
     const csr = new pkijs.CertificationRequest();
-    csr.subject = EdgeX509.name(commonName);
+    csr.subject = EdgeX509.distinguishedName(commonName);
     await csr.subjectPublicKeyInfo.importKey(keys.publicKey);
     await csr.sign(keys.privateKey, EdgeX509.HASH);
     return EdgeX509.pem('CERTIFICATE REQUEST', new Uint8Array(csr.toSchema().toBER(false)));
@@ -86,8 +89,8 @@ export class EdgeX509 {
     const cert = new pkijs.Certificate();
     cert.version = 2;
     cert.serialNumber = new asn1js.Integer({ valueHex: Buffer.from(spec.serial, 'hex') });
-    cert.subject = EdgeX509.name(spec.subject);
-    cert.issuer = EdgeX509.name(spec.issuer);
+    cert.subject = EdgeX509.distinguishedName(spec.subject);
+    cert.issuer = EdgeX509.distinguishedName(spec.issuer);
     cert.notBefore.value = spec.notBefore;
     cert.notAfter.value = spec.notAfter;
     if (spec.publicKey instanceof pkijs.PublicKeyInfo) cert.subjectPublicKeyInfo = spec.publicKey;
@@ -142,7 +145,7 @@ export class EdgeX509 {
     return digest.buffer.slice(digest.byteOffset, digest.byteOffset + digest.byteLength) as ArrayBuffer;
   }
 
-  private static name(commonName: string): pkijs.RelativeDistinguishedNames {
+  private static distinguishedName(commonName: string): pkijs.RelativeDistinguishedNames {
     return new pkijs.RelativeDistinguishedNames({
       typesAndValues: [new pkijs.AttributeTypeAndValue({ type: EdgeX509.OID.CN, value: new asn1js.Utf8String({ value: commonName }) })],
     });

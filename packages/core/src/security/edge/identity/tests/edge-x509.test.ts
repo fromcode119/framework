@@ -72,4 +72,11 @@ describe('EdgeX509', () => {
     tampered[tampered.length - 5] ^= 0xff;
     expect(await EdgeX509.readRequest(EdgeX509.pem('CERTIFICATE REQUEST', tampered))).toBeNull();
   });
+  it('never makes a serial with a leading zero or the sign bit, which DER and verifiers refuse', () => {
+    for (let i = 0; i < 2000; i += 1) {
+      const first = Number.parseInt(EdgeX509.serial().slice(0, 2), 16);
+      expect(first).toBeGreaterThan(0);
+      expect(first).toBeLessThan(0x80);
+    }
+  });
 });
