@@ -6,18 +6,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.641] - 2026-11-24
+
+### Fixed
+
+- **core**: apple touch icon falls back to the theme favicon, not the platform mark ([#1623](https://github.com/fromcode119/framework/pull/1623))
+
 ## [0.2.640] - 2026-11-24
 
 ### Added
 
 - **security**: list, keep and announce the addresses the gateway stops ([#1621](https://github.com/fromcode119/framework/pull/1621))
-- **gateway**: stop an address that keeps probing for scanner paths ([#1615](https://github.com/fromcode119/framework/pull/1615))
+
+## [0.2.639] - 2026-11-24
 
 ### Fixed
 
 - **react**: refresh a lifted default stylesheet older than the running bundle ([#1619](https://github.com/fromcode119/framework/pull/1619))
 - **admin**: never print a related record as an object ([#1618](https://github.com/fromcode119/framework/pull/1618))
+
+## [0.2.638] - 2026-11-24
+
+### Added
+
+- **gateway**: stop an address that keeps probing for scanner paths ([#1615](https://github.com/fromcode119/framework/pull/1615))
+
+### Fixed
+
 - **frontend**: a file share page is never indexed ([#1616](https://github.com/fromcode119/framework/pull/1616))
+
+## [0.2.637] - 2026-11-24
+
+### Fixed
+
 - **gateway**: free the app connection when the visitor leaves before the answer ([#1613](https://github.com/fromcode119/framework/pull/1613))
 - **admin**: a numeric column's header ends over its digits ([#1612](https://github.com/fromcode119/framework/pull/1612))
 
