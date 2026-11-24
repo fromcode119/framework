@@ -11,7 +11,8 @@ import { Platform, PureReactor, prop } from '@fromcode119/react-class-components
  *    on load order. A renderer that only injected on mount painted UNSTYLED on the server and shifted the
  *    whole block once the browser injected the sheet — a 0.64 CLS on a contact page.
  *  - **browser:** renders nothing (matching the lifted server markup) and, on mount, prepends the sheet
- *    to `<head>` once per key — unless the server's lifted copy is already there, which it adopts.
+ *    to `<head>` once per key — unless the server's lifted copy is already there, which it adopts, refreshing its text
+ *    when it differs from the sheet the running bundle carries.
  *
  * Deliberately NOT a cascade layer: an unlayered global reset (`* { padding: 0 }`) would beat layered
  * defaults and strip the design's own spacing. Prepending keeps plain cascade semantics.
@@ -34,10 +35,17 @@ export class PluginDefaultStyle extends PureReactor {
   static inject(styleKey: string, css: string): void {
     if (!Platform.isBrowser || !styleKey || PluginDefaultStyle.injected.has(styleKey)) return;
     PluginDefaultStyle.injected.add(styleKey);
-    if (document.head.querySelector(`style[${PluginDefaultStyle.ATTRIBUTE}="${styleKey}"]`)) return;
+    const sheet = String(css || '');
+    const lifted = document.head.querySelector<HTMLStyleElement>(`style[${PluginDefaultStyle.ATTRIBUTE}="${styleKey}"]`);
+    if (lifted) {
+      // The server's copy can be older than the bundle that is now running (a page restored from the
+      // browser's cache, or a render made just before a release): the running bundle's sheet wins.
+      if (lifted.textContent !== sheet) lifted.textContent = sheet;
+      return;
+    }
     const element = document.createElement('style');
     element.setAttribute(PluginDefaultStyle.ATTRIBUTE, styleKey);
-    element.textContent = String(css || '');
+    element.textContent = sheet;
     document.head.prepend(element);
   }
 
