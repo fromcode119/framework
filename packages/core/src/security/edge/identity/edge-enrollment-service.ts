@@ -57,12 +57,11 @@ export class EdgeEnrollmentService {
     if (!publicKey) return null;
     const now = new Date(this.now()).toISOString();
     // One statement checks and spends: two requests racing with one token get one row back, not two.
-    const spent = await this.db.update(
-      EdgeEnrollmentService.TOKENS,
-      { token_hash: EdgeEnrollmentService.hash(token), used_at: null, expires_at: { gt: now } },
-      { used_at: now },
-    );
-    const edgeId = spent?.edge_id ? String(spent.edge_id) : '';
+    // Equality only — an `update` filter takes no operators on every dialect — so the expiry is read off
+    // the row it spent. An expired token is spent all the same: it could never have been used again.
+    const spent = await this.db.update(EdgeEnrollmentService.TOKENS, { token_hash: EdgeEnrollmentService.hash(token), used_at: null }, { used_at: now });
+    const live = spent && new Date(spent.expires_at ?? spent.expiresAt).getTime() > this.now();
+    const edgeId = live && spent.edge_id ? String(spent.edge_id) : '';
     const edge = edgeId ? await this.find(edgeId) : null;
     if (!edge || edge.revokedAt) return null;
     const issued = await this.issueFor(edge, publicKey, seen);
