@@ -48,18 +48,19 @@ describe('GatewayScannerBan', () => {
     expect(ban.isBanned('203.0.113.13')).toBe(false);
   });
 
-  it('ends a stop the map no longer carries once it has had time to be recorded (released in the console)', () => {
+  it('keeps a stop whose report never reached the api, and ends it only on a release made after it', () => {
     let now = 0;
     const ban = new GatewayScannerBan(() => now);
     ban.strike('203.0.113.14', 1, 60);
-    // Not yet recorded: a map fetched in the meantime does not end it.
+    // The map never lists it (the report was lost): it stays stopped, however long.
+    now += 30 * 60_000;
     ban.sync([]);
     expect(ban.isBanned('203.0.113.14')).toBe(true);
-    now += GatewayScannerBan.UNRECORDED_GRACE_MS;
-    ban.sync([new EdgeStop('203.0.113.14', now + 60_000)]);
+    // A release from BEFORE this stop (an earlier one) does not end it.
+    ban.sync([], [new EdgeStop('203.0.113.14', -1)]);
     expect(ban.isBanned('203.0.113.14')).toBe(true);
-    // Released: the next map leaves it out.
-    ban.sync([]);
+    // Released in the console after it was made: ends now.
+    ban.sync([], [new EdgeStop('203.0.113.14', now)]);
     expect(ban.isBanned('203.0.113.14')).toBe(false);
   });
 });

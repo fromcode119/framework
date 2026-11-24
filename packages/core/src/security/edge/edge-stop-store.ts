@@ -18,6 +18,8 @@ export class EdgeStopStore {
   private static readonly TABLE = SystemConstants.TABLE.EDGE_STOPS;
   /** The newest stops kept in view. A scanner wave is hundreds, not tens of thousands. */
   static readonly WINDOW = 500;
+  /** How long a release is carried to the gateway: longer than any stop it could end. */
+  static readonly RELEASED_WINDOW_MS = 31 * 24 * 60 * 60_000;
   /** What one report may carry, so a report cannot fill a row with anything it likes. */
   private static readonly MAX_LIST = 10;
   private static readonly MAX_ENTRY = 200;
@@ -78,14 +80,34 @@ export class EdgeStopStore {
     return rows.map((row: any) => this.toRecord(row));
   }
 
-  /** The stops in force: not released, not yet ended. */
+  /**
+   * The stops in force: not released, not yet ended. Asked of the database directly, never filtered
+   * from the window {@link list} shows — a wave of newer stops must not push an older one out of force.
+   */
   async active(): Promise<IEdgeStopRecord[]> {
-    return (await this.list()).filter((stop) => stop.active);
+    const rows = await this.db.queryRaw(
+      `SELECT * FROM "${EdgeStopStore.TABLE}" WHERE "released_at" IS NULL AND "until_at" > $1 ORDER BY "id" DESC`,
+      [new Date(this.now()).toISOString()],
+    );
+    return (rows || []).map((row: any) => this.toRecord(row));
   }
 
   /** What the routing map carries to the gateway. */
   async stops(): Promise<EdgeStop[]> {
     return (await this.active()).map((stop) => new EdgeStop(stop.address, Date.parse(stop.until)));
+  }
+
+  /**
+   * The stops an operator ended early within {@link RELEASED_WINDOW_MS}, with when — so the gateway ends
+   * its own copy of each, and only a copy older than the release. A stop the map merely does not list
+   * (its report was lost) is never ended this way.
+   */
+  async released(): Promise<EdgeStop[]> {
+    const rows = await this.db.queryRaw(
+      `SELECT "address", "released_at" FROM "${EdgeStopStore.TABLE}" WHERE "released_at" > $1 ORDER BY "id" DESC`,
+      [new Date(this.now() - EdgeStopStore.RELEASED_WINDOW_MS).toISOString()],
+    );
+    return (rows || []).map((row: any) => new EdgeStop(String(row.address ?? ''), Date.parse(EdgeStopStore.iso(row.released_at))));
   }
 
   async find(id: number): Promise<IEdgeStopRecord | null> {

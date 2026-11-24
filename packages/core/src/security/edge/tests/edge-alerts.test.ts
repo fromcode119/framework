@@ -50,3 +50,15 @@ describe('EdgeAlerts', () => {
     await expect(alerts.scannerStopped(stop('203.0.113.33'))).resolves.toBeUndefined();
   });
 });
+
+describe('EdgeAlerts — a template that cannot be rendered', () => {
+  it('logs instead of rejecting, so the report that triggered it still succeeds', async () => {
+    const alerts = new EdgeAlerts({}, () => 0, async () => undefined);
+    (EdgeAlerts as any).SCANNER_TEMPLATE = 'no-such-template';
+    try {
+      await expect(alerts.scannerStopped(stop('203.0.113.34'))).resolves.toBeUndefined();
+    } finally {
+      (EdgeAlerts as any).SCANNER_TEMPLATE = 'edge-scanner-stopped';
+    }
+  });
+});

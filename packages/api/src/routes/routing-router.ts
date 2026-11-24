@@ -39,7 +39,7 @@ export class RoutingRouter {
       aliases: ApplicationDomainSettingsUtils.parseDomainAliases(this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES)),
     }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
     const protectedMap = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
-    const map = this.stops ? protectedMap.withStops(await this.stops.stops()) : protectedMap;
+    const map = this.stops ? protectedMap.withStops(await this.stops.stops(), await this.stops.released()) : protectedMap;
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

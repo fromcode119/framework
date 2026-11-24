@@ -43,7 +43,7 @@ export class EdgeAlerts {
   }
 
   async gatewayRestarted(reason: string, at: string): Promise<void> {
-    await this.deliver(PluginEmailTemplateFileService.renderEmail(EdgeAlerts.RESTART_TEMPLATE, { reason: reason || 'not given', at }));
+    await this.deliver(EdgeAlerts.RESTART_TEMPLATE, { reason: reason || 'not given', at });
   }
 
   /** Sends what is gathered, if anything. */
@@ -52,7 +52,7 @@ export class EdgeAlerts {
     const stops = this.pending;
     this.pending = [];
     this.lastSentAt = this.now();
-    await this.deliver(PluginEmailTemplateFileService.renderEmail(EdgeAlerts.SCANNER_TEMPLATE, {
+    await this.deliver(EdgeAlerts.SCANNER_TEMPLATE, {
       isSingle: stops.length === 1,
       address: stops[0].address,
       count: stops.length,
@@ -63,7 +63,7 @@ export class EdgeAlerts {
         hosts: stop.hosts.join(', '),
         paths: stop.paths.join(', '),
       })),
-    }));
+    });
   }
 
   stop(): void {
@@ -71,12 +71,12 @@ export class EdgeAlerts {
     this.timer = null;
   }
 
-  private async deliver(message: { subject: string; text: string; html: string }): Promise<void> {
+  /** Rendered and sent; any failure is logged, never thrown — the stop or restart is already recorded. */
+  private async deliver(template: string, data: Record<string, unknown>): Promise<void> {
     try {
-      await this.send(message);
+      await this.send(PluginEmailTemplateFileService.renderEmail(template, data));
     } catch (error: any) {
-      // An alert that cannot be sent must not fail the gateway's report: the stop is already recorded.
-      this.logger.warn(`Could not send the edge alert "${message.subject}": ${error?.message || error}`);
+      this.logger.warn(`Could not send the edge alert "${template}": ${error?.message || error}`);
     }
   }
 }

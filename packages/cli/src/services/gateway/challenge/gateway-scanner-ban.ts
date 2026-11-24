@@ -11,8 +11,8 @@ import type { EdgeStop } from '@fromcode119/core';
  * browser ever asks for `/.env` or carries `union select`. The platform's own servers are never counted.
  *
  * A stop is decided here, in memory, and reported to the api, which records it (Settings → Security →
- * Stopped addresses). The routing map then carries every recorded stop back ({@link sync}): that is how
- * a stop outlives a gateway restart, and how an operator's "Release" reaches the gateway.
+ * Stopped addresses). The routing map then carries every recorded stop, and every early release, back
+ * ({@link sync}): that is how a stop outlives a gateway restart, and how an operator's "Release" reaches it.
  */
 export class GatewayScannerBan {
   private static readonly WINDOW_MS = 10 * 60_000;
@@ -20,11 +20,6 @@ export class GatewayScannerBan {
   private static readonly MAX_TRACKED = 100_000;
   /** Hosts and paths kept per address — what the console shows it asked for. */
   private static readonly MAX_SEEN = 10;
-  /**
-   * How long a stop made here stands without the routing map carrying it. Long enough for the report to
-   * be recorded and the map refetched; after it, an address the map no longer lists was released.
-   */
-  static readonly UNRECORDED_GRACE_MS = 2 * 60_000;
 
   private readonly visitors = new Map<string, { firstAt: number; strikes: number; bannedUntil: number; bannedAt: number; hosts: string[]; paths: string[] }>();
 
@@ -74,23 +69,25 @@ export class GatewayScannerBan {
   }
 
   /**
-   * The recorded stops, from the routing map. Each listed address is stopped until its end; a stop made
-   * here that the map no longer lists, once past {@link UNRECORDED_GRACE_MS}, was released and ends now.
+   * The recorded stops and releases, from the routing map. Each stop listed is in force until its end.
+   * A stop made here ends early only when the map names it RELEASED after it was made — never because the
+   * map does not list it: a report that never reached the api must not let a scanner back in.
    */
-  sync(stops: readonly EdgeStop[]): void {
+  sync(stops: readonly EdgeStop[], released: readonly EdgeStop[] = []): void {
     const now = this.now();
     const listed = new Map<string, number>();
     for (const stop of stops) {
       const visitor = GatewayScannerBan.visitorOf(stop.address);
       if (visitor && stop.until > now) listed.set(visitor, stop.until);
     }
-    for (const [visitor, entry] of this.visitors) {
-      if (entry.bannedUntil <= now || listed.has(visitor)) continue;
-      if (now - entry.bannedAt >= GatewayScannerBan.UNRECORDED_GRACE_MS) {
-        entry.bannedUntil = 0;
-        entry.strikes = 0;
-        entry.firstAt = now;
-      }
+    for (const release of released) {
+      const visitor = GatewayScannerBan.visitorOf(release.address);
+      const entry = visitor ? this.visitors.get(visitor) : undefined;
+      // `until` of a release is when it was released.
+      if (!visitor || !entry || listed.has(visitor) || entry.bannedUntil <= now || release.until < entry.bannedAt) continue;
+      entry.bannedUntil = 0;
+      entry.strikes = 0;
+      entry.firstAt = now;
     }
     for (const [visitor, until] of listed) {
       const entry = this.visitors.get(visitor) ?? { firstAt: now, strikes: 0, bannedUntil: 0, bannedAt: now, hosts: [], paths: [] };

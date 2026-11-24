@@ -14,6 +14,12 @@ class MemoryDb {
   async insert(_table: string, data: Record<string, any>) {
     this.rows.push({ id: this.rows.length + 1, released_at: null, ...data });
   }
+  /** The two queries the store sends: the stops in force, and the recent releases. */
+  async queryRaw(sql: string, params: string[]) {
+    const at = Date.parse(params[0]);
+    if (sql.includes('"released_at" IS NULL')) return this.rows.filter((row) => !row.released_at && Date.parse(row.until_at) > at).sort((a, b) => b.id - a.id);
+    return this.rows.filter((row) => row.released_at && Date.parse(row.released_at) > at);
+  }
   async update(_table: string, where: { id: number }, data: Record<string, any>) {
     Object.assign(this.rows.find((row) => row.id === where.id)!, data);
   }
@@ -35,6 +41,7 @@ describe('EdgeStopStore', () => {
 
     expect(await store.release(recorded!.id, 'ops@example.test', 'released')).toBe(true);
     expect(await store.stops()).toEqual([]);
+    expect((await store.released()).map((stop) => [stop.address, stop.until])).toEqual([['203.0.113.20', now]]);
     expect((await store.list())[0]).toMatchObject({ active: false, releaseAction: 'released', releasedBy: 'ops@example.test' });
     // Released already: nothing to do, and the caller is told so.
     expect(await store.release(recorded!.id, 'ops@example.test', 'released')).toBe(false);
@@ -67,6 +74,14 @@ describe('EdgeStopStore', () => {
     expect(stop!.paths).toHaveLength(10);
     expect(stop!.paths.every((path) => path.length <= 200)).toBe(true);
   });
+
+  it('keeps an old stop in force however many newer ones arrive', async () => {
+    const now = 1_000_000;
+    const store = new EdgeStopStore(new MemoryDb(), () => now);
+    await store.record(report('203.0.113.1', now + 60_000));
+    for (let i = 0; i < EdgeStopStore.WINDOW + 5; i += 1) await store.record(report(`198.51.${Math.floor(i / 250)}.${(i % 250) + 1}`, now + 60_000));
+    expect((await store.stops()).some((stop) => stop.address === '203.0.113.1')).toBe(true);
+  }, 30_000);
 
   it('travels in the routing map', async () => {
     const now = Date.now();

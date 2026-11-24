@@ -63,7 +63,9 @@ export class EdgeInternalRouter {
     }
     const reason = CoercionUtils.toString(body.reason).slice(0, 500);
     this.logger.warn(`The gateway's watchdog is restarting it: ${reason}`);
-    await this.alerts.gatewayRestarted(reason, new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC');
+    // Answered before the message is sent: the gateway reporting this is about to exit, and a slow mail
+    // server must not hold its last request open.
     res.json({ ok: true });
+    void this.alerts.gatewayRestarted(reason, new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC');
   }
 }

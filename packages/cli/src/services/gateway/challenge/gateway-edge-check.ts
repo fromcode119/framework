@@ -94,7 +94,7 @@ export class GatewayEdgeCheck {
     const map = await this.routingMap();
     if (map && map !== this.synced) {
       this.synced = map;
-      this.scanners.sync(map.stops);
+      this.scanners.sync(map.stops, map.released);
     }
     const route = map?.resolve(this.hostOf(req));
     return map && route ? { map, tenantId: route.tenantId } : null;

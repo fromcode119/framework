@@ -10,9 +10,8 @@ import { ListRow } from '@/components/ui/view/list-row.client';
 import { RecordCard } from '@/components/ui/view/record-card.client';
 import { EmptyState } from '@/components/ui/view/empty-state.client';
 import { StateBadge } from '@/components/ui/view/state-badge.client';
-import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -100,12 +99,10 @@ export class SecurityStoppedAddresses extends AdminComponent {
         description={parts.join(' · ')}
         descriptionTitle={parts.join('\n')}
         failed={stop.active}
-        actions={stop.active ? (
-          <>
-            <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={() => { this.pending = { stop, block: false }; }}>{AdminI18n.t('settings.security.stopRelease')}</Button>
-            <Button variant={ButtonVariant.DANGER} size={FieldSize.SM} onClick={() => { this.pending = { stop, block: true }; }}>{AdminI18n.t('settings.security.stopBlock')}</Button>
-          </>
-        ) : null}
+        menu={stop.active ? [
+          { label: AdminI18n.t('settings.security.stopRelease'), onClick: () => { this.pending = { stop, block: false }; } },
+          { label: AdminI18n.t('settings.security.stopBlock'), variant: DropdownItemVariant.DANGER, onClick: () => { this.pending = { stop, block: true }; } },
+        ] : undefined}
       />
     );
   }
