@@ -31,12 +31,10 @@ export class GatewayUpstreamProbe {
   /** What is wrong with the gateway's path to the frontend, or null when it works or cannot be judged. */
   async stalled(): Promise<string | null> {
     if (!this.target) return null;
-    const before = this.progress();
     if (await GatewayUpstreamProbe.reach(this.target, this.agent, this.timeoutMs) !== GatewayUpstreamProbe.TIMEOUT) return null;
-    // A pool full of connections that are still moving bytes is load, not a stall: visitors (or an attacker)
-    // keeping the frontend busy must never get the gateway ended for it. A full pool where nothing moved for
-    // the whole wait is the stall of 2026-11-24 — sockets held for responses nobody reads.
-    if (this.saturated() && this.moved(before)) return null;
+    // A full pool is never a reason to end the gateway: visitors (or an attacker) can fill it with slow
+    // requests on purpose, and a restart would hand them the outage. Only a wait with free capacity counts.
+    if (this.saturated()) return null;
     if (await GatewayUpstreamProbe.reach(this.target, false, this.timeoutMs) !== GatewayUpstreamProbe.ANSWERED) return null;
     return `its pooled requests to the frontend get no answer in ${this.timeoutMs} ms while a new connection is answered`;
   }
@@ -44,21 +42,6 @@ export class GatewayUpstreamProbe {
   /** True when some origin holds as many sockets as the pool allows, so a new request must queue. */
   private saturated(): boolean {
     return Object.values(this.agent.sockets).some((sockets) => (sockets ?? []).length >= this.agent.maxSockets);
-  }
-
-  /** Bytes each busy socket has moved so far. */
-  private progress(): Map<object, number> {
-    const moved = new Map<object, number>();
-    for (const sockets of Object.values(this.agent.sockets)) for (const socket of sockets ?? []) moved.set(socket, socket.bytesRead + socket.bytesWritten);
-    return moved;
-  }
-
-  /** True when any busy socket moved a byte, or is new, since `before`. */
-  private moved(before: Map<object, number>): boolean {
-    for (const sockets of Object.values(this.agent.sockets)) {
-      for (const socket of sockets ?? []) if (before.get(socket) !== socket.bytesRead + socket.bytesWritten) return true;
-    }
-    return false;
   }
 
   /** Any HTTP answer counts, whatever its status; the clock covers the wait for a pooled socket too. */

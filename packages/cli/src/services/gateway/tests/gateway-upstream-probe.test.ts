@@ -40,15 +40,15 @@ describe('GatewayUpstreamProbe', () => {
     expect(problem).toMatch(/pooled requests to the frontend get no answer in 300 ms/);
   });
 
-  it('blames the gateway for a pool full of connections that move nothing (sockets held for nobody)', async () => {
+  it('does not blame the gateway for a full pool held by silent requests, which an attacker can cause', async () => {
     let held = 0;
     const target = await listen(http.createServer((_req, res) => { if (held++ > 0) res.end('ok'); }));
     const agent = fullPool(target);
-    await new Promise((resolve) => setTimeout(resolve, 100)); // the held request has been sent and is now silent
-    expect(await new GatewayUpstreamProbe(target, agent, 300).stalled()).toMatch(/pooled requests to the frontend/);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(await new GatewayUpstreamProbe(target, agent, 300).stalled()).toBeNull();
   });
 
-  it('does not blame the gateway for a pool full of connections that are still moving bytes', async () => {
+  it('does not blame the gateway for a full pool, which visitors can cause', async () => {
     let held = 0;
     const target = await listen(http.createServer((_req, res) => {
       if (held++ > 0) { res.end('ok'); return; }
