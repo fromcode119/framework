@@ -43,7 +43,7 @@ export class GatewayControlRequests {
     if (req.method === 'POST' && url.pathname === EdgeControlPaths.RENEW) {
       const body = await GatewayControlRequests.body(req);
       const serial = String(socket.getPeerCertificate()?.serialNumber ?? '').toLowerCase();
-      const answer = await this.api.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_RENEW, { serial, request: String(body?.request ?? ''), address: socket.remoteAddress ?? '', version });
+      const answer = await this.api.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_RENEW, { serial, request: String(body?.request ?? ''), address: NetworkAddressUtils.normalize(socket.remoteAddress ?? ''), version });
       return GatewayControlRequests.send(res, answer.status === 200 ? 200 : 403, answer.status === 200 ? answer.body : { error: 'refused' });
     }
     if (req.method === 'GET' && url.pathname === EdgeControlPaths.RULES) return this.rules(req, res, url.searchParams.get('known') ?? '');

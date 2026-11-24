@@ -64,7 +64,10 @@ export class EdgePlatformRules implements IEdgeRuleSource {
         if (snapshot && snapshot.version !== this.current.version) this.apply(snapshot);
         continue;
       }
-      console.warn(`[edge] rules: the platform did not answer (HTTP ${answer?.status || 'none'}); the rules in force stay, next try in ${this.backoff / 1000} s`);
+      const why = answer?.status === 403
+        ? 'the platform refused this edge — removed in the console, or its certificate ran out; join it again with a new token'
+        : `the platform did not answer (HTTP ${answer?.status || 'none'})`;
+      console.warn(`[edge] rules: ${why}; the rules in force stay, next try in ${this.backoff / 1000} s`);
       await new Promise((resolve) => setTimeout(resolve, this.backoff));
       this.backoff = Math.min(this.backoff * 2, EdgePlatformRules.MAX_BACKOFF_MS);
     }

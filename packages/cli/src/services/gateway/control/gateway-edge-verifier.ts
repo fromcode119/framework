@@ -1,5 +1,5 @@
 import type tls from 'tls';
-import { RouteConstants } from '@fromcode119/core';
+import { NetworkAddressUtils, RouteConstants } from '@fromcode119/core';
 import { GatewayControlApi } from '@cli/services/gateway/control/gateway-control-api';
 
 /**
@@ -26,7 +26,7 @@ export class GatewayEdgeVerifier {
     if (!serial) return null;
     const cached = this.known.get(serial);
     if (cached && this.now() - cached.at < GatewayEdgeVerifier.CACHE_MS) return cached.edge;
-    const answer = await this.api.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_VERIFY, { serial, address: socket.remoteAddress ?? '', version });
+    const answer = await this.api.post(RouteConstants.SEGMENTS.INTERNAL_EDGE_VERIFY, { serial, address: NetworkAddressUtils.normalize(socket.remoteAddress ?? ''), version });
     const edge = answer.status === 200 ? answer.body.edge : null;
     // The identity in the certificate must be the edge the api found for its serial.
     const uri = String(peer.subjectaltname ?? '').split(/,\s*/).find((name) => name.startsWith('URI:')) ?? '';
