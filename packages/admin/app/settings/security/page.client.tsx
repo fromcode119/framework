@@ -46,6 +46,7 @@ export class SecuritySettingsPage extends AdminComponent {
    * arrives; nothing is hidden before then.
    */
   @state scope: SettingsPageScope | null = null;
+  @state insideSite = false;
 
   /**
    * The DASHBOARD tab reports the runtime isolation of the box every site runs on — plugin processes,
@@ -62,7 +63,12 @@ export class SecuritySettingsPage extends AdminComponent {
     const askedTab = new URLSearchParams(window.location.search).get('tab');
     if (!this.canManagePlatform || askedTab === SecurityTab.SETTINGS.value) this.activeTab = SecurityTab.SETTINGS;
     await this.loadPageData();
-    this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), SecuritySettingsKeys.ALL);
+    const locks = await PlatformSettingLocks.load();
+    this.insideSite = locks.isSiteScope();
+    // The Dashboard is the platform's own state (isolation, stopped addresses, edges): inside a site it
+    // would state a platform value as the site's, so a site never has that tab.
+    if (this.insideSite) this.activeTab = SecurityTab.SETTINGS;
+    this.scope = new SettingsPageScope(locks, SecuritySettingsKeys.ALL);
   }
 
   /** Where the settings this scope does not show are changed — hiding must not make a setting undiscoverable. */
@@ -185,7 +191,7 @@ export class SecuritySettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
             <Tabs value={activeTab === SecurityTab.DASHBOARD ? 'dashboard' : 'settings'} onChange={(id: string) => (id === 'dashboard' ? this.showDashboardTab() : this.showSettingsTab())}
-              tabs={[...(this.canManagePlatform ? [{ id: 'dashboard', label: AdminI18n.t('settings.security.dashboard') }] : []), { id: 'settings', label: AdminI18n.t('settings.security.settings') }]} />
+              tabs={[...(this.canManagePlatform && !this.insideSite ? [{ id: 'dashboard', label: AdminI18n.t('settings.security.dashboard') }] : []), { id: 'settings', label: AdminI18n.t('settings.security.settings') }]} />
           }
         />
 
