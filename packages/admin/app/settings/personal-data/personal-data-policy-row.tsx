@@ -21,6 +21,7 @@ export class PersonalDataPolicyRow extends PureReactor {
   @prop declare site: IPersonalDataPolicyChoice | undefined;
   @prop declare platform: IPersonalDataPolicyChoice | undefined;
   @prop declare platformEditable: boolean;
+  @prop declare showPlatform: boolean;
   @prop declare siteEditable: boolean;
   @prop declare onSiteChange: (id: string, choice: IPersonalDataPolicyChoice | undefined) => void;
   @prop declare onPlatformChange: (id: string, choice: IPersonalDataPolicyChoice | undefined) => void;
@@ -85,7 +86,7 @@ export class PersonalDataPolicyRow extends PureReactor {
           )}
         </div>
 
-        {this.column(AdminI18n.t('settings.personalData.platformDefault'), this.platform, this.platformEditable, AdminI18n.t('settings.personalData.inheritsValue', { value: dataset.declaredProvenance }), this.onPlatformChange)}
+        {this.showPlatform && this.column(AdminI18n.t('settings.personalData.platformDefault'), this.platform, this.platformEditable, AdminI18n.t('settings.personalData.inheritsValue', { value: dataset.declaredProvenance }), this.onPlatformChange)}
         {this.column(AdminI18n.t('settings.personalData.thisSite'), this.site, this.siteEditable, AdminI18n.t('settings.personalData.inheritsThePlatformDefault'), this.onSiteChange)}
 
         <div className="fc-pd__cell fc-pd__cell--tight">

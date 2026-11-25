@@ -1067,6 +1067,7 @@ html.dark {
 .fc-pd__cell-label { font-size: 12px; line-height: 20px; font-weight: 500; color: var(--fc-text-muted); }
 @container (min-width: 44rem) {
   .fc-pd__grid { grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); }
+  .fc-pd--site .fc-pd__grid { grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); }
   .fc-pd__head { display: grid; }
   .fc-pd__cell-label { display: none; }
 }

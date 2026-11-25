@@ -36,7 +36,10 @@ export class SystemSettingsController {
    */
   async getSettings(_req: Request, res: Response) {
     try {
-      const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
+      const rows = await this.runtime.db.find(SystemConstants.TABLE.META);
+      // A site is a client of the platform: it is told nothing of the platform's own settings, so the row
+      // the database publishes to it for a platform-only key is left out of the answer.
+      const settings = SystemSettingsWriter.withoutPlatformOnly(rows);
       const inherited = await this.platformSwitchFallbacks(settings);
       res.json(SystemSettingsExposureUtils.toExposableSettingsMap([...inherited, ...settings], { parseJson: true }));
     } catch (error: any) {
