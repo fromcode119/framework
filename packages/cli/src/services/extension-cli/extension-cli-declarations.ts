@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import type { IExtensionCliCommand } from './interfaces/extension-cli-command.interface';
-import type { IExtensionCliDeclaration } from './interfaces/extension-cli-declaration.interface';
+import type { IExtensionCliCommand } from '@cli/services/extension-cli/interfaces/extension-cli-command.interface';
+import type { IExtensionCliDeclaration } from '@cli/services/extension-cli/interfaces/extension-cli-declaration.interface';
 
 /**
  * Finds and reads the commands extensions declare.

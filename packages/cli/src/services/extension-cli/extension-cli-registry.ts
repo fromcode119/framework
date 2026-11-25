@@ -2,8 +2,8 @@ import { spawnSync } from 'child_process';
 import path from 'path';
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { ExtensionCliDeclarations } from './extension-cli-declarations';
-import type { IExtensionCliCommand } from './interfaces/extension-cli-command.interface';
+import { ExtensionCliDeclarations } from '@cli/services/extension-cli/extension-cli-declarations';
+import type { IExtensionCliCommand } from '@cli/services/extension-cli/interfaces/extension-cli-command.interface';
 
 /**
  * Adds the commands extensions declare to the program, as nested groups: `fromcode <group> <sub> … <command>`.
