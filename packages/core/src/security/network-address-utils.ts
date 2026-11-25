@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { BlockList, isIP } from 'net';
 import type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
+import { Ipv6Groups } from '@core/security/ipv6-groups';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
 
 /**
@@ -79,21 +80,8 @@ export class NetworkAddressUtils {
     const family = isIP(host);
     if (family === 4) return prefix === undefined ? host : '';
     if (family !== 6 || !NetworkAddressUtils.isPublic(host)) return '';
-    const groups = NetworkAddressUtils.ipv6Groups(host);
+    const groups = Ipv6Groups.parse(host);
     return groups ? `${groups.slice(0, 4).map((group) => group.toString(16)).join(':')}::/64` : '';
-  }
-
-  /** The eight 16-bit groups of an IPv6 address, or null. */
-  private static ipv6Groups(address: string): number[] | null {
-    const [head, tail, ...rest] = address.split('::');
-    if (rest.length || /[.%]/.test(address)) return null;
-    const parse = (text: string | undefined): number[] => (text ? text.split(':').map((group) => parseInt(group, 16)) : []);
-    const first = parse(head);
-    const last = parse(tail);
-    const fill = 8 - first.length - last.length;
-    if (tail === undefined ? fill !== 0 : fill < 1) return null;
-    const groups = [...first, ...new Array(Math.max(fill, 0)).fill(0), ...last];
-    return groups.length === 8 && groups.every((group) => Number.isInteger(group) && group >= 0 && group <= 0xffff) ? groups : null;
   }
 
   /** True when `address` is the exact address `pattern`, or falls inside its CIDR block (IPv4 or IPv6). */
