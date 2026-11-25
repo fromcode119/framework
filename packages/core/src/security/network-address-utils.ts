@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { BlockList, isIP } from 'net';
 import type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
+import { Ipv6Groups } from '@core/security/ipv6-groups';
 import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
 
 /**
@@ -11,8 +12,8 @@ import { NetworkEdgeProviderRegistry } from '@core/security/providers/network-ed
  * regex in the first, and would have become a second copy in the other; both belong here so a range
  * added once applies everywhere.
  *
- * A pattern is either an exact address (`10.0.0.5`, `::1`) or an IPv4 CIDR block (`172.16.0.0/12`).
- * IPv6 addresses match literally; the IPv4-mapped form Node reports on a dual-stack socket
+ * A pattern is either an exact address (`10.0.0.5`, `::1`) or a CIDR block (`172.16.0.0/12`, `2a01:4f8:1c19:96de::/64`).
+ * IPv6 addresses match a block or literally; the IPv4-mapped form Node reports on a dual-stack socket
  * (`::ffff:10.0.0.5`) is unwrapped first so an IPv4 rule still matches it.
  */
 export class NetworkAddressUtils {
@@ -65,7 +66,25 @@ export class NetworkAddressUtils {
     return address;
   }
 
-  /** True when `address` is the exact address `pattern`, or falls inside its IPv4 CIDR block. */
+  /**
+   * The unit a stop applies to. An IPv4 address is its own unit. An IPv6 address belongs to its /64 — the
+   * block one subscriber or server is given, inside which it can take any address — written
+   * `2a01:4f8:1c19:96de::/64`. A block already written that way is returned as it is. Empty for anything
+   * that is not an address, and for an IPv6 address that is not public (loopback, link-local, unique-local):
+   * those are never counted, never stopped.
+   */
+  static subscriber(value: unknown): string {
+    const address = NetworkAddressUtils.normalize(value);
+    const [host, prefix, ...rest] = address.split('/');
+    if (rest.length || (prefix !== undefined && prefix !== '64')) return '';
+    const family = isIP(host);
+    if (family === 4) return prefix === undefined ? host : '';
+    if (family !== 6 || !NetworkAddressUtils.isPublic(host)) return '';
+    const groups = Ipv6Groups.parse(host);
+    return groups ? `${groups.slice(0, 4).map((group) => group.toString(16)).join(':')}::/64` : '';
+  }
+
+  /** True when `address` is the exact address `pattern`, or falls inside its CIDR block (IPv4 or IPv6). */
   static matches(address: unknown, pattern: unknown): boolean {
     const normalizedAddress = NetworkAddressUtils.normalize(address);
     const rawPattern = CoercionUtils.toKey(pattern);
@@ -73,6 +92,7 @@ export class NetworkAddressUtils {
 
     const compiled = NetworkAddressUtils.compile(rawPattern);
     if (compiled.exact !== undefined) return compiled.exact === normalizedAddress;
+    if (compiled.v6 !== undefined) return isIP(normalizedAddress) === 6 && compiled.v6.check(normalizedAddress, 'ipv6');
     if (compiled.block === undefined || compiled.mask === undefined) return false;
 
     const addressNumber = NetworkAddressUtils.toIpv4Number(normalizedAddress);
@@ -85,19 +105,25 @@ export class NetworkAddressUtils {
    * A pattern parsed once: the operator's lists are checked against every request, and parsing each
    * block every time was measured at 8% of the api's CPU under load.
    */
-  private static readonly compiledPatterns = new Map<string, { exact?: string; block?: number; mask?: number }>();
+  private static readonly compiledPatterns = new Map<string, { exact?: string; block?: number; mask?: number; v6?: BlockList }>();
 
-  private static compile(rawPattern: string): { exact?: string; block?: number; mask?: number } {
+  private static compile(rawPattern: string): { exact?: string; block?: number; mask?: number; v6?: BlockList } {
     const known = NetworkAddressUtils.compiledPatterns.get(rawPattern);
     if (known) return known;
-    let compiled: { exact?: string; block?: number; mask?: number } = {};
+    let compiled: { exact?: string; block?: number; mask?: number; v6?: BlockList } = {};
     const separatorIndex = rawPattern.indexOf('/');
     if (separatorIndex < 0) {
       compiled = { exact: NetworkAddressUtils.normalize(rawPattern) };
     } else {
       const prefixBits = Number(rawPattern.slice(separatorIndex + 1));
+      const base = NetworkAddressUtils.normalize(rawPattern.slice(0, separatorIndex));
+      if (isIP(base) === 6 && Number.isInteger(prefixBits) && prefixBits >= 0 && prefixBits <= 128) {
+        const v6 = new BlockList();
+        v6.addSubnet(base, prefixBits, 'ipv6');
+        compiled = { v6 };
+      }
       const blockNumber = NetworkAddressUtils.toIpv4Number(NetworkAddressUtils.normalize(rawPattern.slice(0, separatorIndex)));
-      if (Number.isInteger(prefixBits) && prefixBits >= 0 && prefixBits <= 32 && blockNumber !== null) {
+      if (compiled.v6 === undefined && Number.isInteger(prefixBits) && prefixBits >= 0 && prefixBits <= 32 && blockNumber !== null) {
         const mask = prefixBits === 0 ? 0 : prefixBits === 32 ? 0xFFFFFFFF : (~((2 ** (32 - prefixBits)) - 1)) >>> 0;
         compiled = { block: blockNumber, mask };
       }

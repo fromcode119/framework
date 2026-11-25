@@ -40,7 +40,10 @@ export class EdgeStopAdminService {
     const key = SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES;
     const previous = await this.platformValue(key);
     const entries = String(previous ?? '').split(/\r?\n|,/).map((entry) => entry.trim()).filter(Boolean);
-    if (!NetworkAddressUtils.matchesAny(stop.address, entries)) {
+    // An IPv6 stop is a /64 block: it is already blocked only by an entry that covers the whole block
+    // (a /64 or wider), never by a narrower entry that happens to contain its first address.
+    const covering = stop.address.includes('/') ? entries.filter((entry) => Number(entry.split('/')[1] ?? 128) <= 64) : entries;
+    if (!NetworkAddressUtils.matchesAny(stop.address.split('/')[0], covering)) {
       const next = [...entries, stop.address].join('\n');
       await this.writePlatformValue(key, next);
       void this.manager.audit.logAction('system', 'settings.update', key, AuditOutcome.ALLOWED, { userId: actor.id, email: actor.email, from: previous ?? null, to: next });

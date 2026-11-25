@@ -42,7 +42,8 @@ export class EdgeRuleSnapshot {
   /** Whether `address` is refused at `now`. */
   refuses(address: string, now: number): boolean {
     const normalized = NetworkAddressUtils.normalize(address);
-    if (this.stops.some((stop) => stop.address === normalized && stop.until > now)) return true;
+    const unit = NetworkAddressUtils.subscriber(normalized);
+    if (unit && this.stops.some((stop) => stop.address === unit && stop.until > now)) return true;
     return NetworkAddressUtils.matchesAny(normalized, this.blocked);
   }
 

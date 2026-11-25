@@ -148,4 +148,26 @@ describe('NetworkAddressUtils.resolveClientIp', () => {
       { cloudflare: ['203.0.113.0/24'] },
     )).toBe('198.51.100.7');
   });
+
+  describe('subscriber', () => {
+    it('is the /64 for a public IPv6 address and the address itself for IPv4', () => {
+      expect(NetworkAddressUtils.subscriber('2a01:4f8:1c19:96de::1')).toBe('2a01:4f8:1c19:96de::/64');
+      expect(NetworkAddressUtils.subscriber('2A01:4F8:1C19:96DE:ffff:1:2:3')).toBe('2a01:4f8:1c19:96de::/64');
+      expect(NetworkAddressUtils.subscriber('[2a01:4f8:1c19:96de::5]:443')).toBe('2a01:4f8:1c19:96de::/64');
+      expect(NetworkAddressUtils.subscriber('2a01:4f8:1c19:96de::/64')).toBe('2a01:4f8:1c19:96de::/64');
+      expect(NetworkAddressUtils.subscriber('2a01:4f8:1c19:96df::1')).not.toBe(NetworkAddressUtils.subscriber('2a01:4f8:1c19:96de::1'));
+      expect(NetworkAddressUtils.subscriber('203.0.113.9')).toBe('203.0.113.9');
+      expect(NetworkAddressUtils.subscriber('::ffff:203.0.113.9')).toBe('203.0.113.9');
+    });
+
+    it('is empty for loopback, link-local, unique-local and junk', () => {
+      for (const value of ['::1', 'fe80::1', 'fd00::5', '', 'nonsense', '2a01::/48']) expect(NetworkAddressUtils.subscriber(value)).toBe('');
+    });
+
+    it('is matched by an IPv6 block', () => {
+      expect(NetworkAddressUtils.matchesAny('2a01:4f8:1c19:96de::abcd', ['2a01:4f8:1c19:96de::/64'])).toBe(true);
+      expect(NetworkAddressUtils.matchesAny('2a01:4f8:1c19:96df::1', ['2a01:4f8:1c19:96de::/64'])).toBe(false);
+      expect(NetworkAddressUtils.matchesAny('203.0.113.9', ['2a01:4f8:1c19:96de::/64'])).toBe(false);
+    });
+  });
 });

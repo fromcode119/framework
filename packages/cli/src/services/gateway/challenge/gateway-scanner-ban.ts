@@ -7,6 +7,9 @@ import type { EdgeStop } from '@fromcode119/core';
  * {@link WINDOW_MS}, every request it makes to any site is refused for the configured minutes, before
  * anything is routed. A scanner tries hundreds of addresses; after the first few it costs nothing.
  *
+ * An IPv4 address is stopped on its own; an IPv6 address takes its whole /64 with it (a scanner changes
+ * its address freely inside the one block it is given). See `NetworkAddressUtils.subscriber`.
+ *
  * Only refusals count, never a 404: a visitor who mistypes an address is not a scanner, while no
  * browser ever asks for `/.env` or carries `union select`. The platform's own servers are never counted.
  *
@@ -62,6 +65,7 @@ export class GatewayScannerBan {
 
   /** What the console shows about a stop just made: until when, how many refusals, what it asked for. */
   describe(address: string | undefined): { address: string; until: string; strikes: number; hosts: string[]; paths: string[] } | null {
+    // `address` is the unit stopped: the address itself for IPv4, the /64 it belongs to for IPv6.
     const visitor = GatewayScannerBan.visitorOf(address);
     const entry = visitor ? this.visitors.get(visitor) : undefined;
     if (!visitor || !entry || entry.bannedUntil <= this.now()) return null;
@@ -103,8 +107,8 @@ export class GatewayScannerBan {
   }
 
   private static visitorOf(address: string | undefined): string | null {
-    const visitor = NetworkAddressUtils.normalize(address);
-    return visitor && !NetworkAddressUtils.isPrivate(visitor) ? visitor : null;
+    const visitor = NetworkAddressUtils.subscriber(address);
+    return visitor && !NetworkAddressUtils.isPrivate(NetworkAddressUtils.normalize(address)) ? visitor : null;
   }
 
   private forgetOldest(): void {

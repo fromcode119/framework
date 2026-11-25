@@ -63,4 +63,26 @@ describe('GatewayScannerBan', () => {
     ban.sync([], [new EdgeStop('203.0.113.14', now)]);
     expect(ban.isBanned('203.0.113.14')).toBe(false);
   });
+
+  it('stops a whole IPv6 /64, not another /64, not IPv4, and never loopback or private', () => {
+    const ban = new GatewayScannerBan(() => 0);
+    expect(ban.strike('2a01:4f8:1c19:96de::1', 2, 60)).toBe(false);
+    expect(ban.strike('2a01:4f8:1c19:96de:aaaa:bbbb:cccc:dddd', 2, 60, 'shop.test', '/.env')).toBe(true);
+    expect(ban.isBanned('2a01:4f8:1c19:96de::77')).toBe(true);
+    expect(ban.isBanned('2a01:4f8:1c19:96df::1')).toBe(false);
+    expect(ban.isBanned('203.0.113.1')).toBe(false);
+    expect(ban.describe('2a01:4f8:1c19:96de::2')).toMatchObject({ address: '2a01:4f8:1c19:96de::/64', strikes: 2 });
+    for (const address of ['::1', 'fe80::1', 'fd00::1', '::ffff:10.0.0.4']) {
+      for (let i = 0; i < 5; i += 1) ban.strike(address, 1, 60);
+      expect(ban.isBanned(address)).toBe(false);
+    }
+  });
+
+  it('takes a recorded /64 stop and its release from the routing map', () => {
+    const ban = new GatewayScannerBan(() => 1_000);
+    ban.sync([new EdgeStop('2a01:4f8:1c19:96de::5', 90_000)]);
+    expect(ban.isBanned('2a01:4f8:1c19:96de::9')).toBe(true);
+    ban.sync([], [new EdgeStop('2a01:4f8:1c19:96de::/64', 2_000)]);
+    expect(ban.isBanned('2a01:4f8:1c19:96de::9')).toBe(false);
+  });
 });
