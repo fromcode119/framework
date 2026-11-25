@@ -58,3 +58,24 @@ test('a declared command never replaces a built-in one, and a path is declared o
   assert.equal(program.commands.filter((c) => c.name() === 'dup').length, 1);
   assert.equal(warnings.length, 2);
 });
+
+test('options, examples and group texts reach --help', () => {
+  const program = new Command();
+  const declared = echo(['app', 'sim', 'up'], { arguments: ['<app>'], options: [{ flags: '--platform <ios|android>', description: 'which one' }], examples: ['fromcode app sim up zen wonders'] });
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'ext-cli-'));
+  fs.mkdirSync(path.join(base, 'shell'));
+  fs.writeFileSync(path.join(base, 'shell', 'fromcode.cli.json'), JSON.stringify({ groups: { app: 'Native apps', 'app sim': 'Throwaway simulators' }, commands: [declared] }));
+  ExtensionCliRegistry.register(program, [base], ['node', 'fromcode'], () => {});
+  const app = program.commands.find((c) => c.name() === 'app')!;
+  assert.match(app.description(), /Native apps/);
+  const sim = app.commands.find((c) => c.name() === 'sim')!;
+  assert.match(sim.description(), /Throwaway simulators/);
+  const help = sim.commands.find((c) => c.name() === 'up')!.helpInformation();
+  assert.match(help, /--platform <ios\|android>/);
+});
+
+test('a malformed option or example skips the command with a warning', () => {
+  const warnings: string[] = [];
+  ExtensionCliRegistry.register(new Command(), [root({ a: { commands: [echo(['x'], { options: [{ flags: 'bad flags', description: 'd' }] }), echo(['y'], { examples: [3] })] } })], ['node', 'fromcode'], (m) => warnings.push(m));
+  assert.equal(warnings.length, 2);
+});

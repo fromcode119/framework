@@ -22,21 +22,23 @@ export class ExtensionCliRegistry {
         if (builtIn.has(command.path[0])) { warn(`${declaration.folder}: "${key}" starts with a built-in command; skipped.`); continue; }
         if (taken.has(key)) { warn(`${declaration.folder}: "${key}" is already declared by another extension; skipped.`); continue; }
         taken.add(key);
-        ExtensionCliRegistry.add(program, command, declaration.folder, argv);
+        ExtensionCliRegistry.add(program, command, declaration.folder, argv, declaration.groups);
       }
     }
   }
 
   /** The group for each leading word (made once), then the command itself under the last group. */
-  private static add(program: Command, declared: IExtensionCliCommand, folder: string, argv: string[]): void {
+  private static add(program: Command, declared: IExtensionCliCommand, folder: string, argv: string[], groups: Record<string, string>): void {
     let parent = program;
-    for (const word of declared.path.slice(0, -1)) {
+    declared.path.slice(0, -1).forEach((word, index) => {
       const existing = parent.commands.find((command) => command.name() === word);
-      parent = existing ?? parent.command(word).description('Declared by extensions');
-    }
+      parent = existing ?? parent.command(word).description(groups[declared.path.slice(0, index + 1).join(' ')] ?? 'Declared by extensions');
+    });
     const leaf = parent.command(declared.path[declared.path.length - 1]).description(declared.description);
     for (const argument of declared.arguments ?? []) leaf.argument(argument);
-    leaf.allowUnknownOption(true).allowExcessArguments(true).helpOption(false);
+    for (const option of declared.options ?? []) leaf.option(option.flags, option.description);
+    if (declared.examples?.length) leaf.addHelpText('after', `\nExamples:\n${declared.examples.map((example) => `  ${example}`).join('\n')}`);
+    leaf.allowUnknownOption(true).allowExcessArguments(true);
     leaf.action(() => {
       // What was typed after the command path, exactly as typed: options meant for the extension's own
       // program must reach it untouched, which commander's own parsing would not guarantee.

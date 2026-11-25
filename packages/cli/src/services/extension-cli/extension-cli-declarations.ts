@@ -36,9 +36,9 @@ export class ExtensionCliDeclarations {
   }
 
   private static read(folder: string, file: string, warn: (message: string) => void): IExtensionCliDeclaration | null {
-    let document: { commands?: unknown };
+    let document: { commands?: unknown; groups?: unknown };
     try {
-      document = JSON.parse(fs.readFileSync(file, 'utf8')) as { commands?: unknown };
+      document = JSON.parse(fs.readFileSync(file, 'utf8')) as { commands?: unknown; groups?: unknown };
     } catch (error) {
       warn(`${file}: not valid JSON (${(error as Error).message}); its commands are left out.`);
       return null;
@@ -53,14 +53,21 @@ export class ExtensionCliDeclarations {
       if (problem) warn(`${file}: ${problem}`);
       else commands.push(candidate as IExtensionCliCommand);
     }
-    return { folder, commands };
+    const groups: Record<string, string> = {};
+    if (document.groups && typeof document.groups === 'object') {
+      for (const [key, text] of Object.entries(document.groups as Record<string, unknown>)) {
+        if (typeof text === 'string' && key.split(' ').every((word) => ExtensionCliDeclarations.WORD.test(word))) groups[key] = text;
+        else warn(`${file}: group "${key}" needs a path of lowercase words and a text; left out.`);
+      }
+    }
+    return { folder, commands, groups };
   }
 
   /** Why a declared command cannot be used, or null. A bad one is skipped, never half-registered. */
   private static problem(candidate: unknown, folder: string): string | null {
     const command = candidate as Partial<IExtensionCliCommand> | null;
     if (!command || typeof command !== 'object') return 'a command must be an object.';
-    const { path: words, description, run, arguments: args, cwd } = command;
+    const { path: words, description, run, arguments: args, cwd, options, examples } = command;
     if (!Array.isArray(words) || !words.length || !words.every((word) => typeof word === 'string' && ExtensionCliDeclarations.WORD.test(word))) {
       return 'a command\'s "path" is a list of lowercase words (letters, digits, "-").';
     }
@@ -69,6 +76,12 @@ export class ExtensionCliDeclarations {
     if (!Array.isArray(run) || !run.length || !run.every((part) => typeof part === 'string' && part)) return `"${name}" has no "run" (the program and its arguments).`;
     if (args !== undefined && (!Array.isArray(args) || !args.every((arg) => typeof arg === 'string' && /^[<[][a-zA-Z0-9-]+(\.\.\.)?[>\]]$/.test(arg)))) {
       return `"${name}": "arguments" are names like "<app>" or "[name]".`;
+    }
+    if (options !== undefined && (!Array.isArray(options) || !options.every((option) => option && typeof option.description === 'string' && /^(-[a-zA-Z], )?--[a-z][a-z0-9-]*( <[^>]+>| \[[^\]]+\])?$/.test(String(option.flags))))) {
+      return `"${name}": "options" are { "flags": "--device <model>", "description": "…" }.`;
+    }
+    if (examples !== undefined && (!Array.isArray(examples) || !examples.every((example) => typeof example === 'string' && example))) {
+      return `"${name}": "examples" are command lines.`;
     }
     if (cwd !== undefined) {
       const target = path.resolve(folder, String(cwd));
