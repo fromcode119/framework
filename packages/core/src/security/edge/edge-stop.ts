@@ -14,7 +14,7 @@ export class EdgeStop {
 
   static fromJson(raw: unknown): EdgeStop | null {
     const value = (raw ?? {}) as Record<string, unknown>;
-    const address = NetworkAddressUtils.normalize(String(value.address ?? ''));
+    const address = NetworkAddressUtils.subscriber(value.address);
     const until = Date.parse(String(value.until ?? ''));
     return address && Number.isFinite(until) ? new EdgeStop(address, until) : null;
   }

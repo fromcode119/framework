@@ -31,9 +31,9 @@ export class EdgeStopStore {
    * side during a deploy) extends that row instead of adding another. Null when the report is unusable.
    */
   async record(report: IEdgeStopReport): Promise<IEdgeStopRecord | null> {
-    const address = NetworkAddressUtils.normalize(report.address);
+    const address = NetworkAddressUtils.subscriber(report.address);
     const until = Date.parse(String(report.until ?? ''));
-    if (!address || NetworkAddressUtils.isPrivate(address) || !Number.isFinite(until) || until <= this.now()) return null;
+    if (!address || NetworkAddressUtils.isPrivate(NetworkAddressUtils.normalize(report.address)) || !Number.isFinite(until) || until <= this.now()) return null;
     const hosts = EdgeStopStore.list(report.hosts);
     const paths = EdgeStopStore.list(report.paths);
     const reason = String(report.reason ?? '').slice(0, EdgeStopStore.MAX_ENTRY) || 'scanner_stopped';
@@ -66,7 +66,7 @@ export class EdgeStopStore {
   async addRefused(counts: Record<string, unknown>): Promise<void> {
     const active = await this.active();
     for (const [raw, value] of Object.entries(counts ?? {})) {
-      const address = NetworkAddressUtils.normalize(raw);
+      const address = NetworkAddressUtils.subscriber(raw);
       const count = Math.max(0, Math.floor(Number(value) || 0));
       const stop = active.find((entry) => entry.address === address);
       if (!stop || !count) continue;

@@ -1,4 +1,5 @@
 import http from 'http';
+import { NetworkAddressUtils } from '@fromcode119/core';
 import type { TenantRouteMap } from '@fromcode119/core';
 import { GatewayChallenge } from '@cli/services/gateway/challenge/gateway-challenge';
 import { GatewayRateLimit } from '@cli/services/gateway/challenge/gateway-rate-limit';
@@ -39,7 +40,7 @@ export class GatewayEdgeCheck {
     const protection = site.map.protection;
     if (this.scanners.isBanned(req.socket.remoteAddress)) {
       this.refusals.record(req, GatewayEdgeCheck.SCANNER);
-      this.reporter.refusedFrom(String(req.socket.remoteAddress ?? ''));
+      this.reporter.refusedFrom(NetworkAddressUtils.subscriber(req.socket.remoteAddress));
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'blocked', reason: GatewayEdgeCheck.SCANNER }));
       return true;

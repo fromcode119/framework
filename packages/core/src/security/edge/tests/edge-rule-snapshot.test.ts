@@ -26,6 +26,16 @@ describe('EdgeRuleSnapshot', () => {
     expect(snapshot.refuses('203.0.113.5', now + 60_001)).toBe(false); // the edge ends a stop on time itself
   });
 
+  it('refuses any address of a stopped IPv6 /64 and nothing outside it', () => {
+    const snapshot = EdgeRuleSnapshot.of([new EdgeStop('2a01:4f8:1c19:96de::/64', now + 60_000)], [], now);
+    expect(snapshot.refuses('2a01:4f8:1c19:96de::1', now)).toBe(true);
+    expect(snapshot.refuses('2a01:4f8:1c19:96de:1:2:3:4', now)).toBe(true);
+    expect(snapshot.refuses('2a01:4f8:1c19:96df::1', now)).toBe(false);
+    expect(snapshot.refuses('203.0.113.5', now)).toBe(false);
+    expect(snapshot.refuses('::1', now)).toBe(false);
+    expect(EdgeRuleSnapshot.fromJson(JSON.parse(JSON.stringify(snapshot)))?.refuses('2a01:4f8:1c19:96de::9', now)).toBe(true);
+  });
+
   it('names its content: the same rules give the same version, and it survives a trip to disk', () => {
     const one = EdgeRuleSnapshot.of([new EdgeStop('203.0.113.5', now + 60_000)], ['192.0.2.1'], now);
     const two = EdgeRuleSnapshot.of([new EdgeStop('203.0.113.5', now + 60_000)], ['192.0.2.1'], now + 5_000);

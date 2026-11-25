@@ -87,4 +87,18 @@ describe('EdgeStopStore', () => {
     expect(map.stops.map((stop) => [stop.address, stop.until])).toEqual([['203.0.113.24', now + 60_000]]);
     expect(TenantRouteMap.fromJson({ routes: [] }).stops).toEqual([]);
   });
+
+  it('records an IPv6 stop as its /64, merges a second address of it, counts refusals, and releases it', async () => {
+    const now = 1_000_000;
+    const store = new EdgeStopStore(await TestDb.open(), () => now);
+    const first = await store.record(report('2a01:4f8:1c19:96de::1', now + 60_000));
+    expect(first).toMatchObject({ address: '2a01:4f8:1c19:96de::/64', isNew: true });
+    expect(await store.record(report('2a01:4f8:1c19:96de::2', now + 90_000))).toMatchObject({ isNew: false });
+    expect(await store.record(report('::1', now + 60_000))).toBeNull();
+    await store.addRefused({ '2a01:4f8:1c19:96de::/64': 4 });
+    expect((await store.active())[0]).toMatchObject({ refused: 4 });
+    expect((await store.stops()).map((stop) => stop.address)).toEqual(['2a01:4f8:1c19:96de::/64']);
+    expect(await store.release(first!.id, 'op', 'released')).toBe(true);
+    expect(await store.stops()).toEqual([]);
+  });
 });
