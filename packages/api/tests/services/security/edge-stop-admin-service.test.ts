@@ -24,4 +24,9 @@ describe('EdgeStopAdminService.block', () => {
     expect(await run('2a01:4f8:1c19:96de::/64')).toEqual([]);
     expect(await run('2a01:4f8::/32')).toEqual([]);
   });
+
+  it('adds the /64 when only a narrower entry contains its first address', async () => {
+    expect(await run('2a01:4f8:1c19:96de::/128')).toEqual(['2a01:4f8:1c19:96de::/128\n2a01:4f8:1c19:96de::/64']);
+    expect(await run('2a01:4f8:1c19:96de::')).toEqual(['2a01:4f8:1c19:96de::\n2a01:4f8:1c19:96de::/64']);
+  });
 });
