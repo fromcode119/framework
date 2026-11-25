@@ -3,6 +3,7 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Switch } from '@/components/ui/view/switch.client';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 
 /**
@@ -20,6 +21,8 @@ export class SettingSwitchRow extends PureReactor {
   @prop declare title: ReactNode;
   @prop declare description: ReactNode;
   @prop declare theme: ThemeMode;
+  /** The scope the console is in; a setting that does not belong to it is not drawn at all. */
+  @prop declare scope?: SettingsPageScope;
 
   private get isOn(): boolean {
     return String(this.settings[this.settingKey] ?? '').trim().toLowerCase() === 'true';
@@ -32,6 +35,7 @@ export class SettingSwitchRow extends PureReactor {
   }
 
   render(): ReactNode {
+    if (this.scope && !this.scope.shows(this.settingKey)) return null;
     return (
       <SettingRow theme={this.theme} title={this.title} description={this.description}>
         <Switch checked={this.isOn} onChange={this.onChange} />

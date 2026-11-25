@@ -53,11 +53,11 @@ describe('PlatformSettingLocks', () => {
     expect(locks.isSiteScope()).toBe(true);
   });
 
-  it('keeps a hidden platform key WRITABLE for a platform admin — shown and writable are not the same test', async () => {
+  it('locks a platform key inside a site even for a platform admin — it is changed with no site selected', async () => {
     const locks = await siteScope();
 
     expect(locks.shown(PLATFORM_KEY)).toBe(false);
-    expect(locks.writable(PLATFORM_KEY)).toBe(true);
+    expect(locks.writable(PLATFORM_KEY)).toBe(false);
   });
 
   it('a site admin may neither see nor save a platform key', async () => {

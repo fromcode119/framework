@@ -1,5 +1,6 @@
 import { ThemeMode, SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode, SetStateAction } from 'react';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
@@ -14,17 +15,19 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * could neither see nor change the policy their users were being held to.
  */
 export class PasswordPolicyCard extends PureReactor {
-  declare props: Pick<PasswordPolicyCard, 'settings' | 'setSettings' | 'theme'>;
+  declare props: Pick<PasswordPolicyCard, 'settings' | 'setSettings' | 'theme' | 'scope'>;
 
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare theme: ThemeMode;
+  @prop declare scope?: SettingsPageScope;
 
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.security.passwordPolicy')}>
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH}
@@ -36,6 +39,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE}
@@ -45,6 +49,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE}
@@ -54,6 +59,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER}
@@ -63,6 +69,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL}
@@ -72,6 +79,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY}
@@ -83,6 +91,7 @@ export class PasswordPolicyCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK}

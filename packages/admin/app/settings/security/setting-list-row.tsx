@@ -6,6 +6,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { Select } from '@/components/ui/view/select.client';
 import { TagFieldChips } from '@/components/ui/tag-field/view/chips.client';
 import type { IOption } from '@/components/ui/interfaces/option.interface';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { SettingListValue } from '@/app/settings/security/setting-list-value';
 import type { SettingListSeparator } from '@/app/settings/security/enums/setting-list-separator.enum';
@@ -18,7 +19,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * under it. Stored exactly as before, in the separator the setting's readers expect.
  */
 export class SettingListRow extends PureReactor {
-  declare props: Pick<SettingListRow, 'settings' | 'setSettings' | 'settingKey' | 'separator' | 'title' | 'description' | 'theme' | 'placeholder' | 'options' | 'uppercase'>;
+  declare props: Pick<SettingListRow, 'settings' | 'setSettings' | 'settingKey' | 'separator' | 'title' | 'description' | 'theme' | 'scope' | 'placeholder' | 'options' | 'uppercase'>;
 
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
@@ -27,6 +28,8 @@ export class SettingListRow extends PureReactor {
   @prop declare title: ReactNode;
   @prop declare description: ReactNode;
   @prop declare theme: ThemeMode;
+  /** The scope the console is in; a setting that does not belong to it is not drawn at all. */
+  @prop declare scope?: SettingsPageScope;
   @prop declare placeholder?: string;
   /** Known values, picked by name; entries outside it can still be typed. */
   @prop declare options?: IOption[];
@@ -67,6 +70,7 @@ export class SettingListRow extends PureReactor {
   noSuggestions(): void {}
 
   render(): ReactNode {
+    if (this.scope && !this.scope.shows(this.settingKey)) return null;
     const entries = this.entries;
     const options = this.options ?? [];
     const labels = Object.fromEntries(options.map((option) => [option.value, option.label]));

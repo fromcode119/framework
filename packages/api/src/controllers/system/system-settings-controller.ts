@@ -105,7 +105,6 @@ export class SystemSettingsController {
     }
   }
 
-
   /**
    * Every personal-data dataset, with the strategy currently in force and WHICH layer decided it.
    *
@@ -124,7 +123,6 @@ export class SystemSettingsController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   async updateSettings(req: Request, res: Response) {
     try {
@@ -187,6 +185,16 @@ export class SystemSettingsController {
       // the row is the site's, but the thing it spends is the platform's, so a site admin may not grant it.
       const platformGranted = SystemSettingRegistry.platformAdminWrittenKeys();
       const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key) || platformGranted.has(key));
+      // With a site selected a platform-only key is refused for EVERY account, a platform admin included:
+      // its row belongs to all sites. It is changed from the platform console, with no site selected.
+      const platformOnlyRefused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key));
+      if (platformOnlyRefused.length > 0 && TenantMode.isEnabled() && tenantBound) {
+        return res.status(403).json({
+          error: 'platform_context_required',
+          message: `Platform setting(s) ${platformOnlyRefused.join(', ')} apply to every site, so they cannot be changed from inside a site. Open the platform console (no site selected) to change them.`,
+          keys: platformOnlyRefused,
+        });
+      }
       if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
         return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
       }
@@ -280,7 +288,6 @@ export class SystemSettingsController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   /** @see SystemSettingsWriter.prepareSettingsPayload */
   private prepareSettingsPayload(...args: Parameters<SystemSettingsWriter["prepareSettingsPayload"]>): ReturnType<SystemSettingsWriter["prepareSettingsPayload"]> {
