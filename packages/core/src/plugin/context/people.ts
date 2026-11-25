@@ -70,7 +70,11 @@ export class PeopleContextProxy {
         }
         return { ...existing, ...update };
       }
-      return PeopleRowMapper.toPerson(await db.insert(SystemConstants.TABLE.PEOPLE, data));
+      try { return PeopleRowMapper.toPerson(await db.insert(SystemConstants.TABLE.PEOPLE, data)); } catch (error) {
+        // Two requests for someone new both found nobody and the other inserted first: theirs is filled, no request fails.
+        if (!(await match({ userId: input?.userId, email: input?.email, phone: input?.phone }))) throw error;
+        return upsert(input);
+      }
     }
 
     const directory = new PeopleDirectoryService(
@@ -293,5 +297,4 @@ export class PeopleContextProxy {
       } satisfies IPluginContextPeople['personalData']
     };
   }
-
 }

@@ -53,6 +53,26 @@ describe('PeopleContextProxy.match', () => {
 });
 
 describe('PeopleContextProxy.upsert', () => {
+  it('keeps the person another request created a moment before, instead of failing on the duplicate', async () => {
+    const mgr = makeManager([]);
+    // The other request's row lands between this one's lookup and its insert; the insert then breaks the unique key.
+    mgr.db.insert.mockImplementationOnce(async () => {
+      mgr.db.store.push({ id: 11, userId: 42 });
+      throw new Error('duplicate key value violates unique constraint "people_user_id_key"');
+    });
+    const people = PeopleContextProxy.createPeopleProxy({} as any, mgr);
+    const p = await people.upsert({ userId: 42, firstName: 'Ana' });
+    expect(p.id).toBe(11);
+    expect(mgr.db.store.find((row: any) => row.id === 11).firstName).toBe('Ana');
+  });
+
+  it('still fails an insert that broke for another reason', async () => {
+    const mgr = makeManager([]);
+    mgr.db.insert.mockImplementationOnce(async () => { throw new Error('connection lost'); });
+    const people = PeopleContextProxy.createPeopleProxy({} as any, mgr);
+    await expect(people.upsert({ userId: 43 })).rejects.toThrow('connection lost');
+  });
+
   it('inserts a new person when no match', async () => {
     const mgr = makeManager([]);
     const people = PeopleContextProxy.createPeopleProxy({} as any, mgr);
