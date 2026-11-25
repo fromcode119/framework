@@ -172,8 +172,9 @@ export class McpContentTools {
           permalink: McpSchema.string({ description: 'Record permalink/path, when the id is unknown.' }),
           where: McpSchema.object({}),
           data: McpSchema.object({}),
+          compact: McpSchema.boolean({ description: 'Answer with only what was saved: the target and the names of the fields that changed. Leaves out the before/after values, the preview and the whole updated record — a large saving when the record is big (a product with variants and its public page).' }),
         }, ['collectionSlug', 'data']),
-        description: 'Update one content item by id/slug/permalink and return before/after preview.',
+        description: 'Update one content item by id/slug/permalink and return before/after preview. Pass compact: true for a short answer (target + changed field names) when the full record is not needed.',
         handler: async (input, context) => {
           const collectionSlug = String(input?.collectionSlug || input?.slug || '').trim();
           const payload = input?.data && typeof input.data === 'object' ? input.data : {};
@@ -212,6 +213,9 @@ export class McpContentTools {
               visualPreview: { beforePath: beforePreviewPath, afterPath: afterDraftPreviewPath, beforeTitle: RuntimeMiscHelpers.resolveRecordPreviewTitle(existing), afterTitle: RuntimeMiscHelpers.resolveRecordPreviewTitle(afterDraftRecord) } };
           }
           const updated = await options.updateContent!(collection, targetId, payload, context || {});
+          if (input?.compact === true) {
+            return { dryRun: false, ok: true, target: { collectionSlug: collection.slug, primaryKey, id: targetId }, changedFields: changedFields.map((entry) => entry.field) };
+          }
           const after = RuntimeMiscHelpers.pickRecordFields(updated, changedFields.map((e) => e.field));
           return { dryRun: false, action: { type: 'mcp_call', tool: 'content.update', input: { collectionSlug: collection.slug, id: targetId, data: payload } },
             target: { collectionSlug: collection.slug, primaryKey, id: targetId }, changedFields, before, after, item: updated,
