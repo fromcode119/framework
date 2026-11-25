@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.647] - 2026-11-25
+
+### Added
+
+- **cli**: declared commands carry options, examples and group texts for --help ([#1636](https://github.com/fromcode119/framework/pull/1636))
+
+### Fixed
+
+- **core**: a person created by a concurrent request is kept, not a failed request ([#1639](https://github.com/fromcode119/framework/pull/1639))
+- **integrations**: the shared queue and cache are the platform's, not a site's ([#1638](https://github.com/fromcode119/framework/pull/1638))
+
 ## [0.2.646] - 2026-11-25
 
 ### Fixed
