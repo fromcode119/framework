@@ -9,6 +9,9 @@ import { AuthCommands } from '@cli/commands/auth';
 import { ExtensionBuildCommandService } from '@cli/commands/extension-build-command-service';
 import { DeployCommandService } from '@cli/commands/deploy-command-service';
 import { StackCommandService } from '@cli/commands/stack-command-service';
+import { ExtensionCliRegistry } from '@cli/services/extension-cli/extension-cli-registry';
+import { CliUtils } from '@cli/utils';
+import * as path from 'path';
 
 /**
  * The `fromcode` CLI.
@@ -25,7 +28,7 @@ import { StackCommandService } from '@cli/commands/stack-command-service';
  */
 export class FromcodeCli {
   static main(argv: string[]): void {
-    const program = FromcodeCli.build();
+    const program = FromcodeCli.build(argv);
 
     // No arguments is a request for help, not an error — commander would otherwise exit silently.
     if (!argv.slice(2).length) {
@@ -36,7 +39,7 @@ export class FromcodeCli {
   }
 
   /** The configured program: metadata, every command group, and the unknown-command handler. */
-  private static build(): Command {
+  private static build(argv: string[] = []): Command {
     const program = new Command();
 
     program
@@ -55,9 +58,17 @@ export class FromcodeCli {
     AuthCommands.registerAuthCommands(program);
     DeployCommandService.register(program);
     StackCommandService.register(program);
+    // Last: an extension's declared commands never replace a built-in one, so the built-ins must already be there.
+    ExtensionCliRegistry.register(program, FromcodeCli.extensionRoots(), argv);
 
     program.on('command:*', () => FromcodeCli.rejectUnknown(program));
     return program;
+  }
+
+  /** Where extensions live: the plugins, themes, appearance and apps folders of this installation. */
+  private static extensionRoots(): string[] {
+    const source = path.dirname(CliUtils.getPluginsDir());
+    return [CliUtils.getPluginsDir(), CliUtils.themesRoot(), path.join(source, 'appearance'), path.join(source, 'apps')];
   }
 
   /** An unrecognised command must fail loudly — a silent exit 0 reads as success. */
