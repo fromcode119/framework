@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.645] - 2026-11-25
+
+### Added
+
+- **security**: a stopped scanner takes its whole IPv6 /64 with it ([#1633](https://github.com/fromcode119/framework/pull/1633))
+- **cli**: extensions declare their own commands ([#1632](https://github.com/fromcode119/framework/pull/1632))
+
+### Fixed
+
+- **settings**: a site is told nothing of the platform's own settings ([#1631](https://github.com/fromcode119/framework/pull/1631))
+
 ## [0.2.644] - 2026-11-25
 
 ### Fixed
