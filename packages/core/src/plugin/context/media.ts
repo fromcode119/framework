@@ -38,6 +38,21 @@ export class MediaContextProxy {
    * app connects as a non-superuser role, so the tenant filter is enforced by the CONNECTION and
    * applies to every statement here. A plugin cannot resolve another tenant's media by guessing an id.
    */
+  /** The site's media rows for these ids, keyed by id, read in batches of `MAX_BATCH`. */
+  private static async rowsByIds(manager: IPluginManagerInterface, ids: any[]): Promise<Map<string, Record<string, any>>> {
+    const unique = Array.from(new Set((ids || []).filter((id) => id != null && id !== '').map(String)));
+    const resolved = new Map<string, Record<string, any>>();
+    for (let start = 0; start < unique.length; start += MediaContextProxy.MAX_BATCH) {
+      const batch = unique.slice(start, start + MediaContextProxy.MAX_BATCH);
+      const rows = await manager.db.find(SystemConstants.TABLE.MEDIA, { where: { id: { in: batch } }, limit: batch.length });
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const record = MediaContextProxy.denormalize(row);
+        if (record?.id != null) resolved.set(String(record.id), record);
+      }
+    }
+    return resolved;
+  }
+
   static createMediaProxy(manager: IPluginManagerInterface, security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>, owner: string) {
     const overlay = new MediaOverlayContext(manager, owner);
     return {
@@ -104,22 +119,7 @@ export class MediaContextProxy {
        * position.
        */
       async findByIds(ids: any[]): Promise<Map<string, Record<string, any>>> {
-        const unique = Array.from(new Set((ids || []).filter((id) => id != null && id !== '').map(String)));
-        const resolved = new Map<string, Record<string, any>>();
-        if (unique.length === 0) return resolved;
-
-        for (let start = 0; start < unique.length; start += MediaContextProxy.MAX_BATCH) {
-          const batch = unique.slice(start, start + MediaContextProxy.MAX_BATCH);
-          const rows = await manager.db.find(SystemConstants.TABLE.MEDIA, {
-            where: { id: { in: batch } },
-            limit: batch.length,
-          });
-          for (const row of Array.isArray(rows) ? rows : []) {
-            const record = MediaContextProxy.denormalize(row);
-            if (record?.id != null) resolved.set(String(record.id), record);
-          }
-        }
-        return resolved;
+        return MediaContextProxy.rowsByIds(manager, ids);
       },
       /**
        * List media records (newest first). The sanctioned way for plugins (e.g. a media
@@ -152,6 +152,20 @@ export class MediaContextProxy {
         if (!row?.path) return null;
         const url = (manager.integrations as any).storage.publicUrl(String(row.path), String(row.visibility || 'public'));
         return url ? String(url) : null;
+      },
+      /**
+       * The addresses of MANY stored files, keyed by id: the batch form of `publicUrl`. A list that hands out
+       * a picture per entry otherwise costs one read per entry, and from an isolated plugin each read is a
+       * round trip out of its process. An id that resolves to nothing here, or to a private file, is absent.
+       */
+      async publicUrls(ids: any[]): Promise<Record<string, string>> {
+        const urls: Record<string, string> = {};
+        const storage = (manager.integrations as any).storage;
+        for (const [id, row] of await MediaContextProxy.rowsByIds(manager, ids)) {
+          const url = row?.path ? storage.publicUrl(String(row.path), String(row.visibility || 'public')) : null;
+          if (url) urls[id] = String(url);
+        }
+        return urls;
       },
       /**
        * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.

@@ -27,6 +27,8 @@ export interface IPluginContextMedia {
   count(): Promise<number>;
   /** Where the stored file is served from, or null when it resolves to nothing here or is private. */
   publicUrl(id: any): Promise<string | null>;
+  /** The addresses of many stored files in one read, keyed by id; an id with none here is absent. */
+  publicUrls(ids: any[]): Promise<Record<string, string>>;
   /** SHA-256 (hex) of the stored file's bytes, or null when the id resolves to nothing in this site. */
   digest(id: any): Promise<string | null>;
   /**
