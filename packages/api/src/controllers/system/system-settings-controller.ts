@@ -73,8 +73,6 @@ export class SystemSettingsController {
   async platformSettingKeys(req: Request, res: Response) {
     try {
       const tenantMode = TenantMode.isEnabled();
-      // `editable` is whether this account may change PLATFORM-only settings FROM HERE: a platform admin, and
-      // only with no site selected (see `updateSettings`).
       const editable = !tenantMode || await this.runtime.isPlatformAdmin(req);
       // `tenantMode` so the admin can say WHICH settings are platform-wide even to someone allowed to
       // change them. On a single-tenant deployment there is no second scope to contrast with, so the
@@ -107,7 +105,6 @@ export class SystemSettingsController {
     }
   }
 
-
   /**
    * Every personal-data dataset, with the strategy currently in force and WHICH layer decided it.
    *
@@ -126,7 +123,6 @@ export class SystemSettingsController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   async updateSettings(req: Request, res: Response) {
     try {
@@ -189,10 +185,8 @@ export class SystemSettingsController {
       // the row is the site's, but the thing it spends is the platform's, so a site admin may not grant it.
       const platformGranted = SystemSettingRegistry.platformAdminWrittenKeys();
       const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key) || platformGranted.has(key));
-      // A site is not the platform. With a site selected, a platform-only key is refused for EVERY account,
-      // a platform admin included: the row it would land in belongs to all sites, and writing it from one
-      // site's console changed every other site without that console ever saying so. The platform admin
-      // changes it from the platform console, with no site selected.
+      // With a site selected a platform-only key is refused for EVERY account, a platform admin included:
+      // its row belongs to all sites. It is changed from the platform console, with no site selected.
       const platformOnlyRefused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key));
       if (platformOnlyRefused.length > 0 && TenantMode.isEnabled() && tenantBound) {
         return res.status(403).json({
@@ -294,7 +288,6 @@ export class SystemSettingsController {
       res.status(500).json({ error: error.message });
     }
   }
-
 
   /** @see SystemSettingsWriter.prepareSettingsPayload */
   private prepareSettingsPayload(...args: Parameters<SystemSettingsWriter["prepareSettingsPayload"]>): ReturnType<SystemSettingsWriter["prepareSettingsPayload"]> {
