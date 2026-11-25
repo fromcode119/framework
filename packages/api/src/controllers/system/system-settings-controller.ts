@@ -73,6 +73,8 @@ export class SystemSettingsController {
   async platformSettingKeys(req: Request, res: Response) {
     try {
       const tenantMode = TenantMode.isEnabled();
+      // `editable` is whether this account may change PLATFORM-only settings FROM HERE: a platform admin, and
+      // only with no site selected (see `updateSettings`).
       const editable = !tenantMode || await this.runtime.isPlatformAdmin(req);
       // `tenantMode` so the admin can say WHICH settings are platform-wide even to someone allowed to
       // change them. On a single-tenant deployment there is no second scope to contrast with, so the
@@ -187,6 +189,18 @@ export class SystemSettingsController {
       // the row is the site's, but the thing it spends is the platform's, so a site admin may not grant it.
       const platformGranted = SystemSettingRegistry.platformAdminWrittenKeys();
       const refused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key) || platformGranted.has(key));
+      // A site is not the platform. With a site selected, a platform-only key is refused for EVERY account,
+      // a platform admin included: the row it would land in belongs to all sites, and writing it from one
+      // site's console changed every other site without that console ever saying so. The platform admin
+      // changes it from the platform console, with no site selected.
+      const platformOnlyRefused = Object.keys(preparedPayload).filter((key) => platformOnlyKeys.has(key));
+      if (platformOnlyRefused.length > 0 && TenantMode.isEnabled() && tenantBound) {
+        return res.status(403).json({
+          error: 'platform_context_required',
+          message: `Platform setting(s) ${platformOnlyRefused.join(', ')} apply to every site, so they cannot be changed from inside a site. Open the platform console (no site selected) to change them.`,
+          keys: platformOnlyRefused,
+        });
+      }
       if (refused.length > 0 && TenantMode.isEnabled() && !platformAdmin) {
         return res.status(403).json({ error: 'platform_admin_required', message: `Platform setting(s) ${refused.join(', ')} apply to every site and only a platform admin may change them.`, keys: refused });
       }

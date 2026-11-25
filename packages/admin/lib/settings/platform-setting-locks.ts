@@ -77,6 +77,8 @@ export class PlatformSettingLocks {
     // A site's own row, but one only the platform grants (sending through the platform's mail server).
     if (this.platformGranted.has(key)) return !this.editable;
     if (this.isInherited(key) && this.isSiteScope()) return false;
+    // A platform-only setting is never changed from inside a site, whoever is signed in: the API refuses it.
+    if (this.isSiteScope() && this.keys.has(key)) return true;
     return !this.editable && this.keys.has(key);
   }
 

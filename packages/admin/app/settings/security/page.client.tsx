@@ -65,6 +65,11 @@ export class SecuritySettingsPage extends AdminComponent {
     this.scope = new SettingsPageScope(await PlatformSettingLocks.load(), SecuritySettingsKeys.ALL);
   }
 
+  /** Where the settings this scope does not show are changed — hiding must not make a setting undiscoverable. */
+  private get scopeNotice(): string {
+    return this.scope?.notice({ canManagePlatform: this.canManagePlatform }) ?? '';
+  }
+
   /** Nothing on the Settings tab can be saved in this scope. */
   private get settingsOutOfScope(): boolean {
     return this.scope?.isEmpty === true;
@@ -151,7 +156,7 @@ export class SecuritySettingsPage extends AdminComponent {
     if (!settings) return;
     this.isSaving = true;
     try {
-      await SecuritySettingsIo.save(settings, this.loaded);
+      await SecuritySettingsIo.save(settings, this.loaded, this.scope ?? undefined);
       await this.fetchSettings();
       addNotification({ title: AdminI18n.t('settings.security.securityUpdated'), message: AdminI18n.t('settings.security.apiProtectionAndAccountDefense'), type: NotificationType.SUCCESS });
     } catch (err: any) {
@@ -211,8 +216,11 @@ export class SecuritySettingsPage extends AdminComponent {
             <SiteScopePanel detail={AdminI18n.t('settings.security.passwordPolicyLoginProtectionRate')} />
           )}
 
+          {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && this.scopeNotice && (
+            <p className="fc-scope-notice"><span className="fc-scope-notice__text">{this.scopeNotice}</span></p>
+          )}
           {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
-            <SecuritySettingsCards settings={settings} setSettings={this.setSettings} theme={theme} />
+            <SecuritySettingsCards settings={settings} setSettings={this.setSettings} theme={theme} scope={this.scope ?? undefined} />
           )}
           {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
             <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSave} onDiscard={this.discardChanges} />

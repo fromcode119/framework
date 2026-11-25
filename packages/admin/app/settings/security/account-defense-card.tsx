@@ -1,5 +1,6 @@
 import { ThemeMode, SystemConstants } from '@fromcode119/core/client';
 import type { ReactNode, SetStateAction } from 'react';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
@@ -8,17 +9,19 @@ import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class AccountDefenseCard extends PureReactor {
-  declare props: Pick<AccountDefenseCard, 'settings' | 'setSettings' | 'theme'>;
+  declare props: Pick<AccountDefenseCard, 'settings' | 'setSettings' | 'theme' | 'scope'>;
 
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare theme: ThemeMode;
+  @prop declare scope?: SettingsPageScope;
 
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.security.accountDefense')}>
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_SESSION_DURATION}
@@ -30,6 +33,7 @@ export class AccountDefenseCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.TWO_FACTOR_ENABLED}
@@ -39,6 +43,7 @@ export class AccountDefenseCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS}

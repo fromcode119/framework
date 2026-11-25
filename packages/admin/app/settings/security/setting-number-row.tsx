@@ -3,6 +3,7 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { NumberStepper } from '@/components/ui/number-stepper';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 
 /**
@@ -22,6 +23,8 @@ export class SettingNumberRow extends PureReactor {
   @prop declare min: number;
   @prop declare max: number;
   @prop declare theme: ThemeMode;
+  /** The scope the console is in; a setting that does not belong to it is not drawn at all. */
+  @prop declare scope?: SettingsPageScope;
 
   @bound
   onChange(value: number | string): void {
@@ -30,6 +33,7 @@ export class SettingNumberRow extends PureReactor {
   }
 
   render(): ReactNode {
+    if (this.scope && !this.scope.shows(this.settingKey)) return null;
     return (
       <SettingRow theme={this.theme} title={this.title} description={this.description}>
         <NumberStepper min={this.min} max={this.max} value={this.settings[this.settingKey] ?? ''} onChange={this.onChange} />

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
@@ -20,11 +21,12 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * exempt paths keep apps and payment webhooks working. Saving pushes the change to the gateway.
  */
 export class EdgeProtectionCard extends PureReactor {
-  declare props: Pick<EdgeProtectionCard, 'settings' | 'setSettings' | 'theme'>;
+  declare props: Pick<EdgeProtectionCard, 'settings' | 'setSettings' | 'theme' | 'scope'>;
 
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare theme: ThemeMode;
+  @prop declare scope?: SettingsPageScope;
 
   @bound
   setTitle(event: ChangeEvent<HTMLInputElement>): void {
@@ -47,6 +49,7 @@ export class EdgeProtectionCard extends PureReactor {
       <Card title={AdminI18n.t('settings.security.edgeProtection')}>
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_UNDER_ATTACK}
@@ -56,6 +59,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_COUNTRIES}
@@ -69,6 +73,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGED_COUNTRIES}
@@ -82,6 +87,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_ADDRESSES}
@@ -92,6 +98,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingSwitchRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCK_ATTACK_PATTERNS}
@@ -101,6 +108,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_PATHS}
@@ -111,6 +119,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_BLOCKED_USER_AGENTS}
@@ -121,6 +130,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_SCANNER_BAN_AFTER}
@@ -132,6 +142,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_SCANNER_BAN_MINUTES}
@@ -143,6 +154,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_RATE_LIMIT_PER_MINUTE}
@@ -154,6 +166,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingNumberRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGE_CLEARANCE_MINUTES}
@@ -165,6 +178,7 @@ export class EdgeProtectionCard extends PureReactor {
 
         <SettingListRow
           theme={this.theme}
+          scope={this.scope}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_CHALLENGE_EXEMPT_PATHS}
@@ -173,23 +187,23 @@ export class EdgeProtectionCard extends PureReactor {
           description={AdminI18n.t('settings.security.browserCheckExemptPathsHelp')}
         />
 
-        <SettingRow
+        {(!this.scope || this.scope.shows(keys.EDGE_CHALLENGE_TITLE)) && <SettingRow
           theme={this.theme}
           title={AdminI18n.t('settings.security.browserCheckPageTitle')}
           description={AdminI18n.t('settings.security.browserCheckPageTitleHelp')}
           wide
         >
           <Input className="w-full max-w-3xl" value={this.settings[keys.EDGE_CHALLENGE_TITLE] ?? ''} onChange={this.setTitle} />
-        </SettingRow>
+        </SettingRow>}
 
-        <SettingRow
+        {(!this.scope || this.scope.shows(keys.EDGE_CHALLENGE_MESSAGE)) && <SettingRow
           theme={this.theme}
           title={AdminI18n.t('settings.security.browserCheckPageMessage')}
           description={AdminI18n.t('settings.security.browserCheckPageMessageHelp')}
           wide
         >
           <TextArea className="w-full max-w-3xl" size={FieldSize.MD} value={this.settings[keys.EDGE_CHALLENGE_MESSAGE] ?? ''} onChange={this.setMessage} />
-        </SettingRow>
+        </SettingRow>}
       </Card>
     );
   }

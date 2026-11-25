@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import type { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SecuritySettingsKeys } from '@/app/settings/security/security-settings-keys';
 
 /**
@@ -36,14 +37,16 @@ export class SecuritySettingsIo {
    * write; a blank switch is off) — so saving one toggle silently rewrote the rest of the screen.
    * Returns how many keys it sent; with none changed it sends nothing.
    */
-  static async save(settings: Record<string, string>, loaded: Record<string, string>): Promise<number> {
+  static async save(settings: Record<string, string>, loaded: Record<string, string>, scope?: SettingsPageScope): Promise<number> {
     const payload: Record<string, string> = {};
     for (const key of SecuritySettingsKeys.ALL) {
       const value = CoercionUtils.toString(settings[key]);
       if (value !== CoercionUtils.toString(loaded[key])) payload[key] = value;
     }
-    const changed = Object.keys(payload).length;
-    if (changed) await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, payload);
+    // Only what this scope may write: a platform setting is never sent from inside a site.
+    const sendable = scope ? scope.sendable(payload) : payload;
+    const changed = Object.keys(sendable).length;
+    if (changed) await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS, sendable);
     return changed;
   }
 }
