@@ -38,6 +38,8 @@ export class PersonalDataSettingsPage extends AdminComponent {
   @state platform: IPersonalDataChoiceMap = {};
   /** Whether THIS account may write each layer. The API refuses either way; the page must not pretend. */
   @state platformEditable = false;
+  /** Inside a site the platform's default is not shown: a site is a client and sees only its own policy. */
+  @state inSite = false;
   @state siteEditable = false;
   /**
    * Whether each layer HAD a stored row when the page loaded.
@@ -92,6 +94,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
       // platform control lives in the platform scope. Read-only here, not hidden, because the site
       // column is read against it and hiding it would make the inherited value unexplainable.
       const inSite = platformKeys?.tenantMode === true && platformKeys?.siteSelected !== false;
+      this.inSite = inSite;
       this.platformEditable = Boolean(platformKeys?.editable) && !inSite;
       // With no site chosen on a multi-site deployment the settings PUT refuses any per-site key, so
       // the site column is read-only there. A single-site deployment has no such scope: its one site's
@@ -163,10 +166,10 @@ export class PersonalDataSettingsPage extends AdminComponent {
 
         {this.datasets && (
           <Card title={AdminI18n.t('settings.personalData.erasureStrategyPerDataset')}>
-            <div className="fc-pd">
+            <div className={this.inSite ? 'fc-pd fc-pd--site' : 'fc-pd'}>
               <div className="fc-pd__grid fc-pd__head">
                 <span>{AdminI18n.t('settings.personalData.dataset')}</span>
-                <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
+                {!this.inSite && <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>}
                 <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
                 <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
               </div>
@@ -177,6 +180,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
                   site={this.site[dataset.id]}
                   platform={this.platform[dataset.id]}
                   platformEditable={this.platformEditable}
+                  showPlatform={!this.inSite}
                   siteEditable={this.siteEditable}
                   onSiteChange={this.onSiteChange}
                   onPlatformChange={this.onPlatformChange}
@@ -185,7 +189,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
               ))}
             </div>
 
-            {!this.platformEditable ? (
+            {!this.platformEditable && !this.inSite ? (
               <div className="fc-settings-note">
                 <Hint>{AdminI18n.t('settings.personalData.thePlatformDefaultIsSet')}</Hint>
               </div>

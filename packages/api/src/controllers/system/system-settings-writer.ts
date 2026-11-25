@@ -1,5 +1,5 @@
 import { ApplicationDomainSettingsUtils, CoercionUtils, RequestContextUtils, SystemConstants, SystemSettingsExposureUtils, TenantMode, TenantResolverService } from '@fromcode119/core';
-import { SystemSettingRegistry } from '@fromcode119/core';
+import { SystemSettingRegistry, TenantBespokePolicies } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 /**
@@ -27,6 +27,14 @@ export class SystemSettingsWriter {
    * omission, one layer up, so it has the same answer: declare it once, next to the scope, and
    * derive. Verified identical to the list it replaces (69 keys, no difference either way).
    */
+  /** Inside a site, the platform-only rows the database publishes to it are left out of what it is told. */
+  static withoutPlatformOnly(rows: any[]): any[] {
+    if (!TenantMode.isEnabled() || !RequestContextUtils.getTenantId()) return rows;
+    const inherited = new Set(SystemSettingRegistry.inheritedKeys());
+    const platformOnly = new Set(TenantBespokePolicies.platformKeys().filter((key) => !inherited.has(key)));
+    return rows.filter((row) => !platformOnly.has(String(row?.key ?? '')));
+  }
+
   static writableKeys(): Set<string> {
     return SystemSettingRegistry.writableKeys();
   }
