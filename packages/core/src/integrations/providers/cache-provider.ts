@@ -8,6 +8,8 @@ export class CacheIntegrationDefinition {
   label: 'System Cache',
   description: 'Provider used for system-level caching and plugin data storage.',
   defaultProvider: 'memory',
+  // One cache serves every site; a site is told nothing of it and cannot change it.
+  platformOnly: true,
   resolveFromEnv: () => {
     const redisUrl = process.env.REDIS_URL;
     if (redisUrl) {

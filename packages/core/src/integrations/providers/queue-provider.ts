@@ -19,6 +19,8 @@ export class QueueIntegrationDefinition {
     label: 'Background Jobs',
     description: 'Runs scheduled tasks and plugin jobs. Redis survives restarts and is shared between instances.',
     defaultProvider: 'local',
+    // One queue serves every site; a site is told nothing of it and cannot change it.
+    platformOnly: true,
     resolveFromEnv: () => {
       const redisUrl = process.env.REDIS_URL;
       if (redisUrl) {
