@@ -31,6 +31,9 @@ export class RequestServerTiming {
   /** A step name is a short token the header can carry as is; anything else is not recorded. */
   private static readonly NAME = /^[a-z][a-z0-9-]{0,39}$/;
 
+  /** A log-only step name: a peer and its method (`peer:billing.charge`), which the header never carries. */
+  private static readonly LOG_NAME = /^[a-z][a-z0-9-]{0,19}:[A-Za-z0-9_.-]{1,80}$/;
+
   /** The credentials a request can carry other than a cookie. */
   private static readonly CREDENTIAL_HEADERS = ['authorization', 'x-api-key'] as const;
 
@@ -77,6 +80,16 @@ export class RequestServerTiming {
   static recordTotal(name: string, ms: number, count: number): void {
     const recorder = RequestServerTiming.storage.getStore();
     if (recorder && Number.isInteger(count) && count > 0) RequestServerTiming.add(recorder, name, ms, count);
+  }
+
+  /**
+   * Adds `ms` and `count` runs to `name` for the access log only. For a breakdown that names what is installed
+   * (which plugin's method a request waited on): the operator needs it to see where the time went, a stranger
+   * reading the header must not learn it.
+   */
+  static recordForLog(name: string, ms: number, count: number): void {
+    const recorder = RequestServerTiming.storage.getStore();
+    if (recorder && RequestServerTiming.LOG_NAME.test(name) && Number.isFinite(ms) && ms >= 0 && Number.isInteger(count) && count > 0) recorder.add(name, ms, count, recorder.logged);
   }
 
   /** Runs `contribute` just before the header is written: for a step that is still adding up while the request runs. */
@@ -127,7 +140,8 @@ export class RequestServerTiming {
     const existing = res.getHeader('Server-Timing');
     const kept = Array.isArray(existing) ? existing.join(', ') : existing ? String(existing) : '';
     const whole = kept && mine ? `${kept}, ${mine}` : kept || mine;
-    if (res.locals) res.locals[RequestServerTiming.LOCALS_KEY] = whole;
+    const logged = RequestServerTiming.format({ steps: recorder.logged });
+    if (res.locals) res.locals[RequestServerTiming.LOCALS_KEY] = whole && logged ? `${whole}, ${logged}` : whole || logged;
     if (gated && !RequestServerTiming.allows(req)) {
       // A plugin process answered with timings of its own: they are held to the same rule.
       res.removeHeader('Server-Timing');

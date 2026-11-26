@@ -126,6 +126,22 @@ describe('RequestServerTiming over HTTP', () => {
     } finally { close(); }
   });
 
+  it('keeps a log-only step out of the header and in the access log\'s copy', async () => {
+    let logged = '';
+    const { port, close } = await serve(true, (_req, res) => {
+      RequestServerTiming.record('scan', 3);
+      RequestServerTiming.recordForLog('peer:billing.charge', 4, 2);
+      RequestServerTiming.recordForLog('peer:bad name', 1, 1);
+      res.on('finish', () => { logged = String(res.locals[RequestServerTiming.LOCALS_KEY]); });
+      res.json({ ok: true });
+    });
+    try {
+      const reply = await fetch(`http://127.0.0.1:${port}/x`);
+      expect(reply.headers.get('server-timing')).toBe('scan;dur=3.0');
+      expect(logged).toBe('scan;dur=3.0, peer:billing.charge;dur=4.0;desc="2x"');
+    } finally { close(); }
+  });
+
   it('removes timings a plugin process sent when the caller is not allowed to be told', async () => {
     const { port, close } = await serve(true, (_req, res) => {
       RequestServerTiming.record('scan', 3);

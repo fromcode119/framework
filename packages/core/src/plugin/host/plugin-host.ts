@@ -241,6 +241,7 @@ export class PluginHost extends PluginHostSharedProcesses {
         if (!rpc) return;
         RequestServerTiming.recordTotal('plugin-rpc-host', rpc.ms, rpc.count);
         for (const [kind, by] of rpc.by) RequestServerTiming.recordTotal(`rpc-${kind}`, by.ms, by.count);
+        for (const [peer, by] of rpc.peers) RequestServerTiming.recordForLog(`peer:${peer}`, by.ms, by.count);
       });
       await RequestServerTiming.step('plugin-sync', () => this.syncPeers(store));
       await RequestServerTiming.step('plugin-release', () => TenantConnectionScope.releaseCurrent());
