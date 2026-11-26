@@ -42,6 +42,18 @@ describe('PluginHostDispatcher keeps the host\'s own time on an invocation', () 
     for (const kind of tokens.resolve(token)!.rpc.by.keys()) expect(kind).toMatch(/^[a-z0-9-]{1,28}$/);
   });
 
+  it('keeps each peer method a call into the namespace API waited on, in both shapes of the call', async () => {
+    const { tokens, context, dispatcher } = build();
+    context.plugins = { namespace: () => ({ call: vi.fn(async () => 1), billing: { charge: vi.fn(async () => 2) } }) };
+    const token = tokens.mint('route', undefined);
+    await dispatcher.dispatch(context, { root: 'context', steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'call', args: ['billing', 'charge', 5] }], token });
+    await dispatcher.dispatch(context, { root: 'context', steps: [{ name: 'plugins' }, { name: 'namespace', args: ['org.x'] }, { name: 'billing' }, { name: 'charge', args: [5] }], token });
+    await dispatcher.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['t'] }], token });
+    const rpc = tokens.resolve(token)!.rpc;
+    expect(rpc.peers.get('billing.charge')!.count).toBe(2);
+    expect([...rpc.peers.keys()]).toEqual(['billing.charge']);
+  });
+
   it('keeps nothing for a token the host never minted', async () => {
     const { context, dispatcher } = build();
     await expect(dispatcher.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['t'] }], token: 'route:forged' })).rejects.toMatchObject({ code: 'unknown_invocation' });

@@ -71,7 +71,29 @@ export class PluginHostDispatcher {
       by.ms += took;
       by.count += 1;
       invocation.rpc.by.set(kind, by);
+      const peer = PluginHostDispatcher.peerMethod(call.steps);
+      if (peer) {
+        const spent = invocation.rpc.peers.get(peer) ?? { ms: 0, count: 0 };
+        spent.ms += took;
+        spent.count += 1;
+        invocation.rpc.peers.set(peer, spent);
+      }
     }
+  }
+
+  /**
+   * Which peer method a call into the namespace API asked for, as `slug.method`: `namespace(ns).call(slug, m)`
+   * and `namespace(ns).<slug>.<m>(...)` alike. Every such call is otherwise one `plugins-namespace` total,
+   * which says a request waited on other plugins but never on which one.
+   */
+  static peerMethod(steps: IPluginRemoteCall['steps']): string | null {
+    if (steps[0]?.name !== 'plugins' || steps[1]?.name !== 'namespace') return null;
+    const third = steps[2];
+    if (!third) return null;
+    const [slug, method] = third.name === 'call' || third.name === 'callOperation'
+      ? [third.args?.[0], third.args?.[1]]
+      : [third.name, steps[3]?.name];
+    return typeof slug === 'string' && typeof method === 'string' && slug && method ? `${slug}.${method}` : null;
   }
 
   /**

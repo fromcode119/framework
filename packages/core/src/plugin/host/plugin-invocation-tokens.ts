@@ -18,7 +18,7 @@ import type { ITenantScopeLease } from '@fromcode119/database';
  * calls reuse while this one piece of work runs. Revoking the token closes it.
  */
 export class PluginInvocationTokens {
-  private readonly live = new Map<string, { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }> } }>();
+  private readonly live = new Map<string, { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }>; peers: Map<string, { ms: number; count: number }> } }>();
   private readonly leases = new Map<string, ITenantScopeLease>();
   /** Per live token: host calls still running, and when the last one started or ended. */
   private readonly activity = new Map<string, { running: number; lastAt: number }>();
@@ -27,13 +27,13 @@ export class PluginInvocationTokens {
   mint(kind: string, store: IRequestStore | undefined): string {
     const token = `${kind}:${randomBytes(18).toString('base64url')}`;
     const tenantId = String(store?.tenantId ?? '').trim() || null;
-    this.live.set(token, { store, tenantId, kind, rpc: { ms: 0, count: 0, by: new Map() } });
+    this.live.set(token, { store, tenantId, kind, rpc: { ms: 0, count: 0, by: new Map(), peers: new Map() } });
     this.activity.set(token, { running: 0, lastAt: Date.now() });
     return token;
   }
 
   /** The invocation a token was minted for, or null — never a guess. */
-  resolve(token: unknown): { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }> } } | null {
+  resolve(token: unknown): { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }>; peers: Map<string, { ms: number; count: number }> } } | null {
     if (typeof token !== 'string' || !token) return null;
     return this.live.get(token) ?? null;
   }
