@@ -57,21 +57,21 @@ export class StackStore {
         framework,
         version: String(raw.version || ''),
         createdAt: new Date(String(raw.createdAt || Date.now())),
-        // The session is read from the WORKTREE path, which is where the scratchpad id lives; the
+        // The session is read from a WORKTREE path, which is where the scratchpad id lives; the
         // stack's own directory is outside the scratchpad precisely so it survives a restart.
-        session: StackSession.fromWorkingDirectory(framework),
+        session: StackSession.fromWorkingDirectory(String(raw.owner || framework)),
       };
     } catch {
       return null;
     }
   }
 
-  write(name: string, port: number, framework: string, version: string, plugins: readonly string[]): void {
+  write(name: string, port: number, framework: string, version: string, plugins: readonly string[], owner?: string): void {
     const root = this.rootFor(name);
     fs.mkdirSync(root, { recursive: true });
     fs.writeFileSync(
       path.join(root, 'stack.json'),
-      `${JSON.stringify({ name, port, framework, version, plugins, createdAt: new Date().toISOString() }, null, 2)}\n`,
+      `${JSON.stringify({ name, port, framework, version, plugins, owner, createdAt: new Date().toISOString() }, null, 2)}\n`,
     );
   }
 

@@ -2,6 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
+import type { IStackManifest } from '@cli/services/stack/interfaces/stack-manifest.interface';
 
 /**
  * The packages a worktree needs that the image under its stack does not have.
@@ -26,19 +27,37 @@ export class StackImagePackages {
   private static readonly SCOPE = '@fromcode119/';
 
   /** What `workspace` and every workspace package it uses ask for from the registry, as `name@range`. */
-  static declaredBy(framework: string, workspace: string, seen = new Set<string>()): string[] {
-    if (seen.has(workspace)) return [];
-    seen.add(workspace);
+  static declaredBy(framework: string, workspace: string): string[] {
+    const specs = [...StackImagePackages.closureOf(framework, workspace).values()].flatMap((manifest) =>
+      Object.entries(manifest.dependencies ?? {})
+        .filter(([name, range]) => !name.startsWith(StackImagePackages.SCOPE) && !/^(workspace|file|link):/.test(range))
+        .map(([name, range]) => `${name}@${range}`),
+    );
+    return [...new Set(specs)];
+  }
+
+  /**
+   * The folders an image may keep one declared package in: the root, or beside each workspace package
+   * that declares it. A version that could not be hoisted stays in the workspace's own folder, and
+   * looking only at the root reinstalled those into every stack, on an image that already had them.
+   */
+  static foldersOf(framework: string, workspace: string, spec: string): string[] {
+    const name = StackImagePackages.nameOf(spec);
+    const declarers = [...StackImagePackages.closureOf(framework, workspace)].filter(([, manifest]) => manifest.dependencies?.[name] !== undefined);
+    return ['/app/node_modules', ...declarers.map(([declarer]) => `/app/packages/${declarer}/node_modules`)].map((folder) => `${folder}/${name}`);
+  }
+
+  /** `workspace` and every workspace package it uses, with each one's manifest. */
+  private static closureOf(framework: string, workspace: string, found = new Map<string, IStackManifest>()): Map<string, IStackManifest> {
     const file = path.join(framework, 'packages', workspace, 'package.json');
-    if (!fs.existsSync(file)) return [];
-    const manifest = JSON.parse(fs.readFileSync(file, 'utf8')) as { dependencies?: Record<string, string> };
-    const own: string[] = [];
-    const nested: string[] = [];
-    for (const [name, range] of Object.entries(manifest.dependencies ?? {})) {
-      if (name.startsWith(StackImagePackages.SCOPE)) nested.push(...StackImagePackages.declaredBy(framework, name.slice(StackImagePackages.SCOPE.length), seen));
-      else if (!/^(workspace|file|link):/.test(range)) own.push(`${name}@${range}`);
+    if (found.has(workspace) || !fs.existsSync(file)) return found;
+
+    const manifest = JSON.parse(fs.readFileSync(file, 'utf8')) as IStackManifest;
+    found.set(workspace, manifest);
+    for (const name of Object.keys(manifest.dependencies ?? {})) {
+      if (name.startsWith(StackImagePackages.SCOPE)) StackImagePackages.closureOf(framework, name.slice(StackImagePackages.SCOPE.length), found);
     }
-    return [...new Set([...own, ...nested])];
+    return found;
   }
 
   /** The declared packages whose folder the image does not have. */
@@ -65,7 +84,7 @@ export class StackImagePackages {
         if (!image) continue;
         const declared = StackImagePackages.declaredBy(this.framework, workspace);
         if (!declared.length) continue;
-        const lacking = StackImagePackages.missing(declared, await this.presentIn(image, declared));
+        const lacking = StackImagePackages.missing(declared, await this.presentIn(image, workspace, declared));
         if (!lacking.length) continue;
         const key = `${image} ${lacking.join(' ')}`;
         if (!built.has(key)) built.set(key, await this.install(image, lacking));
@@ -91,8 +110,13 @@ export class StackImagePackages {
    * Asked of the image in a container of its own: a crashing service cannot be asked, and a stack's
    * services may sit on an internal network with no way to the registry.
    */
-  private async presentIn(image: string, declared: string[]): Promise<Set<string>> {
-    const probe = declared.map((spec) => StackImagePackages.nameOf(spec)).map((name) => `[ -d /app/node_modules/${name} ] && echo ${name}`).join('; ');
+  private async presentIn(image: string, workspace: string, declared: string[]): Promise<Set<string>> {
+    const probe = declared
+      .map((spec) => {
+        const found = StackImagePackages.foldersOf(this.framework, workspace, spec).map((folder) => `[ -d ${folder} ]`).join(' || ');
+        return `{ ${found}; } && echo ${StackImagePackages.nameOf(spec)}`;
+      })
+      .join('; ');
     const result = await this.shell.run(`docker run --rm ${await this.platformOf(image)} --entrypoint sh ${image} -c "${probe}; true"`);
     return new Set(result.stdout.split('\n').map((line) => line.trim()).filter(Boolean));
   }

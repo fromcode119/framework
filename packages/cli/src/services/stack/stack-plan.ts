@@ -59,7 +59,7 @@ export class StackPlan {
 
   constructor(private readonly request: IStackRequest) {
     this.layout = StackLayout.of(request.framework);
-    this.extensions = StackExtensions.of(request.framework, StackPlan.PLUGIN_KIND);
+    this.extensions = StackExtensions.of(request.checkout ?? request.framework, StackPlan.PLUGIN_KIND);
     this.packages = new StackPackageMounts(request.framework, this.layout);
   }
 

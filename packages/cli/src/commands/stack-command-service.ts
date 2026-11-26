@@ -1,16 +1,15 @@
-import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { StackService } from '@cli/services/stack/stack-service';
 import { StackStore } from '@cli/services/stack/stack-store';
 import { StackPlan } from '@cli/services/stack/stack-plan';
-import { StackImageTag } from '@cli/services/stack/stack-image-tag';
-import { StackTemplate } from '@cli/services/stack/stack-template';
+import { StackRuntime } from '@cli/services/stack/stack-runtime';
 import { StackPluginBuild } from '@cli/services/stack/stack-plugin-build';
 import { StackThemeBuild } from '@cli/services/stack/stack-theme-build';
 import { StackCapacity } from '@cli/services/stack/stack-capacity';
 import { StackSourceApps } from '@cli/services/stack/stack-source-apps';
+import type { IStackRequest } from '@cli/services/stack/interfaces/stack-request.interface';
 import { execFileSync } from 'child_process';
 
 /**
@@ -35,31 +34,37 @@ export class StackCommandService {
   private static registerUp(stack: Command): void {
     stack
       .command('up <name>')
-      .description('Start an isolated stack running a worktree (builds no images)')
-      .option('-f, --framework <path>', 'Framework worktree to run', process.cwd())
+      .description('Start an isolated stack on the latest release, or on a framework worktree (builds no images)')
+      .option('-f, --framework <path>', 'Framework worktree to run (default: this worktree; from the shared checkout, the latest release as published)')
       .option('-p, --plugin <path...>', 'Plugin worktree to mount (built in place before the stack starts)', [])
       .option('-T, --theme <path...>', 'Theme worktree to mount (built in place before the stack starts)', [])
       // NOT `--version`: commander already owns that on the program, so the flag printed the CLI's
       // own version and never started a stack.
-      .option('-t, --tag <tag>', 'Released image tag to run on (default: the worktree version if it is here, else the template\'s, else the newest here)')
+      .option('-t, --tag <tag>', 'Released image tag to run on (default: the worktree version, or the latest release)')
+      .option('--no-pull', 'Run only on images already on this machine')
       .option('--port <port>', 'Port on 127.0.0.1', (value) => parseInt(value, 10))
       .option('--from <template>', 'Start from a captured template instead of the setup wizard')
       .action(async (name: string, options: Record<string, unknown>) => {
         const service = new StackService();
-        const framework = path.resolve(String(options.framework));
-        let request: { name: string; framework: string; plugins: string[]; themes: string[]; version: string; port: number } | null = null;
+        let request: IStackRequest | null = null;
 
         try {
+          const runtime = await new StackRuntime().resolve({
+            framework: options.framework ? String(options.framework) : undefined,
+            directory: process.cwd(),
+            tag: options.tag ? String(options.tag) : undefined,
+            template: options.from ? String(options.from) : undefined,
+            pull: options.pull !== false,
+          });
           request = {
             name,
-            framework,
+            ...runtime,
             plugins: (options.plugin as string[]).map((plugin) => path.resolve(plugin)),
             themes: (options.theme as string[]).map((theme) => path.resolve(theme)),
-            version: StackCommandService.tagFor(framework, options),
             port: new StackStore().claimPort(name, options.port as number | undefined),
           };
           const plan = new StackPlan(request);
-          StackCommandService.reportCapacity(framework);
+          StackCommandService.reportCapacity(runtime.framework);
           StackCommandService.reportDependencies(plan);
           await StackPluginBuild.all(plan.changedPlugins());
           await StackThemeBuild.all(request.themes);
@@ -158,18 +163,6 @@ export class StackCommandService {
    * command has already reported success — the plugin is installed but never registered, so the
    * console simply does not show it and nothing on screen says why.
    */
-  /** The image tag, never one that would make compose pull gigabytes the caller did not ask for. */
-  private static tagFor(framework: string, options: Record<string, unknown>): string {
-    const template = options.from ? StackTemplate.versionAt(new StackStore().root, String(options.from)) : null;
-    const choice = StackImageTag.of(framework).choose(
-      options.tag ? String(options.tag) : undefined,
-      StackCommandService.versionOf(framework),
-      template,
-    );
-    if (choice.note) console.log(chalk.yellow(`\n${choice.note}`));
-    return choice.tag;
-  }
-
   private static reportDependencies(plan: StackPlan): void {
     for (const plugin of plan.mirroredPlugins()) {
       console.log(chalk.yellow(`\n${plugin} is the shared mirror of main, so it is mounted READ-ONLY.`));
@@ -209,22 +202,6 @@ export class StackCommandService {
           StackCommandService.fail(error);
         }
       });
-  }
-
-  /**
-   * The image tag to run on.
-   *
-   * The worktree's own version, because that is the image whose node_modules matches the code being
-   * mounted over it. A mismatch is not theoretical — a theme packed against one tag and served by
-   * another made every sdk component undefined and crashed the editor with React #130.
-   */
-  private static versionOf(framework: string): string {
-    const file = path.join(framework, 'package.json');
-    if (!fs.existsSync(file)) throw new Error(`${framework} has no package.json`);
-
-    const version = String((JSON.parse(fs.readFileSync(file, 'utf8')) as { version?: string }).version || '').trim();
-    if (!version) throw new Error(`${file} declares no version`);
-    return version.startsWith('v') ? version : `v${version}`;
   }
 
   private static fail(error: unknown): never {
