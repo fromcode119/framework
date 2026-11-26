@@ -1,4 +1,4 @@
-import { Logger } from '@fromcode119/core';
+import { Logger, RequestServerTiming } from '@fromcode119/core';
 import { Request, Response, NextFunction } from 'express';
 import { BaseMiddleware } from '@api/middlewares/base-middleware';
 import { ApiConfig } from '@api/config/api-config';
@@ -10,12 +10,17 @@ import { ApiConfig } from '@api/config/api-config';
  * Written on `finish`, not on arrival, so the line carries what the request GOT, including a refusal sent by
  * a later middleware. A server error is logged at `warn`, everything else at `info`.
  *
+ * A response slower than `SLOW_MS` also carries where its time went (`timing=`, the steps of `Server-Timing`:
+ * names, durations and counts, never a value) — for every caller, because the slow answers worth explaining
+ * are mostly the signed-in ones, which never get the header.
+ *
  * Deliberately left out: the query string (tokens, emails and search terms travel there), the user's email
  * (the id identifies them without putting personal data in the log), and liveness/readiness/status probes,
  * which a watchdog calls every few seconds and would bury every real request.
  */
 export class RequestLoggerMiddleware extends BaseMiddleware {
   private static readonly logger = new Logger({ namespace: 'http' });
+  static readonly SLOW_MS = 1000;
 
   handle(req: Request, res: Response, next: NextFunction): void {
     if (this.isProbe(req.originalUrl)) return next();
@@ -25,7 +30,8 @@ export class RequestLoggerMiddleware extends BaseMiddleware {
       const host = String(req.headers['x-forwarded-host'] || req.headers.host || '-');
       const path = req.originalUrl.split('?')[0];
       const user = (req as any).user?.id;
-      const line = `${host} ${req.method} ${path} ${res.statusCode} ${ms}ms user=${user ?? '-'}`;
+      const timing = ms >= RequestLoggerMiddleware.SLOW_MS ? String(res.locals?.[RequestServerTiming.LOCALS_KEY] ?? '') : '';
+      const line = `${host} ${req.method} ${path} ${res.statusCode} ${ms}ms user=${user ?? '-'}${timing ? ` timing=${timing}` : ''}`;
       if (res.statusCode >= 500) RequestLoggerMiddleware.logger.warn(line);
       else RequestLoggerMiddleware.logger.info(line);
     });
