@@ -41,7 +41,10 @@ export class PluginGuestPeerNamespace {
     const peerRef = (slug: string) => remote.ref('context', [
       { name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: slug },
     ]);
-    const facadeCall = (method: string, args: unknown[]) => remote.ref('context', [
+    // Sent now, once, and answered as a plain promise — as in-process. A remote chain sends its message
+    // each time it is awaited, so an answer kept and awaited again (a short-lived cache shared by callers)
+    // asked the peer once per await: a guest caching one config read asked for it seven times a request.
+    const facadeCall = (method: string, args: unknown[]) => remote.call('context', [
       { name: 'plugins' }, { name: 'namespace', args: [namespace] }, { name: method, args },
     ]);
 

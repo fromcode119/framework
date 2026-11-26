@@ -20,7 +20,10 @@ describe('the guest namespace proxy', () => {
       peerKeys: () => peers.map((slug) => `org.fromcode:${slug}`),
       peerFunctions: (_ns: string, slug: string) => (slug === 'numbers' ? ['contentReadings'] : ['other']),
     };
-    const remote = { ref: vi.fn((root: string, chain: unknown[]) => ({ __ref: true, root, chain })) };
+    const remote = {
+      ref: vi.fn((root: string, chain: unknown[]) => ({ __ref: true, root, chain })),
+      call: vi.fn(async (_root: string, chain: Array<{ name: string; args?: unknown[] }>) => ({ answered: chain[chain.length - 1].name })),
+    };
     // Moved out of PluginGuestContextFactory when that file passed its size limit; same behaviour.
     return PluginGuestPeerNamespace.build('org.fromcode', state, remote) as any;
   };
@@ -70,11 +73,27 @@ describe('the guest namespace proxy', () => {
       .toThrow(/not available to an isolated plugin/);
   });
 
-  it('forwards the async facade calls as remote chains', () => {
+  it('sends the async facade calls at once and answers them as promises', async () => {
     const ns = build(['billing']);
 
-    expect(ns.callOperation('billing', 'refund', 1)).toMatchObject({ __ref: true });
+    await expect(ns.callOperation('billing', 'refund', 1)).resolves.toEqual({ answered: 'callOperation' });
     expect(ns.getNamespace()).toBe('org.fromcode');
+  });
+
+  // A remote chain sends its message on every await. A guest that kept the answer of call() in a cache and
+  // awaited it from several callers asked the peer once per await — seven times in one request.
+  it('sends a call once however many times its answer is awaited', async () => {
+    const remote = { ref: vi.fn(), call: vi.fn(async () => 'value') };
+    const ns = PluginGuestPeerNamespace.build('org.fromcode', { hasPeer: () => true, peerKeys: () => [], peerFunctions: () => [] }, remote as any) as any;
+
+    const answer = ns.call('ledger', 'balance', { account: 'a1' });
+    expect(await answer).toBe('value');
+    expect(await answer).toBe('value');
+    expect(await Promise.all([answer, answer])).toEqual(['value', 'value']);
+    expect(remote.call).toHaveBeenCalledTimes(1);
+    expect(remote.call).toHaveBeenCalledWith('context', [
+      { name: 'plugins' }, { name: 'namespace', args: ['org.fromcode'] }, { name: 'call', args: ['ledger', 'balance', { account: 'a1' }] },
+    ]);
   });
 
   it('keeps the `in` operator working', () => {
