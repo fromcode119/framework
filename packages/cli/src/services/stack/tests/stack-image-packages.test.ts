@@ -28,4 +28,15 @@ describe('StackImagePackages', () => {
     expect(StackImagePackages.declaredBy(root, 'api').sort()).toEqual(['express@^5', 'pg@^8', 'pkijs@4.0.1']);
     fs.rmSync(root, { recursive: true, force: true });
   });
+  it('looks beside every workspace package that declares one, not only at the root', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stack-folders-'));
+    const write = (name: string, dependencies: Record<string, string>) => {
+      fs.mkdirSync(path.join(root, 'packages', name), { recursive: true });
+      fs.writeFileSync(path.join(root, 'packages', name, 'package.json'), JSON.stringify({ dependencies }));
+    };
+    write('api', { '@fromcode119/core': '*' });
+    write('core', { pkijs: '4.0.1' });
+    expect(StackImagePackages.foldersOf(root, 'api', 'pkijs@4.0.1')).toEqual(['/app/node_modules/pkijs', '/app/packages/core/node_modules/pkijs']);
+    fs.rmSync(root, { recursive: true, force: true });
+  });
 });

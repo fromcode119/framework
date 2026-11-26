@@ -10,6 +10,7 @@ import { IStackRequest } from '@cli/services/stack/interfaces/stack-request.inte
 import { IStackRecord } from '@cli/services/stack/interfaces/stack-record.interface';
 import { StackStore } from '@cli/services/stack/stack-store';
 import { StackLayout } from '@cli/services/stack/stack-layout';
+import { StackSession } from '@cli/services/stack/stack-session';
 import { StackTemplate } from '@cli/services/stack/stack-template';
 import { StackTemplateRestore } from '@cli/services/stack/stack-template-restore';
 import { StackImagePackages } from '@cli/services/stack/stack-image-packages';
@@ -17,8 +18,8 @@ import { StackImagePackages } from '@cli/services/stack/stack-image-packages';
 /**
  * Brings a throwaway stack up and takes it away again.
  *
- * The whole point is that `up` builds NOTHING. It runs a released image already on the machine and
- * mounts this worktree's built output over it, so a stack costs containers and a database — not
+ * The whole point is that `up` builds NO image. It runs a released one (pulled by StackRuntime when it
+ * is not here) and mounts this worktree's built output over it, so a stack costs containers and a database — not
  * five three-gigabyte images, which is what a second compose project used to cost before every
  * local project was pinned to one image tag.
  */
@@ -27,7 +28,8 @@ export class StackService {
 
   /** Creates the stack's files and starts it, optionally from a captured template. */
   async up(request: IStackRequest, template?: string): Promise<IStackRecord> {
-    this.assertFrameworkBuilt(request.framework);
+    // A release run as published has nothing to build: the images are the platform.
+    if (!request.checkout) this.assertFrameworkBuilt(request.framework);
     if (this.store.exists(request.name)) {
       throw new Error(`Stack "${request.name}" already exists. Use \`fromcode stack down ${request.name}\` first.`);
     }
@@ -35,7 +37,9 @@ export class StackService {
     const plan = new StackPlan(request);
     const root = this.store.rootFor(request.name);
     this.materialise(root, request.framework, plan, request.themes ?? []);
-    this.store.write(request.name, request.port, request.framework, request.version, request.plugins);
+    // Whoever's scratchpad a worktree sits in owns the stack; a release run as published has only its extensions to say so.
+    const owner = [request.framework, ...request.plugins, ...(request.themes ?? [])].find((candidate) => StackSession.fromWorkingDirectory(candidate).id);
+    this.store.write(request.name, request.port, request.framework, request.version, request.plugins, owner);
 
     if (template) {
       await new StackTemplateRestore(this.store.root, this.shell(root)).lay(

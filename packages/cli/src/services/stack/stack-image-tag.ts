@@ -2,16 +2,20 @@ import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { StackLayout } from '@cli/services/stack/stack-layout';
+import { StackReleaseOrder } from '@cli/services/stack/stack-release-order';
 import type { IStackImageChoice } from '@cli/services/stack/interfaces/stack-image-choice.interface';
+import type { IStackImageQuery } from '@cli/services/stack/interfaces/stack-image-query.interface';
 
 /**
- * Which released image tag a stack runs on, chosen among the ones already on this machine.
+ * Which released image tag a stack runs on.
  *
- * The worktree's own version is preferred, because its image's node_modules matches the code
- * mounted over it. But a worktree is usually AHEAD of every image here: on 2026-11-19 a stack
- * asked for v0.2.606, compose started pulling four 3 GB images, and the pull then failed because
- * that tag had no arm64 build. A missing tag is therefore never pulled implicitly — the stack
- * falls back to the template's tag, then to the newest one present, and says so.
+ * The worktree's own version is preferred, because its image's node_modules matches the code mounted
+ * over it; a stack with no framework change runs the latest release. Either is pulled when it is not
+ * on this machine. Until 2026-11-26 nothing was ever pulled, so stacks started on whatever was newest
+ * HERE: images at v0.2.588 under a main of v0.2.651, where a plugin needing a newer core could not run
+ * at all. Only a published tag is pulled — a release takes some minutes to publish its images, and a
+ * half-published one is passed over for the release before it. Without the registry (offline, or
+ * `--no-pull`) the stack falls back to what is here and says so.
  *
  * The image names come from the framework's own images file, so nothing here names a registry.
  */
@@ -20,7 +24,7 @@ export class StackImageTag {
   private static readonly IMAGE_LINE = /image:\s*(?:\$\{\w+:-)?([^\s:${}]+):\$\{VERSION/g;
 
   private constructor(
-    private readonly images: string[],
+    readonly images: readonly string[],
     private readonly present: (image: string) => string[],
   ) {}
 
@@ -41,34 +45,53 @@ export class StackImageTag {
     if (!this.images.length) return [];
 
     const [first, ...rest] = this.images.map((image) => new Set(this.present(image)));
-    return [...first]
-      .filter((tag) => rest.every((tags) => tags.has(tag)) && /^v?\d+\.\d+\.\d+$/.test(tag))
-      .sort(StackImageTag.newestFirst);
+    return StackReleaseOrder.releases([...first].filter((tag) => rest.every((tags) => tags.has(tag))));
+  }
+
+  /** The images that do not have `tag` on this machine. */
+  lacking(tag: string): string[] {
+    return this.images.filter((image) => !this.present(image).includes(tag));
   }
 
   /**
-   * The tag to run on, and why when it is not the preferred one.
+   * The tag to run on, and why when it is not simply the preferred one.
    *
-   * An explicit tag is taken as given: the caller asked for it, pull included.
+   * An explicit tag is taken as given: the caller asked for it.
    */
-  choose(explicit: string | undefined, preferred: string, template: string | null): IStackImageChoice {
+  async choose(query: IStackImageQuery): Promise<IStackImageChoice> {
+    const { explicit, preferred, template, releases } = query;
     if (explicit) return { tag: explicit, note: null };
 
     const available = this.available();
-    if (available.includes(preferred)) return { tag: preferred, note: null };
+    if (preferred && available.includes(preferred)) return { tag: preferred, note: null };
+
+    if (releases) {
+      if (preferred && (await releases.isPublished(this.images, preferred))) return { tag: preferred, note: null };
+
+      const latest = await releases.latest(this.images, available);
+      if (latest) {
+        const note = preferred
+          ? `${preferred} has no published images, so the stack runs on the latest release, ${latest}.`
+          : `Running the latest release, ${latest}.`;
+        return { tag: latest, note };
+      }
+    }
+
+    return this.localFallback(available, preferred, template, releases ? 'no release could be read from the registry' : '--no-pull was given');
+  }
+
+  private localFallback(available: string[], preferred: string | null, template: string | null, because: string): IStackImageChoice {
     if (!available.length) {
       throw new Error(
-        `No released image of this topology is on this machine (wanted ${preferred}).\n` +
-          `  Pull one on purpose, then pass it:  --tag <tag>`,
+        `No released image of this topology is on this machine, and ${because}.\n` +
+          '  Check the connection and `docker login`, or pass a published one:  --tag <tag>',
       );
     }
 
     const tag = template && available.includes(template) ? template : available[0];
     const why = template === tag ? 'the template was captured on it' : 'it is the newest one here';
-    return {
-      tag,
-      note: `${preferred} is not on this machine, so the stack runs on ${tag} (${why}); nothing is pulled.`,
-    };
+    const wanted = preferred ?? 'The latest release';
+    return { tag, note: `${wanted} is not used (${because}), so the stack runs on ${tag} (${why}).` };
   }
 
   private static localTagsOf(image: string): string[] {
@@ -83,12 +106,5 @@ export class StackImageTag {
     } catch {
       return [];
     }
-  }
-
-  private static newestFirst(a: string, b: string): number {
-    const parts = (tag: string) => tag.replace(/^v/, '').split('.').map(Number);
-    const [x, y] = [parts(a), parts(b)];
-    for (let i = 0; i < 3; i += 1) if (x[i] !== y[i]) return y[i] - x[i];
-    return 0;
   }
 }
