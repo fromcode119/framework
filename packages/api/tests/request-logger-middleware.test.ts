@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { vi } from 'vitest';
-import { Logger } from '@fromcode119/core';
+import { Logger, RequestServerTiming } from '@fromcode119/core';
 import { RequestLoggerMiddleware } from '@api/middlewares/request-logger-middleware';
 import { ApiConfig } from '@api/config/api-config';
 
@@ -44,5 +44,25 @@ describe('RequestLoggerMiddleware — the api access log', () => {
     const { next, lines } = run(`/api${ApiConfig.getInstance().probeRoutes.HEALTH}`, 200);
     expect(next).toHaveBeenCalledOnce();
     expect(lines).toEqual([]);
+  });
+
+  const timed = (elapsedMs: number) => {
+    const info = vi.spyOn(Logger.prototype, 'info').mockImplementation(() => {});
+    const clock = vi.spyOn(process.hrtime, 'bigint').mockReturnValueOnce(0n).mockReturnValueOnce(BigInt(elapsedMs) * 1_000_000n);
+    const res = Object.assign(new EventEmitter(), { statusCode: 200, locals: { [RequestServerTiming.LOCALS_KEY]: 'plugin-handler;dur=1400.0, api-total;dur=1450.2' } });
+    new RequestLoggerMiddleware().middleware()({ method: 'GET', originalUrl: '/api/plugins/demo/me', headers: { host: 'site.example' }, user: { id: 3 } } as any, res as any, vi.fn());
+    res.emit('finish');
+    const line = String(info.mock.calls[0]?.[0]);
+    info.mockRestore();
+    clock.mockRestore();
+    return line;
+  };
+
+  it('says where the time of a slow response went, for a signed-in caller too', () => {
+    expect(timed(1500)).toBe('site.example GET /api/plugins/demo/me 200 1500ms user=3 timing=plugin-handler;dur=1400.0, api-total;dur=1450.2');
+  });
+
+  it('keeps a fast response to its one short line', () => {
+    expect(timed(40)).toBe('site.example GET /api/plugins/demo/me 200 40ms user=3');
   });
 });

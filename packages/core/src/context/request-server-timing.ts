@@ -22,6 +22,12 @@ import type { IRequestTimingStepTotal } from '@core/context/interfaces/request-t
 export class RequestServerTiming {
   private static readonly storage = new AsyncLocalStorage<RequestTimingRecorder>();
 
+  /**
+   * Where the whole timing of a response is left for the access log (`res.locals`), whoever the caller is: the
+   * log is the operator's, and a slow answer to a signed-in person is exactly the one that needs explaining.
+   */
+  static readonly LOCALS_KEY = 'fcServerTiming';
+
   /** A step name is a short token the header can carry as is; anything else is not recorded. */
   private static readonly NAME = /^[a-z][a-z0-9-]{0,39}$/;
 
@@ -114,18 +120,19 @@ export class RequestServerTiming {
 
   private static write(req: Request, res: Response, recorder: RequestTimingRecorder, gated: boolean): void {
     if (res.headersSent) return;
+    for (const contribute of recorder.late) {
+      try { contribute(); } catch { /* a step that cannot be counted is left out; the answer is not held up */ }
+    }
+    const mine = RequestServerTiming.format(recorder);
+    const existing = res.getHeader('Server-Timing');
+    const kept = Array.isArray(existing) ? existing.join(', ') : existing ? String(existing) : '';
+    const whole = kept && mine ? `${kept}, ${mine}` : kept || mine;
+    if (res.locals) res.locals[RequestServerTiming.LOCALS_KEY] = whole;
     if (gated && !RequestServerTiming.allows(req)) {
       // A plugin process answered with timings of its own: they are held to the same rule.
       res.removeHeader('Server-Timing');
       return;
     }
-    for (const contribute of recorder.late) {
-      try { contribute(); } catch { /* a step that cannot be counted is left out; the answer is not held up */ }
-    }
-    const mine = RequestServerTiming.format(recorder);
-    if (!mine) return;
-    const existing = res.getHeader('Server-Timing');
-    const kept = Array.isArray(existing) ? existing.join(', ') : existing ? String(existing) : '';
-    res.setHeader('Server-Timing', kept ? `${kept}, ${mine}` : mine);
+    if (mine) res.setHeader('Server-Timing', whole);
   }
 }
