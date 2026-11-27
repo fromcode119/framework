@@ -223,7 +223,9 @@ export class SystemApiPaths {
       /** An admin's own view of a file's bytes, whatever storage space it lives in. */
       ID_RAW: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_ID_RAW),
       /** An image with an extension's overlay laid over it, made on first request and cached. */
-      OVERLAY: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_OVERLAY)
+      OVERLAY: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_OVERLAY),
+      /** One stored file, whatever its space, for as long as its signed token lasts. */
+      SIGNED: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_SIGNED)
     },
     FILES: {
       BASE: SystemApiPaths.FILES_BASE,

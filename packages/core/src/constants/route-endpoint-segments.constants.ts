@@ -116,6 +116,8 @@ export class RouteEndpointSegments {
   MEDIA_ID_RAW: '/:id/raw',
   /** An image served with an extension's overlay (a watermark) — see `MediaOverlayStore`. */
   MEDIA_OVERLAY: '/overlay/:owner/:hash/:file',
+  /** One stored file for a few minutes, to whoever holds the link — see `MediaSignedTokens`. */
+  MEDIA_SIGNED: '/signed/:token/:file',
   // MEDIA_BASE: '/' is implicitly handled by the router mount point or just ''
 
   // ── Private file delivery ───────────────────────────────────────────────
