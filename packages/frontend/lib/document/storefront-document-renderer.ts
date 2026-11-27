@@ -19,7 +19,6 @@ import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { FrameworkSitePage } from '@/lib/document/framework-site-page';
 import { DocumentContactProtection } from '@/lib/contact/document-contact-protection';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
-import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { FrontendTranslationsCache } from '@/lib/frontend-translations-cache';
 import { PluginInjectionRenderer } from '@/lib/plugin-injection-renderer';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
@@ -60,17 +59,19 @@ export class StorefrontDocumentRenderer {
     if (RouteSegmentUtils.shouldBypassDynamicRouting(segments)) notFound();
     const slug = segments.join('/').trim();
     await timing.measure('session', AccountRouteGuard.enforce(`/${slug}`, request.pathname));
+    // One language for the whole document, the one its address names: `<html lang>`, the theme's render
+    // and the translations must be the locale the content was resolved in.
+    const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
 
     if (!slug) {
       const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams));
-      if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
+      if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, locale, timing);
       return StorefrontDocumentRenderer.document({
         content: home.content, resolutionType: home.resolution?.type, resolutionPlugin: home.resolution?.plugin, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '', contentPreview: home.resolution?.preview === true,
-        pageKind: StorefrontPageKind.HOME, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
+        pageKind: StorefrontPageKind.HOME, locale, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
 
-    const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
     // A path the framework answers itself (sign-in, registration, the account) is no miss when no content
     // claims it: reporting one logged every visit to /login as a 404 and moved the site's content revision,
     // which emptied every cached page.
@@ -83,12 +84,12 @@ export class StorefrontDocumentRenderer {
       if (canonicalTarget) permanentRedirect(canonicalTarget);
       return StorefrontDocumentRenderer.document({
         content: resolution.doc, resolutionType: resolution.type, resolutionPlugin: resolution.plugin, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', contentPreview: resolution.preview === true,
-        pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
+        pageKind: StorefrontPageKind.CONTENT, locale, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
     const redirectRule = await timing.measure('redirect', DynamicPageResolver.redirectAfterMiss(slug, resolution, !frameworkPage));
     // A rule saying the page is gone for good: the not-found page, answered 410 so crawlers drop it.
-    if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing, 410);
+    if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, locale, timing, 410);
     if (redirectRule) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);
@@ -97,10 +98,10 @@ export class StorefrontDocumentRenderer {
     if (frameworkPage) {
       return StorefrontDocumentRenderer.document({
         content: frameworkPage, resolutionType: undefined, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
-        pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
+        pageKind: StorefrontPageKind.CONTENT, locale, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
-    return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
+    return StorefrontDocumentRenderer.notFoundDocument(request, locale, timing);
   }
 
   /**
@@ -108,10 +109,10 @@ export class StorefrontDocumentRenderer {
    * override wins), status 404, `noindex` — what the App Router's `not-found` renders, as a document
    * the runtime can hydrate. A route handler's `notFound()` would answer with an EMPTY 404 instead.
    */
-  private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy, timing: DocumentRenderTiming, status = 404): Promise<Response> {
+  private static notFoundDocument(request: StorefrontDocumentRequest, locale: string, timing: DocumentRenderTiming, status = 404): Promise<Response> {
     return StorefrontDocumentRenderer.document({
       content: null, resolutionType: undefined, url: request.pathname, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', pageKind: StorefrontPageKind.NOT_FOUND,
-      strategy, status, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
+      locale, status, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
     }, timing);
   }
 
@@ -181,11 +182,11 @@ export class StorefrontDocumentRenderer {
   }
 
   private static async document(args: {
-    content: unknown; resolutionType: string | undefined; resolutionPlugin?: string; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
+    content: unknown; resolutionType: string | undefined; resolutionPlugin?: string; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; locale: string;
     status?: number; notFoundPath?: string; acceptEncoding?: string; contentPreview?: boolean;
   }, timing: DocumentRenderTiming): Promise<Response> {
     const content = (args.content as Record<string, unknown> | null) || null;
-    const locale = await timing.measure('documentLocale', FrontendLocaleService.resolveDocumentLocale(args.strategy));
+    const { locale } = args;
     const [page, site, schema, markup, theme, headInjections, bodyStartInjections, frontend, translations, pageDocPrefetch] = await Promise.all([
       // The robots directive is the FRAMEWORK's last word, applied after whichever plugin built the
       // head. A 404 is never indexable, and neither is a site that has not been published — that is

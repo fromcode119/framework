@@ -10,6 +10,7 @@ import "@fromcode119/react/widgets/plugin-widget-frame.css";
 // The one-time storefront notice (StorefrontNoticeBar) — same reason as the ones above.
 import "@fromcode119/react/storefront-notice/storefront-notice-bar.css";
 import type { Metadata } from 'next';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import { StorefrontRuntimeGate } from "@/app/components/view/storefront-runtime-gate.client";
 import { ThemeAssetsView } from '@/components/theme-assets';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
@@ -40,7 +41,7 @@ export class FrontendRootLayoutRoute {
       SiteVisibilityVerdict.isNonProduction(),
     ]);
     return (
-      <html lang={documentLocale} suppressHydrationWarning>
+      <html lang={documentLocale} dir={LocalizationUtils.textDirection(documentLocale).value} suppressHydrationWarning>
         <head>
           {/* Pre-paint color-scheme restore (generic, theme-agnostic contract) — see
               `ColorSchemeBootScript`. Serialized from real TypeScript, with the shared
