@@ -192,7 +192,7 @@ export class StorefrontDocumentRenderer {
       // head. A 404 is never indexable, and neither is a site that has not been published — that is
       // a fact about the site, not about its content, so no plugin gets to contradict it and it
       // holds even when the plugin that would normally set robots is inactive.
-      timing.measure('metadata', ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
+      timing.measure('metadata', ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url, locale)
         .then(async (page) => (args.status === 404 || args.status === 410 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
           ? { ...page, robots: { index: false, follow: false }, alternates: page.alternates?.canonical ? { canonical: page.alternates.canonical } : undefined }
           : page))),
