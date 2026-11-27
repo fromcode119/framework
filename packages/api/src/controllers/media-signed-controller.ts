@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Logger, MediaSignedTokens, MediaVisibility, RequestContextUtils, SystemConstants } from '@fromcode119/core';
+import { CoercionUtils, Logger, MediaSignedAddress, MediaSignedTokens, MediaVisibility, RequestContextUtils, SystemConstants } from '@fromcode119/core';
 import type { IPluginManagerInterface } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { MediaByteRange } from '@api/controllers/media-byte-range';
@@ -26,14 +26,19 @@ export class MediaSignedController {
 
   serve = async (req: Request, res: Response): Promise<unknown> => {
     const tenantId = String((req as unknown as { tenantId?: string }).tenantId || RequestContextUtils.getTenantId() || '').trim() || null;
+    // `/signed/<id>/file?t=<token>` names the file in the path; `/signed/<token>/file` is the earlier form.
+    const named = String(req.params.token || '');
+    const byId = /^\d+$/.test(named);
+    const token = byId ? CoercionUtils.toString(req.query?.[MediaSignedAddress.QUERY]) : named;
     let mediaId: string | null = null;
     try {
-      mediaId = await this.tokens.verify(String(req.params.token || ''), tenantId);
+      mediaId = await this.tokens.verify(token, tenantId);
     } catch {
       // A key that cannot be read means "cannot verify", which must read as no file — never as one.
       mediaId = null;
     }
-    if (!mediaId) return res.status(404).end();
+    // A token opens only the file it was made for, whatever the path names.
+    if (!mediaId || (byId && mediaId !== named)) return res.status(404).end();
     const row: Record<string, any> | null = await this.manager.db.findOne(SystemConstants.TABLE.MEDIA, { id: Number(mediaId) });
     if (!row?.path) return res.status(404).end();
 

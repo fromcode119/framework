@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { MediaSignedTokens } from '@core/media/media-signed-tokens';
@@ -85,5 +86,16 @@ describe('media signed tokens', () => {
     expect(MediaSignedAddress.fileName({ filename: 'live-50564-0718692e.MP4' })).toBe('file.mp4');
     expect(MediaSignedAddress.fileName({ filename: 'noext', originalName: 'sea.m4a' })).toBe('file.m4a');
     expect(MediaSignedAddress.fileName({ filename: 'noext' })).toBe('file');
+  });
+
+  // A token lasts a day at most: a phone that keeps files by their path must find one path per file, whatever the token.
+  it('names the file in the path and carries the token in the query', async () => {
+    vi.spyOn(MediaSignedTokens.prototype, 'mint').mockResolvedValue('v1.claim.sig');
+    vi.spyOn(SiteBaseUrl, 'apiUrlForCurrentSite').mockImplementation(async (path: string) => `https://site.test${path}`);
+    try {
+      expect(await new MediaSignedAddress({} as any).of({ id: 42, filename: 'sea.mp3' }, 3600)).toMatch(/^https:\/\/site\.test\/.*\/media\/signed\/42\/file\.mp3\?t=v1\.claim\.sig$/);
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 });
