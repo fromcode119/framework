@@ -10,10 +10,10 @@ import { IHomeTargetResolution } from '@/app/interfaces/home-target-resolution.i
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
 
 export class HomePageResolver {
-  static async resolve(searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>)): Promise<IHomeTargetResolution> {
+  static async resolve(searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>), pathLocale = ''): Promise<IHomeTargetResolution> {
     const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);
     const localeStrategy = await this.getLocaleUrlStrategy();
-    const locale = await this.resolveLocale(resolvedSearchParams, localeStrategy);
+    const locale = await this.resolveLocale(resolvedSearchParams, localeStrategy, pathLocale);
     const fallbackLocale = LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(resolvedSearchParams, 'fallback_locale'));
 
     return await this.resolveHomeTarget(locale, fallbackLocale);
@@ -41,8 +41,8 @@ export class HomePageResolver {
     return LocaleUrlStrategy.resolve(value);
   }
 
-  private static async resolveLocale(searchParams: Record<string, string | string[] | undefined> | undefined, strategy: LocaleUrlStrategy): Promise<string> {
-    return FrontendLocaleService.resolveLocale(searchParams, '', strategy);
+  private static async resolveLocale(searchParams: Record<string, string | string[] | undefined> | undefined, strategy: LocaleUrlStrategy, pathLocale: string): Promise<string> {
+    return FrontendLocaleService.resolveLocale(searchParams, pathLocale, strategy);
   }
 
   private static async resolveBySlug(slug: string, locale: string, fallbackLocale: string): Promise<unknown> {

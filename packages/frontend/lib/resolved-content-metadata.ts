@@ -31,6 +31,7 @@ export class ResolvedContentMetadata {
     content: Record<string, unknown> | null,
     resolutionType: string | undefined,
     url: string,
+    locale = '',
   ): Promise<Metadata> {
     const base = ResolvedContentMetadata.build(content, resolutionType);
     const head = await ResolvedContentMetadata.fetchHeadData({
@@ -45,7 +46,8 @@ export class ResolvedContentMetadata {
       record: content,
     });
     if (!head) return base;
-    const canonical = head.canonical || undefined;
+    const bare = head.canonical || undefined;
+    const canonical = bare ? await LocaleAlternateLinks.canonical(bare, locale) : undefined;
     const images = head.ogImage ? [head.ogImage] : undefined;
     const ogTitle = head.ogTitle || head.title || undefined;
     const ogDescription = head.ogDescription || head.description || undefined;
@@ -53,7 +55,7 @@ export class ResolvedContentMetadata {
       ...base,
       title: head.title ? { absolute: head.title } : base.title,
       description: head.description || base.description,
-      alternates: canonical ? { canonical, languages: await LocaleAlternateLinks.build(url, canonical) } : base.alternates,
+      alternates: bare ? { canonical, languages: await LocaleAlternateLinks.build(url, bare) } : base.alternates,
       robots: ResolvedContentMetadata.parseRobots(head.robots),
       ...HeadSiteTags.fields(head, base.other),
       openGraph: {

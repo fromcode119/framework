@@ -64,7 +64,7 @@ export class StorefrontDocumentRenderer {
     const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
 
     if (!slug) {
-      const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams));
+      const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams, pathLocale));
       if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, locale, timing);
       return StorefrontDocumentRenderer.document({
         content: home.content, resolutionType: home.resolution?.type, resolutionPlugin: home.resolution?.plugin, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '', contentPreview: home.resolution?.preview === true,
@@ -192,19 +192,19 @@ export class StorefrontDocumentRenderer {
       // head. A 404 is never indexable, and neither is a site that has not been published — that is
       // a fact about the site, not about its content, so no plugin gets to contradict it and it
       // holds even when the plugin that would normally set robots is inactive.
-      timing.measure('metadata', ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
+      timing.measure('metadata', ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url, locale)
         .then(async (page) => (args.status === 404 || args.status === 410 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
           ? { ...page, robots: { index: false, follow: false }, alternates: page.alternates?.canonical ? { canonical: page.alternates.canonical } : undefined }
           : page))),
       timing.measure('site', ResolvedContentMetadata.buildSiteMetadata()),
       timing.measure('schema', ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url)),
       timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch, resolutionPlugin: args.resolutionPlugin, resolutionType: args.resolutionType, timing })),
-      timing.measure('themeHead', ThemeHeadModel.load()),
+      timing.measure('themeHead', ThemeHeadModel.load(locale)),
       timing.measure('headInjections', PluginInjectionRenderer.loadHeadElements()),
       timing.measure('bodyInjections', PluginInjectionRenderer.loadBodyStartElements()),
       timing.measure('frontendConfig', FrontendConfigCache.read()),
       timing.measure('translations', FrontendTranslationsCache.read(locale)),
-      timing.measure('prefetch', PageDocPrefetchRequestCache.read(args.content, args.requestSearch, args.resolutionPlugin || '', args.resolutionType || '')),
+      timing.measure('prefetch', PageDocPrefetchRequestCache.read(args.content, args.requestSearch, args.resolutionPlugin || '', args.resolutionType || '', locale)),
     ]);
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),

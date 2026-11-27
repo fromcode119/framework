@@ -22,6 +22,21 @@ export class LocaleAlternateLinks {
     return LocaleAlternateLinks.links(origin, path, strategy, [...enabledLocales], defaultLocale);
   }
 
+  /**
+   * The canonical address of the page as read in `locale`. The head-data provider names the page's bare
+   * address; left so, a `/bg` page told search engines it was a copy of the default language's.
+   */
+  static async canonical(canonical: string, locale: string): Promise<string> {
+    const origin = LocaleAlternateLinks.origin(canonical);
+    if (!origin || !locale) return canonical;
+    const { strategy, enabledLocales } = await DynamicPageResolver.getLocaleRoutingConfig();
+    if (strategy === LocaleUrlStrategy.NONE || !enabledLocales.has(locale)) return canonical;
+    const address = new URL(canonical);
+    const defaultLocale = await FrontendLocaleService.readDefaultLocale();
+    if (locale === defaultLocale || enabledLocales.has(address.pathname.split('/')[1] || '')) return canonical;
+    return `${origin}${LocaleAlternateLinks.localized(address.pathname, locale, strategy, defaultLocale)}`;
+  }
+
   static links(origin: string, path: string, strategy: LocaleUrlStrategy, locales: string[], defaultLocale: string): Record<string, string> {
     const bare = `/${String(path || '').replace(/^\/+/, '')}`;
     const languages: Record<string, string> = {};

@@ -43,7 +43,9 @@ export class ThemeDataPrefetcher {
    * Shared with `PageDocPrefetcher`: every server-side prefetch reaches the API through this, so none
    * can be the one that forgot the tenant or a shared cache.
    */
-  static async fetchEntry(url: string): Promise<unknown | undefined> {
+  static async fetchEntry(entryUrl: string, locale = ''): Promise<unknown | undefined> {
+    // In the document's language: asked without it, the api answered a `/bg` page's menus in the site's default.
+    const url = locale ? `${entryUrl}${entryUrl.includes('?') ? '&' : '?'}locale=${encodeURIComponent(locale)}` : entryUrl;
     // THE TENANT, and the reason this whole mechanism was dead. A server-to-server fetch reaches the
     // API as `Host: api:3000`, and on a multi-tenant deployment the API routes by host — so every
     // prefetch resolved no site and was refused. Nothing failed loudly: the payload came back empty,
@@ -74,7 +76,7 @@ export class ThemeDataPrefetcher {
     return undefined;
   }
 
-  static async prefetch(theme: Record<string, any>): Promise<Record<string, unknown>> {
+  static async prefetch(theme: Record<string, any>, locale = ''): Promise<Record<string, unknown>> {
     const apis = Array.isArray(theme.ui?.prefetchApis)
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
       : [];
@@ -96,7 +98,7 @@ export class ThemeDataPrefetcher {
         );
         const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
-        const payload = await ThemeDataPrefetcher.fetchEntry(url);
+        const payload = await ThemeDataPrefetcher.fetchEntry(url, locale);
         if (payload !== undefined) results[key] = payload;
       }),
     );
