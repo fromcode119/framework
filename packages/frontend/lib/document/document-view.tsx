@@ -1,5 +1,6 @@
 import { PagePrefetchScriptView } from '@/components/page-prefetch-script';
 import type { Metadata } from 'next';
+import { LocalizationUtils } from '@fromcode119/core/client';
 import type { ReactElement, ReactNode } from 'react';
 import { DocumentHeadView } from '@/lib/document/document-head-view';
 import type { ThemeHeadModel } from '@/lib/document/theme-head-model';
@@ -44,7 +45,7 @@ export class DocumentView {
     status: number;
   }): ReactNode {
     return (
-      <html lang={lang}>
+      <html lang={lang} dir={LocalizationUtils.textDirection(lang).value}>
         <DocumentHeadView.render page={page} site={site} theme={theme} markup={markup} injections={headInjections} runtimeScriptPath={runtimeScriptPath} layoutInlineCss={layoutInlineCss} />
         <body>
           {/* FIRST in the body, ahead of the theme and ahead of any plugin injection, so nothing a
