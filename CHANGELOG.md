@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.652] - 2026-11-27
+
+### Added
+
+- **core**: media.signedUrl hands out a stored file for minutes, served in parts ([#1650](https://github.com/fromcode119/framework/pull/1650))
+
+### Fixed
+
+- **cli**: stack up runs the latest release instead of the newest image on the machine ([#1649](https://github.com/fromcode119/framework/pull/1649))
+
 ## [0.2.651] - 2026-11-26
 
 ### Fixed
@@ -17,6 +27,11 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Added
 
 - **core**: name the peer method a request waited on, in the access log only ([#1645](https://github.com/fromcode119/framework/pull/1645))
+
+## [0.2.649] - 2026-11-26
+
+### Added
+
 - **api**: the access log says where the time of a slow response went ([#1643](https://github.com/fromcode119/framework/pull/1643))
 
 ## [0.2.648] - 2026-11-25
