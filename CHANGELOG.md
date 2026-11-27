@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.653] - 2026-11-27
+
+### Fixed
+
+- **api**: compress script and text uploads on the way out ([#1654](https://github.com/fromcode119/framework/pull/1654))
+- **frontend**: the storefront document speaks the language its address names ([#1653](https://github.com/fromcode119/framework/pull/1653))
+
 ## [0.2.652] - 2026-11-27
 
 ### Added
