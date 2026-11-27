@@ -2,6 +2,7 @@ import express from 'express';
 import { MediaManager } from '@fromcode119/media';
 import { ApiConfig } from '@api/config/api-config';
 import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
+import { UploadsCompression } from '@api/server/uploads-compression';
 import { TenantUploadsStatic } from '@api/server/tenant-uploads-static';
 import { UploadsSessionSite } from '@api/server/uploads-session-site';
 import { ServedFileHeaderService } from '@api/services/served-file-header-service';
@@ -43,9 +44,10 @@ export class ServerUploadsStaticSetup {
       ServerUploadsStaticSetup.OPTIONS,
       sessionSite ? (req) => sessionSite.siteFor(req) : undefined,
     ).middleware();
-    app.use(config.publicPath, uploadsStatic);
+    const compressed = UploadsCompression.middleware();
+    app.use(config.publicPath, compressed, uploadsStatic);
     if (config.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
-      app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, uploadsStatic);
+      app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, compressed, uploadsStatic);
     }
     return config;
   }

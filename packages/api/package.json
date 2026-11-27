@@ -34,8 +34,10 @@
     "@fromcode119/mcp-server": "*",
     "@fromcode119/media": "*",
     "@fromcode119/scheduler": "*",
+    "@fromcode119/sources": "*",
     "@types/ws": "^8.18.1",
     "adm-zip": "^0.6.1",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -48,12 +50,12 @@
     "qrcode": "^1.5.4",
     "speakeasy": "^2.0.0",
     "tldts": "^7.0.22",
-    "ws": "^8.19.0",
-    "@fromcode119/sources": "*"
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",
     "@types/adm-zip": "^0.5.5",
+    "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.5",
