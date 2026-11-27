@@ -29,6 +29,12 @@ export interface IPluginContextMedia {
   publicUrl(id: any): Promise<string | null>;
   /** The addresses of many stored files in one read, keyed by id; an id with none here is absent. */
   publicUrls(ids: any[]): Promise<Record<string, string>>;
+  /**
+   * A short-lived address of a stored file, public or private (`ttlSeconds`: 30 s to a day, 10 minutes when
+   * not given), served by the API in parts, or null when the id resolves to nothing here. The address ends
+   * in the file's own type. For a file sold to a person: check them, then hand over this, never the file's own.
+   */
+  signedUrl(id: any, ttlSeconds?: number): Promise<string | null>;
   /** SHA-256 (hex) of the stored file's bytes, or null when the id resolves to nothing in this site. */
   digest(id: any): Promise<string | null>;
   /**

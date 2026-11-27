@@ -5,6 +5,7 @@ import type { Readable } from 'stream';
 import { randomUUID } from 'crypto';
 import { IStorageDriver } from '@media/index';
 import { MediaStorageConstants } from '@media/constants/media-storage.constants';
+import type { IStorageByteRange } from '@media/interfaces/storage-byte-range.interface';
 
 export class LocalStorageDriver implements IStorageDriver {
   public readonly provider = 'local';
@@ -110,12 +111,12 @@ export class LocalStorageDriver implements IStorageDriver {
     return fullPath;
   }
 
-  async stream(filepath: string): Promise<Readable> {
+  async stream(filepath: string, range?: IStorageByteRange): Promise<Readable> {
     const fullPath = this.resolveContainedPath(filepath);
     // stat first: createReadStream reports a missing file asynchronously on the stream, by which point
     // the caller has usually already committed response headers.
     await fs.access(fullPath);
-    return createReadStream(fullPath);
+    return range ? createReadStream(fullPath, { start: range.start, end: range.end }) : createReadStream(fullPath);
   }
 
   async delete(filepath: string): Promise<void> {

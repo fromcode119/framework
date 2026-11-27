@@ -3,6 +3,7 @@ export * from '@media/media-service';
 export * from '@media/media-collection';
 export { StorageFactory } from '@media/storage-factory';
 export type { IStorageDriver } from '@media/interfaces/storage-driver.interface';
+export type { IStorageByteRange } from '@media/interfaces/storage-byte-range.interface';
 export type { IStorageDriverCreator } from '@media/interfaces/storage-driver-creator.interface';
 export { MediaManager } from '@media/media-manager';
 export { MediaImageOptimizer } from '@media/media-image-optimizer';

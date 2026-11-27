@@ -130,6 +130,7 @@ export { LogLevel } from '@core/enums/log-level.enum';
 export { MediaVisibility } from '@core/enums/media-visibility.enum';
 export { MediaFileRemoval } from '@core/media/media-file-removal';
 export { MediaOverlayStore } from '@core/media/media-overlay-store';
+export { MediaSignedTokens } from '@core/media/media-signed-tokens';
 export type { IMediaOverlaySpec } from '@core/media/interfaces/media-overlay-spec.interface';
 export { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
 export { FileGrantRepository } from '@core/files/file-grant-repository';

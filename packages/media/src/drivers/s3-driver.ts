@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import { S3Client, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { IStorageDriver } from '@media/index';
+import type { IStorageByteRange } from '@media/interfaces/storage-byte-range.interface';
 
 export class S3StorageDriver implements IStorageDriver {
     public readonly provider: string;
@@ -66,10 +67,11 @@ export class S3StorageDriver implements IStorageDriver {
      * The SDK already hands back a streaming body — `read` buffers it only because its caller wanted a
      * Buffer. Passing it through avoids holding an arbitrarily large object in memory.
      */
-    async stream(filepath: string): Promise<Readable> {
+    async stream(filepath: string, range?: IStorageByteRange): Promise<Readable> {
         const response = await this.client.send(new GetObjectCommand({
             Bucket: this.bucket,
-            Key: filepath
+            Key: filepath,
+            ...(range ? { Range: `bytes=${range.start}-${range.end}` } : {})
         }));
         const body = response.Body as AsyncIterable<Uint8Array> | undefined;
         if (!body) throw new Error(`Object has no body: ${filepath}`);

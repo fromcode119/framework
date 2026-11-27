@@ -7,6 +7,7 @@ import { MediaFileRemoval } from '@core/media/media-file-removal';
 import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
 import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { MediaOverlayContext } from '@core/plugin/context/media-overlay';
+import { MediaSignedAddress } from '@core/plugin/context/media-signed-address';
 import type { IMediaOverlaySpec } from '@core/media/interfaces/media-overlay-spec.interface';
 
 export class MediaContextProxy {
@@ -166,6 +167,16 @@ export class MediaContextProxy {
           if (url) urls[id] = String(url);
         }
         return urls;
+      },
+      /**
+       * A short-lived address of a stored file, public or private, or null when the id resolves to nothing
+       * here. For a file an extension sells: it checks the person, then hands over this address instead of
+       * the file's own (which works for anyone, forever) or its bytes (see `MediaSignedAddress`).
+       */
+      async signedUrl(id: any, ttlSeconds?: number): Promise<string | null> {
+        if (id == null || id === '') return null;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        return row?.path ? new MediaSignedAddress(manager).of(MediaContextProxy.denormalize(row) as Record<string, any>, ttlSeconds) : null;
       },
       /**
        * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.

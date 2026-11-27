@@ -1,6 +1,7 @@
 
 import path from 'path';
 import type { IStorageDriver } from '@media/interfaces/storage-driver.interface';
+import type { IStorageByteRange } from '@media/interfaces/storage-byte-range.interface';
 import { MediaImageOptimizer } from '@media/media-image-optimizer';
 import { MediaMagicByteValidator } from '@media/media-magic-byte-validator';
 import { MediaSvgSanitizer } from '@media/media-svg-sanitizer';
@@ -79,8 +80,8 @@ export class MediaManager {
   }
 
   /** Bytes for a stored file, as a stream. Large downloads must not be buffered into memory. */
-  async stream(filepath: string, space: string = MediaManager.PUBLIC_SPACE): Promise<NodeJS.ReadableStream> {
-    return this.driverFor(space).stream(filepath);
+  async stream(filepath: string, space: string = MediaManager.PUBLIC_SPACE, range?: IStorageByteRange): Promise<NodeJS.ReadableStream> {
+    return this.driverFor(space).stream(filepath, range);
   }
 
   /**

@@ -34,6 +34,11 @@ describe('LocalStorageDriver.stream', () => {
     expect(await collect(await driver.stream(stored))).toBe('private payload');
   });
 
+  it('streams only the asked part, both ends included', async () => {
+    const stored = await driver.save(Buffer.from('private payload'), 'notes.txt');
+    expect(await collect(await driver.stream(stored, { start: 8, end: 10 }))).toBe('pay');
+  });
+
   it('accepts a path carrying the public prefix, as read() does', async () => {
     const stored = await driver.save(Buffer.from('prefixed'), 'notes.txt');
     expect(await collect(await driver.stream(`/uploads/${stored}`))).toBe('prefixed');
