@@ -39,7 +39,7 @@ export class PageDocPrefetcher {
    * `plugins`, `requestSearch` (the page address's query string) and `origin` (the plugin and collection the
    * document was resolved from) feed the entries plugins declare for their own pages — `PluginPagePrefetcher`.
    */
-  static async prefetch(doc: unknown, theme: Record<string, any>, plugins: unknown = [], requestSearch = '', origin?: IResolvedDocOrigin): Promise<Record<string, unknown>> {
+  static async prefetch(doc: unknown, theme: Record<string, any>, plugins: unknown = [], requestSearch = '', origin?: IResolvedDocOrigin, locale = ''): Promise<Record<string, unknown>> {
     const apis = Array.isArray(theme?.ui?.prefetchApis)
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
       : [];
@@ -59,14 +59,14 @@ export class PageDocPrefetcher {
         query.set(String(entry.fromPage?.queryParam || '').trim(), values.join(','));
         const apiPath = ServerApiPaths.buildPluginPath(entry.pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
-        const payload = await ThemeDataPrefetcher.fetchEntry(url);
+        const payload = await ThemeDataPrefetcher.fetchEntry(url, locale);
         if (payload !== undefined) results[String(entry.key).trim()] = payload;
       }),
     );
 
     await Promise.all([
-      PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results),
-      PluginPagePrefetcher.prefetch(doc, plugins, requestSearch, internalBase, results, origin),
+      PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results, locale),
+      PluginPagePrefetcher.prefetch(doc, plugins, requestSearch, internalBase, results, origin, locale),
     ]);
     return results;
   }
@@ -86,6 +86,7 @@ export class PageDocPrefetcher {
     doc: unknown,
     internalBase: string,
     results: Record<string, unknown>,
+    locale: string,
   ): Promise<void> {
     const blocks = PageDocPrefetcher.blocksOf(PageDocPrefetcher.asRecord(doc));
     const seen = new Set<string>();
@@ -110,7 +111,7 @@ export class PageDocPrefetcher {
       const query = PageDocPrefetcher.datasourceQuery(data);
 
       const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, datasourceKey, query);
-      const payload = await ThemeDataPrefetcher.fetchEntry(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`);
+      const payload = await ThemeDataPrefetcher.fetchEntry(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`, locale);
       if (payload !== undefined) results[key] = payload;
     }));
   }

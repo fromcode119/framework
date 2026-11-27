@@ -32,6 +32,7 @@ export class PluginPagePrefetcher {
     internalBase: string,
     results: Record<string, unknown>,
     origin: IResolvedDocOrigin = { plugin: '', type: '' },
+    locale = '',
   ): Promise<void> {
     const record = PluginPagePrefetcher.asRecord(doc);
     const recipe = String(record?.recipe ?? '').trim();
@@ -65,7 +66,7 @@ export class PluginPagePrefetcher {
         const query = PluginPagePrefetcher.queryOf(entry, address);
         requests.push((async () => {
           const apiPath = ServerApiPaths.buildPluginPath(slug, path, query);
-          const data = await ThemeDataPrefetcher.fetchEntry(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`);
+          const data = await ThemeDataPrefetcher.fetchEntry(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`, locale);
           if (data !== undefined) results[`${slug}:${key}`] = { query: query.toString(), data };
         })());
       }

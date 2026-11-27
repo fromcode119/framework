@@ -93,7 +93,7 @@ export class ThemeHeadModel {
     return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
   }
 
-  static async load(): Promise<ThemeHeadModel | null> {
+  static async load(locale = ''): Promise<ThemeHeadModel | null> {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) return null;
@@ -125,7 +125,7 @@ export class ThemeHeadModel {
       .filter((fileName: string) => fileName && !fileName.includes('/') && !fileName.includes('\\'))
       .map((fileName: string) => ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName));
 
-    const prefetchData = await ThemePrefetchRequestCache.read();
+    const prefetchData = await ThemePrefetchRequestCache.read(locale);
     const prefetchApis = Array.isArray(theme.ui?.prefetchApis) ? theme.ui.prefetchApis : [];
     const lcpPreload = ThemeDataPrefetcher.extractLcpImageUrl(prefetchData, prefetchApis, apiUrl);
 

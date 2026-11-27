@@ -17,20 +17,20 @@ import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
 export class PageDocPrefetchRequestCache {
   // Plain strings, not an origin object: the memo keys an object by its identity, so two callers passing
   // equal origins would each fetch.
-  private static readonly prefetchCache = RequestScope.memo(async (doc: unknown, requestSearch: string, plugin: string, type: string): Promise<Record<string, unknown>> => {
+  private static readonly prefetchCache = RequestScope.memo(async (doc: unknown, requestSearch: string, plugin: string, type: string, locale: string): Promise<Record<string, unknown>> => {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) {
       return {};
     }
-    return PageDocPrefetcher.prefetch(doc, theme, config?.plugins, requestSearch, { plugin, type });
+    return PageDocPrefetcher.prefetch(doc, theme, config?.plugins, requestSearch, { plugin, type }, locale);
   });
 
   /**
    * `requestSearch`: the page address's query string, which plugin-declared page entries read; `plugin` and
    * `type`: whom the document was resolved from, which a plugin's record-page entries match.
    */
-  static read(doc: unknown, requestSearch = '', plugin = '', type = ''): Promise<Record<string, unknown>> {
-    return PageDocPrefetchRequestCache.prefetchCache(doc, requestSearch, plugin, type);
+  static read(doc: unknown, requestSearch = '', plugin = '', type = '', locale = ''): Promise<Record<string, unknown>> {
+    return PageDocPrefetchRequestCache.prefetchCache(doc, requestSearch, plugin, type, locale);
   }
 }

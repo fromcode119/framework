@@ -18,16 +18,17 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
  * plugin endpoint is ever hit twice for one document render.
  */
 export class ThemePrefetchRequestCache {
-  private static readonly prefetchCache = SiteRevisionMemo.memo(async (): Promise<Record<string, unknown>> => {
+  private static readonly prefetchCache = SiteRevisionMemo.memo(async (locale: string): Promise<Record<string, unknown>> => {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) {
       return {};
     }
-    return ThemeDataPrefetcher.prefetch(theme);
+    return ThemeDataPrefetcher.prefetch(theme, locale);
   });
 
-  static read(): Promise<Record<string, unknown>> {
-    return ThemePrefetchRequestCache.prefetchCache();
+  /** `locale`: the document's language — each language keeps its own copy. */
+  static read(locale = ''): Promise<Record<string, unknown>> {
+    return ThemePrefetchRequestCache.prefetchCache(locale);
   }
 }

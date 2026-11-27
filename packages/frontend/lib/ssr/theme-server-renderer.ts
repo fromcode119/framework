@@ -85,8 +85,8 @@ export class ThemeServerRenderer {
     // real navigation appeared only after the client booted — a visible change on every first load.
     const timing = args.timing ?? new DocumentRenderTiming();
     const prefetchRequest = Promise.all([
-      timing.measure('themePrefetch', ThemePrefetchRequestCache.read()),
-      PageDocPrefetchRequestCache.read(content, requestSearch, args.resolutionPlugin || '', args.resolutionType || ''),
+      timing.measure('themePrefetch', ThemePrefetchRequestCache.read(locale)),
+      PageDocPrefetchRequestCache.read(content, requestSearch, args.resolutionPlugin || '', args.resolutionType || '', locale),
     ]).then(([themeWide, pageScoped]) => ({ ...themeWide, ...pageScoped }));
 
     const config = (await FrontendConfigCache.read()) || {};
