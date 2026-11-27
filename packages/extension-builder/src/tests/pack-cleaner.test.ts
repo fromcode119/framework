@@ -38,6 +38,19 @@ describe('PackCleaner', () => {
     expect(exists('index.js')).toBe(true);
   });
 
+  it('strips links, whether or not what they point at exists, and leaves the target alone', () => {
+    const target = write('outside/kept.js');
+    write('package/index.js');
+    const root = path.join(dir, 'package');
+    fs.symlinkSync(path.dirname(target), path.join(root, 'node_modules'));
+    fs.symlinkSync(path.join(dir, 'missing'), path.join(root, 'dangling'));
+
+    PackCleaner.clean(root);
+
+    expect(fs.readdirSync(root)).toEqual(['index.js']);
+    expect(exists('outside/kept.js')).toBe(true);
+  });
+
   it('strips dumps, logs and backups', () => {
     write('data.sqlite');
     write('data.sqlite3');

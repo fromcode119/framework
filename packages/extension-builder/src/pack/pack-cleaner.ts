@@ -67,6 +67,13 @@ export class PackCleaner {
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const full = path.join(current, entry.name);
 
+      // A package is plain files. A `node_modules` LINK beside the source is not a directory to the
+      // rules below, so it shipped pointing at a developer's disk and the upload failed with ENOENT.
+      if (entry.isSymbolicLink()) {
+        fs.unlinkSync(full);
+        continue;
+      }
+
       if (entry.isDirectory()) {
         if (PackCleaner.STRIPPED_DIRS.has(entry.name)) {
           fs.rmSync(full, { recursive: true, force: true });
