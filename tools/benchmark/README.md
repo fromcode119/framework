@@ -22,7 +22,8 @@ npx tsx tools/benchmark/suite.ts payload  payload_default  tools/benchmark/suite
 
 Each read: a 5 s warm-up, then the median of three 15 s runs at 32 connections. Create: 15 s of POSTs with a unique
 slug each (`{n}` in the body), median of three. A URL starting with `re:` is a regular expression, so every request
-gets a different query string (`u=[a-z0-9]{12}`) and no response cache can answer it. Some systems (Strapi, Medusa,
+gets a different query string (`u=[a-z0-9]{12}`) that defeats full-page and response caches (pages an application
+prepares itself, such as the Fromcode shop's product pages, still answer). Some systems (Strapi, Medusa,
 PrestaShop) reject unknown query parameters: give those the plain URL; they have no response cache.
 
 ## Read the results honestly
