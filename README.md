@@ -49,9 +49,15 @@ schema. SaaS products lock you into their pricing. Fromcode Framework is none of
 | **Background jobs** | Built-in queues (BullMQ or local) | Built-in scheduler (WP-Cron) | Built-in cron (opt-in) | Built-in jobs queue | Scheduled flows | Official BullMQ module |
 | **Two-factor sign-in** | Built in (TOTP) | Plugin | Plugin, or SSO on paid plans | Plugin | Built in (TOTP) | Your code |
 | **Roles and access control** | Built in | Built in | Built in | Built in | Built in | Guards (official guide) |
-| **Adding extensions** | Built-in marketplace, public or your own | Plugin directory in the admin | Marketplace in the admin | npm packages | Marketplace in the admin | npm packages |
+| **Adding extensions** | Marketplace in the admin | Plugin directory in the admin | Marketplace in the admin | npm packages | Marketplace in the admin | npm packages |
+| **Your own private marketplace** | Built in: point the admin at your catalogue | — | — | — | Configurable registry address | — |
+| **Many sites in one install** | Built in, isolated by PostgreSQL row-level security | Multisite: own tables per site | Community plugins | Official plugin, access rules | — | Your code |
+| **Resource limits on plugins** | CPU, memory, disk and time limits for isolated and site-uploaded plugins | — | — | — | Sandboxed API extensions | — |
+| **Visitor protection** | Built in at the gateway: under-attack mode, request limit, country and address blocking | — | — | — | Request limit (off by default) | Official rate-limiting module |
+| **Load balancer, zero-gap releases, TLS certificates in the admin** | Built in | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy |
 
-Competitor entries follow each project's own documentation and public listings, read on 27 November 2026.
+Competitor entries follow each project's documentation and public listings, read on 27 November 2026.
+"—" means we found no built-in equivalent there; sources are in the full write-up.
 
 </details>
 
