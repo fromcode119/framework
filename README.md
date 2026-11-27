@@ -38,26 +38,49 @@ build on it is yours, and nothing obliges you to use our plugins at all.
 Traditional frameworks hand you raw materials but no system. CMS platforms lock you into their
 schema. SaaS products lock you into their pricing. Fromcode Framework is none of those.
 
-<details>
-<summary><b>📊 Comparison — WordPress, Strapi, Payload, Directus, NestJS</b></summary>
+### Where the kernel goes further
 
 | Feature | Fromcode Framework | WordPress | Strapi | Payload | Directus | NestJS |
-|:--------|:--------:|:---------:|:------:|:-------:|:--------:|:------:|
+|:--------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
+| **Plugins in their own OS process** | ✅ Isolated plugins: a crash stops only that plugin | — | — | — | Sandbox inside the same process | — |
+| **A site uploads its own plugin, sandboxed** | ✅ Own user, no network, CPU, memory and disk limits | — | — | — | Marketplace sandbox with memory and time limits | n/a |
+| **Under-attack mode and country blocking** | ✅ At the gateway (off by default) | — | IP allow and block lists | — | IP allow list | Rate-limit module |
+| **TLS certificates in the admin, expiry warnings** | ✅ | Your hosting | Your hosting | Your hosting | Your hosting | Paid platform |
+| **Load balancer and zero-gap releases, self-hosted** | ✅ | Your hosting | Your hosting | Your hosting | Your hosting | Paid platform |
+| **Many sites, isolated in the database** | ✅ PostgreSQL row-level security | Multisite: own tables per site | Community plugins | Official plugin, access rules | — | Your code |
+| **Your own private marketplace** | ✅ Point the admin at your catalogue | — | — | — | Configurable registry address | n/a |
+| **Only pull-request-merged code is built from Git** | ✅ GitHub signature checked (can be allowed otherwise) | — | — | — | — | n/a |
+| **Encrypted credentials only their plugin opens** | ✅ | — | — | Shared app key | — | — |
+| **Emails and phones hidden from harvesters** | ✅ Every theme and plugin | Comment emails | — | — | — | n/a |
+| **Account erasure that reaches every plugin** | ✅ | ✅ | — | — | — | — |
+| **Version history and restore, no setup** | ✅ Every admin and API edit | Post types with revisions | Paid plans | Opt-in per collection | ✅ Retention depends on plan | — |
+| **One page of all scheduled jobs and every run** | ✅ | — | — | Job records, hidden by default | Logs per flow | Hosted add-on |
+| **Outgoing webhooks with a delivery log** | ✅ | — | Webhooks, no log | — | Flow logs | Official library |
+| **Redirect rules in the core** | ✅ | Automatic old-address redirects | — | Official plugin | — | — |
+| **New site private, preview without accounts** | ✅ | Public by default | Private content by default | Login required by default | Share links for single items | n/a |
+| **Replace the whole admin with an installable one** | ✅ Appearances | Color schemes | Theming and code | Components in code | Themes and app extensions | n/a |
+| **Backups with restore, and moving a site** | ✅ | Content export | CLI transfer; admin restore in their cloud | CSV/JSON per collection | Data and schema export | n/a |
+| **Native app sign-in (Apple, Google) and push** | ✅ Including in-app account deletion | — | Google web sign-in | Your own strategy | Web single sign-on (licensed) | Google token library |
+| **Admin audit log** | ✅ | — | Paid plans | Paid plans | ✅ Retention depends on plan | — |
+
+Competitor entries follow each project's documentation and public listings, read on 27 November 2026.
+"—" means we found no built-in equivalent there; third-party plugins may add it. Sources are in the full write-up.
+
+<details>
+<summary><b>📊 Common ground — what the others offer too</b></summary>
+
+| Feature | Fromcode Framework | WordPress | Strapi | Payload | Directus | NestJS |
+|:--------|:--------:|:--------:|:--------:|:--------:|:--------:|:--------:|
 | **What it is** | Application framework: API, API + admin, or full stack | Full-stack CMS | Headless CMS | Next.js full-stack framework and CMS | Backend and admin app over a SQL database | Server framework |
 | **Databases** | PostgreSQL, MySQL, SQLite | MySQL, MariaDB | PostgreSQL, MySQL, MariaDB, SQLite | MongoDB, PostgreSQL, SQLite | PostgreSQL, MySQL, MariaDB, SQLite, MS SQL, CockroachDB, Oracle | Your choice |
 | **Real-time WebSockets** | Built in | Plugin | Plugin | Plugin | Built in (opt-in when self-hosted) | Official module |
-| **Background jobs** | Built-in queues (BullMQ or local) | Built-in scheduler (WP-Cron) | Built-in cron (opt-in) | Built-in jobs queue | Scheduled flows | Official BullMQ module |
+| **Background jobs** | Built-in queues (BullMQ or local) | Built-in scheduler | Built-in cron (opt-in) | Built-in jobs queue | Scheduled flows | Official module |
 | **Two-factor sign-in** | Built in (TOTP) | Plugin | Plugin, or SSO on paid plans | Plugin | Built in (TOTP) | Your code |
-| **Roles and access control** | Built in | Built in | Built in | Built in | Built in | Guards (official guide) |
+| **Roles and access control** | Built in | Built in | Built in | Built in | Built in | Guards |
 | **Adding extensions** | Marketplace in the admin | Plugin directory in the admin | Marketplace in the admin | npm packages | Marketplace in the admin | npm packages |
-| **Your own private marketplace** | Built in: point the admin at your catalogue | — | — | — | Configurable registry address | — |
-| **Many sites in one install** | Built in, isolated by PostgreSQL row-level security | Multisite: own tables per site | Community plugins | Official plugin, access rules | — | Your code |
-| **Resource limits on plugins** | Memory and time limits for isolated plugins; CPU and disk limits too for site uploads | — | — | — | Sandboxed API extensions | — |
-| **Visitor protection** | Built in at the gateway: under-attack mode, request limit, country and address blocking (off by default) | — | — | — | Request limit (off by default) | Official rate-limiting module |
-| **Load balancer, zero-gap releases, TLS certificates in the admin** | Built in | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy | Your hosting or proxy |
-
-Competitor entries follow each project's documentation and public listings, read on 27 November 2026.
-"—" means we found no built-in equivalent there; sources are in the full write-up.
+| **Translated content fields** | Built in | Plugin | Built in (opt-in) | Built in (opt-in) | Built in | Message translation library |
+| **AI for extensions** | Built in | Core AI client, providers added | Paid plans | Paid plans or plugins | Built-in assistant | Official library |
+| **MCP server for AI agents** | Built in | Official add-on | Built in (opt-in) | Official plugin | Built in (opt-in) | Official library |
 
 </details>
 
@@ -189,7 +212,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 🎛️ **Admin appearances** — An installed appearance can replace the whole console for a product.
 - 🏗️ **Zero Architecture Lock-In** — Run as API only, API + Admin, or Full Stack; swap any provider without touching business logic.
 - 📊 **Atomic Migrations** — 7-phase database synchronization across core and all active plugins.
-- 🛡️ **Kernel Security Loop** — Real-time threat detection, cryptographic plugin signing, audit logging.
+- 🛡️ **Kernel Security Loop** — Real-time threat detection, plugin integrity checks with optional signature enforcement, audit logging.
 - 🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process with a heap ceiling and a per-call deadline; a crash takes down only that plugin.
 - 🧯 **A bad plugin breaks one site, not the server** — A plugin a site uploads runs as its own user with no network, no secrets and only a short list of SDK calls, held to CPU, memory, disk and process limits, in a sandbox container of its own that can run under gVisor ([what to do](#-running-plugins-you-dont-fully-trust)).
 - 🔁 **Rolling updates, zero gap** — A release replaces the api, admin, storefront and gateway one at a time: the new container starts beside the old one, takes traffic once it answers, and the old one drains its in-flight requests before it stops. No failed request, no maintenance window ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
