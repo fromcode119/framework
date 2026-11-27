@@ -13,6 +13,11 @@ import { MediaByteRange } from '@api/controllers/media-byte-range';
  */
 export class MediaSignedController {
   private static readonly logger = new Logger({ namespace: 'media-signed' });
+  /**
+   * The types shown in place. The address is on the site's own host, so anything else — an uploaded page or
+   * drawing (`text/html`, `image/svg+xml`) could run script there — is sent as a download, never rendered.
+   */
+  private static readonly INLINE = /^(?:video|audio)\/|^image\/(?:jpeg|png|webp|gif|avif)$|^application\/pdf$/;
   private readonly tokens: MediaSignedTokens;
 
   constructor(private readonly manager: IPluginManagerInterface, private readonly mediaManager: MediaManager) {
@@ -40,9 +45,13 @@ export class MediaSignedController {
     }
     try {
       const stream = await this.mediaManager.stream(String(row.path), MediaVisibility.resolve(row.visibility).value, range ?? undefined);
-      res.setHeader('Content-Type', String(row.mime_type || row.mimeType || 'application/octet-stream'));
+      const type = String(row.mime_type || row.mimeType || 'application/octet-stream').trim().toLowerCase();
+      res.setHeader('Content-Type', type);
       // The link is a capability, and the bytes may not be public: nothing in front of the api keeps them.
       res.setHeader('Cache-Control', 'private, no-store');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'");
+      if (!MediaSignedController.INLINE.test(type)) res.setHeader('Content-Disposition', 'attachment');
       if (size) res.setHeader('Accept-Ranges', 'bytes');
       if (range) {
         res.status(206);
