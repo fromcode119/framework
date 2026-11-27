@@ -107,8 +107,10 @@ Fromcode Framework and any other platform on your own hardware and compare.
   slug each, median of three.
 - **Data:** 1,000 products (price, stock 100, a 520-character description), 3,625 posts where the platform has
   posts, 20 pages, one administrator.
-- **No caches:** a unique query parameter on every request defeats full-page and response caches (Strapi,
+- **Caches:** a unique query parameter on every request defeats full-page and response caches (Strapi,
   Medusa and PrestaShop reject unknown parameters and have no response cache, so they ran on the plain URL).
+  The Fromcode Framework shop plugin's prepared pages (product list and single product) still answer such
+  requests; the figures computed on every request are given beside those rows (see section 2).
 - **Each platform through its own public API:** Fromcode Framework REST, Payload REST, Directus and Strapi REST, Medusa
   store API, PrestaShop webservice (JSON), Magento storefront GraphQL (admin REST for create), Drupal JSON:API,
   WooCommerce Store API + WordPress REST.

@@ -5,7 +5,7 @@
   <img alt="Fromcode Framework" src="packages/frontend/public/brand/fromcode-framework-logo-dark.png" width="420">
 </picture>
 
-**Fromcode Framework** — the open-source application framework by Fromcode · codename **Atlantis**
+**Fromcode Framework** — the open-source application framework by Fromcode
 
 [![GitHub Stars](https://img.shields.io/github/stars/fromcode119/framework?style=for-the-badge&logo=github&color=gold)](https://github.com/fromcode119/framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
@@ -39,25 +39,19 @@ Traditional frameworks hand you raw materials but no system. CMS platforms lock 
 schema. SaaS products lock you into their pricing. Fromcode Framework is none of those.
 
 <details>
-<summary><b>📊 Full comparison — WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express</b></summary>
+<summary><b>📊 Comparison — WordPress, Strapi, Payload, Directus, NestJS</b></summary>
 
-| Feature | Fromcode Framework | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
-|:--------|:--------:|:---------:|:------:|:-------:|:----------------:|:----------------:|
-| **Deployment Mode** | API / API+Admin / Full-Stack | Monolithic | Headless Only | Headless Only | Headless Only | API Only |
-| **Architecture** | Modular Kernel + Plugins | PHP Monolith | Static Schema | Code-first Schema | Static Schema | Manual Structure |
-| **Database Abstraction** | ✅ Extensible driver | MySQL locked | DB-agnostic | DB-agnostic | DB-agnostic | BYO |
-| **Real-time WS** | ✅ Built-in | ❌ 3rd party | ❌ 3rd party | ❌ 3rd party | ❌ 3rd party | Manual |
-| **Background Queues** | ✅ Built-in BullMQ/Local | ❌ WP-Cron | ❌ Custom | ❌ Custom | ❌ Manual | Manual |
-| **Cache Layer** | ✅ Kernel-managed | ❌ Plugins | ❌ Manual | ❌ Manual | Partial | Manual |
-| **Plugin Isolation** | ✅ Sandboxed + signed | Loose hooks | Loose | Loose | Loose | N/A |
-| **Marketplace** | ✅ Built-in + self-hosted | ❌ External | ❌ No | ❌ No | ❌ No | N/A |
-| **Upgradable Plugins/Core** | ✅ In-place upgrades | Manual | Manual | Manual | Manual | N/A |
-| **Zero-downtime Deploys** | ✅ Rolling + built-in edge LB | ❌ Maintenance mode | ❌ Manual | ❌ Manual | ❌ Manual | Manual |
-| **RBAC** | ✅ Kernel built-in | Plugin | Basic | Basic | Basic | Manual |
-| **MFA / TOTP** | ✅ Native | ❌ Plugin | ❌ Plugin | ❌ Plugin | ❌ Plugin | ❌ Manual |
-| **AI Workflow Hooks** | ✅ Native | ❌ Plugin bloat | ❌ Custom | ❌ Custom | ❌ Manual | ❌ Manual |
-| **7-Phase Migrations** | ✅ Atomic | ❌ Manual SQL | Partial | Partial | Partial | Manual |
-| **Vendor Lock-In** | **Zero** | High | Medium | Medium | Medium | Low |
+| Feature | Fromcode Framework | WordPress | Strapi | Payload | Directus | NestJS |
+|:--------|:--------:|:---------:|:------:|:-------:|:--------:|:------:|
+| **What it is** | Application framework: API, API + admin, or full stack | Full-stack CMS | Headless CMS | Next.js full-stack framework and CMS | Backend and admin app over a SQL database | Server framework |
+| **Databases** | PostgreSQL, MySQL, SQLite | MySQL, MariaDB | PostgreSQL, MySQL, MariaDB, SQLite | MongoDB, PostgreSQL, SQLite | PostgreSQL, MySQL, MariaDB, SQLite, MS SQL, CockroachDB, Oracle | Your choice |
+| **Real-time WebSockets** | Built in | Plugin | Plugin | Plugin | Built in (opt-in when self-hosted) | Official module |
+| **Background jobs** | Built-in queues (BullMQ or local) | Built-in scheduler (WP-Cron) | Built-in cron (opt-in) | Built-in jobs queue | Scheduled flows | Official BullMQ module |
+| **Two-factor sign-in** | Built in (TOTP) | Plugin | Plugin, or SSO on paid plans | Plugin | Built in (TOTP) | Your code |
+| **Roles and access control** | Built in | Built in | Built in | Built in | Built in | Guards (official guide) |
+| **Adding extensions** | Built-in marketplace, public or your own | Plugin directory in the admin | Marketplace in the admin | npm packages | Marketplace in the admin | npm packages |
+
+Competitor entries follow each project's own documentation and public listings, read on 27 November 2026.
 
 </details>
 
@@ -65,7 +59,10 @@ Full write-up: **[Why Fromcode Framework?](docs/comparison.md)**
 
 ## ⚡ Performance
 
-Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, same data, no response cache. Higher is faster; best in **bold**.
+Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, same data, with a new query string on every
+request. Higher is faster; best in **bold**. The full shop product's list and single product are answered from pages
+the shop prepares in advance; the figure for working them out on every
+request is shown beside each. The computed list was measured on a slower day, beside Payload's commerce list at 49.5.
 
 **Against the open-source backends** — the same six-field records on every platform:
 
@@ -82,8 +79,8 @@ stock) against each platform's own product (Payload with its official e-commerce
 
 | Operation (req/s) | Fromcode Framework, full shop product | Payload + e-commerce plugin | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
 |:--|--:|--:|--:|--:|--:|--:|--:|
-| Product list (20) | **80.6** | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
-| Single product | **214.6** | 98.2 | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
+| Product list (20) | **80.6** <sub>(computed per request 55–60)</sub> | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
+| Single product | **214.6** <sub>(computed per request 107.0)</sub> | 98.2 | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
 | Filtered + sorted (20) | **66.8** | 30.2 | 14.9 | 10.3 | 8.9 | 10.7 | 16.2 |
 | Signed-in read (20) | **119.0** | 52.7 | 51.7 | 6.4 | 4.3 | 7.7 | 10.5 |
 | Create a record | **70.3** | 44.9 | 23.0 | 24.1 | 4.3 | 14.7 | 5.2 |
@@ -149,7 +146,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 | [Deploying the framework](deploy/DEPLOYMENT.md) | Prebuilt images, rolling releases, the edge, a relay in front of it, and protecting and reporting at the edge |
 | [Configuration](docs/configuration.md) | Every environment variable — core, database, cache/queue/storage/email, multi-site, rate limiting |
 | [Architecture](docs/architecture.md) | Hooked kernel design, request flow, kernel subsystems, repository structure |
-| [Comparison — Why Fromcode Framework?](docs/comparison.md) | Feature-by-feature vs. WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express |
+| [Comparison — Why Fromcode Framework?](docs/comparison.md) | Feature-by-feature vs. WordPress, Strapi, Payload, Directus, NestJS |
 | [Build & CLI](docs/cli.md) | Build commands, architecture-check gates, the `fromcode` CLI, run modes |
 | [MCP Server](docs/mcp-server.md) | Every install as a Model Context Protocol server — security model, tools, connecting Claude |
 | [Plugin Development](docs/plugin-development-guide.md) | Plugin ecosystem, plugin structure, cross-plugin communication, collections, hooks |
