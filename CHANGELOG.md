@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.657] - 2026-11-28
+
+### Fixed
+
+- **auth**: keep ?next through sign-up, email confirmation and sign-in ([#1663](https://github.com/fromcode119/framework/pull/1663))
+
 ## [0.2.656] - 2026-11-28
 
 ### Performance
@@ -16,8 +22,8 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **extension-builder**: never pack a symbolic link ([#1658](https://github.com/fromcode119/framework/pull/1658))
 - **media**: a signed address names its file in the path, the token in the query ([#1659](https://github.com/fromcode119/framework/pull/1659))
+- **extension-builder**: never pack a symbolic link ([#1658](https://github.com/fromcode119/framework/pull/1658))
 
 ## [0.2.654] - 2026-11-27
 
