@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
 import { SdkClient, BrowserStateClient, LocalPathUtils, RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
@@ -65,6 +65,17 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
   /** The sign-in page, carrying {@link requestedNext} on so the person still lands where they were going. */
   protected get loginHref(): string {
     return this.withNext(RouteConstants.SEGMENTS.LOGIN);
+  }
+
+  /**
+   * Follow a sign-in link with `next` read NOW. The server renders the page without the address's query,
+   * so the `href` it sent is plain `/login`, and hydration does not rewrite an attribute: a link with no
+   * click handler of its own would drop `next` on the way to sign-in.
+   */
+  protected goToLogin(event: ReactMouseEvent): void {
+    if (!Platform.isBrowser) return;
+    event.preventDefault();
+    window.location.assign(this.loginHref);
   }
 
   /** `path` with {@link requestedNext} carried on, when there is one. */
