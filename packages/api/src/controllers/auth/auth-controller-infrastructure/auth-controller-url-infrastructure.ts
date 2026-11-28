@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { ApplicationUrlUtils, AppPathConstants, CoercionUtils, RequestContextUtils, RequestSurfaceUtils, SiteBaseUrl, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, AppPathConstants, LocalPathUtils, RequestContextUtils, RequestSurfaceUtils, SiteBaseUrl, SystemConstants } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
 import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
@@ -46,8 +46,8 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
    */
   protected async buildEmailVerificationUrl(req: Request, token: string, next: unknown = ''): Promise<string> {
     const baseUrl = await this.getFrontendBaseUrl(req);
-    const path = CoercionUtils.toString(next).trim();
-    const local = path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\') ? `&next=${encodeURIComponent(path)}` : '';
+    const path = LocalPathUtils.safe(next);
+    const local = path ? `&next=${encodeURIComponent(path)}` : '';
     return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.VERIFY_EMAIL}?token=${encodeURIComponent(token)}${local}`;
   }
 

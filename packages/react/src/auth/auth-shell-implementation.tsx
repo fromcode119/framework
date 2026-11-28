@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
-import { RouteConstants, SdkClient } from '@fromcode119/core/client';
+import { LocalPathUtils, RouteConstants, SdkClient } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthLoginForm } from '@react/auth/auth-login-form';
 import { AuthRegisterForm } from '@react/auth/auth-register-form';
@@ -88,7 +88,7 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
   private switchMode(mode: AuthMode): void {
     if (Platform.isBrowser && window.history && typeof window.history.pushState === 'function') {
       // Keep where the person was going: `/register?next=/x` switched to sign-in must still lead to /x.
-      const next = new URLSearchParams(window.location.search).get('next');
+      const next = LocalPathUtils.safe(new URLSearchParams(window.location.search).get('next'));
       window.history.pushState({}, '', next ? `${mode.path}?next=${encodeURIComponent(next)}` : mode.path);
     }
     if (mode !== this.state.mode) this.setState({ mode });

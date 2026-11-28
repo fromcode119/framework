@@ -18,7 +18,7 @@ describe('the confirmation link keeps where the person was going', () => {
     expect(url).toMatch(/\?token=tok&next=%2Fadvent$/);
   });
 
-  it.each(['https://evil.test', '//evil.test', '/\\evil.test', '', undefined, 42])('drops %s', async (next) => {
+  it.each(['https://evil.test', '//evil.test', '/\\evil.test', '/\t/evil.test', '', undefined, 42])('drops %s', async (next) => {
     const url = await controller().buildEmailVerificationUrl({}, 'tok', next);
     expect(url).not.toContain('next=');
     expect(url).toMatch(/\?token=tok$/);

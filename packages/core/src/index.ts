@@ -203,6 +203,7 @@ export type { IBrowserCookieOptions } from '@core/clients';
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';
 export { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+export { LocalPathUtils } from '@core/utils/local-path-utils';
 export { ApplicationHostUtils } from '@core/utils/application-host-utils';
 export { ApplicationDomainSettingsUtils } from '@core/utils/application-domain-settings-utils';
 export { PublicAssetUrlUtils } from '@core/utils/public-asset-url-utils';
