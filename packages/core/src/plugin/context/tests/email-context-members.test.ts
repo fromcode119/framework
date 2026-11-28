@@ -30,7 +30,7 @@ describe('context.email members', () => {
 
   it('keeps the framework additions', () => {
     expect(Object.keys(email).sort()).toEqual([
-      'buildPreferencesUrl', 'inbox', 'isSuppressed', 'listCategories', 'logoUrl', 'registerCategory', 'send', 'suppress', 'unsuppress',
+      'buildPreferencesUrl', 'inbox', 'isSuppressed', 'listCategories', 'logoUrl', 'registerCategory', 'registerTemplate', 'send', 'suppress', 'unsuppress',
     ]);
   });
 });
