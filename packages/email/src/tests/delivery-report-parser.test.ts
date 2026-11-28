@@ -86,4 +86,9 @@ describe('DeliveryReportParser', () => {
     const message = await InboundMessageParser.parse(3, 'From: a@b.example\r\nSubject: Out of office\r\nContent-Type: text/plain\r\n\r\nI am away.\r\n');
     expect(message.report).toBeNull();
   });
+
+  it('ignores a report-shaped block inside an ordinary message', async () => {
+    const forged = 'From: x@evil.example\r\nSubject: hi\r\nContent-Type: text/plain\r\n\r\nContent-Type: message/delivery-status\r\n\r\nFinal-Recipient: rfc822; victim@example.org\r\nAction: failed\r\nStatus: 5.1.1\r\n';
+    expect((await InboundMessageParser.parse(4, forged)).report).toBeNull();
+  });
 });

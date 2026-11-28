@@ -53,25 +53,35 @@ export class EmailBounceReader {
     }
   }
 
-  /** One report against the log. Returns how many log rows it changed. */
+  /**
+   * One report against the log. Returns how many log rows it changed.
+   *
+   * A report counts only when it names the Message-ID of an email this site sent to that same
+   * address. Anyone can mail the bounce mailbox, and an unmatched "bounce" acted on would let a
+   * stranger silence a real customer; a matched one proves the report is about our own email.
+   */
   async apply(report: IDeliveryReport): Promise<number> {
+    if (!report.originalMessageId) return 0;
     let changed = 0;
     for (const recipient of report.recipients) {
       const complaint = report.kind === 'complaint';
-      const permanent = complaint || (recipient.action === 'failed' && recipient.status.startsWith('5'));
       if (!complaint && recipient.action !== 'failed') continue; // `delayed`, `delivered`: nothing has gone wrong yet.
-      const where: Record<string, unknown> = { to_address: recipient.address };
-      if (report.originalMessageId) where.message_id = report.originalMessageId;
-      const [row] = await this.db.find(SystemConstants.TABLE.EMAIL_LOG, { where, orderBy: { id: 'desc' }, limit: 1 });
-      if (row) {
-        await this.db.update(SystemConstants.TABLE.EMAIL_LOG, { id: row.id }, {
-          status: (complaint ? EmailLogStatus.COMPLAINED : EmailLogStatus.BOUNCED).value,
-          error: [recipient.status, recipient.diagnostic].filter(Boolean).join(' — ') || null,
-          updated_at: new Date(),
-        });
-        changed += 1;
+      const [row] = await this.db.find(SystemConstants.TABLE.EMAIL_LOG, {
+        where: { to_address: recipient.address, message_id: report.originalMessageId },
+        orderBy: { id: 'desc' },
+        limit: 1,
+      });
+      if (!row) continue;
+      await this.db.update(SystemConstants.TABLE.EMAIL_LOG, { id: row.id }, {
+        status: (complaint ? EmailLogStatus.COMPLAINED : EmailLogStatus.BOUNCED).value,
+        error: [recipient.status, recipient.diagnostic].filter(Boolean).join(' — ') || null,
+        updated_at: new Date(),
+      });
+      changed += 1;
+      // Only a PERMANENT failure (5.x.x) or a complaint stops future mail; a temporary one does not.
+      if (complaint || recipient.status.startsWith('5')) {
+        await EmailSuppressionService.suppress(this.db, recipient.address, EmailSuppressionService.ALL, complaint ? 'complaint' : 'bounce');
       }
-      if (permanent) await EmailSuppressionService.suppress(this.db, recipient.address, EmailSuppressionService.ALL, complaint ? 'complaint' : 'bounce');
     }
     return changed;
   }

@@ -26,6 +26,8 @@ export class EmailTemplateRegistry {
   /** Declare one email. Refused when it has no key, no name or no trigger: a catalog entry must say all three. */
   static register(sender: string, descriptor: IEmailTemplateDescriptor, render: (data: Record<string, unknown>) => Promise<IRenderedEmail>): boolean {
     const key = String(descriptor?.key || '').trim();
+    // `platform` names the platform's own emails; an extension with that slug must not pose as them.
+    if (String(sender || '').trim() === EmailTemplateRegistry.PLATFORM) return false;
     if (!key || !String(descriptor?.labelKey || '').trim() || !String(descriptor?.triggerKey || '').trim()) return false;
     const id = EmailTemplateRegistry.idOf(sender, key);
     EmailTemplateRegistry.entries.set(id, {

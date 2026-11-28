@@ -31,16 +31,30 @@ export class DeliveryReportParser {
     return null;
   }
 
-  /** The body of the first MIME part of `type`: after its headers, up to the next boundary line. */
+  /**
+   * The body of the DIRECT child of type `type` of a top-level `multipart/report`, bounded by the
+   * boundary the message declares. Text that merely looks like such a part anywhere else (inside the
+   * human-readable part, inside a quoted original) is never read.
+   */
   private static part(source: string, type: string): string | null {
-    const header = new RegExp(`^content-type:\\s*${type.replace('/', '\\/')}\\b[^\\n]*(?:\\r?\\n[ \\t][^\\n]*)*`, 'im').exec(source);
-    if (!header) return null;
-    const rest = source.slice(header.index + header[0].length);
-    const start = /\r?\n\r?\n/.exec(rest);
-    if (!start) return null;
-    const body = rest.slice(start.index + start[0].length);
-    const end = /^--[^\r\n]+$/m.exec(body);
-    return end ? body.slice(0, end.index) : body;
+    const split = /\r?\n\r?\n/.exec(source);
+    if (!split) return null;
+    const top = DeliveryReportParser.fields(source.slice(0, split.index));
+    const contentType = String(top['content-type'] || '');
+    if (!/^multipart\/report\b/i.test(contentType)) return null;
+    const boundary = /boundary="?([^";]+)"?/i.exec(contentType)?.[1];
+    if (!boundary) return null;
+    const body = source.slice(split.index + split[0].length);
+    const delimiter = `--${boundary}`;
+    for (const chunk of body.split(delimiter).slice(1)) {
+      if (chunk.startsWith('--')) break; // the closing delimiter
+      const part = chunk.replace(/^\r?\n/, '');
+      const gap = /\r?\n\r?\n/.exec(part);
+      const headers = DeliveryReportParser.fields(gap ? part.slice(0, gap.index) : part);
+      if (String(headers['content-type'] || '').split(';')[0].trim().toLowerCase() !== type) continue;
+      return gap ? part.slice(gap.index + gap[0].length).replace(/\r?\n$/, '') : '';
+    }
+    return null;
   }
 
   /** The per-recipient field groups: a delivery-status body is blank-line-separated blocks. */
