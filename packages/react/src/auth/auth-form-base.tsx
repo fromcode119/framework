@@ -58,9 +58,25 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
    * crafted sign-in link could hand a freshly signed-in visitor to any site.
    */
   protected get afterAuthPath(): string {
+    return this.requestedNext || RouteConstants.SEGMENTS.ACCOUNT;
+  }
+
+  /** The same-site `?next=` path this page was opened with, or empty. */
+  protected get requestedNext(): string {
     const next = Platform.isBrowser ? this.browserState.readQueryParamFromWindow('next') : '';
     const local = Boolean(next) && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\');
-    return local ? next : RouteConstants.SEGMENTS.ACCOUNT;
+    return local ? next : '';
+  }
+
+  /** The sign-in page, carrying {@link requestedNext} on so the person still lands where they were going. */
+  protected get loginHref(): string {
+    return this.withNext(RouteConstants.SEGMENTS.LOGIN);
+  }
+
+  /** `path` with {@link requestedNext} carried on, when there is one. */
+  protected withNext(path: string): string {
+    const next = this.requestedNext;
+    return next ? `${path}?next=${encodeURIComponent(next)}` : path;
   }
 
   /** After a successful sign-in, go to {@link afterAuthPath}. */

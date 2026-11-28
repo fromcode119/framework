@@ -1,6 +1,5 @@
 import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { AuthMode } from '@react/auth/enums/auth-mode.enum';
-import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthSocialSignIn } from '@react/auth/auth-social-sign-in';
 import type { IAuthFormProps } from '@react/auth/interfaces/auth-form-props.interface';
@@ -36,7 +35,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
     const { email, password, firstName, lastName } = this.state;
     try {
       const data = await this.systemAuth.register(
-        { email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim() },
+        { email: email.trim(), password, firstName: firstName.trim(), lastName: lastName.trim(), next: this.requestedNext || undefined },
         { silent: true, noDedupe: true },
       );
       if (data && data.success === false) {
@@ -70,7 +69,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
   private async handleResend(): Promise<void> {
     this.setState({ resending: true, resendError: '' });
     try {
-      const data = await this.systemAuth.resendVerification(this.state.email.trim(), { silent: true, noDedupe: true });
+      const data = await this.systemAuth.resendVerification(this.state.email.trim(), { silent: true, noDedupe: true }, this.requestedNext || undefined);
       if (data?.emailDelivery === 'failed') throw new Error('');
       this.setState({ resending: false, emailNotSent: false });
     } catch (error: unknown) {
@@ -106,7 +105,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
           </div>
         )}
         <p className="fc-auth__switch">
-          <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+          <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
             {this.tr('auth.register.backToLogin', 'Back to sign in')}
           </a>
         </p>
@@ -135,7 +134,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
         <AuthSocialSignIn />
         <p className="fc-auth__switch">
           {this.tr('auth.register.haveAccount', 'Already have an account?')}{' '}
-          <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+          <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
             {this.tr('auth.register.loginLink', 'Sign in')}
           </a>
         </p>

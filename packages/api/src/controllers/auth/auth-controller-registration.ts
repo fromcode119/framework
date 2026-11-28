@@ -57,7 +57,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     await this.joinStorefrontSite(req, newUser.id);
 
     const verification = await this.issueEmailVerificationToken(newUser.id, normalizedEmail, flowContext);
-    const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
+    const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token, req.body?.next);
     const emailSent = await this.sendVerificationEmail({ to: normalizedEmail, verificationUrl, firstName: String(firstName || '').trim() });
 
     this.manager.hooks.emit('auth:user:registered', { userId: newUser.id, email: normalizedEmail, context: flowContext });
@@ -173,7 +173,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
       return res.json({ success: true, alreadyVerified: true, message: 'Email is already verified.' });
     }
     const verification = await this.issueEmailVerificationToken(user.id, email);
-    const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
+    const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token, req.body?.next);
     const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: this.readUserFirstName(user) });
     // The site's mail failed, not the person: this request does not use up their allowance.
     if (!emailSent) await this.restoreVerificationResendState(throttleKey, existingThrottleState);

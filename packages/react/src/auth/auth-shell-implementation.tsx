@@ -87,7 +87,9 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
 
   private switchMode(mode: AuthMode): void {
     if (Platform.isBrowser && window.history && typeof window.history.pushState === 'function') {
-      window.history.pushState({}, '', mode.path);
+      // Keep where the person was going: `/register?next=/x` switched to sign-in must still lead to /x.
+      const next = new URLSearchParams(window.location.search).get('next');
+      window.history.pushState({}, '', next ? `${mode.path}?next=${encodeURIComponent(next)}` : mode.path);
     }
     if (mode !== this.state.mode) this.setState({ mode });
   }

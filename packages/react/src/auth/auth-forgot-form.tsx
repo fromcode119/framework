@@ -1,6 +1,5 @@
 import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { AuthMode } from '@react/auth/enums/auth-mode.enum';
-import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import type { IAuthFormProps } from '@react/auth/interfaces/auth-form-props.interface';
 import type { IAuthForgotFormState } from '@react/auth/interfaces/auth-forgot-form-state.interface';
@@ -48,7 +47,7 @@ export class AuthForgotForm extends AuthFormBase<IAuthFormProps, IAuthForgotForm
             {this.tr('auth.forgot.sentBody', 'If an account exists for that email, we sent a link to reset your password. The link is valid for a limited time.')}
           </div>
           <p className="fc-auth__switch">
-            <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+            <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
               {this.tr('auth.forgot.backToLogin', 'Back to sign in')}
             </a>
           </p>
@@ -67,7 +66,7 @@ export class AuthForgotForm extends AuthFormBase<IAuthFormProps, IAuthForgotForm
           </button>
         </form>
         <p className="fc-auth__switch">
-          <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+          <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
             {this.tr('auth.forgot.backToLogin', 'Back to sign in')}
           </a>
         </p>
