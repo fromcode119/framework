@@ -23,6 +23,11 @@ export interface IEmailOptions {
    * `context.email` — never taken from the caller. Absent = the platform itself.
    */
   sender?: string;
+  /**
+   * The body holds something that works as a credential — a sign-in, reset or confirmation link. The
+   * email log then keeps who, when and the subject, never the content.
+   */
+  sensitive?: boolean;
   /** The declared email template this message was rendered from, for the email log and the catalog. */
   template?: string;
 }

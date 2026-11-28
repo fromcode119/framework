@@ -21,7 +21,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
     });
     const email = brandedEmail || await VerifyEmailFallbackTemplate.build({ ...common, verificationUrl: options.verificationUrl });
 
-    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send verification email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress, sensitive: true }, '[AuthController] Failed to send verification email');
   }
 
   protected async sendPasswordResetEmail(options: { to: string; resetUrl: string; firstName?: string }): Promise<boolean> {
@@ -29,7 +29,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
     const fromAddress = (await this.resolveFrameworkSender()).identity;
     const email = await PasswordResetEmailTemplate.build({ ...common, resetUrl: options.resetUrl });
 
-    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send password reset email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress, sensitive: true }, '[AuthController] Failed to send password reset email');
   }
 
   protected async sendEmailChangeVerificationEmail(options: { to: string; confirmUrl: string; firstName?: string }): Promise<boolean> {
@@ -37,7 +37,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
     const fromAddress = (await this.resolveFrameworkSender()).identity;
     const email = await EmailChangeVerificationTemplate.build({ ...common, confirmUrl: options.confirmUrl, newEmail: options.to });
 
-    return this.sendEmail({ to: options.to, ...email, from: fromAddress }, '[AuthController] Failed to send email-change verification email');
+    return this.sendEmail({ to: options.to, ...email, from: fromAddress, sensitive: true }, '[AuthController] Failed to send email-change verification email');
   }
 
   /**
@@ -95,7 +95,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
     }
   }
 
-  protected async sendEmail(payload: { to: string; from: string; subject: string; text: string; html: string }, logPrefix: string): Promise<boolean> {
+  protected async sendEmail(payload: { to: string; from: string; subject: string; text: string; html: string; sensitive?: boolean }, logPrefix: string): Promise<boolean> {
     // ONE guard for every framework email. Without a configured sender the platform used to invent
     // `no-reply@<site domain>` and send anyway — an unroutable address on a domain nobody nominated
     // for mail. Refusing here is honest and, unlike the invented address, it says what to fix.

@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
 import { BaseController, CoercionUtils, Logger } from '@fromcode119/core';
-import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { EmailLogOverviewService } from '@api/services/system/email-log-overview-service';
 
 /**
  * HTTP for the Emails page: what mail this scope sent, one email, and "send it again".
  *
- * Who sees what follows the Jobs page: inside a site, that site's own mail; a platform admin standing
- * in the platform scope reads the platform's (`withPlatformAdmin` only there).
+ * Inside a site, that site's own mail; the platform scope, which the router opens to platform admins
+ * only, reads the platform's.
  */
 export class EmailLogAdminController extends BaseController {
   private readonly logger = new Logger({ namespace: 'email-log-admin' });
@@ -82,9 +81,9 @@ export class EmailLogAdminController extends BaseController {
     }
   }
 
+  /** The router already refused the platform scope to anyone who is not a platform admin. */
   private async read<T>(req: Request, work: () => Promise<T>): Promise<T> {
-    const whole = !EmailLogAdminController.tenantOf(req) && await new PlatformAccessResolver(this.manager.db).isPlatformAdmin(req);
-    return whole ? this.manager.db.withPlatformAdmin(work) : work();
+    return EmailLogAdminController.tenantOf(req) ? work() : this.manager.db.withPlatformAdmin(work);
   }
 
   private static tenantOf(req: Request): string {

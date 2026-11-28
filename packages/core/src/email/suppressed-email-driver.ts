@@ -49,8 +49,8 @@ export class SuppressedEmailDriver implements IEmailDriver {
       return { skipped: true, reason: 'suppressed', suppressed: addresses.length };
     }
 
-    // `sender` and `template` are the log's, not the transport's.
-    const { sender: _sender, template: _template, ...outgoing } = options; // eslint-disable-line @typescript-eslint/no-unused-vars
+    // `sender`, `template` and `sensitive` are the log's, not the transport's.
+    const { sender: _sender, template: _template, sensitive: _sensitive, ...outgoing } = options; // eslint-disable-line @typescript-eslint/no-unused-vars
     let result: unknown;
     try {
       result = await this.inner.send({ ...outgoing, to: allowed.length === 1 ? allowed[0] : allowed });

@@ -189,12 +189,9 @@ export class ServerRoutesSetup {
       `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_GEO}`,
       new GeoAdminRouter(GeoDatabaseUpdater.for((this.manager as any).db, this.logger), this.auth, platformAdmin).router,
     );
-    // The platform monitor's Health page (Settings → Infrastructure → Monitoring). Platform admins only.
-    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_MONITORING}`, new MonitoringAdminRouter(this.manager, this.auth, platformAdmin).router);
-    // The Jobs page (System → Jobs): scheduled tasks and their runs for anyone with `system:view`, the queue for platform admins.
-    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_JOBS}`, new JobsAdminRouter(this.manager, this.auth, platformAdmin).router);
-    // The Emails page (System → Emails): every email this scope sent, suppressed or failed.
-    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EMAILS}`, new EmailLogAdminRouter(this.manager, this.auth).router);
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_MONITORING}`, new MonitoringAdminRouter(this.manager, this.auth, platformAdmin).router); // Health page, platform admins
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_JOBS}`, new JobsAdminRouter(this.manager, this.auth, platformAdmin).router); // System → Jobs; queue platform-only
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_EMAILS}`, new EmailLogAdminRouter(this.manager, this.auth, platformAdmin).router); // System → Emails
     // The database-schema review (Settings → Infrastructure): columns nothing declares, and dropping one. Platform admins only.
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_SCHEMA_ORPHANS}`, new SchemaOrphanAdminRouter(this.manager, this.auth, platformAdmin).router);
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.

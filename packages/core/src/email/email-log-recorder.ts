@@ -27,8 +27,10 @@ export class EmailLogRecorder {
         category: EmailLogRecorder.text(options.category) || null,
         to_address: address.toLowerCase(),
         subject: EmailLogRecorder.text(options.subject),
-        html: typeof options.html === 'string' ? options.html : null,
-        text: typeof options.text === 'string' ? options.text : null,
+        // A credential-bearing body is never kept: anyone able to read the log could use the link.
+        html: !options.sensitive && typeof options.html === 'string' ? options.html : null,
+        text: !options.sensitive && typeof options.text === 'string' ? options.text : null,
+        content_removed_at: options.sensitive ? new Date() : null,
         status: status.value,
         error: outcome.error === undefined ? null : EmailLogRecorder.message(outcome.error).slice(0, EmailLogRecorder.ERROR_LIMIT),
         smtp_response: EmailLogRecorder.text(result.response).slice(0, EmailLogRecorder.ERROR_LIMIT) || null,
