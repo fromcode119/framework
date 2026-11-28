@@ -31,5 +31,15 @@ export class RetentionMetaKeys {
      * stale one that stopped recurring ages out. Read by JournalRetentionService.
      */
     EVENT_DELIVERY_RETENTION_DAYS: 'event_delivery_retention_days',
+    /**
+     * Days of `_system_email_log` rows to keep. Empty or 0 means KEEP FOREVER, as the admin field says.
+     * Read by JournalRetentionService.
+     */
+    EMAIL_LOG_RETENTION_DAYS: 'email_log_retention_days',
+    /**
+     * Days an email's CONTENT (subject stays, html and text go) is kept in the log; the row itself stays
+     * for `EMAIL_LOG_RETENTION_DAYS`. Empty or 0 means KEEP FOREVER. Read by JournalRetentionService (a clearing target).
+     */
+    EMAIL_CONTENT_RETENTION_DAYS: 'email_content_retention_days',
   } as const;
 }

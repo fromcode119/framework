@@ -15,6 +15,11 @@ export interface IJournalRetentionTarget {
    * reason, never clamped. Absent means any positive window is acceptable.
    */
   readonly minimumDays?: number;
+  /**
+   * Empty these columns on an aged row instead of deleting it, and stamp `stampField` with when that
+   * happened — for a journal whose CONTENT has a shorter life than the record that it happened.
+   */
+  readonly clears?: { readonly fields: readonly string[]; readonly stampField: string };
   /** Called after a successful prune, for a journal that must record its own pruning. */
   readonly afterPrune?: (summary: IJournalPruneSummary) => Promise<void>;
 }

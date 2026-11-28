@@ -97,6 +97,8 @@ export class SystemTables {
     /** Idempotency keys of effects that already ran, so a repeated event does its work once. */
     EVENT_DEDUPE: '_system_event_dedupe',
     EMAIL_SUPPRESSIONS: '_system_email_suppressions',
+    /** Every email sent, suppressed or failed, one row per recipient — the admin's Emails screen. */
+    EMAIL_LOG: '_system_email_log',
     META: '_system_meta',
     MEDIA: 'media',
     MEDIA_FOLDERS: 'media_folders',

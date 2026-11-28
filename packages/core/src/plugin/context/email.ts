@@ -122,7 +122,8 @@ export class EmailContextProxy {
     // forwarding "everything else" handed every plugin with `email` whatever the driver happened to hold.
     return {
       ...additions,
-      send: (options: unknown) => driver.send(options),
+      // The sender is the platform's to state: whatever a plugin puts there is replaced by its own slug.
+      send: (options: Record<string, unknown>) => driver.send({ ...(options ?? {}), sender: slug }),
       suppress: (address: string, category?: string) => driver.suppress(address, category),
       isSuppressed: (address: string, category?: string) => driver.isSuppressed(address, category),
     };

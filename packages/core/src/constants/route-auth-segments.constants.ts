@@ -164,6 +164,10 @@ export class RouteAuthSegments {
   ADMIN_JOBS: '/admin/jobs',
   JOBS_RUNS: '/runs',
   JOBS_QUEUE: '/queue',
+  /** `/system/admin/emails` — every email this scope sent, suppressed or failed; one email; send it again. */
+  ADMIN_EMAILS: '/admin/emails',
+  EMAILS_ID: '/:id',
+  EMAILS_ID_RESEND: '/:id/resend',
   MONITORING_CHECK: '/check',
   /** `/system/admin/schema-orphans` — columns nothing declares, awaiting a platform admin's decision. */
   ADMIN_SCHEMA_ORPHANS: '/admin/schema-orphans',

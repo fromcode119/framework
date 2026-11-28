@@ -18,4 +18,11 @@ export interface IEmailOptions {
    * a real header — a link in the body cannot serve that purpose.
    */
   headers?: Record<string, string>;
+  /**
+   * Who sent it, for the email log: the sending extension's slug, stamped by the platform at
+   * `context.email` — never taken from the caller. Absent = the platform itself.
+   */
+  sender?: string;
+  /** The declared email template this message was rendered from, for the email log and the catalog. */
+  template?: string;
 }

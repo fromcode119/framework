@@ -132,6 +132,8 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.JOB_RUN_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.EVENT_DELIVERY_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.EMAIL_LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.EMAIL_CONTENT_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     // PLATFORM for the same reason as the logs window: one sweep, one process, one untenanted read.
     // No seed — an empty value is KEEP FOREVER, and a platform that started expiring its own security
     // record because a registry picked a number would be the invented default this codebase forbids.
