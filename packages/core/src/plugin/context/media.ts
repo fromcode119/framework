@@ -179,6 +179,16 @@ export class MediaContextProxy {
         return row?.path ? new MediaSignedAddress(manager).of(MediaContextProxy.denormalize(row) as Record<string, any>, ttlSeconds) : null;
       },
       /**
+       * The short-lived addresses of MANY stored files, keyed by id: the batch form of `signedUrl`. An
+       * extension that hands a person every file they may play otherwise makes one call per file, and from
+       * an isolated plugin each is a round trip out of its process that also reads the site's key again.
+       * An id that resolves to nothing here is absent.
+       */
+      async signedUrls(ids: any[], ttlSeconds?: number): Promise<Record<string, string>> {
+        const rows = Array.from((await MediaContextProxy.rowsByIds(manager, ids)).values()).filter((row) => row?.path);
+        return rows.length ? new MediaSignedAddress(manager).ofAll(rows, ttlSeconds) : {};
+      },
+      /**
        * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.
        *
        * A plugin runs isolated and cannot open the storage itself, so a plugin that has to publish a

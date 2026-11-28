@@ -27,12 +27,26 @@ export class MediaSignedTokens {
 
   /** A token for the file `mediaId` of the site this code runs for. Throws without a site — "no site" is never every site. */
   async mint(mediaId: string, ttlSeconds: number = MediaSignedTokens.DEFAULT_TTL_SECONDS, now = Date.now()): Promise<string> {
+    const claim = MediaSignedTokens.claim(mediaId, ttlSeconds, now);
+    return `${claim}.${SigningSecretService.sign(await this.key(), claim)}`;
+  }
+
+  /** Tokens for MANY files of this site, keyed by id, the site's key read once rather than once per file. */
+  async mintAll(mediaIds: string[], ttlSeconds: number = MediaSignedTokens.DEFAULT_TTL_SECONDS, now = Date.now()): Promise<Map<string, string>> {
+    const claims = mediaIds.map((id) => [String(id), MediaSignedTokens.claim(id, ttlSeconds, now)] as const);
+    const tokens = new Map<string, string>();
+    if (!claims.length) return tokens;
+    const key = await this.key();
+    for (const [id, claim] of claims) tokens.set(id, `${claim}.${SigningSecretService.sign(key, claim)}`);
+    return tokens;
+  }
+
+  /** `v1.<payload>` for one file of the site this code runs for. Throws without a site or a file id. */
+  private static claim(mediaId: string, ttlSeconds: number, now: number): string {
     const id = String(mediaId ?? '').trim();
     if (!/^\d+$/.test(id)) throw new Error('A signed file address needs the id of a stored file');
-    const ttl = MediaSignedTokens.ttl(ttlSeconds);
-    const claim = { s: MediaSignedTokens.currentSite(), m: id, e: Math.floor(now / 1000) + ttl };
-    const signed = `${MediaSignedTokens.VERSION}.${Buffer.from(JSON.stringify(claim)).toString('base64url')}`;
-    return `${signed}.${SigningSecretService.sign(await this.key(), signed)}`;
+    const claim = { s: MediaSignedTokens.currentSite(), m: id, e: Math.floor(now / 1000) + MediaSignedTokens.ttl(ttlSeconds) };
+    return `${MediaSignedTokens.VERSION}.${Buffer.from(JSON.stringify(claim)).toString('base64url')}`;
   }
 
   /** The file id a token opens on the site `tenantId`, or null for anything forged, expired, malformed or minted elsewhere. */

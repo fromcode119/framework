@@ -21,7 +21,18 @@ export class MediaSignedAddress {
   constructor(private readonly manager: IPluginManagerInterface) {}
 
   async of(row: Record<string, any>, ttlSeconds?: number): Promise<string> {
-    const token = await new MediaSignedTokens(this.manager).mint(String(row.id), MediaSignedTokens.ttl(ttlSeconds));
+    return this.at(row, await new MediaSignedTokens(this.manager).mint(String(row.id), MediaSignedTokens.ttl(ttlSeconds)));
+  }
+
+  /** The addresses of many rows, keyed by id: one signing key for all of them (`MediaSignedTokens.mintAll`). */
+  async ofAll(rows: Array<Record<string, any>>, ttlSeconds?: number): Promise<Record<string, string>> {
+    const tokens = await new MediaSignedTokens(this.manager).mintAll(rows.map((row) => String(row.id)), MediaSignedTokens.ttl(ttlSeconds));
+    const urls: Record<string, string> = {};
+    for (const row of rows) urls[String(row.id)] = await this.at(row, tokens.get(String(row.id)) as string);
+    return urls;
+  }
+
+  private async at(row: Record<string, any>, token: string): Promise<string> {
     const path = ApiPathUtils.versioned(ApiPathUtils.fillPath(SystemApiPaths.ALL.MEDIA.SIGNED, { token: String(row.id), file: MediaSignedAddress.fileName(row) }));
     return `${await SiteBaseUrl.apiUrlForCurrentSite(path)}?${MediaSignedAddress.QUERY}=${encodeURIComponent(token)}`;
   }
