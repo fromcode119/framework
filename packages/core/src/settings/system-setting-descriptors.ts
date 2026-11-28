@@ -133,7 +133,7 @@ export class SystemSettingDescriptors {
     // Every journal window, the audit one included. No seed — an empty value is KEEP FOREVER, and a
     // platform that started expiring its own security record because a registry picked a number would
     // be the invented default this codebase forbids.
-    ...Object.fromEntries(Object.values(RetentionMetaKeys.ALL).map((key) => [key, { scope: SettingScope.PLATFORM, writable: true, exposed: true }])),
+    ...(Object.fromEntries(Object.values(RetentionMetaKeys.ALL).map((key) => [key, { scope: SettingScope.PLATFORM, writable: true, exposed: true }])) as Record<(typeof RetentionMetaKeys.ALL)[keyof typeof RetentionMetaKeys.ALL], ISystemSettingDescriptor>),
     // PLATFORM: one database for every site. No seed: off until an operator opts in to the download.
     [SystemConstants.META_KEY.GEO_IP_LOOKUP]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
