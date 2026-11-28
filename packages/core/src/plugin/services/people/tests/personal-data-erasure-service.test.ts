@@ -435,7 +435,7 @@ describe('PersonalDataErasureService.exportAll — the export door cannot drift 
 
     const platform = datasets.filter((d: any) => d.plugin === 'platform').map((d: any) => d.dataset);
     expect(platform).toEqual([
-      'account', 'person', 'sessions', 'roles', 'record-versions', 'audit-log', 'system-log',
+      'account', 'person', 'sessions', 'roles', 'record-versions', 'audit-log', 'system-log', 'email-log',
     ]);
   });
 
@@ -536,5 +536,38 @@ describe('the journal count is scoped like the scrub', () => {
     await new PersonalDataErasureService(db).exportDataset('audit-log', SUBJECT);
 
     expect(db.platformScopes).toBe(1);
+  });
+});
+
+/** The emails sent to a person are theirs: exported as rows, deleted on erasure, other people's kept. */
+describe('PersonalDataErasureService — the email log', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  const db = () => makeDb({
+    [SystemConstants.TABLE.EMAIL_LOG]: [
+      { id: 1, to_address: SUBJECT.email, subject: 'Your order' },
+      { id: 2, to_address: 'someone-else@example.invalid', subject: 'Their order' },
+    ],
+  });
+
+  it('exports the subject\'s own emails and nobody else\'s', async () => {
+    const rows = await new PersonalDataErasureService(db()).exportDataset('email-log', SUBJECT as any);
+    expect(rows.map((row: any) => row.id)).toEqual([1]);
+  });
+
+  it('deletes the subject\'s emails inside the site\'s own scope', async () => {
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue('acme' as any);
+    const store = db();
+    const result = await new PersonalDataErasureService(store).eraseDataset('email-log', SUBJECT as any, 'delete');
+    expect(result).toMatchObject({ erased: 1 });
+    expect(store.tables[SystemConstants.TABLE.EMAIL_LOG].map((row: any) => row.id)).toEqual([2]);
+    expect(store.platformScopes).toBe(0);
+  });
+
+  it('reaches the platform\'s own emails only through the platform-admin marker', async () => {
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(undefined as any);
+    const store = db();
+    await new PersonalDataErasureService(store).eraseDataset('email-log', SUBJECT as any, 'delete');
+    expect(store.platformScopes).toBe(1);
   });
 });

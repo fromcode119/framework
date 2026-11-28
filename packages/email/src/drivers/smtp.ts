@@ -22,8 +22,10 @@ export class SMTPDriver implements IEmailDriver {
       pass: string;
     };
     from?: string;
+    /** The bounce mailbox, for the platform's bounce reader — not a transport option. */
+    bounce?: unknown;
   }) {
-    const { from, ...transport } = config;
+    const { from, bounce: _bounce, ...transport } = config; // eslint-disable-line @typescript-eslint/no-unused-vars
     this.defaultFrom = from || '';
     this.transporter = nodemailer.createTransport(transport);
   }

@@ -49,6 +49,17 @@ export class EmailLogOverviewService {
     };
   }
 
+  /**
+   * Which streams an address is on the do-not-email list for, and since when. Read-only on purpose:
+   * an opt-out is the PERSON's to lift (their preferences page), not the operator's.
+   */
+  async suppressions(address: string): Promise<Array<Record<string, unknown>>> {
+    const normalized = address.trim().toLowerCase();
+    if (!normalized) return [];
+    const rows = await this.db.find(SystemConstants.TABLE.EMAIL_SUPPRESSIONS, { where: { address: normalized }, limit: 100 });
+    return (rows || []).map((row: any) => ({ category: row.category, source: row.source || null, createdAt: row.created_at ?? null }));
+  }
+
   /** The value the list's sender filter uses for mail the platform itself sent. */
   static readonly PLATFORM = 'platform';
 

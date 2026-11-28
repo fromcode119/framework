@@ -73,6 +73,11 @@ export { EntitySchemaPlanService } from '@core/database/entity-schema-plan-servi
 export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';
 export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 export { MigrationManager } from '@core/database/migration-manager';
+export { EmailGateway } from '@core/integrations/providers/email-gateway';
+export { EmailTemplateRegistry } from '@core/email/email-template-registry';
+export type { IEmailTemplateDescriptor } from '@core/email/interfaces/email-template-descriptor.interface';
+export type { IRenderedEmail } from '@core/email/interfaces/rendered-email.interface';
+export { EmailLogStatus } from '@core/email/enums/email-log-status.enum';
 export { JournalRetentionService } from '@core/database/journal-retention-service';
 export { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
 export { PersonFieldService } from '@core/plugin/services/people/fields/person-field-service';

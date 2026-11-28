@@ -34,6 +34,8 @@ export class AppPathConstants {
     MINIMAL: '/atlantis',
     ACTIVITY: '/activity',
     JOBS: '/jobs',
+    EMAILS: '/emails',
+    EMAILS_CATALOG: '/emails/catalog',
     ACTIVITY_FILTER: (query: Record<string, string | number | boolean | undefined | null>) =>
       AppPathConstants.withQuery('/activity', query),
     MEDIA: {

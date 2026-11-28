@@ -1,0 +1,27 @@
+/* The email as it was sent. A mail client paints it on its own white page, so the preview does too,
+   in both console themes; the frame only marks where the email ends. */
+.fc-email-preview {
+  display: block;
+  width: 100%;
+  height: 560px;
+  border: 1px solid var(--fc-border);
+  border-radius: var(--fc-radius);
+  background: #ffffff;
+}
+
+.fc-email-preview--text {
+  height: auto;
+  min-height: 160px;
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: #18181b;
+  font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* A phone's width, so a template that only works wide is seen to break. */
+.fc-email-preview--phone {
+  max-width: 390px;
+  margin-inline: auto;
+}

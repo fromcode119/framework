@@ -30,6 +30,8 @@ export class PluginDeclarations {
     ['i18n', 'registerTranslations'],
     ['i18n', 'registerTranslationsFromDirectory'],
     ['email', 'registerCategory'],
+    // The email catalog is in-memory too: unlisted, an api restart under running plugin processes empties it.
+    ['email', 'registerTemplate'],
     // An alert sent to the administrators fills the same in-memory registry; without this an api restart
     // under running plugin processes drops every plugin's alerts from each administrator's profile.
     ['notifications', 'registerAdminAlert'],

@@ -187,6 +187,15 @@ export class AdminConstants {
       RUNS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_JOBS}${RouteConstants.SEGMENTS.JOBS_RUNS}`),
       QUEUE: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_JOBS}${RouteConstants.SEGMENTS.JOBS_QUEUE}`),
     },
+    EMAILS: {
+      LIST: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_EMAILS),
+      CATALOG: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_CATALOG}`),
+      CATALOG_PREVIEW: (template: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_CATALOG_PREVIEW}`, { template }),
+      CATALOG_TEST: (template: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_CATALOG_TEST}`, { template }),
+      SUPPRESSIONS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_SUPPRESSIONS}`),
+      ONE: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_ID}`, { id }),
+      RESEND: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_EMAILS}${RouteConstants.SEGMENTS.EMAILS_ID_RESEND}`, { id }),
+    },
     /** The signed-in person's own UI preference `key` (a saved view, their dashboard layout). */
     PREFERENCE: (key: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PREFERENCES_KEY, { key }),
     ROLES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_ROLES),

@@ -68,7 +68,15 @@ export class PersonalDataSubjectReader {
     return this.db.find(SystemConstants.TABLE.PERSON_FIELD_VALUES, { where: { person_id: person.id } });
   }
 
-  async findVersions(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
+  /** The email log's rows for the subject's address — every email the platform sent them. */
+  async findEmails(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
+    const email = String(subject?.email ?? '').trim().toLowerCase();
+    if (!email) return [];
+    const rows = await this.db.find(SystemConstants.TABLE.EMAIL_LOG, { where: { to_address: email }, orderBy: { id: 'asc' } });
+    return Array.isArray(rows) ? rows : [];
+  }
+
+    async findVersions(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
     const person = await this.findPerson(subject);
     const user = await this.findUser(subject);
     const out: Record<string, unknown>[] = [];

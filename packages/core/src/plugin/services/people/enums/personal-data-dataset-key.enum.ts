@@ -3,7 +3,7 @@ import { Enum } from '@fromcode119/react-class-components/lang';
 /**
  * The datasets the FRAMEWORK itself holds about a person.
  *
- * Declared once, because the same seven keys were spelled as bare strings in the descriptor list and
+ * Declared once, because the same keys were spelled as bare strings in the descriptor list and
  * again in two switches, and a key that agrees in one place and not the others is a dataset an
  * operator can configure and an erasure never reaches — silently, since a `switch` with no matching
  * `case` simply does nothing.
@@ -19,6 +19,8 @@ export class PersonalDataDatasetKey extends Enum {
   static readonly RECORD_VERSIONS = new PersonalDataDatasetKey('record-versions');
   static readonly AUDIT_LOG = new PersonalDataDatasetKey('audit-log');
   static readonly SYSTEM_LOG = new PersonalDataDatasetKey('system-log');
+  /** Every email the platform sent to the person: one row per recipient, so each row is theirs alone. */
+  static readonly EMAIL_LOG = new PersonalDataDatasetKey('email-log');
 
   private constructor(value: string) {
     super(value);

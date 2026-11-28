@@ -27,7 +27,18 @@ export class EmailGateway {
           }
         : {}),
       ...(from ? { from } : {}),
+      // The bounce mailbox rides along for the bounce-reading job; the SMTP driver drops it. The second
+      // normalizing pass sees it already folded, so it keeps the folded form.
+      ...(EmailGateway.bounceOf(input) ? { bounce: EmailGateway.bounceOf(input) } : {}),
     };
+  }
+
+  /** The bounce mailbox from the Email integration's fields, or `null` when no host is set. */
+  static bounceOf(input: Record<string, any>): { host: string; port: number; user: string; password: string } | null {
+    if (input?.bounce && typeof input.bounce === 'object' && String(input.bounce.host || '').trim()) return input.bounce;
+    const host = String(input?.bounceHost || '').trim();
+    if (!host) return null;
+    return { host, port: Number(input?.bouncePort) || 0, user: String(input?.bounceUser || '').trim(), password: String(input?.bouncePass || '') };
   }
 
   static resolveEmailFromEnv() {

@@ -42,7 +42,13 @@ export class EmailIntegrationDefinition {
           label: 'From Name',
           type: IntegrationConfigFieldType.TEXT,
           placeholder: 'Shown beside the address; defaults to the platform name',
-        }
+        },
+        // Where bounce and spam reports to this site's mail arrive (its Return-Path mailbox), read every
+        // 15 minutes to mark emails in the email log as bounced. Blank host: not read, and the Emails page says so.
+        { name: 'bounceHost', label: 'Bounce mailbox: IMAP host', type: IntegrationConfigFieldType.TEXT, placeholder: 'imap.example.com' },
+        { name: 'bouncePort', label: 'Bounce mailbox: IMAP port', type: IntegrationConfigFieldType.NUMBER, placeholder: '993' },
+        { name: 'bounceUser', label: 'Bounce mailbox: username', type: IntegrationConfigFieldType.TEXT },
+        { name: 'bouncePass', label: 'Bounce mailbox: password', type: IntegrationConfigFieldType.PASSWORD },
       ],
       normalizeConfig: EmailGateway.normalizeSmtpConfig,
       create: (config) =>

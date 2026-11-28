@@ -43,6 +43,7 @@ export class FileShareEmailService {
         html: email.html,
         // The share link IS the access: a log that kept it would hand the file to whoever reads the log.
         sensitive: true,
+        template: 'file-share',
       });
 
       return true;

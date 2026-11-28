@@ -1,6 +1,7 @@
 import type { IEmailOptions } from '@fromcode119/email';
 import { SystemConstants } from '@core/constants/system.constants';
 import { EmailLogStatus } from '@core/email/enums/email-log-status.enum';
+import { EmailTemplateRegistry } from '@core/email/email-template-registry';
 import { Logger } from '@core/logging';
 import { SchedulerRunJournal } from '@fromcode119/scheduler';
 
@@ -23,7 +24,7 @@ export class EmailLogRecorder {
       const result = (outcome.result ?? {}) as { messageId?: unknown; response?: unknown };
       await this.db.insert(SystemConstants.TABLE.EMAIL_LOG, {
         sender: EmailLogRecorder.text(options.sender) || null,
-        template_key: EmailLogRecorder.text(options.template) || null,
+        template_key: EmailLogRecorder.templateId(options),
         category: EmailLogRecorder.text(options.category) || null,
         to_address: address.toLowerCase(),
         subject: EmailLogRecorder.text(options.subject),
@@ -34,7 +35,8 @@ export class EmailLogRecorder {
         status: status.value,
         error: outcome.error === undefined ? null : EmailLogRecorder.message(outcome.error).slice(0, EmailLogRecorder.ERROR_LIMIT),
         smtp_response: EmailLogRecorder.text(result.response).slice(0, EmailLogRecorder.ERROR_LIMIT) || null,
-        message_id: EmailLogRecorder.text(result.messageId) || null,
+        // Stored without its angle brackets, the form a bounce report is matched by.
+        message_id: EmailLogRecorder.text(result.messageId).replace(/^<|>$/g, '') || null,
         scheduler_run_id: SchedulerRunJournal.currentRunId(),
       });
     } catch (error) {
@@ -50,6 +52,13 @@ export class EmailLogRecorder {
     const list = (result as { rejected?: unknown })?.rejected;
     const values = Array.isArray(list) ? list : [];
     return new Set(values.map((entry) => EmailLogRecorder.text((entry as { address?: unknown })?.address ?? entry).toLowerCase()).filter(Boolean));
+  }
+
+  /** `<sender>:<key>`, as the catalog lists it. `context.email` qualifies already; the platform's own sends do not. */
+  private static templateId(options: IEmailOptions): string | null {
+    const template = EmailLogRecorder.text(options.template);
+    if (!template) return null;
+    return template.includes(':') ? template : EmailTemplateRegistry.idOf(EmailLogRecorder.text(options.sender), template);
   }
 
   private static text(value: unknown): string {

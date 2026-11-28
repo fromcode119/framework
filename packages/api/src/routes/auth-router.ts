@@ -31,6 +31,8 @@ export class AuthRouter extends BaseRouter {
   ) {
     super();
     this.controller = new AuthController(manager, auth);
+    // The platform's own emails, for the email catalog (System → Emails).
+    this.controller.registerEmailCatalog();
     // Wire the Google/Apple id-token verifier onto the SSO resolution hook that AuthControllerSso.ssoLogin
     // calls. Registered once here; the resolver reads accepted client IDs from the `sso` integration config.
     const ssoResolver = new SsoUserResolverService(manager);

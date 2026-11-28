@@ -1,5 +1,6 @@
 import { simpleParser } from 'mailparser';
 import type { IInboundMessage } from '@email/interfaces/inbound-message.interface';
+import { DeliveryReportParser } from '@email/inbox/delivery-report-parser';
 
 /** A raw RFC 822 message, reduced to what an application acts on. */
 export class InboundMessageParser {
@@ -17,6 +18,7 @@ export class InboundMessageParser {
       subject: String(parsed.subject ?? ''),
       text: String(parsed.text ?? ''),
       date: parsed.date ? parsed.date.toISOString() : null,
+      report: DeliveryReportParser.parse(Buffer.isBuffer(source) ? source.toString('utf8') : String(source)),
     };
   }
 }
