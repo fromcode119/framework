@@ -5030,7 +5030,12 @@
       "allSenders": "Všichni odesílatelé",
       "address": "Hledat podle e-mailové adresy",
       "onlyTemplate": "Jen e-maily druhu {{template}}.",
-      "showAll": "Zobrazit všechny e-maily"
+      "showAll": "Zobrazit všechny e-maily",
+      "period": "Období",
+      "anyTime": "Kdykoli",
+      "lastDay": "Posledních 24 hodin",
+      "lastWeek": "Posledních 7 dní",
+      "lastMonth": "Posledních 30 dní"
     },
     "status": {
       "sent": "Přijat poštovním serverem",
@@ -5107,6 +5112,13 @@
           "trigger": "Když někdo sdílí soubor z Médií e-mailem."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Vrácené e-maily se zatím nesledují: tento web nemá schránku pro vrácenou poštu. Dokud ji nenastavíte, e-mail přijatý poštovním serverem se zobrazuje jako přijatý, i když se později vrátí.",
+      "settingsLink": "Nastavit schránku pro vrácenou poštu",
+      "failed": "Schránku pro vrácenou poštu se nepodařilo přečíst: {{error}}",
+      "lastRead": "Vrácené e-maily se ze schránky pro vrácenou poštu čtou každých 15 minut. Naposledy: {{date}}.",
+      "notReadYet": "Vrácené e-maily se ze schránky pro vrácenou poštu čtou každých 15 minut. Zatím nebyla přečtena."
     }
   }
 }

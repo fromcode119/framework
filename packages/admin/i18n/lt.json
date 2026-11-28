@@ -5030,7 +5030,12 @@
       "allSenders": "Visi siuntėjai",
       "address": "Ieškoti pagal el. pašto adresą",
       "onlyTemplate": "Tik {{template}} rūšies el. laiškai.",
-      "showAll": "Rodyti visus el. laiškus"
+      "showAll": "Rodyti visus el. laiškus",
+      "period": "Laikotarpis",
+      "anyTime": "Bet kada",
+      "lastDay": "Paskutinės 24 valandos",
+      "lastWeek": "Paskutinės 7 dienos",
+      "lastMonth": "Paskutinės 30 dienų"
     },
     "status": {
       "sent": "Priėmė pašto serveris",
@@ -5107,6 +5112,13 @@
           "trigger": "Kai kas nors el. paštu pasidalija failu iš Medijos."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Grąžinti el. laiškai dar nesekami: ši svetainė neturi grąžintų laiškų pašto dėžutės. Kol ji nenustatyta, pašto serverio priimtas el. laiškas rodomas kaip priimtas, net jei vėliau bus grąžintas.",
+      "settingsLink": "Nustatyti grąžintų laiškų pašto dėžutę",
+      "failed": "Nepavyko nuskaityti grąžintų laiškų pašto dėžutės: {{error}}",
+      "lastRead": "Grąžinti el. laiškai skaitomi iš grąžintų laiškų pašto dėžutės kas 15 minučių. Paskutinį kartą skaityta: {{date}}.",
+      "notReadYet": "Grąžinti el. laiškai skaitomi iš grąžintų laiškų pašto dėžutės kas 15 minučių. Dar neskaityta."
     }
   }
 }

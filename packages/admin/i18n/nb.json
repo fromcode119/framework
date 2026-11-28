@@ -5030,7 +5030,12 @@
       "allSenders": "Alle avsendere",
       "address": "Søk etter e-postadresse",
       "onlyTemplate": "Bare e-poster av typen {{template}}.",
-      "showAll": "Vis alle e-poster"
+      "showAll": "Vis alle e-poster",
+      "period": "Periode",
+      "anyTime": "Når som helst",
+      "lastDay": "Siste 24 timer",
+      "lastWeek": "Siste 7 dager",
+      "lastMonth": "Siste 30 dager"
     },
     "status": {
       "sent": "Akseptert av e-postserveren",
@@ -5107,6 +5112,13 @@
           "trigger": "Når noen deler en fil fra Medier via e-post."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Returnerte e-poster spores ikke ennå: dette nettstedet har ingen postboks for returpost. Inntil en er satt, vises en e-post som e-postserveren har akseptert som akseptert, selv om den senere returneres.",
+      "settingsLink": "Angi postboksen for returpost",
+      "failed": "Postboksen for returpost kunne ikke leses: {{error}}",
+      "lastRead": "Returnerte e-poster leses fra postboksen for returpost hvert 15. minutt. Sist lest: {{date}}.",
+      "notReadYet": "Returnerte e-poster leses fra postboksen for returpost hvert 15. minutt. Den er ikke lest ennå."
     }
   }
 }

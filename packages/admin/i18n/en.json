@@ -5030,7 +5030,12 @@
       "allSenders": "Every sender",
       "address": "Search by email address",
       "onlyTemplate": "Only emails of the kind {{template}}.",
-      "showAll": "Show every email"
+      "showAll": "Show every email",
+      "period": "Period",
+      "anyTime": "Any time",
+      "lastDay": "Last 24 hours",
+      "lastWeek": "Last 7 days",
+      "lastMonth": "Last 30 days"
     },
     "status": {
       "sent": "Accepted by the mail server",
@@ -5107,6 +5112,13 @@
           "trigger": "When someone shares a file from Media by email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Returned emails are not tracked yet: this site has no bounce mailbox. Until one is set, an email the mail server accepted shows as accepted even if it later bounced.",
+      "settingsLink": "Set the bounce mailbox",
+      "failed": "The bounce mailbox could not be read: {{error}}",
+      "lastRead": "Returned emails are read from the bounce mailbox every 15 minutes. Last read: {{date}}.",
+      "notReadYet": "Returned emails are read from the bounce mailbox every 15 minutes. It has not been read yet."
     }
   }
 }

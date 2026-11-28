@@ -5030,7 +5030,12 @@
       "allSenders": "Kõik saatjad",
       "address": "Otsi e-posti aadressi järgi",
       "onlyTemplate": "Ainult liiki {{template}} e-kirjad.",
-      "showAll": "Näita kõiki e-kirju"
+      "showAll": "Näita kõiki e-kirju",
+      "period": "Periood",
+      "anyTime": "Kogu aeg",
+      "lastDay": "Viimased 24 tundi",
+      "lastWeek": "Viimased 7 päeva",
+      "lastMonth": "Viimased 30 päeva"
     },
     "status": {
       "sent": "Postiserver võttis vastu",
@@ -5107,6 +5112,13 @@
           "trigger": "Kui keegi jagab faili Meediast e-kirjaga."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Tagasipõrganud e-kirju ei jälgita veel: sellel saidil pole tagasipõrkepostkasti. Kuni seda pole määratud, näitab postiserveri vastu võetud e-kiri end vastuvõetuna ka siis, kui see hiljem tagasi põrkab.",
+      "settingsLink": "Määra tagasipõrkepostkast",
+      "failed": "Tagasipõrkepostkasti ei õnnestunud lugeda: {{error}}",
+      "lastRead": "Tagasipõrganud e-kirju loetakse tagasipõrkepostkastist iga 15 minuti järel. Viimati loetud: {{date}}.",
+      "notReadYet": "Tagasipõrganud e-kirju loetakse tagasipõrkepostkastist iga 15 minuti järel. Seda pole veel loetud."
     }
   }
 }

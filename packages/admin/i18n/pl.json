@@ -5030,7 +5030,12 @@
       "allSenders": "Wszyscy nadawcy",
       "address": "Szukaj według adresu e-mail",
       "onlyTemplate": "Tylko e-maile rodzaju {{template}}.",
-      "showAll": "Pokaż wszystkie e-maile"
+      "showAll": "Pokaż wszystkie e-maile",
+      "period": "Okres",
+      "anyTime": "Dowolny czas",
+      "lastDay": "Ostatnie 24 godziny",
+      "lastWeek": "Ostatnie 7 dni",
+      "lastMonth": "Ostatnie 30 dni"
     },
     "status": {
       "sent": "Przyjęty przez serwer pocztowy",
@@ -5107,6 +5112,13 @@
           "trigger": "Gdy ktoś udostępnia e-mailem plik z Multimediów."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Zwrócone e-maile nie są jeszcze śledzone: ta witryna nie ma skrzynki na zwroty. Dopóki jej nie ustawisz, e-mail przyjęty przez serwer pocztowy jest pokazywany jako przyjęty, nawet jeśli później wróci.",
+      "settingsLink": "Ustaw skrzynkę na zwroty",
+      "failed": "Nie udało się odczytać skrzynki na zwroty: {{error}}",
+      "lastRead": "Zwrócone e-maile są odczytywane ze skrzynki na zwroty co 15 minut. Ostatni odczyt: {{date}}.",
+      "notReadYet": "Zwrócone e-maile są odczytywane ze skrzynki na zwroty co 15 minut. Nie została jeszcze odczytana."
     }
   }
 }

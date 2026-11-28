@@ -5030,7 +5030,12 @@
       "allSenders": "Kaikki lähettäjät",
       "address": "Hae sähköpostiosoitteella",
       "onlyTemplate": "Vain lajin {{template}} sähköpostit.",
-      "showAll": "Näytä kaikki sähköpostit"
+      "showAll": "Näytä kaikki sähköpostit",
+      "period": "Ajanjakso",
+      "anyTime": "Milloin tahansa",
+      "lastDay": "Viimeiset 24 tuntia",
+      "lastWeek": "Viimeiset 7 päivää",
+      "lastMonth": "Viimeiset 30 päivää"
     },
     "status": {
       "sent": "Postipalvelin hyväksyi",
@@ -5107,6 +5112,13 @@
           "trigger": "Kun joku jakaa tiedoston Mediasta sähköpostilla."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Palautuneita sähköposteja ei seurata vielä: tällä sivustolla ei ole palautuspostilaatikkoa. Kunnes sellainen on asetettu, postipalvelimen hyväksymä sähköposti näkyy hyväksyttynä, vaikka se palautuisi myöhemmin.",
+      "settingsLink": "Aseta palautuspostilaatikko",
+      "failed": "Palautuspostilaatikkoa ei voitu lukea: {{error}}",
+      "lastRead": "Palautuneet sähköpostit luetaan palautuspostilaatikosta 15 minuutin välein. Viimeksi luettu: {{date}}.",
+      "notReadYet": "Palautuneet sähköpostit luetaan palautuspostilaatikosta 15 minuutin välein. Sitä ei ole vielä luettu."
     }
   }
 }

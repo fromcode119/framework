@@ -5030,7 +5030,12 @@
       "allSenders": "所有寄件者",
       "address": "依電子郵件地址搜尋",
       "onlyTemplate": "僅顯示類型為 {{template}} 的郵件。",
-      "showAll": "顯示所有郵件"
+      "showAll": "顯示所有郵件",
+      "period": "時間範圍",
+      "anyTime": "任何時間",
+      "lastDay": "最近 24 小時",
+      "lastWeek": "最近 7 天",
+      "lastMonth": "最近 30 天"
     },
     "status": {
       "sent": "郵件伺服器已接受",
@@ -5107,6 +5112,13 @@
           "trigger": "有人透過郵件分享媒體中的檔案時。"
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "目前尚未追蹤被退回的郵件：此網站沒有退信信箱。在設定之前，郵件伺服器已接受的郵件即使之後被退回，仍會顯示為已接受。",
+      "settingsLink": "設定退信信箱",
+      "failed": "無法讀取退信信箱：{{error}}",
+      "lastRead": "被退回的郵件每 15 分鐘從退信信箱讀取一次。上次讀取：{{date}}。",
+      "notReadYet": "被退回的郵件每 15 分鐘從退信信箱讀取一次。尚未讀取過。"
     }
   }
 }

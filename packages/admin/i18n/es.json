@@ -5030,7 +5030,12 @@
       "allSenders": "Todos los remitentes",
       "address": "Buscar por dirección de correo",
       "onlyTemplate": "Solo correos del tipo {{template}}.",
-      "showAll": "Mostrar todos los correos"
+      "showAll": "Mostrar todos los correos",
+      "period": "Periodo",
+      "anyTime": "Cualquier momento",
+      "lastDay": "Últimas 24 horas",
+      "lastWeek": "Últimos 7 días",
+      "lastMonth": "Últimos 30 días"
     },
     "status": {
       "sent": "Aceptado por el servidor de correo",
@@ -5107,6 +5112,13 @@
           "trigger": "Cuando alguien comparte por correo un archivo de Medios."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Los correos devueltos aún no se registran: este sitio no tiene buzón de rebotes. Hasta que se configure uno, un correo aceptado por el servidor de correo aparece como aceptado aunque después rebote.",
+      "settingsLink": "Configurar el buzón de rebotes",
+      "failed": "No se pudo leer el buzón de rebotes: {{error}}",
+      "lastRead": "Los correos devueltos se leen del buzón de rebotes cada 15 minutos. Última lectura: {{date}}.",
+      "notReadYet": "Los correos devueltos se leen del buzón de rebotes cada 15 minutos. Aún no se ha leído."
     }
   }
 }

@@ -5030,7 +5030,12 @@
       "allSenders": "Minden feladó",
       "address": "Keresés e-mail-cím alapján",
       "onlyTemplate": "Csak a(z) {{template}} fajtájú e-mailek.",
-      "showAll": "Minden e-mail megjelenítése"
+      "showAll": "Minden e-mail megjelenítése",
+      "period": "Időszak",
+      "anyTime": "Bármikor",
+      "lastDay": "Utolsó 24 óra",
+      "lastWeek": "Utolsó 7 nap",
+      "lastMonth": "Utolsó 30 nap"
     },
     "status": {
       "sent": "A levelezőszerver elfogadta",
@@ -5107,6 +5112,13 @@
           "trigger": "Amikor valaki e-mailben megoszt egy fájlt a Médiából."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "A visszaküldött e-maileket még nem követjük: ennek a webhelynek nincs visszapattanási postafiókja. Amíg nincs beállítva, a levelezőszerver által elfogadott e-mail elfogadottként látszik akkor is, ha később visszapattan.",
+      "settingsLink": "Visszapattanási postafiók beállítása",
+      "failed": "A visszapattanási postafiókot nem sikerült beolvasni: {{error}}",
+      "lastRead": "A visszaküldött e-maileket 15 percenként olvassuk be a visszapattanási postafiókból. Utolsó beolvasás: {{date}}.",
+      "notReadYet": "A visszaküldött e-maileket 15 percenként olvassuk be a visszapattanási postafiókból. Még nem lett beolvasva."
     }
   }
 }

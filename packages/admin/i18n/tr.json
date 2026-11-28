@@ -5030,7 +5030,12 @@
       "allSenders": "Tüm göndericiler",
       "address": "E-posta adresine göre ara",
       "onlyTemplate": "Yalnızca {{template}} türündeki e-postalar.",
-      "showAll": "Tüm e-postaları göster"
+      "showAll": "Tüm e-postaları göster",
+      "period": "Dönem",
+      "anyTime": "Her zaman",
+      "lastDay": "Son 24 saat",
+      "lastWeek": "Son 7 gün",
+      "lastMonth": "Son 30 gün"
     },
     "status": {
       "sent": "Posta sunucusu tarafından kabul edildi",
@@ -5107,6 +5112,13 @@
           "trigger": "Biri Medya'dan e-posta ile dosya paylaştığında."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Geri dönen e-postalar henüz izlenmiyor: bu sitenin geri dönenler için posta kutusu yok. Bir kutu ayarlanana kadar, posta sunucusunun kabul ettiği e-posta sonradan geri dönse bile kabul edildi olarak görünür.",
+      "settingsLink": "Geri dönenler posta kutusunu ayarla",
+      "failed": "Geri dönenler posta kutusu okunamadı: {{error}}",
+      "lastRead": "Geri dönen e-postalar geri dönenler posta kutusundan her 15 dakikada bir okunur. Son okuma: {{date}}.",
+      "notReadYet": "Geri dönen e-postalar geri dönenler posta kutusundan her 15 dakikada bir okunur. Henüz okunmadı."
     }
   }
 }

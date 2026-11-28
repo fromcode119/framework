@@ -5030,7 +5030,12 @@
       "allSenders": "Lahat ng nagpadala",
       "address": "Maghanap gamit ang email address",
       "onlyTemplate": "Mga email lang na uri ng {{template}}.",
-      "showAll": "Ipakita ang lahat ng email"
+      "showAll": "Ipakita ang lahat ng email",
+      "period": "Panahon",
+      "anyTime": "Anumang oras",
+      "lastDay": "Huling 24 oras",
+      "lastWeek": "Huling 7 araw",
+      "lastMonth": "Huling 30 araw"
     },
     "status": {
       "sent": "Tinanggap ng mail server",
@@ -5107,6 +5112,13 @@
           "trigger": "Kapag may nag-share ng file mula sa Media sa pamamagitan ng email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Hindi pa sinusubaybayan ang mga ibinalik na email: walang bounce mailbox ang site na ito. Hangga't wala pa, ang email na tinanggap ng mail server ay lalabas na tinanggap kahit bumalik ito mamaya.",
+      "settingsLink": "Itakda ang bounce mailbox",
+      "failed": "Hindi mabasa ang bounce mailbox: {{error}}",
+      "lastRead": "Binabasa ang mga ibinalik na email mula sa bounce mailbox kada 15 minuto. Huling nabasa: {{date}}.",
+      "notReadYet": "Binabasa ang mga ibinalik na email mula sa bounce mailbox kada 15 minuto. Hindi pa ito nababasa."
     }
   }
 }

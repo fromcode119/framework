@@ -5030,7 +5030,12 @@
       "allSenders": "Toți expeditorii",
       "address": "Caută după adresa de e-mail",
       "onlyTemplate": "Doar e-mailuri de tipul {{template}}.",
-      "showAll": "Arată toate e-mailurile"
+      "showAll": "Arată toate e-mailurile",
+      "period": "Perioadă",
+      "anyTime": "Oricând",
+      "lastDay": "Ultimele 24 de ore",
+      "lastWeek": "Ultimele 7 zile",
+      "lastMonth": "Ultimele 30 de zile"
     },
     "status": {
       "sent": "Acceptat de serverul de e-mail",
@@ -5107,6 +5112,13 @@
           "trigger": "Când cineva partajează prin e-mail un fișier din Media."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "E-mailurile returnate nu sunt urmărite încă: acest site nu are o căsuță pentru mesaje returnate. Până se setează una, un e-mail acceptat de serverul de e-mail apare ca acceptat chiar dacă ulterior este returnat.",
+      "settingsLink": "Setează căsuța pentru mesaje returnate",
+      "failed": "Căsuța pentru mesaje returnate nu a putut fi citită: {{error}}",
+      "lastRead": "E-mailurile returnate sunt citite din căsuța pentru mesaje returnate la fiecare 15 minute. Ultima citire: {{date}}.",
+      "notReadYet": "E-mailurile returnate sunt citite din căsuța pentru mesaje returnate la fiecare 15 minute. Nu a fost citită încă."
     }
   }
 }

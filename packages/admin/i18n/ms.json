@@ -5030,7 +5030,12 @@
       "allSenders": "Semua penghantar",
       "address": "Cari mengikut alamat e-mel",
       "onlyTemplate": "E-mel jenis {{template}} sahaja.",
-      "showAll": "Tunjukkan semua e-mel"
+      "showAll": "Tunjukkan semua e-mel",
+      "period": "Tempoh",
+      "anyTime": "Bila-bila masa",
+      "lastDay": "24 jam lepas",
+      "lastWeek": "7 hari lepas",
+      "lastMonth": "30 hari lepas"
     },
     "status": {
       "sent": "Diterima oleh pelayan mel",
@@ -5107,6 +5112,13 @@
           "trigger": "Apabila seseorang berkongsi fail dari Media melalui e-mel."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "E-mel yang dikembalikan belum dijejaki: tapak ini tiada peti mel untuk e-mel terpantul. Selagi belum ditetapkan, e-mel yang diterima pelayan mel akan ditunjukkan sebagai diterima walaupun kemudian terpantul.",
+      "settingsLink": "Tetapkan peti mel e-mel terpantul",
+      "failed": "Peti mel e-mel terpantul tidak dapat dibaca: {{error}}",
+      "lastRead": "E-mel yang dikembalikan dibaca daripada peti mel e-mel terpantul setiap 15 minit. Terakhir dibaca: {{date}}.",
+      "notReadYet": "E-mel yang dikembalikan dibaca daripada peti mel e-mel terpantul setiap 15 minit. Belum dibaca lagi."
     }
   }
 }

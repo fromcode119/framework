@@ -5030,7 +5030,12 @@
       "allSenders": "Alle Absender",
       "address": "Nach E-Mail-Adresse suchen",
       "onlyTemplate": "Nur E-Mails der Art {{template}}.",
-      "showAll": "Alle E-Mails anzeigen"
+      "showAll": "Alle E-Mails anzeigen",
+      "period": "Zeitraum",
+      "anyTime": "Beliebig",
+      "lastDay": "Letzte 24 Stunden",
+      "lastWeek": "Letzte 7 Tage",
+      "lastMonth": "Letzte 30 Tage"
     },
     "status": {
       "sent": "Vom Mailserver angenommen",
@@ -5107,6 +5112,13 @@
           "trigger": "Wenn jemand eine Datei aus Medien per E-Mail teilt."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Zurückgekommene E-Mails werden noch nicht erfasst: Diese Website hat kein Postfach für Rückläufer. Solange keines festgelegt ist, erscheint eine vom Mailserver angenommene E-Mail als angenommen, auch wenn sie später zurückkommt.",
+      "settingsLink": "Postfach für Rückläufer festlegen",
+      "failed": "Das Postfach für Rückläufer konnte nicht gelesen werden: {{error}}",
+      "lastRead": "Zurückgekommene E-Mails werden alle 15 Minuten aus dem Postfach für Rückläufer gelesen. Zuletzt gelesen: {{date}}.",
+      "notReadYet": "Zurückgekommene E-Mails werden alle 15 Minuten aus dem Postfach für Rückläufer gelesen. Es wurde noch nicht gelesen."
     }
   }
 }

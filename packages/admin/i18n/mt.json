@@ -5030,7 +5030,12 @@
       "allSenders": "Is-senders kollha",
       "address": "Fittex skont l-indirizz tal-email",
       "onlyTemplate": "Emails tat-tip {{template}} biss.",
-      "showAll": "Uri l-emails kollha"
+      "showAll": "Uri l-emails kollha",
+      "period": "Perjodu",
+      "anyTime": "Kull ħin",
+      "lastDay": "L-aħħar 24 siegħa",
+      "lastWeek": "L-aħħar 7 ijiem",
+      "lastMonth": "L-aħħar 30 jum"
     },
     "status": {
       "sent": "Aċċettat mis-server tal-posta",
@@ -5107,6 +5112,13 @@
           "trigger": "Meta xi ħadd jaqsam fajl minn Midja bl-email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "L-emails li reġgħu lura għadhom ma jiġux segwiti: dan is-sit m'għandu ebda kaxxa postali għar-ritorni. Sakemm ma tiġix issettjata waħda, email aċċettat mis-server tal-posta jidher bħala aċċettat anki jekk aktar tard jerġa' lura.",
+      "settingsLink": "Issettja l-kaxxa postali tar-ritorni",
+      "failed": "Il-kaxxa postali tar-ritorni ma setgħetx tinqara: {{error}}",
+      "lastRead": "L-emails li reġgħu lura jinqraw mill-kaxxa postali tar-ritorni kull 15-il minuta. L-aħħar qari: {{date}}.",
+      "notReadYet": "L-emails li reġgħu lura jinqraw mill-kaxxa postali tar-ritorni kull 15-il minuta. Għadha ma nqrietx."
     }
   }
 }

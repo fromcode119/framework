@@ -5030,7 +5030,12 @@
       "allSenders": "Alla avsändare",
       "address": "Sök på e-postadress",
       "onlyTemplate": "Bara e-post av typen {{template}}.",
-      "showAll": "Visa all e-post"
+      "showAll": "Visa all e-post",
+      "period": "Period",
+      "anyTime": "Alla tider",
+      "lastDay": "Senaste 24 timmarna",
+      "lastWeek": "Senaste 7 dagarna",
+      "lastMonth": "Senaste 30 dagarna"
     },
     "status": {
       "sent": "Godkänt av mailservern",
@@ -5107,6 +5112,13 @@
           "trigger": "När någon delar en fil från Media via e-post."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Returnerad e-post spåras inte ännu: den här webbplatsen har ingen brevlåda för returer. Tills en är angiven visas ett meddelande som mailservern har godkänt som godkänt, även om det senare studsar tillbaka.",
+      "settingsLink": "Ange brevlådan för returer",
+      "failed": "Brevlådan för returer kunde inte läsas: {{error}}",
+      "lastRead": "Returnerad e-post läses från brevlådan för returer var 15:e minut. Senast läst: {{date}}.",
+      "notReadYet": "Returnerad e-post läses från brevlådan för returer var 15:e minut. Den har inte lästs ännu."
     }
   }
 }

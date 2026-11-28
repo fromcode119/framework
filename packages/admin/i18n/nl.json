@@ -5030,7 +5030,12 @@
       "allSenders": "Alle afzenders",
       "address": "Zoeken op e-mailadres",
       "onlyTemplate": "Alleen e-mails van het soort {{template}}.",
-      "showAll": "Alle e-mails tonen"
+      "showAll": "Alle e-mails tonen",
+      "period": "Periode",
+      "anyTime": "Altijd",
+      "lastDay": "Laatste 24 uur",
+      "lastWeek": "Laatste 7 dagen",
+      "lastMonth": "Laatste 30 dagen"
     },
     "status": {
       "sent": "Geaccepteerd door de mailserver",
@@ -5107,6 +5112,13 @@
           "trigger": "Wanneer iemand een bestand uit Media per e-mail deelt."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Teruggekomen e-mails worden nog niet gevolgd: deze site heeft geen postbus voor teruggekomen berichten. Zolang die niet is ingesteld, staat een e-mail die de mailserver heeft geaccepteerd als geaccepteerd, ook als hij later terugkomt.",
+      "settingsLink": "Postbus voor teruggekomen berichten instellen",
+      "failed": "De postbus voor teruggekomen berichten kon niet worden gelezen: {{error}}",
+      "lastRead": "Teruggekomen e-mails worden elke 15 minuten uit de postbus voor teruggekomen berichten gelezen. Laatst gelezen: {{date}}.",
+      "notReadYet": "Teruggekomen e-mails worden elke 15 minuten uit de postbus voor teruggekomen berichten gelezen. Hij is nog niet gelezen."
     }
   }
 }

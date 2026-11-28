@@ -5030,7 +5030,12 @@
       "allSenders": "Semua pengirim",
       "address": "Cari berdasarkan alamat email",
       "onlyTemplate": "Hanya email berjenis {{template}}.",
-      "showAll": "Tampilkan semua email"
+      "showAll": "Tampilkan semua email",
+      "period": "Periode",
+      "anyTime": "Kapan saja",
+      "lastDay": "24 jam terakhir",
+      "lastWeek": "7 hari terakhir",
+      "lastMonth": "30 hari terakhir"
     },
     "status": {
       "sent": "Diterima oleh server email",
@@ -5107,6 +5112,13 @@
           "trigger": "Saat seseorang membagikan file dari Media lewat email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Email yang dikembalikan belum dilacak: situs ini tidak punya kotak surat untuk email terpental. Sampai ada yang diatur, email yang diterima server email akan tampil sebagai diterima meskipun kemudian terpental.",
+      "settingsLink": "Atur kotak surat email terpental",
+      "failed": "Kotak surat email terpental tidak dapat dibaca: {{error}}",
+      "lastRead": "Email yang dikembalikan dibaca dari kotak surat email terpental setiap 15 menit. Terakhir dibaca: {{date}}.",
+      "notReadYet": "Email yang dikembalikan dibaca dari kotak surat email terpental setiap 15 menit. Belum pernah dibaca."
     }
   }
 }

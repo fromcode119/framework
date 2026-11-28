@@ -5030,7 +5030,12 @@
       "allSenders": "Të gjithë dërguesit",
       "address": "Kërko sipas adresës së emailit",
       "onlyTemplate": "Vetëm emailet e llojit {{template}}.",
-      "showAll": "Shfaq të gjitha emailet"
+      "showAll": "Shfaq të gjitha emailet",
+      "period": "Periudha",
+      "anyTime": "Çdo kohë",
+      "lastDay": "24 orët e fundit",
+      "lastWeek": "7 ditët e fundit",
+      "lastMonth": "30 ditët e fundit"
     },
     "status": {
       "sent": "Pranuar nga serveri i postës",
@@ -5107,6 +5112,13 @@
           "trigger": "Kur dikush ndan një skedar nga Media me email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Emailet e kthyera ende nuk gjurmohen: ky sajt nuk ka kuti postare për të kthyerat. Derisa të caktohet një, një email i pranuar nga serveri i postës shfaqet si i pranuar edhe nëse më vonë kthehet.",
+      "settingsLink": "Cakto kutinë postare të të kthyerave",
+      "failed": "Kutia postare e të kthyerave nuk mund të lexohej: {{error}}",
+      "lastRead": "Emailet e kthyera lexohen nga kutia postare e të kthyerave çdo 15 minuta. Leximi i fundit: {{date}}.",
+      "notReadYet": "Emailet e kthyera lexohen nga kutia postare e të kthyerave çdo 15 minuta. Ende nuk është lexuar."
     }
   }
 }

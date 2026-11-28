@@ -5030,7 +5030,12 @@
       "allSenders": "Mọi người gửi",
       "address": "Tìm theo địa chỉ email",
       "onlyTemplate": "Chỉ các email loại {{template}}.",
-      "showAll": "Hiện tất cả email"
+      "showAll": "Hiện tất cả email",
+      "period": "Khoảng thời gian",
+      "anyTime": "Mọi lúc",
+      "lastDay": "24 giờ qua",
+      "lastWeek": "7 ngày qua",
+      "lastMonth": "30 ngày qua"
     },
     "status": {
       "sent": "Máy chủ thư đã tiếp nhận",
@@ -5107,6 +5112,13 @@
           "trigger": "Khi ai đó chia sẻ tệp từ Thư viện qua email."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Email bị trả lại chưa được theo dõi: trang này chưa có hộp thư nhận email bị trả lại. Cho đến khi đặt hộp thư này, email đã được máy chủ thư tiếp nhận vẫn hiển thị là đã tiếp nhận dù sau đó bị trả lại.",
+      "settingsLink": "Đặt hộp thư nhận email bị trả lại",
+      "failed": "Không đọc được hộp thư nhận email bị trả lại: {{error}}",
+      "lastRead": "Email bị trả lại được đọc từ hộp thư nhận email bị trả lại mỗi 15 phút. Lần đọc gần nhất: {{date}}.",
+      "notReadYet": "Email bị trả lại được đọc từ hộp thư nhận email bị trả lại mỗi 15 phút. Hộp thư chưa được đọc."
     }
   }
 }

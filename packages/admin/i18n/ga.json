@@ -5030,7 +5030,12 @@
       "allSenders": "Gach seoltóir",
       "address": "Cuardaigh de réir seoladh ríomhphoist",
       "onlyTemplate": "Ríomhphoist de chineál {{template}} amháin.",
-      "showAll": "Taispeáin gach ríomhphost"
+      "showAll": "Taispeáin gach ríomhphost",
+      "period": "Tréimhse",
+      "anyTime": "Am ar bith",
+      "lastDay": "24 uair an chloig seo caite",
+      "lastWeek": "7 lá seo caite",
+      "lastMonth": "30 lá seo caite"
     },
     "status": {
       "sent": "Glactha ag an bhfreastalaí poist",
@@ -5107,6 +5112,13 @@
           "trigger": "Nuair a roinneann duine comhad ó Meáin trí ríomhphost."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Ní rianaítear ríomhphoist aisfhillte go fóill: níl bosca poist aisfhillte ag an suíomh seo. Go dtí go socraítear ceann, taispeánfar ríomhphost a ghlac an freastalaí poist leis mar ghlactha fiú má fhilleann sé ar ais ina dhiaidh sin.",
+      "settingsLink": "Socraigh an bosca poist aisfhillte",
+      "failed": "Níorbh fhéidir an bosca poist aisfhillte a léamh: {{error}}",
+      "lastRead": "Léitear ríomhphoist aisfhillte ón mbosca poist aisfhillte gach 15 nóiméad. Léite go deireanach: {{date}}.",
+      "notReadYet": "Léitear ríomhphoist aisfhillte ón mbosca poist aisfhillte gach 15 nóiméad. Níor léadh go fóill é."
     }
   }
 }

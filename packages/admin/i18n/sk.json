@@ -5030,7 +5030,12 @@
       "allSenders": "Všetci odosielatelia",
       "address": "Hľadať podľa e-mailovej adresy",
       "onlyTemplate": "Iba e-maily druhu {{template}}.",
-      "showAll": "Zobraziť všetky e-maily"
+      "showAll": "Zobraziť všetky e-maily",
+      "period": "Obdobie",
+      "anyTime": "Kedykoľvek",
+      "lastDay": "Posledných 24 hodín",
+      "lastWeek": "Posledných 7 dní",
+      "lastMonth": "Posledných 30 dní"
     },
     "status": {
       "sent": "Prijatý poštovým serverom",
@@ -5107,6 +5112,13 @@
           "trigger": "Keď niekto zdieľa súbor z Médií e-mailom."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Vrátené e-maily sa zatiaľ nesledujú: tento web nemá schránku pre vrátenú poštu. Kým nie je nastavená, e-mail prijatý poštovým serverom sa zobrazuje ako prijatý, aj keď sa neskôr vráti.",
+      "settingsLink": "Nastaviť schránku pre vrátenú poštu",
+      "failed": "Schránku pre vrátenú poštu sa nepodarilo prečítať: {{error}}",
+      "lastRead": "Vrátené e-maily sa zo schránky pre vrátenú poštu čítajú každých 15 minút. Naposledy: {{date}}.",
+      "notReadYet": "Vrátené e-maily sa zo schránky pre vrátenú poštu čítajú každých 15 minút. Zatiaľ nebola prečítaná."
     }
   }
 }

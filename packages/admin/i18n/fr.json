@@ -5030,7 +5030,12 @@
       "allSenders": "Tous les expéditeurs",
       "address": "Rechercher par adresse e-mail",
       "onlyTemplate": "Uniquement les e-mails de type {{template}}.",
-      "showAll": "Afficher tous les e-mails"
+      "showAll": "Afficher tous les e-mails",
+      "period": "Période",
+      "anyTime": "Toute la période",
+      "lastDay": "Dernières 24 heures",
+      "lastWeek": "7 derniers jours",
+      "lastMonth": "30 derniers jours"
     },
     "status": {
       "sent": "Accepté par le serveur de messagerie",
@@ -5107,6 +5112,13 @@
           "trigger": "Quand quelqu'un partage un fichier depuis Médias par e-mail."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Les e-mails retournés ne sont pas encore suivis : ce site n'a pas de boîte pour les retours. Tant qu'elle n'est pas définie, un e-mail accepté par le serveur de messagerie apparaît comme accepté même s'il est retourné ensuite.",
+      "settingsLink": "Définir la boîte des retours",
+      "failed": "La boîte des retours n'a pas pu être lue : {{error}}",
+      "lastRead": "Les e-mails retournés sont lus dans la boîte des retours toutes les 15 minutes. Dernière lecture : {{date}}.",
+      "notReadYet": "Les e-mails retournés sont lus dans la boîte des retours toutes les 15 minutes. Elle n'a pas encore été lue."
     }
   }
 }

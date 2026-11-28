@@ -5030,7 +5030,12 @@
       "allSenders": "Todos os remetentes",
       "address": "Pesquisar por endereço de e-mail",
       "onlyTemplate": "Apenas e-mails do tipo {{template}}.",
-      "showAll": "Mostrar todos os e-mails"
+      "showAll": "Mostrar todos os e-mails",
+      "period": "Período",
+      "anyTime": "Qualquer altura",
+      "lastDay": "Últimas 24 horas",
+      "lastWeek": "Últimos 7 dias",
+      "lastMonth": "Últimos 30 dias"
     },
     "status": {
       "sent": "Aceite pelo servidor de e-mail",
@@ -5107,6 +5112,13 @@
           "trigger": "Quando alguém partilha por e-mail um ficheiro de Multimédia."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Os e-mails devolvidos ainda não são acompanhados: este site não tem caixa de correio para devoluções. Enquanto não for definida uma, um e-mail aceite pelo servidor de e-mail aparece como aceite mesmo que depois seja devolvido.",
+      "settingsLink": "Definir a caixa de correio de devoluções",
+      "failed": "Não foi possível ler a caixa de correio de devoluções: {{error}}",
+      "lastRead": "Os e-mails devolvidos são lidos da caixa de correio de devoluções de 15 em 15 minutos. Última leitura: {{date}}.",
+      "notReadYet": "Os e-mails devolvidos são lidos da caixa de correio de devoluções de 15 em 15 minutos. Ainda não foi lida."
     }
   }
 }

@@ -5030,7 +5030,12 @@
       "allSenders": "所有发件人",
       "address": "按邮件地址搜索",
       "onlyTemplate": "仅显示类型为 {{template}} 的邮件。",
-      "showAll": "显示所有邮件"
+      "showAll": "显示所有邮件",
+      "period": "时间段",
+      "anyTime": "任何时间",
+      "lastDay": "最近 24 小时",
+      "lastWeek": "最近 7 天",
+      "lastMonth": "最近 30 天"
     },
     "status": {
       "sent": "邮件服务器已接收",
@@ -5107,6 +5112,13 @@
           "trigger": "有人通过邮件分享媒体中的文件时。"
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "目前尚未跟踪被退回的邮件：此站点没有退信邮箱。在设置之前，邮件服务器已接收的邮件即使之后被退回，也仍显示为已接收。",
+      "settingsLink": "设置退信邮箱",
+      "failed": "无法读取退信邮箱：{{error}}",
+      "lastRead": "被退回的邮件每 15 分钟从退信邮箱读取一次。上次读取：{{date}}。",
+      "notReadYet": "被退回的邮件每 15 分钟从退信邮箱读取一次。尚未读取过。"
     }
   }
 }

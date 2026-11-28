@@ -5030,7 +5030,12 @@
       "allSenders": "Visi sūtītāji",
       "address": "Meklēt pēc e-pasta adreses",
       "onlyTemplate": "Tikai {{template}} veida e-pasti.",
-      "showAll": "Rādīt visus e-pastus"
+      "showAll": "Rādīt visus e-pastus",
+      "period": "Periods",
+      "anyTime": "Jebkurā laikā",
+      "lastDay": "Pēdējās 24 stundas",
+      "lastWeek": "Pēdējās 7 dienas",
+      "lastMonth": "Pēdējās 30 dienas"
     },
     "status": {
       "sent": "Pasta serveris pieņēmis",
@@ -5107,6 +5112,13 @@
           "trigger": "Kad kāds ar e-pastu kopīgo failu no Multivides."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Atgrieztie e-pasti vēl netiek uzraudzīti: šai vietnei nav atgriezto vēstuļu pastkastītes. Kamēr tā nav iestatīta, pasta servera pieņemts e-pasts tiek rādīts kā pieņemts, pat ja vēlāk tiek atgriezts.",
+      "settingsLink": "Iestatīt atgriezto vēstuļu pastkastīti",
+      "failed": "Atgriezto vēstuļu pastkastīti neizdevās nolasīt: {{error}}",
+      "lastRead": "Atgrieztie e-pasti tiek lasīti no atgriezto vēstuļu pastkastītes ik pēc 15 minūtēm. Pēdējoreiz lasīts: {{date}}.",
+      "notReadYet": "Atgrieztie e-pasti tiek lasīti no atgriezto vēstuļu pastkastītes ik pēc 15 minūtēm. Tā vēl nav lasīta."
     }
   }
 }

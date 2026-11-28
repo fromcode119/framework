@@ -5030,7 +5030,12 @@
       "allSenders": "Svi pošiljatelji",
       "address": "Traži prema adresi e-pošte",
       "onlyTemplate": "Samo e-poruke vrste {{template}}.",
-      "showAll": "Prikaži sve e-poruke"
+      "showAll": "Prikaži sve e-poruke",
+      "period": "Razdoblje",
+      "anyTime": "Bilo kada",
+      "lastDay": "Zadnja 24 sata",
+      "lastWeek": "Zadnjih 7 dana",
+      "lastMonth": "Zadnjih 30 dana"
     },
     "status": {
       "sent": "Prihvatio poslužitelj e-pošte",
@@ -5107,6 +5112,13 @@
           "trigger": "Kada netko podijeli datoteku iz Medija e-poštom."
         }
       }
+    },
+    "bounces": {
+      "notConfigured": "Vraćene e-poruke još se ne prate: ovo web-mjesto nema sandučić za vraćenu poštu. Dok se ne postavi, e-poruka koju je prihvatio poslužitelj e-pošte prikazuje se kao prihvaćena čak i ako se kasnije vrati.",
+      "settingsLink": "Postavi sandučić za vraćenu poštu",
+      "failed": "Sandučić za vraćenu poštu nije bilo moguće pročitati: {{error}}",
+      "lastRead": "Vraćene e-poruke čitaju se iz sandučića za vraćenu poštu svakih 15 minuta. Zadnje čitanje: {{date}}.",
+      "notReadYet": "Vraćene e-poruke čitaju se iz sandučića za vraćenu poštu svakih 15 minuta. Još nije pročitan."
     }
   }
 }
