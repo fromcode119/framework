@@ -35,6 +35,8 @@ export interface IPluginContextMedia {
    * in the file's own type. For a file sold to a person: check them, then hand over this, never the file's own.
    */
   signedUrl(id: any, ttlSeconds?: number): Promise<string | null>;
+  /** The signed addresses of many stored files in one call, keyed by id, all for `ttlSeconds`; an id with none here is absent. */
+  signedUrls(ids: any[], ttlSeconds?: number): Promise<Record<string, string>>;
   /** SHA-256 (hex) of the stored file's bytes, or null when the id resolves to nothing in this site. */
   digest(id: any): Promise<string | null>;
   /**

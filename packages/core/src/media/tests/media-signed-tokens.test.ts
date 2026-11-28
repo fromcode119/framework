@@ -98,4 +98,29 @@ describe('media signed tokens', () => {
       vi.restoreAllMocks();
     }
   });
+
+  // A person who may play many files is handed all of them at once: the site's key is read once, not once per file.
+  it('signs many files with one read of the site key, each opening only its own file', async () => {
+    sites();
+    const tokens = new MediaSignedTokens(siteManager());
+    const key = vi.spyOn(MediaSignedTokens.prototype as any, 'key');
+    const all = await onSite('zen', () => tokens.mintAll(['1', '2', '3'], 3600));
+    expect(key).toHaveBeenCalledTimes(1);
+    key.mockRestore();
+    expect(await tokens.verify(all.get('2') as string, 'zen')).toBe('2');
+    expect(await tokens.verify(all.get('3') as string, 'shop')).toBeNull();
+    expect(new Set(all.values()).size).toBe(3);
+  });
+
+  it('gives each row of a batch its own address, keyed by id', async () => {
+    vi.spyOn(MediaSignedTokens.prototype, 'mintAll').mockImplementation(async (ids: string[]) => new Map(ids.map((id) => [id, `v1.c${id}.sig`])));
+    vi.spyOn(SiteBaseUrl, 'apiUrlForCurrentSite').mockImplementation(async (path: string) => `https://site.test${path}`);
+    try {
+      const urls = await new MediaSignedAddress({} as any).ofAll([{ id: 7, filename: 'a.mp3' }, { id: 8, filename: 'b.mp4' }], 3600);
+      expect(urls['7']).toMatch(/\/media\/signed\/7\/file\.mp3\?t=v1\.c7\.sig$/);
+      expect(urls['8']).toMatch(/\/media\/signed\/8\/file\.mp4\?t=v1\.c8\.sig$/);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
 });
