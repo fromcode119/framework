@@ -18,7 +18,7 @@ export class DeliveryReportParser {
       const recipients = DeliveryReportParser.blocks(status)
         .map((fields) => DeliveryReportParser.recipient(fields))
         .filter((recipient): recipient is IDeliveryReportRecipient => recipient !== null);
-      return recipients.length ? { kind: 'delivery-status', originalMessageId, recipients } : null;
+      return recipients.length ? { complaint: false, originalMessageId, recipients } : null;
     }
 
     const feedback = DeliveryReportParser.part(source, 'message/feedback-report');
@@ -26,7 +26,7 @@ export class DeliveryReportParser {
       const fields = DeliveryReportParser.fields(feedback);
       const address = DeliveryReportParser.address(fields['original-rcpt-to'] || fields['removal-recipient'] || '');
       if (!address) return null;
-      return { kind: 'complaint', originalMessageId, recipients: [{ address, action: String(fields['feedback-type'] || 'abuse').toLowerCase(), status: '', diagnostic: '' }] };
+      return { complaint: true, originalMessageId, recipients: [{ address, action: String(fields['feedback-type'] || 'abuse').toLowerCase(), status: '', diagnostic: '' }] };
     }
     return null;
   }

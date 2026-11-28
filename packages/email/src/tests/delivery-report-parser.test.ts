@@ -66,7 +66,7 @@ describe('DeliveryReportParser', () => {
   it('reads a hard bounce: recipient, status, the server\'s words and the original Message-ID', async () => {
     const message = await InboundMessageParser.parse(1, bounce);
     expect(message.report).toEqual({
-      kind: 'delivery-status',
+      complaint: false,
       originalMessageId: 'abc123@shop.example',
       recipients: [{
         address: 'gone@example.org',
@@ -79,7 +79,7 @@ describe('DeliveryReportParser', () => {
 
   it('reads a spam complaint', async () => {
     const message = await InboundMessageParser.parse(2, complaint);
-    expect(message.report).toMatchObject({ kind: 'complaint', originalMessageId: 'news-9@shop.example', recipients: [{ address: 'ana@isp.example', action: 'abuse' }] });
+    expect(message.report).toMatchObject({ complaint: true, originalMessageId: 'news-9@shop.example', recipients: [{ address: 'ana@isp.example', action: 'abuse' }] });
   });
 
   it('says nothing about an ordinary reply', async () => {

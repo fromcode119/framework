@@ -5,7 +5,8 @@ import type { IDeliveryReportRecipient } from '@email/interfaces/delivery-report
  * `Message-ID`), which recipients, and what happened to each.
  */
 export interface IDeliveryReport {
-  kind: 'delivery-status' | 'complaint';
+  /** True for a spam complaint (RFC 5965), false for a delivery status report (RFC 3464). */
+  complaint: boolean;
   /** The `Message-ID` of the email the report is about, without angle brackets; empty when absent. */
   originalMessageId: string;
   recipients: IDeliveryReportRecipient[];

@@ -174,7 +174,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             settingKey="job_run_retention_days"
             title={AdminI18n.t('settings.infrastructure.jobRunRetention')}
             description={AdminI18n.t('settings.infrastructure.daysOfJobRunHistory')}
-            olderThan={(days) => AdminI18n.t('settings.infrastructure.jobRunsOlderThanDay', { days })}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.jobRunsOlderThanDay', { days })}
             keptForever={AdminI18n.t('settings.infrastructure.jobRunsAreKeptForever')}
             failed={AdminI18n.t('settings.infrastructure.failedToSaveJobRunRetention')}
           />
@@ -182,7 +182,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             settingKey="email_log_retention_days"
             title={AdminI18n.t('settings.infrastructure.emailLogRetention')}
             description={AdminI18n.t('settings.infrastructure.daysOfEmailLog')}
-            olderThan={(days) => AdminI18n.t('settings.infrastructure.emailsOlderThanDay', { days })}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.emailsOlderThanDay', { days })}
             keptForever={AdminI18n.t('settings.infrastructure.emailsAreKeptForever')}
             failed={AdminI18n.t('settings.infrastructure.failedToSaveEmailLogRetention')}
           />
@@ -190,7 +190,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             settingKey="email_content_retention_days"
             title={AdminI18n.t('settings.infrastructure.emailContentRetention')}
             description={AdminI18n.t('settings.infrastructure.daysOfEmailContent')}
-            olderThan={(days) => AdminI18n.t('settings.infrastructure.emailContentOlderThanDay', { days })}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.emailContentOlderThanDay', { days })}
             keptForever={AdminI18n.t('settings.infrastructure.emailContentIsKeptForever')}
             failed={AdminI18n.t('settings.infrastructure.failedToSaveEmailContentRetention')}
           />

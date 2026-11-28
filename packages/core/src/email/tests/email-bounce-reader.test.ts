@@ -8,7 +8,7 @@ const db = (rows: any[]) => ({
 });
 
 const bounce = (originalMessageId: string, address = 'gone@example.org') => ({
-  kind: 'delivery-status' as const,
+  complaint: false,
   originalMessageId,
   recipients: [{ address, action: 'failed', status: '5.1.1', diagnostic: 'smtp; 550 User unknown' }],
 });

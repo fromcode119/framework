@@ -68,7 +68,7 @@ export class EmailBounceReader {
     if (sent.length !== 1) return 0;
     let changed = 0;
     for (const recipient of report.recipients) {
-      const complaint = report.kind === 'complaint';
+      const complaint = report.complaint === true;
       if (!complaint && recipient.action !== 'failed') continue; // `delayed`, `delivered`: nothing has gone wrong yet.
       const [row] = await this.db.find(SystemConstants.TABLE.EMAIL_LOG, {
         where: { to_address: recipient.address, message_id: report.originalMessageId },

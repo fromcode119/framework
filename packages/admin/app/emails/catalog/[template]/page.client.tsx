@@ -30,7 +30,7 @@ export class EmailTemplatePage extends AdminComponent {
   @state private entry: any = null;
   @state private preview: any = null;
   @state private error = '';
-  @state private width: 'desktop' | 'phone' = 'desktop';
+  @state private phone = false;
   @state private sending = false;
 
   async componentDidMount(): Promise<void> {
@@ -50,7 +50,7 @@ export class EmailTemplatePage extends AdminComponent {
   }
 
   @bound private onWidth(value: string): void {
-    this.width = value === 'phone' ? 'phone' : 'desktop';
+    this.phone = value === 'phone';
   }
 
   @bound private async sendTest(): Promise<void> {
@@ -81,10 +81,10 @@ export class EmailTemplatePage extends AdminComponent {
   private renderPreview(): ReactNode {
     const preview = this.preview;
     if (!preview) return null;
-    const frameClass = `fc-email-preview${this.width === 'phone' ? ' fc-email-preview--phone' : ''}`;
+    const frameClass = `fc-email-preview${this.phone ? ' fc-email-preview--phone' : ''}`;
     return (
       <div className="fc-stack">
-        <Tabs label={AdminI18n.t('emails.catalog.width')} value={this.width} onChange={this.onWidth} variant="second"
+        <Tabs label={AdminI18n.t('emails.catalog.width')} value={this.phone ? 'phone' : 'desktop'} onChange={this.onWidth} variant="second"
           tabs={[{ id: 'desktop', label: AdminI18n.t('emails.catalog.desktop') }, { id: 'phone', label: AdminI18n.t('emails.catalog.phone') }]} />
         <AdminFactGrid facts={[{ key: 'subject', label: AdminI18n.t('emails.columns.subject'), value: preview.subject }]} lockLabel={AdminI18n.t('emails.catalog.exampleData')} />
         {preview.html

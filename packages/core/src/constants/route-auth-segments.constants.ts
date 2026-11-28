@@ -164,11 +164,9 @@ export class RouteAuthSegments {
   ADMIN_JOBS: '/admin/jobs',
   JOBS_RUNS: '/runs',
   JOBS_QUEUE: '/queue',
-  /** `/system/admin/emails` — every email this scope sent, suppressed or failed; one email; send it again. */
+  /** `/system/admin/emails`: the log, one email, resend; an address's do-not-email rows; the catalog, a preview, a test. */
   ADMIN_EMAILS: '/admin/emails',
-  /** The do-not-email rows for one address (`?address=`), read-only. */
   EMAILS_SUPPRESSIONS: '/suppressions',
-  /** The email catalog: every kind of email this scope can send; one drawn with its example data; a test. */
   EMAILS_CATALOG: '/catalog',
   EMAILS_CATALOG_PREVIEW: '/catalog/:template/preview',
   EMAILS_CATALOG_TEST: '/catalog/:template/test',
