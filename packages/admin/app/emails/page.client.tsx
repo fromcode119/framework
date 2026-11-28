@@ -41,6 +41,8 @@ export class EmailsPage extends AdminComponent {
   @state private more = false;
   @state private status = '';
   @state private sender = '';
+  /** Hours back from now, or '' for every email. */
+  @state private period = '';
   @state private address = '';
   @state private activeAddress = '';
   /** Opened from the catalog: only this kind of email. Stated above the list, with a way back to all. */
@@ -57,7 +59,7 @@ export class EmailsPage extends AdminComponent {
     if (this.searchTimer) clearTimeout(this.searchTimer);
   }
 
-  @watch('status', 'sender', 'activeAddress', 'template') private reload(): void {
+  @watch('status', 'sender', 'activeAddress', 'template', 'period') private reload(): void {
     void this.load();
   }
 
@@ -67,6 +69,7 @@ export class EmailsPage extends AdminComponent {
     if (this.sender) params.set('sender', this.sender);
     if (this.activeAddress.trim()) params.set('address', this.activeAddress.trim());
     if (this.template) params.set('template', this.template);
+    if (this.period) params.set('since', new Date(Date.now() - Number(this.period) * 3_600_000).toISOString());
     if (before) params.set('before', String(before));
     const text = params.toString();
     return text ? `?${text}` : '';
@@ -96,6 +99,10 @@ export class EmailsPage extends AdminComponent {
 
   @bound private onSender(value: string): void {
     this.sender = value;
+  }
+
+  @bound private onPeriod(value: string): void {
+    this.period = value;
   }
 
   @bound private onAddress(value: string): void {
@@ -139,7 +146,7 @@ export class EmailsPage extends AdminComponent {
   private get emptyMessage(): string {
     if (this.loading) return AdminI18n.t('emails.loading');
     if (this.failed) return AdminI18n.t('emails.failed');
-    return this.status || this.sender || this.activeAddress || this.template ? AdminI18n.t('emails.emptyFiltered') : AdminI18n.t('emails.empty');
+    return this.status || this.sender || this.activeAddress || this.template || this.period ? AdminI18n.t('emails.emptyFiltered') : AdminI18n.t('emails.empty');
   }
 
   render(): ReactNode {
@@ -172,6 +179,17 @@ export class EmailsPage extends AdminComponent {
             tools={(
               <>
                 <Select value={this.sender} onChange={this.onSender} options={this.senderOptions} label={AdminI18n.t('emails.columns.sender')} />
+                <Select
+                  value={this.period}
+                  onChange={this.onPeriod}
+                  label={AdminI18n.t('emails.filters.period')}
+                  options={[
+                    { value: '', label: AdminI18n.t('emails.filters.anyTime') },
+                    { value: '24', label: AdminI18n.t('emails.filters.lastDay') },
+                    { value: '168', label: AdminI18n.t('emails.filters.lastWeek') },
+                    { value: '720', label: AdminI18n.t('emails.filters.lastMonth') },
+                  ]}
+                />
                 <SearchField value={this.address} onChange={this.onAddress} placeholder={AdminI18n.t('emails.filters.address')} />
               </>
             )}
