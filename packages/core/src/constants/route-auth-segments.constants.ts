@@ -167,11 +167,8 @@ export class RouteAuthSegments {
   /** `/system/admin/emails`: the log, one email, resend; an address's do-not-email rows; the catalog, a preview, a test. */
   ADMIN_EMAILS: '/admin/emails',
   EMAILS_SUPPRESSIONS: '/suppressions',
-  EMAILS_CATALOG: '/catalog',
-  EMAILS_CATALOG_PREVIEW: '/catalog/:template/preview',
-  EMAILS_CATALOG_TEST: '/catalog/:template/test',
-  EMAILS_ID: '/:id',
-  EMAILS_ID_RESEND: '/:id/resend',
+  EMAILS_CATALOG: '/catalog', EMAILS_CATALOG_PREVIEW: '/catalog/:template/preview', EMAILS_CATALOG_TEST: '/catalog/:template/test',
+  EMAILS_ID: '/:id', EMAILS_ID_RESEND: '/:id/resend',
   MONITORING_CHECK: '/check',
   /** `/system/admin/schema-orphans` — columns nothing declares, awaiting a platform admin's decision. */
   ADMIN_SCHEMA_ORPHANS: '/admin/schema-orphans',
