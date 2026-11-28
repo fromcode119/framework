@@ -111,7 +111,9 @@ export class JournalRetentionService {
 
   async pruneOlderThan(target: IJournalRetentionTarget, retentionDays: number): Promise<number> {
     const cutoff = new Date(Date.now() - (retentionDays * JournalRetentionService.MILLISECONDS_PER_DAY));
-    const where = { [target.timestampField]: { lt: cutoff.toISOString() } };
+    const where: Record<string, unknown> = { [target.timestampField]: { lt: cutoff.toISOString() } };
+    // A clearing sweep touches each row once: a row already emptied is not counted or rewritten again.
+    if (target.clears) where[target.clears.stampField] = null;
 
     try {
       // ONE platform-admin scope around the count, the breakdown and every batch: the marker is bound
@@ -131,7 +133,9 @@ export class JournalRetentionService {
           + ` (before ${cutoff.toISOString()}) across ${owners}.`,
         );
 
-        const removed = await this.deleteInBatches(target, where);
+        const removed = target.clears
+          ? await this.clearInBatches(target, target.clears, where)
+          : await this.deleteInBatches(target, where);
         this.logger.info(`[Retention:${target.label}] Removed ${removed} row(s).`);
 
         // A journal that IS the record of what happened must record its own pruning. Failing to write
@@ -166,6 +170,22 @@ export class JournalRetentionService {
     return groups
       .map((group) => `${group?.tenant_id ? String(group.tenant_id) : 'platform'}=${CoercionUtils.toNumber(group?.count, 0)}`)
       .join(', ');
+  }
+
+  /** Empty the declared columns by id, a batch at a time, until no aged row still holds them. */
+  private async clearInBatches(target: IJournalRetentionTarget, clears: NonNullable<IJournalRetentionTarget['clears']>, where: Record<string, unknown>): Promise<number> {
+    let cleared = 0;
+    const patch: Record<string, unknown> = Object.fromEntries(clears.fields.map((field) => [field, null]));
+    for (;;) {
+      const batch: Array<Record<string, any>> = await this.db.find(target.table, { where, columns: { id: true }, limit: JournalRetentionService.DELETE_BATCH });
+      const ids = batch.map((row) => row?.id).filter((id) => id !== undefined && id !== null);
+      if (ids.length === 0) return cleared;
+      // One row per statement: `update` matches by equality only, never `{ in: [...] }`.
+      const stamp = { ...patch, [clears.stampField]: new Date() };
+      for (const id of ids) await this.db.update(target.table, { id }, stamp);
+      cleared += ids.length;
+      if (ids.length < JournalRetentionService.DELETE_BATCH) return cleared;
+    }
   }
 
   /**

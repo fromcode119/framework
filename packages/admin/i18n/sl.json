@@ -793,7 +793,8 @@
       "activity": "Dejavnost",
       "themes": "Teme",
       "settings": "Nastavitve",
-      "jobs": "Opravila"
+      "jobs": "Opravila",
+      "emails": "E-pošta"
     },
     "panel": {
       "sites-list": "Vsa spletna mesta",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Število dni hranjenja izvajanj opravil v ozadju (stran Opravila), čiščenje poteka dnevno. Prazno polje hrani vsa izvajanja trajno.",
       "jobRunsOlderThanDay": "Izvajanja opravil, starejša od {{days}} dni, bodo odstranjena.",
       "jobRunsAreKeptForever": "Izvajanja opravil se hranijo trajno.",
-      "failedToSaveJobRunRetention": "Nastavitve zgodovine izvajanj opravil ni bilo mogoče shraniti."
+      "failedToSaveJobRunRetention": "Nastavitve zgodovine izvajanj opravil ni bilo mogoče shraniti.",
+      "emailLogRetention": "Dnevnik e-pošte",
+      "daysOfEmailLog": "Koliko dni dnevnika e-pošte (stran E-pošta) hraniti; čisti se vsak dan. Prazno polje hrani vsa e-sporočila trajno.",
+      "emailsOlderThanDay": "E-sporočila, starejša od {{days}} dni, bodo odstranjena iz dnevnika.",
+      "emailsAreKeptForever": "Dnevnik e-pošte se hrani trajno.",
+      "failedToSaveEmailLogRetention": "Nastavitve dnevnika e-pošte ni bilo mogoče shraniti.",
+      "emailContentRetention": "Vsebina e-sporočil",
+      "daysOfEmailContent": "Koliko dni hraniti, kar je pisalo v vsakem e-sporočilu. Nato dnevnik obdrži komu, kdaj in zadevo. Prazno polje hrani vsebino trajno.",
+      "emailContentOlderThanDay": "Vsebina e-sporočil, starejših od {{days}} dni, bo odstranjena.",
+      "emailContentIsKeptForever": "Vsebina e-sporočil se hrani trajno.",
+      "failedToSaveEmailContentRetention": "Nastavitve vsebine e-sporočil ni bilo mogoče shraniti."
     },
     "integrations": {
       "displayNameOptional": "Prikazno ime (neobvezno)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-pošta",
+    "subtitleSite": "Vsako e-sporočilo, ki ga je to spletno mesto poslalo, zadržalo ali ga ni moglo poslati: komu, kdaj, katera razširitev ga je poslala in kaj je pisalo v njem.",
+    "subtitlePlatform": "Vsako e-sporočilo, ki ga je platforma sama poslala, zadržala ali ga ni mogla poslati. E-sporočila posameznega mesta so na strani E-pošta tega mesta.",
+    "platform": "Platforma",
+    "noTemplate": "Brez predloge",
+    "transactional": "Storitveno (ni mogoče izklopiti)",
+    "loading": "Nalaganje e-sporočil …",
+    "failed": "E-sporočil ni bilo mogoče prebrati.",
+    "empty": "Poslanih še ni nobenih e-sporočil.",
+    "emptyFiltered": "Nobeno e-sporočilo ne ustreza tem filtrom.",
+    "loadOlder": "Naloži starejša e-sporočila",
+    "notFound": "Tega e-sporočila ni v dnevniku. Morda ga je odstranila nastavitev hrambe dnevnika.",
+    "manageRequired": "Za odpiranje vsebine e-sporočila je potrebno dovoljenje za upravljanje sistema.",
+    "detailHeading": "E-sporočilo",
+    "contentHeading": "Vsebina",
+    "contentRemoved": "Vsebina tega e-sporočila se ne hrani (odstranjena {{date}}). Bodisi je vsebovalo povezavo za prijavo, ponastavitev ali deljenje, bodisi je starejše, kot dovoljuje nastavitev hrambe vsebine.",
+    "noContent": "To e-sporočilo ni imelo vsebine.",
+    "columns": {
+      "status": "Stanje",
+      "sentAt": "Poslano",
+      "to": "Za",
+      "subject": "Zadeva",
+      "sender": "Poslal",
+      "template": "Predloga"
+    },
+    "fields": {
+      "category": "Vrsta e-sporočila",
+      "error": "Napaka",
+      "serverAnswer": "Odgovor poštnega strežnika",
+      "messageId": "ID sporočila",
+      "jobRun": "Zagon opravila v ozadju"
+    },
+    "filters": {
+      "all": "Vse",
+      "allSenders": "Vsi pošiljatelji",
+      "address": "Išči po e-poštnem naslovu",
+      "onlyTemplate": "Samo e-sporočila vrste {{template}}.",
+      "showAll": "Prikaži vsa e-sporočila",
+      "period": "Obdobje",
+      "anyTime": "Kadar koli",
+      "lastDay": "Zadnjih 24 ur",
+      "lastWeek": "Zadnjih 7 dni",
+      "lastMonth": "Zadnjih 30 dni"
+    },
+    "status": {
+      "sent": "Sprejel poštni strežnik",
+      "suppressed": "Ni poslano: odjavljen",
+      "failed": "Ni uspelo",
+      "bounced": "Vrnjeno",
+      "complained": "Označeno kot vsiljena pošta"
+    },
+    "resend": {
+      "button": "Pošlji znova",
+      "confirmTitle": "Želite to e-sporočilo poslati znova?",
+      "confirm": "Isto e-sporočilo bo šlo na {{address}} še enkrat. V dnevniku bo zapisano kot novo e-sporočilo.",
+      "sentTitle": "Poslano znova",
+      "sent": "E-sporočilo je bilo znova poslano na {{address}}.",
+      "skippedTitle": "Ni poslano",
+      "skipped": "{{address}} se je odjavil/a od te vrste e-sporočil, zato ni bilo poslano.",
+      "failedTitle": "Pošiljanje ni uspelo",
+      "failed": "E-sporočila ni bilo mogoče znova poslati."
+    },
+    "person": {
+      "heading": "E-pošta",
+      "seeAll": "Prikaži vse",
+      "none": "Tej osebi ni bilo poslano nobeno e-sporočilo.",
+      "noAddress": "Ta oseba nima e-poštnega naslova.",
+      "allMail": "Vsa e-pošta",
+      "optedOut": "Ta oseba je prosila, naj ne prejema nekaterih e-sporočil.",
+      "optOutsHint": "Odjavo lahko prekliče samo oseba sama na strani svojih e-poštnih nastavitev."
+    },
+    "catalog": {
+      "open": "Katalog e-sporočil",
+      "title": "Katalog e-sporočil",
+      "subtitle": "Vsaka vrsta e-sporočila, ki ga lahko pošlje to spletno mesto: kdo ga pošlje, kdaj odide in kako izgleda.",
+      "empty": "Še ni opisanih e-sporočil.",
+      "notFound": "To spletno mesto nima takega e-sporočila.",
+      "previewFailed": "E-sporočila ni bilo mogoče prikazati.",
+      "neverSent": "Še ni poslano",
+      "aboutHeading": "O tem e-sporočilu",
+      "previewHeading": "Kako izgleda",
+      "exampleData": "Prikazano z vzorčnimi podatki, ne prave osebe.",
+      "width": "Širina",
+      "desktop": "Računalnik",
+      "phone": "Telefon",
+      "seeSent": "Poglej poslana e-sporočila",
+      "sendTest": "Pošlji mi preizkus",
+      "testSentTitle": "Preizkus poslan",
+      "testSent": "Preizkusna kopija je šla na {{address}}.",
+      "testFailed": "Preizkusnega e-sporočila ni bilo mogoče poslati.",
+      "sensitive": "To e-sporočilo vsebuje povezavo za prijavo, ponastavitev ali deljenje, zato dnevnik hrani komu in kdaj, nikoli pa vsebine.",
+      "columns": {
+        "email": "E-sporočilo",
+        "when": "Kdaj se pošlje",
+        "sent": "Poslano v {{days}} dneh",
+        "lastSent": "Nazadnje poslano"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Potrdite svoj e-poštni naslov",
+          "trigger": "Ko se nekdo registrira, da potrdi svoj naslov."
+        },
+        "passwordReset": {
+          "label": "Ponastavite geslo",
+          "trigger": "Ko nekdo zahteva novo geslo, na strani za prijavo ali iz svojega zapisa osebe."
+        },
+        "emailChange": {
+          "label": "Potrdite svoj novi e-poštni naslov",
+          "trigger": "Ko nekdo spremeni e-poštni naslov; pošlje se na novi naslov."
+        },
+        "securityNotification": {
+          "label": "Varnostno obvestilo",
+          "trigger": "Ko se spremeni geslo ali e-pošta računa ali se nekdo prijavi z novega mesta (Nastavitve → Varnost)."
+        },
+        "fileShare": {
+          "label": "Z vami je bila deljena datoteka",
+          "trigger": "Ko nekdo po e-pošti deli datoteko iz Medijev."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Vrnjena e-sporočila se še ne spremljajo: to spletno mesto nima nabiralnika za vrnjeno pošto. Dokler ni nastavljen, se e-sporočilo, ki ga je sprejel poštni strežnik, prikazuje kot sprejeto, tudi če se pozneje vrne.",
+      "settingsLink": "Nastavi nabiralnik za vrnjeno pošto",
+      "failed": "Nabiralnika za vrnjeno pošto ni bilo mogoče prebrati: {{error}}",
+      "lastRead": "Vrnjena e-sporočila se iz nabiralnika za vrnjeno pošto berejo vsakih 15 minut. Zadnje branje: {{date}}.",
+      "notReadYet": "Vrnjena e-sporočila se iz nabiralnika za vrnjeno pošto berejo vsakih 15 minut. Še ni bil prebran."
     }
   }
 }

@@ -793,7 +793,8 @@
       "activity": "活动",
       "themes": "主题",
       "settings": "设置",
-      "jobs": "任务"
+      "jobs": "任务",
+      "emails": "邮件"
     },
     "panel": {
       "sites-list": "所有站点",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "后台任务运行记录（任务页面）的保留天数，每日清理。留空则永久保留所有记录。",
       "jobRunsOlderThanDay": "超过 {{days}} 天的任务运行记录将被删除。",
       "jobRunsAreKeptForever": "任务运行记录将永久保留。",
-      "failedToSaveJobRunRetention": "保存任务运行历史设置失败。"
+      "failedToSaveJobRunRetention": "保存任务运行历史设置失败。",
+      "emailLogRetention": "邮件日志",
+      "daysOfEmailLog": "邮件日志（“邮件”页面）保留的天数，每天清理一次。留空则永久保留所有邮件。",
+      "emailsOlderThanDay": "超过 {{days}} 天的邮件将从日志中删除。",
+      "emailsAreKeptForever": "邮件日志永久保留。",
+      "failedToSaveEmailLogRetention": "无法保存邮件日志设置。",
+      "emailContentRetention": "邮件内容",
+      "daysOfEmailContent": "每封邮件的内容保留的天数。之后日志只保留收件人、时间和主题。留空则永久保留内容。",
+      "emailContentOlderThanDay": "超过 {{days}} 天的邮件内容将被删除。",
+      "emailContentIsKeptForever": "邮件内容永久保留。",
+      "failedToSaveEmailContentRetention": "无法保存邮件内容设置。"
     },
     "integrations": {
       "displayNameOptional": "显示名称（可选）",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "邮件",
+    "subtitleSite": "此站点发送、暂扣或发送失败的每一封邮件：发给谁、何时、由哪个扩展发送，以及内容是什么。",
+    "subtitlePlatform": "平台自身发送、暂扣或发送失败的每一封邮件。各站点自己的邮件在该站点的“邮件”页面。",
+    "platform": "平台",
+    "noTemplate": "无模板",
+    "transactional": "事务性邮件（无法关闭）",
+    "loading": "正在加载邮件…",
+    "failed": "无法读取邮件。",
+    "empty": "尚未发送任何邮件。",
+    "emptyFiltered": "没有符合这些筛选条件的邮件。",
+    "loadOlder": "加载更早的邮件",
+    "notFound": "日志中没有这封邮件。它可能已按日志保留设置被删除。",
+    "manageRequired": "打开邮件内容需要管理系统的权限。",
+    "detailHeading": "邮件",
+    "contentHeading": "内容",
+    "contentRemoved": "这封邮件的内容未保留（已于 {{date}} 删除）。要么它包含登录、重置或分享链接，要么比内容保留设置允许的时间更早。",
+    "noContent": "这封邮件没有内容。",
+    "columns": {
+      "status": "状态",
+      "sentAt": "发送时间",
+      "to": "收件人",
+      "subject": "主题",
+      "sender": "发送者",
+      "template": "模板"
+    },
+    "fields": {
+      "category": "邮件类型",
+      "error": "错误",
+      "serverAnswer": "邮件服务器的回复",
+      "messageId": "邮件 ID",
+      "jobRun": "后台任务运行"
+    },
+    "filters": {
+      "all": "全部",
+      "allSenders": "所有发件人",
+      "address": "按邮件地址搜索",
+      "onlyTemplate": "仅显示类型为 {{template}} 的邮件。",
+      "showAll": "显示所有邮件",
+      "period": "时间段",
+      "anyTime": "任何时间",
+      "lastDay": "最近 24 小时",
+      "lastWeek": "最近 7 天",
+      "lastMonth": "最近 30 天"
+    },
+    "status": {
+      "sent": "邮件服务器已接收",
+      "suppressed": "未发送：已退订",
+      "failed": "失败",
+      "bounced": "被退回",
+      "complained": "已标记为垃圾邮件"
+    },
+    "resend": {
+      "button": "再次发送",
+      "confirmTitle": "要再次发送这封邮件吗？",
+      "confirm": "同一封邮件将再发给 {{address}} 一次。日志中会将其记录为一封新邮件。",
+      "sentTitle": "已再次发送",
+      "sent": "邮件已再次发送给 {{address}}。",
+      "skippedTitle": "未发送",
+      "skipped": "{{address}} 已退订此类邮件，因此未发送。",
+      "failedTitle": "无法发送",
+      "failed": "无法再次发送这封邮件。"
+    },
+    "person": {
+      "heading": "邮件",
+      "seeAll": "查看全部",
+      "none": "尚未向此人发送过邮件。",
+      "noAddress": "此人没有邮件地址。",
+      "allMail": "所有邮件",
+      "optedOut": "此人要求不接收部分邮件。",
+      "optOutsHint": "只有本人可以在自己的邮件偏好设置页面取消退订。"
+    },
+    "catalog": {
+      "open": "邮件目录",
+      "title": "邮件目录",
+      "subtitle": "此站点可以发送的每一种邮件：由谁发送、何时发出以及外观如何。",
+      "empty": "尚未登记任何邮件。",
+      "notFound": "此站点没有这封邮件。",
+      "previewFailed": "无法显示该邮件。",
+      "neverSent": "尚未发送",
+      "aboutHeading": "关于这封邮件",
+      "previewHeading": "外观",
+      "exampleData": "使用示例数据显示，并非真实用户的数据。",
+      "width": "宽度",
+      "desktop": "电脑",
+      "phone": "手机",
+      "seeSent": "查看已发送的邮件",
+      "sendTest": "给我发送测试邮件",
+      "testSentTitle": "测试邮件已发送",
+      "testSent": "测试副本已发送到 {{address}}。",
+      "testFailed": "无法发送测试邮件。",
+      "sensitive": "这封邮件包含登录、重置或分享链接，因此邮件日志只保留发给谁和何时，从不保留内容。",
+      "columns": {
+        "email": "邮件",
+        "when": "发送时间",
+        "sent": "{{days}} 天内发送",
+        "lastSent": "最近发送"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "请确认你的邮箱地址",
+          "trigger": "有人注册时发送，用于确认其地址。"
+        },
+        "passwordReset": {
+          "label": "重置你的密码",
+          "trigger": "有人要求新密码时发送，来自登录页面或其个人记录。"
+        },
+        "emailChange": {
+          "label": "请确认你的新邮箱地址",
+          "trigger": "有人更改邮箱地址时发送到新地址。"
+        },
+        "securityNotification": {
+          "label": "安全通知",
+          "trigger": "账户的密码或邮箱更改，或从新地点登录时（设置 → 安全）。"
+        },
+        "fileShare": {
+          "label": "有人与你分享了文件",
+          "trigger": "有人通过邮件分享媒体中的文件时。"
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "目前尚未跟踪被退回的邮件：此站点没有退信邮箱。在设置之前，邮件服务器已接收的邮件即使之后被退回，也仍显示为已接收。",
+      "settingsLink": "设置退信邮箱",
+      "failed": "无法读取退信邮箱：{{error}}",
+      "lastRead": "被退回的邮件每 15 分钟从退信邮箱读取一次。上次读取：{{date}}。",
+      "notReadYet": "被退回的邮件每 15 分钟从退信邮箱读取一次。尚未读取过。"
     }
   }
 }

@@ -793,7 +793,8 @@
       "activity": "활동",
       "themes": "테마",
       "settings": "설정",
-      "jobs": "작업"
+      "jobs": "작업",
+      "emails": "이메일"
     },
     "panel": {
       "sites-list": "모든 사이트",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "백그라운드 작업 실행 기록(작업 페이지)을 보관할 일수입니다. 매일 정리되며, 비워 두면 모든 기록을 영구 보관합니다.",
       "jobRunsOlderThanDay": "{{days}}일보다 오래된 작업 실행 기록이 삭제됩니다.",
       "jobRunsAreKeptForever": "작업 실행 기록을 영구 보관합니다.",
-      "failedToSaveJobRunRetention": "작업 실행 기록 설정을 저장하지 못했습니다."
+      "failedToSaveJobRunRetention": "작업 실행 기록 설정을 저장하지 못했습니다.",
+      "emailLogRetention": "이메일 로그",
+      "daysOfEmailLog": "이메일 로그(이메일 페이지)를 며칠분 보관할지 정합니다. 매일 정리됩니다. 비워 두면 모든 이메일을 영구 보관합니다.",
+      "emailsOlderThanDay": "{{days}}일보다 오래된 이메일은 로그에서 삭제됩니다.",
+      "emailsAreKeptForever": "이메일 로그는 영구 보관됩니다.",
+      "failedToSaveEmailLogRetention": "이메일 로그 설정을 저장하지 못했습니다.",
+      "emailContentRetention": "이메일 내용",
+      "daysOfEmailContent": "각 이메일의 내용을 며칠 동안 보관할지 정합니다. 그 후에는 로그에 받는 사람, 시각, 제목만 남습니다. 비워 두면 내용을 영구 보관합니다.",
+      "emailContentOlderThanDay": "{{days}}일보다 오래된 이메일 내용은 삭제됩니다.",
+      "emailContentIsKeptForever": "이메일 내용은 영구 보관됩니다.",
+      "failedToSaveEmailContentRetention": "이메일 내용 설정을 저장하지 못했습니다."
     },
     "integrations": {
       "displayNameOptional": "표시 이름(선택 사항)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "이메일",
+    "subtitleSite": "이 사이트가 보냈거나, 보류했거나, 보내지 못한 모든 이메일입니다. 받는 사람, 시각, 보낸 확장 기능, 내용을 확인할 수 있습니다.",
+    "subtitlePlatform": "플랫폼이 직접 보냈거나, 보류했거나, 보내지 못한 모든 이메일입니다. 각 사이트의 이메일은 해당 사이트의 이메일 페이지에 있습니다.",
+    "platform": "플랫폼",
+    "noTemplate": "템플릿 없음",
+    "transactional": "거래 관련(끌 수 없음)",
+    "loading": "이메일을 불러오는 중…",
+    "failed": "이메일을 읽을 수 없습니다.",
+    "empty": "아직 보낸 이메일이 없습니다.",
+    "emptyFiltered": "이 필터와 일치하는 이메일이 없습니다.",
+    "loadOlder": "이전 이메일 불러오기",
+    "notFound": "이 이메일은 로그에 없습니다. 로그 보관 설정에 따라 삭제되었을 수 있습니다.",
+    "manageRequired": "이메일 내용을 열려면 시스템 관리 권한이 필요합니다.",
+    "detailHeading": "이메일",
+    "contentHeading": "내용",
+    "contentRemoved": "이 이메일의 내용은 보관되지 않습니다({{date}}에 삭제됨). 로그인, 재설정 또는 공유 링크가 들어 있었거나, 내용 보관 설정보다 오래되었습니다.",
+    "noContent": "이 이메일에는 내용이 없었습니다.",
+    "columns": {
+      "status": "상태",
+      "sentAt": "보낸 시각",
+      "to": "받는 사람",
+      "subject": "제목",
+      "sender": "보낸 곳",
+      "template": "템플릿"
+    },
+    "fields": {
+      "category": "이메일 종류",
+      "error": "오류",
+      "serverAnswer": "메일 서버의 응답",
+      "messageId": "메시지 ID",
+      "jobRun": "백그라운드 작업 실행"
+    },
+    "filters": {
+      "all": "전체",
+      "allSenders": "모든 발신자",
+      "address": "이메일 주소로 검색",
+      "onlyTemplate": "{{template}} 종류의 이메일만 표시합니다.",
+      "showAll": "모든 이메일 보기",
+      "period": "기간",
+      "anyTime": "전체 기간",
+      "lastDay": "최근 24시간",
+      "lastWeek": "최근 7일",
+      "lastMonth": "최근 30일"
+    },
+    "status": {
+      "sent": "메일 서버가 접수함",
+      "suppressed": "발송 안 됨: 수신 거부",
+      "failed": "실패",
+      "bounced": "반송됨",
+      "complained": "스팸으로 표시됨"
+    },
+    "resend": {
+      "button": "다시 보내기",
+      "confirmTitle": "이 이메일을 다시 보낼까요?",
+      "confirm": "같은 이메일이 {{address}}(으)로 한 번 더 전송됩니다. 로그에는 새 이메일로 기록됩니다.",
+      "sentTitle": "다시 보냄",
+      "sent": "이메일을 {{address}}(으)로 다시 보냈습니다.",
+      "skippedTitle": "발송 안 됨",
+      "skipped": "{{address}}은(는) 이 종류의 이메일을 수신 거부했으므로 보내지 않았습니다.",
+      "failedTitle": "보낼 수 없음",
+      "failed": "이메일을 다시 보낼 수 없습니다."
+    },
+    "person": {
+      "heading": "이메일",
+      "seeAll": "모두 보기",
+      "none": "이 사람에게 보낸 이메일이 없습니다.",
+      "noAddress": "이 사람은 이메일 주소가 없습니다.",
+      "allMail": "모든 이메일",
+      "optedOut": "이 사람은 일부 이메일을 받지 않겠다고 요청했습니다.",
+      "optOutsHint": "수신 거부는 본인만 자신의 이메일 환경설정 페이지에서 해제할 수 있습니다."
+    },
+    "catalog": {
+      "open": "이메일 목록",
+      "title": "이메일 목록",
+      "subtitle": "이 사이트가 보낼 수 있는 모든 이메일 종류: 누가 보내는지, 언제 나가는지, 어떻게 보이는지.",
+      "empty": "아직 등록된 이메일이 없습니다.",
+      "notFound": "이 사이트에는 해당 이메일이 없습니다.",
+      "previewFailed": "이메일을 표시할 수 없습니다.",
+      "neverSent": "아직 보낸 적 없음",
+      "aboutHeading": "이 이메일에 대해",
+      "previewHeading": "보이는 모습",
+      "exampleData": "실제 사람이 아닌 예시 데이터로 표시했습니다.",
+      "width": "너비",
+      "desktop": "컴퓨터",
+      "phone": "휴대폰",
+      "seeSent": "보낸 이메일 보기",
+      "sendTest": "나에게 테스트 보내기",
+      "testSentTitle": "테스트 발송됨",
+      "testSent": "테스트 사본이 {{address}}(으)로 갔습니다.",
+      "testFailed": "테스트 이메일을 보내지 못했습니다.",
+      "sensitive": "이 이메일에는 로그인, 재설정 또는 공유 링크가 들어 있어서 이메일 로그에는 받는 사람과 시각만 남고 내용은 저장되지 않습니다.",
+      "columns": {
+        "email": "이메일",
+        "when": "발송 시점",
+        "sent": "{{days}}일 동안 발송",
+        "lastSent": "마지막 발송"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "이메일 주소를 확인하세요",
+          "trigger": "누군가 가입할 때 주소를 확인하기 위해 보냅니다."
+        },
+        "passwordReset": {
+          "label": "비밀번호를 재설정하세요",
+          "trigger": "누군가 새 비밀번호를 요청할 때, 로그인 페이지나 본인 정보에서 보냅니다."
+        },
+        "emailChange": {
+          "label": "새 이메일 주소를 확인하세요",
+          "trigger": "누군가 이메일 주소를 바꿀 때 새 주소로 보냅니다."
+        },
+        "securityNotification": {
+          "label": "보안 알림",
+          "trigger": "계정의 비밀번호나 이메일이 바뀌거나 새로운 곳에서 로그인할 때(설정 → 보안)."
+        },
+        "fileShare": {
+          "label": "파일이 공유되었습니다",
+          "trigger": "누군가 미디어에서 이메일로 파일을 공유할 때."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "반송된 이메일은 아직 추적되지 않습니다. 이 사이트에는 반송 메일함이 없습니다. 설정하기 전까지는 메일 서버가 접수한 이메일이 나중에 반송되어도 접수됨으로 표시됩니다.",
+      "settingsLink": "반송 메일함 설정",
+      "failed": "반송 메일함을 읽을 수 없습니다: {{error}}",
+      "lastRead": "반송된 이메일은 15분마다 반송 메일함에서 읽어 옵니다. 마지막으로 읽은 시각: {{date}}.",
+      "notReadYet": "반송된 이메일은 15분마다 반송 메일함에서 읽어 옵니다. 아직 읽지 않았습니다."
     }
   }
 }

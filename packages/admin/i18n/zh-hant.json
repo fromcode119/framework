@@ -793,7 +793,8 @@
       "activity": "活動",
       "themes": "佈景主題",
       "settings": "設定",
-      "jobs": "工作"
+      "jobs": "工作",
+      "emails": "電子郵件"
     },
     "panel": {
       "sites-list": "所有網站",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "背景工作執行記錄（工作頁面）的保留天數，每日清理一次。留空則永久保留所有記錄。",
       "jobRunsOlderThanDay": "將移除超過 {{days}} 天的工作執行記錄。",
       "jobRunsAreKeptForever": "工作執行記錄將永久保留。",
-      "failedToSaveJobRunRetention": "無法儲存工作執行記錄設定。"
+      "failedToSaveJobRunRetention": "無法儲存工作執行記錄設定。",
+      "emailLogRetention": "郵件記錄",
+      "daysOfEmailLog": "郵件記錄（「電子郵件」頁面）保留的天數，每天清理一次。留空則永久保留所有郵件。",
+      "emailsOlderThanDay": "超過 {{days}} 天的郵件將從記錄中刪除。",
+      "emailsAreKeptForever": "郵件記錄永久保留。",
+      "failedToSaveEmailLogRetention": "無法儲存郵件記錄設定。",
+      "emailContentRetention": "郵件內容",
+      "daysOfEmailContent": "每封郵件的內容保留的天數。之後記錄只保留收件者、時間和主旨。留空則永久保留內容。",
+      "emailContentOlderThanDay": "超過 {{days}} 天的郵件內容將被刪除。",
+      "emailContentIsKeptForever": "郵件內容永久保留。",
+      "failedToSaveEmailContentRetention": "無法儲存郵件內容設定。"
     },
     "integrations": {
       "displayNameOptional": "顯示名稱（選填）",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "電子郵件",
+    "subtitleSite": "此網站傳送、暫扣或傳送失敗的每一封郵件：寄給誰、何時、由哪個擴充功能傳送，以及內容是什麼。",
+    "subtitlePlatform": "平台本身傳送、暫扣或傳送失敗的每一封郵件。各網站自己的郵件在該網站的「電子郵件」頁面。",
+    "platform": "平台",
+    "noTemplate": "無範本",
+    "transactional": "交易類郵件（無法關閉）",
+    "loading": "正在載入郵件…",
+    "failed": "無法讀取郵件。",
+    "empty": "尚未傳送任何郵件。",
+    "emptyFiltered": "沒有符合這些篩選條件的郵件。",
+    "loadOlder": "載入較早的郵件",
+    "notFound": "記錄中沒有這封郵件。它可能已依記錄保留設定刪除。",
+    "manageRequired": "開啟郵件內容需要管理系統的權限。",
+    "detailHeading": "電子郵件",
+    "contentHeading": "內容",
+    "contentRemoved": "這封郵件的內容未保留（已於 {{date}} 刪除）。要麼它包含登入、重設或分享連結，要麼比內容保留設定允許的時間更早。",
+    "noContent": "這封郵件沒有內容。",
+    "columns": {
+      "status": "狀態",
+      "sentAt": "傳送時間",
+      "to": "收件者",
+      "subject": "主旨",
+      "sender": "傳送者",
+      "template": "範本"
+    },
+    "fields": {
+      "category": "郵件類型",
+      "error": "錯誤",
+      "serverAnswer": "郵件伺服器的回覆",
+      "messageId": "郵件 ID",
+      "jobRun": "背景工作執行"
+    },
+    "filters": {
+      "all": "全部",
+      "allSenders": "所有寄件者",
+      "address": "依電子郵件地址搜尋",
+      "onlyTemplate": "僅顯示類型為 {{template}} 的郵件。",
+      "showAll": "顯示所有郵件",
+      "period": "時間範圍",
+      "anyTime": "任何時間",
+      "lastDay": "最近 24 小時",
+      "lastWeek": "最近 7 天",
+      "lastMonth": "最近 30 天"
+    },
+    "status": {
+      "sent": "郵件伺服器已接受",
+      "suppressed": "未傳送：已取消訂閱",
+      "failed": "失敗",
+      "bounced": "被退回",
+      "complained": "已標記為垃圾郵件"
+    },
+    "resend": {
+      "button": "再次傳送",
+      "confirmTitle": "要再次傳送這封郵件嗎？",
+      "confirm": "同一封郵件將再寄給 {{address}} 一次。記錄中會將其記為一封新郵件。",
+      "sentTitle": "已再次傳送",
+      "sent": "郵件已再次傳送給 {{address}}。",
+      "skippedTitle": "未傳送",
+      "skipped": "{{address}} 已取消訂閱此類郵件，因此未傳送。",
+      "failedTitle": "無法傳送",
+      "failed": "無法再次傳送這封郵件。"
+    },
+    "person": {
+      "heading": "電子郵件",
+      "seeAll": "查看全部",
+      "none": "尚未向此人傳送過郵件。",
+      "noAddress": "此人沒有電子郵件地址。",
+      "allMail": "所有郵件",
+      "optedOut": "此人要求不接收部分郵件。",
+      "optOutsHint": "只有本人可以在自己的郵件偏好設定頁面取消退訂。"
+    },
+    "catalog": {
+      "open": "郵件目錄",
+      "title": "郵件目錄",
+      "subtitle": "此網站可以傳送的每一種郵件：由誰傳送、何時發出以及外觀如何。",
+      "empty": "尚未登記任何郵件。",
+      "notFound": "此網站沒有這封郵件。",
+      "previewFailed": "無法顯示該郵件。",
+      "neverSent": "尚未傳送",
+      "aboutHeading": "關於這封郵件",
+      "previewHeading": "外觀",
+      "exampleData": "使用範例資料顯示，並非真實使用者的資料。",
+      "width": "寬度",
+      "desktop": "電腦",
+      "phone": "手機",
+      "seeSent": "查看已傳送的郵件",
+      "sendTest": "傳送測試郵件給我",
+      "testSentTitle": "測試郵件已傳送",
+      "testSent": "測試副本已傳送到 {{address}}。",
+      "testFailed": "無法傳送測試郵件。",
+      "sensitive": "這封郵件包含登入、重設或分享連結，因此郵件記錄只保留寄給誰和何時，從不保留內容。",
+      "columns": {
+        "email": "郵件",
+        "when": "傳送時間",
+        "sent": "{{days}} 天內傳送",
+        "lastSent": "最近傳送"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "請確認你的電子郵件地址",
+          "trigger": "有人註冊時傳送，用於確認其地址。"
+        },
+        "passwordReset": {
+          "label": "重設你的密碼",
+          "trigger": "有人要求新密碼時傳送，來自登入頁面或其個人記錄。"
+        },
+        "emailChange": {
+          "label": "請確認你的新電子郵件地址",
+          "trigger": "有人變更電子郵件地址時傳送到新地址。"
+        },
+        "securityNotification": {
+          "label": "安全性通知",
+          "trigger": "帳號的密碼或電子郵件變更，或從新地點登入時（設定 → 安全性）。"
+        },
+        "fileShare": {
+          "label": "有人與你分享了檔案",
+          "trigger": "有人透過郵件分享媒體中的檔案時。"
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "目前尚未追蹤被退回的郵件：此網站沒有退信信箱。在設定之前，郵件伺服器已接受的郵件即使之後被退回，仍會顯示為已接受。",
+      "settingsLink": "設定退信信箱",
+      "failed": "無法讀取退信信箱：{{error}}",
+      "lastRead": "被退回的郵件每 15 分鐘從退信信箱讀取一次。上次讀取：{{date}}。",
+      "notReadYet": "被退回的郵件每 15 分鐘從退信信箱讀取一次。尚未讀取過。"
     }
   }
 }

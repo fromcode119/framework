@@ -793,7 +793,8 @@
       "activity": "Activity",
       "themes": "Themes",
       "settings": "Settings",
-      "jobs": "Jobs"
+      "jobs": "Jobs",
+      "emails": "Emails"
     },
     "panel": {
       "sites-list": "All sites",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Days of background job runs (Jobs page) to keep, swept daily. Blank keeps every run forever.",
       "jobRunsOlderThanDay": "Job runs older than {{days}} day(s) will be removed.",
       "jobRunsAreKeptForever": "Job runs are kept forever.",
-      "failedToSaveJobRunRetention": "Failed to save the job run history setting."
+      "failedToSaveJobRunRetention": "Failed to save the job run history setting.",
+      "emailLogRetention": "Email log",
+      "daysOfEmailLog": "Days of the email log (Emails page) to keep, swept daily. Blank keeps every email forever.",
+      "emailsOlderThanDay": "Emails older than {{days}} day(s) will be removed from the log.",
+      "emailsAreKeptForever": "The email log is kept forever.",
+      "failedToSaveEmailLogRetention": "Failed to save the email log setting.",
+      "emailContentRetention": "Email content",
+      "daysOfEmailContent": "Days to keep what each email said. After that the log keeps who, when and the subject. Blank keeps the content forever.",
+      "emailContentOlderThanDay": "Email content older than {{days}} day(s) will be removed.",
+      "emailContentIsKeptForever": "Email content is kept forever.",
+      "failedToSaveEmailContentRetention": "Failed to save the email content setting."
     },
     "integrations": {
       "displayNameOptional": "Display Name (Optional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Emails",
+    "subtitleSite": "Every email this site sent, held back or failed to send: to whom, when, which extension sent it and what it said.",
+    "subtitlePlatform": "Every email the platform itself sent, held back or failed to send. Each site's own emails are on that site's Emails page.",
+    "platform": "Platform",
+    "noTemplate": "No template",
+    "transactional": "Transactional (cannot be switched off)",
+    "loading": "Loading emails…",
+    "failed": "The emails could not be read.",
+    "empty": "No emails have been sent yet.",
+    "emptyFiltered": "No emails match these filters.",
+    "loadOlder": "Load older emails",
+    "notFound": "This email is not in the log. It may have been removed by the log's retention setting.",
+    "manageRequired": "Opening an email's content needs the permission to manage the system.",
+    "detailHeading": "Email",
+    "contentHeading": "Content",
+    "contentRemoved": "The content of this email is not kept (removed on {{date}}). It either carried a sign-in, reset or share link, or it is older than the content retention setting allows.",
+    "noContent": "This email had no content.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Sent",
+      "to": "To",
+      "subject": "Subject",
+      "sender": "Sent by",
+      "template": "Template"
+    },
+    "fields": {
+      "category": "Stream",
+      "error": "Error",
+      "serverAnswer": "Mail server's answer",
+      "messageId": "Message ID",
+      "jobRun": "Background job run"
+    },
+    "filters": {
+      "all": "All",
+      "allSenders": "Every sender",
+      "address": "Search by email address",
+      "onlyTemplate": "Only emails of the kind {{template}}.",
+      "showAll": "Show every email",
+      "period": "Period",
+      "anyTime": "Any time",
+      "lastDay": "Last 24 hours",
+      "lastWeek": "Last 7 days",
+      "lastMonth": "Last 30 days"
+    },
+    "status": {
+      "sent": "Accepted by the mail server",
+      "suppressed": "Not sent: opted out",
+      "failed": "Failed",
+      "bounced": "Bounced",
+      "complained": "Marked as spam"
+    },
+    "resend": {
+      "button": "Send again",
+      "confirmTitle": "Send this email again?",
+      "confirm": "The same email goes to {{address}} once more. It is recorded in the log as a new email.",
+      "sentTitle": "Sent again",
+      "sent": "The email was sent to {{address}} again.",
+      "skippedTitle": "Not sent",
+      "skipped": "{{address}} has opted out of this kind of email, so it was not sent.",
+      "failedTitle": "Could not send",
+      "failed": "The email could not be sent again."
+    },
+    "person": {
+      "heading": "Emails",
+      "seeAll": "See all",
+      "none": "No emails have been sent to this person.",
+      "noAddress": "This person has no email address.",
+      "allMail": "All email",
+      "optedOut": "This person asked not to receive some email.",
+      "optOutsHint": "Only the person can lift an opt-out, from their email preferences page."
+    },
+    "catalog": {
+      "open": "Email catalog",
+      "title": "Email catalog",
+      "subtitle": "Every kind of email this site can send: who sends it, when it goes out, and how it looks.",
+      "empty": "No emails are declared yet.",
+      "notFound": "This site has no such email.",
+      "previewFailed": "The email could not be drawn.",
+      "neverSent": "Not sent yet",
+      "aboutHeading": "About this email",
+      "previewHeading": "How it looks",
+      "exampleData": "Drawn with example data, not a real person's.",
+      "width": "Width",
+      "desktop": "Computer",
+      "phone": "Phone",
+      "seeSent": "See sent emails",
+      "sendTest": "Send a test to me",
+      "testSentTitle": "Test sent",
+      "testSent": "A test copy went to {{address}}.",
+      "testFailed": "The test email could not be sent.",
+      "sensitive": "This email carries a sign-in, reset or share link, so the email log keeps who and when but never its content.",
+      "columns": {
+        "email": "Email",
+        "when": "When it is sent",
+        "sent": "Sent in {{days}} days",
+        "lastSent": "Last sent"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Confirm your email address",
+          "trigger": "When someone signs up, to confirm their address."
+        },
+        "passwordReset": {
+          "label": "Reset your password",
+          "trigger": "When someone asks for a new password, from the sign-in page or from their person record."
+        },
+        "emailChange": {
+          "label": "Confirm your new email address",
+          "trigger": "When someone changes their email address, sent to the new address."
+        },
+        "securityNotification": {
+          "label": "Security notice",
+          "trigger": "When an account's password changes, its email changes, or it signs in from somewhere new (Settings → Security)."
+        },
+        "fileShare": {
+          "label": "A file was shared with you",
+          "trigger": "When someone shares a file from Media by email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Returned emails are not tracked yet: this site has no bounce mailbox. Until one is set, an email the mail server accepted shows as accepted even if it later bounced.",
+      "settingsLink": "Set the bounce mailbox",
+      "failed": "The bounce mailbox could not be read: {{error}}",
+      "lastRead": "Returned emails are read from the bounce mailbox every 15 minutes. Last read: {{date}}.",
+      "notReadYet": "Returned emails are read from the bounce mailbox every 15 minutes. It has not been read yet."
     }
   }
 }

@@ -7,3 +7,6 @@ export type { IInboxAccount } from '@email/interfaces/inbox-account.interface';
 export type { IInboxFetchOptions } from '@email/interfaces/inbox-fetch-options.interface';
 export type { IInboxFetchResult } from '@email/interfaces/inbox-fetch-result.interface';
 export type { IInboundMessage } from '@email/interfaces/inbound-message.interface';
+export { DeliveryReportParser } from '@email/inbox/delivery-report-parser';
+export type { IDeliveryReport } from '@email/interfaces/delivery-report.interface';
+export type { IDeliveryReportRecipient } from '@email/interfaces/delivery-report-recipient.interface';

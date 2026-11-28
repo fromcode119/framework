@@ -793,7 +793,8 @@
       "activity": "Tegevused",
       "themes": "Teemad",
       "settings": "Seaded",
-      "jobs": "Tööd"
+      "jobs": "Tööd",
+      "emails": "E-kirjad"
     },
     "panel": {
       "sites-list": "Kõik saidid",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Mitu päeva taustatööde käivitusi (lehel Tööd) säilitada; puhastatakse iga päev. Tühjana säilitatakse kõik käivitused igavesti.",
       "jobRunsOlderThanDay": "Üle {{days}} päeva vanused tööde käivitused eemaldatakse.",
       "jobRunsAreKeptForever": "Tööde käivitusi säilitatakse igavesti.",
-      "failedToSaveJobRunRetention": "Tööde käivituste ajaloo seadet ei õnnestunud salvestada."
+      "failedToSaveJobRunRetention": "Tööde käivituste ajaloo seadet ei õnnestunud salvestada.",
+      "emailLogRetention": "E-kirjade logi",
+      "daysOfEmailLog": "Mitu päeva e-kirjade logi (leht E-kirjad) säilitatakse; puhastatakse iga päev. Tühi väli säilitab kõik e-kirjad igavesti.",
+      "emailsOlderThanDay": "Vanemad kui {{days}} päeva vanused e-kirjad eemaldatakse logist.",
+      "emailsAreKeptForever": "E-kirjade logi säilitatakse igavesti.",
+      "failedToSaveEmailLogRetention": "E-kirjade logi seadet ei õnnestunud salvestada.",
+      "emailContentRetention": "E-kirjade sisu",
+      "daysOfEmailContent": "Mitu päeva säilitatakse iga e-kirja tekst. Pärast seda jääb logisse kellele, millal ja teema. Tühi väli säilitab sisu igavesti.",
+      "emailContentOlderThanDay": "Vanemad kui {{days}} päeva vanused e-kirjade sisud eemaldatakse.",
+      "emailContentIsKeptForever": "E-kirjade sisu säilitatakse igavesti.",
+      "failedToSaveEmailContentRetention": "E-kirjade sisu seadet ei õnnestunud salvestada."
     },
     "integrations": {
       "displayNameOptional": "Kuvatav nimi (valikuline)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-kirjad",
+    "subtitleSite": "Kõik e-kirjad, mille see sait on saatnud, kinni hoidnud või mida ei õnnestunud saata: kellele, millal, milline laiendus selle saatis ja mis seal oli.",
+    "subtitlePlatform": "Kõik e-kirjad, mille platvorm ise on saatnud, kinni hoidnud või mida ei õnnestunud saata. Iga saidi enda e-kirjad on selle saidi lehel E-kirjad.",
+    "platform": "Platvorm",
+    "noTemplate": "Malli pole",
+    "transactional": "Teenuskiri (ei saa välja lülitada)",
+    "loading": "E-kirjade laadimine…",
+    "failed": "E-kirju ei õnnestunud lugeda.",
+    "empty": "E-kirju pole veel saadetud.",
+    "emptyFiltered": "Neile filtritele ei vasta ükski e-kiri.",
+    "loadOlder": "Laadi vanemad e-kirjad",
+    "notFound": "Seda e-kirja logis pole. See võib olla eemaldatud logi säilitamise seade tõttu.",
+    "manageRequired": "E-kirja sisu avamiseks on vaja süsteemi haldamise õigust.",
+    "detailHeading": "E-kiri",
+    "contentHeading": "Sisu",
+    "contentRemoved": "Selle e-kirja sisu ei säilitata (eemaldatud {{date}}). Kas selles oli sisselogimise, lähtestamise või jagamise link, või on see vanem, kui sisu säilitamise seade lubab.",
+    "noContent": "Sel e-kirjal polnud sisu.",
+    "columns": {
+      "status": "Olek",
+      "sentAt": "Saadetud",
+      "to": "Kellele",
+      "subject": "Teema",
+      "sender": "Saatja",
+      "template": "Mall"
+    },
+    "fields": {
+      "category": "E-kirja liik",
+      "error": "Viga",
+      "serverAnswer": "Postiserveri vastus",
+      "messageId": "Sõnumi ID",
+      "jobRun": "Taustatöö käivitus"
+    },
+    "filters": {
+      "all": "Kõik",
+      "allSenders": "Kõik saatjad",
+      "address": "Otsi e-posti aadressi järgi",
+      "onlyTemplate": "Ainult liiki {{template}} e-kirjad.",
+      "showAll": "Näita kõiki e-kirju",
+      "period": "Periood",
+      "anyTime": "Kogu aeg",
+      "lastDay": "Viimased 24 tundi",
+      "lastWeek": "Viimased 7 päeva",
+      "lastMonth": "Viimased 30 päeva"
+    },
+    "status": {
+      "sent": "Postiserver võttis vastu",
+      "suppressed": "Saatmata: loobunud",
+      "failed": "Ebaõnnestus",
+      "bounced": "Tagasi põrganud",
+      "complained": "Märgitud rämpspostiks"
+    },
+    "resend": {
+      "button": "Saada uuesti",
+      "confirmTitle": "Kas saata see e-kiri uuesti?",
+      "confirm": "Sama e-kiri läheb aadressile {{address}} veel kord. Logis salvestatakse see uue e-kirjana.",
+      "sentTitle": "Saadetud uuesti",
+      "sent": "E-kiri saadeti aadressile {{address}} uuesti.",
+      "skippedTitle": "Saatmata",
+      "skipped": "{{address}} on sellist liiki e-kirjadest loobunud, seega seda ei saadetud.",
+      "failedTitle": "Saatmine ebaõnnestus",
+      "failed": "E-kirja ei õnnestunud uuesti saata."
+    },
+    "person": {
+      "heading": "E-kirjad",
+      "seeAll": "Vaata kõiki",
+      "none": "Sellele inimesele pole e-kirju saadetud.",
+      "noAddress": "Sellel inimesel pole e-posti aadressi.",
+      "allMail": "Kõik e-kirjad",
+      "optedOut": "See inimene palus mõningaid e-kirju mitte saada.",
+      "optOutsHint": "Loobumise saab tühistada ainult inimene ise oma e-posti eelistuste lehel."
+    },
+    "catalog": {
+      "open": "E-kirjade kataloog",
+      "title": "E-kirjade kataloog",
+      "subtitle": "Iga e-kirja liik, mida see sait saata saab: kes selle saadab, millal see läheb ja kuidas see välja näeb.",
+      "empty": "E-kirju pole veel kirjeldatud.",
+      "notFound": "Sellel saidil pole sellist e-kirja.",
+      "previewFailed": "E-kirja ei õnnestunud kuvada.",
+      "neverSent": "Pole veel saadetud",
+      "aboutHeading": "Selle e-kirja kohta",
+      "previewHeading": "Kuidas see välja näeb",
+      "exampleData": "Kuvatud näidisandmetega, mitte päris inimese andmetega.",
+      "width": "Laius",
+      "desktop": "Arvuti",
+      "phone": "Telefon",
+      "seeSent": "Vaata saadetud e-kirju",
+      "sendTest": "Saada mulle test",
+      "testSentTitle": "Test saadetud",
+      "testSent": "Testkoopia läks aadressile {{address}}.",
+      "testFailed": "Test-e-kirja ei õnnestunud saata.",
+      "sensitive": "See e-kiri sisaldab sisselogimise, lähtestamise või jagamise linki, seepärast hoiab logi kellele ja millal, kuid mitte kunagi sisu.",
+      "columns": {
+        "email": "E-kiri",
+        "when": "Millal see saadetakse",
+        "sent": "Saadetud {{days}} päeva jooksul",
+        "lastSent": "Viimati saadetud"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Kinnitage oma e-posti aadress",
+          "trigger": "Kui keegi registreerub, et oma aadress kinnitada."
+        },
+        "passwordReset": {
+          "label": "Lähtestage oma parool",
+          "trigger": "Kui keegi küsib uut parooli, sisselogimislehelt või oma isikukirjest."
+        },
+        "emailChange": {
+          "label": "Kinnitage oma uus e-posti aadress",
+          "trigger": "Kui keegi muudab oma e-posti aadressi; saadetakse uuele aadressile."
+        },
+        "securityNotification": {
+          "label": "Turvateade",
+          "trigger": "Kui konto parool või e-post muutub või sisselogimine toimub uuest kohast (Seaded → Turvalisus)."
+        },
+        "fileShare": {
+          "label": "Teiega jagati faili",
+          "trigger": "Kui keegi jagab faili Meediast e-kirjaga."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Tagasipõrganud e-kirju ei jälgita veel: sellel saidil pole tagasipõrkepostkasti. Kuni seda pole määratud, näitab postiserveri vastu võetud e-kiri end vastuvõetuna ka siis, kui see hiljem tagasi põrkab.",
+      "settingsLink": "Määra tagasipõrkepostkast",
+      "failed": "Tagasipõrkepostkasti ei õnnestunud lugeda: {{error}}",
+      "lastRead": "Tagasipõrganud e-kirju loetakse tagasipõrkepostkastist iga 15 minuti järel. Viimati loetud: {{date}}.",
+      "notReadYet": "Tagasipõrganud e-kirju loetakse tagasipõrkepostkastist iga 15 minuti järel. Seda pole veel loetud."
     }
   }
 }

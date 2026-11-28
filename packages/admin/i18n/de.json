@@ -793,7 +793,8 @@
       "activity": "Aktivität",
       "themes": "Themes",
       "settings": "Einstellungen",
-      "jobs": "Jobs"
+      "jobs": "Jobs",
+      "emails": "E-Mails"
     },
     "panel": {
       "sites-list": "Alle Websites",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Anzahl der Tage, die Ausführungen von Hintergrund-Jobs (Seite „Jobs“) aufbewahrt werden; täglich bereinigt. Leer lassen, um alle Ausführungen dauerhaft zu behalten.",
       "jobRunsOlderThanDay": "Job-Ausführungen, die älter als {{days}} Tag(e) sind, werden entfernt.",
       "jobRunsAreKeptForever": "Job-Ausführungen werden dauerhaft aufbewahrt.",
-      "failedToSaveJobRunRetention": "Die Einstellung für den Job-Verlauf konnte nicht gespeichert werden."
+      "failedToSaveJobRunRetention": "Die Einstellung für den Job-Verlauf konnte nicht gespeichert werden.",
+      "emailLogRetention": "E-Mail-Protokoll",
+      "daysOfEmailLog": "Wie viele Tage des E-Mail-Protokolls (Seite „E-Mails“) aufbewahrt werden; täglich bereinigt. Leer lassen, um alle E-Mails dauerhaft zu behalten.",
+      "emailsOlderThanDay": "E-Mails, die älter als {{days}} Tag(e) sind, werden aus dem Protokoll entfernt.",
+      "emailsAreKeptForever": "Das E-Mail-Protokoll wird dauerhaft aufbewahrt.",
+      "failedToSaveEmailLogRetention": "Die Einstellung für das E-Mail-Protokoll konnte nicht gespeichert werden.",
+      "emailContentRetention": "E-Mail-Inhalt",
+      "daysOfEmailContent": "Wie viele Tage der Inhalt jeder E-Mail aufbewahrt wird. Danach bleiben im Protokoll nur Empfänger, Zeitpunkt und Betreff. Leer lassen, um den Inhalt dauerhaft zu behalten.",
+      "emailContentOlderThanDay": "E-Mail-Inhalte, die älter als {{days}} Tag(e) sind, werden entfernt.",
+      "emailContentIsKeptForever": "E-Mail-Inhalte werden dauerhaft aufbewahrt.",
+      "failedToSaveEmailContentRetention": "Die Einstellung für den E-Mail-Inhalt konnte nicht gespeichert werden."
     },
     "integrations": {
       "displayNameOptional": "Anzeigename (optional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-Mails",
+    "subtitleSite": "Jede E-Mail, die diese Website gesendet, zurückgehalten oder nicht senden konnte: an wen, wann, welche Erweiterung sie gesendet hat und was darin stand.",
+    "subtitlePlatform": "Jede E-Mail, die die Plattform selbst gesendet, zurückgehalten oder nicht senden konnte. Die E-Mails jeder Website stehen auf der Seite „E-Mails“ dieser Website.",
+    "platform": "Plattform",
+    "noTemplate": "Keine Vorlage",
+    "transactional": "Systemmail (nicht abschaltbar)",
+    "loading": "E-Mails werden geladen…",
+    "failed": "Die E-Mails konnten nicht gelesen werden.",
+    "empty": "Es wurden noch keine E-Mails gesendet.",
+    "emptyFiltered": "Keine E-Mails entsprechen diesen Filtern.",
+    "loadOlder": "Ältere E-Mails laden",
+    "notFound": "Diese E-Mail ist nicht im Protokoll. Sie wurde möglicherweise gemäß der Aufbewahrungseinstellung des Protokolls entfernt.",
+    "manageRequired": "Zum Öffnen des Inhalts einer E-Mail ist die Berechtigung zur Systemverwaltung nötig.",
+    "detailHeading": "E-Mail",
+    "contentHeading": "Inhalt",
+    "contentRemoved": "Der Inhalt dieser E-Mail wird nicht aufbewahrt (entfernt am {{date}}). Entweder enthielt sie einen Link zum Anmelden, Zurücksetzen oder Teilen, oder sie ist älter, als die Einstellung für die Inhaltsaufbewahrung erlaubt.",
+    "noContent": "Diese E-Mail hatte keinen Inhalt.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Gesendet",
+      "to": "An",
+      "subject": "Betreff",
+      "sender": "Gesendet von",
+      "template": "Vorlage"
+    },
+    "fields": {
+      "category": "E-Mail-Art",
+      "error": "Fehler",
+      "serverAnswer": "Antwort des Mailservers",
+      "messageId": "Nachrichten-ID",
+      "jobRun": "Lauf des Hintergrund-Jobs"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSenders": "Alle Absender",
+      "address": "Nach E-Mail-Adresse suchen",
+      "onlyTemplate": "Nur E-Mails der Art {{template}}.",
+      "showAll": "Alle E-Mails anzeigen",
+      "period": "Zeitraum",
+      "anyTime": "Beliebig",
+      "lastDay": "Letzte 24 Stunden",
+      "lastWeek": "Letzte 7 Tage",
+      "lastMonth": "Letzte 30 Tage"
+    },
+    "status": {
+      "sent": "Vom Mailserver angenommen",
+      "suppressed": "Nicht gesendet: abgemeldet",
+      "failed": "Fehlgeschlagen",
+      "bounced": "Zurückgewiesen",
+      "complained": "Als Spam markiert"
+    },
+    "resend": {
+      "button": "Erneut senden",
+      "confirmTitle": "Diese E-Mail erneut senden?",
+      "confirm": "Dieselbe E-Mail geht noch einmal an {{address}}. Sie wird im Protokoll als neue E-Mail erfasst.",
+      "sentTitle": "Erneut gesendet",
+      "sent": "Die E-Mail wurde erneut an {{address}} gesendet.",
+      "skippedTitle": "Nicht gesendet",
+      "skipped": "{{address}} hat sich von dieser Art E-Mails abgemeldet, daher wurde nichts gesendet.",
+      "failedTitle": "Senden nicht möglich",
+      "failed": "Die E-Mail konnte nicht erneut gesendet werden."
+    },
+    "person": {
+      "heading": "E-Mails",
+      "seeAll": "Alle anzeigen",
+      "none": "An diese Person wurden noch keine E-Mails gesendet.",
+      "noAddress": "Diese Person hat keine E-Mail-Adresse.",
+      "allMail": "Alle E-Mails",
+      "optedOut": "Diese Person möchte einige E-Mails nicht erhalten.",
+      "optOutsHint": "Nur die Person selbst kann eine Abmeldung aufheben, auf ihrer Seite mit den E-Mail-Einstellungen."
+    },
+    "catalog": {
+      "open": "E-Mail-Katalog",
+      "title": "E-Mail-Katalog",
+      "subtitle": "Jede Art von E-Mail, die diese Website senden kann: wer sie sendet, wann sie rausgeht und wie sie aussieht.",
+      "empty": "Es sind noch keine E-Mails hinterlegt.",
+      "notFound": "Diese Website hat keine solche E-Mail.",
+      "previewFailed": "Die E-Mail konnte nicht dargestellt werden.",
+      "neverSent": "Noch nicht gesendet",
+      "aboutHeading": "Über diese E-Mail",
+      "previewHeading": "So sieht sie aus",
+      "exampleData": "Dargestellt mit Beispieldaten, nicht mit denen einer echten Person.",
+      "width": "Breite",
+      "desktop": "Computer",
+      "phone": "Smartphone",
+      "seeSent": "Gesendete E-Mails ansehen",
+      "sendTest": "Test an mich senden",
+      "testSentTitle": "Test gesendet",
+      "testSent": "Eine Testkopie ging an {{address}}.",
+      "testFailed": "Die Test-E-Mail konnte nicht gesendet werden.",
+      "sensitive": "Diese E-Mail enthält einen Link zum Anmelden, Zurücksetzen oder Teilen, daher speichert das E-Mail-Protokoll nur an wen und wann, nie den Inhalt.",
+      "columns": {
+        "email": "E-Mail",
+        "when": "Wann sie gesendet wird",
+        "sent": "In {{days}} Tagen gesendet",
+        "lastSent": "Zuletzt gesendet"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Bestätigen Sie Ihre E-Mail-Adresse",
+          "trigger": "Wenn sich jemand registriert, um die Adresse zu bestätigen."
+        },
+        "passwordReset": {
+          "label": "Passwort zurücksetzen",
+          "trigger": "Wenn jemand ein neues Passwort anfordert, auf der Anmeldeseite oder in seinem Personeneintrag."
+        },
+        "emailChange": {
+          "label": "Bestätigen Sie Ihre neue E-Mail-Adresse",
+          "trigger": "Wenn jemand seine E-Mail-Adresse ändert; sie geht an die neue Adresse."
+        },
+        "securityNotification": {
+          "label": "Sicherheitshinweis",
+          "trigger": "Wenn sich das Passwort oder die E-Mail eines Kontos ändert oder eine Anmeldung von einem neuen Ort erfolgt (Einstellungen → Sicherheit)."
+        },
+        "fileShare": {
+          "label": "Eine Datei wurde mit Ihnen geteilt",
+          "trigger": "Wenn jemand eine Datei aus Medien per E-Mail teilt."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Zurückgekommene E-Mails werden noch nicht erfasst: Diese Website hat kein Postfach für Rückläufer. Solange keines festgelegt ist, erscheint eine vom Mailserver angenommene E-Mail als angenommen, auch wenn sie später zurückkommt.",
+      "settingsLink": "Postfach für Rückläufer festlegen",
+      "failed": "Das Postfach für Rückläufer konnte nicht gelesen werden: {{error}}",
+      "lastRead": "Zurückgekommene E-Mails werden alle 15 Minuten aus dem Postfach für Rückläufer gelesen. Zuletzt gelesen: {{date}}.",
+      "notReadYet": "Zurückgekommene E-Mails werden alle 15 Minuten aus dem Postfach für Rückläufer gelesen. Es wurde noch nicht gelesen."
     }
   }
 }

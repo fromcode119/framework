@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PersonFieldsPanel } from '@/app/users/people/[id]/components/view/person-fields-panel.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
+import { PersonEmailsPanel } from '@/app/users/people/[id]/components/view/person-emails-panel.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PersonEditPageActions } from '@/app/users/people/[id]/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -119,6 +120,8 @@ export class PersonEditPage extends PersonEditPageActions {
           </div>
 
           <PersonFieldsPanel personId={person.id} theme={theme} />
+
+          <PersonEmailsPanel address={person.email || ''} />
 
           <RecordCard title={AdminI18n.t('users.accountManagement')}>
             <div className="fc-stack">

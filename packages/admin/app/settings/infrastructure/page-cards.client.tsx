@@ -9,7 +9,7 @@ import { Explanation } from '@/components/ui/view/explanation.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
-import { JobRunRetentionRow } from '@/app/settings/infrastructure/job-run-retention-row.client';
+import { RetentionDaysRow } from '@/app/settings/infrastructure/retention-days-row.client';
 
 /**
  * The four cards this screen is made of.
@@ -170,7 +170,30 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             </div>
           </SettingRow>
 
-          <JobRunRetentionRow />
+          <RetentionDaysRow
+            settingKey="job_run_retention_days"
+            title={AdminI18n.t('settings.infrastructure.jobRunRetention')}
+            description={AdminI18n.t('settings.infrastructure.daysOfJobRunHistory')}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.jobRunsOlderThanDay', { days })}
+            keptForever={AdminI18n.t('settings.infrastructure.jobRunsAreKeptForever')}
+            failed={AdminI18n.t('settings.infrastructure.failedToSaveJobRunRetention')}
+          />
+          <RetentionDaysRow
+            settingKey="email_log_retention_days"
+            title={AdminI18n.t('settings.infrastructure.emailLogRetention')}
+            description={AdminI18n.t('settings.infrastructure.daysOfEmailLog')}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.emailsOlderThanDay', { days })}
+            keptForever={AdminI18n.t('settings.infrastructure.emailsAreKeptForever')}
+            failed={AdminI18n.t('settings.infrastructure.failedToSaveEmailLogRetention')}
+          />
+          <RetentionDaysRow
+            settingKey="email_content_retention_days"
+            title={AdminI18n.t('settings.infrastructure.emailContentRetention')}
+            description={AdminI18n.t('settings.infrastructure.daysOfEmailContent')}
+            olderThan={(days: number) => AdminI18n.t('settings.infrastructure.emailContentOlderThanDay', { days })}
+            keptForever={AdminI18n.t('settings.infrastructure.emailContentIsKeptForever')}
+            failed={AdminI18n.t('settings.infrastructure.failedToSaveEmailContentRetention')}
+          />
         </Card>
     );
   }

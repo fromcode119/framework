@@ -1,6 +1,8 @@
 import type { IEmailDriver, IEmailOptions } from '@fromcode119/email';
 import { EmailSuppressionService } from '@core/email/email-suppression-service';
 import { Logger } from '@core/logging';
+import { EmailLogRecorder } from '@core/email/email-log-recorder';
+import { EmailLogStatus } from '@core/email/enums/email-log-status.enum';
 
 /**
  * Wraps the configured email driver so the do-not-email list is enforced where mail LEAVES, rather than
@@ -17,10 +19,14 @@ import { Logger } from '@core/logging';
 export class SuppressedEmailDriver implements IEmailDriver {
   private static readonly logger = new Logger({ namespace: 'email-suppression' });
 
+  private readonly log: EmailLogRecorder;
+
   constructor(
     private readonly inner: IEmailDriver,
     private readonly db: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  ) {}
+  ) {
+    this.log = new EmailLogRecorder(db);
+  }
 
   async send(options: IEmailOptions): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
     const category = (options as { category?: string })?.category;
@@ -33,6 +39,7 @@ export class SuppressedEmailDriver implements IEmailDriver {
         SuppressedEmailDriver.logger.info(
           `Suppressed ${category ? `"${category}" ` : ''}email to ${address} — the address is on the do-not-email list.`,
         );
+        await this.log.record(options, address, EmailLogStatus.SUPPRESSED);
         continue;
       }
       allowed.push(address);
@@ -42,7 +49,23 @@ export class SuppressedEmailDriver implements IEmailDriver {
       return { skipped: true, reason: 'suppressed', suppressed: addresses.length };
     }
 
-    return this.inner.send({ ...options, to: allowed.length === 1 ? allowed[0] : allowed });
+    // `sender`, `template` and `sensitive` are the log's, not the transport's.
+    const { sender: _sender, template: _template, sensitive: _sensitive, ...outgoing } = options; // eslint-disable-line @typescript-eslint/no-unused-vars
+    let result: unknown;
+    try {
+      result = await this.inner.send({ ...outgoing, to: allowed.length === 1 ? allowed[0] : allowed });
+    } catch (error) {
+      for (const address of allowed) await this.log.record(options, address, EmailLogStatus.FAILED, { error });
+      throw error;
+    }
+    const rejected = EmailLogRecorder.rejected(result);
+    for (const address of allowed) {
+      const refused = rejected.has(address.toLowerCase());
+      await this.log.record(options, address, refused ? EmailLogStatus.FAILED : EmailLogStatus.SENT, refused
+        ? { result, error: 'The mail server rejected this recipient.' }
+        : { result });
+    }
+    return result;
   }
 
   /**

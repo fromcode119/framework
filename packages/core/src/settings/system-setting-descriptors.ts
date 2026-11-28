@@ -1,5 +1,6 @@
 import { SettingScope } from '@core/settings/enums/setting-scope.enum';
 import { SystemConstants } from '@core/constants/system.constants';
+import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
 import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 import { SystemSettingSeedDefaults } from '@core/settings/system-setting-seed-defaults';
 import { LocalizationSettingDescriptors } from '@core/settings/localization-setting-descriptors';
@@ -129,13 +130,10 @@ export class SystemSettingDescriptors {
     // else. Declared SITE, the only control for it (Settings -> Infrastructure, a platform screen) could
     // not write a row the sweep would ever read: refused outright with no site selected, and filed under
     // a tenant with one. Dead in both scopes on every multi-site deployment.
-    [SystemConstants.META_KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
-    [SystemConstants.META_KEY.JOB_RUN_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
-    [SystemConstants.META_KEY.EVENT_DELIVERY_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
-    // PLATFORM for the same reason as the logs window: one sweep, one process, one untenanted read.
-    // No seed — an empty value is KEEP FOREVER, and a platform that started expiring its own security
-    // record because a registry picked a number would be the invented default this codebase forbids.
-    [SystemConstants.META_KEY.AUDIT_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // Every journal window, the audit one included. No seed — an empty value is KEEP FOREVER, and a
+    // platform that started expiring its own security record because a registry picked a number would
+    // be the invented default this codebase forbids.
+    ...(Object.fromEntries(Object.values(RetentionMetaKeys.ALL).map((key) => [key, { scope: SettingScope.PLATFORM, writable: true, exposed: true }])) as Record<(typeof RetentionMetaKeys.ALL)[keyof typeof RetentionMetaKeys.ALL], ISystemSettingDescriptor>),
     // PLATFORM: one database for every site. No seed: off until an operator opts in to the download.
     [SystemConstants.META_KEY.GEO_IP_LOOKUP]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 

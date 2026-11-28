@@ -13,5 +13,7 @@ export class SiteBrandSettingDescriptors {
   static readonly ALL = {
     [SystemConstants.META_KEY.EMAIL_LOGO]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.SITE_ICON]: { scope: SettingScope.SITE, writable: true, exposed: true },
+    // Written by the bounce-reading job, not by a form; read by the Emails page through its own route.
+    [SystemConstants.META_KEY.EMAIL_BOUNCE_CURSOR]: { scope: SettingScope.SITE, writable: false, exposed: false },
   };
 }

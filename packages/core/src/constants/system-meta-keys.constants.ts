@@ -3,6 +3,7 @@ import { MonitoringMetaKeys } from '@core/constants/monitoring-meta-keys.constan
 import { UsageReportMetaKeys } from '@core/constants/usage-report-meta-keys.constants';
 import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
+import { EmailMetaKeys } from '@core/constants/email-meta-keys.constants';
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
 import { EdgeIdentityMetaKeys } from '@core/constants/edge-identity-meta-keys.constants';
 import { CustomerAccountMetaKeys } from '@core/constants/customer-account-meta-keys.constants';
@@ -250,12 +251,7 @@ export class SystemMetaKeys {
   SIGNUP_EMAIL_IGNORE_MESSAGE: 'signup_email_ignore_message',
   SIGNUP_EMAIL_FOOTER_TEXT: 'signup_email_footer_text',
   SIGNUP_EMAIL_ACCENT_COLOR: 'signup_email_accent_color',
-  /**
-   * The media id of the logo at the top of every email a site sends — the framework's own (sign-up,
-   * password reset, security notices) and any plugin's that places `context.email.logoUrl()`. Blank:
-   * no logo. Per SITE, set in Settings → General.
-   */
-  EMAIL_LOGO: 'email_logo',
+  ...EmailMetaKeys.ALL,
   SITE_ICON: 'site_icon', // `/favicon.ico` + `/apple-touch-icon.png`, per SITE — see SiteIconResolver.
   /**
    * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api

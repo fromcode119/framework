@@ -793,7 +793,8 @@
       "activity": "Aktivitas",
       "themes": "Tema",
       "settings": "Pengaturan",
-      "jobs": "Tugas"
+      "jobs": "Tugas",
+      "emails": "Email"
     },
     "panel": {
       "sites-list": "Semua situs",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Jumlah hari eksekusi job latar belakang (halaman Job) yang disimpan, dibersihkan setiap hari. Kosongkan untuk menyimpan semua eksekusi selamanya.",
       "jobRunsOlderThanDay": "Eksekusi job yang lebih lama dari {{days}} hari akan dihapus.",
       "jobRunsAreKeptForever": "Eksekusi job disimpan selamanya.",
-      "failedToSaveJobRunRetention": "Gagal menyimpan pengaturan riwayat eksekusi job."
+      "failedToSaveJobRunRetention": "Gagal menyimpan pengaturan riwayat eksekusi job.",
+      "emailLogRetention": "Log email",
+      "daysOfEmailLog": "Berapa hari log email (halaman Email) yang disimpan, dibersihkan setiap hari. Kosongkan untuk menyimpan semua email selamanya.",
+      "emailsOlderThanDay": "Email yang lebih lama dari {{days}} hari akan dihapus dari log.",
+      "emailsAreKeptForever": "Log email disimpan selamanya.",
+      "failedToSaveEmailLogRetention": "Pengaturan log email gagal disimpan.",
+      "emailContentRetention": "Isi email",
+      "daysOfEmailContent": "Berapa hari isi setiap email disimpan. Setelah itu log hanya menyimpan siapa, kapan, dan subjeknya. Kosongkan untuk menyimpan isi selamanya.",
+      "emailContentOlderThanDay": "Isi email yang lebih lama dari {{days}} hari akan dihapus.",
+      "emailContentIsKeptForever": "Isi email disimpan selamanya.",
+      "failedToSaveEmailContentRetention": "Pengaturan isi email gagal disimpan."
     },
     "integrations": {
       "displayNameOptional": "Nama Tampilan (Opsional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Email",
+    "subtitleSite": "Setiap email yang dikirim, ditahan, atau gagal dikirim oleh situs ini: kepada siapa, kapan, ekstensi mana yang mengirim, dan apa isinya.",
+    "subtitlePlatform": "Setiap email yang dikirim, ditahan, atau gagal dikirim oleh platform sendiri. Email tiap situs ada di halaman Email situs tersebut.",
+    "platform": "Platform",
+    "noTemplate": "Tanpa templat",
+    "transactional": "Transaksional (tidak bisa dimatikan)",
+    "loading": "Memuat email…",
+    "failed": "Email tidak dapat dibaca.",
+    "empty": "Belum ada email yang dikirim.",
+    "emptyFiltered": "Tidak ada email yang cocok dengan filter ini.",
+    "loadOlder": "Muat email yang lebih lama",
+    "notFound": "Email ini tidak ada di log. Mungkin sudah dihapus oleh pengaturan masa simpan log.",
+    "manageRequired": "Membuka isi email memerlukan izin untuk mengelola sistem.",
+    "detailHeading": "Email",
+    "contentHeading": "Isi",
+    "contentRemoved": "Isi email ini tidak disimpan (dihapus pada {{date}}). Entah email ini berisi tautan masuk, atur ulang, atau bagikan, atau lebih lama dari yang diizinkan pengaturan masa simpan isi.",
+    "noContent": "Email ini tidak memiliki isi.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Dikirim",
+      "to": "Kepada",
+      "subject": "Subjek",
+      "sender": "Dikirim oleh",
+      "template": "Templat"
+    },
+    "fields": {
+      "category": "Jenis email",
+      "error": "Kesalahan",
+      "serverAnswer": "Jawaban server email",
+      "messageId": "ID pesan",
+      "jobRun": "Eksekusi tugas latar belakang"
+    },
+    "filters": {
+      "all": "Semua",
+      "allSenders": "Semua pengirim",
+      "address": "Cari berdasarkan alamat email",
+      "onlyTemplate": "Hanya email berjenis {{template}}.",
+      "showAll": "Tampilkan semua email",
+      "period": "Periode",
+      "anyTime": "Kapan saja",
+      "lastDay": "24 jam terakhir",
+      "lastWeek": "7 hari terakhir",
+      "lastMonth": "30 hari terakhir"
+    },
+    "status": {
+      "sent": "Diterima oleh server email",
+      "suppressed": "Tidak dikirim: berhenti berlangganan",
+      "failed": "Gagal",
+      "bounced": "Terpental",
+      "complained": "Ditandai sebagai spam"
+    },
+    "resend": {
+      "button": "Kirim lagi",
+      "confirmTitle": "Kirim email ini lagi?",
+      "confirm": "Email yang sama akan dikirim ke {{address}} sekali lagi. Email ini dicatat di log sebagai email baru.",
+      "sentTitle": "Dikirim lagi",
+      "sent": "Email dikirim lagi ke {{address}}.",
+      "skippedTitle": "Tidak dikirim",
+      "skipped": "{{address}} telah berhenti berlangganan jenis email ini, jadi email tidak dikirim.",
+      "failedTitle": "Tidak dapat dikirim",
+      "failed": "Email tidak dapat dikirim lagi."
+    },
+    "person": {
+      "heading": "Email",
+      "seeAll": "Lihat semua",
+      "none": "Belum ada email yang dikirim ke orang ini.",
+      "noAddress": "Orang ini tidak memiliki alamat email.",
+      "allMail": "Semua email",
+      "optedOut": "Orang ini meminta untuk tidak menerima sebagian email.",
+      "optOutsHint": "Hanya orang itu sendiri yang dapat membatalkannya, dari halaman preferensi email miliknya."
+    },
+    "catalog": {
+      "open": "Katalog email",
+      "title": "Katalog email",
+      "subtitle": "Setiap jenis email yang dapat dikirim situs ini: siapa yang mengirim, kapan dikirim, dan seperti apa tampilannya.",
+      "empty": "Belum ada email yang dideklarasikan.",
+      "notFound": "Situs ini tidak memiliki email seperti itu.",
+      "previewFailed": "Email tidak dapat ditampilkan.",
+      "neverSent": "Belum pernah dikirim",
+      "aboutHeading": "Tentang email ini",
+      "previewHeading": "Tampilannya",
+      "exampleData": "Ditampilkan dengan data contoh, bukan data orang sungguhan.",
+      "width": "Lebar",
+      "desktop": "Komputer",
+      "phone": "Ponsel",
+      "seeSent": "Lihat email terkirim",
+      "sendTest": "Kirim tes ke saya",
+      "testSentTitle": "Tes terkirim",
+      "testSent": "Salinan tes dikirim ke {{address}}.",
+      "testFailed": "Email tes tidak dapat dikirim.",
+      "sensitive": "Email ini membawa tautan masuk, atur ulang, atau bagikan, sehingga log email menyimpan kepada siapa dan kapan, tetapi tidak pernah isinya.",
+      "columns": {
+        "email": "Email",
+        "when": "Kapan dikirim",
+        "sent": "Terkirim dalam {{days}} hari",
+        "lastSent": "Terakhir dikirim"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Konfirmasi alamat email Anda",
+          "trigger": "Saat seseorang mendaftar, untuk mengonfirmasi alamatnya."
+        },
+        "passwordReset": {
+          "label": "Atur ulang kata sandi Anda",
+          "trigger": "Saat seseorang meminta kata sandi baru, dari halaman masuk atau dari data orangnya."
+        },
+        "emailChange": {
+          "label": "Konfirmasi alamat email baru Anda",
+          "trigger": "Saat seseorang mengubah alamat emailnya; dikirim ke alamat yang baru."
+        },
+        "securityNotification": {
+          "label": "Pemberitahuan keamanan",
+          "trigger": "Saat kata sandi atau email akun berubah, atau ada masuk dari tempat baru (Pengaturan → Keamanan)."
+        },
+        "fileShare": {
+          "label": "Sebuah file dibagikan kepada Anda",
+          "trigger": "Saat seseorang membagikan file dari Media lewat email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Email yang dikembalikan belum dilacak: situs ini tidak punya kotak surat untuk email terpental. Sampai ada yang diatur, email yang diterima server email akan tampil sebagai diterima meskipun kemudian terpental.",
+      "settingsLink": "Atur kotak surat email terpental",
+      "failed": "Kotak surat email terpental tidak dapat dibaca: {{error}}",
+      "lastRead": "Email yang dikembalikan dibaca dari kotak surat email terpental setiap 15 menit. Terakhir dibaca: {{date}}.",
+      "notReadYet": "Email yang dikembalikan dibaca dari kotak surat email terpental setiap 15 menit. Belum pernah dibaca."
     }
   }
 }

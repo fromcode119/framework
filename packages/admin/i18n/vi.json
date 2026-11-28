@@ -793,7 +793,8 @@
       "activity": "Hoạt động",
       "themes": "Giao diện",
       "settings": "Cài đặt",
-      "jobs": "Tác vụ"
+      "jobs": "Tác vụ",
+      "emails": "Email"
     },
     "panel": {
       "sites-list": "Tất cả trang",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Số ngày lưu các lần chạy tác vụ nền (trang Tác vụ), được dọn dẹp hằng ngày. Để trống để giữ mọi lần chạy vĩnh viễn.",
       "jobRunsOlderThanDay": "Các lần chạy tác vụ cũ hơn {{days}} ngày sẽ bị xóa.",
       "jobRunsAreKeptForever": "Các lần chạy tác vụ được lưu vĩnh viễn.",
-      "failedToSaveJobRunRetention": "Không thể lưu cài đặt lịch sử chạy tác vụ."
+      "failedToSaveJobRunRetention": "Không thể lưu cài đặt lịch sử chạy tác vụ.",
+      "emailLogRetention": "Nhật ký email",
+      "daysOfEmailLog": "Số ngày nhật ký email (trang Email) được giữ lại, dọn mỗi ngày. Để trống để giữ mọi email vĩnh viễn.",
+      "emailsOlderThanDay": "Email cũ hơn {{days}} ngày sẽ bị xóa khỏi nhật ký.",
+      "emailsAreKeptForever": "Nhật ký email được giữ vĩnh viễn.",
+      "failedToSaveEmailLogRetention": "Không lưu được cài đặt nhật ký email.",
+      "emailContentRetention": "Nội dung email",
+      "daysOfEmailContent": "Số ngày giữ nội dung của từng email. Sau đó nhật ký chỉ giữ người nhận, thời gian và tiêu đề. Để trống để giữ nội dung vĩnh viễn.",
+      "emailContentOlderThanDay": "Nội dung email cũ hơn {{days}} ngày sẽ bị xóa.",
+      "emailContentIsKeptForever": "Nội dung email được giữ vĩnh viễn.",
+      "failedToSaveEmailContentRetention": "Không lưu được cài đặt nội dung email."
     },
     "integrations": {
       "displayNameOptional": "Tên hiển thị (Tùy chọn)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Email",
+    "subtitleSite": "Mọi email mà trang này đã gửi, giữ lại hoặc không gửi được: gửi cho ai, khi nào, tiện ích nào đã gửi và nội dung ra sao.",
+    "subtitlePlatform": "Mọi email mà chính nền tảng đã gửi, giữ lại hoặc không gửi được. Email của từng trang nằm ở trang Email của trang đó.",
+    "platform": "Nền tảng",
+    "noTemplate": "Không có mẫu",
+    "transactional": "Email hệ thống (không thể tắt)",
+    "loading": "Đang tải email…",
+    "failed": "Không đọc được email.",
+    "empty": "Chưa có email nào được gửi.",
+    "emptyFiltered": "Không có email nào khớp với các bộ lọc này.",
+    "loadOlder": "Tải email cũ hơn",
+    "notFound": "Email này không có trong nhật ký. Có thể nó đã bị xóa theo cài đặt thời gian lưu nhật ký.",
+    "manageRequired": "Mở nội dung email cần quyền quản lý hệ thống.",
+    "detailHeading": "Email",
+    "contentHeading": "Nội dung",
+    "contentRemoved": "Nội dung email này không được lưu (đã xóa vào {{date}}). Hoặc email có liên kết đăng nhập, đặt lại hay chia sẻ, hoặc email cũ hơn mức cài đặt lưu nội dung cho phép.",
+    "noContent": "Email này không có nội dung.",
+    "columns": {
+      "status": "Trạng thái",
+      "sentAt": "Đã gửi lúc",
+      "to": "Đến",
+      "subject": "Tiêu đề",
+      "sender": "Gửi bởi",
+      "template": "Mẫu"
+    },
+    "fields": {
+      "category": "Loại email",
+      "error": "Lỗi",
+      "serverAnswer": "Phản hồi của máy chủ thư",
+      "messageId": "ID thư",
+      "jobRun": "Lần chạy tác vụ nền"
+    },
+    "filters": {
+      "all": "Tất cả",
+      "allSenders": "Mọi người gửi",
+      "address": "Tìm theo địa chỉ email",
+      "onlyTemplate": "Chỉ các email loại {{template}}.",
+      "showAll": "Hiện tất cả email",
+      "period": "Khoảng thời gian",
+      "anyTime": "Mọi lúc",
+      "lastDay": "24 giờ qua",
+      "lastWeek": "7 ngày qua",
+      "lastMonth": "30 ngày qua"
+    },
+    "status": {
+      "sent": "Máy chủ thư đã tiếp nhận",
+      "suppressed": "Chưa gửi: đã hủy đăng ký",
+      "failed": "Thất bại",
+      "bounced": "Bị trả lại",
+      "complained": "Đã đánh dấu là spam"
+    },
+    "resend": {
+      "button": "Gửi lại",
+      "confirmTitle": "Gửi lại email này?",
+      "confirm": "Email giống hệt sẽ được gửi đến {{address}} thêm một lần nữa. Nhật ký sẽ ghi nó như một email mới.",
+      "sentTitle": "Đã gửi lại",
+      "sent": "Đã gửi lại email đến {{address}}.",
+      "skippedTitle": "Chưa gửi",
+      "skipped": "{{address}} đã hủy đăng ký loại email này nên email không được gửi.",
+      "failedTitle": "Không gửi được",
+      "failed": "Không thể gửi lại email."
+    },
+    "person": {
+      "heading": "Email",
+      "seeAll": "Xem tất cả",
+      "none": "Chưa có email nào được gửi cho người này.",
+      "noAddress": "Người này không có địa chỉ email.",
+      "allMail": "Tất cả email",
+      "optedOut": "Người này đã yêu cầu không nhận một số email.",
+      "optOutsHint": "Chỉ chính người đó mới có thể bỏ việc này, từ trang tùy chọn email của họ."
+    },
+    "catalog": {
+      "open": "Danh mục email",
+      "title": "Danh mục email",
+      "subtitle": "Mọi loại email mà trang này có thể gửi: ai gửi, khi nào gửi và trông như thế nào.",
+      "empty": "Chưa có email nào được khai báo.",
+      "notFound": "Trang này không có email như vậy.",
+      "previewFailed": "Không thể hiển thị email.",
+      "neverSent": "Chưa gửi lần nào",
+      "aboutHeading": "Về email này",
+      "previewHeading": "Trông như thế nào",
+      "exampleData": "Hiển thị bằng dữ liệu mẫu, không phải của người thật.",
+      "width": "Chiều rộng",
+      "desktop": "Máy tính",
+      "phone": "Điện thoại",
+      "seeSent": "Xem email đã gửi",
+      "sendTest": "Gửi thử cho tôi",
+      "testSentTitle": "Đã gửi thử",
+      "testSent": "Một bản thử đã được gửi đến {{address}}.",
+      "testFailed": "Không thể gửi email thử.",
+      "sensitive": "Email này có liên kết đăng nhập, đặt lại hoặc chia sẻ, nên nhật ký chỉ lưu gửi cho ai và khi nào, không bao giờ lưu nội dung.",
+      "columns": {
+        "email": "Email",
+        "when": "Khi nào được gửi",
+        "sent": "Đã gửi trong {{days}} ngày",
+        "lastSent": "Gửi gần nhất"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Xác nhận địa chỉ email của bạn",
+          "trigger": "Khi ai đó đăng ký, để xác nhận địa chỉ của họ."
+        },
+        "passwordReset": {
+          "label": "Đặt lại mật khẩu của bạn",
+          "trigger": "Khi ai đó yêu cầu mật khẩu mới, từ trang đăng nhập hoặc từ hồ sơ của họ."
+        },
+        "emailChange": {
+          "label": "Xác nhận địa chỉ email mới của bạn",
+          "trigger": "Khi ai đó đổi địa chỉ email; gửi đến địa chỉ mới."
+        },
+        "securityNotification": {
+          "label": "Thông báo bảo mật",
+          "trigger": "Khi mật khẩu hoặc email của tài khoản thay đổi, hoặc có đăng nhập từ nơi mới (Cài đặt → Bảo mật)."
+        },
+        "fileShare": {
+          "label": "Một tệp đã được chia sẻ với bạn",
+          "trigger": "Khi ai đó chia sẻ tệp từ Thư viện qua email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Email bị trả lại chưa được theo dõi: trang này chưa có hộp thư nhận email bị trả lại. Cho đến khi đặt hộp thư này, email đã được máy chủ thư tiếp nhận vẫn hiển thị là đã tiếp nhận dù sau đó bị trả lại.",
+      "settingsLink": "Đặt hộp thư nhận email bị trả lại",
+      "failed": "Không đọc được hộp thư nhận email bị trả lại: {{error}}",
+      "lastRead": "Email bị trả lại được đọc từ hộp thư nhận email bị trả lại mỗi 15 phút. Lần đọc gần nhất: {{date}}.",
+      "notReadYet": "Email bị trả lại được đọc từ hộp thư nhận email bị trả lại mỗi 15 phút. Hộp thư chưa được đọc."
     }
   }
 }

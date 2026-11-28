@@ -9,6 +9,9 @@ import { MetaContextProxy } from '@core/plugin/context/meta';
 import { SigningSecretService } from '@core/security/signing-secret-service';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { PluginInbox } from '@core/email/plugin-inbox';
+import { EmailTemplateRegistry } from '@core/email/email-template-registry';
+import type { IEmailTemplateDescriptor } from '@core/email/interfaces/email-template-descriptor.interface';
+import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import type { IInboxAccount, IInboxFetchOptions } from '@fromcode119/email';
 
 /**
@@ -70,6 +73,20 @@ export class EmailContextProxy {
       registerCategory: (category: Omit<IEmailCategory, 'pluginSlug'>) => {
         (manager as any).emailCategories?.register({ ...category, pluginSlug: slug });
       },
+      /**
+       * Declare one kind of email this plugin sends, for the email catalog. Data only: the render
+       * method is NAMED and called back through the plugin manager's own API resolver, as personal-data
+       * sources are, so the declaration crosses to an isolated plugin unchanged.
+       */
+      registerTemplate: (template: IEmailTemplateDescriptor) => {
+        const namespace = String(plugin?.manifest?.namespace || '').trim();
+        EmailTemplateRegistry.register(slug, template, async (data) => {
+          const api: any = new PluginsManagerResolver(manager.plugins as any).resolve(namespace, slug);
+          if (!api) throw new Error(`${slug} is not reachable (inactive, or not enabled for this site), so its email could not be drawn`);
+          if (typeof api[template.method] !== 'function') throw new Error(`${slug} does not expose ${template.method}`);
+          return api[template.method]({ key: template.key, data });
+        });
+      },
       /** Every declared stream. The account preferences screen is the caller that matters. */
       listCategories: (): IEmailCategory[] => (manager as any).emailCategories?.list() ?? [],
 
@@ -122,7 +139,14 @@ export class EmailContextProxy {
     // forwarding "everything else" handed every plugin with `email` whatever the driver happened to hold.
     return {
       ...additions,
-      send: (options: unknown) => driver.send(options),
+      // The sender is the platform's to state: whatever a plugin puts there is replaced by its own slug.
+      // A template is named by the plugin and recorded under its slug, so one plugin's key never files
+      // mail under another's.
+      send: (options: Record<string, unknown>) => driver.send({
+        ...(options ?? {}),
+        sender: slug,
+        template: options?.template ? EmailTemplateRegistry.idOf(slug, String(options.template)) : undefined,
+      }),
       suppress: (address: string, category?: string) => driver.suppress(address, category),
       isSuppressed: (address: string, category?: string) => driver.isSuppressed(address, category),
     };

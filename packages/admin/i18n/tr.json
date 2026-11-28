@@ -793,7 +793,8 @@
       "activity": "Etkinlik",
       "themes": "Temalar",
       "settings": "Ayarlar",
-      "jobs": "İşler"
+      "jobs": "İşler",
+      "emails": "E-postalar"
     },
     "panel": {
       "sites-list": "Tüm siteler",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Arka plan iş çalıştırmalarının (İşler sayfası) kaç gün saklanacağı; temizlik her gün yapılır. Boş bırakılırsa tüm çalıştırmalar süresiz saklanır.",
       "jobRunsOlderThanDay": "{{days}} günden eski iş çalıştırmaları kaldırılacak.",
       "jobRunsAreKeptForever": "İş çalıştırmaları süresiz saklanır.",
-      "failedToSaveJobRunRetention": "İş çalıştırma geçmişi ayarı kaydedilemedi."
+      "failedToSaveJobRunRetention": "İş çalıştırma geçmişi ayarı kaydedilemedi.",
+      "emailLogRetention": "E-posta kaydı",
+      "daysOfEmailLog": "E-posta kaydının (E-postalar sayfası) kaç günü saklanacak; her gün temizlenir. Boş bırakırsanız tüm e-postalar süresiz saklanır.",
+      "emailsOlderThanDay": "{{days}} günden eski e-postalar kayıttan kaldırılacak.",
+      "emailsAreKeptForever": "E-posta kaydı süresiz saklanır.",
+      "failedToSaveEmailLogRetention": "E-posta kaydı ayarı kaydedilemedi.",
+      "emailContentRetention": "E-posta içeriği",
+      "daysOfEmailContent": "Her e-postada yazanların kaç gün saklanacağı. Sonrasında kayıtta kime, ne zaman ve konu kalır. Boş bırakırsanız içerik süresiz saklanır.",
+      "emailContentOlderThanDay": "{{days}} günden eski e-posta içerikleri kaldırılacak.",
+      "emailContentIsKeptForever": "E-posta içeriği süresiz saklanır.",
+      "failedToSaveEmailContentRetention": "E-posta içeriği ayarı kaydedilemedi."
     },
     "integrations": {
       "displayNameOptional": "Görünen Ad (İsteğe Bağlı)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-postalar",
+    "subtitleSite": "Bu sitenin gönderdiği, beklettiği veya gönderemediği her e-posta: kime, ne zaman, hangi uzantı gönderdi ve içinde ne yazıyordu.",
+    "subtitlePlatform": "Platformun kendisinin gönderdiği, beklettiği veya gönderemediği her e-posta. Her sitenin kendi e-postaları o sitenin E-postalar sayfasındadır.",
+    "platform": "Platform",
+    "noTemplate": "Şablon yok",
+    "transactional": "İşlemsel (kapatılamaz)",
+    "loading": "E-postalar yükleniyor…",
+    "failed": "E-postalar okunamadı.",
+    "empty": "Henüz e-posta gönderilmedi.",
+    "emptyFiltered": "Bu filtrelerle eşleşen e-posta yok.",
+    "loadOlder": "Daha eski e-postaları yükle",
+    "notFound": "Bu e-posta kayıtta yok. Kayıt saklama ayarı nedeniyle kaldırılmış olabilir.",
+    "manageRequired": "Bir e-postanın içeriğini açmak için sistemi yönetme izni gerekir.",
+    "detailHeading": "E-posta",
+    "contentHeading": "İçerik",
+    "contentRemoved": "Bu e-postanın içeriği saklanmıyor ({{date}} tarihinde kaldırıldı). Ya giriş, sıfırlama veya paylaşım bağlantısı içeriyordu ya da içerik saklama ayarının izin verdiğinden daha eski.",
+    "noContent": "Bu e-postanın içeriği yoktu.",
+    "columns": {
+      "status": "Durum",
+      "sentAt": "Gönderildi",
+      "to": "Alıcı",
+      "subject": "Konu",
+      "sender": "Gönderen",
+      "template": "Şablon"
+    },
+    "fields": {
+      "category": "E-posta türü",
+      "error": "Hata",
+      "serverAnswer": "Posta sunucusunun yanıtı",
+      "messageId": "İleti kimliği",
+      "jobRun": "Arka plan işi çalıştırması"
+    },
+    "filters": {
+      "all": "Tümü",
+      "allSenders": "Tüm göndericiler",
+      "address": "E-posta adresine göre ara",
+      "onlyTemplate": "Yalnızca {{template}} türündeki e-postalar.",
+      "showAll": "Tüm e-postaları göster",
+      "period": "Dönem",
+      "anyTime": "Her zaman",
+      "lastDay": "Son 24 saat",
+      "lastWeek": "Son 7 gün",
+      "lastMonth": "Son 30 gün"
+    },
+    "status": {
+      "sent": "Posta sunucusu tarafından kabul edildi",
+      "suppressed": "Gönderilmedi: abonelikten çıkmış",
+      "failed": "Başarısız",
+      "bounced": "Geri döndü",
+      "complained": "Spam olarak işaretlendi"
+    },
+    "resend": {
+      "button": "Yeniden gönder",
+      "confirmTitle": "Bu e-posta yeniden gönderilsin mi?",
+      "confirm": "Aynı e-posta {{address}} adresine bir kez daha gidecek. Kayıtta yeni bir e-posta olarak görünür.",
+      "sentTitle": "Yeniden gönderildi",
+      "sent": "E-posta {{address}} adresine yeniden gönderildi.",
+      "skippedTitle": "Gönderilmedi",
+      "skipped": "{{address}} bu tür e-postalardan çıkmış, bu yüzden gönderilmedi.",
+      "failedTitle": "Gönderilemedi",
+      "failed": "E-posta yeniden gönderilemedi."
+    },
+    "person": {
+      "heading": "E-postalar",
+      "seeAll": "Tümünü gör",
+      "none": "Bu kişiye hiç e-posta gönderilmedi.",
+      "noAddress": "Bu kişinin e-posta adresi yok.",
+      "allMail": "Tüm e-postalar",
+      "optedOut": "Bu kişi bazı e-postaları almak istemediğini bildirdi.",
+      "optOutsHint": "Abonelikten çıkmayı yalnızca kişinin kendisi, e-posta tercihleri sayfasından kaldırabilir."
+    },
+    "catalog": {
+      "open": "E-posta kataloğu",
+      "title": "E-posta kataloğu",
+      "subtitle": "Bu sitenin gönderebileceği her e-posta türü: kim gönderir, ne zaman çıkar ve nasıl görünür.",
+      "empty": "Henüz tanımlı e-posta yok.",
+      "notFound": "Bu sitede böyle bir e-posta yok.",
+      "previewFailed": "E-posta gösterilemedi.",
+      "neverSent": "Henüz gönderilmedi",
+      "aboutHeading": "Bu e-posta hakkında",
+      "previewHeading": "Nasıl görünür",
+      "exampleData": "Gerçek bir kişinin değil, örnek verilerle gösteriliyor.",
+      "width": "Genişlik",
+      "desktop": "Bilgisayar",
+      "phone": "Telefon",
+      "seeSent": "Gönderilen e-postaları gör",
+      "sendTest": "Bana test gönder",
+      "testSentTitle": "Test gönderildi",
+      "testSent": "Bir test kopyası {{address}} adresine gitti.",
+      "testFailed": "Test e-postası gönderilemedi.",
+      "sensitive": "Bu e-posta bir giriş, sıfırlama veya paylaşım bağlantısı taşır; bu yüzden kayıt kime ve ne zaman bilgisini saklar, içeriği asla saklamaz.",
+      "columns": {
+        "email": "E-posta",
+        "when": "Ne zaman gönderilir",
+        "sent": "{{days}} günde gönderilen",
+        "lastSent": "Son gönderim"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "E-posta adresinizi onaylayın",
+          "trigger": "Biri kaydolduğunda, adresini onaylamak için."
+        },
+        "passwordReset": {
+          "label": "Parolanızı sıfırlayın",
+          "trigger": "Biri yeni parola istediğinde, giriş sayfasından veya kişi kaydından."
+        },
+        "emailChange": {
+          "label": "Yeni e-posta adresinizi onaylayın",
+          "trigger": "Biri e-posta adresini değiştirdiğinde; yeni adrese gönderilir."
+        },
+        "securityNotification": {
+          "label": "Güvenlik bildirimi",
+          "trigger": "Bir hesabın parolası veya e-postası değiştiğinde ya da yeni bir yerden giriş yapıldığında (Ayarlar → Güvenlik)."
+        },
+        "fileShare": {
+          "label": "Sizinle bir dosya paylaşıldı",
+          "trigger": "Biri Medya'dan e-posta ile dosya paylaştığında."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Geri dönen e-postalar henüz izlenmiyor: bu sitenin geri dönenler için posta kutusu yok. Bir kutu ayarlanana kadar, posta sunucusunun kabul ettiği e-posta sonradan geri dönse bile kabul edildi olarak görünür.",
+      "settingsLink": "Geri dönenler posta kutusunu ayarla",
+      "failed": "Geri dönenler posta kutusu okunamadı: {{error}}",
+      "lastRead": "Geri dönen e-postalar geri dönenler posta kutusundan her 15 dakikada bir okunur. Son okuma: {{date}}.",
+      "notReadYet": "Geri dönen e-postalar geri dönenler posta kutusundan her 15 dakikada bir okunur. Henüz okunmadı."
     }
   }
 }

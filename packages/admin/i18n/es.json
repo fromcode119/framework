@@ -793,7 +793,8 @@
       "activity": "Actividad",
       "themes": "Temas",
       "settings": "Ajustes",
-      "jobs": "Tareas"
+      "jobs": "Tareas",
+      "emails": "Correos"
     },
     "panel": {
       "sites-list": "Todos los sitios",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Días que se conservan las ejecuciones de tareas en segundo plano (página Tareas); se depuran a diario. Si se deja en blanco, se conservan todas indefinidamente.",
       "jobRunsOlderThanDay": "Se eliminarán las ejecuciones de tareas con más de {{days}} día(s) de antigüedad.",
       "jobRunsAreKeptForever": "Las ejecuciones de tareas se conservan indefinidamente.",
-      "failedToSaveJobRunRetention": "No se ha podido guardar el ajuste del historial de ejecuciones de tareas."
+      "failedToSaveJobRunRetention": "No se ha podido guardar el ajuste del historial de ejecuciones de tareas.",
+      "emailLogRetention": "Registro de correos",
+      "daysOfEmailLog": "Cuántos días del registro de correos (página Correos) se conservan; se limpia a diario. En blanco conserva todos los correos indefinidamente.",
+      "emailsOlderThanDay": "Los correos con más de {{days}} día(s) se eliminarán del registro.",
+      "emailsAreKeptForever": "El registro de correos se conserva indefinidamente.",
+      "failedToSaveEmailLogRetention": "No se pudo guardar el ajuste del registro de correos.",
+      "emailContentRetention": "Contenido de los correos",
+      "daysOfEmailContent": "Cuántos días se conserva lo que decía cada correo. Después el registro guarda quién, cuándo y el asunto. En blanco conserva el contenido indefinidamente.",
+      "emailContentOlderThanDay": "El contenido de correos con más de {{days}} día(s) se eliminará.",
+      "emailContentIsKeptForever": "El contenido de los correos se conserva indefinidamente.",
+      "failedToSaveEmailContentRetention": "No se pudo guardar el ajuste del contenido de los correos."
     },
     "integrations": {
       "displayNameOptional": "Nombre visible (opcional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Correos",
+    "subtitleSite": "Todos los correos que este sitio envió, retuvo o no pudo enviar: a quién, cuándo, qué extensión lo envió y qué decía.",
+    "subtitlePlatform": "Todos los correos que la propia plataforma envió, retuvo o no pudo enviar. Los correos de cada sitio están en la página Correos de ese sitio.",
+    "platform": "Plataforma",
+    "noTemplate": "Sin plantilla",
+    "transactional": "Transaccional (no se puede desactivar)",
+    "loading": "Cargando correos…",
+    "failed": "No se pudieron leer los correos.",
+    "empty": "Todavía no se ha enviado ningún correo.",
+    "emptyFiltered": "Ningún correo coincide con estos filtros.",
+    "loadOlder": "Cargar correos anteriores",
+    "notFound": "Este correo no está en el registro. Puede haberse eliminado por el ajuste de conservación del registro.",
+    "manageRequired": "Abrir el contenido de un correo requiere permiso para administrar el sistema.",
+    "detailHeading": "Correo",
+    "contentHeading": "Contenido",
+    "contentRemoved": "El contenido de este correo no se conserva (eliminado el {{date}}). O llevaba un enlace de inicio de sesión, restablecimiento o para compartir, o es más antiguo de lo que permite el ajuste de conservación del contenido.",
+    "noContent": "Este correo no tenía contenido.",
+    "columns": {
+      "status": "Estado",
+      "sentAt": "Enviado",
+      "to": "Para",
+      "subject": "Asunto",
+      "sender": "Enviado por",
+      "template": "Plantilla"
+    },
+    "fields": {
+      "category": "Tipo de correo",
+      "error": "Error",
+      "serverAnswer": "Respuesta del servidor de correo",
+      "messageId": "ID del mensaje",
+      "jobRun": "Ejecución de la tarea en segundo plano"
+    },
+    "filters": {
+      "all": "Todos",
+      "allSenders": "Todos los remitentes",
+      "address": "Buscar por dirección de correo",
+      "onlyTemplate": "Solo correos del tipo {{template}}.",
+      "showAll": "Mostrar todos los correos",
+      "period": "Periodo",
+      "anyTime": "Cualquier momento",
+      "lastDay": "Últimas 24 horas",
+      "lastWeek": "Últimos 7 días",
+      "lastMonth": "Últimos 30 días"
+    },
+    "status": {
+      "sent": "Aceptado por el servidor de correo",
+      "suppressed": "No enviado: se dio de baja",
+      "failed": "Falló",
+      "bounced": "Rebotado",
+      "complained": "Marcado como spam"
+    },
+    "resend": {
+      "button": "Enviar de nuevo",
+      "confirmTitle": "¿Enviar este correo de nuevo?",
+      "confirm": "El mismo correo irá a {{address}} una vez más. Se registrará como un correo nuevo.",
+      "sentTitle": "Enviado de nuevo",
+      "sent": "El correo se envió otra vez a {{address}}.",
+      "skippedTitle": "No enviado",
+      "skipped": "{{address}} se dio de baja de este tipo de correos, por eso no se envió.",
+      "failedTitle": "No se pudo enviar",
+      "failed": "No se pudo enviar el correo de nuevo."
+    },
+    "person": {
+      "heading": "Correos",
+      "seeAll": "Ver todos",
+      "none": "No se ha enviado ningún correo a esta persona.",
+      "noAddress": "Esta persona no tiene dirección de correo.",
+      "allMail": "Todos los correos",
+      "optedOut": "Esta persona pidió no recibir algunos correos.",
+      "optOutsHint": "Solo la propia persona puede anular la baja, desde su página de preferencias de correo."
+    },
+    "catalog": {
+      "open": "Catálogo de correos",
+      "title": "Catálogo de correos",
+      "subtitle": "Todos los tipos de correo que este sitio puede enviar: quién lo envía, cuándo sale y cómo se ve.",
+      "empty": "Aún no hay correos declarados.",
+      "notFound": "Este sitio no tiene ese correo.",
+      "previewFailed": "No se pudo mostrar el correo.",
+      "neverSent": "Aún no enviado",
+      "aboutHeading": "Sobre este correo",
+      "previewHeading": "Cómo se ve",
+      "exampleData": "Mostrado con datos de ejemplo, no de una persona real.",
+      "width": "Ancho",
+      "desktop": "Ordenador",
+      "phone": "Teléfono",
+      "seeSent": "Ver correos enviados",
+      "sendTest": "Enviarme una prueba",
+      "testSentTitle": "Prueba enviada",
+      "testSent": "Una copia de prueba fue a {{address}}.",
+      "testFailed": "No se pudo enviar el correo de prueba.",
+      "sensitive": "Este correo lleva un enlace de inicio de sesión, restablecimiento o para compartir, así que el registro guarda quién y cuándo, pero nunca su contenido.",
+      "columns": {
+        "email": "Correo",
+        "when": "Cuándo se envía",
+        "sent": "Enviados en {{days}} días",
+        "lastSent": "Último envío"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Confirma tu dirección de correo",
+          "trigger": "Cuando alguien se registra, para confirmar su dirección."
+        },
+        "passwordReset": {
+          "label": "Restablece tu contraseña",
+          "trigger": "Cuando alguien pide una contraseña nueva, desde la página de inicio de sesión o desde su ficha de persona."
+        },
+        "emailChange": {
+          "label": "Confirma tu nueva dirección de correo",
+          "trigger": "Cuando alguien cambia su dirección de correo; se envía a la nueva dirección."
+        },
+        "securityNotification": {
+          "label": "Aviso de seguridad",
+          "trigger": "Cuando cambia la contraseña o el correo de una cuenta, o se inicia sesión desde un lugar nuevo (Ajustes → Seguridad)."
+        },
+        "fileShare": {
+          "label": "Se ha compartido un archivo contigo",
+          "trigger": "Cuando alguien comparte por correo un archivo de Medios."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Los correos devueltos aún no se registran: este sitio no tiene buzón de rebotes. Hasta que se configure uno, un correo aceptado por el servidor de correo aparece como aceptado aunque después rebote.",
+      "settingsLink": "Configurar el buzón de rebotes",
+      "failed": "No se pudo leer el buzón de rebotes: {{error}}",
+      "lastRead": "Los correos devueltos se leen del buzón de rebotes cada 15 minutos. Última lectura: {{date}}.",
+      "notReadYet": "Los correos devueltos se leen del buzón de rebotes cada 15 minutos. Aún no se ha leído."
     }
   }
 }

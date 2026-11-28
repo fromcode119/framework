@@ -793,7 +793,8 @@
       "activity": "アクティビティ",
       "themes": "テーマ",
       "settings": "設定",
-      "jobs": "ジョブ"
+      "jobs": "ジョブ",
+      "emails": "メール"
     },
     "panel": {
       "sites-list": "すべてのサイト",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "バックグラウンドジョブの実行履歴（ジョブページ）を保持する日数です。毎日整理されます。空欄にするとすべての実行履歴を無期限に保持します。",
       "jobRunsOlderThanDay": "{{days}} 日より古いジョブ実行履歴は削除されます。",
       "jobRunsAreKeptForever": "ジョブ実行履歴は無期限に保持されます。",
-      "failedToSaveJobRunRetention": "ジョブ実行履歴の設定を保存できませんでした。"
+      "failedToSaveJobRunRetention": "ジョブ実行履歴の設定を保存できませんでした。",
+      "emailLogRetention": "メールログ",
+      "daysOfEmailLog": "メールログ（メールページ）を何日分保存するか。毎日整理されます。空欄にするとすべてのメールを無期限に保持します。",
+      "emailsOlderThanDay": "{{days}}日より古いメールはログから削除されます。",
+      "emailsAreKeptForever": "メールログは無期限に保持されます。",
+      "failedToSaveEmailLogRetention": "メールログの設定を保存できませんでした。",
+      "emailContentRetention": "メールの内容",
+      "daysOfEmailContent": "各メールの本文を何日間保存するか。その後はログに宛先、日時、件名だけが残ります。空欄にすると内容を無期限に保持します。",
+      "emailContentOlderThanDay": "{{days}}日より古いメールの内容は削除されます。",
+      "emailContentIsKeptForever": "メールの内容は無期限に保持されます。",
+      "failedToSaveEmailContentRetention": "メールの内容の設定を保存できませんでした。"
     },
     "integrations": {
       "displayNameOptional": "表示名（任意）",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "メール",
+    "subtitleSite": "このサイトが送信した、保留した、または送信に失敗したすべてのメール。宛先、日時、送信した拡張機能、本文を確認できます。",
+    "subtitlePlatform": "プラットフォーム自身が送信した、保留した、または送信に失敗したすべてのメール。各サイトのメールは、そのサイトのメールページにあります。",
+    "platform": "プラットフォーム",
+    "noTemplate": "テンプレートなし",
+    "transactional": "取引関連（オフにできません）",
+    "loading": "メールを読み込み中…",
+    "failed": "メールを読み込めませんでした。",
+    "empty": "まだメールは送信されていません。",
+    "emptyFiltered": "この条件に一致するメールはありません。",
+    "loadOlder": "古いメールを読み込む",
+    "notFound": "このメールはログにありません。ログの保存期間の設定により削除された可能性があります。",
+    "manageRequired": "メールの内容を開くには、システムを管理する権限が必要です。",
+    "detailHeading": "メール",
+    "contentHeading": "内容",
+    "contentRemoved": "このメールの内容は保存されていません（{{date}} に削除）。ログイン、リセット、共有のリンクが含まれていたか、内容の保存期間の設定より古くなっています。",
+    "noContent": "このメールには内容がありませんでした。",
+    "columns": {
+      "status": "ステータス",
+      "sentAt": "送信日時",
+      "to": "宛先",
+      "subject": "件名",
+      "sender": "送信元",
+      "template": "テンプレート"
+    },
+    "fields": {
+      "category": "メールの種類",
+      "error": "エラー",
+      "serverAnswer": "メールサーバーの応答",
+      "messageId": "メッセージID",
+      "jobRun": "バックグラウンドジョブの実行"
+    },
+    "filters": {
+      "all": "すべて",
+      "allSenders": "すべての送信元",
+      "address": "メールアドレスで検索",
+      "onlyTemplate": "種類が {{template}} のメールのみ。",
+      "showAll": "すべてのメールを表示",
+      "period": "期間",
+      "anyTime": "すべて",
+      "lastDay": "過去24時間",
+      "lastWeek": "過去7日間",
+      "lastMonth": "過去30日間"
+    },
+    "status": {
+      "sent": "メールサーバーが受理",
+      "suppressed": "未送信：配信停止済み",
+      "failed": "失敗",
+      "bounced": "返送",
+      "complained": "迷惑メールとして報告"
+    },
+    "resend": {
+      "button": "再送信",
+      "confirmTitle": "このメールを再送信しますか？",
+      "confirm": "同じメールが {{address}} にもう一度送られます。ログには新しいメールとして記録されます。",
+      "sentTitle": "再送信しました",
+      "sent": "メールを {{address}} に再送信しました。",
+      "skippedTitle": "未送信",
+      "skipped": "{{address}} はこの種類のメールを配信停止しているため、送信されませんでした。",
+      "failedTitle": "送信できません",
+      "failed": "メールを再送信できませんでした。"
+    },
+    "person": {
+      "heading": "メール",
+      "seeAll": "すべて表示",
+      "none": "この人にはメールが送信されていません。",
+      "noAddress": "この人にはメールアドレスがありません。",
+      "allMail": "すべてのメール",
+      "optedOut": "この人は一部のメールを受け取らないよう希望しています。",
+      "optOutsHint": "配信停止を解除できるのは本人だけです。本人のメール設定ページから行います。"
+    },
+    "catalog": {
+      "open": "メールカタログ",
+      "title": "メールカタログ",
+      "subtitle": "このサイトが送信できるメールの全種類：送信者、送信のタイミング、見た目。",
+      "empty": "メールはまだ登録されていません。",
+      "notFound": "このサイトにはそのようなメールはありません。",
+      "previewFailed": "メールを表示できませんでした。",
+      "neverSent": "まだ送信されていません",
+      "aboutHeading": "このメールについて",
+      "previewHeading": "見た目",
+      "exampleData": "実在の人物ではなくサンプルデータで表示しています。",
+      "width": "幅",
+      "desktop": "パソコン",
+      "phone": "スマートフォン",
+      "seeSent": "送信済みメールを見る",
+      "sendTest": "自分にテストを送る",
+      "testSentTitle": "テストを送信しました",
+      "testSent": "テストのコピーを {{address}} に送りました。",
+      "testFailed": "テストメールを送信できませんでした。",
+      "sensitive": "このメールにはログイン、リセット、共有のリンクが含まれるため、メールログには宛先と日時だけを残し、内容は保存しません。",
+      "columns": {
+        "email": "メール",
+        "when": "送信のタイミング",
+        "sent": "{{days}}日間の送信数",
+        "lastSent": "最後の送信"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "メールアドレスを確認してください",
+          "trigger": "誰かが登録したとき、アドレスを確認するために送信。"
+        },
+        "passwordReset": {
+          "label": "パスワードをリセットしてください",
+          "trigger": "誰かが新しいパスワードを求めたとき（ログインページまたは本人のページから）。"
+        },
+        "emailChange": {
+          "label": "新しいメールアドレスを確認してください",
+          "trigger": "誰かがメールアドレスを変更したとき。新しいアドレスに送信。"
+        },
+        "securityNotification": {
+          "label": "セキュリティのお知らせ",
+          "trigger": "アカウントのパスワードやメールが変更されたとき、または新しい場所からログインしたとき（設定 → セキュリティ）。"
+        },
+        "fileShare": {
+          "label": "ファイルが共有されました",
+          "trigger": "誰かがメディアからファイルをメールで共有したとき。"
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "返送されたメールはまだ追跡されていません。このサイトには返送用のメールボックスがありません。設定するまでは、メールサーバーが受理したメールは、あとで返送されても「受理」と表示されます。",
+      "settingsLink": "返送用メールボックスを設定",
+      "failed": "返送用メールボックスを読み込めませんでした：{{error}}",
+      "lastRead": "返送されたメールは15分ごとに返送用メールボックスから読み込まれます。最終読み込み：{{date}}。",
+      "notReadYet": "返送されたメールは15分ごとに返送用メールボックスから読み込まれます。まだ読み込まれていません。"
     }
   }
 }

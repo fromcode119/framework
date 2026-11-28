@@ -793,7 +793,8 @@
       "activity": "Activitate",
       "themes": "Teme",
       "settings": "Setări",
-      "jobs": "Sarcini"
+      "jobs": "Sarcini",
+      "emails": "E-mailuri"
     },
     "panel": {
       "sites-list": "Toate site-urile",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Numărul de zile pentru care se păstrează rulările joburilor în fundal (pagina Joburi), curățate zilnic. Gol păstrează toate rulările pentru totdeauna.",
       "jobRunsOlderThanDay": "Rulările de joburi mai vechi de {{days}} zile vor fi eliminate.",
       "jobRunsAreKeptForever": "Rulările de joburi sunt păstrate pentru totdeauna.",
-      "failedToSaveJobRunRetention": "Setarea istoricului rulărilor de joburi nu a putut fi salvată."
+      "failedToSaveJobRunRetention": "Setarea istoricului rulărilor de joburi nu a putut fi salvată.",
+      "emailLogRetention": "Jurnal de e-mailuri",
+      "daysOfEmailLog": "Câte zile din jurnalul de e-mailuri (pagina E-mailuri) se păstrează; se curăță zilnic. Gol păstrează toate e-mailurile permanent.",
+      "emailsOlderThanDay": "E-mailurile mai vechi de {{days}} zi(le) vor fi eliminate din jurnal.",
+      "emailsAreKeptForever": "Jurnalul de e-mailuri este păstrat permanent.",
+      "failedToSaveEmailLogRetention": "Setarea jurnalului de e-mailuri nu a putut fi salvată.",
+      "emailContentRetention": "Conținutul e-mailurilor",
+      "daysOfEmailContent": "Câte zile se păstrează ce scria în fiecare e-mail. După aceea, jurnalul păstrează cine, când și subiectul. Gol păstrează conținutul permanent.",
+      "emailContentOlderThanDay": "Conținutul e-mailurilor mai vechi de {{days}} zi(le) va fi eliminat.",
+      "emailContentIsKeptForever": "Conținutul e-mailurilor este păstrat permanent.",
+      "failedToSaveEmailContentRetention": "Setarea conținutului e-mailurilor nu a putut fi salvată."
     },
     "integrations": {
       "displayNameOptional": "Nume afișat (opțional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mailuri",
+    "subtitleSite": "Fiecare e-mail pe care acest site l-a trimis, reținut sau nu a reușit să-l trimită: către cine, când, ce extensie l-a trimis și ce scria în el.",
+    "subtitlePlatform": "Fiecare e-mail pe care platforma însăși l-a trimis, reținut sau nu a reușit să-l trimită. E-mailurile fiecărui site sunt pe pagina E-mailuri a acelui site.",
+    "platform": "Platformă",
+    "noTemplate": "Fără șablon",
+    "transactional": "Tranzacțional (nu poate fi dezactivat)",
+    "loading": "Se încarcă e-mailurile…",
+    "failed": "E-mailurile nu au putut fi citite.",
+    "empty": "Nu a fost trimis încă niciun e-mail.",
+    "emptyFiltered": "Niciun e-mail nu se potrivește cu aceste filtre.",
+    "loadOlder": "Încarcă e-mailuri mai vechi",
+    "notFound": "Acest e-mail nu este în jurnal. Este posibil să fi fost eliminat de setarea de păstrare a jurnalului.",
+    "manageRequired": "Deschiderea conținutului unui e-mail necesită permisiunea de a gestiona sistemul.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Conținut",
+    "contentRemoved": "Conținutul acestui e-mail nu este păstrat (eliminat la {{date}}). Fie conținea un link de autentificare, de resetare sau de partajare, fie este mai vechi decât permite setarea de păstrare a conținutului.",
+    "noContent": "Acest e-mail nu avea conținut.",
+    "columns": {
+      "status": "Stare",
+      "sentAt": "Trimis",
+      "to": "Către",
+      "subject": "Subiect",
+      "sender": "Trimis de",
+      "template": "Șablon"
+    },
+    "fields": {
+      "category": "Tipul e-mailului",
+      "error": "Eroare",
+      "serverAnswer": "Răspunsul serverului de e-mail",
+      "messageId": "ID mesaj",
+      "jobRun": "Rularea sarcinii din fundal"
+    },
+    "filters": {
+      "all": "Toate",
+      "allSenders": "Toți expeditorii",
+      "address": "Caută după adresa de e-mail",
+      "onlyTemplate": "Doar e-mailuri de tipul {{template}}.",
+      "showAll": "Arată toate e-mailurile",
+      "period": "Perioadă",
+      "anyTime": "Oricând",
+      "lastDay": "Ultimele 24 de ore",
+      "lastWeek": "Ultimele 7 zile",
+      "lastMonth": "Ultimele 30 de zile"
+    },
+    "status": {
+      "sent": "Acceptat de serverul de e-mail",
+      "suppressed": "Netrimis: dezabonat",
+      "failed": "Eșuat",
+      "bounced": "Returnat",
+      "complained": "Marcat ca spam"
+    },
+    "resend": {
+      "button": "Trimite din nou",
+      "confirmTitle": "Trimiți din nou acest e-mail?",
+      "confirm": "Același e-mail ajunge încă o dată la {{address}}. Este înregistrat în jurnal ca un e-mail nou.",
+      "sentTitle": "Trimis din nou",
+      "sent": "E-mailul a fost trimis din nou către {{address}}.",
+      "skippedTitle": "Netrimis",
+      "skipped": "{{address}} s-a dezabonat de la acest tip de e-mailuri, deci nu a fost trimis.",
+      "failedTitle": "Nu s-a putut trimite",
+      "failed": "E-mailul nu a putut fi trimis din nou."
+    },
+    "person": {
+      "heading": "E-mailuri",
+      "seeAll": "Vezi toate",
+      "none": "Nu a fost trimis niciun e-mail acestei persoane.",
+      "noAddress": "Această persoană nu are adresă de e-mail.",
+      "allMail": "Toate e-mailurile",
+      "optedOut": "Această persoană a cerut să nu primească unele e-mailuri.",
+      "optOutsHint": "Doar persoana însăși poate anula dezabonarea, din pagina ei de preferințe pentru e-mail."
+    },
+    "catalog": {
+      "open": "Catalog de e-mailuri",
+      "title": "Catalog de e-mailuri",
+      "subtitle": "Fiecare tip de e-mail pe care îl poate trimite acest site: cine îl trimite, când pleacă și cum arată.",
+      "empty": "Nu este declarat încă niciun e-mail.",
+      "notFound": "Acest site nu are un astfel de e-mail.",
+      "previewFailed": "E-mailul nu a putut fi afișat.",
+      "neverSent": "Netrimis încă",
+      "aboutHeading": "Despre acest e-mail",
+      "previewHeading": "Cum arată",
+      "exampleData": "Afișat cu date de exemplu, nu ale unei persoane reale.",
+      "width": "Lățime",
+      "desktop": "Computer",
+      "phone": "Telefon",
+      "seeSent": "Vezi e-mailurile trimise",
+      "sendTest": "Trimite-mi un test",
+      "testSentTitle": "Test trimis",
+      "testSent": "O copie de test a plecat către {{address}}.",
+      "testFailed": "E-mailul de test nu a putut fi trimis.",
+      "sensitive": "Acest e-mail conține un link de autentificare, de resetare sau de partajare, deci jurnalul păstrează către cine și când, dar niciodată conținutul.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Când se trimite",
+        "sent": "Trimise în {{days}} zile",
+        "lastSent": "Ultima trimitere"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Confirmă-ți adresa de e-mail",
+          "trigger": "Când cineva se înregistrează, pentru a-și confirma adresa."
+        },
+        "passwordReset": {
+          "label": "Resetează-ți parola",
+          "trigger": "Când cineva cere o parolă nouă, din pagina de autentificare sau din fișa sa de persoană."
+        },
+        "emailChange": {
+          "label": "Confirmă-ți noua adresă de e-mail",
+          "trigger": "Când cineva își schimbă adresa de e-mail; se trimite la noua adresă."
+        },
+        "securityNotification": {
+          "label": "Notificare de securitate",
+          "trigger": "Când se schimbă parola sau e-mailul unui cont, sau cineva se autentifică dintr-un loc nou (Setări → Securitate)."
+        },
+        "fileShare": {
+          "label": "Un fișier a fost partajat cu tine",
+          "trigger": "Când cineva partajează prin e-mail un fișier din Media."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "E-mailurile returnate nu sunt urmărite încă: acest site nu are o căsuță pentru mesaje returnate. Până se setează una, un e-mail acceptat de serverul de e-mail apare ca acceptat chiar dacă ulterior este returnat.",
+      "settingsLink": "Setează căsuța pentru mesaje returnate",
+      "failed": "Căsuța pentru mesaje returnate nu a putut fi citită: {{error}}",
+      "lastRead": "E-mailurile returnate sunt citite din căsuța pentru mesaje returnate la fiecare 15 minute. Ultima citire: {{date}}.",
+      "notReadYet": "E-mailurile returnate sunt citite din căsuța pentru mesaje returnate la fiecare 15 minute. Nu a fost citită încă."
     }
   }
 }

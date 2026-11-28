@@ -45,6 +45,19 @@ export class JournalRetentionTargets {
         settingKey: SystemConstants.META_KEY.EVENT_DELIVERY_RETENTION_DAYS,
         label: 'event-deliveries',
       },
+      {
+        table: SystemConstants.TABLE.EMAIL_LOG,
+        timestampField: 'created_at',
+        settingKey: SystemConstants.META_KEY.EMAIL_LOG_RETENTION_DAYS,
+        label: 'email-log',
+      },
+      {
+        table: SystemConstants.TABLE.EMAIL_LOG,
+        timestampField: 'created_at',
+        settingKey: SystemConstants.META_KEY.EMAIL_CONTENT_RETENTION_DAYS,
+        label: 'email-content',
+        clears: { fields: ['html', 'text'], stampField: 'content_removed_at' },
+      },
     ];
   }
 }

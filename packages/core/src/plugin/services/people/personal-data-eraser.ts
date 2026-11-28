@@ -46,6 +46,7 @@ export class PersonalDataEraser {
       case PersonalDataDatasetKey.RECORD_VERSIONS.value: return this.eraseVersions(subject, strategy);
       case PersonalDataDatasetKey.AUDIT_LOG.value: return this.journals.anonymise(PersonalDataJournal.AUDIT, subject, strategy);
       case PersonalDataDatasetKey.SYSTEM_LOG.value: return this.journals.anonymise(PersonalDataJournal.SYSTEM, subject, strategy);
+      case PersonalDataDatasetKey.EMAIL_LOG.value: return this.eraseEmails(subject, strategy);
       default: return { ...PersonalDataEraser.empty(strategy), remaining: 0 };
     }
   }
@@ -153,6 +154,19 @@ export class PersonalDataEraser {
     return { strategy, erased: versions.length, anonymised: 0, retained: 0, remaining: 0 };
   }
 
+
+  /**
+   * The emails sent to the subject's address. Scoped like the journals: inside a request, the site's
+   * own rows; with no site, the platform's, which only the platform-admin marker reaches.
+   */
+  async eraseEmails(subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
+    const work = async (): Promise<IPersonalDataErasure> => {
+      const rows: any[] = await this.reader.findEmails(subject);
+      for (const row of rows) await this.db.delete(SystemConstants.TABLE.EMAIL_LOG, { id: row.id });
+      return { strategy, erased: rows.length, anonymised: 0, retained: 0, remaining: 0 };
+    };
+    return RequestContextUtils.getTenantId() ? work() : this.db.withPlatformAdmin(work);
+  }
 
   async deleteBy(table: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure> {
     const userId = PersonalDataSubjectReader.userIdOf(subject);

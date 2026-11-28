@@ -793,7 +793,8 @@
       "activity": "Tevékenység",
       "themes": "Témák",
       "settings": "Beállítások",
-      "jobs": "Feladatok"
+      "jobs": "Feladatok",
+      "emails": "E-mailek"
     },
     "panel": {
       "sites-list": "Összes webhely",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "A háttérfeladat-futtatások (Feladatok oldal) megőrzési ideje napokban, naponta törölve. Üresen hagyva minden futtatás örökre megmarad.",
       "jobRunsOlderThanDay": "A(z) {{days}} napnál régebbi feladatfuttatások törlődnek.",
       "jobRunsAreKeptForever": "A feladatfuttatások örökre megmaradnak.",
-      "failedToSaveJobRunRetention": "Nem sikerült menteni a feladatfuttatási előzmények beállítását."
+      "failedToSaveJobRunRetention": "Nem sikerült menteni a feladatfuttatási előzmények beállítását.",
+      "emailLogRetention": "E-mail-napló",
+      "daysOfEmailLog": "Hány napnyi e-mail-naplót (E-mailek oldal) őrizzen meg; naponta takarításra kerül. Üresen hagyva minden e-mailt korlátlan ideig megőriz.",
+      "emailsOlderThanDay": "A(z) {{days}} napnál régebbi e-mailek törlődnek a naplóból.",
+      "emailsAreKeptForever": "Az e-mail-naplót korlátlan ideig megőrizzük.",
+      "failedToSaveEmailLogRetention": "Az e-mail-napló beállítását nem sikerült menteni.",
+      "emailContentRetention": "E-mailek tartalma",
+      "daysOfEmailContent": "Hány napig őrizze meg, mi állt az egyes e-mailekben. Ezután a napló csak a kinek, mikor és tárgy adatot tartja meg. Üresen hagyva a tartalmat korlátlan ideig megőrzi.",
+      "emailContentOlderThanDay": "A(z) {{days}} napnál régebbi e-mail-tartalmak törlődnek.",
+      "emailContentIsKeptForever": "Az e-mailek tartalmát korlátlan ideig megőrizzük.",
+      "failedToSaveEmailContentRetention": "Az e-mailek tartalmának beállítását nem sikerült menteni."
     },
     "integrations": {
       "displayNameOptional": "Megjelenített név (nem kötelező)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mailek",
+    "subtitleSite": "Minden e-mail, amelyet ez a webhely elküldött, visszatartott vagy nem tudott elküldeni: kinek, mikor, melyik bővítmény küldte és mi állt benne.",
+    "subtitlePlatform": "Minden e-mail, amelyet maga a platform elküldött, visszatartott vagy nem tudott elküldeni. Az egyes webhelyek saját e-mailjei az adott webhely E-mailek oldalán vannak.",
+    "platform": "Platform",
+    "noTemplate": "Nincs sablon",
+    "transactional": "Rendszerüzenet (nem kapcsolható ki)",
+    "loading": "E-mailek betöltése…",
+    "failed": "Az e-mailek nem olvashatók.",
+    "empty": "Még nem lett e-mail elküldve.",
+    "emptyFiltered": "Egy e-mail sem felel meg ezeknek a szűrőknek.",
+    "loadOlder": "Régebbi e-mailek betöltése",
+    "notFound": "Ez az e-mail nincs a naplóban. Lehet, hogy a napló megőrzési beállítása miatt törölték.",
+    "manageRequired": "Az e-mail tartalmának megnyitásához a rendszer kezelésének jogosultsága kell.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Tartalom",
+    "contentRemoved": "Ennek az e-mailnek a tartalmát nem őrizzük meg (törölve: {{date}}). Vagy bejelentkezési, jelszó-visszaállítási vagy megosztási hivatkozást tartalmazott, vagy régebbi, mint amit a tartalom megőrzési beállítása megenged.",
+    "noContent": "Ennek az e-mailnek nem volt tartalma.",
+    "columns": {
+      "status": "Állapot",
+      "sentAt": "Elküldve",
+      "to": "Címzett",
+      "subject": "Tárgy",
+      "sender": "Küldte",
+      "template": "Sablon"
+    },
+    "fields": {
+      "category": "E-mail típusa",
+      "error": "Hiba",
+      "serverAnswer": "A levelezőszerver válasza",
+      "messageId": "Üzenetazonosító",
+      "jobRun": "Háttérfeladat futása"
+    },
+    "filters": {
+      "all": "Mind",
+      "allSenders": "Minden feladó",
+      "address": "Keresés e-mail-cím alapján",
+      "onlyTemplate": "Csak a(z) {{template}} fajtájú e-mailek.",
+      "showAll": "Minden e-mail megjelenítése",
+      "period": "Időszak",
+      "anyTime": "Bármikor",
+      "lastDay": "Utolsó 24 óra",
+      "lastWeek": "Utolsó 7 nap",
+      "lastMonth": "Utolsó 30 nap"
+    },
+    "status": {
+      "sent": "A levelezőszerver elfogadta",
+      "suppressed": "Nem küldve: leiratkozott",
+      "failed": "Sikertelen",
+      "bounced": "Visszapattant",
+      "complained": "Spamnek jelölve"
+    },
+    "resend": {
+      "button": "Küldés újra",
+      "confirmTitle": "Elküldi újra ezt az e-mailt?",
+      "confirm": "Ugyanez az e-mail még egyszer megy a(z) {{address}} címre. A naplóban új e-mailként jelenik meg.",
+      "sentTitle": "Újra elküldve",
+      "sent": "Az e-mail újra el lett küldve a(z) {{address}} címre.",
+      "skippedTitle": "Nem küldve",
+      "skipped": "{{address}} leiratkozott erről az e-mail-fajtáról, ezért nem lett elküldve.",
+      "failedTitle": "Nem sikerült elküldeni",
+      "failed": "Az e-mailt nem sikerült újra elküldeni."
+    },
+    "person": {
+      "heading": "E-mailek",
+      "seeAll": "Összes megtekintése",
+      "none": "Ennek a személynek még nem lett e-mail küldve.",
+      "noAddress": "Ennek a személynek nincs e-mail-címe.",
+      "allMail": "Minden e-mail",
+      "optedOut": "Ez a személy kérte, hogy bizonyos e-maileket ne kapjon.",
+      "optOutsHint": "A leiratkozást csak maga a személy törölheti, az e-mail-beállításai oldalán."
+    },
+    "catalog": {
+      "open": "E-mail-katalógus",
+      "title": "E-mail-katalógus",
+      "subtitle": "Minden e-mail-fajta, amelyet ez a webhely küldhet: ki küldi, mikor megy ki és hogyan néz ki.",
+      "empty": "Még nincs e-mail megadva.",
+      "notFound": "Ennek a webhelynek nincs ilyen e-mailje.",
+      "previewFailed": "Az e-mailt nem sikerült megjeleníteni.",
+      "neverSent": "Még nem lett elküldve",
+      "aboutHeading": "Erről az e-mailről",
+      "previewHeading": "Hogyan néz ki",
+      "exampleData": "Mintaadatokkal megjelenítve, nem valódi személyével.",
+      "width": "Szélesség",
+      "desktop": "Számítógép",
+      "phone": "Telefon",
+      "seeSent": "Elküldött e-mailek megtekintése",
+      "sendTest": "Teszt küldése nekem",
+      "testSentTitle": "Teszt elküldve",
+      "testSent": "Egy tesztpéldány a(z) {{address}} címre ment.",
+      "testFailed": "A tesztlevelet nem sikerült elküldeni.",
+      "sensitive": "Ez az e-mail bejelentkezési, visszaállítási vagy megosztási hivatkozást tartalmaz, ezért a napló megőrzi, kinek és mikor, de a tartalmát soha.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Mikor kerül elküldésre",
+        "sent": "{{days}} nap alatt elküldve",
+        "lastSent": "Utoljára elküldve"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Erősítse meg az e-mail-címét",
+          "trigger": "Amikor valaki regisztrál, a címe megerősítéséhez."
+        },
+        "passwordReset": {
+          "label": "Állítsa vissza a jelszavát",
+          "trigger": "Amikor valaki új jelszót kér, a bejelentkezési oldalról vagy a személyi adatlapjáról."
+        },
+        "emailChange": {
+          "label": "Erősítse meg az új e-mail-címét",
+          "trigger": "Amikor valaki megváltoztatja az e-mail-címét; az új címre megy."
+        },
+        "securityNotification": {
+          "label": "Biztonsági értesítés",
+          "trigger": "Amikor egy fiók jelszava vagy e-mail-címe megváltozik, vagy új helyről jelentkeznek be (Beállítások → Biztonság)."
+        },
+        "fileShare": {
+          "label": "Valaki megosztott Önnel egy fájlt",
+          "trigger": "Amikor valaki e-mailben megoszt egy fájlt a Médiából."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "A visszaküldött e-maileket még nem követjük: ennek a webhelynek nincs visszapattanási postafiókja. Amíg nincs beállítva, a levelezőszerver által elfogadott e-mail elfogadottként látszik akkor is, ha később visszapattan.",
+      "settingsLink": "Visszapattanási postafiók beállítása",
+      "failed": "A visszapattanási postafiókot nem sikerült beolvasni: {{error}}",
+      "lastRead": "A visszaküldött e-maileket 15 percenként olvassuk be a visszapattanási postafiókból. Utolsó beolvasás: {{date}}.",
+      "notReadYet": "A visszaküldött e-maileket 15 percenként olvassuk be a visszapattanási postafiókból. Még nem lett beolvasva."
     }
   }
 }

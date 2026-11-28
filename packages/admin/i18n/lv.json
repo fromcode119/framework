@@ -793,7 +793,8 @@
       "activity": "Aktivitāte",
       "themes": "Motīvi",
       "settings": "Iestatījumi",
-      "jobs": "Uzdevumi"
+      "jobs": "Uzdevumi",
+      "emails": "E-pasti"
     },
     "panel": {
       "sites-list": "Visas vietnes",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Cik dienas glabāt fona uzdevumu izpildes (lapa Uzdevumi); tīrīšana notiek katru dienu. Ja lauks ir tukšs, visas izpildes tiek glabātas bez termiņa.",
       "jobRunsOlderThanDay": "Uzdevumu izpildes, kas vecākas par {{days}} d., tiks dzēstas.",
       "jobRunsAreKeptForever": "Uzdevumu izpildes tiek glabātas bez termiņa.",
-      "failedToSaveJobRunRetention": "Neizdevās saglabāt uzdevumu izpildes vēstures iestatījumu."
+      "failedToSaveJobRunRetention": "Neizdevās saglabāt uzdevumu izpildes vēstures iestatījumu.",
+      "emailLogRetention": "E-pastu žurnāls",
+      "daysOfEmailLog": "Cik dienu e-pastu žurnālu (lapa E-pasti) glabāt; tiek tīrīts katru dienu. Atstājot tukšu, visi e-pasti tiek glabāti bezgalīgi.",
+      "emailsOlderThanDay": "E-pasti, kas vecāki par {{days}} d., tiks noņemti no žurnāla.",
+      "emailsAreKeptForever": "E-pastu žurnāls tiek glabāts bezgalīgi.",
+      "failedToSaveEmailLogRetention": "Neizdevās saglabāt e-pastu žurnāla iestatījumu.",
+      "emailContentRetention": "E-pastu saturs",
+      "daysOfEmailContent": "Cik dienu glabāt to, kas bija rakstīts katrā e-pastā. Pēc tam žurnālā paliek kam, kad un tēma. Atstājot tukšu, saturs tiek glabāts bezgalīgi.",
+      "emailContentOlderThanDay": "E-pastu saturs, kas vecāks par {{days}} d., tiks noņemts.",
+      "emailContentIsKeptForever": "E-pastu saturs tiek glabāts bezgalīgi.",
+      "failedToSaveEmailContentRetention": "Neizdevās saglabāt e-pastu satura iestatījumu."
     },
     "integrations": {
       "displayNameOptional": "Attēlojamais nosaukums (neobligāts)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-pasti",
+    "subtitleSite": "Katrs e-pasts, ko šī vietne nosūtījusi, aizturējusi vai nav varējusi nosūtīt: kam, kad, kurš paplašinājums to nosūtīja un kas tajā bija rakstīts.",
+    "subtitlePlatform": "Katrs e-pasts, ko pati platforma nosūtījusi, aizturējusi vai nav varējusi nosūtīt. Katras vietnes e-pasti ir šīs vietnes lapā E-pasti.",
+    "platform": "Platforma",
+    "noTemplate": "Bez veidnes",
+    "transactional": "Servisa (nevar izslēgt)",
+    "loading": "Notiek e-pastu ielāde…",
+    "failed": "E-pastus neizdevās nolasīt.",
+    "empty": "Vēl nav nosūtīts neviens e-pasts.",
+    "emptyFiltered": "Neviens e-pasts neatbilst šiem filtriem.",
+    "loadOlder": "Ielādēt vecākus e-pastus",
+    "notFound": "Šī e-pasta žurnālā nav. Iespējams, to noņēma žurnāla glabāšanas iestatījums.",
+    "manageRequired": "E-pasta satura atvēršanai nepieciešama sistēmas pārvaldības atļauja.",
+    "detailHeading": "E-pasts",
+    "contentHeading": "Saturs",
+    "contentRemoved": "Šī e-pasta saturs netiek glabāts (noņemts {{date}}). Vai nu tajā bija pierakstīšanās, atiestatīšanas vai kopīgošanas saite, vai arī tas ir vecāks, nekā pieļauj satura glabāšanas iestatījums.",
+    "noContent": "Šim e-pastam nebija satura.",
+    "columns": {
+      "status": "Statuss",
+      "sentAt": "Nosūtīts",
+      "to": "Kam",
+      "subject": "Tēma",
+      "sender": "Nosūtīja",
+      "template": "Veidne"
+    },
+    "fields": {
+      "category": "E-pasta veids",
+      "error": "Kļūda",
+      "serverAnswer": "Pasta servera atbilde",
+      "messageId": "Ziņojuma ID",
+      "jobRun": "Fona uzdevuma izpilde"
+    },
+    "filters": {
+      "all": "Visi",
+      "allSenders": "Visi sūtītāji",
+      "address": "Meklēt pēc e-pasta adreses",
+      "onlyTemplate": "Tikai {{template}} veida e-pasti.",
+      "showAll": "Rādīt visus e-pastus",
+      "period": "Periods",
+      "anyTime": "Jebkurā laikā",
+      "lastDay": "Pēdējās 24 stundas",
+      "lastWeek": "Pēdējās 7 dienas",
+      "lastMonth": "Pēdējās 30 dienas"
+    },
+    "status": {
+      "sent": "Pasta serveris pieņēmis",
+      "suppressed": "Nenosūtīts: atteicies saņemt",
+      "failed": "Neizdevās",
+      "bounced": "Atgriezts",
+      "complained": "Atzīmēts kā surogātpasts"
+    },
+    "resend": {
+      "button": "Sūtīt vēlreiz",
+      "confirmTitle": "Vai sūtīt šo e-pastu vēlreiz?",
+      "confirm": "Tas pats e-pasts tiks nosūtīts uz {{address}} vēl vienu reizi. Žurnālā tas tiks ierakstīts kā jauns e-pasts.",
+      "sentTitle": "Nosūtīts vēlreiz",
+      "sent": "E-pasts vēlreiz nosūtīts uz {{address}}.",
+      "skippedTitle": "Nenosūtīts",
+      "skipped": "{{address}} ir atteicies saņemt šāda veida e-pastus, tāpēc tas netika nosūtīts.",
+      "failedTitle": "Nevarēja nosūtīt",
+      "failed": "E-pastu neizdevās nosūtīt vēlreiz."
+    },
+    "person": {
+      "heading": "E-pasti",
+      "seeAll": "Skatīt visus",
+      "none": "Šai personai nav nosūtīts neviens e-pasts.",
+      "noAddress": "Šai personai nav e-pasta adreses.",
+      "allMail": "Visi e-pasti",
+      "optedOut": "Šī persona lūgusi nesaņemt dažus e-pastus.",
+      "optOutsHint": "Atteikumu var atcelt tikai pati persona savā e-pasta preferenču lapā."
+    },
+    "catalog": {
+      "open": "E-pastu katalogs",
+      "title": "E-pastu katalogs",
+      "subtitle": "Katrs e-pasta veids, ko šī vietne var nosūtīt: kas to sūta, kad tas aiziet un kā izskatās.",
+      "empty": "E-pasti vēl nav aprakstīti.",
+      "notFound": "Šai vietnei nav tāda e-pasta.",
+      "previewFailed": "E-pastu neizdevās parādīt.",
+      "neverSent": "Vēl nav nosūtīts",
+      "aboutHeading": "Par šo e-pastu",
+      "previewHeading": "Kā izskatās",
+      "exampleData": "Parādīts ar piemēra datiem, nevis īstas personas datiem.",
+      "width": "Platums",
+      "desktop": "Dators",
+      "phone": "Tālrunis",
+      "seeSent": "Skatīt nosūtītos e-pastus",
+      "sendTest": "Nosūtīt man testu",
+      "testSentTitle": "Tests nosūtīts",
+      "testSent": "Testa kopija aizgāja uz {{address}}.",
+      "testFailed": "Testa e-pastu neizdevās nosūtīt.",
+      "sensitive": "Šis e-pasts satur pierakstīšanās, atiestatīšanas vai kopīgošanas saiti, tāpēc žurnāls glabā kam un kad, bet nekad saturu.",
+      "columns": {
+        "email": "E-pasts",
+        "when": "Kad tiek sūtīts",
+        "sent": "Nosūtīti {{days}} dienās",
+        "lastSent": "Pēdējoreiz nosūtīts"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Apstipriniet savu e-pasta adresi",
+          "trigger": "Kad kāds reģistrējas, lai apstiprinātu savu adresi."
+        },
+        "passwordReset": {
+          "label": "Atiestatiet savu paroli",
+          "trigger": "Kad kāds pieprasa jaunu paroli pierakstīšanās lapā vai savā personas ierakstā."
+        },
+        "emailChange": {
+          "label": "Apstipriniet savu jauno e-pasta adresi",
+          "trigger": "Kad kāds nomaina e-pasta adresi; tiek sūtīts uz jauno adresi."
+        },
+        "securityNotification": {
+          "label": "Drošības paziņojums",
+          "trigger": "Kad mainās konta parole vai e-pasts, vai tiek pierakstīts no jaunas vietas (Iestatījumi → Drošība)."
+        },
+        "fileShare": {
+          "label": "Ar jums ir kopīgots fails",
+          "trigger": "Kad kāds ar e-pastu kopīgo failu no Multivides."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Atgrieztie e-pasti vēl netiek uzraudzīti: šai vietnei nav atgriezto vēstuļu pastkastītes. Kamēr tā nav iestatīta, pasta servera pieņemts e-pasts tiek rādīts kā pieņemts, pat ja vēlāk tiek atgriezts.",
+      "settingsLink": "Iestatīt atgriezto vēstuļu pastkastīti",
+      "failed": "Atgriezto vēstuļu pastkastīti neizdevās nolasīt: {{error}}",
+      "lastRead": "Atgrieztie e-pasti tiek lasīti no atgriezto vēstuļu pastkastītes ik pēc 15 minūtēm. Pēdējoreiz lasīts: {{date}}.",
+      "notReadYet": "Atgrieztie e-pasti tiek lasīti no atgriezto vēstuļu pastkastītes ik pēc 15 minūtēm. Tā vēl nav lasīta."
     }
   }
 }

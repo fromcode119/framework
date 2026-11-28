@@ -793,7 +793,8 @@
       "activity": "Aktivita",
       "themes": "Témy",
       "settings": "Nastavenia",
-      "jobs": "Úlohy"
+      "jobs": "Úlohy",
+      "emails": "E-maily"
     },
     "panel": {
       "sites-list": "Všetky lokality",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Počet dní, počas ktorých sa uchovávajú behy úloh na pozadí (stránka Úlohy); čistí sa denne. Prázdne pole uchováva všetky behy navždy.",
       "jobRunsOlderThanDay": "Behy úloh staršie ako {{days}} dní budú odstránené.",
       "jobRunsAreKeptForever": "Behy úloh sa uchovávajú navždy.",
-      "failedToSaveJobRunRetention": "Nastavenie histórie behov úloh sa nepodarilo uložiť."
+      "failedToSaveJobRunRetention": "Nastavenie histórie behov úloh sa nepodarilo uložiť.",
+      "emailLogRetention": "Záznam e-mailov",
+      "daysOfEmailLog": "Koľko dní záznamu e-mailov (stránka E-maily) uchovávať; čistí sa denne. Prázdne pole uchováva všetky e-maily natrvalo.",
+      "emailsOlderThanDay": "E-maily staršie ako {{days}} dní budú zo záznamu odstránené.",
+      "emailsAreKeptForever": "Záznam e-mailov sa uchováva natrvalo.",
+      "failedToSaveEmailLogRetention": "Nastavenie záznamu e-mailov sa nepodarilo uložiť.",
+      "emailContentRetention": "Obsah e-mailov",
+      "daysOfEmailContent": "Koľko dní uchovávať text každého e-mailu. Potom záznam ponechá len komu, kedy a predmet. Prázdne pole uchováva obsah natrvalo.",
+      "emailContentOlderThanDay": "Obsah e-mailov starších ako {{days}} dní bude odstránený.",
+      "emailContentIsKeptForever": "Obsah e-mailov sa uchováva natrvalo.",
+      "failedToSaveEmailContentRetention": "Nastavenie obsahu e-mailov sa nepodarilo uložiť."
     },
     "integrations": {
       "displayNameOptional": "Zobrazovaný názov (voliteľné)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-maily",
+    "subtitleSite": "Každý e-mail, ktorý tento web odoslal, zadržal alebo ho nedokázal odoslať: komu, kedy, ktoré rozšírenie ho poslalo a čo v ňom stálo.",
+    "subtitlePlatform": "Každý e-mail, ktorý odoslala, zadržala alebo nedokázala odoslať samotná platforma. E-maily každého webu sú na stránke E-maily daného webu.",
+    "platform": "Platforma",
+    "noTemplate": "Bez šablóny",
+    "transactional": "Prevádzkový (nedá sa vypnúť)",
+    "loading": "Načítavajú sa e-maily…",
+    "failed": "E-maily sa nepodarilo načítať.",
+    "empty": "Zatiaľ neboli odoslané žiadne e-maily.",
+    "emptyFiltered": "Týmto filtrom nezodpovedá žiadny e-mail.",
+    "loadOlder": "Načítať staršie e-maily",
+    "notFound": "Tento e-mail nie je v zázname. Mohol byť odstránený podľa nastavenia doby uchovávania záznamu.",
+    "manageRequired": "Na otvorenie obsahu e-mailu je potrebné oprávnenie spravovať systém.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Obsah",
+    "contentRemoved": "Obsah tohto e-mailu sa neuchováva (odstránený {{date}}). Buď obsahoval odkaz na prihlásenie, obnovenie alebo zdieľanie, alebo je starší, než dovoľuje nastavenie uchovávania obsahu.",
+    "noContent": "Tento e-mail nemal žiadny obsah.",
+    "columns": {
+      "status": "Stav",
+      "sentAt": "Odoslané",
+      "to": "Komu",
+      "subject": "Predmet",
+      "sender": "Odoslal",
+      "template": "Šablóna"
+    },
+    "fields": {
+      "category": "Druh e-mailu",
+      "error": "Chyba",
+      "serverAnswer": "Odpoveď poštového servera",
+      "messageId": "ID správy",
+      "jobRun": "Spustenie úlohy na pozadí"
+    },
+    "filters": {
+      "all": "Všetky",
+      "allSenders": "Všetci odosielatelia",
+      "address": "Hľadať podľa e-mailovej adresy",
+      "onlyTemplate": "Iba e-maily druhu {{template}}.",
+      "showAll": "Zobraziť všetky e-maily",
+      "period": "Obdobie",
+      "anyTime": "Kedykoľvek",
+      "lastDay": "Posledných 24 hodín",
+      "lastWeek": "Posledných 7 dní",
+      "lastMonth": "Posledných 30 dní"
+    },
+    "status": {
+      "sent": "Prijatý poštovým serverom",
+      "suppressed": "Neodoslané: odhlásený z odberu",
+      "failed": "Zlyhalo",
+      "bounced": "Vrátené",
+      "complained": "Označené ako spam"
+    },
+    "resend": {
+      "button": "Odoslať znova",
+      "confirmTitle": "Odoslať tento e-mail znova?",
+      "confirm": "Ten istý e-mail pôjde na adresu {{address}} ešte raz. V zázname sa uloží ako nový e-mail.",
+      "sentTitle": "Odoslané znova",
+      "sent": "E-mail bol na adresu {{address}} odoslaný znova.",
+      "skippedTitle": "Neodoslané",
+      "skipped": "Adresa {{address}} sa odhlásila z tohto druhu e-mailov, preto nebol odoslaný.",
+      "failedTitle": "Odoslanie sa nepodarilo",
+      "failed": "E-mail sa nepodarilo odoslať znova."
+    },
+    "person": {
+      "heading": "E-maily",
+      "seeAll": "Zobraziť všetky",
+      "none": "Tejto osobe neboli odoslané žiadne e-maily.",
+      "noAddress": "Táto osoba nemá e-mailovú adresu.",
+      "allMail": "Všetky e-maily",
+      "optedOut": "Táto osoba požiadala, aby nedostávala niektoré e-maily.",
+      "optOutsHint": "Odhlásenie môže zrušiť len samotná osoba na stránke svojich e-mailových predvolieb."
+    },
+    "catalog": {
+      "open": "Katalóg e-mailov",
+      "title": "Katalóg e-mailov",
+      "subtitle": "Každý druh e-mailu, ktorý môže tento web odoslať: kto ho posiela, kedy odchádza a ako vyzerá.",
+      "empty": "Zatiaľ nie sú opísané žiadne e-maily.",
+      "notFound": "Tento web takýto e-mail nemá.",
+      "previewFailed": "E-mail sa nepodarilo zobraziť.",
+      "neverSent": "Zatiaľ neodoslané",
+      "aboutHeading": "O tomto e-maile",
+      "previewHeading": "Ako vyzerá",
+      "exampleData": "Zobrazené s ukážkovými údajmi, nie skutočnej osoby.",
+      "width": "Šírka",
+      "desktop": "Počítač",
+      "phone": "Telefón",
+      "seeSent": "Zobraziť odoslané e-maily",
+      "sendTest": "Poslať mi skúšku",
+      "testSentTitle": "Skúška odoslaná",
+      "testSent": "Skúšobná kópia odišla na {{address}}.",
+      "testFailed": "Skúšobný e-mail sa nepodarilo odoslať.",
+      "sensitive": "Tento e-mail nesie odkaz na prihlásenie, obnovenie alebo zdieľanie, preto záznam uchováva komu a kedy, ale nikdy obsah.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Kedy sa odosiela",
+        "sent": "Odoslané za {{days}} dní",
+        "lastSent": "Naposledy odoslané"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Potvrďte svoju e-mailovú adresu",
+          "trigger": "Keď sa niekto zaregistruje, aby potvrdil svoju adresu."
+        },
+        "passwordReset": {
+          "label": "Obnovte svoje heslo",
+          "trigger": "Keď niekto požiada o nové heslo, zo stránky prihlásenia alebo zo svojej osobnej karty."
+        },
+        "emailChange": {
+          "label": "Potvrďte novú e-mailovú adresu",
+          "trigger": "Keď si niekto zmení e-mailovú adresu; posiela sa na novú adresu."
+        },
+        "securityNotification": {
+          "label": "Bezpečnostné upozornenie",
+          "trigger": "Keď sa zmení heslo alebo e-mail účtu, alebo sa niekto prihlási z nového miesta (Nastavenia → Zabezpečenie)."
+        },
+        "fileShare": {
+          "label": "S vami bol zdieľaný súbor",
+          "trigger": "Keď niekto zdieľa súbor z Médií e-mailom."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Vrátené e-maily sa zatiaľ nesledujú: tento web nemá schránku pre vrátenú poštu. Kým nie je nastavená, e-mail prijatý poštovým serverom sa zobrazuje ako prijatý, aj keď sa neskôr vráti.",
+      "settingsLink": "Nastaviť schránku pre vrátenú poštu",
+      "failed": "Schránku pre vrátenú poštu sa nepodarilo prečítať: {{error}}",
+      "lastRead": "Vrátené e-maily sa zo schránky pre vrátenú poštu čítajú každých 15 minút. Naposledy: {{date}}.",
+      "notReadYet": "Vrátené e-maily sa zo schránky pre vrátenú poštu čítajú každých 15 minút. Zatiaľ nebola prečítaná."
     }
   }
 }

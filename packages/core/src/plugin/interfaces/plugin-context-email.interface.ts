@@ -1,5 +1,6 @@
 import type { IEmailDriver } from '@fromcode119/email';
 import type { IEmailCategory } from '@core/email/interfaces/email-category.interface';
+import type { IEmailTemplateDescriptor } from '@core/email/interfaces/email-template-descriptor.interface';
 import type { IPluginContextEmailInbox } from '@core/plugin/interfaces/plugin-context-email-inbox.interface';
 
 /**
@@ -18,6 +19,12 @@ export interface IPluginContextEmail extends IEmailDriver {
   /** Declare an opt-outable stream this plugin sends; call in `onInit`. */
   registerCategory(category: Omit<IEmailCategory, 'pluginSlug'>): void;
   listCategories(): IEmailCategory[];
+  /**
+   * Declare one kind of email this plugin sends, for the email catalog: its name, WHEN it goes out,
+   * example data, and the method on this plugin's API that renders it. Call in `onInit`; then pass
+   * `template: '<key>'` with every `send` of that email.
+   */
+  registerTemplate(template: IEmailTemplateDescriptor): void;
   /** The signed preferences/unsubscribe link for one address on this site; '' when it cannot be built. */
   buildPreferencesUrl(address: string): Promise<string>;
   /** The site's email logo as an absolute URL, or '' when the site has none. */

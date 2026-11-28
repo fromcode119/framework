@@ -85,6 +85,9 @@ export class TenantBespokePolicies {
       // row, written inside that site; a task's whole pass, and the platform's own tasks, are written
       // with no site bound and belong to the platform scope. A site sees the runs of its own work.
       new JournalPolicySpec('_system_scheduler_runs'),
+      // WHAT MAIL WENT OUT. Written inside the site whose driver sent it; the platform's own mail, sent
+      // with no site bound, belongs to the platform scope. A site sees only the emails it sent.
+      new JournalPolicySpec('_system_email_log'),
       // THE IN-APP INBOX, and a `journal` rather than a generic scoped table for a reason that cost
       // a rewrite: the generic predicate is strict equality, so a row whose `tenant_id` is NULL
       // matches in NO scope. `TenantAdoptionService` states the invariant — "one NULL row is a row

@@ -793,7 +793,8 @@
       "activity": "Activité",
       "themes": "Thèmes",
       "settings": "Paramètres",
-      "jobs": "Tâches"
+      "jobs": "Tâches",
+      "emails": "E-mails"
     },
     "panel": {
       "sites-list": "Tous les sites",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Nombre de jours d'exécutions de tâches en arrière-plan (page Tâches) à conserver, nettoyage quotidien. Laissez vide pour tout conserver indéfiniment.",
       "jobRunsOlderThanDay": "Les exécutions de plus de {{days}} jour(s) seront supprimées.",
       "jobRunsAreKeptForever": "Les exécutions de tâches sont conservées indéfiniment.",
-      "failedToSaveJobRunRetention": "Impossible d'enregistrer le paramètre d'historique des exécutions de tâches."
+      "failedToSaveJobRunRetention": "Impossible d'enregistrer le paramètre d'historique des exécutions de tâches.",
+      "emailLogRetention": "Journal des e-mails",
+      "daysOfEmailLog": "Nombre de jours de journal des e-mails (page E-mails) à conserver, nettoyé chaque jour. Vide : tous les e-mails sont conservés indéfiniment.",
+      "emailsOlderThanDay": "Les e-mails de plus de {{days}} jour(s) seront supprimés du journal.",
+      "emailsAreKeptForever": "Le journal des e-mails est conservé indéfiniment.",
+      "failedToSaveEmailLogRetention": "Impossible d'enregistrer le réglage du journal des e-mails.",
+      "emailContentRetention": "Contenu des e-mails",
+      "daysOfEmailContent": "Nombre de jours de conservation du texte de chaque e-mail. Ensuite, le journal garde qui, quand et l'objet. Vide : le contenu est conservé indéfiniment.",
+      "emailContentOlderThanDay": "Le contenu des e-mails de plus de {{days}} jour(s) sera supprimé.",
+      "emailContentIsKeptForever": "Le contenu des e-mails est conservé indéfiniment.",
+      "failedToSaveEmailContentRetention": "Impossible d'enregistrer le réglage du contenu des e-mails."
     },
     "integrations": {
       "displayNameOptional": "Nom d'affichage (facultatif)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mails",
+    "subtitleSite": "Tous les e-mails que ce site a envoyés, retenus ou n'a pas pu envoyer : à qui, quand, quelle extension l'a envoyé et ce qu'il disait.",
+    "subtitlePlatform": "Tous les e-mails que la plateforme elle-même a envoyés, retenus ou n'a pas pu envoyer. Les e-mails de chaque site se trouvent sur la page E-mails de ce site.",
+    "platform": "Plateforme",
+    "noTemplate": "Aucun modèle",
+    "transactional": "Transactionnel (ne peut pas être désactivé)",
+    "loading": "Chargement des e-mails…",
+    "failed": "Impossible de lire les e-mails.",
+    "empty": "Aucun e-mail n'a encore été envoyé.",
+    "emptyFiltered": "Aucun e-mail ne correspond à ces filtres.",
+    "loadOlder": "Charger les e-mails plus anciens",
+    "notFound": "Cet e-mail n'est pas dans le journal. Il a peut-être été supprimé par le réglage de conservation du journal.",
+    "manageRequired": "Ouvrir le contenu d'un e-mail demande l'autorisation de gérer le système.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Contenu",
+    "contentRemoved": "Le contenu de cet e-mail n'est pas conservé (supprimé le {{date}}). Soit il contenait un lien de connexion, de réinitialisation ou de partage, soit il est plus ancien que ne le permet le réglage de conservation du contenu.",
+    "noContent": "Cet e-mail n'avait pas de contenu.",
+    "columns": {
+      "status": "Statut",
+      "sentAt": "Envoyé",
+      "to": "À",
+      "subject": "Objet",
+      "sender": "Envoyé par",
+      "template": "Modèle"
+    },
+    "fields": {
+      "category": "Type d'e-mail",
+      "error": "Erreur",
+      "serverAnswer": "Réponse du serveur de messagerie",
+      "messageId": "ID du message",
+      "jobRun": "Exécution de la tâche en arrière-plan"
+    },
+    "filters": {
+      "all": "Tous",
+      "allSenders": "Tous les expéditeurs",
+      "address": "Rechercher par adresse e-mail",
+      "onlyTemplate": "Uniquement les e-mails de type {{template}}.",
+      "showAll": "Afficher tous les e-mails",
+      "period": "Période",
+      "anyTime": "Toute la période",
+      "lastDay": "Dernières 24 heures",
+      "lastWeek": "7 derniers jours",
+      "lastMonth": "30 derniers jours"
+    },
+    "status": {
+      "sent": "Accepté par le serveur de messagerie",
+      "suppressed": "Non envoyé : désinscrit",
+      "failed": "Échec",
+      "bounced": "Rejeté",
+      "complained": "Marqué comme spam"
+    },
+    "resend": {
+      "button": "Renvoyer",
+      "confirmTitle": "Renvoyer cet e-mail ?",
+      "confirm": "Le même e-mail repart vers {{address}} une fois de plus. Il est enregistré dans le journal comme un nouvel e-mail.",
+      "sentTitle": "Renvoyé",
+      "sent": "L'e-mail a de nouveau été envoyé à {{address}}.",
+      "skippedTitle": "Non envoyé",
+      "skipped": "{{address}} s'est désinscrit de ce type d'e-mails, il n'a donc pas été envoyé.",
+      "failedTitle": "Envoi impossible",
+      "failed": "L'e-mail n'a pas pu être renvoyé."
+    },
+    "person": {
+      "heading": "E-mails",
+      "seeAll": "Tout voir",
+      "none": "Aucun e-mail n'a été envoyé à cette personne.",
+      "noAddress": "Cette personne n'a pas d'adresse e-mail.",
+      "allMail": "Tous les e-mails",
+      "optedOut": "Cette personne a demandé à ne pas recevoir certains e-mails.",
+      "optOutsHint": "Seule la personne peut lever une désinscription, depuis sa page de préférences e-mail."
+    },
+    "catalog": {
+      "open": "Catalogue des e-mails",
+      "title": "Catalogue des e-mails",
+      "subtitle": "Tous les types d'e-mails que ce site peut envoyer : qui l'envoie, quand il part et à quoi il ressemble.",
+      "empty": "Aucun e-mail n'est encore déclaré.",
+      "notFound": "Ce site n'a pas cet e-mail.",
+      "previewFailed": "L'e-mail n'a pas pu être affiché.",
+      "neverSent": "Pas encore envoyé",
+      "aboutHeading": "À propos de cet e-mail",
+      "previewHeading": "Son aspect",
+      "exampleData": "Affiché avec des données d'exemple, pas celles d'une vraie personne.",
+      "width": "Largeur",
+      "desktop": "Ordinateur",
+      "phone": "Téléphone",
+      "seeSent": "Voir les e-mails envoyés",
+      "sendTest": "M'envoyer un test",
+      "testSentTitle": "Test envoyé",
+      "testSent": "Une copie de test est partie vers {{address}}.",
+      "testFailed": "L'e-mail de test n'a pas pu être envoyé.",
+      "sensitive": "Cet e-mail contient un lien de connexion, de réinitialisation ou de partage ; le journal garde donc à qui et quand, mais jamais son contenu.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Quand il est envoyé",
+        "sent": "Envoyés en {{days}} jours",
+        "lastSent": "Dernier envoi"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Confirmez votre adresse e-mail",
+          "trigger": "Quand quelqu'un s'inscrit, pour confirmer son adresse."
+        },
+        "passwordReset": {
+          "label": "Réinitialisez votre mot de passe",
+          "trigger": "Quand quelqu'un demande un nouveau mot de passe, depuis la page de connexion ou depuis sa fiche personne."
+        },
+        "emailChange": {
+          "label": "Confirmez votre nouvelle adresse e-mail",
+          "trigger": "Quand quelqu'un change son adresse e-mail ; envoyé à la nouvelle adresse."
+        },
+        "securityNotification": {
+          "label": "Avis de sécurité",
+          "trigger": "Quand le mot de passe ou l'e-mail d'un compte change, ou qu'une connexion vient d'un nouvel endroit (Paramètres → Sécurité)."
+        },
+        "fileShare": {
+          "label": "Un fichier a été partagé avec vous",
+          "trigger": "Quand quelqu'un partage un fichier depuis Médias par e-mail."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Les e-mails retournés ne sont pas encore suivis : ce site n'a pas de boîte pour les retours. Tant qu'elle n'est pas définie, un e-mail accepté par le serveur de messagerie apparaît comme accepté même s'il est retourné ensuite.",
+      "settingsLink": "Définir la boîte des retours",
+      "failed": "La boîte des retours n'a pas pu être lue : {{error}}",
+      "lastRead": "Les e-mails retournés sont lus dans la boîte des retours toutes les 15 minutes. Dernière lecture : {{date}}.",
+      "notReadYet": "Les e-mails retournés sont lus dans la boîte des retours toutes les 15 minutes. Elle n'a pas encore été lue."
     }
   }
 }

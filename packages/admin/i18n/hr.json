@@ -793,7 +793,8 @@
       "activity": "Aktivnost",
       "themes": "Teme",
       "settings": "Postavke",
-      "jobs": "Poslovi"
+      "jobs": "Poslovi",
+      "emails": "E-pošta"
     },
     "panel": {
       "sites-list": "Sva mjesta",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Broj dana čuvanja izvođenja pozadinskih poslova (stranica Poslovi), čisti se svakodnevno. Prazno polje čuva sva izvođenja zauvijek.",
       "jobRunsOlderThanDay": "Izvođenja poslova starija od {{days}} dana bit će uklonjena.",
       "jobRunsAreKeptForever": "Izvođenja poslova čuvaju se zauvijek.",
-      "failedToSaveJobRunRetention": "Spremanje postavke povijesti izvođenja poslova nije uspjelo."
+      "failedToSaveJobRunRetention": "Spremanje postavke povijesti izvođenja poslova nije uspjelo.",
+      "emailLogRetention": "Zapisnik e-pošte",
+      "daysOfEmailLog": "Koliko dana zapisnika e-pošte (stranica E-pošta) čuvati; čisti se svaki dan. Prazno čuva sve e-poruke trajno.",
+      "emailsOlderThanDay": "E-poruke starije od {{days}} dan(a) bit će uklonjene iz zapisnika.",
+      "emailsAreKeptForever": "Zapisnik e-pošte čuva se trajno.",
+      "failedToSaveEmailLogRetention": "Postavku zapisnika e-pošte nije bilo moguće spremiti.",
+      "emailContentRetention": "Sadržaj e-poruka",
+      "daysOfEmailContent": "Koliko dana čuvati ono što je pisalo u svakoj e-poruci. Nakon toga zapisnik čuva tko, kada i predmet. Prazno čuva sadržaj trajno.",
+      "emailContentOlderThanDay": "Sadržaj e-poruka stariji od {{days}} dan(a) bit će uklonjen.",
+      "emailContentIsKeptForever": "Sadržaj e-poruka čuva se trajno.",
+      "failedToSaveEmailContentRetention": "Postavku sadržaja e-poruka nije bilo moguće spremiti."
     },
     "integrations": {
       "displayNameOptional": "Prikazni naziv (neobavezno)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-pošta",
+    "subtitleSite": "Svaka e-poruka koju je ovo web-mjesto poslalo, zadržalo ili je nije uspjelo poslati: kome, kada, koje ju je proširenje poslalo i što je pisalo u njoj.",
+    "subtitlePlatform": "Svaka e-poruka koju je sama platforma poslala, zadržala ili je nije uspjela poslati. E-poruke svakog web-mjesta nalaze se na stranici E-pošta tog web-mjesta.",
+    "platform": "Platforma",
+    "noTemplate": "Bez predloška",
+    "transactional": "Servisna (ne može se isključiti)",
+    "loading": "Učitavanje e-poruka…",
+    "failed": "E-poruke nije bilo moguće pročitati.",
+    "empty": "Još nije poslana nijedna e-poruka.",
+    "emptyFiltered": "Nijedna e-poruka ne odgovara ovim filtrima.",
+    "loadOlder": "Učitaj starije e-poruke",
+    "notFound": "Ove e-poruke nema u zapisniku. Možda je uklonjena zbog postavke čuvanja zapisnika.",
+    "manageRequired": "Za otvaranje sadržaja e-poruke potrebna je dozvola za upravljanje sustavom.",
+    "detailHeading": "E-poruka",
+    "contentHeading": "Sadržaj",
+    "contentRemoved": "Sadržaj ove e-poruke se ne čuva (uklonjen {{date}}). Ili je sadržavala vezu za prijavu, ponovno postavljanje ili dijeljenje, ili je starija nego što dopušta postavka čuvanja sadržaja.",
+    "noContent": "Ova e-poruka nije imala sadržaj.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Poslano",
+      "to": "Prima",
+      "subject": "Predmet",
+      "sender": "Poslao",
+      "template": "Predložak"
+    },
+    "fields": {
+      "category": "Vrsta e-poruke",
+      "error": "Pogreška",
+      "serverAnswer": "Odgovor poslužitelja e-pošte",
+      "messageId": "ID poruke",
+      "jobRun": "Pokretanje pozadinskog posla"
+    },
+    "filters": {
+      "all": "Sve",
+      "allSenders": "Svi pošiljatelji",
+      "address": "Traži prema adresi e-pošte",
+      "onlyTemplate": "Samo e-poruke vrste {{template}}.",
+      "showAll": "Prikaži sve e-poruke",
+      "period": "Razdoblje",
+      "anyTime": "Bilo kada",
+      "lastDay": "Zadnja 24 sata",
+      "lastWeek": "Zadnjih 7 dana",
+      "lastMonth": "Zadnjih 30 dana"
+    },
+    "status": {
+      "sent": "Prihvatio poslužitelj e-pošte",
+      "suppressed": "Nije poslano: odjavljen",
+      "failed": "Nije uspjelo",
+      "bounced": "Vraćeno",
+      "complained": "Označeno kao neželjena pošta"
+    },
+    "resend": {
+      "button": "Pošalji ponovno",
+      "confirmTitle": "Poslati ovu e-poruku ponovno?",
+      "confirm": "Ista e-poruka ide na {{address}} još jednom. U zapisniku se bilježi kao nova e-poruka.",
+      "sentTitle": "Poslano ponovno",
+      "sent": "E-poruka je ponovno poslana na {{address}}.",
+      "skippedTitle": "Nije poslano",
+      "skipped": "{{address}} se odjavio/la s ove vrste e-poruka, pa nije poslana.",
+      "failedTitle": "Slanje nije uspjelo",
+      "failed": "E-poruku nije bilo moguće ponovno poslati."
+    },
+    "person": {
+      "heading": "E-pošta",
+      "seeAll": "Prikaži sve",
+      "none": "Ovoj osobi nije poslana nijedna e-poruka.",
+      "noAddress": "Ova osoba nema adresu e-pošte.",
+      "allMail": "Sve e-poruke",
+      "optedOut": "Ova osoba je zatražila da ne prima neke e-poruke.",
+      "optOutsHint": "Odjavu može poništiti samo sama osoba, na stranici svojih postavki e-pošte."
+    },
+    "catalog": {
+      "open": "Katalog e-poruka",
+      "title": "Katalog e-poruka",
+      "subtitle": "Svaka vrsta e-poruke koju ovo web-mjesto može poslati: tko je šalje, kada odlazi i kako izgleda.",
+      "empty": "Još nije opisana nijedna e-poruka.",
+      "notFound": "Ovo web-mjesto nema takvu e-poruku.",
+      "previewFailed": "E-poruku nije bilo moguće prikazati.",
+      "neverSent": "Još nije poslano",
+      "aboutHeading": "O ovoj e-poruci",
+      "previewHeading": "Kako izgleda",
+      "exampleData": "Prikazano s primjerom podataka, ne stvarne osobe.",
+      "width": "Širina",
+      "desktop": "Računalo",
+      "phone": "Telefon",
+      "seeSent": "Pogledaj poslane e-poruke",
+      "sendTest": "Pošalji mi test",
+      "testSentTitle": "Test poslan",
+      "testSent": "Probna kopija otišla je na {{address}}.",
+      "testFailed": "Probnu e-poruku nije bilo moguće poslati.",
+      "sensitive": "Ova e-poruka nosi vezu za prijavu, ponovno postavljanje ili dijeljenje, pa zapisnik čuva kome i kada, ali nikada sadržaj.",
+      "columns": {
+        "email": "E-poruka",
+        "when": "Kada se šalje",
+        "sent": "Poslano u {{days}} dana",
+        "lastSent": "Zadnje slanje"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Potvrdite svoju adresu e-pošte",
+          "trigger": "Kada se netko registrira, radi potvrde adrese."
+        },
+        "passwordReset": {
+          "label": "Ponovno postavite lozinku",
+          "trigger": "Kada netko zatraži novu lozinku, sa stranice za prijavu ili iz svog zapisa o osobi."
+        },
+        "emailChange": {
+          "label": "Potvrdite svoju novu adresu e-pošte",
+          "trigger": "Kada netko promijeni adresu e-pošte; šalje se na novu adresu."
+        },
+        "securityNotification": {
+          "label": "Sigurnosna obavijest",
+          "trigger": "Kada se promijeni lozinka ili e-pošta računa ili se netko prijavi s novog mjesta (Postavke → Sigurnost)."
+        },
+        "fileShare": {
+          "label": "S vama je podijeljena datoteka",
+          "trigger": "Kada netko podijeli datoteku iz Medija e-poštom."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Vraćene e-poruke još se ne prate: ovo web-mjesto nema sandučić za vraćenu poštu. Dok se ne postavi, e-poruka koju je prihvatio poslužitelj e-pošte prikazuje se kao prihvaćena čak i ako se kasnije vrati.",
+      "settingsLink": "Postavi sandučić za vraćenu poštu",
+      "failed": "Sandučić za vraćenu poštu nije bilo moguće pročitati: {{error}}",
+      "lastRead": "Vraćene e-poruke čitaju se iz sandučića za vraćenu poštu svakih 15 minuta. Zadnje čitanje: {{date}}.",
+      "notReadYet": "Vraćene e-poruke čitaju se iz sandučića za vraćenu poštu svakih 15 minuta. Još nije pročitan."
     }
   }
 }

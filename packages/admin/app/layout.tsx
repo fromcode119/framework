@@ -3,6 +3,7 @@ import { connection } from 'next/server';
 import { headers } from 'next/headers';
 import '@/app/admin.css';
 import '@/app/settings.css';
+import '@/app/emails/emails.css';
 import '@/app/login/login.css';
 import { ClientLayout } from '@/app/components/view/client-layout.client';
 import { PwaRegister } from '@/app/components/view/pwa-register.client';

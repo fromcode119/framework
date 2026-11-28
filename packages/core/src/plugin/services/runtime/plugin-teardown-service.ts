@@ -2,6 +2,7 @@ import { PluginArchiveInstallerService } from '@core/plugin/services/installatio
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { CapabilityProviderRegistry } from '@core/plugin/capabilities/capability-provider-registry';
+import { EmailTemplateRegistry } from '@core/email/email-template-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 
@@ -64,6 +65,8 @@ export class PluginTeardownService {
       // A disabled plugin stops being a provider, so a consumer asking for a capability never gets a
       // dead plugin back.
       CapabilityProviderRegistry.withdraw(slug);
+      // Nor does the email catalog list emails a disabled plugin can no longer send.
+      EmailTemplateRegistry.unregisterBySender(slug);
       if (options.persistState !== false) {
         await this.registry.savePluginState(slug, PluginState.INACTIVE, undefined, plugin.manifest.version);
         await this.registry.writeLog('INFO', `Plugin "${slug}" disabled.`, slug);
@@ -108,6 +111,7 @@ export class PluginTeardownService {
     const pluginPath = plugin?.path;
     this.manager.plugins.delete(slug);
     this.manager.middlewares.unregisterByPlugin(slug);
+    EmailTemplateRegistry.unregisterBySender(slug);
 
     this.activation.cleanupAfterDelete(slug, pluginPath, plugin?.manifest.main || PluginPackageLayout.SERVER_ENTRY);
   }

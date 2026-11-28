@@ -793,7 +793,8 @@
       "activity": "Aktivitet",
       "themes": "Teman",
       "settings": "Inställningar",
-      "jobs": "Jobb"
+      "jobs": "Jobb",
+      "emails": "E-post"
     },
     "panel": {
       "sites-list": "Alla webbplatser",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Antal dagar som körningar av bakgrundsjobb (sidan Jobb) sparas; rensas dagligen. Lämna tomt för att spara alla körningar för alltid.",
       "jobRunsOlderThanDay": "Jobbkörningar äldre än {{days}} dag(ar) tas bort.",
       "jobRunsAreKeptForever": "Jobbkörningar sparas för alltid.",
-      "failedToSaveJobRunRetention": "Det gick inte att spara inställningen för jobbhistorik."
+      "failedToSaveJobRunRetention": "Det gick inte att spara inställningen för jobbhistorik.",
+      "emailLogRetention": "E-postlogg",
+      "daysOfEmailLog": "Hur många dagar av e-postloggen (sidan E-post) som sparas; rensas dagligen. Tomt fält sparar all e-post för alltid.",
+      "emailsOlderThanDay": "E-post som är äldre än {{days}} dag(ar) tas bort från loggen.",
+      "emailsAreKeptForever": "E-postloggen sparas för alltid.",
+      "failedToSaveEmailLogRetention": "Inställningen för e-postloggen kunde inte sparas.",
+      "emailContentRetention": "E-postinnehåll",
+      "daysOfEmailContent": "Hur många dagar innehållet i varje meddelande sparas. Efter det behåller loggen vem, när och ämnet. Tomt fält sparar innehållet för alltid.",
+      "emailContentOlderThanDay": "E-postinnehåll som är äldre än {{days}} dag(ar) tas bort.",
+      "emailContentIsKeptForever": "E-postinnehåll sparas för alltid.",
+      "failedToSaveEmailContentRetention": "Inställningen för e-postinnehåll kunde inte sparas."
     },
     "integrations": {
       "displayNameOptional": "Visningsnamn (valfritt)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-post",
+    "subtitleSite": "Alla e-postmeddelanden som den här webbplatsen har skickat, hållit tillbaka eller inte kunnat skicka: till vem, när, vilket tillägg som skickade dem och vad de innehöll.",
+    "subtitlePlatform": "Alla e-postmeddelanden som plattformen själv har skickat, hållit tillbaka eller inte kunnat skicka. Varje webbplats egna meddelanden finns på webbplatsens sida E-post.",
+    "platform": "Plattform",
+    "noTemplate": "Ingen mall",
+    "transactional": "Systemmeddelande (kan inte stängas av)",
+    "loading": "Läser in e-post…",
+    "failed": "E-postmeddelandena kunde inte läsas.",
+    "empty": "Ingen e-post har skickats ännu.",
+    "emptyFiltered": "Inget e-postmeddelande matchar de här filtren.",
+    "loadOlder": "Läs in äldre e-post",
+    "notFound": "Det här meddelandet finns inte i loggen. Det kan ha tagits bort av inställningen för hur länge loggen sparas.",
+    "manageRequired": "För att öppna innehållet i ett meddelande krävs behörighet att hantera systemet.",
+    "detailHeading": "E-postmeddelande",
+    "contentHeading": "Innehåll",
+    "contentRemoved": "Innehållet i det här meddelandet sparas inte (borttaget {{date}}). Antingen innehöll det en länk för inloggning, återställning eller delning, eller så är det äldre än inställningen för innehåll tillåter.",
+    "noContent": "Det här meddelandet hade inget innehåll.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Skickat",
+      "to": "Till",
+      "subject": "Ämne",
+      "sender": "Skickat av",
+      "template": "Mall"
+    },
+    "fields": {
+      "category": "Typ av e-post",
+      "error": "Fel",
+      "serverAnswer": "Mailserverns svar",
+      "messageId": "Meddelande-ID",
+      "jobRun": "Körning av bakgrundsjobb"
+    },
+    "filters": {
+      "all": "Alla",
+      "allSenders": "Alla avsändare",
+      "address": "Sök på e-postadress",
+      "onlyTemplate": "Bara e-post av typen {{template}}.",
+      "showAll": "Visa all e-post",
+      "period": "Period",
+      "anyTime": "Alla tider",
+      "lastDay": "Senaste 24 timmarna",
+      "lastWeek": "Senaste 7 dagarna",
+      "lastMonth": "Senaste 30 dagarna"
+    },
+    "status": {
+      "sent": "Godkänt av mailservern",
+      "suppressed": "Inte skickat: avregistrerad",
+      "failed": "Misslyckades",
+      "bounced": "Studsade",
+      "complained": "Markerat som skräppost"
+    },
+    "resend": {
+      "button": "Skicka igen",
+      "confirmTitle": "Skicka det här meddelandet igen?",
+      "confirm": "Samma meddelande skickas till {{address}} en gång till. Det sparas i loggen som ett nytt meddelande.",
+      "sentTitle": "Skickat igen",
+      "sent": "Meddelandet skickades till {{address}} igen.",
+      "skippedTitle": "Inte skickat",
+      "skipped": "{{address}} har avregistrerat sig från den här typen av e-post, så det skickades inte.",
+      "failedTitle": "Kunde inte skickas",
+      "failed": "Meddelandet kunde inte skickas igen."
+    },
+    "person": {
+      "heading": "E-post",
+      "seeAll": "Visa alla",
+      "none": "Ingen e-post har skickats till den här personen.",
+      "noAddress": "Den här personen har ingen e-postadress.",
+      "allMail": "All e-post",
+      "optedOut": "Den här personen har bett att slippa en del e-post.",
+      "optOutsHint": "Bara personen själv kan häva en avregistrering, från sin sida för e-postinställningar."
+    },
+    "catalog": {
+      "open": "E-postkatalog",
+      "title": "E-postkatalog",
+      "subtitle": "Alla typer av e-post som den här webbplatsen kan skicka: vem som skickar dem, när de går iväg och hur de ser ut.",
+      "empty": "Ingen e-post är beskriven ännu.",
+      "notFound": "Den här webbplatsen har inget sådant meddelande.",
+      "previewFailed": "E-postmeddelandet kunde inte visas.",
+      "neverSent": "Inte skickat ännu",
+      "aboutHeading": "Om det här meddelandet",
+      "previewHeading": "Så ser det ut",
+      "exampleData": "Visas med exempeldata, inte en riktig persons.",
+      "width": "Bredd",
+      "desktop": "Dator",
+      "phone": "Telefon",
+      "seeSent": "Se skickad e-post",
+      "sendTest": "Skicka ett test till mig",
+      "testSentTitle": "Test skickat",
+      "testSent": "En testkopia gick till {{address}}.",
+      "testFailed": "Testmeddelandet kunde inte skickas.",
+      "sensitive": "Det här meddelandet innehåller en länk för inloggning, återställning eller delning, så loggen sparar till vem och när, men aldrig innehållet.",
+      "columns": {
+        "email": "E-postmeddelande",
+        "when": "När det skickas",
+        "sent": "Skickat på {{days}} dagar",
+        "lastSent": "Senast skickat"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Bekräfta din e-postadress",
+          "trigger": "När någon registrerar sig, för att bekräfta adressen."
+        },
+        "passwordReset": {
+          "label": "Återställ ditt lösenord",
+          "trigger": "När någon ber om ett nytt lösenord, från inloggningssidan eller från sin personpost."
+        },
+        "emailChange": {
+          "label": "Bekräfta din nya e-postadress",
+          "trigger": "När någon ändrar sin e-postadress; skickas till den nya adressen."
+        },
+        "securityNotification": {
+          "label": "Säkerhetsmeddelande",
+          "trigger": "När lösenordet eller e-posten för ett konto ändras, eller någon loggar in från en ny plats (Inställningar → Säkerhet)."
+        },
+        "fileShare": {
+          "label": "En fil har delats med dig",
+          "trigger": "När någon delar en fil från Media via e-post."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Returnerad e-post spåras inte ännu: den här webbplatsen har ingen brevlåda för returer. Tills en är angiven visas ett meddelande som mailservern har godkänt som godkänt, även om det senare studsar tillbaka.",
+      "settingsLink": "Ange brevlådan för returer",
+      "failed": "Brevlådan för returer kunde inte läsas: {{error}}",
+      "lastRead": "Returnerad e-post läses från brevlådan för returer var 15:e minut. Senast läst: {{date}}.",
+      "notReadYet": "Returnerad e-post läses från brevlådan för returer var 15:e minut. Den har inte lästs ännu."
     }
   }
 }

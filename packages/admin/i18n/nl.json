@@ -793,7 +793,8 @@
       "activity": "Activiteit",
       "themes": "Thema's",
       "settings": "Instellingen",
-      "jobs": "Taken"
+      "jobs": "Taken",
+      "emails": "E-mails"
     },
     "panel": {
       "sites-list": "Alle sites",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Aantal dagen dat uitvoeringen van achtergrondtaken (pagina Taken) worden bewaard; dagelijks opgeschoond. Leeg laten bewaart alle uitvoeringen voor altijd.",
       "jobRunsOlderThanDay": "Taakuitvoeringen ouder dan {{days}} dag(en) worden verwijderd.",
       "jobRunsAreKeptForever": "Taakuitvoeringen worden voor altijd bewaard.",
-      "failedToSaveJobRunRetention": "Opslaan van de instelling voor taakgeschiedenis is mislukt."
+      "failedToSaveJobRunRetention": "Opslaan van de instelling voor taakgeschiedenis is mislukt.",
+      "emailLogRetention": "E-maillogboek",
+      "daysOfEmailLog": "Hoeveel dagen van het e-maillogboek (pagina E-mails) worden bewaard; wordt dagelijks opgeschoond. Leeg laten bewaart alle e-mails voor altijd.",
+      "emailsOlderThanDay": "E-mails ouder dan {{days}} dag(en) worden uit het logboek verwijderd.",
+      "emailsAreKeptForever": "Het e-maillogboek wordt voor altijd bewaard.",
+      "failedToSaveEmailLogRetention": "De instelling voor het e-maillogboek kon niet worden opgeslagen.",
+      "emailContentRetention": "E-mailinhoud",
+      "daysOfEmailContent": "Hoeveel dagen bewaard wordt wat elke e-mail zei. Daarna bewaart het logboek wie, wanneer en het onderwerp. Leeg laten bewaart de inhoud voor altijd.",
+      "emailContentOlderThanDay": "E-mailinhoud ouder dan {{days}} dag(en) wordt verwijderd.",
+      "emailContentIsKeptForever": "E-mailinhoud wordt voor altijd bewaard.",
+      "failedToSaveEmailContentRetention": "De instelling voor e-mailinhoud kon niet worden opgeslagen."
     },
     "integrations": {
       "displayNameOptional": "Weergavenaam (optioneel)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mails",
+    "subtitleSite": "Elke e-mail die deze site heeft verstuurd, tegengehouden of niet kon versturen: naar wie, wanneer, welke extensie hem verstuurde en wat erin stond.",
+    "subtitlePlatform": "Elke e-mail die het platform zelf heeft verstuurd, tegengehouden of niet kon versturen. De e-mails van elke site staan op de pagina E-mails van die site.",
+    "platform": "Platform",
+    "noTemplate": "Geen sjabloon",
+    "transactional": "Transactioneel (kan niet worden uitgeschakeld)",
+    "loading": "E-mails laden…",
+    "failed": "De e-mails konden niet worden gelezen.",
+    "empty": "Er zijn nog geen e-mails verstuurd.",
+    "emptyFiltered": "Geen e-mails komen overeen met deze filters.",
+    "loadOlder": "Oudere e-mails laden",
+    "notFound": "Deze e-mail staat niet in het logboek. Hij is mogelijk verwijderd door de bewaarinstelling van het logboek.",
+    "manageRequired": "Om de inhoud van een e-mail te openen is toestemming nodig om het systeem te beheren.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Inhoud",
+    "contentRemoved": "De inhoud van deze e-mail wordt niet bewaard (verwijderd op {{date}}). Of er stond een link in om in te loggen, opnieuw in te stellen of te delen, of hij is ouder dan de instelling voor het bewaren van inhoud toestaat.",
+    "noContent": "Deze e-mail had geen inhoud.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Verstuurd",
+      "to": "Aan",
+      "subject": "Onderwerp",
+      "sender": "Verstuurd door",
+      "template": "Sjabloon"
+    },
+    "fields": {
+      "category": "Soort e-mail",
+      "error": "Fout",
+      "serverAnswer": "Antwoord van de mailserver",
+      "messageId": "Bericht-ID",
+      "jobRun": "Uitvoering van de achtergrondtaak"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSenders": "Alle afzenders",
+      "address": "Zoeken op e-mailadres",
+      "onlyTemplate": "Alleen e-mails van het soort {{template}}.",
+      "showAll": "Alle e-mails tonen",
+      "period": "Periode",
+      "anyTime": "Altijd",
+      "lastDay": "Laatste 24 uur",
+      "lastWeek": "Laatste 7 dagen",
+      "lastMonth": "Laatste 30 dagen"
+    },
+    "status": {
+      "sent": "Geaccepteerd door de mailserver",
+      "suppressed": "Niet verstuurd: uitgeschreven",
+      "failed": "Mislukt",
+      "bounced": "Teruggekaatst",
+      "complained": "Gemarkeerd als spam"
+    },
+    "resend": {
+      "button": "Opnieuw versturen",
+      "confirmTitle": "Deze e-mail opnieuw versturen?",
+      "confirm": "Dezelfde e-mail gaat nog een keer naar {{address}}. In het logboek wordt hij vastgelegd als een nieuwe e-mail.",
+      "sentTitle": "Opnieuw verstuurd",
+      "sent": "De e-mail is opnieuw naar {{address}} verstuurd.",
+      "skippedTitle": "Niet verstuurd",
+      "skipped": "{{address}} heeft zich uitgeschreven voor dit soort e-mails, dus hij is niet verstuurd.",
+      "failedTitle": "Versturen niet gelukt",
+      "failed": "De e-mail kon niet opnieuw worden verstuurd."
+    },
+    "person": {
+      "heading": "E-mails",
+      "seeAll": "Alles bekijken",
+      "none": "Aan deze persoon zijn nog geen e-mails verstuurd.",
+      "noAddress": "Deze persoon heeft geen e-mailadres.",
+      "allMail": "Alle e-mail",
+      "optedOut": "Deze persoon heeft gevraagd sommige e-mails niet te ontvangen.",
+      "optOutsHint": "Alleen de persoon zelf kan een uitschrijving ongedaan maken, op de eigen pagina met e-mailvoorkeuren."
+    },
+    "catalog": {
+      "open": "E-mailcatalogus",
+      "title": "E-mailcatalogus",
+      "subtitle": "Elk soort e-mail dat deze site kan versturen: wie hem verstuurt, wanneer hij weggaat en hoe hij eruitziet.",
+      "empty": "Er zijn nog geen e-mails vastgelegd.",
+      "notFound": "Deze site heeft zo'n e-mail niet.",
+      "previewFailed": "De e-mail kon niet worden getoond.",
+      "neverSent": "Nog niet verstuurd",
+      "aboutHeading": "Over deze e-mail",
+      "previewHeading": "Hoe hij eruitziet",
+      "exampleData": "Getoond met voorbeeldgegevens, niet van een echte persoon.",
+      "width": "Breedte",
+      "desktop": "Computer",
+      "phone": "Telefoon",
+      "seeSent": "Verstuurde e-mails bekijken",
+      "sendTest": "Stuur mij een test",
+      "testSentTitle": "Test verstuurd",
+      "testSent": "Een testkopie ging naar {{address}}.",
+      "testFailed": "De test-e-mail kon niet worden verstuurd.",
+      "sensitive": "Deze e-mail bevat een link om in te loggen, opnieuw in te stellen of te delen, dus het e-maillogboek bewaart wie en wanneer, maar nooit de inhoud.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Wanneer hij wordt verstuurd",
+        "sent": "Verstuurd in {{days}} dagen",
+        "lastSent": "Laatst verstuurd"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Bevestig je e-mailadres",
+          "trigger": "Wanneer iemand zich registreert, om het adres te bevestigen."
+        },
+        "passwordReset": {
+          "label": "Stel je wachtwoord opnieuw in",
+          "trigger": "Wanneer iemand een nieuw wachtwoord vraagt, vanaf de inlogpagina of vanuit zijn persoonsgegevens."
+        },
+        "emailChange": {
+          "label": "Bevestig je nieuwe e-mailadres",
+          "trigger": "Wanneer iemand zijn e-mailadres wijzigt; verstuurd naar het nieuwe adres."
+        },
+        "securityNotification": {
+          "label": "Beveiligingsmelding",
+          "trigger": "Wanneer het wachtwoord of de e-mail van een account verandert, of er vanaf een nieuwe plek wordt ingelogd (Instellingen → Beveiliging)."
+        },
+        "fileShare": {
+          "label": "Er is een bestand met je gedeeld",
+          "trigger": "Wanneer iemand een bestand uit Media per e-mail deelt."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Teruggekomen e-mails worden nog niet gevolgd: deze site heeft geen postbus voor teruggekomen berichten. Zolang die niet is ingesteld, staat een e-mail die de mailserver heeft geaccepteerd als geaccepteerd, ook als hij later terugkomt.",
+      "settingsLink": "Postbus voor teruggekomen berichten instellen",
+      "failed": "De postbus voor teruggekomen berichten kon niet worden gelezen: {{error}}",
+      "lastRead": "Teruggekomen e-mails worden elke 15 minuten uit de postbus voor teruggekomen berichten gelezen. Laatst gelezen: {{date}}.",
+      "notReadYet": "Teruggekomen e-mails worden elke 15 minuten uit de postbus voor teruggekomen berichten gelezen. Hij is nog niet gelezen."
     }
   }
 }

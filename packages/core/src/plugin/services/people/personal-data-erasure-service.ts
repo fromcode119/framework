@@ -104,6 +104,8 @@ export class PersonalDataErasureService {
       { key: PersonalDataDatasetKey.SYSTEM_LOG.value, label: 'System log', fields: ['context.userId', 'context.email', 'context.ip', 'message'],
         strategies: [PersonalDataErasureService.ANONYMISE, PersonalDataErasureService.RETAIN],
         defaultStrategy: PersonalDataErasureService.ANONYMISE },
+      { key: PersonalDataDatasetKey.EMAIL_LOG.value, label: 'Emails sent to the subject', fields: ['toAddress', 'subject', 'html', 'text'],
+        strategies: [PersonalDataErasureService.DELETE, PersonalDataErasureService.RETAIN], defaultStrategy: PersonalDataErasureService.DELETE },
     ];
   }
 
@@ -118,6 +120,8 @@ export class PersonalDataErasureService {
       case PersonalDataDatasetKey.SESSIONS.value: return this.reader.byUser(SystemConstants.TABLE.SESSIONS, subject);
       case PersonalDataDatasetKey.ROLES.value: return this.reader.byUser(SystemConstants.TABLE.TENANT_MEMBERSHIPS, subject);
       case PersonalDataDatasetKey.RECORD_VERSIONS.value: return this.reader.findVersions(subject);
+      // One recipient per row, so unlike the journals these rows are the subject's alone.
+      case PersonalDataDatasetKey.EMAIL_LOG.value: return this.reader.findEmails(subject);
       case PersonalDataDatasetKey.AUDIT_LOG.value:
       case PersonalDataDatasetKey.SYSTEM_LOG.value: {
         // The journals are exported as COUNTS, not rows. They carry other people's actions in the

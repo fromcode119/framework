@@ -793,7 +793,8 @@
       "activity": "Aktivitet",
       "themes": "Temaer",
       "settings": "Innstillinger",
-      "jobs": "Jobber"
+      "jobs": "Jobber",
+      "emails": "E-poster"
     },
     "panel": {
       "sites-list": "Alle nettsteder",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Antall dager med kjøringer av bakgrunnsjobber (Jobber-siden) som skal beholdes, ryddes daglig. Tomt felt beholder alle kjøringer for alltid.",
       "jobRunsOlderThanDay": "Jobbkjøringer eldre enn {{days}} dag(er) blir fjernet.",
       "jobRunsAreKeptForever": "Jobbkjøringer beholdes for alltid.",
-      "failedToSaveJobRunRetention": "Kunne ikke lagre innstillingen for jobbhistorikk."
+      "failedToSaveJobRunRetention": "Kunne ikke lagre innstillingen for jobbhistorikk.",
+      "emailLogRetention": "E-postlogg",
+      "daysOfEmailLog": "Hvor mange dager av e-postloggen (siden E-poster) som lagres; ryddes daglig. Tomt felt beholder alle e-poster for alltid.",
+      "emailsOlderThanDay": "E-poster eldre enn {{days}} dag(er) fjernes fra loggen.",
+      "emailsAreKeptForever": "E-postloggen beholdes for alltid.",
+      "failedToSaveEmailLogRetention": "Innstillingen for e-postloggen kunne ikke lagres.",
+      "emailContentRetention": "E-postinnhold",
+      "daysOfEmailContent": "Hvor mange dager innholdet i hver e-post lagres. Etter det beholder loggen hvem, når og emnet. Tomt felt beholder innholdet for alltid.",
+      "emailContentOlderThanDay": "E-postinnhold eldre enn {{days}} dag(er) fjernes.",
+      "emailContentIsKeptForever": "E-postinnhold beholdes for alltid.",
+      "failedToSaveEmailContentRetention": "Innstillingen for e-postinnhold kunne ikke lagres."
     },
     "integrations": {
       "displayNameOptional": "Visningsnavn (valgfritt)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-poster",
+    "subtitleSite": "Alle e-poster dette nettstedet har sendt, holdt tilbake eller ikke klart å sende: til hvem, når, hvilken utvidelse som sendte dem og hva de inneholdt.",
+    "subtitlePlatform": "Alle e-poster plattformen selv har sendt, holdt tilbake eller ikke klart å sende. Hvert nettsteds egne e-poster ligger på siden E-poster for det nettstedet.",
+    "platform": "Plattform",
+    "noTemplate": "Ingen mal",
+    "transactional": "Systemmelding (kan ikke slås av)",
+    "loading": "Laster e-poster…",
+    "failed": "E-postene kunne ikke leses.",
+    "empty": "Ingen e-poster er sendt ennå.",
+    "emptyFiltered": "Ingen e-poster samsvarer med disse filtrene.",
+    "loadOlder": "Last inn eldre e-poster",
+    "notFound": "Denne e-posten er ikke i loggen. Den kan ha blitt fjernet av innstillingen for hvor lenge loggen lagres.",
+    "manageRequired": "For å åpne innholdet i en e-post kreves tillatelse til å administrere systemet.",
+    "detailHeading": "E-post",
+    "contentHeading": "Innhold",
+    "contentRemoved": "Innholdet i denne e-posten lagres ikke (fjernet {{date}}). Enten inneholdt den en lenke for innlogging, tilbakestilling eller deling, eller så er den eldre enn innstillingen for innhold tillater.",
+    "noContent": "Denne e-posten hadde intet innhold.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Sendt",
+      "to": "Til",
+      "subject": "Emne",
+      "sender": "Sendt av",
+      "template": "Mal"
+    },
+    "fields": {
+      "category": "E-posttype",
+      "error": "Feil",
+      "serverAnswer": "Svar fra e-postserveren",
+      "messageId": "Meldings-ID",
+      "jobRun": "Kjøring av bakgrunnsjobb"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSenders": "Alle avsendere",
+      "address": "Søk etter e-postadresse",
+      "onlyTemplate": "Bare e-poster av typen {{template}}.",
+      "showAll": "Vis alle e-poster",
+      "period": "Periode",
+      "anyTime": "Når som helst",
+      "lastDay": "Siste 24 timer",
+      "lastWeek": "Siste 7 dager",
+      "lastMonth": "Siste 30 dager"
+    },
+    "status": {
+      "sent": "Akseptert av e-postserveren",
+      "suppressed": "Ikke sendt: avmeldt",
+      "failed": "Mislyktes",
+      "bounced": "Returnert",
+      "complained": "Markert som søppelpost"
+    },
+    "resend": {
+      "button": "Send på nytt",
+      "confirmTitle": "Sende denne e-posten på nytt?",
+      "confirm": "Den samme e-posten sendes til {{address}} én gang til. Den blir lagret i loggen som en ny e-post.",
+      "sentTitle": "Sendt på nytt",
+      "sent": "E-posten ble sendt til {{address}} på nytt.",
+      "skippedTitle": "Ikke sendt",
+      "skipped": "{{address}} har meldt seg av denne typen e-post, så den ble ikke sendt.",
+      "failedTitle": "Kunne ikke sendes",
+      "failed": "E-posten kunne ikke sendes på nytt."
+    },
+    "person": {
+      "heading": "E-poster",
+      "seeAll": "Se alle",
+      "none": "Det er ikke sendt noen e-poster til denne personen.",
+      "noAddress": "Denne personen har ingen e-postadresse.",
+      "allMail": "All e-post",
+      "optedOut": "Denne personen har bedt om å slippe noen e-poster.",
+      "optOutsHint": "Bare personen selv kan oppheve en avmelding, fra siden for sine e-postinnstillinger."
+    },
+    "catalog": {
+      "open": "E-postkatalog",
+      "title": "E-postkatalog",
+      "subtitle": "Alle typer e-post dette nettstedet kan sende: hvem som sender dem, når de sendes og hvordan de ser ut.",
+      "empty": "Ingen e-poster er beskrevet ennå.",
+      "notFound": "Dette nettstedet har ingen slik e-post.",
+      "previewFailed": "E-posten kunne ikke vises.",
+      "neverSent": "Ikke sendt ennå",
+      "aboutHeading": "Om denne e-posten",
+      "previewHeading": "Slik ser den ut",
+      "exampleData": "Vist med eksempeldata, ikke en ekte persons.",
+      "width": "Bredde",
+      "desktop": "Datamaskin",
+      "phone": "Telefon",
+      "seeSent": "Se sendte e-poster",
+      "sendTest": "Send en test til meg",
+      "testSentTitle": "Test sendt",
+      "testSent": "En testkopi gikk til {{address}}.",
+      "testFailed": "Test-e-posten kunne ikke sendes.",
+      "sensitive": "Denne e-posten har en lenke for innlogging, tilbakestilling eller deling, så e-postloggen lagrer hvem og når, men aldri innholdet.",
+      "columns": {
+        "email": "E-post",
+        "when": "Når den sendes",
+        "sent": "Sendt på {{days}} dager",
+        "lastSent": "Sist sendt"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Bekreft e-postadressen din",
+          "trigger": "Når noen registrerer seg, for å bekrefte adressen."
+        },
+        "passwordReset": {
+          "label": "Tilbakestill passordet ditt",
+          "trigger": "Når noen ber om nytt passord, fra innloggingssiden eller fra personposten sin."
+        },
+        "emailChange": {
+          "label": "Bekreft den nye e-postadressen din",
+          "trigger": "Når noen endrer e-postadressen sin; sendes til den nye adressen."
+        },
+        "securityNotification": {
+          "label": "Sikkerhetsvarsel",
+          "trigger": "Når passordet eller e-posten til en konto endres, eller det logges inn fra et nytt sted (Innstillinger → Sikkerhet)."
+        },
+        "fileShare": {
+          "label": "En fil er delt med deg",
+          "trigger": "Når noen deler en fil fra Medier via e-post."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Returnerte e-poster spores ikke ennå: dette nettstedet har ingen postboks for returpost. Inntil en er satt, vises en e-post som e-postserveren har akseptert som akseptert, selv om den senere returneres.",
+      "settingsLink": "Angi postboksen for returpost",
+      "failed": "Postboksen for returpost kunne ikke leses: {{error}}",
+      "lastRead": "Returnerte e-poster leses fra postboksen for returpost hvert 15. minutt. Sist lest: {{date}}.",
+      "notReadYet": "Returnerte e-poster leses fra postboksen for returpost hvert 15. minutt. Den er ikke lest ennå."
     }
   }
 }

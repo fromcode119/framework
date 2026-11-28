@@ -1,5 +1,6 @@
 import { ApiWorkers } from '@core/cluster/api-workers';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
+import { EmailBounceReader } from '@core/email/email-bounce-reader';
 import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 import { Logger } from '@core/logging';
 import { IDatabaseManager } from '@fromcode119/database';
@@ -115,6 +116,13 @@ export class PluginManagerInitService {
     // Once per tenant: the rows are tenant-owned, so an untenanted sweep reads an empty table under
     // row-level security and deletes nothing — the table would grow for the life of the deployment
     // while the timer reported success every hour.
+    // Bounce and spam reports from each site's bounce mailbox, written into the email log. Once for the
+    // platform's own mail, then once per site, each inside its own scope.
+    await manager.scheduler.register(EmailBounceReader.NAME, EmailBounceReader.SCHEDULE, async () => {
+      const reader = () => new EmailBounceReader(manager.db, () => manager.integrations.resolveMany('email')).run();
+      if (TenantMode.isEnabled()) await reader();
+      await PerTenantRun.forEach({ label: EmailBounceReader.NAME, db: manager.db, work: reader });
+    }, { type: 'cron' });
     await manager.scheduler.register('site-preview-grant-sweep', '0 * * * *', async () => {
       await PerTenantRun.forEach({
         label: 'site-preview-grant-sweep',

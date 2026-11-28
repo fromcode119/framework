@@ -793,7 +793,8 @@
       "activity": "Aktibidad",
       "themes": "Mga Tema",
       "settings": "Mga Setting",
-      "jobs": "Mga Job"
+      "jobs": "Mga Job",
+      "emails": "Mga Email"
     },
     "panel": {
       "sites-list": "Lahat ng site",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Ilang araw ng mga background job run (pahina ng Jobs) ang itatago, nililinis araw-araw. Kapag blangko, itatago ang lahat ng run magpakailanman.",
       "jobRunsOlderThanDay": "Aalisin ang mga job run na mas luma sa {{days}} araw.",
       "jobRunsAreKeptForever": "Itinatago ang mga job run magpakailanman.",
-      "failedToSaveJobRunRetention": "Hindi na-save ang setting ng kasaysayan ng job run."
+      "failedToSaveJobRunRetention": "Hindi na-save ang setting ng kasaysayan ng job run.",
+      "emailLogRetention": "Log ng email",
+      "daysOfEmailLog": "Ilang araw ng log ng email (pahina ng Mga Email) ang itatago, nililinis araw-araw. Kapag blangko, panatilihin nang permanente ang lahat ng email.",
+      "emailsOlderThanDay": "Aalisin sa log ang mga email na mas matanda sa {{days}} araw.",
+      "emailsAreKeptForever": "Permanenteng itinatago ang log ng email.",
+      "failedToSaveEmailLogRetention": "Hindi nai-save ang setting ng log ng email.",
+      "emailContentRetention": "Laman ng email",
+      "daysOfEmailContent": "Ilang araw itatago ang laman ng bawat email. Pagkatapos, itatago ng log kung kanino, kailan at ang paksa. Kapag blangko, panatilihin nang permanente ang laman.",
+      "emailContentOlderThanDay": "Aalisin ang laman ng mga email na mas matanda sa {{days}} araw.",
+      "emailContentIsKeptForever": "Permanenteng itinatago ang laman ng email.",
+      "failedToSaveEmailContentRetention": "Hindi nai-save ang setting ng laman ng email."
     },
     "integrations": {
       "displayNameOptional": "Display Name (Opsyonal)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Mga Email",
+    "subtitleSite": "Bawat email na ipinadala, pinigilan o hindi naipadala ng site na ito: kanino, kailan, aling extension ang nagpadala at ano ang laman.",
+    "subtitlePlatform": "Bawat email na ipinadala, pinigilan o hindi naipadala ng platform mismo. Ang mga email ng bawat site ay nasa pahina ng Mga Email ng site na iyon.",
+    "platform": "Platform",
+    "noTemplate": "Walang template",
+    "transactional": "Transactional (hindi maaaring i-off)",
+    "loading": "Nilo-load ang mga email…",
+    "failed": "Hindi mabasa ang mga email.",
+    "empty": "Wala pang naipadalang email.",
+    "emptyFiltered": "Walang email na tumutugma sa mga filter na ito.",
+    "loadOlder": "I-load ang mas lumang mga email",
+    "notFound": "Wala ang email na ito sa log. Maaaring inalis ito ng setting ng pagtatago ng log.",
+    "manageRequired": "Kailangan ng pahintulot na mamahala ng sistema para mabuksan ang laman ng email.",
+    "detailHeading": "Email",
+    "contentHeading": "Laman",
+    "contentRemoved": "Hindi itinatago ang laman ng email na ito (inalis noong {{date}}). Maaaring may link ito para sa pag-sign in, pag-reset o pag-share, o mas luma ito kaysa sa pinapayagan ng setting ng pagtatago ng laman.",
+    "noContent": "Walang laman ang email na ito.",
+    "columns": {
+      "status": "Katayuan",
+      "sentAt": "Naipadala",
+      "to": "Para kay",
+      "subject": "Paksa",
+      "sender": "Ipinadala ni",
+      "template": "Template"
+    },
+    "fields": {
+      "category": "Uri ng email",
+      "error": "Error",
+      "serverAnswer": "Sagot ng mail server",
+      "messageId": "Message ID",
+      "jobRun": "Pagpapatakbo ng background job"
+    },
+    "filters": {
+      "all": "Lahat",
+      "allSenders": "Lahat ng nagpadala",
+      "address": "Maghanap gamit ang email address",
+      "onlyTemplate": "Mga email lang na uri ng {{template}}.",
+      "showAll": "Ipakita ang lahat ng email",
+      "period": "Panahon",
+      "anyTime": "Anumang oras",
+      "lastDay": "Huling 24 oras",
+      "lastWeek": "Huling 7 araw",
+      "lastMonth": "Huling 30 araw"
+    },
+    "status": {
+      "sent": "Tinanggap ng mail server",
+      "suppressed": "Hindi naipadala: nag-opt out",
+      "failed": "Nabigo",
+      "bounced": "Bumalik",
+      "complained": "Minarkahang spam"
+    },
+    "resend": {
+      "button": "Ipadala muli",
+      "confirmTitle": "Ipadala muli ang email na ito?",
+      "confirm": "Ang parehong email ay mapupunta sa {{address}} nang isa pang beses. Itatala ito sa log bilang bagong email.",
+      "sentTitle": "Naipadala muli",
+      "sent": "Naipadala muli ang email sa {{address}}.",
+      "skippedTitle": "Hindi naipadala",
+      "skipped": "Nag-opt out ang {{address}} sa ganitong uri ng email, kaya hindi ito naipadala.",
+      "failedTitle": "Hindi maipadala",
+      "failed": "Hindi maipadalang muli ang email."
+    },
+    "person": {
+      "heading": "Mga Email",
+      "seeAll": "Tingnan lahat",
+      "none": "Wala pang naipadalang email sa taong ito.",
+      "noAddress": "Walang email address ang taong ito.",
+      "allMail": "Lahat ng email",
+      "optedOut": "Humiling ang taong ito na huwag tumanggap ng ilang email.",
+      "optOutsHint": "Ang tao lang mismo ang makakapag-alis ng opt-out, mula sa kanyang pahina ng mga kagustuhan sa email."
+    },
+    "catalog": {
+      "open": "Katalogo ng email",
+      "title": "Katalogo ng email",
+      "subtitle": "Bawat uri ng email na maaaring ipadala ng site na ito: sino ang nagpapadala, kailan ito lumalabas at ano ang itsura nito.",
+      "empty": "Wala pang idineklarang email.",
+      "notFound": "Walang ganitong email ang site na ito.",
+      "previewFailed": "Hindi maipakita ang email.",
+      "neverSent": "Hindi pa naipapadala",
+      "aboutHeading": "Tungkol sa email na ito",
+      "previewHeading": "Ano ang itsura",
+      "exampleData": "Ipinakita gamit ang halimbawang datos, hindi sa totoong tao.",
+      "width": "Lapad",
+      "desktop": "Computer",
+      "phone": "Telepono",
+      "seeSent": "Tingnan ang mga naipadalang email",
+      "sendTest": "Magpadala ng test sa akin",
+      "testSentTitle": "Naipadala ang test",
+      "testSent": "Isang kopya ng test ang napunta sa {{address}}.",
+      "testFailed": "Hindi maipadala ang test na email.",
+      "sensitive": "May dalang link ang email na ito para sa pag-sign in, pag-reset o pag-share, kaya itinatago ng log ng email kung kanino at kailan, ngunit hindi kailanman ang laman.",
+      "columns": {
+        "email": "Email",
+        "when": "Kailan ito ipinapadala",
+        "sent": "Naipadala sa {{days}} araw",
+        "lastSent": "Huling naipadala"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Kumpirmahin ang iyong email address",
+          "trigger": "Kapag may nag-sign up, para kumpirmahin ang kanilang address."
+        },
+        "passwordReset": {
+          "label": "I-reset ang iyong password",
+          "trigger": "Kapag may humiling ng bagong password, mula sa pahina ng pag-sign in o sa talaan ng tao."
+        },
+        "emailChange": {
+          "label": "Kumpirmahin ang iyong bagong email address",
+          "trigger": "Kapag may nagpalit ng email address; ipinapadala sa bagong address."
+        },
+        "securityNotification": {
+          "label": "Abiso sa seguridad",
+          "trigger": "Kapag nagbago ang password o email ng account, o may nag-sign in mula sa bagong lugar (Mga Setting → Seguridad)."
+        },
+        "fileShare": {
+          "label": "May ibinahaging file sa iyo",
+          "trigger": "Kapag may nag-share ng file mula sa Media sa pamamagitan ng email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Hindi pa sinusubaybayan ang mga ibinalik na email: walang bounce mailbox ang site na ito. Hangga't wala pa, ang email na tinanggap ng mail server ay lalabas na tinanggap kahit bumalik ito mamaya.",
+      "settingsLink": "Itakda ang bounce mailbox",
+      "failed": "Hindi mabasa ang bounce mailbox: {{error}}",
+      "lastRead": "Binabasa ang mga ibinalik na email mula sa bounce mailbox kada 15 minuto. Huling nabasa: {{date}}.",
+      "notReadYet": "Binabasa ang mga ibinalik na email mula sa bounce mailbox kada 15 minuto. Hindi pa ito nababasa."
     }
   }
 }

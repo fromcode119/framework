@@ -793,7 +793,8 @@
       "activity": "Atividade",
       "themes": "Temas",
       "settings": "Definições",
-      "jobs": "Tarefas"
+      "jobs": "Tarefas",
+      "emails": "E-mails"
     },
     "panel": {
       "sites-list": "Todos os sites",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Dias de execuções de tarefas em segundo plano (página Tarefas) a manter, com limpeza diária. Em branco, todas as execuções são mantidas para sempre.",
       "jobRunsOlderThanDay": "As execuções de tarefas com mais de {{days}} dia(s) serão removidas.",
       "jobRunsAreKeptForever": "As execuções de tarefas são mantidas para sempre.",
-      "failedToSaveJobRunRetention": "Não foi possível guardar a definição do histórico de execuções de tarefas."
+      "failedToSaveJobRunRetention": "Não foi possível guardar a definição do histórico de execuções de tarefas.",
+      "emailLogRetention": "Registo de e-mails",
+      "daysOfEmailLog": "Quantos dias do registo de e-mails (página E-mails) se conservam; é limpo diariamente. Em branco conserva todos os e-mails para sempre.",
+      "emailsOlderThanDay": "Os e-mails com mais de {{days}} dia(s) serão removidos do registo.",
+      "emailsAreKeptForever": "O registo de e-mails é conservado para sempre.",
+      "failedToSaveEmailLogRetention": "Não foi possível guardar a definição do registo de e-mails.",
+      "emailContentRetention": "Conteúdo dos e-mails",
+      "daysOfEmailContent": "Quantos dias se conserva o que cada e-mail dizia. Depois, o registo guarda quem, quando e o assunto. Em branco conserva o conteúdo para sempre.",
+      "emailContentOlderThanDay": "O conteúdo dos e-mails com mais de {{days}} dia(s) será removido.",
+      "emailContentIsKeptForever": "O conteúdo dos e-mails é conservado para sempre.",
+      "failedToSaveEmailContentRetention": "Não foi possível guardar a definição do conteúdo dos e-mails."
     },
     "integrations": {
       "displayNameOptional": "Nome a apresentar (opcional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mails",
+    "subtitleSite": "Todos os e-mails que este site enviou, reteve ou não conseguiu enviar: para quem, quando, que extensão o enviou e o que dizia.",
+    "subtitlePlatform": "Todos os e-mails que a própria plataforma enviou, reteve ou não conseguiu enviar. Os e-mails de cada site estão na página E-mails desse site.",
+    "platform": "Plataforma",
+    "noTemplate": "Sem modelo",
+    "transactional": "Transacional (não pode ser desativado)",
+    "loading": "A carregar e-mails…",
+    "failed": "Não foi possível ler os e-mails.",
+    "empty": "Ainda não foi enviado nenhum e-mail.",
+    "emptyFiltered": "Nenhum e-mail corresponde a estes filtros.",
+    "loadOlder": "Carregar e-mails mais antigos",
+    "notFound": "Este e-mail não está no registo. Pode ter sido removido pela definição de conservação do registo.",
+    "manageRequired": "Abrir o conteúdo de um e-mail exige permissão para gerir o sistema.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Conteúdo",
+    "contentRemoved": "O conteúdo deste e-mail não é conservado (removido em {{date}}). Ou continha um link de início de sessão, de redefinição ou de partilha, ou é mais antigo do que a definição de conservação do conteúdo permite.",
+    "noContent": "Este e-mail não tinha conteúdo.",
+    "columns": {
+      "status": "Estado",
+      "sentAt": "Enviado",
+      "to": "Para",
+      "subject": "Assunto",
+      "sender": "Enviado por",
+      "template": "Modelo"
+    },
+    "fields": {
+      "category": "Tipo de e-mail",
+      "error": "Erro",
+      "serverAnswer": "Resposta do servidor de e-mail",
+      "messageId": "ID da mensagem",
+      "jobRun": "Execução da tarefa em segundo plano"
+    },
+    "filters": {
+      "all": "Todos",
+      "allSenders": "Todos os remetentes",
+      "address": "Pesquisar por endereço de e-mail",
+      "onlyTemplate": "Apenas e-mails do tipo {{template}}.",
+      "showAll": "Mostrar todos os e-mails",
+      "period": "Período",
+      "anyTime": "Qualquer altura",
+      "lastDay": "Últimas 24 horas",
+      "lastWeek": "Últimos 7 dias",
+      "lastMonth": "Últimos 30 dias"
+    },
+    "status": {
+      "sent": "Aceite pelo servidor de e-mail",
+      "suppressed": "Não enviado: cancelou a subscrição",
+      "failed": "Falhou",
+      "bounced": "Devolvido",
+      "complained": "Marcado como spam"
+    },
+    "resend": {
+      "button": "Enviar novamente",
+      "confirmTitle": "Enviar este e-mail novamente?",
+      "confirm": "O mesmo e-mail vai para {{address}} mais uma vez. É registado como um e-mail novo.",
+      "sentTitle": "Enviado novamente",
+      "sent": "O e-mail foi enviado novamente para {{address}}.",
+      "skippedTitle": "Não enviado",
+      "skipped": "{{address}} cancelou a subscrição deste tipo de e-mail, por isso não foi enviado.",
+      "failedTitle": "Não foi possível enviar",
+      "failed": "Não foi possível enviar o e-mail novamente."
+    },
+    "person": {
+      "heading": "E-mails",
+      "seeAll": "Ver todos",
+      "none": "Não foi enviado nenhum e-mail a esta pessoa.",
+      "noAddress": "Esta pessoa não tem endereço de e-mail.",
+      "allMail": "Todos os e-mails",
+      "optedOut": "Esta pessoa pediu para não receber alguns e-mails.",
+      "optOutsHint": "Só a própria pessoa pode anular o cancelamento, na sua página de preferências de e-mail."
+    },
+    "catalog": {
+      "open": "Catálogo de e-mails",
+      "title": "Catálogo de e-mails",
+      "subtitle": "Todos os tipos de e-mail que este site pode enviar: quem o envia, quando sai e qual o seu aspeto.",
+      "empty": "Ainda não há e-mails declarados.",
+      "notFound": "Este site não tem esse e-mail.",
+      "previewFailed": "Não foi possível mostrar o e-mail.",
+      "neverSent": "Ainda não enviado",
+      "aboutHeading": "Sobre este e-mail",
+      "previewHeading": "Qual o aspeto",
+      "exampleData": "Mostrado com dados de exemplo, não de uma pessoa real.",
+      "width": "Largura",
+      "desktop": "Computador",
+      "phone": "Telemóvel",
+      "seeSent": "Ver e-mails enviados",
+      "sendTest": "Enviar-me um teste",
+      "testSentTitle": "Teste enviado",
+      "testSent": "Uma cópia de teste foi para {{address}}.",
+      "testFailed": "Não foi possível enviar o e-mail de teste.",
+      "sensitive": "Este e-mail leva um link de início de sessão, de redefinição ou de partilha, por isso o registo guarda para quem e quando, mas nunca o conteúdo.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Quando é enviado",
+        "sent": "Enviados em {{days}} dias",
+        "lastSent": "Último envio"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Confirme o seu endereço de e-mail",
+          "trigger": "Quando alguém se regista, para confirmar o endereço."
+        },
+        "passwordReset": {
+          "label": "Redefina a sua palavra-passe",
+          "trigger": "Quando alguém pede uma nova palavra-passe, na página de início de sessão ou na sua ficha de pessoa."
+        },
+        "emailChange": {
+          "label": "Confirme o seu novo endereço de e-mail",
+          "trigger": "Quando alguém altera o seu endereço de e-mail; enviado para o novo endereço."
+        },
+        "securityNotification": {
+          "label": "Aviso de segurança",
+          "trigger": "Quando a palavra-passe ou o e-mail de uma conta mudam, ou há um início de sessão de um local novo (Definições → Segurança)."
+        },
+        "fileShare": {
+          "label": "Foi partilhado um ficheiro consigo",
+          "trigger": "Quando alguém partilha por e-mail um ficheiro de Multimédia."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Os e-mails devolvidos ainda não são acompanhados: este site não tem caixa de correio para devoluções. Enquanto não for definida uma, um e-mail aceite pelo servidor de e-mail aparece como aceite mesmo que depois seja devolvido.",
+      "settingsLink": "Definir a caixa de correio de devoluções",
+      "failed": "Não foi possível ler a caixa de correio de devoluções: {{error}}",
+      "lastRead": "Os e-mails devolvidos são lidos da caixa de correio de devoluções de 15 em 15 minutos. Última leitura: {{date}}.",
+      "notReadYet": "Os e-mails devolvidos são lidos da caixa de correio de devoluções de 15 em 15 minutos. Ainda não foi lida."
     }
   }
 }

@@ -793,7 +793,8 @@
       "activity": "Attività",
       "themes": "Temi",
       "settings": "Impostazioni",
-      "jobs": "Processi"
+      "jobs": "Processi",
+      "emails": "Email"
     },
     "panel": {
       "sites-list": "Tutti i siti",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Giorni di esecuzioni dei job in background (pagina Job) da conservare, con pulizia giornaliera. Lasciando vuoto, tutte le esecuzioni vengono conservate per sempre.",
       "jobRunsOlderThanDay": "Le esecuzioni dei job più vecchie di {{days}} giorno/i verranno rimosse.",
       "jobRunsAreKeptForever": "Le esecuzioni dei job vengono conservate per sempre.",
-      "failedToSaveJobRunRetention": "Impossibile salvare l'impostazione della cronologia esecuzioni job."
+      "failedToSaveJobRunRetention": "Impossibile salvare l'impostazione della cronologia esecuzioni job.",
+      "emailLogRetention": "Registro delle email",
+      "daysOfEmailLog": "Quanti giorni di registro delle email (pagina Email) conservare, pulito ogni giorno. Vuoto: tutte le email vengono conservate per sempre.",
+      "emailsOlderThanDay": "Le email più vecchie di {{days}} giorno/i verranno rimosse dal registro.",
+      "emailsAreKeptForever": "Il registro delle email viene conservato per sempre.",
+      "failedToSaveEmailLogRetention": "Impossibile salvare l'impostazione del registro delle email.",
+      "emailContentRetention": "Contenuto delle email",
+      "daysOfEmailContent": "Quanti giorni conservare ciò che diceva ogni email. Poi il registro mantiene chi, quando e l'oggetto. Vuoto: il contenuto viene conservato per sempre.",
+      "emailContentOlderThanDay": "Il contenuto delle email più vecchie di {{days}} giorno/i verrà rimosso.",
+      "emailContentIsKeptForever": "Il contenuto delle email viene conservato per sempre.",
+      "failedToSaveEmailContentRetention": "Impossibile salvare l'impostazione del contenuto delle email."
     },
     "integrations": {
       "displayNameOptional": "Nome visualizzato (facoltativo)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Email",
+    "subtitleSite": "Tutte le email che questo sito ha inviato, trattenuto o non è riuscito a inviare: a chi, quando, quale estensione le ha inviate e cosa dicevano.",
+    "subtitlePlatform": "Tutte le email che la piattaforma stessa ha inviato, trattenuto o non è riuscita a inviare. Le email di ogni sito sono nella pagina Email di quel sito.",
+    "platform": "Piattaforma",
+    "noTemplate": "Nessun modello",
+    "transactional": "Di servizio (non si può disattivare)",
+    "loading": "Caricamento delle email…",
+    "failed": "Impossibile leggere le email.",
+    "empty": "Non è ancora stata inviata nessuna email.",
+    "emptyFiltered": "Nessuna email corrisponde a questi filtri.",
+    "loadOlder": "Carica email meno recenti",
+    "notFound": "Questa email non è nel registro. Potrebbe essere stata rimossa dall'impostazione di conservazione del registro.",
+    "manageRequired": "Per aprire il contenuto di un'email serve il permesso di gestire il sistema.",
+    "detailHeading": "Email",
+    "contentHeading": "Contenuto",
+    "contentRemoved": "Il contenuto di questa email non viene conservato (rimosso il {{date}}). O conteneva un link di accesso, reimpostazione o condivisione, oppure è più vecchia di quanto consente l'impostazione di conservazione del contenuto.",
+    "noContent": "Questa email non aveva contenuto.",
+    "columns": {
+      "status": "Stato",
+      "sentAt": "Inviata",
+      "to": "A",
+      "subject": "Oggetto",
+      "sender": "Inviata da",
+      "template": "Modello"
+    },
+    "fields": {
+      "category": "Tipo di email",
+      "error": "Errore",
+      "serverAnswer": "Risposta del server di posta",
+      "messageId": "ID messaggio",
+      "jobRun": "Esecuzione dell'attività in background"
+    },
+    "filters": {
+      "all": "Tutte",
+      "allSenders": "Tutti i mittenti",
+      "address": "Cerca per indirizzo email",
+      "onlyTemplate": "Solo email di tipo {{template}}.",
+      "showAll": "Mostra tutte le email",
+      "period": "Periodo",
+      "anyTime": "Sempre",
+      "lastDay": "Ultime 24 ore",
+      "lastWeek": "Ultimi 7 giorni",
+      "lastMonth": "Ultimi 30 giorni"
+    },
+    "status": {
+      "sent": "Accettata dal server di posta",
+      "suppressed": "Non inviata: iscrizione annullata",
+      "failed": "Non riuscita",
+      "bounced": "Rimbalzata",
+      "complained": "Segnata come spam"
+    },
+    "resend": {
+      "button": "Invia di nuovo",
+      "confirmTitle": "Inviare di nuovo questa email?",
+      "confirm": "La stessa email va a {{address}} ancora una volta. Nel registro viene salvata come una nuova email.",
+      "sentTitle": "Inviata di nuovo",
+      "sent": "L'email è stata inviata di nuovo a {{address}}.",
+      "skippedTitle": "Non inviata",
+      "skipped": "{{address}} ha annullato l'iscrizione a questo tipo di email, quindi non è stata inviata.",
+      "failedTitle": "Impossibile inviare",
+      "failed": "Non è stato possibile inviare di nuovo l'email."
+    },
+    "person": {
+      "heading": "Email",
+      "seeAll": "Vedi tutte",
+      "none": "Non è stata inviata nessuna email a questa persona.",
+      "noAddress": "Questa persona non ha un indirizzo email.",
+      "allMail": "Tutte le email",
+      "optedOut": "Questa persona ha chiesto di non ricevere alcune email.",
+      "optOutsHint": "Solo la persona stessa può annullare questa scelta, dalla sua pagina delle preferenze email."
+    },
+    "catalog": {
+      "open": "Catalogo delle email",
+      "title": "Catalogo delle email",
+      "subtitle": "Ogni tipo di email che questo sito può inviare: chi la invia, quando parte e che aspetto ha.",
+      "empty": "Non è ancora dichiarata nessuna email.",
+      "notFound": "Questo sito non ha una email del genere.",
+      "previewFailed": "Non è stato possibile mostrare l'email.",
+      "neverSent": "Non ancora inviata",
+      "aboutHeading": "Informazioni su questa email",
+      "previewHeading": "Che aspetto ha",
+      "exampleData": "Mostrata con dati di esempio, non di una persona reale.",
+      "width": "Larghezza",
+      "desktop": "Computer",
+      "phone": "Telefono",
+      "seeSent": "Vedi le email inviate",
+      "sendTest": "Inviami una prova",
+      "testSentTitle": "Prova inviata",
+      "testSent": "Una copia di prova è andata a {{address}}.",
+      "testFailed": "Non è stato possibile inviare l'email di prova.",
+      "sensitive": "Questa email contiene un link di accesso, reimpostazione o condivisione, quindi il registro conserva a chi e quando, ma mai il contenuto.",
+      "columns": {
+        "email": "Email",
+        "when": "Quando viene inviata",
+        "sent": "Inviate in {{days}} giorni",
+        "lastSent": "Ultimo invio"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Conferma il tuo indirizzo email",
+          "trigger": "Quando qualcuno si registra, per confermare il suo indirizzo."
+        },
+        "passwordReset": {
+          "label": "Reimposta la tua password",
+          "trigger": "Quando qualcuno chiede una nuova password, dalla pagina di accesso o dalla sua scheda persona."
+        },
+        "emailChange": {
+          "label": "Conferma il tuo nuovo indirizzo email",
+          "trigger": "Quando qualcuno cambia il suo indirizzo email; viene inviata al nuovo indirizzo."
+        },
+        "securityNotification": {
+          "label": "Avviso di sicurezza",
+          "trigger": "Quando cambia la password o l'email di un account, o si accede da un posto nuovo (Impostazioni → Sicurezza)."
+        },
+        "fileShare": {
+          "label": "È stato condiviso un file con te",
+          "trigger": "Quando qualcuno condivide un file da Media via email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Le email restituite non sono ancora monitorate: questo sito non ha una casella per i rimbalzi. Finché non ne viene impostata una, un'email accettata dal server di posta risulta accettata anche se poi rimbalza.",
+      "settingsLink": "Imposta la casella dei rimbalzi",
+      "failed": "Non è stato possibile leggere la casella dei rimbalzi: {{error}}",
+      "lastRead": "Le email restituite vengono lette dalla casella dei rimbalzi ogni 15 minuti. Ultima lettura: {{date}}.",
+      "notReadYet": "Le email restituite vengono lette dalla casella dei rimbalzi ogni 15 minuti. Non è ancora stata letta."
     }
   }
 }

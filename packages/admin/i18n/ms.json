@@ -793,7 +793,8 @@
       "activity": "Aktiviti",
       "themes": "Tema",
       "settings": "Tetapan",
-      "jobs": "Tugas"
+      "jobs": "Tugas",
+      "emails": "E-mel"
     },
     "panel": {
       "sites-list": "Semua laman",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Bilangan hari larian tugas latar belakang (halaman Tugas) yang disimpan, dibersihkan setiap hari. Biarkan kosong untuk menyimpan semua larian selama-lamanya.",
       "jobRunsOlderThanDay": "Larian tugas yang lebih lama daripada {{days}} hari akan dialih keluar.",
       "jobRunsAreKeptForever": "Larian tugas disimpan selama-lamanya.",
-      "failedToSaveJobRunRetention": "Gagal menyimpan tetapan sejarah larian tugas."
+      "failedToSaveJobRunRetention": "Gagal menyimpan tetapan sejarah larian tugas.",
+      "emailLogRetention": "Log e-mel",
+      "daysOfEmailLog": "Berapa hari log e-mel (halaman E-mel) disimpan, dibersihkan setiap hari. Kosongkan untuk menyimpan semua e-mel selama-lamanya.",
+      "emailsOlderThanDay": "E-mel yang lebih lama daripada {{days}} hari akan dialih keluar daripada log.",
+      "emailsAreKeptForever": "Log e-mel disimpan selama-lamanya.",
+      "failedToSaveEmailLogRetention": "Tetapan log e-mel gagal disimpan.",
+      "emailContentRetention": "Kandungan e-mel",
+      "daysOfEmailContent": "Berapa hari kandungan setiap e-mel disimpan. Selepas itu log hanya menyimpan kepada siapa, bila dan subjek. Kosongkan untuk menyimpan kandungan selama-lamanya.",
+      "emailContentOlderThanDay": "Kandungan e-mel yang lebih lama daripada {{days}} hari akan dialih keluar.",
+      "emailContentIsKeptForever": "Kandungan e-mel disimpan selama-lamanya.",
+      "failedToSaveEmailContentRetention": "Tetapan kandungan e-mel gagal disimpan."
     },
     "integrations": {
       "displayNameOptional": "Nama Paparan (Pilihan)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mel",
+    "subtitleSite": "Setiap e-mel yang dihantar, ditahan atau gagal dihantar oleh tapak ini: kepada siapa, bila, sambungan mana yang menghantarnya dan apa isinya.",
+    "subtitlePlatform": "Setiap e-mel yang dihantar, ditahan atau gagal dihantar oleh platform itu sendiri. E-mel setiap tapak ada pada halaman E-mel tapak tersebut.",
+    "platform": "Platform",
+    "noTemplate": "Tiada templat",
+    "transactional": "Transaksi (tidak boleh dimatikan)",
+    "loading": "Memuatkan e-mel…",
+    "failed": "E-mel tidak dapat dibaca.",
+    "empty": "Belum ada e-mel yang dihantar.",
+    "emptyFiltered": "Tiada e-mel sepadan dengan penapis ini.",
+    "loadOlder": "Muatkan e-mel yang lebih lama",
+    "notFound": "E-mel ini tiada dalam log. Mungkin ia telah dialih keluar oleh tetapan tempoh simpanan log.",
+    "manageRequired": "Membuka kandungan e-mel memerlukan kebenaran untuk mengurus sistem.",
+    "detailHeading": "E-mel",
+    "contentHeading": "Kandungan",
+    "contentRemoved": "Kandungan e-mel ini tidak disimpan (dialih keluar pada {{date}}). Sama ada ia mengandungi pautan log masuk, tetap semula atau kongsi, atau ia lebih lama daripada yang dibenarkan oleh tetapan simpanan kandungan.",
+    "noContent": "E-mel ini tiada kandungan.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Dihantar",
+      "to": "Kepada",
+      "subject": "Subjek",
+      "sender": "Dihantar oleh",
+      "template": "Templat"
+    },
+    "fields": {
+      "category": "Jenis e-mel",
+      "error": "Ralat",
+      "serverAnswer": "Jawapan pelayan mel",
+      "messageId": "ID mesej",
+      "jobRun": "Larian tugas latar belakang"
+    },
+    "filters": {
+      "all": "Semua",
+      "allSenders": "Semua penghantar",
+      "address": "Cari mengikut alamat e-mel",
+      "onlyTemplate": "E-mel jenis {{template}} sahaja.",
+      "showAll": "Tunjukkan semua e-mel",
+      "period": "Tempoh",
+      "anyTime": "Bila-bila masa",
+      "lastDay": "24 jam lepas",
+      "lastWeek": "7 hari lepas",
+      "lastMonth": "30 hari lepas"
+    },
+    "status": {
+      "sent": "Diterima oleh pelayan mel",
+      "suppressed": "Tidak dihantar: telah berhenti melanggan",
+      "failed": "Gagal",
+      "bounced": "Dipantulkan",
+      "complained": "Ditandakan sebagai spam"
+    },
+    "resend": {
+      "button": "Hantar semula",
+      "confirmTitle": "Hantar semula e-mel ini?",
+      "confirm": "E-mel yang sama akan dihantar kepada {{address}} sekali lagi. Ia direkodkan dalam log sebagai e-mel baharu.",
+      "sentTitle": "Dihantar semula",
+      "sent": "E-mel telah dihantar semula kepada {{address}}.",
+      "skippedTitle": "Tidak dihantar",
+      "skipped": "{{address}} telah berhenti melanggan jenis e-mel ini, jadi ia tidak dihantar.",
+      "failedTitle": "Tidak dapat dihantar",
+      "failed": "E-mel tidak dapat dihantar semula."
+    },
+    "person": {
+      "heading": "E-mel",
+      "seeAll": "Lihat semua",
+      "none": "Tiada e-mel dihantar kepada orang ini.",
+      "noAddress": "Orang ini tiada alamat e-mel.",
+      "allMail": "Semua e-mel",
+      "optedOut": "Orang ini meminta untuk tidak menerima sesetengah e-mel.",
+      "optOutsHint": "Hanya orang itu sendiri boleh membatalkannya, daripada halaman pilihan e-melnya."
+    },
+    "catalog": {
+      "open": "Katalog e-mel",
+      "title": "Katalog e-mel",
+      "subtitle": "Setiap jenis e-mel yang boleh dihantar oleh tapak ini: siapa yang menghantar, bila ia dihantar dan rupanya.",
+      "empty": "Belum ada e-mel yang diisytiharkan.",
+      "notFound": "Tapak ini tidak mempunyai e-mel sedemikian.",
+      "previewFailed": "E-mel tidak dapat dipaparkan.",
+      "neverSent": "Belum dihantar",
+      "aboutHeading": "Tentang e-mel ini",
+      "previewHeading": "Rupanya",
+      "exampleData": "Dipaparkan dengan data contoh, bukan data orang sebenar.",
+      "width": "Lebar",
+      "desktop": "Komputer",
+      "phone": "Telefon",
+      "seeSent": "Lihat e-mel yang dihantar",
+      "sendTest": "Hantar ujian kepada saya",
+      "testSentTitle": "Ujian dihantar",
+      "testSent": "Satu salinan ujian dihantar kepada {{address}}.",
+      "testFailed": "E-mel ujian tidak dapat dihantar.",
+      "sensitive": "E-mel ini membawa pautan log masuk, tetap semula atau kongsi, jadi log e-mel menyimpan kepada siapa dan bila, tetapi tidak pernah kandungannya.",
+      "columns": {
+        "email": "E-mel",
+        "when": "Bila ia dihantar",
+        "sent": "Dihantar dalam {{days}} hari",
+        "lastSent": "Terakhir dihantar"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Sahkan alamat e-mel anda",
+          "trigger": "Apabila seseorang mendaftar, untuk mengesahkan alamatnya."
+        },
+        "passwordReset": {
+          "label": "Tetapkan semula kata laluan anda",
+          "trigger": "Apabila seseorang meminta kata laluan baharu, dari halaman log masuk atau rekod orangnya."
+        },
+        "emailChange": {
+          "label": "Sahkan alamat e-mel baharu anda",
+          "trigger": "Apabila seseorang menukar alamat e-melnya; dihantar ke alamat baharu."
+        },
+        "securityNotification": {
+          "label": "Notis keselamatan",
+          "trigger": "Apabila kata laluan atau e-mel akaun berubah, atau log masuk dari tempat baharu (Tetapan → Keselamatan)."
+        },
+        "fileShare": {
+          "label": "Satu fail telah dikongsi dengan anda",
+          "trigger": "Apabila seseorang berkongsi fail dari Media melalui e-mel."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "E-mel yang dikembalikan belum dijejaki: tapak ini tiada peti mel untuk e-mel terpantul. Selagi belum ditetapkan, e-mel yang diterima pelayan mel akan ditunjukkan sebagai diterima walaupun kemudian terpantul.",
+      "settingsLink": "Tetapkan peti mel e-mel terpantul",
+      "failed": "Peti mel e-mel terpantul tidak dapat dibaca: {{error}}",
+      "lastRead": "E-mel yang dikembalikan dibaca daripada peti mel e-mel terpantul setiap 15 minit. Terakhir dibaca: {{date}}.",
+      "notReadYet": "E-mel yang dikembalikan dibaca daripada peti mel e-mel terpantul setiap 15 minit. Belum dibaca lagi."
     }
   }
 }

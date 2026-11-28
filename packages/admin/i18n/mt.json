@@ -793,7 +793,8 @@
       "activity": "Attività",
       "themes": "Temi",
       "settings": "Issettjar",
-      "jobs": "Xogħlijiet"
+      "jobs": "Xogħlijiet",
+      "emails": "Emails"
     },
     "panel": {
       "sites-list": "Is-siti kollha",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Għadd ta' jiem li jinżammu t-tħaddim tal-jobs fl-isfond (paġna Jobs), imnaddfa kuljum. Jekk titħalla vojta, kull tħaddim jinżamm għal dejjem.",
       "jobRunsOlderThanDay": "It-tħaddim tal-jobs eqdem minn {{days}} jum/ijiem se jitneħħa.",
       "jobRunsAreKeptForever": "It-tħaddim tal-jobs jinżamm għal dejjem.",
-      "failedToSaveJobRunRetention": "L-issettjar tal-istorja tat-tħaddim tal-jobs ma setax jiġi salvat."
+      "failedToSaveJobRunRetention": "L-issettjar tal-istorja tat-tħaddim tal-jobs ma setax jiġi salvat.",
+      "emailLogRetention": "Reġistru tal-emails",
+      "daysOfEmailLog": "Kemm-il jum tar-reġistru tal-emails (paġna Emails) iżomm, jitnaddaf kuljum. Jekk iħalli vojt, iżomm l-emails kollha għal dejjem.",
+      "emailsOlderThanDay": "L-emails eqdem minn {{days}} jum se jitneħħew mir-reġistru.",
+      "emailsAreKeptForever": "Ir-reġistru tal-emails jinżamm għal dejjem.",
+      "failedToSaveEmailLogRetention": "L-issettjar tar-reġistru tal-emails ma setax jinħażen.",
+      "emailContentRetention": "Kontenut tal-emails",
+      "daysOfEmailContent": "Kemm-il jum iżomm dak li kien miktub f'kull email. Wara dan, ir-reġistru jżomm lil min, meta u s-suġġett. Jekk iħalli vojt, iżomm il-kontenut għal dejjem.",
+      "emailContentOlderThanDay": "Il-kontenut tal-emails eqdem minn {{days}} jum se jitneħħa.",
+      "emailContentIsKeptForever": "Il-kontenut tal-emails jinżamm għal dejjem.",
+      "failedToSaveEmailContentRetention": "L-issettjar tal-kontenut tal-emails ma setax jinħażen."
     },
     "integrations": {
       "displayNameOptional": "Isem li jidher (Mhux obbligatorju)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Emails",
+    "subtitleSite": "Kull email li dan is-sit bagħat, żamm lura jew ma setax jibgħat: lil min, meta, liema estensjoni bagħtitu u x'kien fih.",
+    "subtitlePlatform": "Kull email li l-pjattaforma nnifisha bagħtet, żammet lura jew ma setgħetx tibgħat. L-emails ta' kull sit huma fuq il-paġna Emails ta' dak is-sit.",
+    "platform": "Pjattaforma",
+    "noTemplate": "Bla mudell",
+    "transactional": "Tranżazzjonali (ma jistax jintefa)",
+    "loading": "Qed jitgħabbew l-emails…",
+    "failed": "L-emails ma setgħux jinqraw.",
+    "empty": "Għadu ma nbagħat ebda email.",
+    "emptyFiltered": "L-ebda email ma taqbel ma' dawn il-filtri.",
+    "loadOlder": "Tcarrja emails eqdem",
+    "notFound": "Dan l-email mhux fir-reġistru. Jista' jkun li tneħħa mill-issettjar tal-ħażna tar-reġistru.",
+    "manageRequired": "Biex tiftaħ il-kontenut ta' email jkun hemm bżonn il-permess biex timmaniġġja s-sistema.",
+    "detailHeading": "Email",
+    "contentHeading": "Kontenut",
+    "contentRemoved": "Il-kontenut ta' dan l-email mhux miżmum (tneħħa fil-{{date}}). Jew kien fih link biex tidħol, terġa' tissettja jew taqsam, jew huwa eqdem minn dak li jippermetti l-issettjar tal-ħażna tal-kontenut.",
+    "noContent": "Dan l-email ma kellu ebda kontenut.",
+    "columns": {
+      "status": "Stat",
+      "sentAt": "Mibgħut",
+      "to": "Lil",
+      "subject": "Suġġett",
+      "sender": "Mibgħut minn",
+      "template": "Mudell"
+    },
+    "fields": {
+      "category": "Tip ta' email",
+      "error": "Żball",
+      "serverAnswer": "Tweġiba tas-server tal-posta",
+      "messageId": "ID tal-messaġġ",
+      "jobRun": "Tħaddim tax-xogħol fl-isfond"
+    },
+    "filters": {
+      "all": "Kollha",
+      "allSenders": "Is-senders kollha",
+      "address": "Fittex skont l-indirizz tal-email",
+      "onlyTemplate": "Emails tat-tip {{template}} biss.",
+      "showAll": "Uri l-emails kollha",
+      "period": "Perjodu",
+      "anyTime": "Kull ħin",
+      "lastDay": "L-aħħar 24 siegħa",
+      "lastWeek": "L-aħħar 7 ijiem",
+      "lastMonth": "L-aħħar 30 jum"
+    },
+    "status": {
+      "sent": "Aċċettat mis-server tal-posta",
+      "suppressed": "Mhux mibgħut: ħareġ mis-sottoskrizzjoni",
+      "failed": "Falla",
+      "bounced": "Irritorna",
+      "complained": "Immarkat bħala spam"
+    },
+    "resend": {
+      "button": "Ibgħat mill-ġdid",
+      "confirmTitle": "Tibgħat dan l-email mill-ġdid?",
+      "confirm": "L-istess email se jmur lil {{address}} darba oħra. Jiġi rreġistrat fir-reġistru bħala email ġdid.",
+      "sentTitle": "Mibgħut mill-ġdid",
+      "sent": "L-email intbagħat lil {{address}} mill-ġdid.",
+      "skippedTitle": "Mhux mibgħut",
+      "skipped": "{{address}} ħareġ mis-sottoskrizzjoni ta' dan it-tip ta' email, għalhekk ma nbagħatx.",
+      "failedTitle": "Ma setax jinbagħat",
+      "failed": "L-email ma setax jerġa' jinbagħat."
+    },
+    "person": {
+      "heading": "Emails",
+      "seeAll": "Ara kollha",
+      "none": "Ma nbagħat ebda email lil din il-persuna.",
+      "noAddress": "Din il-persuna m'għandha ebda indirizz tal-email.",
+      "allMail": "L-emails kollha",
+      "optedOut": "Din il-persuna talbet li ma tirċevix xi emails.",
+      "optOutsHint": "Il-persuna biss tista' tneħħi dan, mill-paġna tal-preferenzi tal-email tagħha."
+    },
+    "catalog": {
+      "open": "Katalgu tal-emails",
+      "title": "Katalgu tal-emails",
+      "subtitle": "Kull tip ta' email li dan is-sit jista' jibgħat: min jibgħatu, meta joħroġ u kif jidher.",
+      "empty": "Għad ma ġie ddikjarat ebda email.",
+      "notFound": "Dan is-sit m'għandu ebda email bħal dan.",
+      "previewFailed": "L-email ma setax jintwera.",
+      "neverSent": "Għadu ma nbagħatx",
+      "aboutHeading": "Dwar dan l-email",
+      "previewHeading": "Kif jidher",
+      "exampleData": "Muri b'data ta' eżempju, mhux ta' persuna reali.",
+      "width": "Wisa'",
+      "desktop": "Kompjuter",
+      "phone": "Telefon",
+      "seeSent": "Ara l-emails mibgħuta",
+      "sendTest": "Ibgħat test lili",
+      "testSentTitle": "Test mibgħut",
+      "testSent": "Kopja tat-test marret lil {{address}}.",
+      "testFailed": "L-email tat-test ma setax jinbagħat.",
+      "sensitive": "Dan l-email fih link biex tidħol, terġa' tissettja jew taqsam, għalhekk ir-reġistru jżomm lil min u meta, imma qatt il-kontenut.",
+      "columns": {
+        "email": "Email",
+        "when": "Meta jinbagħat",
+        "sent": "Mibgħuta f'{{days}} jum",
+        "lastSent": "Mibgħut l-aħħar"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Ikkonferma l-indirizz tal-email tiegħek",
+          "trigger": "Meta xi ħadd jirreġistra, biex jikkonferma l-indirizz tiegħu."
+        },
+        "passwordReset": {
+          "label": "Erġa' ssettja l-password tiegħek",
+          "trigger": "Meta xi ħadd jitlob password ġdida, mill-paġna biex tidħol jew mir-rekord tal-persuna."
+        },
+        "emailChange": {
+          "label": "Ikkonferma l-indirizz tal-email il-ġdid tiegħek",
+          "trigger": "Meta xi ħadd jbiddel l-indirizz tal-email tiegħu; jinbagħat lill-indirizz il-ġdid."
+        },
+        "securityNotification": {
+          "label": "Avviż ta' sigurtà",
+          "trigger": "Meta tinbidel il-password jew l-email ta' kont, jew isir id-dħul minn post ġdid (Issettjar → Sigurtà)."
+        },
+        "fileShare": {
+          "label": "Ġie maqsum fajl miegħek",
+          "trigger": "Meta xi ħadd jaqsam fajl minn Midja bl-email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "L-emails li reġgħu lura għadhom ma jiġux segwiti: dan is-sit m'għandu ebda kaxxa postali għar-ritorni. Sakemm ma tiġix issettjata waħda, email aċċettat mis-server tal-posta jidher bħala aċċettat anki jekk aktar tard jerġa' lura.",
+      "settingsLink": "Issettja l-kaxxa postali tar-ritorni",
+      "failed": "Il-kaxxa postali tar-ritorni ma setgħetx tinqara: {{error}}",
+      "lastRead": "L-emails li reġgħu lura jinqraw mill-kaxxa postali tar-ritorni kull 15-il minuta. L-aħħar qari: {{date}}.",
+      "notReadYet": "L-emails li reġgħu lura jinqraw mill-kaxxa postali tar-ritorni kull 15-il minuta. Għadha ma nqrietx."
     }
   }
 }

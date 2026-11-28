@@ -793,7 +793,8 @@
       "activity": "Aktywność",
       "themes": "Motywy",
       "settings": "Ustawienia",
-      "jobs": "Zadania"
+      "jobs": "Zadania",
+      "emails": "E-maile"
     },
     "panel": {
       "sites-list": "Wszystkie witryny",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Liczba dni przechowywania uruchomień zadań w tle (strona Zadania), czyszczonych codziennie. Puste pole oznacza przechowywanie wszystkich uruchomień bezterminowo.",
       "jobRunsOlderThanDay": "Uruchomienia zadań starsze niż {{days}} dni zostaną usunięte.",
       "jobRunsAreKeptForever": "Uruchomienia zadań są przechowywane bezterminowo.",
-      "failedToSaveJobRunRetention": "Nie udało się zapisać ustawienia historii uruchomień zadań."
+      "failedToSaveJobRunRetention": "Nie udało się zapisać ustawienia historii uruchomień zadań.",
+      "emailLogRetention": "Dziennik e-maili",
+      "daysOfEmailLog": "Ile dni dziennika e-maili (strona E-maile) przechowywać; czyszczony codziennie. Puste pole oznacza przechowywanie wszystkich e-maili bezterminowo.",
+      "emailsOlderThanDay": "E-maile starsze niż {{days}} dni zostaną usunięte z dziennika.",
+      "emailsAreKeptForever": "Dziennik e-maili jest przechowywany bezterminowo.",
+      "failedToSaveEmailLogRetention": "Nie udało się zapisać ustawienia dziennika e-maili.",
+      "emailContentRetention": "Treść e-maili",
+      "daysOfEmailContent": "Ile dni przechowywać to, co zawierał każdy e-mail. Potem dziennik zachowuje do kogo, kiedy i temat. Puste pole oznacza przechowywanie treści bezterminowo.",
+      "emailContentOlderThanDay": "Treść e-maili starszych niż {{days}} dni zostanie usunięta.",
+      "emailContentIsKeptForever": "Treść e-maili jest przechowywana bezterminowo.",
+      "failedToSaveEmailContentRetention": "Nie udało się zapisać ustawienia treści e-maili."
     },
     "integrations": {
       "displayNameOptional": "Nazwa wyświetlana (opcjonalnie)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-maile",
+    "subtitleSite": "Każdy e-mail, który ta witryna wysłała, wstrzymała lub nie zdołała wysłać: do kogo, kiedy, które rozszerzenie go wysłało i co zawierał.",
+    "subtitlePlatform": "Każdy e-mail, który sama platforma wysłała, wstrzymała lub nie zdołała wysłać. E-maile każdej witryny są na stronie E-maile tej witryny.",
+    "platform": "Platforma",
+    "noTemplate": "Bez szablonu",
+    "transactional": "Transakcyjny (nie można wyłączyć)",
+    "loading": "Wczytywanie e-maili…",
+    "failed": "Nie udało się odczytać e-maili.",
+    "empty": "Nie wysłano jeszcze żadnych e-maili.",
+    "emptyFiltered": "Żaden e-mail nie pasuje do tych filtrów.",
+    "loadOlder": "Wczytaj starsze e-maile",
+    "notFound": "Tego e-maila nie ma w dzienniku. Mógł zostać usunięty przez ustawienie czasu przechowywania dziennika.",
+    "manageRequired": "Otwarcie treści e-maila wymaga uprawnienia do zarządzania systemem.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Treść",
+    "contentRemoved": "Treść tego e-maila nie jest przechowywana (usunięta {{date}}). Albo zawierał link do logowania, resetowania lub udostępniania, albo jest starszy, niż pozwala ustawienie przechowywania treści.",
+    "noContent": "Ten e-mail nie miał treści.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Wysłano",
+      "to": "Do",
+      "subject": "Temat",
+      "sender": "Wysłał",
+      "template": "Szablon"
+    },
+    "fields": {
+      "category": "Rodzaj e-maila",
+      "error": "Błąd",
+      "serverAnswer": "Odpowiedź serwera pocztowego",
+      "messageId": "ID wiadomości",
+      "jobRun": "Uruchomienie zadania w tle"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "allSenders": "Wszyscy nadawcy",
+      "address": "Szukaj według adresu e-mail",
+      "onlyTemplate": "Tylko e-maile rodzaju {{template}}.",
+      "showAll": "Pokaż wszystkie e-maile",
+      "period": "Okres",
+      "anyTime": "Dowolny czas",
+      "lastDay": "Ostatnie 24 godziny",
+      "lastWeek": "Ostatnie 7 dni",
+      "lastMonth": "Ostatnie 30 dni"
+    },
+    "status": {
+      "sent": "Przyjęty przez serwer pocztowy",
+      "suppressed": "Nie wysłano: wypisano z odbioru",
+      "failed": "Nie powiodło się",
+      "bounced": "Odrzucony",
+      "complained": "Oznaczony jako spam"
+    },
+    "resend": {
+      "button": "Wyślij ponownie",
+      "confirmTitle": "Wysłać ten e-mail ponownie?",
+      "confirm": "Ten sam e-mail trafi na adres {{address}} jeszcze raz. W dzienniku zostanie zapisany jako nowy e-mail.",
+      "sentTitle": "Wysłano ponownie",
+      "sent": "E-mail został ponownie wysłany na adres {{address}}.",
+      "skippedTitle": "Nie wysłano",
+      "skipped": "{{address}} wypisał(a) się z odbioru tego rodzaju e-maili, więc nie został wysłany.",
+      "failedTitle": "Nie można wysłać",
+      "failed": "Nie udało się ponownie wysłać e-maila."
+    },
+    "person": {
+      "heading": "E-maile",
+      "seeAll": "Zobacz wszystkie",
+      "none": "Do tej osoby nie wysłano żadnych e-maili.",
+      "noAddress": "Ta osoba nie ma adresu e-mail.",
+      "allMail": "Wszystkie e-maile",
+      "optedOut": "Ta osoba poprosiła, aby nie otrzymywać niektórych e-maili.",
+      "optOutsHint": "Wypisanie może cofnąć tylko sama osoba, na swojej stronie ustawień e-mail."
+    },
+    "catalog": {
+      "open": "Katalog e-maili",
+      "title": "Katalog e-maili",
+      "subtitle": "Każdy rodzaj e-maila, który ta witryna może wysłać: kto go wysyła, kiedy wychodzi i jak wygląda.",
+      "empty": "Nie opisano jeszcze żadnych e-maili.",
+      "notFound": "Ta witryna nie ma takiego e-maila.",
+      "previewFailed": "Nie udało się wyświetlić e-maila.",
+      "neverSent": "Jeszcze nie wysłano",
+      "aboutHeading": "O tym e-mailu",
+      "previewHeading": "Jak wygląda",
+      "exampleData": "Pokazany na przykładowych danych, nie prawdziwej osoby.",
+      "width": "Szerokość",
+      "desktop": "Komputer",
+      "phone": "Telefon",
+      "seeSent": "Zobacz wysłane e-maile",
+      "sendTest": "Wyślij mi test",
+      "testSentTitle": "Test wysłany",
+      "testSent": "Kopia testowa trafiła na adres {{address}}.",
+      "testFailed": "Nie udało się wysłać testowego e-maila.",
+      "sensitive": "Ten e-mail zawiera link do logowania, resetowania lub udostępniania, więc dziennik zachowuje do kogo i kiedy, ale nigdy treści.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Kiedy jest wysyłany",
+        "sent": "Wysłano w {{days}} dni",
+        "lastSent": "Ostatnio wysłano"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Potwierdź swój adres e-mail",
+          "trigger": "Gdy ktoś się rejestruje, aby potwierdzić swój adres."
+        },
+        "passwordReset": {
+          "label": "Zresetuj hasło",
+          "trigger": "Gdy ktoś prosi o nowe hasło, ze strony logowania lub ze swojej karty osoby."
+        },
+        "emailChange": {
+          "label": "Potwierdź nowy adres e-mail",
+          "trigger": "Gdy ktoś zmienia adres e-mail; wysyłany na nowy adres."
+        },
+        "securityNotification": {
+          "label": "Powiadomienie o bezpieczeństwie",
+          "trigger": "Gdy zmienia się hasło lub e-mail konta albo logowanie następuje z nowego miejsca (Ustawienia → Bezpieczeństwo)."
+        },
+        "fileShare": {
+          "label": "Udostępniono Ci plik",
+          "trigger": "Gdy ktoś udostępnia e-mailem plik z Multimediów."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Zwrócone e-maile nie są jeszcze śledzone: ta witryna nie ma skrzynki na zwroty. Dopóki jej nie ustawisz, e-mail przyjęty przez serwer pocztowy jest pokazywany jako przyjęty, nawet jeśli później wróci.",
+      "settingsLink": "Ustaw skrzynkę na zwroty",
+      "failed": "Nie udało się odczytać skrzynki na zwroty: {{error}}",
+      "lastRead": "Zwrócone e-maile są odczytywane ze skrzynki na zwroty co 15 minut. Ostatni odczyt: {{date}}.",
+      "notReadYet": "Zwrócone e-maile są odczytywane ze skrzynki na zwroty co 15 minut. Nie została jeszcze odczytana."
     }
   }
 }

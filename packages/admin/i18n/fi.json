@@ -793,7 +793,8 @@
       "activity": "Toiminta",
       "themes": "Teemat",
       "settings": "Asetukset",
-      "jobs": "Työt"
+      "jobs": "Työt",
+      "emails": "Sähköpostit"
     },
     "panel": {
       "sites-list": "Kaikki sivustot",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Montako päivää taustatöiden ajoja (Työt-sivu) säilytetään; vanhat poistetaan päivittäin. Tyhjä arvo säilyttää kaikki ajot pysyvästi.",
       "jobRunsOlderThanDay": "Yli {{days}} päivää vanhat työajot poistetaan.",
       "jobRunsAreKeptForever": "Työajot säilytetään pysyvästi.",
-      "failedToSaveJobRunRetention": "Työajojen historian asetuksen tallennus epäonnistui."
+      "failedToSaveJobRunRetention": "Työajojen historian asetuksen tallennus epäonnistui.",
+      "emailLogRetention": "Sähköpostiloki",
+      "daysOfEmailLog": "Kuinka monta päivää sähköpostilokia (Sähköpostit-sivu) säilytetään; siivotaan päivittäin. Tyhjä säilyttää kaikki sähköpostit pysyvästi.",
+      "emailsOlderThanDay": "Yli {{days}} päivää vanhat sähköpostit poistetaan lokista.",
+      "emailsAreKeptForever": "Sähköpostiloki säilytetään pysyvästi.",
+      "failedToSaveEmailLogRetention": "Sähköpostilokin asetusta ei voitu tallentaa.",
+      "emailContentRetention": "Sähköpostien sisältö",
+      "daysOfEmailContent": "Kuinka monta päivää kunkin sähköpostin sisältö säilytetään. Sen jälkeen lokiin jää kenelle, milloin ja aihe. Tyhjä säilyttää sisällön pysyvästi.",
+      "emailContentOlderThanDay": "Yli {{days}} päivää vanhat sähköpostien sisällöt poistetaan.",
+      "emailContentIsKeptForever": "Sähköpostien sisältö säilytetään pysyvästi.",
+      "failedToSaveEmailContentRetention": "Sähköpostien sisällön asetusta ei voitu tallentaa."
     },
     "integrations": {
       "displayNameOptional": "Näyttönimi (valinnainen)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Sähköpostit",
+    "subtitleSite": "Kaikki sähköpostit, jotka tämä sivusto on lähettänyt, pidättänyt tai joita ei onnistuttu lähettämään: kenelle, milloin, mikä laajennus lähetti ja mitä viestissä luki.",
+    "subtitlePlatform": "Kaikki sähköpostit, jotka alusta itse on lähettänyt, pidättänyt tai joita ei onnistuttu lähettämään. Kunkin sivuston omat sähköpostit ovat sen sivuston Sähköpostit-sivulla.",
+    "platform": "Alusta",
+    "noTemplate": "Ei pohjaa",
+    "transactional": "Palveluviesti (ei voi poistaa käytöstä)",
+    "loading": "Ladataan sähköposteja…",
+    "failed": "Sähköposteja ei voitu lukea.",
+    "empty": "Sähköposteja ei ole vielä lähetetty.",
+    "emptyFiltered": "Mikään sähköposti ei vastaa näitä suodattimia.",
+    "loadOlder": "Lataa vanhempia sähköposteja",
+    "notFound": "Tämä sähköposti ei ole lokissa. Se on voitu poistaa lokin säilytysasetuksen mukaan.",
+    "manageRequired": "Sähköpostin sisällön avaaminen vaatii järjestelmän hallintaoikeuden.",
+    "detailHeading": "Sähköposti",
+    "contentHeading": "Sisältö",
+    "contentRemoved": "Tämän sähköpostin sisältöä ei säilytetä (poistettu {{date}}). Joko viestissä oli kirjautumis-, palautus- tai jakolinkki, tai se on vanhempi kuin sisällön säilytysasetus sallii.",
+    "noContent": "Tässä sähköpostissa ei ollut sisältöä.",
+    "columns": {
+      "status": "Tila",
+      "sentAt": "Lähetetty",
+      "to": "Vastaanottaja",
+      "subject": "Aihe",
+      "sender": "Lähettäjä",
+      "template": "Pohja"
+    },
+    "fields": {
+      "category": "Sähköpostin laji",
+      "error": "Virhe",
+      "serverAnswer": "Postipalvelimen vastaus",
+      "messageId": "Viestin tunnus",
+      "jobRun": "Taustatyön ajo"
+    },
+    "filters": {
+      "all": "Kaikki",
+      "allSenders": "Kaikki lähettäjät",
+      "address": "Hae sähköpostiosoitteella",
+      "onlyTemplate": "Vain lajin {{template}} sähköpostit.",
+      "showAll": "Näytä kaikki sähköpostit",
+      "period": "Ajanjakso",
+      "anyTime": "Milloin tahansa",
+      "lastDay": "Viimeiset 24 tuntia",
+      "lastWeek": "Viimeiset 7 päivää",
+      "lastMonth": "Viimeiset 30 päivää"
+    },
+    "status": {
+      "sent": "Postipalvelin hyväksyi",
+      "suppressed": "Ei lähetetty: kieltäytynyt viesteistä",
+      "failed": "Epäonnistui",
+      "bounced": "Palautui",
+      "complained": "Merkitty roskapostiksi"
+    },
+    "resend": {
+      "button": "Lähetä uudelleen",
+      "confirmTitle": "Lähetetäänkö tämä sähköposti uudelleen?",
+      "confirm": "Sama sähköposti lähtee osoitteeseen {{address}} vielä kerran. Se kirjataan lokiin uutena sähköpostina.",
+      "sentTitle": "Lähetetty uudelleen",
+      "sent": "Sähköposti lähetettiin osoitteeseen {{address}} uudelleen.",
+      "skippedTitle": "Ei lähetetty",
+      "skipped": "{{address}} on kieltäytynyt tämän tyyppisistä viesteistä, joten sitä ei lähetetty.",
+      "failedTitle": "Lähetys ei onnistunut",
+      "failed": "Sähköpostia ei voitu lähettää uudelleen."
+    },
+    "person": {
+      "heading": "Sähköpostit",
+      "seeAll": "Näytä kaikki",
+      "none": "Tälle henkilölle ei ole lähetetty sähköposteja.",
+      "noAddress": "Tällä henkilöllä ei ole sähköpostiosoitetta.",
+      "allMail": "Kaikki sähköpostit",
+      "optedOut": "Tämä henkilö on pyytänyt, ettei hän saa joitakin sähköposteja.",
+      "optOutsHint": "Vain henkilö itse voi perua kieltäytymisen sähköpostiasetustensa sivulta."
+    },
+    "catalog": {
+      "open": "Sähköpostiluettelo",
+      "title": "Sähköpostiluettelo",
+      "subtitle": "Kaikki sähköpostityypit, joita tämä sivusto voi lähettää: kuka lähettää, milloin se lähtee ja miltä se näyttää.",
+      "empty": "Sähköposteja ei ole vielä määritelty.",
+      "notFound": "Tällä sivustolla ei ole tällaista sähköpostia.",
+      "previewFailed": "Sähköpostia ei voitu näyttää.",
+      "neverSent": "Ei vielä lähetetty",
+      "aboutHeading": "Tästä sähköpostista",
+      "previewHeading": "Miltä se näyttää",
+      "exampleData": "Näytetty esimerkkitiedoilla, ei oikean henkilön tiedoilla.",
+      "width": "Leveys",
+      "desktop": "Tietokone",
+      "phone": "Puhelin",
+      "seeSent": "Näytä lähetetyt sähköpostit",
+      "sendTest": "Lähetä testi minulle",
+      "testSentTitle": "Testi lähetetty",
+      "testSent": "Testikopio lähti osoitteeseen {{address}}.",
+      "testFailed": "Testisähköpostia ei voitu lähettää.",
+      "sensitive": "Tämä sähköposti sisältää kirjautumis-, palautus- tai jakolinkin, joten sähköpostiloki säilyttää kenelle ja milloin, mutta ei koskaan sisältöä.",
+      "columns": {
+        "email": "Sähköposti",
+        "when": "Milloin se lähetetään",
+        "sent": "Lähetetty {{days}} päivässä",
+        "lastSent": "Viimeksi lähetetty"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Vahvista sähköpostiosoitteesi",
+          "trigger": "Kun joku rekisteröityy, osoitteen vahvistamiseksi."
+        },
+        "passwordReset": {
+          "label": "Nollaa salasanasi",
+          "trigger": "Kun joku pyytää uutta salasanaa kirjautumissivulta tai henkilötiedoistaan."
+        },
+        "emailChange": {
+          "label": "Vahvista uusi sähköpostiosoitteesi",
+          "trigger": "Kun joku vaihtaa sähköpostiosoitettaan; lähetetään uuteen osoitteeseen."
+        },
+        "securityNotification": {
+          "label": "Tietoturvailmoitus",
+          "trigger": "Kun tilin salasana tai sähköposti vaihtuu tai kirjaudutaan uudesta paikasta (Asetukset → Tietoturva)."
+        },
+        "fileShare": {
+          "label": "Kanssasi on jaettu tiedosto",
+          "trigger": "Kun joku jakaa tiedoston Mediasta sähköpostilla."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Palautuneita sähköposteja ei seurata vielä: tällä sivustolla ei ole palautuspostilaatikkoa. Kunnes sellainen on asetettu, postipalvelimen hyväksymä sähköposti näkyy hyväksyttynä, vaikka se palautuisi myöhemmin.",
+      "settingsLink": "Aseta palautuspostilaatikko",
+      "failed": "Palautuspostilaatikkoa ei voitu lukea: {{error}}",
+      "lastRead": "Palautuneet sähköpostit luetaan palautuspostilaatikosta 15 minuutin välein. Viimeksi luettu: {{date}}.",
+      "notReadYet": "Palautuneet sähköpostit luetaan palautuspostilaatikosta 15 minuutin välein. Sitä ei ole vielä luettu."
     }
   }
 }

@@ -25,6 +25,7 @@ export class AdminSystemNavigationMetadataService {
       { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85, permission: 'system:view' },
       // What runs on its own: scheduled tasks and their runs, the site's own inside a site, every one in the platform scope.
       { label: 'Jobs', path: AppPathConstants.ADMIN.JOBS, icon: 'Clock', group: 'Platform', priority: 86, permission: 'system:view' },
+      { label: 'Emails', path: AppPathConstants.ADMIN.EMAILS, icon: 'Mail', group: 'Platform', priority: 87, permission: 'system:view' }, // sent, suppressed, failed
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },
       { label: 'Settings', path: AppPathConstants.ADMIN.SETTINGS.ROOT, icon: 'Settings', group: 'System', priority: 95 },
     ];

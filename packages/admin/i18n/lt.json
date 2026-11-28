@@ -793,7 +793,8 @@
       "activity": "Veikla",
       "themes": "Temos",
       "settings": "Nustatymai",
-      "jobs": "Užduotys"
+      "jobs": "Užduotys",
+      "emails": "El. laiškai"
     },
     "panel": {
       "sites-list": "Visos svetainės",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Kiek dienų saugoti foninių užduočių vykdymus (puslapis Užduotys); valoma kasdien. Palikus tuščią, visi vykdymai saugomi visam laikui.",
       "jobRunsOlderThanDay": "Senesni nei {{days}} d. užduočių vykdymai bus pašalinti.",
       "jobRunsAreKeptForever": "Užduočių vykdymai saugomi visam laikui.",
-      "failedToSaveJobRunRetention": "Nepavyko išsaugoti užduočių vykdymo istorijos nustatymo."
+      "failedToSaveJobRunRetention": "Nepavyko išsaugoti užduočių vykdymo istorijos nustatymo.",
+      "emailLogRetention": "El. laiškų žurnalas",
+      "daysOfEmailLog": "Kiek dienų el. laiškų žurnalo (puslapis El. laiškai) saugoti; valoma kasdien. Palikus tuščią, visi el. laiškai saugomi neribotai.",
+      "emailsOlderThanDay": "Senesni nei {{days}} d. el. laiškai bus pašalinti iš žurnalo.",
+      "emailsAreKeptForever": "El. laiškų žurnalas saugomas neribotai.",
+      "failedToSaveEmailLogRetention": "Nepavyko išsaugoti el. laiškų žurnalo nustatymo.",
+      "emailContentRetention": "El. laiškų turinys",
+      "daysOfEmailContent": "Kiek dienų saugoti tai, kas parašyta kiekviename el. laiške. Vėliau žurnale lieka kam, kada ir tema. Palikus tuščią, turinys saugomas neribotai.",
+      "emailContentOlderThanDay": "Senesnių nei {{days}} d. el. laiškų turinys bus pašalintas.",
+      "emailContentIsKeptForever": "El. laiškų turinys saugomas neribotai.",
+      "failedToSaveEmailContentRetention": "Nepavyko išsaugoti el. laiškų turinio nustatymo."
     },
     "integrations": {
       "displayNameOptional": "Rodomas pavadinimas (neprivaloma)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "El. laiškai",
+    "subtitleSite": "Kiekvienas el. laiškas, kurį ši svetainė išsiuntė, sulaikė arba nepavyko išsiųsti: kam, kada, kuris plėtinys jį išsiuntė ir kas jame buvo parašyta.",
+    "subtitlePlatform": "Kiekvienas el. laiškas, kurį pati platforma išsiuntė, sulaikė arba nepavyko išsiųsti. Kiekvienos svetainės el. laiškai yra tos svetainės puslapyje El. laiškai.",
+    "platform": "Platforma",
+    "noTemplate": "Be šablono",
+    "transactional": "Paslaugos (negalima išjungti)",
+    "loading": "Įkeliami el. laiškai…",
+    "failed": "Nepavyko nuskaityti el. laiškų.",
+    "empty": "Dar neišsiųsta jokių el. laiškų.",
+    "emptyFiltered": "Nė vienas el. laiškas neatitinka šių filtrų.",
+    "loadOlder": "Įkelti senesnius el. laiškus",
+    "notFound": "Šio el. laiško žurnale nėra. Gali būti, kad jį pašalino žurnalo saugojimo nustatymas.",
+    "manageRequired": "Norint atidaryti el. laiško turinį, reikia sistemos valdymo teisės.",
+    "detailHeading": "El. laiškas",
+    "contentHeading": "Turinys",
+    "contentRemoved": "Šio el. laiško turinys nesaugomas (pašalintas {{date}}). Arba jame buvo prisijungimo, atstatymo ar bendrinimo nuoroda, arba jis senesnis, nei leidžia turinio saugojimo nustatymas.",
+    "noContent": "Šis el. laiškas neturėjo turinio.",
+    "columns": {
+      "status": "Būsena",
+      "sentAt": "Išsiųsta",
+      "to": "Kam",
+      "subject": "Tema",
+      "sender": "Išsiuntė",
+      "template": "Šablonas"
+    },
+    "fields": {
+      "category": "El. laiško rūšis",
+      "error": "Klaida",
+      "serverAnswer": "Pašto serverio atsakymas",
+      "messageId": "Pranešimo ID",
+      "jobRun": "Fono užduoties vykdymas"
+    },
+    "filters": {
+      "all": "Visi",
+      "allSenders": "Visi siuntėjai",
+      "address": "Ieškoti pagal el. pašto adresą",
+      "onlyTemplate": "Tik {{template}} rūšies el. laiškai.",
+      "showAll": "Rodyti visus el. laiškus",
+      "period": "Laikotarpis",
+      "anyTime": "Bet kada",
+      "lastDay": "Paskutinės 24 valandos",
+      "lastWeek": "Paskutinės 7 dienos",
+      "lastMonth": "Paskutinės 30 dienų"
+    },
+    "status": {
+      "sent": "Priėmė pašto serveris",
+      "suppressed": "Neišsiųsta: atsisakė gauti",
+      "failed": "Nepavyko",
+      "bounced": "Grąžintas",
+      "complained": "Pažymėtas kaip šlamštas"
+    },
+    "resend": {
+      "button": "Siųsti dar kartą",
+      "confirmTitle": "Siųsti šį el. laišką dar kartą?",
+      "confirm": "Tas pats el. laiškas bus išsiųstas adresu {{address}} dar kartą. Žurnale jis bus įrašytas kaip naujas el. laiškas.",
+      "sentTitle": "Išsiųsta dar kartą",
+      "sent": "El. laiškas dar kartą išsiųstas adresu {{address}}.",
+      "skippedTitle": "Neišsiųsta",
+      "skipped": "{{address}} atsisakė gauti šios rūšies el. laiškų, todėl jis nebuvo išsiųstas.",
+      "failedTitle": "Nepavyko išsiųsti",
+      "failed": "Nepavyko dar kartą išsiųsti el. laiško."
+    },
+    "person": {
+      "heading": "El. laiškai",
+      "seeAll": "Rodyti visus",
+      "none": "Šiam asmeniui el. laiškų neišsiųsta.",
+      "noAddress": "Šis asmuo neturi el. pašto adreso.",
+      "allMail": "Visi el. laiškai",
+      "optedOut": "Šis asmuo paprašė negauti kai kurių el. laiškų.",
+      "optOutsHint": "Atsisakymą gali panaikinti tik pats asmuo savo el. pašto nuostatų puslapyje."
+    },
+    "catalog": {
+      "open": "El. laiškų katalogas",
+      "title": "El. laiškų katalogas",
+      "subtitle": "Visos el. laiškų rūšys, kurias gali siųsti ši svetainė: kas siunčia, kada išsiunčiama ir kaip atrodo.",
+      "empty": "El. laiškų dar neaprašyta.",
+      "notFound": "Šioje svetainėje tokio el. laiško nėra.",
+      "previewFailed": "Nepavyko parodyti el. laiško.",
+      "neverSent": "Dar neišsiųsta",
+      "aboutHeading": "Apie šį el. laišką",
+      "previewHeading": "Kaip atrodo",
+      "exampleData": "Rodoma su pavyzdiniais duomenimis, ne tikro asmens.",
+      "width": "Plotis",
+      "desktop": "Kompiuteris",
+      "phone": "Telefonas",
+      "seeSent": "Žiūrėti išsiųstus el. laiškus",
+      "sendTest": "Siųsti man bandomąjį",
+      "testSentTitle": "Bandomasis išsiųstas",
+      "testSent": "Bandomoji kopija nusiųsta adresu {{address}}.",
+      "testFailed": "Nepavyko išsiųsti bandomojo el. laiško.",
+      "sensitive": "Šiame el. laiške yra prisijungimo, atstatymo ar bendrinimo nuoroda, todėl žurnalas saugo kam ir kada, bet niekada turinio.",
+      "columns": {
+        "email": "El. laiškas",
+        "when": "Kada siunčiamas",
+        "sent": "Išsiųsta per {{days}} d.",
+        "lastSent": "Paskutinį kartą išsiųsta"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Patvirtinkite savo el. pašto adresą",
+          "trigger": "Kai kas nors užsiregistruoja, kad patvirtintų adresą."
+        },
+        "passwordReset": {
+          "label": "Atstatykite slaptažodį",
+          "trigger": "Kai kas nors paprašo naujo slaptažodžio prisijungimo puslapyje arba savo asmens įraše."
+        },
+        "emailChange": {
+          "label": "Patvirtinkite naują el. pašto adresą",
+          "trigger": "Kai kas nors pakeičia el. pašto adresą; siunčiama naujuoju adresu."
+        },
+        "securityNotification": {
+          "label": "Saugumo pranešimas",
+          "trigger": "Kai pasikeičia paskyros slaptažodis ar el. paštas arba prisijungiama iš naujos vietos (Nustatymai → Saugumas)."
+        },
+        "fileShare": {
+          "label": "Su jumis pasidalyta failu",
+          "trigger": "Kai kas nors el. paštu pasidalija failu iš Medijos."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Grąžinti el. laiškai dar nesekami: ši svetainė neturi grąžintų laiškų pašto dėžutės. Kol ji nenustatyta, pašto serverio priimtas el. laiškas rodomas kaip priimtas, net jei vėliau bus grąžintas.",
+      "settingsLink": "Nustatyti grąžintų laiškų pašto dėžutę",
+      "failed": "Nepavyko nuskaityti grąžintų laiškų pašto dėžutės: {{error}}",
+      "lastRead": "Grąžinti el. laiškai skaitomi iš grąžintų laiškų pašto dėžutės kas 15 minučių. Paskutinį kartą skaityta: {{date}}.",
+      "notReadYet": "Grąžinti el. laiškai skaitomi iš grąžintų laiškų pašto dėžutės kas 15 minučių. Dar neskaityta."
     }
   }
 }

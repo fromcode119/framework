@@ -793,7 +793,8 @@
       "activity": "Aktivitet",
       "themes": "Temaer",
       "settings": "Indstillinger",
-      "jobs": "Job"
+      "jobs": "Job",
+      "emails": "E-mails"
     },
     "panel": {
       "sites-list": "Alle websteder",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Antal dage, kørsler af baggrundsjob (siden Job) gemmes; ryddes dagligt. Tomt felt gemmer alle kørsler for altid.",
       "jobRunsOlderThanDay": "Jobkørsler ældre end {{days}} dag(e) fjernes.",
       "jobRunsAreKeptForever": "Jobkørsler gemmes for altid.",
-      "failedToSaveJobRunRetention": "Indstillingen for historik for jobkørsler kunne ikke gemmes."
+      "failedToSaveJobRunRetention": "Indstillingen for historik for jobkørsler kunne ikke gemmes.",
+      "emailLogRetention": "E-maillog",
+      "daysOfEmailLog": "Hvor mange dages e-maillog (siden E-mails) der gemmes; ryddes dagligt. Tomt felt gemmer alle e-mails for evigt.",
+      "emailsOlderThanDay": "E-mails ældre end {{days}} dag(e) fjernes fra loggen.",
+      "emailsAreKeptForever": "E-maillogget gemmes for altid.",
+      "failedToSaveEmailLogRetention": "E-maillogindstillingen kunne ikke gemmes.",
+      "emailContentRetention": "E-mailindhold",
+      "daysOfEmailContent": "Hvor mange dage indholdet af hver e-mail gemmes. Derefter beholder loggen hvem, hvornår og emnet. Tomt felt gemmer indholdet for evigt.",
+      "emailContentOlderThanDay": "E-mailindhold ældre end {{days}} dag(e) fjernes.",
+      "emailContentIsKeptForever": "E-mailindhold gemmes for altid.",
+      "failedToSaveEmailContentRetention": "Indstillingen for e-mailindhold kunne ikke gemmes."
     },
     "integrations": {
       "displayNameOptional": "Visningsnavn (valgfrit)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "E-mails",
+    "subtitleSite": "Alle e-mails, som dette websted har sendt, tilbageholdt eller ikke kunnet sende: til hvem, hvornår, hvilken udvidelse der sendte dem, og hvad de indeholdt.",
+    "subtitlePlatform": "Alle e-mails, som platformen selv har sendt, tilbageholdt eller ikke kunnet sende. Hvert websteds egne e-mails findes på dets side E-mails.",
+    "platform": "Platform",
+    "noTemplate": "Ingen skabelon",
+    "transactional": "Systemmail (kan ikke slås fra)",
+    "loading": "Indlæser e-mails…",
+    "failed": "E-mails kunne ikke læses.",
+    "empty": "Der er ikke sendt nogen e-mails endnu.",
+    "emptyFiltered": "Ingen e-mails matcher disse filtre.",
+    "loadOlder": "Indlæs ældre e-mails",
+    "notFound": "Denne e-mail er ikke i loggen. Den kan være fjernet af indstillingen for, hvor længe loggen gemmes.",
+    "manageRequired": "For at åbne indholdet af en e-mail kræves tilladelse til at administrere systemet.",
+    "detailHeading": "E-mail",
+    "contentHeading": "Indhold",
+    "contentRemoved": "Indholdet af denne e-mail gemmes ikke (fjernet {{date}}). Enten indeholdt den et link til login, nulstilling eller deling, eller også er den ældre, end indstillingen for indhold tillader.",
+    "noContent": "Denne e-mail havde intet indhold.",
+    "columns": {
+      "status": "Status",
+      "sentAt": "Sendt",
+      "to": "Til",
+      "subject": "Emne",
+      "sender": "Sendt af",
+      "template": "Skabelon"
+    },
+    "fields": {
+      "category": "Type af e-mail",
+      "error": "Fejl",
+      "serverAnswer": "Mailserverens svar",
+      "messageId": "Meddelelses-id",
+      "jobRun": "Kørsel af baggrundsjob"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSenders": "Alle afsendere",
+      "address": "Søg efter e-mailadresse",
+      "onlyTemplate": "Kun e-mails af typen {{template}}.",
+      "showAll": "Vis alle e-mails",
+      "period": "Periode",
+      "anyTime": "Altid",
+      "lastDay": "Seneste 24 timer",
+      "lastWeek": "Seneste 7 dage",
+      "lastMonth": "Seneste 30 dage"
+    },
+    "status": {
+      "sent": "Accepteret af mailserveren",
+      "suppressed": "Ikke sendt: afmeldt",
+      "failed": "Mislykkedes",
+      "bounced": "Returneret",
+      "complained": "Markeret som spam"
+    },
+    "resend": {
+      "button": "Send igen",
+      "confirmTitle": "Send denne e-mail igen?",
+      "confirm": "Den samme e-mail sendes til {{address}} endnu en gang. Den registreres i loggen som en ny e-mail.",
+      "sentTitle": "Sendt igen",
+      "sent": "E-mailen blev sendt til {{address}} igen.",
+      "skippedTitle": "Ikke sendt",
+      "skipped": "{{address}} har afmeldt sig denne type e-mails, så den blev ikke sendt.",
+      "failedTitle": "Kunne ikke sendes",
+      "failed": "E-mailen kunne ikke sendes igen."
+    },
+    "person": {
+      "heading": "E-mails",
+      "seeAll": "Se alle",
+      "none": "Der er ikke sendt nogen e-mails til denne person.",
+      "noAddress": "Denne person har ingen e-mailadresse.",
+      "allMail": "Alle e-mails",
+      "optedOut": "Denne person har bedt om ikke at modtage visse e-mails.",
+      "optOutsHint": "Kun personen selv kan ophæve en afmelding, fra sin side med e-mailindstillinger."
+    },
+    "catalog": {
+      "open": "E-mailkatalog",
+      "title": "E-mailkatalog",
+      "subtitle": "Alle typer e-mails, dette websted kan sende: hvem der sender dem, hvornår de sendes, og hvordan de ser ud.",
+      "empty": "Der er ikke beskrevet nogen e-mails endnu.",
+      "notFound": "Dette websted har ikke en sådan e-mail.",
+      "previewFailed": "E-mailen kunne ikke vises.",
+      "neverSent": "Ikke sendt endnu",
+      "aboutHeading": "Om denne e-mail",
+      "previewHeading": "Sådan ser den ud",
+      "exampleData": "Vist med eksempeldata, ikke en rigtig persons.",
+      "width": "Bredde",
+      "desktop": "Computer",
+      "phone": "Telefon",
+      "seeSent": "Se sendte e-mails",
+      "sendTest": "Send en test til mig",
+      "testSentTitle": "Test sendt",
+      "testSent": "En testkopi blev sendt til {{address}}.",
+      "testFailed": "Test-e-mailen kunne ikke sendes.",
+      "sensitive": "Denne e-mail indeholder et link til login, nulstilling eller deling, så e-maillogget gemmer hvem og hvornår, men aldrig indholdet.",
+      "columns": {
+        "email": "E-mail",
+        "when": "Hvornår den sendes",
+        "sent": "Sendt på {{days}} dage",
+        "lastSent": "Sidst sendt"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Bekræft din e-mailadresse",
+          "trigger": "Når nogen tilmelder sig, for at bekræfte adressen."
+        },
+        "passwordReset": {
+          "label": "Nulstil din adgangskode",
+          "trigger": "Når nogen beder om en ny adgangskode, fra loginsiden eller fra deres personpost."
+        },
+        "emailChange": {
+          "label": "Bekræft din nye e-mailadresse",
+          "trigger": "Når nogen ændrer sin e-mailadresse; sendes til den nye adresse."
+        },
+        "securityNotification": {
+          "label": "Sikkerhedsmeddelelse",
+          "trigger": "Når en kontos adgangskode eller e-mail ændres, eller der logges ind fra et nyt sted (Indstillinger → Sikkerhed)."
+        },
+        "fileShare": {
+          "label": "En fil er blevet delt med dig",
+          "trigger": "Når nogen deler en fil fra Medier via e-mail."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Returnerede e-mails spores ikke endnu: dette websted har ingen postkasse til returmails. Indtil der er sat en, vises en e-mail, som mailserveren har accepteret, som accepteret, selv hvis den senere returneres.",
+      "settingsLink": "Angiv postkassen til returmails",
+      "failed": "Postkassen til returmails kunne ikke læses: {{error}}",
+      "lastRead": "Returnerede e-mails læses fra postkassen til returmails hvert 15. minut. Sidst læst: {{date}}.",
+      "notReadYet": "Returnerede e-mails læses fra postkassen til returmails hvert 15. minut. Den er ikke læst endnu."
     }
   }
 }

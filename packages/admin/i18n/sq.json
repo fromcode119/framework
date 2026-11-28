@@ -793,7 +793,8 @@
       "activity": "Aktiviteti",
       "themes": "Temat",
       "settings": "Cilësimet",
-      "jobs": "Punët"
+      "jobs": "Punët",
+      "emails": "Emailet"
     },
     "panel": {
       "sites-list": "Të gjitha sajtet",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Ditët e ekzekutimeve të punëve në sfond (faqja Punët) që do të ruhen, pastruar çdo ditë. Bosh i ruan të gjitha ekzekutimet përgjithmonë.",
       "jobRunsOlderThanDay": "Ekzekutimet e punëve më të vjetra se {{days}} ditë do të hiqen.",
       "jobRunsAreKeptForever": "Ekzekutimet e punëve ruhen përgjithmonë.",
-      "failedToSaveJobRunRetention": "Cilësimi i historikut të ekzekutimit të punëve nuk u ruajt."
+      "failedToSaveJobRunRetention": "Cilësimi i historikut të ekzekutimit të punëve nuk u ruajt.",
+      "emailLogRetention": "Regjistri i emaileve",
+      "daysOfEmailLog": "Sa ditë të regjistrit të emaileve (faqja Emailet) ruhen, pastrohet çdo ditë. Bosh i ruan të gjitha emailet përgjithmonë.",
+      "emailsOlderThanDay": "Emailet më të vjetra se {{days}} ditë do të hiqen nga regjistri.",
+      "emailsAreKeptForever": "Regjistri i emaileve ruhet përgjithmonë.",
+      "failedToSaveEmailLogRetention": "Cilësimi i regjistrit të emaileve nuk mund të ruhej.",
+      "emailContentRetention": "Përmbajtja e emaileve",
+      "daysOfEmailContent": "Sa ditë ruhet ajo që thoshte çdo email. Pas kësaj regjistri mban kujt, kur dhe subjektin. Bosh e ruan përmbajtjen përgjithmonë.",
+      "emailContentOlderThanDay": "Përmbajtja e emaileve më të vjetra se {{days}} ditë do të hiqet.",
+      "emailContentIsKeptForever": "Përmbajtja e emaileve ruhet përgjithmonë.",
+      "failedToSaveEmailContentRetention": "Cilësimi i përmbajtjes së emaileve nuk mund të ruhej."
     },
     "integrations": {
       "displayNameOptional": "Emri i shfaqur (opsional)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Emailet",
+    "subtitleSite": "Çdo email që ky sajt ka dërguar, mbajtur ose nuk ka mundur ta dërgojë: kujt, kur, cila shtesë e dërgoi dhe çfarë thoshte.",
+    "subtitlePlatform": "Çdo email që vetë platforma ka dërguar, mbajtur ose nuk ka mundur ta dërgojë. Emailet e çdo sajti janë në faqen Emailet të atij sajti.",
+    "platform": "Platforma",
+    "noTemplate": "Pa shabllon",
+    "transactional": "Shërbimi (nuk mund të çaktivizohet)",
+    "loading": "Po ngarkohen emailet…",
+    "failed": "Emailet nuk mund të lexoheshin.",
+    "empty": "Ende nuk është dërguar asnjë email.",
+    "emptyFiltered": "Asnjë email nuk përputhet me këto filtra.",
+    "loadOlder": "Ngarko emailet më të vjetra",
+    "notFound": "Ky email nuk është në regjistër. Mund të jetë hequr nga cilësimi i ruajtjes së regjistrit.",
+    "manageRequired": "Hapja e përmbajtjes së një emaili kërkon lejen për të menaxhuar sistemin.",
+    "detailHeading": "Email",
+    "contentHeading": "Përmbajtja",
+    "contentRemoved": "Përmbajtja e këtij emaili nuk ruhet (hequr më {{date}}). Ose kishte një lidhje për hyrje, rivendosje ose ndarje, ose është më e vjetër nga sa lejon cilësimi i ruajtjes së përmbajtjes.",
+    "noContent": "Ky email nuk kishte përmbajtje.",
+    "columns": {
+      "status": "Statusi",
+      "sentAt": "Dërguar",
+      "to": "Për",
+      "subject": "Subjekti",
+      "sender": "Dërguar nga",
+      "template": "Shablloni"
+    },
+    "fields": {
+      "category": "Lloji i emailit",
+      "error": "Gabim",
+      "serverAnswer": "Përgjigjja e serverit të postës",
+      "messageId": "ID e mesazhit",
+      "jobRun": "Ekzekutimi i punës në sfond"
+    },
+    "filters": {
+      "all": "Të gjitha",
+      "allSenders": "Të gjithë dërguesit",
+      "address": "Kërko sipas adresës së emailit",
+      "onlyTemplate": "Vetëm emailet e llojit {{template}}.",
+      "showAll": "Shfaq të gjitha emailet",
+      "period": "Periudha",
+      "anyTime": "Çdo kohë",
+      "lastDay": "24 orët e fundit",
+      "lastWeek": "7 ditët e fundit",
+      "lastMonth": "30 ditët e fundit"
+    },
+    "status": {
+      "sent": "Pranuar nga serveri i postës",
+      "suppressed": "Nuk u dërgua: u çregjistrua",
+      "failed": "Dështoi",
+      "bounced": "U kthye mbrapsht",
+      "complained": "Shënuar si spam"
+    },
+    "resend": {
+      "button": "Dërgo përsëri",
+      "confirmTitle": "Ta dërgojmë këtë email përsëri?",
+      "confirm": "I njëjti email do t'i shkojë {{address}} edhe një herë. Në regjistër shënohet si email i ri.",
+      "sentTitle": "U dërgua përsëri",
+      "sent": "Emaili u dërgua përsëri te {{address}}.",
+      "skippedTitle": "Nuk u dërgua",
+      "skipped": "{{address}} është çregjistruar nga ky lloj emaili, ndaj nuk u dërgua.",
+      "failedTitle": "Nuk mund të dërgohej",
+      "failed": "Emaili nuk mund të dërgohej përsëri."
+    },
+    "person": {
+      "heading": "Emailet",
+      "seeAll": "Shiko të gjitha",
+      "none": "Këtij personi nuk i është dërguar asnjë email.",
+      "noAddress": "Ky person nuk ka adresë emaili.",
+      "allMail": "Të gjitha emailet",
+      "optedOut": "Ky person ka kërkuar të mos marrë disa emaile.",
+      "optOutsHint": "Vetëm vetë personi mund ta heqë çregjistrimin, nga faqja e tij e preferencave të emailit."
+    },
+    "catalog": {
+      "open": "Katalogu i emaileve",
+      "title": "Katalogu i emaileve",
+      "subtitle": "Çdo lloj emaili që ky sajt mund të dërgojë: kush e dërgon, kur del dhe si duket.",
+      "empty": "Ende nuk është deklaruar asnjë email.",
+      "notFound": "Ky sajt nuk ka një email të tillë.",
+      "previewFailed": "Emaili nuk mund të shfaqej.",
+      "neverSent": "Ende pa u dërguar",
+      "aboutHeading": "Rreth këtij emaili",
+      "previewHeading": "Si duket",
+      "exampleData": "Shfaqur me të dhëna shembulli, jo të një personi real.",
+      "width": "Gjerësia",
+      "desktop": "Kompjuter",
+      "phone": "Telefon",
+      "seeSent": "Shiko emailet e dërguara",
+      "sendTest": "Më dërgo një provë",
+      "testSentTitle": "Prova u dërgua",
+      "testSent": "Një kopje prove shkoi te {{address}}.",
+      "testFailed": "Emaili i provës nuk mund të dërgohej.",
+      "sensitive": "Ky email mban një lidhje për hyrje, rivendosje ose ndarje, ndaj regjistri ruan kujt dhe kur, por kurrë përmbajtjen.",
+      "columns": {
+        "email": "Email",
+        "when": "Kur dërgohet",
+        "sent": "Dërguar në {{days}} ditë",
+        "lastSent": "Dërguar së fundi"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Konfirmo adresën tënde të emailit",
+          "trigger": "Kur dikush regjistrohet, për të konfirmuar adresën e tij."
+        },
+        "passwordReset": {
+          "label": "Rivendos fjalëkalimin",
+          "trigger": "Kur dikush kërkon fjalëkalim të ri, nga faqja e hyrjes ose nga regjistrimi i personit."
+        },
+        "emailChange": {
+          "label": "Konfirmo adresën e re të emailit",
+          "trigger": "Kur dikush ndryshon adresën e emailit; dërgohet te adresa e re."
+        },
+        "securityNotification": {
+          "label": "Njoftim sigurie",
+          "trigger": "Kur ndryshon fjalëkalimi ose emaili i një llogarie, ose hyhet nga një vend i ri (Cilësimet → Siguria)."
+        },
+        "fileShare": {
+          "label": "U nda një skedar me ty",
+          "trigger": "Kur dikush ndan një skedar nga Media me email."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Emailet e kthyera ende nuk gjurmohen: ky sajt nuk ka kuti postare për të kthyerat. Derisa të caktohet një, një email i pranuar nga serveri i postës shfaqet si i pranuar edhe nëse më vonë kthehet.",
+      "settingsLink": "Cakto kutinë postare të të kthyerave",
+      "failed": "Kutia postare e të kthyerave nuk mund të lexohej: {{error}}",
+      "lastRead": "Emailet e kthyera lexohen nga kutia postare e të kthyerave çdo 15 minuta. Leximi i fundit: {{date}}.",
+      "notReadYet": "Emailet e kthyera lexohen nga kutia postare e të kthyerave çdo 15 minuta. Ende nuk është lexuar."
     }
   }
 }

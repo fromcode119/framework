@@ -793,7 +793,8 @@
       "activity": "Gníomhaíocht",
       "themes": "Téamaí",
       "settings": "Socruithe",
-      "jobs": "Jabanna"
+      "jobs": "Jabanna",
+      "emails": "Ríomhphoist"
     },
     "panel": {
       "sites-list": "Gach suíomh",
@@ -2239,7 +2240,17 @@
       "daysOfJobRunHistory": "Líon laethanta de rití jab cúlra (leathanach Jabanna) le coinneáil, glanta go laethúil. Má fhágtar bán é, coinnítear gach rith go deo.",
       "jobRunsOlderThanDay": "Bainfear rití jab atá níos sine ná {{days}} lá.",
       "jobRunsAreKeptForever": "Coinnítear rití jab go deo.",
-      "failedToSaveJobRunRetention": "Theip ar shábháil shocrú stair rití jab."
+      "failedToSaveJobRunRetention": "Theip ar shábháil shocrú stair rití jab.",
+      "emailLogRetention": "Logchomhad ríomhphoist",
+      "daysOfEmailLog": "Cé mhéad lá den logchomhad ríomhphoist (leathanach Ríomhphoist) le coinneáil, glantar gach lá é. Má fhágtar bán é, coinnítear gach ríomhphost go deo.",
+      "emailsOlderThanDay": "Bainfear ríomhphoist níos sine ná {{days}} lá den logchomhad.",
+      "emailsAreKeptForever": "Coinnítear an logchomhad ríomhphoist go deo.",
+      "failedToSaveEmailLogRetention": "Níorbh fhéidir suíomh an logchomhaid ríomhphoist a shábháil.",
+      "emailContentRetention": "Ábhar ríomhphoist",
+      "daysOfEmailContent": "Cé mhéad lá le hábhar gach ríomhphoist a choinneáil. Ina dhiaidh sin coinníonn an logchomhad cé, cathain agus an t-ábhar. Má fhágtar bán é, coinnítear an t-ábhar go deo.",
+      "emailContentOlderThanDay": "Bainfear ábhar ríomhphoist níos sine ná {{days}} lá.",
+      "emailContentIsKeptForever": "Coinnítear ábhar ríomhphoist go deo.",
+      "failedToSaveEmailContentRetention": "Níorbh fhéidir suíomh ábhar ríomhphoist a shábháil."
     },
     "integrations": {
       "displayNameOptional": "Ainm Taispeána (Roghnach)",
@@ -4979,6 +4990,135 @@
     "chipInput": {
       "placeholder": "Type and press Enter",
       "remove": "Remove {{value}}"
+    }
+  },
+  "emails": {
+    "title": "Ríomhphoist",
+    "subtitleSite": "Gach ríomhphost a sheol an suíomh seo, a choinnigh sé siar nó nár éirigh leis a sheoladh: chuig cé, cathain, cén síneadh a sheol é agus cad a bhí ann.",
+    "subtitlePlatform": "Gach ríomhphost a sheol an t-ardán féin, a choinnigh sé siar nó nár éirigh leis a sheoladh. Tá ríomhphoist gach suímh ar leathanach Ríomhphoist an tsuímh sin.",
+    "platform": "Ardán",
+    "noTemplate": "Gan teimpléad",
+    "transactional": "Idirbheartaíochta (ní féidir é a mhúchadh)",
+    "loading": "Ag luchtú ríomhphost…",
+    "failed": "Níorbh fhéidir na ríomhphoist a léamh.",
+    "empty": "Níor seoladh aon ríomhphost go fóill.",
+    "emptyFiltered": "Níl aon ríomhphost ag teacht leis na scagairí seo.",
+    "loadOlder": "Lódáil ríomhphoist níos sine",
+    "notFound": "Níl an ríomhphost seo sa logchomhad. B'fhéidir gur baineadh é de bharr shuíomh coinneála an logchomhaid.",
+    "manageRequired": "Teastaíonn cead an córas a bhainistiú chun ábhar ríomhphoist a oscailt.",
+    "detailHeading": "Ríomhphost",
+    "contentHeading": "Ábhar",
+    "contentRemoved": "Ní choinnítear ábhar an ríomhphoist seo (baineadh é an {{date}}). Bhí nasc sínithe isteach, athshocraithe nó comhroinnte ann, nó tá sé níos sine ná mar a cheadaíonn suíomh coinneála an ábhair.",
+    "noContent": "Ní raibh aon ábhar sa ríomhphost seo.",
+    "columns": {
+      "status": "Stádas",
+      "sentAt": "Seolta",
+      "to": "Chuig",
+      "subject": "Ábhar",
+      "sender": "Seolta ag",
+      "template": "Teimpléad"
+    },
+    "fields": {
+      "category": "Cineál ríomhphoist",
+      "error": "Earráid",
+      "serverAnswer": "Freagra an fhreastalaí poist",
+      "messageId": "ID an teachtaireachta",
+      "jobRun": "Rith na jabanna cúlra"
+    },
+    "filters": {
+      "all": "Gach ceann",
+      "allSenders": "Gach seoltóir",
+      "address": "Cuardaigh de réir seoladh ríomhphoist",
+      "onlyTemplate": "Ríomhphoist de chineál {{template}} amháin.",
+      "showAll": "Taispeáin gach ríomhphost",
+      "period": "Tréimhse",
+      "anyTime": "Am ar bith",
+      "lastDay": "24 uair an chloig seo caite",
+      "lastWeek": "7 lá seo caite",
+      "lastMonth": "30 lá seo caite"
+    },
+    "status": {
+      "sent": "Glactha ag an bhfreastalaí poist",
+      "suppressed": "Gan seoladh: díliostáilte",
+      "failed": "Theip air",
+      "bounced": "Phreab ar ais",
+      "complained": "Marcáilte mar turscar"
+    },
+    "resend": {
+      "button": "Seol arís",
+      "confirmTitle": "An seolfar an ríomhphost seo arís?",
+      "confirm": "Seolfar an ríomhphost céanna chuig {{address}} uair amháin eile. Taifeadtar sa logchomhad é mar ríomhphost nua.",
+      "sentTitle": "Seolta arís",
+      "sent": "Seoladh an ríomhphost chuig {{address}} arís.",
+      "skippedTitle": "Gan seoladh",
+      "skipped": "Tá {{address}} díliostáilte ón gcineál ríomhphoist seo, mar sin níor seoladh é.",
+      "failedTitle": "Níorbh fhéidir a sheoladh",
+      "failed": "Níorbh fhéidir an ríomhphost a sheoladh arís."
+    },
+    "person": {
+      "heading": "Ríomhphoist",
+      "seeAll": "Féach gach ceann",
+      "none": "Níor seoladh aon ríomhphost chuig an duine seo.",
+      "noAddress": "Níl seoladh ríomhphoist ag an duine seo.",
+      "allMail": "Gach ríomhphost",
+      "optedOut": "D'iarr an duine seo gan roinnt ríomhphost a fháil.",
+      "optOutsHint": "Ní féidir ach leis an duine féin díliostáil a chealú, óna leathanach sainroghanna ríomhphoist."
+    },
+    "catalog": {
+      "open": "Catalóg ríomhphost",
+      "title": "Catalóg ríomhphost",
+      "subtitle": "Gach cineál ríomhphoist ar féidir leis an suíomh seo a sheoladh: cé a sheolann é, cathain a théann sé amach agus cén chuma atá air.",
+      "empty": "Níor fógraíodh aon ríomhphost go fóill.",
+      "notFound": "Níl a leithéid de ríomhphost ag an suíomh seo.",
+      "previewFailed": "Níorbh fhéidir an ríomhphost a thaispeáint.",
+      "neverSent": "Gan seoladh go fóill",
+      "aboutHeading": "Faoin ríomhphost seo",
+      "previewHeading": "An chuma atá air",
+      "exampleData": "Taispeánta le sonraí samplacha, ní le sonraí duine fíor.",
+      "width": "Leithead",
+      "desktop": "Ríomhaire",
+      "phone": "Fón",
+      "seeSent": "Féach ar ríomhphoist seolta",
+      "sendTest": "Seol tástáil chugam",
+      "testSentTitle": "Tástáil seolta",
+      "testSent": "Chuaigh cóip thástála chuig {{address}}.",
+      "testFailed": "Níorbh fhéidir an ríomhphost tástála a sheoladh.",
+      "sensitive": "Tá nasc sínithe isteach, athshocraithe nó comhroinnte sa ríomhphost seo, mar sin coinníonn an logchomhad ríomhphoist cé agus cathain, ach riamh an t-ábhar.",
+      "columns": {
+        "email": "Ríomhphost",
+        "when": "Cathain a sheoltar é",
+        "sent": "Seolta i {{days}} lá",
+        "lastSent": "Seolta go deireanach"
+      },
+      "platform": {
+        "verifyEmail": {
+          "label": "Deimhnigh do sheoladh ríomhphoist",
+          "trigger": "Nuair a chláraíonn duine, chun a sheoladh a dheimhniú."
+        },
+        "passwordReset": {
+          "label": "Athshocraigh do phasfhocal",
+          "trigger": "Nuair a iarrann duine pasfhocal nua, ón leathanach sínithe isteach nó óna thaifead pearsanta."
+        },
+        "emailChange": {
+          "label": "Deimhnigh do sheoladh ríomhphoist nua",
+          "trigger": "Nuair a athraíonn duine a sheoladh ríomhphoist; seoltar chuig an seoladh nua é."
+        },
+        "securityNotification": {
+          "label": "Fógra slándála",
+          "trigger": "Nuair a athraíonn pasfhocal nó ríomhphost cuntais, nó nuair a shínítear isteach ó áit nua (Socruithe → Slándáil)."
+        },
+        "fileShare": {
+          "label": "Roinneadh comhad leat",
+          "trigger": "Nuair a roinneann duine comhad ó Meáin trí ríomhphost."
+        }
+      }
+    },
+    "bounces": {
+      "notConfigured": "Ní rianaítear ríomhphoist aisfhillte go fóill: níl bosca poist aisfhillte ag an suíomh seo. Go dtí go socraítear ceann, taispeánfar ríomhphost a ghlac an freastalaí poist leis mar ghlactha fiú má fhilleann sé ar ais ina dhiaidh sin.",
+      "settingsLink": "Socraigh an bosca poist aisfhillte",
+      "failed": "Níorbh fhéidir an bosca poist aisfhillte a léamh: {{error}}",
+      "lastRead": "Léitear ríomhphoist aisfhillte ón mbosca poist aisfhillte gach 15 nóiméad. Léite go deireanach: {{date}}.",
+      "notReadYet": "Léitear ríomhphoist aisfhillte ón mbosca poist aisfhillte gach 15 nóiméad. Níor léadh go fóill é."
     }
   }
 }
