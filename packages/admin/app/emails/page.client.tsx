@@ -17,6 +17,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { EmailColumns } from '@/app/emails/email-columns';
+import { EmailTemplateNames } from '@/app/emails/email-template-names';
 import { EmailSenderText } from '@/app/emails/email-sender-text';
 
 /**
@@ -47,8 +48,10 @@ export class EmailsPage extends AdminComponent {
   @state private activeAddress = '';
   /** Opened from the catalog: only this kind of email. Stated above the list, with a way back to all. */
   @state private template = '';
+  @state private templateNames = new Map<string, string>();
 
   componentDidMount(): void {
+    void EmailTemplateNames.load().then((names) => { this.templateNames = names; });
     const search = new URLSearchParams(window.location.search);
     this.activeAddress = this.address = search.get('address') || '';
     this.template = search.get('template') || '';
@@ -164,7 +167,7 @@ export class EmailsPage extends AdminComponent {
           <ListShell
             subtitle={this.template ? (
               <span className="fc-dt-inline">
-                {AdminI18n.t('emails.filters.onlyTemplate', { template: this.template })}
+                {AdminI18n.t('emails.filters.onlyTemplate', { template: EmailTemplateNames.of(this.templateNames, this.template) })}
                 <Button variant={ButtonVariant.GHOST} onClick={this.clearTemplate}>{AdminI18n.t('emails.filters.showAll')}</Button>
               </span>
             ) : undefined}
@@ -195,7 +198,7 @@ export class EmailsPage extends AdminComponent {
             )}
             foot={this.more ? <Button variant={ButtonVariant.SECONDARY} isLoading={this.loading} onClick={this.loadOlder}>{AdminI18n.t('emails.loadOlder')}</Button> : null}
           >
-            <DataTable columns={EmailColumns.all() as any} data={this.emails} onRowClick={this.open} emptyMessage={this.emptyMessage} />
+            <DataTable columns={EmailColumns.all(this.templateNames) as any} data={this.emails} onRowClick={this.open} emptyMessage={this.emptyMessage} />
           </ListShell>
         </div>
       </div>

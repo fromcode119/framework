@@ -17,6 +17,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { EmailStatusBadge } from '@/app/emails/email-status-badge';
 import { EmailSenderText } from '@/app/emails/email-sender-text';
 import { EmailColumns } from '@/app/emails/email-columns';
+import { EmailTemplateNames } from '@/app/emails/email-template-names';
 
 /**
  * One email: everything recorded about it, the email itself as it was sent, and "send it again".
@@ -31,8 +32,10 @@ export class EmailPage extends AdminComponent {
   @state private error = '';
   @state private confirming = false;
   @state private resending = false;
+  @state private templateNames = new Map<string, string>();
 
   async componentDidMount(): Promise<void> {
+    void EmailTemplateNames.load().then((names) => { this.templateNames = names; });
     const params = await this.params;
     try {
       const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.EMAILS.ONE(decodeURIComponent(params.id)));
@@ -79,7 +82,7 @@ export class EmailPage extends AdminComponent {
       { key: 'to', label: AdminI18n.t('emails.columns.to'), value: email.to },
       { key: 'subject', label: AdminI18n.t('emails.columns.subject'), value: email.subject },
       { key: 'sender', label: AdminI18n.t('emails.columns.sender'), value: EmailSenderText.of(email.sender) },
-      { key: 'template', label: AdminI18n.t('emails.columns.template'), value: email.template || AdminI18n.t('emails.noTemplate') },
+      { key: 'template', label: AdminI18n.t('emails.columns.template'), value: email.template ? EmailTemplateNames.of(this.templateNames, email.template) : AdminI18n.t('emails.noTemplate') },
       { key: 'category', label: AdminI18n.t('emails.fields.category'), value: email.category || AdminI18n.t('emails.transactional') },
     ];
     if (email.error) facts.push({ key: 'error', label: AdminI18n.t('emails.fields.error'), value: email.error });
