@@ -46,7 +46,9 @@ export class CertificateMaterial {
       throw new CertificateValidationError(CertificateRejection.KEY_MISMATCH);
     }
 
-    const notAfter = leaf.validToDate;
+    // `validTo`/`validFrom` strings, not `validToDate`: the Date getters are Node 22.10+ runtime but
+    // absent from the @types/node the lockfile pins, so the framework did not type-check.
+    const notAfter = new Date(leaf.validTo);
     if (notAfter.getTime() <= Date.now()) {
       throw new CertificateValidationError(CertificateRejection.ALREADY_EXPIRED, notAfter.toISOString());
     }
@@ -67,7 +69,7 @@ export class CertificateMaterial {
       CertificateMaterial.readAltNames(leaf),
       leaf.serialNumber,
       leaf.fingerprint256,
-      leaf.validFromDate,
+      new Date(leaf.validFrom),
       notAfter,
     );
   }
