@@ -3,7 +3,7 @@ import { EmailBounceReader } from '@core/email/email-bounce-reader';
 import { EmailSuppressionService } from '@core/email/email-suppression-service';
 
 const db = (rows: any[]) => ({
-  find: vi.fn(async (_table: string, opts: any) => rows.filter((row) => Object.entries(opts.where).every(([k, v]) => row[k] === v))),
+  find: vi.fn(async (_table: string, opts: any) => rows.filter((row) => Object.entries(opts.where).every(([k, v]) => row[k] === v)).slice(0, opts.limit ?? 1000)),
   update: vi.fn(async (_table: string, where: any, patch: any) => { Object.assign(rows.find((row) => row.id === where.id), patch); }),
 });
 
@@ -35,5 +35,15 @@ describe('EmailBounceReader.apply', () => {
     expect(suppress).not.toHaveBeenCalled();
     suppress.mockRestore();
   });
-});
 
+  it('does nothing when the reported email went to several people', async () => {
+    const rows = [
+      { id: 1, to_address: 'a@example.org', message_id: 'shared@shop.example', status: 'sent' },
+      { id: 2, to_address: 'b@example.org', message_id: 'shared@shop.example', status: 'sent' },
+    ];
+    const suppress = vi.spyOn(EmailSuppressionService, 'suppress').mockResolvedValue();
+    expect(await new EmailBounceReader(db(rows), async () => []).apply(bounce('shared@shop.example', 'b@example.org'))).toBe(0);
+    expect(suppress).not.toHaveBeenCalled();
+    suppress.mockRestore();
+  });
+});

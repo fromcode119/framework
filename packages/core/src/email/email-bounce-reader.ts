@@ -57,11 +57,15 @@ export class EmailBounceReader {
    * One report against the log. Returns how many log rows it changed.
    *
    * A report counts only when it names the Message-ID of an email this site sent to that same
-   * address. Anyone can mail the bounce mailbox, and an unmatched "bounce" acted on would let a
+   * address, and that email went to that address alone. Anyone can mail the bounce mailbox, and an unmatched "bounce" acted on would let a
    * stranger silence a real customer; a matched one proves the report is about our own email.
    */
   async apply(report: IDeliveryReport): Promise<number> {
     if (!report.originalMessageId) return 0;
+    // One Message-ID sent to several people proves nothing about any ONE of them: any co-recipient
+    // could forge a report naming another. Only a message that went to a single address is trusted.
+    const sent: any[] = await this.db.find(SystemConstants.TABLE.EMAIL_LOG, { where: { message_id: report.originalMessageId }, limit: 2 });
+    if (sent.length !== 1) return 0;
     let changed = 0;
     for (const recipient of report.recipients) {
       const complaint = report.kind === 'complaint';
