@@ -88,7 +88,7 @@ export class AuthLoginForm extends AuthFormBase<IAuthFormProps, IAuthLoginFormSt
         <AuthSocialSignIn />
         <p className="fc-auth__switch">
           {this.tr('auth.login.noAccount', "Don't have an account?")}{' '}
-          <a href={RouteConstants.SEGMENTS.REGISTER} className="fc-auth__link" onClick={(e) => this.switchTo(AuthMode.REGISTER, e)}>
+          <a href={this.withNext(RouteConstants.SEGMENTS.REGISTER)} className="fc-auth__link" onClick={(e) => this.switchTo(AuthMode.REGISTER, e)}>
             {this.tr('auth.login.registerLink', 'Create one')}
           </a>
         </p>

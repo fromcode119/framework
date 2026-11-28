@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { ApplicationUrlUtils, AppPathConstants, RequestContextUtils, RequestSurfaceUtils, SiteBaseUrl, SystemConstants } from '@fromcode119/core';
+import { ApplicationUrlUtils, AppPathConstants, LocalPathUtils, RequestContextUtils, RequestSurfaceUtils, SiteBaseUrl, SystemConstants } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
 import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
@@ -39,9 +39,16 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     throw new Error('Admin base URL is not configured. Set the admin URL in Settings → General.');
   }
 
-  protected async buildEmailVerificationUrl(req: Request, token: string): Promise<string> {
+  /**
+   * The confirmation link. `next` is where the person was going when they signed up (a same-site path,
+   * e.g. the page that asked them to register): the confirmation page hands it on to sign-in, so they land
+   * back there instead of on the account page. Anything that is not a plain local path is dropped.
+   */
+  protected async buildEmailVerificationUrl(req: Request, token: string, next: unknown = ''): Promise<string> {
     const baseUrl = await this.getFrontendBaseUrl(req);
-    return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.VERIFY_EMAIL}?token=${encodeURIComponent(token)}`;
+    const path = LocalPathUtils.safe(next);
+    const local = path ? `&next=${encodeURIComponent(path)}` : '';
+    return `${baseUrl}${ApiConfig.getInstance().appRoutes.auth.VERIFY_EMAIL}?token=${encodeURIComponent(token)}${local}`;
   }
 
   protected async buildPasswordResetUrl(req: Request, token: string, contextHint?: string): Promise<string> {

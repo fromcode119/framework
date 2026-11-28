@@ -105,6 +105,7 @@ export { PluginFrontendRuntimeUtils } from '@core/utils/plugin-frontend-runtime-
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';
 export { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+export { LocalPathUtils } from '@core/utils/local-path-utils';
 export { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
 export { PushNotificationWorker } from '@core/push/push-notification-worker';
 // Browser-safe: a pure Enum over four strings, importing nothing but `Enum` itself. The admin needs

@@ -30,6 +30,8 @@ export class SystemAuthClient {
       firstName: string;
       lastName: string;
       context?: Record<string, any>;
+      /** Where the person was going; the confirmation link carries it on to sign-in. */
+      next?: string;
     },
     options?: any,
   ): Promise<any> {
@@ -41,8 +43,8 @@ export class SystemAuthClient {
     return this.requester.post(SystemApiPaths.ALL.AUTH.VERIFY_EMAIL, { token }, options);
   }
 
-  resendVerification(email: string, options?: any): Promise<any> {
-    return this.requester.post(SystemApiPaths.ALL.AUTH.RESEND_VERIFICATION, { email }, options);
+  resendVerification(email: string, options?: any, next?: string): Promise<any> {
+    return this.requester.post(SystemApiPaths.ALL.AUTH.RESEND_VERIFICATION, next ? { email, next } : { email }, options);
   }
 
   /** Request a password-reset email for the given address (always resolves with a generic message). */

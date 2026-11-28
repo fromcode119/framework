@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
-import { SdkClient, BrowserStateClient, RouteConstants } from '@fromcode119/core/client';
+import { SdkClient, BrowserStateClient, LocalPathUtils, RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { FrameworkTranslations } from '@react/i18n/framework-translations';
 
@@ -52,15 +52,25 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
     return translated && translated !== key ? translated : fallback;
   }
 
-  /**
-   * Where a sign-in continues: a same-site `?next=` path, else the framework account page. `//host` and
-   * `/\\host` also start with a slash but are protocol-relative addresses a browser follows off-site, so a
-   * crafted sign-in link could hand a freshly signed-in visitor to any site.
-   */
+  /** Where a sign-in continues: a same-site `?next=` path ({@link LocalPathUtils}), else the account page. */
   protected get afterAuthPath(): string {
-    const next = Platform.isBrowser ? this.browserState.readQueryParamFromWindow('next') : '';
-    const local = Boolean(next) && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\');
-    return local ? next : RouteConstants.SEGMENTS.ACCOUNT;
+    return this.requestedNext || RouteConstants.SEGMENTS.ACCOUNT;
+  }
+
+  /** The same-site `?next=` path this page was opened with, or empty. */
+  protected get requestedNext(): string {
+    return Platform.isBrowser ? LocalPathUtils.safe(this.browserState.readQueryParamFromWindow('next')) : '';
+  }
+
+  /** The sign-in page, carrying {@link requestedNext} on so the person still lands where they were going. */
+  protected get loginHref(): string {
+    return this.withNext(RouteConstants.SEGMENTS.LOGIN);
+  }
+
+  /** `path` with {@link requestedNext} carried on, when there is one. */
+  protected withNext(path: string): string {
+    const next = this.requestedNext;
+    return next ? `${path}?next=${encodeURIComponent(next)}` : path;
   }
 
   /** After a successful sign-in, go to {@link afterAuthPath}. */

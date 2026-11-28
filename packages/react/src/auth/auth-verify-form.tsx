@@ -1,5 +1,4 @@
 import type { FormEvent, ReactNode } from 'react';
-import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthVerifyStatus } from '@react/auth/enums/auth-verify-status.enum';
 import type { IAuthFormProps } from '@react/auth/interfaces/auth-form-props.interface';
@@ -66,7 +65,7 @@ export class AuthVerifyForm extends AuthFormBase<IAuthFormProps, IAuthVerifyForm
 
   private renderLoginButton(): ReactNode {
     return (
-      <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__button">
+      <a href={this.loginHref} className="fc-auth__button">
         {this.tr('auth.verify.toLogin', 'Sign in')}
       </a>
     );
@@ -116,7 +115,7 @@ export class AuthVerifyForm extends AuthFormBase<IAuthFormProps, IAuthVerifyForm
           : <p className="fc-auth__subtitle">{this.tr('auth.verify.missingBody', 'Open the confirmation link we sent to your email. Did not get it? Enter your email and we will send a new one.')}</p>}
         {status.offersResend ? this.renderResend() : null}
         <p className="fc-auth__switch">
-          <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link">{this.tr('auth.register.backToLogin', 'Back to sign in')}</a>
+          <a href={this.loginHref} className="fc-auth__link">{this.tr('auth.register.backToLogin', 'Back to sign in')}</a>
         </p>
       </div>
     );

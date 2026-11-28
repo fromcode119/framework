@@ -4,6 +4,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { PluginPasswordSetup } from '@core/plugin/context/plugin-password-setup';
 import { ApiPathUtils } from '@core/api/api-path-utils';
 import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
+import { LocalPathUtils } from '@core/utils/local-path-utils';
 
 /**
  * A sign-in link for an account a PLUGIN looks after — `context.users.issueSignInLink`.
@@ -41,9 +42,7 @@ export class PluginSignInLink {
 
   /** Only a path on this site: `/x`, never `//host` or an absolute URL. Anything else lands on `/`. */
   static safeNext(next: unknown): string {
-    const value = String(next ?? '').trim();
-    if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return '/';
-    return value;
+    return LocalPathUtils.safe(next) || '/';
   }
 
   static async issue(

@@ -57,7 +57,7 @@ export class AuthResetForm extends AuthFormBase<IAuthFormProps, IAuthResetFormSt
           <h1 className="fc-auth__title">{this.tr('auth.reset.doneTitle', 'Password updated')}</h1>
           <div className="fc-auth__notice">{this.tr('auth.reset.doneBody', 'Your password has been changed. Redirecting you to sign in…')}</div>
           <p className="fc-auth__switch">
-            <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+            <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
               {this.tr('auth.reset.goToLogin', 'Go to sign in')}
             </a>
           </p>
@@ -77,7 +77,7 @@ export class AuthResetForm extends AuthFormBase<IAuthFormProps, IAuthResetFormSt
           </button>
         </form>
         <p className="fc-auth__switch">
-          <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
+          <a href={this.loginHref} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>
             {this.tr('auth.reset.backToLogin', 'Back to sign in')}
           </a>
         </p>
